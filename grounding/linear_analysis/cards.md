@@ -1,0 +1,4660 @@
+# Linear obligation cards
+
+Only agreed card fields appear inside each JSON block. Test/obligation headings are document navigation, not card fields. `Grounding obligations` is the total for the parent test, repeated on each of its cards; count cards once. See [tables and evidence](report.md).
+
+<a id="linear_0"></a>
+## #108 — linear_0
+
+### Obligation 1
+
+```json
+{
+  "Test ID": "linear_0",
+  "Task type": "state-changing",
+  "Grounding obligations": 1,
+  "Grounding obligation name": "Resolve Engineering team",
+  "Grounding obligation description": "Resolve Engineering team. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; teams in linear_expanded.",
+  "Referent set": [
+    "ad608998-915c-4bad-bcd9-85ebfccccee8"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "teams.name"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "teams.id"
+    ]
+  ],
+  "Written attributes": [
+    "issues.teamId"
+  ]
+}
+```
+
+<a id="linear_1"></a>
+## #109 — linear_1
+
+### Obligation 1
+
+```json
+{
+  "Test ID": "linear_1",
+  "Task type": "state-changing",
+  "Grounding obligations": 1,
+  "Grounding obligation name": "Resolve Engineering team",
+  "Grounding obligation description": "Resolve Engineering team. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; teams in linear_expanded.",
+  "Referent set": [
+    "ad608998-915c-4bad-bcd9-85ebfccccee8"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "teams.name"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "teams.id"
+    ]
+  ],
+  "Written attributes": [
+    "issues.teamId"
+  ]
+}
+```
+
+<a id="linear_2"></a>
+## #110 — linear_2
+
+### Obligation 1
+
+```json
+{
+  "Test ID": "linear_2",
+  "Task type": "state-changing",
+  "Grounding obligations": 2,
+  "Grounding obligation name": "Resolve issue ENG-1",
+  "Grounding obligation description": "Resolve issue ENG-1. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; issues in linear_expanded.",
+  "Referent set": [
+    "c6e168e3-fed4-45d0-b03f-a1c1f89ee7ab"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "issues.identifier"
+    ]
+  ],
+  "Change-computation attributes": [
+    []
+  ],
+  "Written attributes": [
+    "issues.stateId"
+  ]
+}
+```
+
+### Obligation 2
+
+```json
+{
+  "Test ID": "linear_2",
+  "Task type": "state-changing",
+  "Grounding obligations": 2,
+  "Grounding obligation name": "Resolve Engineering In Progress workflow state",
+  "Grounding obligation description": "Resolve Engineering In Progress workflow state. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; workflow_states in linear_expanded.",
+  "Referent set": [
+    "6963a682-5967-477a-9afc-0b8a5b70b070"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "workflow_states.name",
+      "workflow_states.teamId",
+      "teams.id",
+      "teams.name"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "workflow_states.id"
+    ]
+  ],
+  "Written attributes": [
+    "issues.stateId"
+  ]
+}
+```
+
+<a id="linear_3"></a>
+## #111 — linear_3
+
+### Obligation 1
+
+```json
+{
+  "Test ID": "linear_3",
+  "Task type": "state-changing",
+  "Grounding obligations": 2,
+  "Grounding obligation name": "Resolve issue ENG-2",
+  "Grounding obligation description": "Resolve issue ENG-2. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; issues in linear_expanded.",
+  "Referent set": [
+    "5c62f29d-0f6a-4c4d-9d25-52293e2a8d4f"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "issues.identifier"
+    ]
+  ],
+  "Change-computation attributes": [
+    []
+  ],
+  "Written attributes": [
+    "issues.assigneeId"
+  ]
+}
+```
+
+### Obligation 2
+
+```json
+{
+  "Test ID": "linear_3",
+  "Task type": "state-changing",
+  "Grounding obligations": 2,
+  "Grounding obligation name": "Resolve John Doe",
+  "Grounding obligation description": "Resolve John Doe. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; users in linear_expanded.",
+  "Referent set": [
+    "2dcc8dc2-ca19-475d-9882-3ba5e911e7ec"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "users.name",
+      "users.displayName"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "users.id"
+    ]
+  ],
+  "Written attributes": [
+    "issues.assigneeId"
+  ]
+}
+```
+
+<a id="linear_4"></a>
+## #112 — linear_4
+
+### Obligation 1
+
+```json
+{
+  "Test ID": "linear_4",
+  "Task type": "state-changing",
+  "Grounding obligations": 1,
+  "Grounding obligation name": "Resolve issue ENG-1",
+  "Grounding obligation description": "Resolve issue ENG-1. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; issues in linear_expanded.",
+  "Referent set": [
+    "c6e168e3-fed4-45d0-b03f-a1c1f89ee7ab"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "issues.identifier"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "issues.id"
+    ]
+  ],
+  "Written attributes": [
+    "comments.issueId",
+    "comments.body"
+  ]
+}
+```
+
+<a id="linear_5"></a>
+## #113 — linear_5
+
+No grounding-obligation cards: see the test notes for new outputs and supplied context.
+
+<a id="linear_6"></a>
+## #114 — linear_6
+
+### Obligation 1
+
+```json
+{
+  "Test ID": "linear_6",
+  "Task type": "state-changing",
+  "Grounding obligations": 1,
+  "Grounding obligation name": "Resolve issue ENG-1",
+  "Grounding obligation description": "Resolve issue ENG-1. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; issues in linear_expanded.",
+  "Referent set": [
+    "c6e168e3-fed4-45d0-b03f-a1c1f89ee7ab"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "issues.identifier"
+    ]
+  ],
+  "Change-computation attributes": [
+    []
+  ],
+  "Written attributes": [
+    "issues.priority"
+  ]
+}
+```
+
+<a id="linear_7"></a>
+## #115 — linear_7
+
+### Obligation 1
+
+```json
+{
+  "Test ID": "linear_7",
+  "Task type": "state-changing",
+  "Grounding obligations": 2,
+  "Grounding obligation name": "Resolve Engineering team",
+  "Grounding obligation description": "Resolve Engineering team. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; teams in linear_expanded.",
+  "Referent set": [
+    "ad608998-915c-4bad-bcd9-85ebfccccee8"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "teams.name"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "teams.id"
+    ]
+  ],
+  "Written attributes": [
+    "issues.teamId"
+  ]
+}
+```
+
+### Obligation 2
+
+```json
+{
+  "Test ID": "linear_7",
+  "Task type": "state-changing",
+  "Grounding obligations": 2,
+  "Grounding obligation name": "Resolve John",
+  "Grounding obligation description": "Resolve John. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; users in linear_expanded.",
+  "Referent set": [
+    "2dcc8dc2-ca19-475d-9882-3ba5e911e7ec"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "users.name",
+      "users.displayName"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "users.id"
+    ]
+  ],
+  "Written attributes": [
+    "issues.assigneeId"
+  ]
+}
+```
+
+<a id="linear_8"></a>
+## #116 — linear_8
+
+### Obligation 1
+
+```json
+{
+  "Test ID": "linear_8",
+  "Task type": "state-changing",
+  "Grounding obligations": 1,
+  "Grounding obligation name": "Resolve issue ENG-1",
+  "Grounding obligation description": "Resolve issue ENG-1. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; issues in linear_expanded.",
+  "Referent set": [
+    "c6e168e3-fed4-45d0-b03f-a1c1f89ee7ab"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "issues.identifier"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "issues.description"
+    ]
+  ],
+  "Written attributes": [
+    "issues.description"
+  ]
+}
+```
+
+<a id="linear_9"></a>
+## #117 — linear_9
+
+### Obligation 1
+
+```json
+{
+  "Test ID": "linear_9",
+  "Task type": "state-changing",
+  "Grounding obligations": 1,
+  "Grounding obligation name": "Resolve Engineering team",
+  "Grounding obligation description": "Resolve Engineering team. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; teams in linear_expanded.",
+  "Referent set": [
+    "ad608998-915c-4bad-bcd9-85ebfccccee8"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "teams.name"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "teams.id"
+    ]
+  ],
+  "Written attributes": [
+    "issues.teamId"
+  ]
+}
+```
+
+<a id="linear_10"></a>
+## #118 — linear_10
+
+### Obligation 1
+
+```json
+{
+  "Test ID": "linear_10",
+  "Task type": "state-changing",
+  "Grounding obligations": 2,
+  "Grounding obligation name": "Resolve issue ENG-1",
+  "Grounding obligation description": "Resolve issue ENG-1. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; issues in linear_expanded.",
+  "Referent set": [
+    "c6e168e3-fed4-45d0-b03f-a1c1f89ee7ab"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "issues.identifier"
+    ]
+  ],
+  "Change-computation attributes": [
+    []
+  ],
+  "Written attributes": [
+    "issues.stateId"
+  ]
+}
+```
+
+### Obligation 2
+
+```json
+{
+  "Test ID": "linear_10",
+  "Task type": "state-changing",
+  "Grounding obligations": 2,
+  "Grounding obligation name": "Resolve Engineering Done workflow state",
+  "Grounding obligation description": "Resolve Engineering Done workflow state. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; workflow_states in linear_expanded.",
+  "Referent set": [
+    "4334c4ee-405c-4d2c-bf25-4dcb7a8c0512"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "workflow_states.name",
+      "workflow_states.teamId",
+      "teams.id",
+      "teams.name"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "workflow_states.id"
+    ]
+  ],
+  "Written attributes": [
+    "issues.stateId"
+  ]
+}
+```
+
+<a id="linear_11"></a>
+## #119 — linear_11
+
+No grounding-obligation cards: see the test notes for new outputs and supplied context.
+
+<a id="linear_12"></a>
+## #120 — linear_12
+
+### Obligation 1
+
+```json
+{
+  "Test ID": "linear_12",
+  "Task type": "state-changing",
+  "Grounding obligations": 2,
+  "Grounding obligation name": "Resolve the Engineering login issue assigned to John",
+  "Grounding obligation description": "Resolve the Engineering login issue assigned to John. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; issues in linear_expanded.",
+  "Referent set": [
+    "c6e168e3-fed4-45d0-b03f-a1c1f89ee7ab"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "issues.title",
+      "issues.teamId",
+      "issues.assigneeId",
+      "teams.id",
+      "teams.name",
+      "users.id",
+      "users.name"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "issues.id"
+    ]
+  ],
+  "Written attributes": [
+    "issue_label_issue_association.issue_id"
+  ]
+}
+```
+
+### Obligation 2
+
+```json
+{
+  "Test ID": "linear_12",
+  "Task type": "state-changing",
+  "Grounding obligations": 2,
+  "Grounding obligation name": "Resolve Bugs label",
+  "Grounding obligation description": "Resolve Bugs label. The explicit description has no matching seeded referent.",
+  "Resolution": "absent",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; issue_labels in linear_expanded.",
+  "Referent set": [],
+  "Alternative sufficient identifying sets": [
+    [
+      "issue_labels.name"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "issue_labels.id"
+    ]
+  ],
+  "Written attributes": [
+    "issue_label_issue_association.issue_label_id"
+  ]
+}
+```
+
+<a id="linear_13"></a>
+## #121 — linear_13
+
+### Obligation 1
+
+```json
+{
+  "Test ID": "linear_13",
+  "Task type": "state-changing",
+  "Grounding obligations": 2,
+  "Grounding obligation name": "Resolve Sarah’s onboarding dashboard issue",
+  "Grounding obligation description": "Resolve Sarah’s onboarding dashboard issue. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; issues in linear_expanded.",
+  "Referent set": [
+    "5c62f29d-0f6a-4c4d-9d25-52293e2a8d4f"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "issues.title",
+      "issues.assigneeId",
+      "users.id",
+      "users.name"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "issues.id"
+    ]
+  ],
+  "Written attributes": [
+    "issue_label_issue_association.issue_id"
+  ]
+}
+```
+
+### Obligation 2
+
+```json
+{
+  "Test ID": "linear_13",
+  "Task type": "state-changing",
+  "Grounding obligations": 2,
+  "Grounding obligation name": "Resolve UX label",
+  "Grounding obligation description": "Resolve UX label. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; issue_labels in linear_expanded.",
+  "Referent set": [
+    "f9c5b7c8-3909-4f8b-bc25-73e1b56a9c0c"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "issue_labels.name"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "issue_labels.id"
+    ]
+  ],
+  "Written attributes": [
+    "issue_label_issue_association.issue_label_id"
+  ]
+}
+```
+
+<a id="linear_14"></a>
+## #122 — linear_14
+
+### Obligation 1
+
+```json
+{
+  "Test ID": "linear_14",
+  "Task type": "state-changing",
+  "Grounding obligations": 1,
+  "Grounding obligation name": "Resolve the Engineering intermittent-login issue",
+  "Grounding obligation description": "Resolve the Engineering intermittent-login issue. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; issues in linear_expanded.",
+  "Referent set": [
+    "c6e168e3-fed4-45d0-b03f-a1c1f89ee7ab"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "issues.description",
+      "issues.title",
+      "issues.teamId",
+      "teams.id",
+      "teams.name"
+    ]
+  ],
+  "Change-computation attributes": [
+    []
+  ],
+  "Written attributes": [
+    "issues.title"
+  ]
+}
+```
+
+<a id="linear_15"></a>
+## #123 — linear_15
+
+### Obligation 1
+
+```json
+{
+  "Test ID": "linear_15",
+  "Task type": "state-changing",
+  "Grounding obligations": 2,
+  "Grounding obligation name": "Resolve the login issue John commented on",
+  "Grounding obligation description": "Resolve the login issue John commented on. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; issues in linear_expanded.",
+  "Referent set": [
+    "c6e168e3-fed4-45d0-b03f-a1c1f89ee7ab"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "issues.title",
+      "issues.id",
+      "comments.issueId",
+      "comments.userId",
+      "users.id",
+      "users.name"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "issues.id"
+    ]
+  ],
+  "Written attributes": [
+    "issue_label_issue_association.issue_id"
+  ]
+}
+```
+
+### Obligation 2
+
+```json
+{
+  "Test ID": "linear_15",
+  "Task type": "state-changing",
+  "Grounding obligations": 2,
+  "Grounding obligation name": "Resolve RL label",
+  "Grounding obligation description": "Resolve RL label. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; issue_labels in linear_expanded.",
+  "Referent set": [
+    "8f01ce9d-1433-4c4c-969d-21ca3bf2718f"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "issue_labels.name"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "issue_labels.id"
+    ]
+  ],
+  "Written attributes": [
+    "issue_label_issue_association.issue_label_id"
+  ]
+}
+```
+
+<a id="linear_16"></a>
+## #124 — linear_16
+
+### Obligation 1
+
+```json
+{
+  "Test ID": "linear_16",
+  "Task type": "state-changing",
+  "Grounding obligations": 2,
+  "Grounding obligation name": "Resolve issue ENG-2",
+  "Grounding obligation description": "Resolve issue ENG-2. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; issues in linear_expanded.",
+  "Referent set": [
+    "5c62f29d-0f6a-4c4d-9d25-52293e2a8d4f"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "issues.identifier"
+    ]
+  ],
+  "Change-computation attributes": [
+    []
+  ],
+  "Written attributes": [
+    "issues.stateId"
+  ]
+}
+```
+
+### Obligation 2
+
+```json
+{
+  "Test ID": "linear_16",
+  "Task type": "state-changing",
+  "Grounding obligations": 2,
+  "Grounding obligation name": "Resolve Engineering In Review workflow state",
+  "Grounding obligation description": "Resolve Engineering In Review workflow state. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; workflow_states in linear_expanded.",
+  "Referent set": [
+    "4379b3d7-1143-4aa4-a3a6-da0c436e73b6"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "workflow_states.name",
+      "workflow_states.teamId",
+      "teams.id",
+      "teams.name"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "workflow_states.id"
+    ]
+  ],
+  "Written attributes": [
+    "issues.stateId"
+  ]
+}
+```
+
+<a id="linear_17"></a>
+## #125 — linear_17
+
+### Obligation 1
+
+```json
+{
+  "Test ID": "linear_17",
+  "Task type": "state-changing",
+  "Grounding obligations": 2,
+  "Grounding obligation name": "Resolve issue ENG-3",
+  "Grounding obligation description": "Resolve issue ENG-3. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; issues in linear_expanded.",
+  "Referent set": [
+    "87c1d2f3-66c4-4dd0-bc93-1b99d04dc374"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "issues.identifier"
+    ]
+  ],
+  "Change-computation attributes": [
+    []
+  ],
+  "Written attributes": [
+    "issues.assigneeId"
+  ]
+}
+```
+
+### Obligation 2
+
+```json
+{
+  "Test ID": "linear_17",
+  "Task type": "state-changing",
+  "Grounding obligations": 2,
+  "Grounding obligation name": "Resolve Sarah Smith",
+  "Grounding obligation description": "Resolve Sarah Smith. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; users in linear_expanded.",
+  "Referent set": [
+    "03b0809e-713e-44ee-95de-b7a198b135ac"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "users.name",
+      "users.displayName"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "users.id"
+    ]
+  ],
+  "Written attributes": [
+    "issues.assigneeId"
+  ]
+}
+```
+
+<a id="linear_18"></a>
+## #126 — linear_18
+
+### Obligation 1
+
+```json
+{
+  "Test ID": "linear_18",
+  "Task type": "state-changing",
+  "Grounding obligations": 3,
+  "Grounding obligation name": "Resolve Engineering team",
+  "Grounding obligation description": "Resolve Engineering team. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; teams in linear_expanded.",
+  "Referent set": [
+    "ad608998-915c-4bad-bcd9-85ebfccccee8"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "teams.name"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "teams.id"
+    ]
+  ],
+  "Written attributes": [
+    "issues.teamId"
+  ]
+}
+```
+
+### Obligation 2
+
+```json
+{
+  "Test ID": "linear_18",
+  "Task type": "state-changing",
+  "Grounding obligations": 3,
+  "Grounding obligation name": "Resolve UX label",
+  "Grounding obligation description": "Resolve UX label. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; issue_labels in linear_expanded.",
+  "Referent set": [
+    "f9c5b7c8-3909-4f8b-bc25-73e1b56a9c0c"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "issue_labels.name"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "issue_labels.id"
+    ]
+  ],
+  "Written attributes": [
+    "issue_label_issue_association.issue_label_id"
+  ]
+}
+```
+
+### Obligation 3
+
+```json
+{
+  "Test ID": "linear_18",
+  "Task type": "state-changing",
+  "Grounding obligations": 3,
+  "Grounding obligation name": "Resolve Urgent label",
+  "Grounding obligation description": "Resolve Urgent label. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; issue_labels in linear_expanded.",
+  "Referent set": [
+    "6c2b0d3c-3d6d-4d91-9a77-b93b59b8d5a0"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "issue_labels.name"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "issue_labels.id"
+    ]
+  ],
+  "Written attributes": [
+    "issue_label_issue_association.issue_label_id"
+  ]
+}
+```
+
+<a id="linear_19"></a>
+## #127 — linear_19
+
+### Obligation 1
+
+```json
+{
+  "Test ID": "linear_19",
+  "Task type": "state-changing",
+  "Grounding obligations": 1,
+  "Grounding obligation name": "Resolve issue ENG-3",
+  "Grounding obligation description": "Resolve issue ENG-3. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; issues in linear_expanded.",
+  "Referent set": [
+    "87c1d2f3-66c4-4dd0-bc93-1b99d04dc374"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "issues.identifier"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "issues.id"
+    ]
+  ],
+  "Written attributes": [
+    "comments.issueId",
+    "comments.body"
+  ]
+}
+```
+
+<a id="linear_20"></a>
+## #128 — linear_20
+
+### Obligation 1
+
+```json
+{
+  "Test ID": "linear_20",
+  "Task type": "state-changing",
+  "Grounding obligations": 1,
+  "Grounding obligation name": "Resolve the described existing comment",
+  "Grounding obligation description": "Resolve the described existing comment. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; comments in linear_expanded.",
+  "Referent set": [
+    "e10f59c3-7a49-4d52-8dba-8c8602f8c807"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "comments.body",
+      "comments.issueId",
+      "issues.id",
+      "issues.identifier"
+    ]
+  ],
+  "Change-computation attributes": [
+    []
+  ],
+  "Written attributes": [
+    "comments.body"
+  ]
+}
+```
+
+<a id="linear_21"></a>
+## #129 — linear_21
+
+### Obligation 1
+
+```json
+{
+  "Test ID": "linear_21",
+  "Task type": "state-changing",
+  "Grounding obligations": 1,
+  "Grounding obligation name": "Resolve the described existing comment",
+  "Grounding obligation description": "Resolve the described existing comment. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; comments in linear_expanded.",
+  "Referent set": [
+    "e10f59c3-7a49-4d52-8dba-8c8602f8c807"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "comments.body",
+      "comments.issueId",
+      "issues.id",
+      "issues.identifier"
+    ]
+  ],
+  "Change-computation attributes": [
+    []
+  ],
+  "Written attributes": []
+}
+```
+
+<a id="linear_22"></a>
+## #130 — linear_22
+
+### Obligation 1
+
+```json
+{
+  "Test ID": "linear_22",
+  "Task type": "state-changing",
+  "Grounding obligations": 3,
+  "Grounding obligation name": "Resolve Engineering team",
+  "Grounding obligation description": "Resolve Engineering team. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; teams in linear_expanded.",
+  "Referent set": [
+    "ad608998-915c-4bad-bcd9-85ebfccccee8"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "teams.name"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "teams.id"
+    ]
+  ],
+  "Written attributes": [
+    "issues.teamId"
+  ]
+}
+```
+
+### Obligation 2
+
+```json
+{
+  "Test ID": "linear_22",
+  "Task type": "state-changing",
+  "Grounding obligations": 3,
+  "Grounding obligation name": "Resolve UX label",
+  "Grounding obligation description": "Resolve UX label. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; issue_labels in linear_expanded.",
+  "Referent set": [
+    "f9c5b7c8-3909-4f8b-bc25-73e1b56a9c0c"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "issue_labels.name"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "issue_labels.id"
+    ]
+  ],
+  "Written attributes": [
+    "issue_label_issue_association.issue_label_id"
+  ]
+}
+```
+
+### Obligation 3
+
+```json
+{
+  "Test ID": "linear_22",
+  "Task type": "state-changing",
+  "Grounding obligations": 3,
+  "Grounding obligation name": "Resolve Urgent label",
+  "Grounding obligation description": "Resolve Urgent label. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; issue_labels in linear_expanded.",
+  "Referent set": [
+    "6c2b0d3c-3d6d-4d91-9a77-b93b59b8d5a0"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "issue_labels.name"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "issue_labels.id"
+    ]
+  ],
+  "Written attributes": [
+    "issue_label_issue_association.issue_label_id"
+  ]
+}
+```
+
+<a id="linear_23"></a>
+## #131 — linear_23
+
+### Obligation 1
+
+```json
+{
+  "Test ID": "linear_23",
+  "Task type": "state-changing",
+  "Grounding obligations": 2,
+  "Grounding obligation name": "Resolve issue ENG-1",
+  "Grounding obligation description": "Resolve issue ENG-1. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; issues in linear_expanded.",
+  "Referent set": [
+    "c6e168e3-fed4-45d0-b03f-a1c1f89ee7ab"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "issues.identifier"
+    ]
+  ],
+  "Change-computation attributes": [
+    []
+  ],
+  "Written attributes": [
+    "issues.stateId"
+  ]
+}
+```
+
+### Obligation 2
+
+```json
+{
+  "Test ID": "linear_23",
+  "Task type": "state-changing",
+  "Grounding obligations": 2,
+  "Grounding obligation name": "Resolve Engineering Canceled workflow state",
+  "Grounding obligation description": "Resolve Engineering Canceled workflow state. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; workflow_states in linear_expanded.",
+  "Referent set": [
+    "d4f59a6d-33cb-45d1-8f4e-3e57536f912d"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "workflow_states.name",
+      "workflow_states.teamId",
+      "teams.id",
+      "teams.name"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "workflow_states.id"
+    ]
+  ],
+  "Written attributes": [
+    "issues.stateId"
+  ]
+}
+```
+
+<a id="linear_24"></a>
+## #132 — linear_24
+
+### Obligation 1
+
+```json
+{
+  "Test ID": "linear_24",
+  "Task type": "state-changing",
+  "Grounding obligations": 1,
+  "Grounding obligation name": "Resolve issue ENG-2",
+  "Grounding obligation description": "Resolve issue ENG-2. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; issues in linear_expanded.",
+  "Referent set": [
+    "5c62f29d-0f6a-4c4d-9d25-52293e2a8d4f"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "issues.identifier"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "issues.id"
+    ]
+  ],
+  "Written attributes": [
+    "issue_label_issue_association.issue_id"
+  ]
+}
+```
+
+<a id="linear_25"></a>
+## #133 — linear_25
+
+### Obligation 1
+
+```json
+{
+  "Test ID": "linear_25",
+  "Task type": "state-changing",
+  "Grounding obligations": 1,
+  "Grounding obligation name": "Resolve UX label",
+  "Grounding obligation description": "Resolve UX label. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; issue_labels in linear_expanded.",
+  "Referent set": [
+    "f9c5b7c8-3909-4f8b-bc25-73e1b56a9c0c"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "issue_labels.name"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "issue_labels.id"
+    ]
+  ],
+  "Written attributes": [
+    "issue_labels.name"
+  ]
+}
+```
+
+<a id="linear_26"></a>
+## #134 — linear_26
+
+### Obligation 1
+
+```json
+{
+  "Test ID": "linear_26",
+  "Task type": "state-changing",
+  "Grounding obligations": 1,
+  "Grounding obligation name": "Resolve issue ENG-1",
+  "Grounding obligation description": "Resolve issue ENG-1. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; issues in linear_expanded.",
+  "Referent set": [
+    "c6e168e3-fed4-45d0-b03f-a1c1f89ee7ab"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "issues.identifier"
+    ]
+  ],
+  "Change-computation attributes": [
+    []
+  ],
+  "Written attributes": [
+    "issues.assigneeId"
+  ]
+}
+```
+
+<a id="linear_27"></a>
+## #135 — linear_27
+
+### Obligation 1
+
+```json
+{
+  "Test ID": "linear_27",
+  "Task type": "state-changing",
+  "Grounding obligations": 1,
+  "Grounding obligation name": "Resolve Product team",
+  "Grounding obligation description": "Resolve Product team. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; teams in linear_expanded.",
+  "Referent set": [
+    "cdb85540-5065-4346-8aef-ae2b72d6e940"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "teams.name"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "teams.id"
+    ]
+  ],
+  "Written attributes": [
+    "workflow_states.teamId",
+    "issues.teamId"
+  ]
+}
+```
+
+<a id="linear_28"></a>
+## #136 — linear_28
+
+### Obligation 1
+
+```json
+{
+  "Test ID": "linear_28",
+  "Task type": "state-changing",
+  "Grounding obligations": 1,
+  "Grounding obligation name": "Resolve Engineering Duplicate state",
+  "Grounding obligation description": "Resolve Engineering Duplicate state. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; workflow_states in linear_expanded.",
+  "Referent set": [
+    "ab04ec5f-1292-48b0-9426-50d354957357"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "workflow_states.name",
+      "workflow_states.teamId",
+      "teams.id",
+      "teams.name"
+    ]
+  ],
+  "Change-computation attributes": [
+    []
+  ],
+  "Written attributes": []
+}
+```
+
+<a id="linear_29"></a>
+## #137 — linear_29
+
+### Obligation 1
+
+```json
+{
+  "Test ID": "linear_29",
+  "Task type": "state-changing",
+  "Grounding obligations": 2,
+  "Grounding obligation name": "Resolve the newer Product trace duplicate",
+  "Grounding obligation description": "Resolve the newer Product trace duplicate. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; issues in linear_expanded.",
+  "Referent set": [
+    "33a21e17-7c49-4b93-a45d-28f58960a109"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "issues.title",
+      "issues.description",
+      "issues.teamId",
+      "issues.createdAt",
+      "teams.id",
+      "teams.name"
+    ]
+  ],
+  "Change-computation attributes": [
+    []
+  ],
+  "Written attributes": [
+    "issues.stateId"
+  ]
+}
+```
+
+### Obligation 2
+
+```json
+{
+  "Test ID": "linear_29",
+  "Task type": "state-changing",
+  "Grounding obligations": 2,
+  "Grounding obligation name": "Resolve Product Duplicate workflow state",
+  "Grounding obligation description": "Resolve Product Duplicate workflow state. The explicit description has no matching seeded referent.",
+  "Resolution": "absent",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; workflow_states in linear_expanded.",
+  "Referent set": [],
+  "Alternative sufficient identifying sets": [
+    [
+      "workflow_states.name",
+      "workflow_states.teamId",
+      "teams.id",
+      "teams.name"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "workflow_states.id"
+    ]
+  ],
+  "Written attributes": [
+    "issues.stateId"
+  ]
+}
+```
+
+<a id="linear_30"></a>
+## #138 — linear_30
+
+### Obligation 1
+
+```json
+{
+  "Test ID": "linear_30",
+  "Task type": "state-changing",
+  "Grounding obligations": 2,
+  "Grounding obligation name": "Resolve Artem",
+  "Grounding obligation description": "Resolve Artem. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; users in linear_expanded.",
+  "Referent set": [
+    "b55072d7-ccaa-43cd-8ab7-3dca324e3294"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "users.name",
+      "users.displayName"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "users.id"
+    ]
+  ],
+  "Written attributes": [
+    "team_memberships.userId"
+  ]
+}
+```
+
+### Obligation 2
+
+```json
+{
+  "Test ID": "linear_30",
+  "Task type": "state-changing",
+  "Grounding obligations": 2,
+  "Grounding obligation name": "Resolve Product team",
+  "Grounding obligation description": "Resolve Product team. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; teams in linear_expanded.",
+  "Referent set": [
+    "cdb85540-5065-4346-8aef-ae2b72d6e940"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "teams.name"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "teams.id"
+    ]
+  ],
+  "Written attributes": [
+    "team_memberships.teamId"
+  ]
+}
+```
+
+<a id="linear_31"></a>
+## #139 — linear_31
+
+### Obligation 1
+
+```json
+{
+  "Test ID": "linear_31",
+  "Task type": "state-changing",
+  "Grounding obligations": 1,
+  "Grounding obligation name": "Resolve the explicitly identified OpenTelemetry comment",
+  "Grounding obligation description": "Resolve the explicitly identified OpenTelemetry comment. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; comments in linear_expanded.",
+  "Referent set": [
+    "e6a0f6c4-4d0e-4f4c-9a54-444444444444"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "comments.id"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "comments.body"
+    ]
+  ],
+  "Written attributes": [
+    "comments.body"
+  ]
+}
+```
+
+<a id="linear_32"></a>
+## #140 — linear_32
+
+### Obligation 1
+
+```json
+{
+  "Test ID": "linear_32",
+  "Task type": "state-changing",
+  "Grounding obligations": 2,
+  "Grounding obligation name": "Resolve John’s urgent issues",
+  "Grounding obligation description": "Resolve John’s urgent issues. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; issues in linear_expanded.",
+  "Referent set": [
+    "87c1d2f3-66c4-4dd0-bc93-1b99d04dc374",
+    "33a21e17-7c49-4b93-a45d-28f58960a109"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "issues.assigneeId",
+      "issues.priority",
+      "users.id",
+      "users.name"
+    ]
+  ],
+  "Change-computation attributes": [
+    []
+  ],
+  "Written attributes": [
+    "issues.assigneeId"
+  ]
+}
+```
+
+### Obligation 2
+
+```json
+{
+  "Test ID": "linear_32",
+  "Task type": "state-changing",
+  "Grounding obligations": 2,
+  "Grounding obligation name": "Resolve Sarah Smith",
+  "Grounding obligation description": "Resolve Sarah Smith. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; users in linear_expanded.",
+  "Referent set": [
+    "03b0809e-713e-44ee-95de-b7a198b135ac"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "users.name",
+      "users.displayName"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "users.id"
+    ]
+  ],
+  "Written attributes": [
+    "issues.assigneeId"
+  ]
+}
+```
+
+<a id="linear_33"></a>
+## #141 — linear_33
+
+### Obligation 1
+
+```json
+{
+  "Test ID": "linear_33",
+  "Task type": "state-changing",
+  "Grounding obligations": 3,
+  "Grounding obligation name": "Resolve Polish onboarding dashboard UX issue",
+  "Grounding obligation description": "Resolve Polish onboarding dashboard UX issue. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; issues in linear_expanded.",
+  "Referent set": [
+    "5c62f29d-0f6a-4c4d-9d25-52293e2a8d4f"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "issues.title"
+    ]
+  ],
+  "Change-computation attributes": [
+    []
+  ],
+  "Written attributes": [
+    "issues.teamId",
+    "issues.stateId"
+  ]
+}
+```
+
+### Obligation 2
+
+```json
+{
+  "Test ID": "linear_33",
+  "Task type": "state-changing",
+  "Grounding obligations": 3,
+  "Grounding obligation name": "Resolve Product team",
+  "Grounding obligation description": "Resolve Product team. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; teams in linear_expanded.",
+  "Referent set": [
+    "cdb85540-5065-4346-8aef-ae2b72d6e940"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "teams.name"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "teams.id"
+    ]
+  ],
+  "Written attributes": [
+    "issues.teamId"
+  ]
+}
+```
+
+### Obligation 3
+
+```json
+{
+  "Test ID": "linear_33",
+  "Task type": "state-changing",
+  "Grounding obligations": 3,
+  "Grounding obligation name": "Resolve Product In Review workflow state",
+  "Grounding obligation description": "Resolve Product In Review workflow state. The explicit description has no matching seeded referent.",
+  "Resolution": "absent",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; workflow_states in linear_expanded.",
+  "Referent set": [],
+  "Alternative sufficient identifying sets": [
+    [
+      "workflow_states.name",
+      "workflow_states.teamId",
+      "teams.id",
+      "teams.name"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "workflow_states.id"
+    ]
+  ],
+  "Written attributes": [
+    "issues.stateId"
+  ]
+}
+```
+
+<a id="linear_34"></a>
+## #142 — linear_34
+
+### Obligation 1
+
+```json
+{
+  "Test ID": "linear_34",
+  "Task type": "state-changing",
+  "Grounding obligations": 3,
+  "Grounding obligation name": "Resolve production-incident comments as analysis evidence",
+  "Grounding obligation description": "Resolve production-incident comments as analysis evidence. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; comments in linear_expanded.",
+  "Referent set": [
+    "b3f7c3f2-1a7b-4d8e-9f21-111111111111"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "issues.title",
+      "issues.id",
+      "comments.issueId"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "comments.body"
+    ]
+  ],
+  "Written attributes": [
+    "issues.description"
+  ]
+}
+```
+
+### Obligation 2
+
+```json
+{
+  "Test ID": "linear_34",
+  "Task type": "state-changing",
+  "Grounding obligations": 3,
+  "Grounding obligation name": "Resolve Engineering team",
+  "Grounding obligation description": "Resolve Engineering team. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; teams in linear_expanded.",
+  "Referent set": [
+    "ad608998-915c-4bad-bcd9-85ebfccccee8"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "teams.name"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "teams.id"
+    ]
+  ],
+  "Written attributes": [
+    "issues.teamId"
+  ]
+}
+```
+
+### Obligation 3
+
+```json
+{
+  "Test ID": "linear_34",
+  "Task type": "state-changing",
+  "Grounding obligations": 3,
+  "Grounding obligation name": "Resolve issue ENG-3",
+  "Grounding obligation description": "Resolve issue ENG-3. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; issues in linear_expanded.",
+  "Referent set": [
+    "87c1d2f3-66c4-4dd0-bc93-1b99d04dc374"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "issues.identifier"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "issues.id"
+    ]
+  ],
+  "Written attributes": [
+    "issue_relations.issueId"
+  ]
+}
+```
+
+<a id="linear_35"></a>
+## #143 — linear_35
+
+### Obligation 1
+
+```json
+{
+  "Test ID": "linear_35",
+  "Task type": "state-changing",
+  "Grounding obligations": 2,
+  "Grounding obligation name": "Resolve the email sign-in issue",
+  "Grounding obligation description": "Resolve the email sign-in issue. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; issues in linear_expanded.",
+  "Referent set": [
+    "7d3f21ac-89c1-4f3b-9c2e-4fe3a1b71002"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "issues.title"
+    ]
+  ],
+  "Change-computation attributes": [
+    []
+  ],
+  "Written attributes": [
+    "issues.assigneeId"
+  ]
+}
+```
+
+### Obligation 2
+
+```json
+{
+  "Test ID": "linear_35",
+  "Task type": "state-changing",
+  "Grounding obligations": 2,
+  "Grounding obligation name": "Resolve eligible least-loaded Engineering members",
+  "Grounding obligation description": "Choose one eligible least-loaded member; the four-member set is a candidate population, not four assignments.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; users in linear_expanded.",
+  "Referent set": [
+    "b55072d7-ccaa-43cd-8ab7-3dca324e3294",
+    "res-user-eng-5-001",
+    "mod-user-derek-001",
+    "mod-user-mila-001"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "teams.name",
+      "teams.id",
+      "team_memberships.teamId",
+      "team_memberships.userId",
+      "users.id",
+      "issues.assigneeId"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "users.id"
+    ]
+  ],
+  "Written attributes": [
+    "issues.assigneeId"
+  ]
+}
+```
+
+<a id="linear_36"></a>
+## #144 — linear_36
+
+### Obligation 1
+
+```json
+{
+  "Test ID": "linear_36",
+  "Task type": "state-changing",
+  "Grounding obligations": 2,
+  "Grounding obligation name": "Resolve RL label",
+  "Grounding obligation description": "Resolve RL label. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; issue_labels in linear_expanded.",
+  "Referent set": [
+    "8f01ce9d-1433-4c4c-969d-21ca3bf2718f"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "issue_labels.name"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "issue_labels.id"
+    ]
+  ],
+  "Written attributes": [
+    "issue_label_issue_association.issue_label_id"
+  ]
+}
+```
+
+### Obligation 2
+
+```json
+{
+  "Test ID": "linear_36",
+  "Task type": "state-changing",
+  "Grounding obligations": 2,
+  "Grounding obligation name": "Resolve issues bearing RL",
+  "Grounding obligation description": "Resolve issues bearing RL. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; issues in linear_expanded.",
+  "Referent set": [
+    "b4f5130f-5c1b-4bc0-a8f6-60a22b0adf5e"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "issue_labels.name",
+      "issue_labels.id",
+      "issue_label_issue_association.issue_label_id",
+      "issue_label_issue_association.issue_id",
+      "issues.id"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "issues.id"
+    ]
+  ],
+  "Written attributes": [
+    "issue_label_issue_association.issue_id",
+    "issue_label_issue_association.issue_label_id"
+  ]
+}
+```
+
+<a id="linear_37"></a>
+## #145 — linear_37
+
+### Obligation 1
+
+```json
+{
+  "Test ID": "linear_37",
+  "Task type": "state-changing",
+  "Grounding obligations": 2,
+  "Grounding obligation name": "Resolve old In Progress Engineering issues",
+  "Grounding obligation description": "Resolve old In Progress Engineering issues. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; issues in linear_expanded.",
+  "Referent set": [
+    "87c1d2f3-66c4-4dd0-bc93-1b99d04dc374"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "issues.createdAt",
+      "issues.stateId",
+      "issues.teamId",
+      "workflow_states.id",
+      "workflow_states.name",
+      "teams.id",
+      "teams.name"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "issues.id"
+    ]
+  ],
+  "Written attributes": [
+    "issues.stateId",
+    "comments.issueId",
+    "comments.body"
+  ]
+}
+```
+
+### Obligation 2
+
+```json
+{
+  "Test ID": "linear_37",
+  "Task type": "state-changing",
+  "Grounding obligations": 2,
+  "Grounding obligation name": "Resolve Engineering Todo workflow state",
+  "Grounding obligation description": "Resolve Engineering Todo workflow state. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; workflow_states in linear_expanded.",
+  "Referent set": [
+    "741f29ae-cfb3-4b8a-a1f8-c5161c842366"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "workflow_states.name",
+      "workflow_states.teamId",
+      "teams.id",
+      "teams.name"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "workflow_states.id"
+    ]
+  ],
+  "Written attributes": [
+    "issues.stateId"
+  ]
+}
+```
+
+<a id="linear_38"></a>
+## #146 — linear_38
+
+### Obligation 1
+
+```json
+{
+  "Test ID": "linear_38",
+  "Task type": "state-changing",
+  "Grounding obligations": 3,
+  "Grounding obligation name": "Resolve the SSO parent issue",
+  "Grounding obligation description": "Resolve the SSO parent issue. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; issues in linear_expanded.",
+  "Referent set": [
+    "7d3f21ac-89c1-4f3b-9c2e-4fe3a1b71002"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "issues.title"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "issues.id"
+    ]
+  ],
+  "Written attributes": [
+    "issues.parentId"
+  ]
+}
+```
+
+### Obligation 2
+
+```json
+{
+  "Test ID": "linear_38",
+  "Task type": "state-changing",
+  "Grounding obligations": 3,
+  "Grounding obligation name": "Resolve Sarah",
+  "Grounding obligation description": "Resolve Sarah. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; users in linear_expanded.",
+  "Referent set": [
+    "03b0809e-713e-44ee-95de-b7a198b135ac"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "users.name",
+      "users.displayName"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "users.id"
+    ]
+  ],
+  "Written attributes": [
+    "issues.assigneeId"
+  ]
+}
+```
+
+### Obligation 3
+
+```json
+{
+  "Test ID": "linear_38",
+  "Task type": "state-changing",
+  "Grounding obligations": 3,
+  "Grounding obligation name": "Resolve John",
+  "Grounding obligation description": "Resolve John. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; users in linear_expanded.",
+  "Referent set": [
+    "2dcc8dc2-ca19-475d-9882-3ba5e911e7ec"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "users.name",
+      "users.displayName"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "users.id"
+    ]
+  ],
+  "Written attributes": [
+    "issues.assigneeId"
+  ]
+}
+```
+
+<a id="linear_39"></a>
+## #147 — linear_39
+
+### Obligation 1
+
+```json
+{
+  "Test ID": "linear_39",
+  "Task type": "state-changing",
+  "Grounding obligations": 1,
+  "Grounding obligation name": "Resolve Engineering team",
+  "Grounding obligation description": "Resolve Engineering team. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; teams in linear_expanded.",
+  "Referent set": [
+    "ad608998-915c-4bad-bcd9-85ebfccccee8"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "teams.name"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "teams.id"
+    ]
+  ],
+  "Written attributes": [
+    "issues.teamId"
+  ]
+}
+```
+
+<a id="linear_40"></a>
+## #148 — linear_40
+
+### Obligation 1
+
+```json
+{
+  "Test ID": "linear_40",
+  "Task type": "state-changing",
+  "Grounding obligations": 1,
+  "Grounding obligation name": "Resolve Kenji",
+  "Grounding obligation description": "Resolve Kenji. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; users in linear_expanded.",
+  "Referent set": [
+    "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "users.name",
+      "users.displayName"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "users.id"
+    ]
+  ],
+  "Written attributes": [
+    "issues.assigneeId"
+  ]
+}
+```
+
+<a id="linear_41"></a>
+## #149 — linear_41
+
+### Obligation 1
+
+```json
+{
+  "Test ID": "linear_41",
+  "Task type": "state-changing",
+  "Grounding obligations": 6,
+  "Grounding obligation name": "Resolve Yuto’s seed packet evidence",
+  "Grounding obligation description": "Resolve Yuto’s seed packet evidence. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; issues in linear_expanded.",
+  "Referent set": [
+    "56789012-def0-1234-5678-9abcdef01234",
+    "67890123-ef01-2345-6789-abcdef012345",
+    "78901234-f012-3456-789a-bcdef0123456",
+    "89012345-0123-4567-89ab-cdef01234567"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "issues.title",
+      "issues.teamId",
+      "teams.id",
+      "teams.name"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "issues.stateId",
+      "issues.title",
+      "workflow_states.name"
+    ]
+  ],
+  "Written attributes": [
+    "issue_label_issue_association.issue_id"
+  ]
+}
+```
+
+### Obligation 2
+
+```json
+{
+  "Test ID": "linear_41",
+  "Task type": "state-changing",
+  "Grounding obligations": 6,
+  "Grounding obligation name": "Resolve Nneka’s seed packet evidence",
+  "Grounding obligation description": "Resolve Nneka’s seed packet evidence. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; issues in linear_expanded.",
+  "Referent set": [
+    "9a012345-1234-5678-9abc-def012345678"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "issues.title",
+      "issues.teamId",
+      "teams.id",
+      "teams.name"
+    ]
+  ],
+  "Change-computation attributes": [
+    []
+  ],
+  "Written attributes": [
+    "issues.stateId"
+  ]
+}
+```
+
+### Obligation 3
+
+```json
+{
+  "Test ID": "linear_41",
+  "Task type": "state-changing",
+  "Grounding obligations": 6,
+  "Grounding obligation name": "Resolve Szymon’s seed packet evidence",
+  "Grounding obligation description": "Resolve Szymon’s seed packet evidence. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; issues in linear_expanded.",
+  "Referent set": [
+    "ab123456-2345-6789-abcd-ef0123456789",
+    "bc234567-3456-789a-bcde-f01234567890",
+    "cd345678-4567-89ab-cdef-012345678901"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "issues.title",
+      "issues.teamId",
+      "teams.id",
+      "teams.name"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "issues.stateId",
+      "workflow_states.name"
+    ]
+  ],
+  "Written attributes": [
+    "comments.body"
+  ]
+}
+```
+
+### Obligation 4
+
+```json
+{
+  "Test ID": "linear_41",
+  "Task type": "state-changing",
+  "Grounding obligations": 6,
+  "Grounding obligation name": "Resolve Seed Library Preserved Collection workflow state",
+  "Grounding obligation description": "Resolve Seed Library Preserved Collection workflow state. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; workflow_states in linear_expanded.",
+  "Referent set": [
+    "34567890-bcde-f012-3456-789abcdef012"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "workflow_states.name",
+      "workflow_states.teamId",
+      "teams.id",
+      "teams.name"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "workflow_states.id"
+    ]
+  ],
+  "Written attributes": [
+    "issues.stateId"
+  ]
+}
+```
+
+### Obligation 5
+
+```json
+{
+  "Test ID": "linear_41",
+  "Task type": "state-changing",
+  "Grounding obligations": 6,
+  "Grounding obligation name": "Resolve Szymon’s non-sprouted action targets",
+  "Grounding obligation description": "Resolve Szymon’s non-sprouted action targets. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; issues in linear_expanded.",
+  "Referent set": [
+    "bc234567-3456-789a-bcde-f01234567890",
+    "cd345678-4567-89ab-cdef-012345678901"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "issues.title",
+      "issues.stateId",
+      "workflow_states.id",
+      "workflow_states.name",
+      "issues.teamId",
+      "teams.id",
+      "teams.name"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "issues.id"
+    ]
+  ],
+  "Written attributes": [
+    "issues.stateId",
+    "comments.issueId"
+  ]
+}
+```
+
+### Obligation 6
+
+```json
+{
+  "Test ID": "linear_41",
+  "Task type": "state-changing",
+  "Grounding obligations": 6,
+  "Grounding obligation name": "Resolve Seed Library Needs Donor Review workflow state",
+  "Grounding obligation description": "Resolve Seed Library Needs Donor Review workflow state. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; workflow_states in linear_expanded.",
+  "Referent set": [
+    "45678901-cdef-0123-4567-89abcdef0123"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "workflow_states.name",
+      "workflow_states.teamId",
+      "teams.id",
+      "teams.name"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "workflow_states.id"
+    ]
+  ],
+  "Written attributes": [
+    "issues.stateId"
+  ]
+}
+```
+
+<a id="linear_42"></a>
+## #150 — linear_42
+
+### Obligation 1
+
+```json
+{
+  "Test ID": "linear_42",
+  "Task type": "state-changing",
+  "Grounding obligations": 3,
+  "Grounding obligation name": "Resolve Haruki",
+  "Grounding obligation description": "Resolve Haruki. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; users in linear_expanded.",
+  "Referent set": [
+    "f6a7b8c9-d0e1-2345-0123-789012345678"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "users.name",
+      "users.displayName"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "users.id"
+    ]
+  ],
+  "Written attributes": [
+    "issues.assigneeId"
+  ]
+}
+```
+
+### Obligation 2
+
+```json
+{
+  "Test ID": "linear_42",
+  "Task type": "state-changing",
+  "Grounding obligations": 3,
+  "Grounding obligation name": "Resolve Priya",
+  "Grounding obligation description": "Resolve Priya. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; users in linear_expanded.",
+  "Referent set": [
+    "b8c9d0e1-f2a3-4567-2345-901234567890"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "users.name",
+      "users.displayName"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "users.id"
+    ]
+  ],
+  "Written attributes": [
+    "issues.assigneeId"
+  ]
+}
+```
+
+### Obligation 3
+
+```json
+{
+  "Test ID": "linear_42",
+  "Task type": "state-changing",
+  "Grounding obligations": 3,
+  "Grounding obligation name": "Resolve Dmitri",
+  "Grounding obligation description": "Resolve Dmitri. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; users in linear_expanded.",
+  "Referent set": [
+    "a7b8c9d0-e1f2-3456-1234-890123456789"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "users.name",
+      "users.displayName"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "users.id"
+    ]
+  ],
+  "Written attributes": [
+    "issues.assigneeId"
+  ]
+}
+```
+
+<a id="linear_43"></a>
+## #151 — linear_43
+
+### Obligation 1
+
+```json
+{
+  "Test ID": "linear_43",
+  "Task type": "state-changing",
+  "Grounding obligations": 4,
+  "Grounding obligation name": "Resolve Mobile team",
+  "Grounding obligation description": "Resolve Mobile team. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; teams in linear_expanded.",
+  "Referent set": [
+    "a0b1c2d3-e4f5-6789-0123-456789abcdef"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "teams.name"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "teams.id"
+    ]
+  ],
+  "Written attributes": [
+    "issues.teamId"
+  ]
+}
+```
+
+### Obligation 2
+
+```json
+{
+  "Test ID": "linear_43",
+  "Task type": "state-changing",
+  "Grounding obligations": 4,
+  "Grounding obligation name": "Resolve Marcus Aurelius",
+  "Grounding obligation description": "Resolve the Marcus selected by the task’s Mobile context and assertion: Marcus Aurelius, not Marcus Johnson. The first name alone is ambiguous.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; users in linear_expanded.",
+  "Referent set": [
+    "c9d0e1f2-a3b4-5678-3456-012345678901"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "users.name",
+      "users.displayName"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "users.id"
+    ]
+  ],
+  "Written attributes": [
+    "issues.assigneeId"
+  ]
+}
+```
+
+### Obligation 3
+
+```json
+{
+  "Test ID": "linear_43",
+  "Task type": "state-changing",
+  "Grounding obligations": 4,
+  "Grounding obligation name": "Resolve Aisha",
+  "Grounding obligation description": "Resolve Aisha. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; users in linear_expanded.",
+  "Referent set": [
+    "d0e1f2a3-b4c5-6789-4567-123456789012"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "users.name",
+      "users.displayName"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "users.id"
+    ]
+  ],
+  "Written attributes": [
+    "issues.assigneeId"
+  ]
+}
+```
+
+### Obligation 4
+
+```json
+{
+  "Test ID": "linear_43",
+  "Task type": "state-changing",
+  "Grounding obligations": 4,
+  "Grounding obligation name": "Resolve Mobile In Progress workflow state",
+  "Grounding obligation description": "Resolve Mobile In Progress workflow state. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; workflow_states in linear_expanded.",
+  "Referent set": [
+    "mob-state-inprogress-567890abcdef"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "workflow_states.name",
+      "workflow_states.teamId",
+      "teams.id",
+      "teams.name"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "workflow_states.id"
+    ]
+  ],
+  "Written attributes": [
+    "issues.stateId"
+  ]
+}
+```
+
+<a id="linear_44"></a>
+## #152 — linear_44
+
+### Obligation 1
+
+```json
+{
+  "Test ID": "linear_44",
+  "Task type": "state-changing",
+  "Grounding obligations": 5,
+  "Grounding obligation name": "Resolve IT Support team",
+  "Grounding obligation description": "Resolve IT Support team. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; teams in linear_expanded.",
+  "Referent set": [
+    "b1c2d3e4-f5a6-7890-1234-567890abcdef"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "teams.name"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "teams.id"
+    ]
+  ],
+  "Written attributes": [
+    "issues.teamId"
+  ]
+}
+```
+
+### Obligation 2
+
+```json
+{
+  "Test ID": "linear_44",
+  "Task type": "state-changing",
+  "Grounding obligations": 5,
+  "Grounding obligation name": "Resolve hardware-failure label",
+  "Grounding obligation description": "Resolve hardware-failure label. The explicit description has no matching seeded referent.",
+  "Resolution": "absent",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; issue_labels in linear_expanded.",
+  "Referent set": [],
+  "Alternative sufficient identifying sets": [
+    [
+      "issue_labels.name"
+    ]
+  ],
+  "Change-computation attributes": [
+    []
+  ],
+  "Written attributes": [
+    "issue_labels.name"
+  ]
+}
+```
+
+### Obligation 3
+
+```json
+{
+  "Test ID": "linear_44",
+  "Task type": "state-changing",
+  "Grounding obligations": 5,
+  "Grounding obligation name": "Resolve Kofi",
+  "Grounding obligation description": "Resolve Kofi. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; users in linear_expanded.",
+  "Referent set": [
+    "f2a3b4c5-d6e7-8901-6789-345678901234"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "users.name",
+      "users.displayName"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "users.id"
+    ]
+  ],
+  "Written attributes": [
+    "issues.assigneeId"
+  ]
+}
+```
+
+### Obligation 4
+
+```json
+{
+  "Test ID": "linear_44",
+  "Task type": "state-changing",
+  "Grounding obligations": 5,
+  "Grounding obligation name": "Resolve Elena",
+  "Grounding obligation description": "Resolve Elena. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; users in linear_expanded.",
+  "Referent set": [
+    "a3b4c5d6-e7f8-9012-7890-456789012345"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "users.name",
+      "users.displayName"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "users.id"
+    ]
+  ],
+  "Written attributes": [
+    "issues.assigneeId"
+  ]
+}
+```
+
+### Obligation 5
+
+```json
+{
+  "Test ID": "linear_44",
+  "Task type": "state-changing",
+  "Grounding obligations": 5,
+  "Grounding obligation name": "Resolve IT Support In Review workflow state",
+  "Grounding obligation description": "Resolve IT Support In Review workflow state. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; workflow_states in linear_expanded.",
+  "Referent set": [
+    "its-state-inreview-4567-def0123456"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "workflow_states.name",
+      "workflow_states.teamId",
+      "teams.id",
+      "teams.name"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "workflow_states.id"
+    ]
+  ],
+  "Written attributes": [
+    "issues.stateId"
+  ]
+}
+```
+
+<a id="linear_45"></a>
+## #153 — linear_45
+
+### Obligation 1
+
+```json
+{
+  "Test ID": "linear_45",
+  "Task type": "state-changing",
+  "Grounding obligations": 4,
+  "Grounding obligation name": "Resolve Backend team",
+  "Grounding obligation description": "Resolve Backend team. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; teams in linear_expanded.",
+  "Referent set": [
+    "c2d3e4f5-a6b7-8901-2345-6789abcdef01"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "teams.name"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "teams.id"
+    ]
+  ],
+  "Written attributes": [
+    "issues.teamId"
+  ]
+}
+```
+
+### Obligation 2
+
+```json
+{
+  "Test ID": "linear_45",
+  "Task type": "state-changing",
+  "Grounding obligations": 4,
+  "Grounding obligation name": "Resolve database migration issue",
+  "Grounding obligation description": "Resolve database migration issue. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; issues in linear_expanded.",
+  "Referent set": [
+    "de456789-5678-9abc-def0-123456789012"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "issues.title"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "issues.id"
+    ]
+  ],
+  "Written attributes": [
+    "issue_relations.issueId"
+  ]
+}
+```
+
+### Obligation 3
+
+```json
+{
+  "Test ID": "linear_45",
+  "Task type": "state-changing",
+  "Grounding obligations": 4,
+  "Grounding obligation name": "Resolve Jamal",
+  "Grounding obligation description": "Resolve Jamal. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; users in linear_expanded.",
+  "Referent set": [
+    "e7f8a9b0-c1d2-3456-1234-890123456789"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "users.name",
+      "users.displayName"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "users.id"
+    ]
+  ],
+  "Written attributes": [
+    "issues.assigneeId"
+  ]
+}
+```
+
+### Obligation 4
+
+```json
+{
+  "Test ID": "linear_45",
+  "Task type": "state-changing",
+  "Grounding obligations": 4,
+  "Grounding obligation name": "Resolve Olga",
+  "Grounding obligation description": "Resolve Olga. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; users in linear_expanded.",
+  "Referent set": [
+    "d6e7f8a9-b0c1-2345-0123-789012345678"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "users.name",
+      "users.displayName"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "users.id"
+    ]
+  ],
+  "Written attributes": [
+    "issues.assigneeId"
+  ]
+}
+```
+
+<a id="linear_46"></a>
+## #154 — linear_46
+
+### Obligation 1
+
+```json
+{
+  "Test ID": "linear_46",
+  "Task type": "state-changing",
+  "Grounding obligations": 4,
+  "Grounding obligation name": "Resolve Launch Coordination team",
+  "Grounding obligation description": "Resolve Launch Coordination team. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; teams in linear_expanded.",
+  "Referent set": [
+    "d3e4f5a6-b7c8-9012-3456-789abcdef012"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "teams.name"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "teams.id"
+    ]
+  ],
+  "Written attributes": [
+    "issues.teamId"
+  ]
+}
+```
+
+### Obligation 2
+
+```json
+{
+  "Test ID": "linear_46",
+  "Task type": "state-changing",
+  "Grounding obligations": 4,
+  "Grounding obligation name": "Resolve Yuki",
+  "Grounding obligation description": "Resolve Yuki. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; users in linear_expanded.",
+  "Referent set": [
+    "f8a9b0c1-d2e3-4567-2345-901234567890"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "users.name",
+      "users.displayName"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "users.id"
+    ]
+  ],
+  "Written attributes": [
+    "issues.assigneeId"
+  ]
+}
+```
+
+### Obligation 3
+
+```json
+{
+  "Test ID": "linear_46",
+  "Task type": "state-changing",
+  "Grounding obligations": 4,
+  "Grounding obligation name": "Resolve Svetlana",
+  "Grounding obligation description": "Resolve Svetlana. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; users in linear_expanded.",
+  "Referent set": [
+    "b0c1d2e3-f4a5-6789-4567-123456789012"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "users.name",
+      "users.displayName"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "users.id"
+    ]
+  ],
+  "Written attributes": [
+    "issues.assigneeId"
+  ]
+}
+```
+
+### Obligation 4
+
+```json
+{
+  "Test ID": "linear_46",
+  "Task type": "state-changing",
+  "Grounding obligations": 4,
+  "Grounding obligation name": "Resolve Kwame",
+  "Grounding obligation description": "Resolve Kwame. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; users in linear_expanded.",
+  "Referent set": [
+    "a9b0c1d2-e3f4-5678-3456-012345678901"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "users.name",
+      "users.displayName"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "users.id"
+    ]
+  ],
+  "Written attributes": [
+    "issues.assigneeId"
+  ]
+}
+```
+
+<a id="linear_47"></a>
+## #155 — linear_47
+
+### Obligation 1
+
+```json
+{
+  "Test ID": "linear_47",
+  "Task type": "state-changing",
+  "Grounding obligations": 5,
+  "Grounding obligation name": "Resolve Research team",
+  "Grounding obligation description": "Resolve Research team. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; teams in linear_expanded.",
+  "Referent set": [
+    "e4f5a6b7-c8d9-0123-4567-89abcdef0123"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "teams.name"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "teams.id"
+    ]
+  ],
+  "Written attributes": [
+    "issues.teamId"
+  ]
+}
+```
+
+### Obligation 2
+
+```json
+{
+  "Test ID": "linear_47",
+  "Task type": "state-changing",
+  "Grounding obligations": 5,
+  "Grounding obligation name": "Resolve IRB Ethics Approval issue",
+  "Grounding obligation description": "Resolve IRB Ethics Approval issue. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; issues in linear_expanded.",
+  "Referent set": [
+    "ef567890-6789-abcd-ef01-234567890123"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "issues.title"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "issues.id"
+    ]
+  ],
+  "Written attributes": [
+    "issue_relations.issueId"
+  ]
+}
+```
+
+### Obligation 3
+
+```json
+{
+  "Test ID": "linear_47",
+  "Task type": "state-changing",
+  "Grounding obligations": 5,
+  "Grounding obligation name": "Resolve Nadia",
+  "Grounding obligation description": "Resolve Nadia. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; users in linear_expanded.",
+  "Referent set": [
+    "c1d2e3f4-a5b6-7890-5678-234567890123"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "users.name",
+      "users.displayName"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "users.id"
+    ]
+  ],
+  "Written attributes": [
+    "issues.assigneeId"
+  ]
+}
+```
+
+### Obligation 4
+
+```json
+{
+  "Test ID": "linear_47",
+  "Task type": "state-changing",
+  "Grounding obligations": 5,
+  "Grounding obligation name": "Resolve Tomás",
+  "Grounding obligation description": "Resolve Tomás. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; users in linear_expanded.",
+  "Referent set": [
+    "d2e3f4a5-b6c7-8901-6789-345678901234"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "users.name",
+      "users.displayName"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "users.id"
+    ]
+  ],
+  "Written attributes": [
+    "issues.assigneeId"
+  ]
+}
+```
+
+### Obligation 5
+
+```json
+{
+  "Test ID": "linear_47",
+  "Task type": "state-changing",
+  "Grounding obligations": 5,
+  "Grounding obligation name": "Resolve Chioma",
+  "Grounding obligation description": "Resolve Chioma. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; users in linear_expanded.",
+  "Referent set": [
+    "e3f4a5b6-c7d8-9012-7890-456789012345"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "users.name",
+      "users.displayName"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "users.id"
+    ]
+  ],
+  "Written attributes": [
+    "issues.assigneeId"
+  ]
+}
+```
+
+<a id="linear_48"></a>
+## #156 — linear_48
+
+### Obligation 1
+
+```json
+{
+  "Test ID": "linear_48",
+  "Task type": "state-changing",
+  "Grounding obligations": 7,
+  "Grounding obligation name": "Resolve Post-Production team",
+  "Grounding obligation description": "Resolve Post-Production team. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; teams in linear_expanded.",
+  "Referent set": [
+    "f5a6b7c8-d9e0-1234-5678-9abcdef01234"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "teams.name"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "teams.id"
+    ]
+  ],
+  "Written attributes": [
+    "issues.teamId"
+  ]
+}
+```
+
+### Obligation 2
+
+```json
+{
+  "Test ID": "linear_48",
+  "Task type": "state-changing",
+  "Grounding obligations": 7,
+  "Grounding obligation name": "Resolve Master Edit Lock issue",
+  "Grounding obligation description": "Resolve Master Edit Lock issue. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; issues in linear_expanded.",
+  "Referent set": [
+    "post-issue-master-edit-lock-001"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "issues.title"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "issues.id"
+    ]
+  ],
+  "Written attributes": [
+    "comments.issueId"
+  ]
+}
+```
+
+### Obligation 3
+
+```json
+{
+  "Test ID": "linear_48",
+  "Task type": "state-changing",
+  "Grounding obligations": 7,
+  "Grounding obligation name": "Resolve issues directly blocked by Master Edit Lock",
+  "Grounding obligation description": "Resolve issues directly blocked by Master Edit Lock. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; issues in linear_expanded.",
+  "Referent set": [
+    "post-issue-color-grading-phase1-002",
+    "post-issue-sound-design-draft-003",
+    "post-issue-vfx-compositing-004",
+    "post-issue-subtitle-localization-005"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "issues.title",
+      "issues.id",
+      "issue_relations.issueId",
+      "issue_relations.relatedIssueId",
+      "issue_relations.type"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "issues.id"
+    ]
+  ],
+  "Written attributes": [
+    "comments.body"
+  ]
+}
+```
+
+### Obligation 4
+
+```json
+{
+  "Test ID": "linear_48",
+  "Task type": "state-changing",
+  "Grounding obligations": 7,
+  "Grounding obligation name": "Resolve Color Grading Phase 1 issue",
+  "Grounding obligation description": "Resolve Color Grading Phase 1 issue. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; issues in linear_expanded.",
+  "Referent set": [
+    "post-issue-color-grading-phase1-002"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "issues.title"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "issues.id"
+    ]
+  ],
+  "Written attributes": [
+    "issue_relations.issueId"
+  ]
+}
+```
+
+### Obligation 5
+
+```json
+{
+  "Test ID": "linear_48",
+  "Task type": "state-changing",
+  "Grounding obligations": 7,
+  "Grounding obligation name": "Resolve Sound Design Draft issue",
+  "Grounding obligation description": "Resolve Sound Design Draft issue. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; issues in linear_expanded.",
+  "Referent set": [
+    "post-issue-sound-design-draft-003"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "issues.title"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "issues.id"
+    ]
+  ],
+  "Written attributes": [
+    "issue_relations.issueId"
+  ]
+}
+```
+
+### Obligation 6
+
+```json
+{
+  "Test ID": "linear_48",
+  "Task type": "state-changing",
+  "Grounding obligations": 7,
+  "Grounding obligation name": "Resolve Kenji",
+  "Grounding obligation description": "Resolve Kenji. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; users in linear_expanded.",
+  "Referent set": [
+    "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "users.name",
+      "users.displayName"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "users.id"
+    ]
+  ],
+  "Written attributes": [
+    "issues.assigneeId"
+  ]
+}
+```
+
+### Obligation 7
+
+```json
+{
+  "Test ID": "linear_48",
+  "Task type": "state-changing",
+  "Grounding obligations": 7,
+  "Grounding obligation name": "Resolve Amara",
+  "Grounding obligation description": "Resolve Amara. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; users in linear_expanded.",
+  "Referent set": [
+    "f4a5b6c7-d8e9-0123-8901-567890123456"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "users.name",
+      "users.displayName"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "users.id"
+    ]
+  ],
+  "Written attributes": [
+    "issues.assigneeId"
+  ]
+}
+```
+
+<a id="linear_49"></a>
+## #157 — linear_49
+
+### Obligation 1
+
+```json
+{
+  "Test ID": "linear_49",
+  "Task type": "state-changing",
+  "Grounding obligations": 8,
+  "Grounding obligation name": "Resolve Archaeology team",
+  "Grounding obligation description": "Resolve Archaeology team. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; teams in linear_expanded.",
+  "Referent set": [
+    "a6b7c8d9-e0f1-2345-6789-0abcdef12345"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "teams.name"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "teams.id"
+    ]
+  ],
+  "Written attributes": [
+    "issues.teamId"
+  ]
+}
+```
+
+### Obligation 2
+
+```json
+{
+  "Test ID": "linear_49",
+  "Task type": "state-changing",
+  "Grounding obligations": 8,
+  "Grounding obligation name": "Resolve Artifact Photography Documentation issue",
+  "Grounding obligation description": "Resolve Artifact Photography Documentation issue. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; issues in linear_expanded.",
+  "Referent set": [
+    "arch-issue-photography-001"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "issues.title"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "issues.id"
+    ]
+  ],
+  "Written attributes": [
+    "issues.assigneeId",
+    "issues.stateId",
+    "issue_relations.issueId"
+  ]
+}
+```
+
+### Obligation 3
+
+```json
+{
+  "Test ID": "linear_49",
+  "Task type": "state-changing",
+  "Grounding obligations": 8,
+  "Grounding obligation name": "Resolve Lab Sample Analysis issue",
+  "Grounding obligation description": "Resolve Lab Sample Analysis issue. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; issues in linear_expanded.",
+  "Referent set": [
+    "arch-issue-lab-analysis-002"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "issues.title"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "issues.id"
+    ]
+  ],
+  "Written attributes": [
+    "issues.assigneeId",
+    "issue_relations.issueId",
+    "comments.issueId"
+  ]
+}
+```
+
+### Obligation 4
+
+```json
+{
+  "Test ID": "linear_49",
+  "Task type": "state-changing",
+  "Grounding obligations": 8,
+  "Grounding obligation name": "Resolve the erroneous Lab-blocks-Photography relation",
+  "Grounding obligation description": "Resolve the erroneous Lab-blocks-Photography relation. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; issue_relations in linear_expanded.",
+  "Referent set": [
+    "rel-lab-blocks-photo-002"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "issue_relations.issueId",
+      "issue_relations.relatedIssueId",
+      "issue_relations.type",
+      "issues.id",
+      "issues.title"
+    ]
+  ],
+  "Change-computation attributes": [
+    []
+  ],
+  "Written attributes": []
+}
+```
+
+### Obligation 5
+
+```json
+{
+  "Test ID": "linear_49",
+  "Task type": "state-changing",
+  "Grounding obligations": 8,
+  "Grounding obligation name": "Resolve Ximena",
+  "Grounding obligation description": "Resolve Ximena. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; users in linear_expanded.",
+  "Referent set": [
+    "b6c7d8e9-f0a1-2345-0123-789012345678"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "users.name",
+      "users.displayName"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "users.id"
+    ]
+  ],
+  "Written attributes": [
+    "issues.assigneeId"
+  ]
+}
+```
+
+### Obligation 6
+
+```json
+{
+  "Test ID": "linear_49",
+  "Task type": "state-changing",
+  "Grounding obligations": 8,
+  "Grounding obligation name": "Resolve Nneka Okonkwo",
+  "Grounding obligation description": "Resolve Nneka Okonkwo. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; users in linear_expanded.",
+  "Referent set": [
+    "d4e5f6a7-b8c9-0123-def0-456789012345"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "users.name",
+      "users.displayName"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "users.id"
+    ]
+  ],
+  "Written attributes": [
+    "issues.assigneeId"
+  ]
+}
+```
+
+### Obligation 7
+
+```json
+{
+  "Test ID": "linear_49",
+  "Task type": "state-changing",
+  "Grounding obligations": 8,
+  "Grounding obligation name": "Resolve Søren",
+  "Grounding obligation description": "Resolve Søren. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; users in linear_expanded.",
+  "Referent set": [
+    "c7d8e9f0-a1b2-3456-1234-890123456789"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "users.name",
+      "users.displayName"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "users.id"
+    ]
+  ],
+  "Written attributes": [
+    "issues.assigneeId"
+  ]
+}
+```
+
+### Obligation 8
+
+```json
+{
+  "Test ID": "linear_49",
+  "Task type": "state-changing",
+  "Grounding obligations": 8,
+  "Grounding obligation name": "Resolve Archaeology In Progress workflow state",
+  "Grounding obligation description": "Resolve Archaeology In Progress workflow state. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; workflow_states in linear_expanded.",
+  "Referent set": [
+    "arch-state-inprogress-2345-cdef01"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "workflow_states.name",
+      "workflow_states.teamId",
+      "teams.id",
+      "teams.name"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "workflow_states.id"
+    ]
+  ],
+  "Written attributes": [
+    "issues.stateId"
+  ]
+}
+```
+
+<a id="linear_50"></a>
+## #158 — linear_50
+
+### Obligation 1
+
+```json
+{
+  "Test ID": "linear_50",
+  "Task type": "state-changing",
+  "Grounding obligations": 3,
+  "Grounding obligation name": "Resolve Stargazers team",
+  "Grounding obligation description": "Resolve Stargazers team. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; teams in linear_expanded.",
+  "Referent set": [
+    "b7c8d9e0-f1a2-3456-7890-abcdef123456"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "teams.name"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "teams.id"
+    ]
+  ],
+  "Written attributes": [
+    "issues.teamId"
+  ]
+}
+```
+
+### Obligation 2
+
+```json
+{
+  "Test ID": "linear_50",
+  "Task type": "state-changing",
+  "Grounding obligations": 3,
+  "Grounding obligation name": "Resolve Priya",
+  "Grounding obligation description": "Resolve Priya. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; users in linear_expanded.",
+  "Referent set": [
+    "b8c9d0e1-f2a3-4567-2345-901234567890"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "users.name",
+      "users.displayName"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "users.id"
+    ]
+  ],
+  "Written attributes": [
+    "issues.assigneeId"
+  ]
+}
+```
+
+### Obligation 3
+
+```json
+{
+  "Test ID": "linear_50",
+  "Task type": "state-changing",
+  "Grounding obligations": 3,
+  "Grounding obligation name": "Resolve public-event label",
+  "Grounding obligation description": "Resolve public-event label. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; issue_labels in linear_expanded.",
+  "Referent set": [
+    "star-label-public-event-001"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "issue_labels.name"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "issue_labels.id"
+    ]
+  ],
+  "Written attributes": [
+    "issue_label_issue_association.issue_label_id"
+  ]
+}
+```
+
+<a id="linear_51"></a>
+## #159 — linear_51
+
+### Obligation 1
+
+```json
+{
+  "Test ID": "linear_51",
+  "Task type": "state-changing",
+  "Grounding obligations": 4,
+  "Grounding obligation name": "Resolve Celadon Vase issue",
+  "Grounding obligation description": "Resolve Celadon Vase issue. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; issues in linear_expanded.",
+  "Referent set": [
+    "cer-issue-vase-001"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "issues.title"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "issues.id"
+    ]
+  ],
+  "Written attributes": [
+    "issues.stateId",
+    "comments.issueId"
+  ]
+}
+```
+
+### Obligation 2
+
+```json
+{
+  "Test ID": "linear_51",
+  "Task type": "state-changing",
+  "Grounding obligations": 4,
+  "Grounding obligation name": "Resolve Stoneware Bowl Set issue",
+  "Grounding obligation description": "Resolve Stoneware Bowl Set issue. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; issues in linear_expanded.",
+  "Referent set": [
+    "cer-issue-bowls-002"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "issues.title"
+    ]
+  ],
+  "Change-computation attributes": [
+    []
+  ],
+  "Written attributes": [
+    "issues.stateId"
+  ]
+}
+```
+
+### Obligation 3
+
+```json
+{
+  "Test ID": "linear_51",
+  "Task type": "state-changing",
+  "Grounding obligations": 4,
+  "Grounding obligation name": "Resolve Ceramics Firing workflow state",
+  "Grounding obligation description": "Resolve Ceramics Firing workflow state. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; workflow_states in linear_expanded.",
+  "Referent set": [
+    "cer-state-firing-1234-bcdef012"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "workflow_states.name",
+      "workflow_states.teamId",
+      "teams.id",
+      "teams.name"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "workflow_states.id"
+    ]
+  ],
+  "Written attributes": [
+    "issues.stateId"
+  ]
+}
+```
+
+### Obligation 4
+
+```json
+{
+  "Test ID": "linear_51",
+  "Task type": "state-changing",
+  "Grounding obligations": 4,
+  "Grounding obligation name": "Resolve Ceramics Cooling workflow state",
+  "Grounding obligation description": "Resolve Ceramics Cooling workflow state. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; workflow_states in linear_expanded.",
+  "Referent set": [
+    "cer-state-cooling-2345-cdef0123"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "workflow_states.name",
+      "workflow_states.teamId",
+      "teams.id",
+      "teams.name"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "workflow_states.id"
+    ]
+  ],
+  "Written attributes": [
+    "issues.stateId"
+  ]
+}
+```
+
+<a id="linear_52"></a>
+## #160 — linear_52
+
+### Obligation 1
+
+```json
+{
+  "Test ID": "linear_52",
+  "Task type": "state-changing",
+  "Grounding obligations": 8,
+  "Grounding obligation name": "Resolve Garden Plots team",
+  "Grounding obligation description": "Resolve Garden Plots team. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; teams in linear_expanded.",
+  "Referent set": [
+    "d9e0f1a2-b3c4-5678-9012-cdef01234567"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "teams.name"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "teams.id"
+    ]
+  ],
+  "Written attributes": [
+    "issues.teamId"
+  ]
+}
+```
+
+### Obligation 2
+
+```json
+{
+  "Test ID": "linear_52",
+  "Task type": "state-changing",
+  "Grounding obligations": 8,
+  "Grounding obligation name": "Resolve Plot A7 issue",
+  "Grounding obligation description": "Resolve Plot A7 issue. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; issues in linear_expanded.",
+  "Referent set": [
+    "gp-issue-a7-tomatoes-001"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "issues.title"
+    ]
+  ],
+  "Change-computation attributes": [
+    []
+  ],
+  "Written attributes": [
+    "issues.assigneeId",
+    "issues.stateId"
+  ]
+}
+```
+
+### Obligation 3
+
+```json
+{
+  "Test ID": "linear_52",
+  "Task type": "state-changing",
+  "Grounding obligations": 8,
+  "Grounding obligation name": "Resolve Plot B3 issue",
+  "Grounding obligation description": "Resolve Plot B3 issue. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; issues in linear_expanded.",
+  "Referent set": [
+    "gp-issue-b3-herbs-002"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "issues.title"
+    ]
+  ],
+  "Change-computation attributes": [
+    []
+  ],
+  "Written attributes": [
+    "issues.assigneeId"
+  ]
+}
+```
+
+### Obligation 4
+
+```json
+{
+  "Test ID": "linear_52",
+  "Task type": "state-changing",
+  "Grounding obligations": 8,
+  "Grounding obligation name": "Resolve Plot C1 issue",
+  "Grounding obligation description": "Resolve Plot C1 issue. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; issues in linear_expanded.",
+  "Referent set": [
+    "gp-issue-c1-squash-003"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "issues.title"
+    ]
+  ],
+  "Change-computation attributes": [
+    []
+  ],
+  "Written attributes": [
+    "issues.stateId"
+  ]
+}
+```
+
+### Obligation 5
+
+```json
+{
+  "Test ID": "linear_52",
+  "Task type": "state-changing",
+  "Grounding obligations": 8,
+  "Grounding obligation name": "Resolve Ines",
+  "Grounding obligation description": "Resolve Ines. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; users in linear_expanded.",
+  "Referent set": [
+    "f0a1b2c3-d4e5-6789-4567-123456789012"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "users.name",
+      "users.displayName"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "users.id"
+    ]
+  ],
+  "Written attributes": [
+    "issues.assigneeId"
+  ]
+}
+```
+
+### Obligation 6
+
+```json
+{
+  "Test ID": "linear_52",
+  "Task type": "state-changing",
+  "Grounding obligations": 8,
+  "Grounding obligation name": "Resolve Rashida",
+  "Grounding obligation description": "Resolve Rashida. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; users in linear_expanded.",
+  "Referent set": [
+    "a1b2c3d4-e5f6-7890-5678-234567890123"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "users.name",
+      "users.displayName"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "users.id"
+    ]
+  ],
+  "Written attributes": [
+    "issues.assigneeId"
+  ]
+}
+```
+
+### Obligation 7
+
+```json
+{
+  "Test ID": "linear_52",
+  "Task type": "state-changing",
+  "Grounding obligations": 8,
+  "Grounding obligation name": "Resolve Garden Plots Active workflow state",
+  "Grounding obligation description": "Resolve Garden Plots Active workflow state. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; workflow_states in linear_expanded.",
+  "Referent set": [
+    "gp-state-active-0003-cdef0123"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "workflow_states.name",
+      "workflow_states.teamId",
+      "teams.id",
+      "teams.name"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "workflow_states.id"
+    ]
+  ],
+  "Written attributes": [
+    "issues.stateId"
+  ]
+}
+```
+
+### Obligation 8
+
+```json
+{
+  "Test ID": "linear_52",
+  "Task type": "state-changing",
+  "Grounding obligations": 8,
+  "Grounding obligation name": "Resolve Garden Plots Dormant workflow state",
+  "Grounding obligation description": "Resolve Garden Plots Dormant workflow state. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; workflow_states in linear_expanded.",
+  "Referent set": [
+    "gp-state-dormant-0001-abcdef01"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "workflow_states.name",
+      "workflow_states.teamId",
+      "teams.id",
+      "teams.name"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "workflow_states.id"
+    ]
+  ],
+  "Written attributes": [
+    "issues.stateId"
+  ]
+}
+```
+
+<a id="linear_53"></a>
+## #161 — linear_53
+
+### Obligation 1
+
+```json
+{
+  "Test ID": "linear_53",
+  "Task type": "state-changing",
+  "Grounding obligations": 5,
+  "Grounding obligation name": "Resolve Catan Regional Championship issue",
+  "Grounding obligation description": "Resolve Catan Regional Championship issue. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; issues in linear_expanded.",
+  "Referent set": [
+    "mb-issue-championship-001"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "issues.title"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "issues.dueDate"
+    ]
+  ],
+  "Written attributes": [
+    "issues.dueDate",
+    "issues.assigneeId",
+    "comments.issueId"
+  ]
+}
+```
+
+### Obligation 2
+
+```json
+{
+  "Test ID": "linear_53",
+  "Task type": "state-changing",
+  "Grounding obligations": 5,
+  "Grounding obligation name": "Resolve Qualifying Round issue",
+  "Grounding obligation description": "Resolve Qualifying Round issue. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; issues in linear_expanded.",
+  "Referent set": [
+    "mb-issue-qualifying-002"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "issues.title"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "issues.dueDate"
+    ]
+  ],
+  "Written attributes": [
+    "issues.dueDate"
+  ]
+}
+```
+
+### Obligation 3
+
+```json
+{
+  "Test ID": "linear_53",
+  "Task type": "state-changing",
+  "Grounding obligations": 5,
+  "Grounding obligation name": "Resolve Tournament Registration Deadline issue",
+  "Grounding obligation description": "Resolve Tournament Registration Deadline issue. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; issues in linear_expanded.",
+  "Referent set": [
+    "mb-issue-registration-003"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "issues.title"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "issues.dueDate"
+    ]
+  ],
+  "Written attributes": [
+    "issues.dueDate"
+  ]
+}
+```
+
+### Obligation 4
+
+```json
+{
+  "Test ID": "linear_53",
+  "Task type": "state-changing",
+  "Grounding obligations": 5,
+  "Grounding obligation name": "Resolve Adaeze",
+  "Grounding obligation description": "Resolve Adaeze. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; users in linear_expanded.",
+  "Referent set": [
+    "d4e5f6a7-b8c9-0123-8901-567890123456"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "users.name",
+      "users.displayName"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "users.id"
+    ]
+  ],
+  "Written attributes": [
+    "issues.assigneeId"
+  ]
+}
+```
+
+### Obligation 5
+
+```json
+{
+  "Test ID": "linear_53",
+  "Task type": "state-changing",
+  "Grounding obligations": 5,
+  "Grounding obligation name": "Resolve Henrik as the retained qualifying-round assignee",
+  "Grounding obligation description": "Resolve Henrik as the retained qualifying-round assignee. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; users in linear_expanded.",
+  "Referent set": [
+    "e5f6a7b8-c9d0-1234-9012-678901234567"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "users.displayName"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "users.id"
+    ]
+  ],
+  "Written attributes": [
+    "issues.assigneeId"
+  ]
+}
+```
+
+<a id="linear_54"></a>
+## #162 — linear_54
+
+### Obligation 1
+
+```json
+{
+  "Test ID": "linear_54",
+  "Task type": "state-changing",
+  "Grounding obligations": 5,
+  "Grounding obligation name": "Resolve all teams for membership comparison",
+  "Grounding obligation description": "Resolve all teams for membership comparison. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; teams in linear_expanded.",
+  "Referent set": [
+    "ad608998-915c-4bad-bcd9-85ebfccccee8",
+    "cdb85540-5065-4346-8aef-ae2b72d6e940",
+    "58c03c85-7b0c-466d-9a4c-120209fccb56",
+    "a0b1c2d3-e4f5-6789-0123-456789abcdef",
+    "b1c2d3e4-f5a6-7890-1234-567890abcdef",
+    "f6a7b8c9-d0e1-2345-f012-678901234567",
+    "c2d3e4f5-a6b7-8901-2345-6789abcdef01",
+    "d3e4f5a6-b7c8-9012-3456-789abcdef012",
+    "e4f5a6b7-c8d9-0123-4567-89abcdef0123",
+    "f5a6b7c8-d9e0-1234-5678-9abcdef01234",
+    "a6b7c8d9-e0f1-2345-6789-0abcdef12345",
+    "b7c8d9e0-f1a2-3456-7890-abcdef123456",
+    "c8d9e0f1-a2b3-4567-8901-bcdef1234567",
+    "d9e0f1a2-b3c4-5678-9012-cdef01234567",
+    "e0f1a2b3-c4d5-6789-0123-def012345678",
+    "f1a2b3c4-d5e6-7890-1234-567890abcdef",
+    "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+    "mod-team-001",
+    "race-team-001"
+  ],
+  "Alternative sufficient identifying sets": [
+    []
+  ],
+  "Change-computation attributes": [
+    [
+      "teams.id",
+      "team_memberships.teamId",
+      "team_memberships.userId"
+    ]
+  ],
+  "Written attributes": [
+    "issues.title",
+    "comments.body"
+  ]
+}
+```
+
+### Obligation 2
+
+```json
+{
+  "Test ID": "linear_54",
+  "Task type": "state-changing",
+  "Grounding obligations": 5,
+  "Grounding obligation name": "Resolve the most-populated benchmark team",
+  "Grounding obligation description": "Resolve the most-populated benchmark team. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; teams in linear_expanded.",
+  "Referent set": [
+    "ad608998-915c-4bad-bcd9-85ebfccccee8"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "teams.id",
+      "team_memberships.teamId",
+      "team_memberships.userId"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "teams.id"
+    ]
+  ],
+  "Written attributes": [
+    "issues.teamId",
+    "comments.body"
+  ]
+}
+```
+
+### Obligation 3
+
+```json
+{
+  "Test ID": "linear_54",
+  "Task type": "state-changing",
+  "Grounding obligations": 5,
+  "Grounding obligation name": "Resolve all understaffed destination teams",
+  "Grounding obligation description": "Resolve all understaffed destination teams. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; teams in linear_expanded.",
+  "Referent set": [
+    "cdb85540-5065-4346-8aef-ae2b72d6e940",
+    "58c03c85-7b0c-466d-9a4c-120209fccb56",
+    "a0b1c2d3-e4f5-6789-0123-456789abcdef",
+    "b1c2d3e4-f5a6-7890-1234-567890abcdef",
+    "f6a7b8c9-d0e1-2345-f012-678901234567",
+    "c2d3e4f5-a6b7-8901-2345-6789abcdef01",
+    "d3e4f5a6-b7c8-9012-3456-789abcdef012",
+    "e4f5a6b7-c8d9-0123-4567-89abcdef0123",
+    "f5a6b7c8-d9e0-1234-5678-9abcdef01234",
+    "a6b7c8d9-e0f1-2345-6789-0abcdef12345",
+    "b7c8d9e0-f1a2-3456-7890-abcdef123456",
+    "c8d9e0f1-a2b3-4567-8901-bcdef1234567",
+    "d9e0f1a2-b3c4-5678-9012-cdef01234567",
+    "e0f1a2b3-c4d5-6789-0123-def012345678",
+    "f1a2b3c4-d5e6-7890-1234-567890abcdef",
+    "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+    "mod-team-001",
+    "race-team-001"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "teams.id",
+      "team_memberships.teamId",
+      "team_memberships.userId"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "teams.id",
+      "team_memberships.teamId",
+      "team_memberships.userId"
+    ]
+  ],
+  "Written attributes": [
+    "issues.teamId",
+    "issues.title"
+  ]
+}
+```
+
+### Obligation 4
+
+```json
+{
+  "Test ID": "linear_54",
+  "Task type": "state-changing",
+  "Grounding obligations": 5,
+  "Grounding obligation name": "Resolve API Documentation Update issue",
+  "Grounding obligation description": "Resolve API Documentation Update issue. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; issues in linear_expanded.",
+  "Referent set": [
+    "res-issue-api-docs-001"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "issues.title"
+    ]
+  ],
+  "Change-computation attributes": [
+    []
+  ],
+  "Written attributes": [
+    "issues.teamId"
+  ]
+}
+```
+
+### Obligation 5
+
+```json
+{
+  "Test ID": "linear_54",
+  "Task type": "state-changing",
+  "Grounding obligations": 5,
+  "Grounding obligation name": "Resolve an eligible Engineering issue for the resource audit",
+  "Grounding obligation description": "Choose one Engineering issue; the candidate set includes the separately grounded API Documentation Update after its requested move into Engineering.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; issues in linear_expanded.",
+  "Referent set": [
+    "c6e168e3-fed4-45d0-b03f-a1c1f89ee7ab",
+    "5c62f29d-0f6a-4c4d-9d25-52293e2a8d4f",
+    "87c1d2f3-66c4-4dd0-bc93-1b99d04dc374",
+    "b4f5130f-5c1b-4bc0-a8f6-60a22b0adf5e",
+    "6fc548fb-49f1-48f7-b00f-0fe3b272ab0b",
+    "7d3f21ac-89c1-4f3b-9c2e-4fe3a1b71002",
+    "res-issue-api-docs-001",
+    "mod-issue-darkmode-001",
+    "mod-issue-checkout-001"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "issues.teamId",
+      "teams.id",
+      "teams.name"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "issues.id"
+    ]
+  ],
+  "Written attributes": [
+    "comments.issueId"
+  ]
+}
+```
+
+<a id="linear_55"></a>
+## #163 — linear_55
+
+### Obligation 1
+
+```json
+{
+  "Test ID": "linear_55",
+  "Task type": "state-changing",
+  "Grounding obligations": 4,
+  "Grounding obligation name": "Resolve flagged comments for the count-and-ID report",
+  "Grounding obligation description": "Resolve flagged comments for the count-and-ID report. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; comments in linear_expanded.",
+  "Referent set": [
+    "mod-comment-bad-001",
+    "mod-comment-bad-002",
+    "mod-comment-bad-003"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "comments.body"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "comments.id"
+    ]
+  ],
+  "Written attributes": [
+    "issues.description"
+  ]
+}
+```
+
+### Obligation 2
+
+```json
+{
+  "Test ID": "linear_55",
+  "Task type": "state-changing",
+  "Grounding obligations": 4,
+  "Grounding obligation name": "Resolve Moderation team",
+  "Grounding obligation description": "Resolve Moderation team. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; teams in linear_expanded.",
+  "Referent set": [
+    "mod-team-001"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "teams.name"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "teams.id"
+    ]
+  ],
+  "Written attributes": [
+    "issues.teamId"
+  ]
+}
+```
+
+### Obligation 3
+
+```json
+{
+  "Test ID": "linear_55",
+  "Task type": "state-changing",
+  "Grounding obligations": 4,
+  "Grounding obligation name": "Resolve Saoirse",
+  "Grounding obligation description": "Resolve Saoirse. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; users in linear_expanded.",
+  "Referent set": [
+    "mod-user-saoirse-001"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "users.name",
+      "users.displayName"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "users.id"
+    ]
+  ],
+  "Written attributes": [
+    "issues.assigneeId"
+  ]
+}
+```
+
+### Obligation 4
+
+```json
+{
+  "Test ID": "linear_55",
+  "Task type": "state-changing",
+  "Grounding obligations": 4,
+  "Grounding obligation name": "Resolve issues with flagged comments for warnings",
+  "Grounding obligation description": "Resolve issues with flagged comments for warnings. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; issues in linear_expanded.",
+  "Referent set": [
+    "mod-issue-darkmode-001",
+    "mod-issue-checkout-001"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "comments.body",
+      "comments.issueId",
+      "issues.id"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "issues.id"
+    ]
+  ],
+  "Written attributes": [
+    "comments.issueId",
+    "comments.body"
+  ]
+}
+```
+
+<a id="linear_56"></a>
+## #164 — linear_56
+
+### Obligation 1
+
+```json
+{
+  "Test ID": "linear_56",
+  "Task type": "state-changing",
+  "Grounding obligations": 3,
+  "Grounding obligation name": "Resolve Racing Operations team",
+  "Grounding obligation description": "Resolve Racing Operations team. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; teams in linear_expanded.",
+  "Referent set": [
+    "race-team-001"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "teams.name"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "teams.id"
+    ]
+  ],
+  "Written attributes": [
+    "issues.teamId"
+  ]
+}
+```
+
+### Obligation 2
+
+```json
+{
+  "Test ID": "linear_56",
+  "Task type": "read-only",
+  "Grounding obligations": 3,
+  "Grounding obligation name": "Resolve in-flight birds for review",
+  "Grounding obligation description": "Resolve in-flight birds for review. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; issues in linear_expanded.",
+  "Referent set": [
+    "race-issue-stormchaser-001",
+    "race-issue-quicksilver-001",
+    "race-issue-nightwing-001"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "issues.teamId",
+      "issues.stateId",
+      "teams.id",
+      "teams.name",
+      "workflow_states.id",
+      "workflow_states.name"
+    ]
+  ],
+  "Answer-computation attributes": [
+    [
+      "issues.title",
+      "issues.description"
+    ]
+  ]
+}
+```
+
+### Obligation 3
+
+```json
+{
+  "Test ID": "linear_56",
+  "Task type": "state-changing",
+  "Grounding obligations": 3,
+  "Grounding obligation name": "Resolve Stormchaser issue",
+  "Grounding obligation description": "Resolve Stormchaser issue. Use the described subject and the supported seed-level selector.",
+  "Resolution": "resolved",
+  "Shared scope": "Supplied Linear organization 18c8630e-1fd6-4c2e-a032-aa2684c16e46, actor 2790a7ee-fde0-4537-9588-e233aa5a68d1; issues in linear_expanded.",
+  "Referent set": [
+    "race-issue-stormchaser-001"
+  ],
+  "Alternative sufficient identifying sets": [
+    [
+      "issues.title"
+    ]
+  ],
+  "Change-computation attributes": [
+    [
+      "issues.description"
+    ]
+  ],
+  "Written attributes": [
+    "issues.description"
+  ]
+}
+```
+
