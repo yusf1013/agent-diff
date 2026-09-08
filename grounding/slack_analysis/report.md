@@ -2,9 +2,9 @@
 
 See [method and source policy](README.md). These are benchmark annotations, not measurements of agent behavior. Cards use the locked schema in [cards.md](cards.md).
 
-59 tests; 198 task-expressed obligations: 169 resolved, 3 absent, 26 underspecified. Assertions fully cover 76, partially cover 36, and leave 86 unchecked.
+59 tests; 198 task-expressed obligations: 169 resolved, 3 absent, 26 underspecified. Assertions fully cover 78, partially cover 34, and leave 86 unchecked.
 
-Full coverage is referent coverage at the adopted permissive boundary, not full task correctness. The denominator includes unresolved and absent obligations. Zero-obligation tasks have no coverage ratio.
+Coverage concerns the grounded contribution in the final state or requested output; it never requires a trajectory or source provenance. Full coverage does not certify whole-task correctness. See [the focused coverage audit](coverage_audit.md). The denominator includes unresolved and absent obligations. Zero-obligation tasks have no coverage ratio.
 
 | # | Test | Obligations | Resolved | Absent | Underspecified | Full | Partial | Unchecked |
 |---:|---|---:|---:|---:|---:|---:|---:|---:|
@@ -56,7 +56,7 @@ Full coverage is referent coverage at the adopted permissive boundary, not full 
 | 46 | [slack_102](#slack_102) | 11 | 6 | 1 | 4 | 0 | 0 | 11 |
 | 47 | [slack_103](#slack_103) | 5 | 4 | 0 | 1 | 2 | 0 | 3 |
 | 48 | [slack_104](#slack_104) | 3 | 3 | 0 | 0 | 2 | 1 | 0 |
-| 49 | [slack_105](#slack_105) | 3 | 3 | 0 | 0 | 1 | 2 | 0 |
+| 49 | [slack_105](#slack_105) | 3 | 3 | 0 | 0 | 2 | 1 | 0 |
 | 50 | [slack_106](#slack_106) | 7 | 7 | 0 | 0 | 5 | 2 | 0 |
 | 51 | [slack_107](#slack_107) | 6 | 6 | 0 | 0 | 4 | 2 | 0 |
 | 52 | [slack_108](#slack_108) | 7 | 7 | 0 | 0 | 4 | 1 | 2 |
@@ -65,7 +65,7 @@ Full coverage is referent coverage at the adopted permissive boundary, not full 
 | 55 | [slack_111](#slack_111) | 8 | 8 | 0 | 0 | 2 | 5 | 1 |
 | 56 | [slack_112](#slack_112) | 5 | 5 | 0 | 0 | 3 | 0 | 2 |
 | 57 | [slack_113](#slack_113) | 6 | 6 | 0 | 0 | 3 | 3 | 0 |
-| 58 | [slack_114](#slack_114) | 4 | 4 | 0 | 0 | 3 | 1 | 0 |
+| 58 | [slack_114](#slack_114) | 4 | 4 | 0 | 0 | 4 | 0 | 0 |
 | 59 | [slack_115](#slack_115) | 2 | 2 | 0 | 0 | 0 | 2 | 0 |
 
 <a id="slack_57"></a>
@@ -800,7 +800,7 @@ Find all questions in #random and post each one to #general as separate messages
 
 | Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |
 |---|---|---|---|---|
-| 1. Resolve questions in #random for reposting | resolved | `["1700210000.000001","1700210180.000004","1706052160.000000","1706052665.000000"]` | partial | A1, A2, A3, A4: Assertions require four output fragments; they do not require the full source text or establish its provenance. |
+| 1. Resolve questions in #random for reposting | resolved | `["1700210000.000001","1700210180.000004","1706052160.000000","1706052665.000000"]` | partial | A1, A2, A3, A4: The four output keywords do not require the actual question contents: four keyword-only messages satisfy the text constraints without reposting the questions. Source IDs or retrieval evidence are unnecessary; missing source-derived question content is the outcome gap. |
 | 2. Resolve #general | resolved | `["C01ABCD1234"]` | yes | A1, A2, A3, A4: Assertions 1, 2, 3, 4 constrain the resulting change to this seeded referent. |
 
 Boundary and selection notes:
@@ -878,7 +878,7 @@ Search for all messages (4 messages) in the #engineering channel related to logi
 
 | Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |
 |---|---|---|---|---|
-| 1. Resolve the login-issue source messages | resolved | `["1699651200.000321","1699737600.000654","1699824000.000987","1699910400.000246"]` | partial | A4, A5, A6, A7: Distinctive source fragments are required in output, but source identity, full wording, and their combination into exactly one message are not all enforced. |
+| 1. Resolve the login-issue source messages | resolved | `["1699651200.000321","1699737600.000654","1699824000.000987","1699910400.000246"]` | partial | A4, A5, A6, A7: The output can contain the required issue fragments while omitting the reported symptoms, timings, and proposed improvements. That does not preserve the source messages’ meaning as requested. The defect is incomplete final content, not missing source IDs or evidence of reading the messages. |
 | 2. Resolve Hubert | resolved | `["U06HUBERT23"]` | yes | A2: A membership addition for Hubert is required. Linking that membership to the message’s conversation is not enforced, but the described user identity is constrained. |
 
 Boundary and selection notes:
@@ -1007,7 +1007,7 @@ Search for all messages (6 messages) related to login issues and auth improvment
 
 | Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |
 |---|---|---|---|---|
-| 1. Resolve the login-issue and authentication-improvement source messages | resolved | `["1699651200.000321","1699737600.000654","1699824000.000987","1699910400.000246","1699996800.000777","1700083200.000888"]` | partial | A3, A4, A5, A6, A7, A8: Distinctive source fragments are required in output, but source identity, full wording, and their combination into exactly one message are not all enforced. |
+| 1. Resolve the login-issue and authentication-improvement source messages | resolved | `["1699651200.000321","1699737600.000654","1699824000.000987","1699910400.000246","1699996800.000777","1700083200.000888"]` | partial | A3, A4, A5, A6, A7, A8: The output can contain the required issue fragments while omitting the reported symptoms, timings, and proposed improvements. That does not preserve the source messages’ meaning as requested. The defect is incomplete final content, not missing source IDs or evidence of reading the messages. |
 | 2. Resolve Hubert | resolved | `["U06HUBERT23"]` | yes | A2: A membership addition for Hubert is required. Linking that membership to the message’s conversation is not enforced, but the described user identity is constrained. |
 
 Boundary and selection notes:
@@ -1131,7 +1131,7 @@ Search for all messages (6 messages) related to login issues and auth improvment
 
 | Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |
 |---|---|---|---|---|
-| 1. Resolve the login-issue and authentication-improvement source messages | resolved | `["1699651200.000321","1699737600.000654","1699824000.000987","1699910400.000246","1699996800.000777","1700083200.000888"]` | partial | A1, A2, A3, A4, A5, A6: Distinctive source fragments are required in output, but source identity, full wording, and their combination into exactly one message are not all enforced. |
+| 1. Resolve the login-issue and authentication-improvement source messages | resolved | `["1699651200.000321","1699737600.000654","1699824000.000987","1699910400.000246","1699996800.000777","1700083200.000888"]` | partial | A1, A2, A3, A4, A5, A6: The output can contain the required issue fragments while omitting the reported symptoms, timings, and proposed improvements. That does not preserve the source messages’ meaning as requested. The defect is incomplete final content, not missing source IDs or evidence of reading the messages. |
 | 2. Resolve the actor’s engineering placeholder about auth issues | resolved | `["1700143200.000999"]` | yes | A1, A2, A3, A4, A5, A6: Assertions 1, 2, 3, 4, 5, 6 constrain the resulting change to this seeded referent. |
 
 Boundary and selection notes:
@@ -1718,7 +1718,7 @@ Create a new channel called 'auth-force' and invite everyone who has posted abou
 
 | Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |
 |---|---|---|---|---|
-| 1. Resolve authors of login/password discussions | resolved | `["U01AGENBOT9","U02JOHNDOE1","U03ROBERT23","U05MORGAN23","U02ARTEM23","U06HUBERT23"]` | partial | A2: Six membership additions must use IDs from the six-person set, but the predicate does not require one distinct addition per person or tie them to auth-force. |
+| 1. Resolve authors of login/password discussions | resolved | `["U01AGENBOT9","U02JOHNDOE1","U03ROBERT23","U05MORGAN23","U02ARTEM23","U06HUBERT23"]` | partial | A2: The final additions must include six membership rows whose users belong to the six-person set. They need not cover all six distinct people: the same person can occur in different channel memberships. Thus the required recipient set is not enforced by these predicates. |
 
 Boundary and selection notes:
 
@@ -1769,7 +1769,7 @@ Try to invite the user 'ElonMusk' to #general. If you can't find him, inform me 
 
 | Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |
 |---|---|---|---|---|
-| 1. Resolve the user ElonMusk | absent | `[]` | partial | A1, A3: No additions to general and a generic failure notice are required, but no identity-specific failed lookup or ElonMusk mention is required. |
+| 1. Resolve the user ElonMusk | absent | `[]` | partial | A1, A3: The outcome need not report the requested user’s absence: the text "ElonMusk was found." satisfies the found alternative in A3 while A1 permits no invitation. This checks neither the polarity nor the subject-specific truth of the failure report; no lookup trace is required. |
 | 2. Resolve #general | resolved | `["C01ABCD1234"]` | yes | A1: Assertion 1 explicitly constrains the conditional invitation destination through a zero-addition check. |
 | 3. Resolve Hubert | resolved | `["U06HUBERT23"]` | yes | A4: Assertions 4 constrain the resulting change to this seeded referent. |
 
@@ -1841,7 +1841,7 @@ Who are the admins of the 'Test Workspace'? Reply with their names in #random.
 
 | Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |
 |---|---|---|---|---|
-| 1. Resolve the admins of Test Workspace | resolved | `["U03ROBERT23","U07MORGANFREE"]` | partial | A1, A2: Robert and Morgan substrings are required; the full names/IDs of the two admins are not. |
+| 1. Resolve the admins of Test Workspace | resolved | `["U03ROBERT23","U07MORGANFREE"]` | partial | A1, A2: The output "The admins are Robert Chen and Morgan Stanley." contains both required names but identifies the wrong seeded admins (Robert Walsh and Morgan Freeman). The missing constraint is correct reported names, not user IDs or a retrieval trace. |
 | 2. Resolve #random | resolved | `["C02EFGH5678"]` | yes | A1, A2: Assertions 1, 2 constrain the resulting change to this seeded referent. |
 
 Boundary and selection notes:
@@ -1969,7 +1969,7 @@ Summarize the discussion about 'Gemini' in #random and post the summary to #engi
 
 | Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |
 |---|---|---|---|---|
-| 1. Resolve the Gemini discussion in #random | resolved | `["1699572000.000789","1700210000.000001","1700210060.000002","1700210120.000003","1700210180.000004","1700210240.000005","1706051580.000000","1706051755.000000","1706052027.000000","1706052160.000000","1706052433.000000","1706052665.000000","1706052779.000000","1706052950.000000","1706053102.000000","1706053181.000000"]` | partial | A1: The output must contain Gemini, but the assertion does not verify the discussion source or summary. |
+| 1. Resolve the Gemini discussion in #random | resolved | `["1699572000.000789","1700210000.000001","1700210060.000002","1700210120.000003","1700210180.000004","1700210240.000005","1706051580.000000","1706051755.000000","1706052027.000000","1706052160.000000","1706052433.000000","1706052665.000000","1706052779.000000","1706052950.000000","1706053102.000000","1706053181.000000"]` | partial | A1: An output such as "I will not summarize the Gemini discussion." meets the keyword condition but contains no faithful summary. The assertion does not check the requested source-dependent facts in the final summary. |
 | 2. Resolve #engineering | resolved | `["C03IJKL9012"]` | yes | A1: Assertions 1 constrain the resulting change to this seeded referent. |
 
 Boundary and selection notes:
@@ -2678,7 +2678,7 @@ After that, rename #engineering to "engineering-backend" since that's what the t
 | Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |
 |---|---|---|---|---|
 | 1. Resolve #engineering | resolved | `["C03IJKL9012"]` | yes | A3: Assertions 3 constrain the resulting change to this seeded referent. |
-| 2. Resolve the current members of #engineering | resolved | `["U01AGENBOT9","U02JOHNDOE1","U03ROBERT23","U05MORGAN23","U06HUBERT23"]` | partial | A1, A2: A count-like 5 and a member word are required, but names and exact membership identities are not checked. |
+| 2. Resolve the current members of #engineering | resolved | `["U01AGENBOT9","U02JOHNDOE1","U03ROBERT23","U05MORGAN23","U06HUBERT23"]` | partial | A1, A2: A1 accepts "Member count: 15" because it contains 5, and A2 only requires a member word. The correct count of five and the requested member-name list are not reliably checked in the output. |
 | 3. Resolve #general | resolved | `["C01ABCD1234"]` | yes | A1, A2, A4: Assertions 1, 2, 4 constrain the resulting change to this seeded referent. |
 
 Boundary and selection notes:
@@ -2770,8 +2770,8 @@ After replying, add a checkmark reaction to the original thread message to mark 
 
 | Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |
 |---|---|---|---|---|
-| 1. Resolve Robert’s circuit-tracer question and its thread | resolved | `["1706110000.000200"]` | partial | A1: The new reply must use the correct root thread, but the specific Robert question is not distinguished from other messages in that thread. |
-| 2. Resolve Sophie’s DM containing her implementation plan and timeline | resolved | `["1706100000.000001"]` | partial | A1: Wednesday must appear in the reply; the source DM and its full information are not verified. |
+| 1. Resolve Robert’s circuit-tracer question and its thread | resolved | `["1706110000.000200"]` | yes | A1: A1 fixes the final reply’s channel to engineering and its parent to the circuit-tracer root, which is the documented destination for replying to Robert’s question in that thread. Recording Robert’s reply ID or proving that his question was read is unnecessary. Timeline-answer fidelity is assessed separately under obligation 2. |
+| 2. Resolve Sophie’s DM containing her implementation plan and timeline | resolved | `["1706100000.000001"]` | partial | A1: Sophie’s seeded estimate is Wednesday next week, but "Completion is Friday next week; Wednesday is only a review meeting." satisfies A1. The output need not state the correct completion estimate. This remains partial for answer fidelity, not because the DM or its ID must be exposed. |
 | 3. Resolve the original circuit-tracer thread message | resolved | `["1706110000.000100"]` | yes | A2: Assertions 2 constrain the resulting change to this seeded referent. |
 
 Boundary and selection notes:
@@ -2843,13 +2843,13 @@ It's end of Q4 and I need to reorganize our Slack workspace. Help me with the fo
 
 | Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |
 |---|---|---|---|---|
-| 1. Resolve conversations the acting user currently belongs to | resolved | `["C01ABCD1234","C02EFGH5678","C03IJKL9012","C04MNOP3456","C06ALPHADEV","C05ALPHA","C_INFRA","C_MODEL","C_FRONTEND"]` | partial | A1: Only the word general is required; the complete membership-derived list, counts, numbering and self-DM destination are not checked. |
+| 1. Resolve conversations the acting user currently belongs to | resolved | `["C01ABCD1234","C02EFGH5678","C03IJKL9012","C04MNOP3456","C06ALPHADEV","C05ALPHA","C_INFRA","C_MODEL","C_FRONTEND"]` | partial | A1: An output containing only general meets A1 while omitting the other current channels and their member counts. The missing check concerns the completeness of the requested final list, not how the memberships were retrieved. |
 | 2. Resolve #old-project-q3 | resolved | `["C_OLD_PROJECT"]` | yes | A2, A3, A16, A17: Assertions 2, 3, 16, 17 constrain the resulting change to this seeded referent. |
 | 3. Resolve #project-alpha-dev | resolved | `["C06ALPHADEV"]` | yes | A4, A5, A6, A7, A8, A9, A10, A11, A12, A13: Assertions 4, 5, 6, 7, 8, 9, 10, 11, 12, 13 constrain the resulting change to this seeded referent. |
 | 4. Resolve non-Americas members of #project-alpha-dev | resolved | `["U_PRIYA","U_LUKAS","U_KENJI","U_AISHA"]` | yes | A4, A5, A6, A7: Each of the four explicit non-Americas users is individually required to be removed from the correct channel. |
 | 5. Resolve the actor’s eyes reaction on the engineering circuit-tracer root | resolved | `[{"message_id":"1706110000.000100","user_id":"U01AGENBOT9","reaction_type":"eyes"}]` | yes | A14: The removal predicate identifies the existing reaction by message and emoji and acting user. |
 | 6. Resolve #product-growth | resolved | `["C_GROWTH"]` | yes | A15: Assertions 15 constrain the resulting change to this seeded referent. |
-| 7. Resolve the Americas members remaining in #project-alpha-dev | resolved | `["U_MATEO","U_ROBERT"]` | partial | A8, A9, A10, A11, A12, A13, A16, A17: Mateo/Robert membership preservation and name fragments are constrained; complete identities in the report, timezones, and exact output content are not. |
+| 7. Resolve the Americas members remaining in #project-alpha-dev | resolved | `["U_MATEO","U_ROBERT"]` | partial | A8, A9, A10, A11, A12, A13, A16, A17: A8–A13 preserve the two relevant memberships, but A16–A17 accept "Mateo and Robert remain" without either requested timezone. Preservation constrains the underlying state; the source-dependent report remains incomplete. No source IDs are required in the report. |
 
 Boundary and selection notes:
 
@@ -3123,8 +3123,8 @@ Kenji, Olena, and Priya want to spin up a generative art project using the team'
 | 1. Resolve Kenji | resolved | `["U_KENJI"]` | yes | A4: A membership count is fixed for this individual user. The new-channel/group-DM allocation is not fully tied together. |
 | 2. Resolve Olena | resolved | `["U_OLENA"]` | yes | A5: A membership count is fixed for this individual user. The new-channel/group-DM allocation is not fully tied together. |
 | 3. Resolve Priya | resolved | `["U_PRIYA"]` | yes | A3: A membership count is fixed for this individual user. The new-channel/group-DM allocation is not fully tied together. |
-| 4. Resolve the three participants’ GPU-work discussion | resolved | `["1706000496.000000","1706000791.000000","1706001104.000000","1706001136.000000","1706001628.000000","1706001817.000000","1706001931.000000","1706002397.000000","1706012958.000000","1706013249.000000","1706013725.000000","1706014443.000000","1706067650.000000","1706068303.000000"]` | partial | A8: The output must mention GPU; the authors and source discussion are not checked. |
-| 5. Resolve the three participants’ circuit-tracer discussion | resolved | `["1706110000.000300"]` | partial | A7, A12, A13, A14: Circuit must appear in output and certain destinations are forbidden; the particular source messages are not constrained. |
+| 4. Resolve the three participants’ GPU-work discussion | resolved | `["1706000496.000000","1706000791.000000","1706001104.000000","1706001136.000000","1706001628.000000","1706001817.000000","1706001931.000000","1706002397.000000","1706012958.000000","1706013249.000000","1706013725.000000","1706014443.000000","1706067650.000000","1706068303.000000"]` | partial | A8: The opening text can merely mention GPU without conveying any of the participants’ GPU-work discussion. A8 checks a topic word, not the requested source-dependent contribution to the final opening post. |
+| 5. Resolve the three participants’ circuit-tracer discussion | resolved | `["1706110000.000300"]` | partial | A7, A12, A13, A14: A7 and the destination exclusions permit a circuit keyword in an allowed destination without any information from the participants’ circuit-tracer discussion. Final content fidelity is unchecked; citation of source records is not required. |
 | 6. Resolve the first engineering message mentioning circuit-tracer | resolved | `["1706110000.000100"]` | yes | A6: Assertions 6 constrain the resulting change to this seeded referent. |
 
 Boundary and selection notes:
@@ -3327,7 +3327,7 @@ Sophie and Mateo want to bring the workspace's food culture together under one r
 | 3. Resolve the old archived channel to revive | resolved | `["C_OLD_PROJECT"]` | yes | A1, A2, A3: Assertions 1, 2, 3 constrain the resulting change to this seeded referent. |
 | 4. Resolve Mateo | resolved | `["U_MATEO"]` | yes | A4: Assertions 4 constrain the resulting change to this seeded referent. |
 | 5. Resolve #project-alpha-dev | resolved | `["C06ALPHADEV"]` | yes | A4: Assertions 4 constrain the resulting change to this seeded referent. |
-| 6. Resolve an espresso-machine message in #random | resolved | `["1706051580.000000","1706052433.000000"]` | partial | A5: The assertion accepts any edited message in random; it does not constrain espresso content or the original message identity. |
+| 6. Resolve an espresso-machine message in #random | resolved | `["1706051580.000000","1706052433.000000"]` | partial | A5: A5 permits an edit to any message in random, including a non-espresso message. The resulting edited record need not belong to the card’s eligible espresso-message set. |
 | 7. Resolve the large-pies lunch-planning message in #random | resolved | `["1706051755.000000"]` | yes | A6: Assertions 6 constrain the resulting change to this seeded referent. |
 
 Boundary and selection notes:
@@ -3452,11 +3452,11 @@ Aisha, Lukasz, Gabriel, Nick, and Priya want to launch a collaborative radio dra
 
 | Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |
 |---|---|---|---|---|
-| 1. Resolve Aisha | resolved | `["U_AISHA"]` | partial | A2, A4: The aggregate membership predicate allows any five additions drawn from five IDs, without requiring each individual or a shared destination. Lagos is only an output clue and does not identify a DM recipient. |
-| 2. Resolve Lukasz | resolved | `["U_LUKAS"]` | partial | A2: The aggregate membership predicate allows any five additions drawn from five IDs, without requiring each individual or a shared destination. |
-| 3. Resolve Gabriel | resolved | `["U09GABRIEL"]` | partial | A2: The aggregate membership predicate allows any five additions drawn from five IDs, without requiring each individual or a shared destination. |
-| 4. Resolve Nick | resolved | `["U08NICK23"]` | partial | A2: The aggregate membership predicate allows any five additions drawn from five IDs, without requiring each individual or a shared destination. |
-| 5. Resolve Priya | resolved | `["U_PRIYA"]` | partial | A2: The aggregate membership predicate allows any five additions drawn from five IDs, without requiring each individual or a shared destination. |
+| 1. Resolve Aisha | resolved | `["U_AISHA"]` | partial | A2, A4: A2 requires five membership rows drawn from the five-person ID list, not one for each named person. A final membership set can omit this individual and use another listed person in multiple channels. The Lagos keyword also does not fix the private-message recipient or check a timezone assertion about Aisha. |
+| 2. Resolve Lukasz | resolved | `["U_LUKAS"]` | partial | A2: A2 requires five membership rows drawn from the five-person ID list, not one for each named person. A final membership set can omit this individual and use another listed person in multiple channels. |
+| 3. Resolve Gabriel | resolved | `["U09GABRIEL"]` | partial | A2: A2 requires five membership rows drawn from the five-person ID list, not one for each named person. A final membership set can omit this individual and use another listed person in multiple channels. |
+| 4. Resolve Nick | resolved | `["U08NICK23"]` | partial | A2: A2 requires five membership rows drawn from the five-person ID list, not one for each named person. A final membership set can omit this individual and use another listed person in multiple channels. |
+| 5. Resolve Priya | resolved | `["U_PRIYA"]` | partial | A2: A2 requires five membership rows drawn from the five-person ID list, not one for each named person. A final membership set can omit this individual and use another listed person in multiple channels. |
 | 6. Resolve transmission and signal discussion sources | resolved | `["C02EFGH5678","C_INFRA","C_MODEL","C_GROWTH","C_FRONTEND"]` | no | A8: A generic actor-message count does not check the inspiration source. |
 | 7. Resolve the actor’s eyes reaction on the engineering circuit-tracer root | resolved | `[{"message_id":"1706110000.000100","user_id":"U01AGENBOT9","reaction_type":"eyes"}]` | yes | A5: The removal predicate identifies the existing reaction by message and emoji; the seed contains just this reaction. |
 | 8. Resolve #product-growth | resolved | `["C_GROWTH"]` | no | None: No assertion constrains this described referent or its derived result. |
@@ -3588,12 +3588,12 @@ Hubert, John, Morgan, and Omer want to start a mapping project for forgotten und
 
 | Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |
 |---|---|---|---|---|
-| 1. Resolve Hubert | resolved | `["U06HUBERT23"]` | partial | A2: The aggregate in-list count permits repeated appearances across different channels and does not force this particular user to occur. |
-| 2. Resolve John | resolved | `["U02JOHNDOE1"]` | partial | A2: The aggregate in-list count permits repeated appearances across different channels and does not force this particular user to occur. |
-| 3. Resolve Omer | resolved | `["U04OMER23"]` | partial | A2: The aggregate in-list count permits repeated appearances across different channels and does not force this particular user to occur. |
+| 1. Resolve Hubert | resolved | `["U06HUBERT23"]` | partial | A2: A2 counts four membership rows with users drawn from four IDs; it does not require this particular person to appear. Repeated appearances of other permitted people in different channels can meet the aggregate condition. |
+| 2. Resolve John | resolved | `["U02JOHNDOE1"]` | partial | A2: A2 counts four membership rows with users drawn from four IDs; it does not require this particular person to appear. Repeated appearances of other permitted people in different channels can meet the aggregate condition. |
+| 3. Resolve Omer | resolved | `["U04OMER23"]` | partial | A2: A2 counts four membership rows with users drawn from four IDs; it does not require this particular person to appear. Repeated appearances of other permitted people in different channels can meet the aggregate condition. |
 | 4. Resolve the Morgan participating in engineering discussions | resolved | `["U05MORGAN23"]` | yes | A2, A6: Assertion 6 independently requires two membership additions for U05MORGAN23. |
 | 5. Resolve #core-infra | resolved | `["C_INFRA"]` | no | None: No assertion constrains this described referent or its derived result. |
-| 6. Resolve all messages mentioning supercomputer | resolved | `["1706069700.000001","1706112500.000001"]` | partial | A3: The output must contain supercomputer followed by 2; the source message identities are not constrained. |
+| 6. Resolve all messages mentioning supercomputer | resolved | `["1706069700.000001","1706112500.000001"]` | partial | A3: A3 accepts "supercomputer mentioned 99 times; 2 reviewers checked this." The regex requires a later standalone 2 but does not bind it to the reported occurrence count. Checking the correct count would suffice without source message IDs; this predicate leaves the numeric claim unconstrained. |
 | 7. Resolve an engineering message as the infrastructure-edit target | resolved | `["1699651200.000321","1699737600.000654","1699824000.000987","1699910400.000246","1700143200.000999","1700153200.000999","1706110000.000100","1706110000.000200","1706110000.000300","1706112500.000001","1706115000.000001"]` | yes | A7: The assertion fixes the edit to engineering, matching this explicitly broadened candidate boundary. |
 
 Boundary and selection notes:
@@ -3726,11 +3726,11 @@ Kenji, Priya, Aisha, Sophie, Lukasz, and Mateo want to do a "Sunrise Relay" — 
 
 | Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |
 |---|---|---|---|---|
-| 1. Resolve Kenji | resolved | `["U_KENJI"]` | partial | A1, A2, A3: Aggregate invitations do not require each individual; timezone fragments constrain some derived profile information, not full participant identities. |
-| 2. Resolve Priya | resolved | `["U_PRIYA"]` | partial | A1, A2, A3: Aggregate invitations do not require each individual; timezone fragments constrain some derived profile information, not full participant identities. |
-| 3. Resolve Aisha | resolved | `["U_AISHA"]` | partial | A1, A2, A3: Aggregate invitations do not require each individual; timezone fragments constrain some derived profile information, not full participant identities. |
-| 4. Resolve Sophie | resolved | `["U_SOPHIE"]` | partial | A1, A2, A3: Aggregate invitations do not require each individual; timezone fragments constrain some derived profile information, not full participant identities. |
-| 5. Resolve Lukasz | resolved | `["U_LUKAS"]` | partial | A1, A2, A3: Aggregate invitations do not require each individual; timezone fragments constrain some derived profile information, not full participant identities. |
+| 1. Resolve Kenji | resolved | `["U_KENJI"]` | partial | A1, A2, A3: A2’s aggregate invitation count does not force this individual’s inclusion. A1/A3 also allow timezone fragments without associating each person with the correct timezone in the schedule. Both gaps concern the resulting memberships or report, not profile-lookup activity. |
+| 2. Resolve Priya | resolved | `["U_PRIYA"]` | partial | A1, A2, A3: A2’s aggregate invitation count does not force this individual’s inclusion. A1/A3 also allow timezone fragments without associating each person with the correct timezone in the schedule. Both gaps concern the resulting memberships or report, not profile-lookup activity. |
+| 3. Resolve Aisha | resolved | `["U_AISHA"]` | partial | A1, A2, A3: A2’s aggregate invitation count does not force this individual’s inclusion. A1/A3 also allow timezone fragments without associating each person with the correct timezone in the schedule. Both gaps concern the resulting memberships or report, not profile-lookup activity. |
+| 4. Resolve Sophie | resolved | `["U_SOPHIE"]` | partial | A1, A2, A3: A2’s aggregate invitation count does not force this individual’s inclusion. A1/A3 also allow timezone fragments without associating each person with the correct timezone in the schedule. Both gaps concern the resulting memberships or report, not profile-lookup activity. |
+| 5. Resolve Lukasz | resolved | `["U_LUKAS"]` | partial | A1, A2, A3: A2’s aggregate invitation count does not force this individual’s inclusion. A1/A3 also allow timezone fragments without associating each person with the correct timezone in the schedule. Both gaps concern the resulting memberships or report, not profile-lookup activity. |
 | 6. Resolve Mateo | resolved | `["U_MATEO"]` | yes | A2, A5: The removal assertion fixes Mateo’s identity. |
 | 7. Resolve #frontend | resolved | `["C_FRONTEND"]` | no | None: No assertion constrains this described referent or its derived result. |
 | 8. Resolve #model-research | resolved | `["C_MODEL"]` | yes | A5: Assertions 5 constrain the resulting change to this seeded referent. |
@@ -3910,10 +3910,10 @@ Think of the workspace as a coastline full of tide pools — each channel is its
 
 | Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |
 |---|---|---|---|---|
-| 1. Resolve the workspace channel population for the alphabetical survey | resolved | `["C01ABCD1234","C02EFGH5678","C03IJKL9012","C04MNOP3456","C05ALPHA","C06ALPHADEV","C_INFRA","C_MODEL","C_GROWTH","C_FRONTEND","C_OLD_PROJECT"]` | partial | A2: The output regex lists nine channel names, omitting product-growth and the archived channel. It does not check the complete seeded population. |
-| 2. Resolve the workspace user roster for admin/member classification | resolved | `["U01AGENBOT9","U02JOHNDOE1","U02ARTEM23","U03ROBERT23","U04OMER23","U05MORGAN23","U06HUBERT23","U07MORGANFREE","U08NICK23","U09GABRIEL","U_PRIYA","U_LUKAS","U_SOPHIE","U_OLENA","U_MATEO","U_KENJI","U_ROBERT","U_AISHA","U_INCOGNITO"]` | partial | A2: Per-channel counts are checked for nine named channels, but the underlying member identities and full roster are not. |
+| 1. Resolve the workspace channel population for the alphabetical survey | resolved | `["C01ABCD1234","C02EFGH5678","C03IJKL9012","C04MNOP3456","C05ALPHA","C06ALPHADEV","C_INFRA","C_MODEL","C_GROWTH","C_FRONTEND","C_OLD_PROJECT"]` | partial | A2: A2 permits a report containing only nine channel names, with product-growth and the archived channel omitted from the card’s adopted eleven-channel population. The final survey can therefore be incomplete. |
+| 2. Resolve the workspace user roster for admin/member classification | resolved | `["U01AGENBOT9","U02JOHNDOE1","U02ARTEM23","U03ROBERT23","U04OMER23","U05MORGAN23","U06HUBERT23","U07MORGANFREE","U08NICK23","U09GABRIEL","U_PRIYA","U_LUKAS","U_SOPHIE","U_OLENA","U_MATEO","U_KENJI","U_ROBERT","U_AISHA","U_INCOGNITO"]` | partial | A2: The requested roster-derived result is the per-channel admin/member survey. A2 constrains counts for nine channels but omits two channels in the adopted population; their counts and members’ contribution can be omitted. Individual user IDs or a displayed full roster are not independently required for checking this aggregate result. |
 | 3. Resolve Omer | resolved | `["U04OMER23"]` | yes | A1: Assertions 1 constrain the resulting change to this seeded referent. |
-| 4. Resolve replies under the engineering circuit-tracer root | resolved | `["1706110000.000200","1706110000.000300"]` | partial | A5: Two replies and Robert/Kenji fragments are required; the specific reply records and source relationship are not. |
+| 4. Resolve replies under the engineering circuit-tracer root | resolved | `["1706110000.000200","1706110000.000300"]` | partial | A5: A5 checks two replies and later Robert/Kenji substrings, but accepts "Field Report 2: 2 replies found under circuit-tracer in #engineering — organisms: Robert, Aisha. Report prepared by Kenji." It need not report the correct pair of authors. Reply IDs and retrieval provenance are unnecessary; the author attribution in the final report is the gap. |
 | 5. Resolve a lunch-coordination message in #random | resolved | `["1699572000.000789","1706051755.000000","1706052665.000000","1706053102.000000"]` | yes | A3: The removal assertion selects exactly this permissive channel-and-content candidate population. |
 | 6. Resolve the author of the original engineering circuit-tracer message | resolved | `["U_LUKAS"]` | yes | A4: A membership addition for U_LUKAS is explicitly required. The report’s delivery to that same conversation is not enforced. |
 
@@ -3998,7 +3998,7 @@ Robert and Nick want to do a "Palimpsest" — scraping off old marks in the work
 
 | Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |
 |---|---|---|---|---|
-| 1. Resolve conversations Nick belongs to | resolved | `["C04MNOP3456"]` | partial | A3: The output fixes the derived count to one and names Nick, but does not constrain the underlying conversation identity. |
+| 1. Resolve conversations Nick belongs to | resolved | `["C04MNOP3456"]` | yes | A3: A3 binds the count 1 to the requested "PALIMPSEST COMPLETE ... channels found for Nick" statement in random. One is the seed-derived answer. The underlying channel need not be named, and there is no requirement to expose source IDs or retrieval activity. |
 | 2. Resolve the actor’s eyes reaction on the engineering circuit-tracer root | resolved | `[{"message_id":"1706110000.000100","user_id":"U01AGENBOT9","reaction_type":"eyes"}]` | yes | A1: The removal predicate identifies the existing reaction by message and emoji and acting user. |
 | 3. Resolve #project-alpha | resolved | `["C05ALPHA"]` | yes | A2: Assertions 2 constrain the resulting change to this seeded referent. |
 | 4. Resolve #random | resolved | `["C02EFGH5678"]` | yes | A3: Assertions 3 constrain the resulting change to this seeded referent. |
@@ -4067,8 +4067,8 @@ How many active private conversations do I have? If I have less than seven conve
 
 | Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |
 |---|---|---|---|---|
-| 1. Resolve the actor’s existing active private conversations | resolved | `["D01AGENTSOPHIE"]` | partial | A1: Six DM additions implicitly constrain the derived deficit; the initial Sophie conversation, final total, and duplicate avoidance are not directly checked. |
-| 2. Resolve the alphabetically first eligible users for new conversations | resolved | `["U_AISHA","U02ARTEM23","U_INCOGNITO","U09GABRIEL","U06HUBERT23","U02JOHNDOE1"]` | partial | A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12: Eleven user IDs are forbidden and six new DMs required, but each intended first-six user is not positively required; Sophie/self duplication and all relationships remain unchecked. |
+| 1. Resolve the actor’s existing active private conversations | resolved | `["D01AGENTSOPHIE"]` | partial | A1: A1 constrains six DM additions, but the listed predicates do not ensure that the resulting state contains exactly seven active private conversations for the actor. Preservation/activity/membership of the final conversation population is not checked. Naming the initial Sophie DM or proving it was counted is unnecessary. |
+| 2. Resolve the alphabetically first eligible users for new conversations | resolved | `["U_AISHA","U02ARTEM23","U_INCOGNITO","U09GABRIEL","U06HUBERT23","U02JOHNDOE1"]` | partial | A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12: The output-state predicates forbid eleven user IDs and count six DM additions, but do not ensure the final six new conversations are with the intended six distinct eligible counterparts, skipping existing conversations. The missing constraint is the final recipient/conversation relationship, not the order of API calls or a sorting trace. |
 
 Boundary and selection notes:
 

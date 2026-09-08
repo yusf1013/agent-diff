@@ -142,7 +142,7 @@ def make_outputs(analysis, entries, seed):
     }
     report = ["# Slack grounding obligations", "", "See [method and source policy](README.md). These are benchmark annotations, not measurements of agent behavior. Cards use the locked schema in [cards.md](cards.md).", "",
         f"{aggregate['tests']} tests; {aggregate['obligations']} task-expressed obligations: {aggregate['resolved']} resolved, {aggregate['absent']} absent, {aggregate['underspecified']} underspecified. Assertions fully cover {aggregate['fully_covered']}, partially cover {aggregate['partially_covered']}, and leave {aggregate['unchecked']} unchecked.", "",
-        "Full coverage is referent coverage at the adopted permissive boundary, not full task correctness. The denominator includes unresolved and absent obligations. Zero-obligation tasks have no coverage ratio.", "",
+        "Coverage concerns the grounded contribution in the final state or requested output; it never requires a trajectory or source provenance. Full coverage does not certify whole-task correctness. See [the focused coverage audit](coverage_audit.md). The denominator includes unresolved and absent obligations. Zero-obligation tasks have no coverage ratio.", "",
         "| # | Test | Obligations | Resolved | Absent | Underspecified | Full | Partial | Unchecked |",
         "|---:|---|---:|---:|---:|---:|---:|---:|---:|"]
     for m in per_test:
@@ -185,6 +185,7 @@ def make_outputs(analysis, entries, seed):
             "https://docs.slack.dev/reference/methods/conversations.members/",
             "https://docs.slack.dev/reference/methods/reactions.get/",
             "https://docs.slack.dev/reference/methods/conversations.history/",
+            "https://docs.slack.dev/reference/methods/chat.postMessage/",
         ], "documentation_consulted_on": "2026-09-08",
         "excluded": ["service implementation", "evaluator implementation", "live database", "agent runs/audits", "external conceptual ER model"]}, indent=2) + "\n"
     return outputs
