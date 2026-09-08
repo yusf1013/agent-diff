@@ -2,7 +2,7 @@
 
 See [method and source policy](README.md). These are benchmark annotations, not measurements of agent behavior. Cards use the locked schema in [cards.md](cards.md).
 
-59 tests; 198 task-expressed obligations: 169 resolved, 3 absent, 26 underspecified. Assertions fully cover 78, partially cover 34, and leave 86 unchecked.
+59 tests; 197 task-expressed obligations: 168 resolved, 3 absent, 26 underspecified. Assertions fully cover 77, partially cover 34, and leave 86 unchecked.
 
 Coverage concerns the grounded contribution in the final state or requested output; it never requires a trajectory or source provenance. Full coverage does not certify whole-task correctness. See [the focused coverage audit](coverage_audit.md). The denominator includes unresolved and absent obligations. Zero-obligation tasks have no coverage ratio.
 
@@ -39,7 +39,7 @@ Coverage concerns the grounded contribution in the final state or requested outp
 | 29 | [slack_85](#slack_85) | 2 | 2 | 0 | 0 | 2 | 0 | 0 |
 | 30 | [slack_86](#slack_86) | 1 | 1 | 0 | 0 | 1 | 0 | 0 |
 | 31 | [slack_87](#slack_87) | 1 | 1 | 0 | 0 | 0 | 1 | 0 |
-| 32 | [slack_88](#slack_88) | 3 | 2 | 1 | 0 | 2 | 1 | 0 |
+| 32 | [slack_88](#slack_88) | 2 | 1 | 1 | 0 | 1 | 1 | 0 |
 | 33 | [slack_89](#slack_89) | 2 | 2 | 0 | 0 | 1 | 1 | 0 |
 | 34 | [slack_90](#slack_90) | 2 | 2 | 0 | 0 | 2 | 0 | 0 |
 | 35 | [slack_91](#slack_91) | 1 | 1 | 0 | 0 | 1 | 0 | 0 |
@@ -1770,15 +1770,13 @@ Try to invite the user 'ElonMusk' to #general. If you can't find him, inform me 
 | Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |
 |---|---|---|---|---|
 | 1. Resolve the user ElonMusk | absent | `[]` | partial | A1, A3: The outcome need not report the requested user’s absence: the text "ElonMusk was found." satisfies the found alternative in A3 while A1 permits no invitation. This checks neither the polarity nor the subject-specific truth of the failure report; no lookup trace is required. |
-| 2. Resolve #general | resolved | `["C01ABCD1234"]` | yes | A1: Assertion 1 explicitly constrains the conditional invitation destination through a zero-addition check. |
-| 3. Resolve Hubert | resolved | `["U06HUBERT23"]` | yes | A4: Assertions 4 constrain the resulting change to this seeded referent. |
+| 2. Resolve Hubert | resolved | `["U06HUBERT23"]` | yes | A4: Assertions 4 constrain the resulting change to this seeded referent. |
 
 Boundary and selection notes:
 
-- **1.** No seeded user matches the explicit requested name; this is absent, not underspecified. Selection: Case-insensitive exact comparison of ElonMusk with username, display_name, and real_name.
-- **2.** Resolve the named channel #general; its name selects one seeded conversation. Repeated uses in the task share this obligation. Selection: channels.channel_name == 'general'
-- **3.** The prompt’s name resolves to Hubert Marek in the seed. This is one described person even when used repeatedly. Selection: users.real_name == 'Hubert Marek'
-- Counting convention (provisional pending user reply): retain the explicitly named general destination as a task-expressed obligation even though ElonMusk is absent and the invitation branch is inactive in this seed. This is not a claim that the active execution path must look up general.
+- **1.** No seeded user matches the explicit requested name; this is absent, not underspecified. The established absence determines the applicable notification branch and contributes to its message text; invitation membership fields belong to the inactive branch. Selection: Case-insensitive exact comparison of ElonMusk with username, display_name, and real_name.
+- **2.** The prompt’s name resolves to Hubert Marek in the seed. This is one described person even when used repeatedly. Selection: users.real_name == 'Hubert Marek'
+- Count subjects needed to determine the condition and those required by the branch applicable to the supplied seed. ElonMusk is absent, so notifying Hubert is applicable; #general is used only by the inactive invitation branch and is excluded. General exists: exclusion is not an absent resolution. Assertion 1 forbids added memberships in general, but this constraint does not create a task grounding obligation or contribute a separate covered obligation.
 
 <details><summary>Assertion predicates from the test entry (A1, A2, …)</summary>
 

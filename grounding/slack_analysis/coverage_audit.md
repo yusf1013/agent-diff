@@ -2,7 +2,9 @@
 
 Baseline: commit `2ec3342` (the initial Slack analysis). Reviewed all 36 partial obligations across 19 tests against the user’s clarification: coverage concerns the final state or requested source-dependent output, never a trajectory or internal state.
 
-**Result: two partial → yes changes, 34 retained partial.** The 198 cards, their fields, referent sets, resolution labels, and obligation counts are unchanged. Aggregate coverage moves from 76 full / 36 partial / 86 unchecked to **78 full / 34 partial / 86 unchecked**. The provisional conditional count for `slack_88` is independent of this audit and remains unchanged.
+**Audit result: two partial → yes changes, 34 retained partial.** At audit commit `f993305`, the 198 cards, their fields, referent sets, resolution labels, and obligation counts were unchanged. Aggregate coverage moved from 76 full / 36 partial / 86 unchecked to **78 full / 34 partial / 86 unchecked**.
+
+Subsequently, the user approved counting conditional obligations against the supplied seed: retain condition-determining subjects and applicable-branch subjects, and exclude targets used only by a demonstrably inactive branch. This removes the general destination from `slack_88`, independently of the coverage audit. Current totals are **197 obligations: 77 full / 34 partial / 86 unchecked**. The reviewed entries below and their coverage decisions are unchanged; see the [current counting rules](README.md#counting-and-resolution).
 
 The promoted obligations are `slack_105` obligation 1 (reply destination) and `slack_114` obligation 1 (Nick’s count).
 

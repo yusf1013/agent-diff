@@ -1469,9 +1469,9 @@ No grounding-obligation cards: this task creates a new channel without describin
 {
   "Test ID": "slack_88",
   "Task type": "state-changing",
-  "Grounding obligations": 3,
+  "Grounding obligations": 2,
   "Grounding obligation name": "Resolve the user ElonMusk",
-  "Grounding obligation description": "No seeded user matches the explicit requested name; this is absent, not underspecified.",
+  "Grounding obligation description": "Determine whether the explicitly named user exists, selecting the applicable invitation or absence-notification branch. No seeded user matches; the established absence contributes to the notification text.",
   "Resolution": "absent",
   "Shared scope": "users in Seeded Slack workspace T01WORKSPACE; acting user U01AGENBOT9. Public conversations and the actor’s existing private conversation are within the analysis population.",
   "Referent set": [],
@@ -1486,8 +1486,7 @@ No grounding-obligation cards: this task creates a new channel without describin
     []
   ],
   "Written attributes": [
-    "channel_members.channel_id",
-    "channel_members.user_id"
+    "messages.message_text"
   ]
 }
 ```
@@ -1498,38 +1497,7 @@ No grounding-obligation cards: this task creates a new channel without describin
 {
   "Test ID": "slack_88",
   "Task type": "state-changing",
-  "Grounding obligations": 3,
-  "Grounding obligation name": "Resolve #general",
-  "Grounding obligation description": "Resolve the named channel #general; its name selects one seeded conversation. Repeated uses in the task share this obligation.",
-  "Resolution": "resolved",
-  "Shared scope": "channels in Seeded Slack workspace T01WORKSPACE; acting user U01AGENBOT9. Public conversations and the actor’s existing private conversation are within the analysis population.",
-  "Referent set": [
-    "C01ABCD1234"
-  ],
-  "Alternative sufficient identifying sets": [
-    [
-      "channels.channel_name"
-    ]
-  ],
-  "Change-computation attributes": [
-    [
-      "channels.channel_id"
-    ]
-  ],
-  "Written attributes": [
-    "channel_members.channel_id",
-    "channel_members.user_id"
-  ]
-}
-```
-
-### Obligation 3
-
-```json
-{
-  "Test ID": "slack_88",
-  "Task type": "state-changing",
-  "Grounding obligations": 3,
+  "Grounding obligations": 2,
   "Grounding obligation name": "Resolve Hubert",
   "Grounding obligation description": "The prompt’s name resolves to Hubert Marek in the seed. This is one described person even when used repeatedly.",
   "Resolution": "resolved",

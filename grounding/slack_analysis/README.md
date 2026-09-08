@@ -1,5 +1,7 @@
 # Slack grounding-obligation measurements
 
+Methodology: [Grounding obligations protocol v1](../GROUNDING_OBLIGATIONS_ONBOARDING.md). No Slack coverage decisions are currently pending because of missing or uninterpretable assertion specifications. Such cases must be raised to the user rather than labeled unchecked.
+
 This directory annotates all **59 Slack tests** in `all_numbered.jsonl` (`slack_57`–`slack_115`). It measures the benchmark's expressed grounding obligations and the extent to which its existing assertions constrain their referents. It does not measure agents, predict their scores, or infer capability.
 
 Start with [the per-test tables and aggregate counts](report.md), then [the cards](cards.md). [CSV measurements](metrics.csv) and [JSON measurements](metrics.json) are available for analysis. [cards.jsonl](cards.jsonl) contains the same cards without document headings.
@@ -26,7 +28,8 @@ The prompt defines described subjects. Metadata supplies hints, not counts. Asse
 - Separate requests for a channel and its member roster can describe two subjects. A broad request to review a channel's discussion can stop at the channel as the source container.
 - Contextual people, authentication identity, and names of entities newly created during the task do not automatically require resolving existing entities. Reusing a just-created channel or message does not add an initial-state grounding obligation.
 - Count definite requests, including conditional requests relevant to this instance. Do not invent removal targets from tentative remarks such as “we may need to streamline membership.”
-- Provisional conditional convention for `slack_88`: retain an explicitly named destination in the task-expressed count even when its branch is inactive in the seed. Thus ElonMusk, general, and Hubert are three obligations. This optional clarification is recorded in the test notes; excluding the inactive destination would reduce overall obligations and full coverage by one each. No claim about necessary execution steps follows from including it.
+- Conditional requests are counted against the supplied seed: include subjects needed to determine which condition holds, then additional subjects required by the applicable branch. Exclude subjects used only in a branch the seed establishes is inactive. If the evidence cannot settle the condition, retain potentially required obligations and explain the uncertainty outside the cards; uncertainty alone does not remove an obligation.
+- In `slack_88`, count ElonMusk (absent) and Hubert (notification recipient), but exclude general, which is only the inactive invitation destination. Exclusion does not mean absence: general exists. The assertion forbidding additions to general remains documented but creates no task obligation and contributes no separate covered obligation. In `slack_115`, count the existing conversations and eligible users for creation; the inactive removal branch adds no target set. These rules describe benchmark requirements, not an agent's lookups or execution history.
 - `resolved`: the adopted description/boundary yields a justified nonempty referent set.
 - `absent`: a sufficiently concrete description has no match in the supplied seed. This does not claim absence from a running service with different data.
 - `underspecified`: the available description/evidence does not justify a referent set. `null` is not an empty set.
