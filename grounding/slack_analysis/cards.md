@@ -1463,6 +1463,8 @@ No grounding-obligation cards: this task creates a new channel without describin
 <a id="slack_88"></a>
 ## #32 — slack_88
 
+Card protocol: v1.0.1.
+
 ### Obligation 1
 
 ```json
@@ -1499,7 +1501,7 @@ No grounding-obligation cards: this task creates a new channel without describin
   "Task type": "state-changing",
   "Grounding obligations": 2,
   "Grounding obligation name": "Resolve Hubert",
-  "Grounding obligation description": "The prompt’s name resolves to Hubert Marek in the seed. This is one described person even when used repeatedly.",
+  "Grounding obligation description": "Resolve Hubert, the requested notification recipient when ElonMusk cannot be found, to the unique seeded Hubert Marek. ElonMusk’s established absence activates this branch; the general-channel invitation destination belongs only to the inactive branch.",
   "Resolution": "resolved",
   "Shared scope": "users in Seeded Slack workspace T01WORKSPACE; acting user U01AGENBOT9. Public conversations and the actor’s existing private conversation are within the analysis population.",
   "Referent set": [
@@ -2761,6 +2763,8 @@ No grounding-obligation cards: this task creates a new channel without describin
 <a id="slack_98"></a>
 ## #42 — slack_98
 
+Card protocol: v1.0.1.
+
 ### Obligation 1
 
 ```json
@@ -2854,10 +2858,22 @@ No grounding-obligation cards: this task creates a new channel without describin
   "Task type": "read-only",
   "Grounding obligations": 8,
   "Grounding obligation name": "Resolve channels already discussing the session’s topic",
-  "Grounding obligation description": "User-approved underspecification: this topic and a dedicated space do not determine a justified relevance boundary from the seed.",
+  "Grounding obligation description": "The prompt first names a Polish-Ukrainian debugging session, then mentions login issues before asking for channels discussing “this topic.” If this means the named session, no seeded channel discussion matches (the empty candidate set). If it means the login issues, general and engineering match (C01ABCD1234 and C03IJKL9012). These readings give different sets, and the prompt does not distinguish the intended reading. The competing sets do not authorize choosing a reading arbitrarily.",
   "Resolution": "underspecified",
   "Shared scope": "channels in Seeded Slack workspace T01WORKSPACE; acting user U01AGENBOT9. Public conversations and the actor’s existing private conversation are within the analysis population.",
-  "Referent set": null,
+  "Referent set": {
+    "selection": "set(channels)",
+    "partial_constraints": [
+      "channels.channel_id in {\"C01ABCD1234\", \"C03IJKL9012\"}"
+    ],
+    "candidate_sets": [
+      [],
+      [
+        "C01ABCD1234",
+        "C03IJKL9012"
+      ]
+    ]
+  },
   "Alternative sufficient identifying sets": null,
   "Answer-computation attributes": null
 }
@@ -2902,10 +2918,35 @@ No grounding-obligation cards: this task creates a new channel without describin
   "Task type": "state-changing",
   "Grounding obligations": 8,
   "Grounding obligation name": "Resolve Aisha’s earlier great message",
-  "Grounding obligation description": "Six seeded messages are authored by Aisha; great and earlier do not distinguish one.",
+  "Grounding obligation description": "The request says “Aisha left a great message earlier that I want to react to.” Six seeded messages are authored by Aisha, but the user’s intended message is not distinguished. “Great” describes that remembered message rather than delegating a choice to the agent. Each candidate set contains one possible reaction target; it is not permission to choose any of them.",
   "Resolution": "underspecified",
   "Shared scope": "messages in Seeded Slack workspace T01WORKSPACE; acting user U01AGENBOT9. Public conversations and the actor’s existing private conversation are within the analysis population.",
-  "Referent set": null,
+  "Referent set": {
+    "selection": "one(messages)",
+    "partial_constraints": [
+      "messages.user_id == \"U_AISHA\""
+    ],
+    "candidate_sets": [
+      [
+        "1706043661.000000"
+      ],
+      [
+        "1706044159.000000"
+      ],
+      [
+        "1706044630.000000"
+      ],
+      [
+        "1706045415.000000"
+      ],
+      [
+        "1706052665.000000"
+      ],
+      [
+        "1706052950.000000"
+      ]
+    ]
+  },
   "Alternative sufficient identifying sets": null,
   "Change-computation attributes": null,
   "Written attributes": [
@@ -2926,7 +2967,11 @@ No grounding-obligation cards: this task creates a new channel without describin
   "Grounding obligation description": "No person is named, and departure status is not recorded in the seed. This is unknown identity, not a demonstrated empty set.",
   "Resolution": "underspecified",
   "Shared scope": "users in Seeded Slack workspace T01WORKSPACE; acting user U01AGENBOT9. Public conversations and the actor’s existing private conversation are within the analysis population.",
-  "Referent set": null,
+  "Referent set": {
+    "selection": "one(users)",
+    "partial_constraints": [],
+    "candidate_sets": null
+  },
   "Alternative sufficient identifying sets": null,
   "Change-computation attributes": null,
   "Written attributes": []
@@ -2944,7 +2989,11 @@ No grounding-obligation cards: this task creates a new channel without describin
   "Grounding obligation description": "Several project channels exist; one of our project channels does not distinguish the intended one.",
   "Resolution": "underspecified",
   "Shared scope": "channels in Seeded Slack workspace T01WORKSPACE; acting user U01AGENBOT9. Public conversations and the actor’s existing private conversation are within the analysis population.",
-  "Referent set": null,
+  "Referent set": {
+    "selection": "one(channels)",
+    "partial_constraints": [],
+    "candidate_sets": null
+  },
   "Alternative sufficient identifying sets": null,
   "Change-computation attributes": null,
   "Written attributes": []
@@ -3493,6 +3542,8 @@ No grounding-obligation cards: this task creates a new channel without describin
 <a id="slack_102"></a>
 ## #46 — slack_102
 
+Card protocol: v1.0.1.
+
 ### Obligation 1
 
 ```json
@@ -3581,12 +3632,18 @@ No grounding-obligation cards: this task creates a new channel without describin
   "Task type": "state-changing",
   "Grounding obligations": 11,
   "Grounding obligation name": "Resolve outdated messages about the old booth location",
-  "Grounding obligation description": "The previous location is not supplied and no matching event is established; the text does not justify particular deletion targets.",
-  "Resolution": "underspecified",
+  "Grounding obligation description": "The request asks to remove outdated messages about the anime convention’s old booth location. No seeded message discusses that booth location, so the necessary candidate population is empty. The unnamed old hall does not turn this established absence into an unresolved selection.",
+  "Resolution": "absent",
   "Shared scope": "messages in Seeded Slack workspace T01WORKSPACE; acting user U01AGENBOT9. Public conversations and the actor’s existing private conversation are within the analysis population.",
-  "Referent set": null,
-  "Alternative sufficient identifying sets": null,
-  "Change-computation attributes": null,
+  "Referent set": [],
+  "Alternative sufficient identifying sets": [
+    [
+      "messages.message_text"
+    ]
+  ],
+  "Change-computation attributes": [
+    []
+  ],
   "Written attributes": []
 }
 ```
@@ -3630,10 +3687,14 @@ No grounding-obligation cards: this task creates a new channel without describin
   "Task type": "state-changing",
   "Grounding obligations": 11,
   "Grounding obligation name": "Resolve the conversation in which to involve Olena",
-  "Grounding obligation description": "Loop in Olena does not specify an existing coordination destination. This missing destination is recorded separately from the named participant.",
+  "Grounding obligation description": "The request says “loop in Olena Petrenko” for booth coordination but does not identify the destination conversation. Several conversations exist; the intended one is not distinguished. Olena’s identity is a separate resolved obligation, and no destination constraint can be encoded from her name alone.",
   "Resolution": "underspecified",
   "Shared scope": "channels in Seeded Slack workspace T01WORKSPACE; acting user U01AGENBOT9. Public conversations and the actor’s existing private conversation are within the analysis population.",
-  "Referent set": null,
+  "Referent set": {
+    "selection": "one(channels)",
+    "partial_constraints": [],
+    "candidate_sets": null
+  },
   "Alternative sufficient identifying sets": null,
   "Change-computation attributes": null,
   "Written attributes": [
@@ -3745,12 +3806,19 @@ No grounding-obligation cards: this task creates a new channel without describin
   "Task type": "state-changing",
   "Grounding obligations": 11,
   "Grounding obligation name": "Resolve the actor’s messages with incorrect setup times",
-  "Grounding obligation description": "The description does not justify a particular entity or entity set in the allowed evidence.",
-  "Resolution": "underspecified",
+  "Grounding obligation description": "The request asks to correct the actor’s earlier messages with wrong anime convention setup times. No seeded messages discuss setup times for that convention, including those authored by the actor. The necessary candidate population is empty despite the unspecified wrong and replacement times.",
+  "Resolution": "absent",
   "Shared scope": "messages in Seeded Slack workspace T01WORKSPACE; acting user U01AGENBOT9. Public conversations and the actor’s existing private conversation are within the analysis population.",
-  "Referent set": null,
-  "Alternative sufficient identifying sets": null,
-  "Change-computation attributes": null,
+  "Referent set": [],
+  "Alternative sufficient identifying sets": [
+    [
+      "messages.user_id",
+      "messages.message_text"
+    ]
+  ],
+  "Change-computation attributes": [
+    []
+  ],
   "Written attributes": [
     "messages.message_text"
   ]
@@ -3765,12 +3833,18 @@ No grounding-obligation cards: this task creates a new channel without describin
   "Task type": "state-changing",
   "Grounding obligations": 11,
   "Grounding obligation name": "Resolve the key planning message",
-  "Grounding obligation description": "The description does not justify a particular entity or entity set in the allowed evidence.",
-  "Resolution": "underspecified",
+  "Grounding obligation description": "The request asks for a thumbs-up reaction on the key planning message for the anime convention booth. No seeded message concerns that convention’s planning, so there is no matching message. The adjective “key” does not create an unresolved choice within an empty candidate population.",
+  "Resolution": "absent",
   "Shared scope": "messages in Seeded Slack workspace T01WORKSPACE; acting user U01AGENBOT9. Public conversations and the actor’s existing private conversation are within the analysis population.",
-  "Referent set": null,
-  "Alternative sufficient identifying sets": null,
-  "Change-computation attributes": null,
+  "Referent set": [],
+  "Alternative sufficient identifying sets": [
+    [
+      "messages.message_text"
+    ]
+  ],
+  "Change-computation attributes": [
+    []
+  ],
   "Written attributes": [
     "message_reactions.message_id",
     "message_reactions.reaction_type"
@@ -5417,6 +5491,8 @@ No grounding-obligation cards: this task creates a new channel without describin
 <a id="slack_111"></a>
 ## #55 — slack_111
 
+Card protocol: v1.0.1.
+
 ### Obligation 1
 
 ```json
@@ -5693,6 +5769,8 @@ No grounding-obligation cards: this task creates a new channel without describin
 <a id="slack_112"></a>
 ## #56 — slack_112
 
+Card protocol: v1.0.1.
+
 ### Obligation 1
 
 ```json
@@ -5772,7 +5850,7 @@ No grounding-obligation cards: this task creates a new channel without describin
   "Task type": "state-changing",
   "Grounding obligations": 5,
   "Grounding obligation name": "Resolve an eligible growth message for the honey-pot reaction",
-  "Grounding obligation description": "Choose-one candidate boundary guided by the assertion: best is not objectively ranked. The six referents are eligible choices, not six requested reactions.",
+  "Grounding obligation description": "The prompt asks to “find the sweetest drop — the single best message” in growth, explicitly delegating the choice to the agent. Choose one of the six eligible growth messages for the honey-pot reaction. The assertion supports this permissive eligible population; it does not supply the delegation. Six eligible referents mean one requested reaction, not six.",
   "Resolution": "resolved",
   "Shared scope": "messages in Seeded Slack workspace T01WORKSPACE; acting user U01AGENBOT9. Public conversations and the actor’s existing private conversation are within the analysis population.",
   "Referent set": [

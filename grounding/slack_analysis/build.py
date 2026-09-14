@@ -11,6 +11,7 @@ import csv
 import hashlib
 import io
 import json
+import re
 from collections import Counter
 from pathlib import Path
 
@@ -66,7 +67,33 @@ def validate(analysis, entries, seed):
             refs = card["Referent set"]
             resolution = card["Resolution"]
             if resolution == "underspecified":
-                assert refs is None and card["Alternative sufficient identifying sets"] is None
+                assert card["Alternative sufficient identifying sets"] is None
+                if item.get("protocol_version", "v1") == "v1":
+                    # Cases outside the explicitly migrated scope retain v1.
+                    assert refs is None
+                else:
+                    assert item["protocol_version"] == "v1.0.1"
+                    assert isinstance(refs, dict)
+                    assert set(refs) == {"selection", "partial_constraints", "candidate_sets"}
+                    entity = row["referent_entity"]
+                    assert refs["selection"] in {f"one({entity})", f"set({entity})"}
+                    assert isinstance(refs["partial_constraints"], list)
+                    for condition in refs["partial_constraints"]:
+                        assert isinstance(condition, str) and condition.strip()
+                        attributes = set(re.findall(r"\b[a-z_]+\.[a-z_]+\b", condition))
+                        assert attributes <= fields, (entry["test_id"], attributes - fields)
+                    candidates = refs["candidate_sets"]
+                    if candidates is not None:
+                        assert isinstance(candidates, list) and len(candidates) >= 2
+                        canonical = []
+                        for candidate in candidates:
+                            assert isinstance(candidate, list)
+                            assert len(set(candidate)) == len(candidate)
+                            assert set(candidate) <= seed_ids[entity]
+                            if refs["selection"].startswith("one("):
+                                assert len(candidate) <= 1
+                            canonical.append(tuple(sorted(candidate)))
+                        assert len(set(canonical)) == len(canonical)
             else:
                 assert isinstance(refs, list)
                 assert (len(refs) > 0) == (resolution == "resolved")
@@ -156,6 +183,8 @@ def make_outputs(analysis, entries, seed):
             "| Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |",
             "|---|---|---|---|---|"]
         card_md += [f'<a id="{tid}"></a>', f"## #{item['number']} — {tid}", ""]
+        if "protocol_version" in item:
+            card_md += [f"Card protocol: {item['protocol_version']}.", ""]
         if not item["obligations"]:
             report.append("| No existing-referent obligation | — | — | N/A | Creation of a new named entity only |")
             card_md += ["No grounding-obligation cards: this task creates a new channel without describing an existing referent.", ""]
@@ -165,6 +194,8 @@ def make_outputs(analysis, entries, seed):
             report.append(f"| {i}. {safe(card['Grounding obligation name'])} | {card['Resolution']} | {refs_text(card['Referent set'])} | {row['assertion_coverage']} | {indices}: {safe(row['coverage_explanation'])} |")
             card_md += [f"### Obligation {i}", "", "```json", json.dumps(card, indent=2, ensure_ascii=False), "```", ""]
         report += ["", "Boundary and selection notes:", ""]
+        if "protocol_version" in item:
+            report.append(f"- Card protocol: {item['protocol_version']}.")
         for i, row in enumerate(item["obligations"], 1):
             report.append(f"- **{i}.** {row['semantic_justification']}" + (f" Selection: {row['selection_rule']}" if row['selection_rule'] and row['selection_rule'] != row['semantic_justification'] else ""))
         for note in item["notes"]:

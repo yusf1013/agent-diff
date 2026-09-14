@@ -2,7 +2,7 @@
 
 See [method and source policy](README.md). These are benchmark annotations, not measurements of agent behavior. Cards use the locked schema in [cards.md](cards.md).
 
-59 tests; 197 task-expressed obligations: 168 resolved, 3 absent, 26 underspecified. Assertions fully cover 77, partially cover 34, and leave 86 unchecked.
+59 tests; 197 task-expressed obligations: 168 resolved, 6 absent, 23 underspecified. Assertions fully cover 77, partially cover 34, and leave 86 unchecked.
 
 Coverage concerns the grounded contribution in the final state or requested output; it never requires a trajectory or source provenance. Full coverage does not certify whole-task correctness. See [the focused coverage audit](coverage_audit.md). The denominator includes unresolved and absent obligations. Zero-obligation tasks have no coverage ratio.
 
@@ -53,7 +53,7 @@ Coverage concerns the grounded contribution in the final state or requested outp
 | 43 | [slack_99](#slack_99) | 5 | 2 | 0 | 3 | 0 | 0 | 5 |
 | 44 | [slack_100](#slack_100) | 7 | 5 | 0 | 2 | 0 | 0 | 7 |
 | 45 | [slack_101](#slack_101) | 8 | 6 | 0 | 2 | 0 | 0 | 8 |
-| 46 | [slack_102](#slack_102) | 11 | 6 | 1 | 4 | 0 | 0 | 11 |
+| 46 | [slack_102](#slack_102) | 11 | 6 | 4 | 1 | 0 | 0 | 11 |
 | 47 | [slack_103](#slack_103) | 5 | 4 | 0 | 1 | 2 | 0 | 3 |
 | 48 | [slack_104](#slack_104) | 3 | 3 | 0 | 0 | 2 | 1 | 0 |
 | 49 | [slack_105](#slack_105) | 3 | 3 | 0 | 0 | 2 | 1 | 0 |
@@ -1774,9 +1774,11 @@ Try to invite the user 'ElonMusk' to #general. If you can't find him, inform me 
 
 Boundary and selection notes:
 
+- Card protocol: v1.0.1.
 - **1.** No seeded user matches the explicit requested name; this is absent, not underspecified. The established absence determines the applicable notification branch and contributes to its message text; invitation membership fields belong to the inactive branch. Selection: Case-insensitive exact comparison of ElonMusk with username, display_name, and real_name.
-- **2.** The prompt’s name resolves to Hubert Marek in the seed. This is one described person even when used repeatedly. Selection: users.real_name == 'Hubert Marek'
+- **2.** Resolve Hubert, the requested notification recipient when ElonMusk cannot be found, to the unique seeded Hubert Marek. ElonMusk’s established absence activates this branch; the general-channel invitation destination belongs only to the inactive branch. Selection: users.real_name == 'Hubert Marek'
 - Count subjects needed to determine the condition and those required by the branch applicable to the supplied seed. ElonMusk is absent, so notifying Hubert is applicable; #general is used only by the inactive invitation branch and is excluded. General exists: exclusion is not an absent resolution. Assertion 1 forbids added memberships in general, but this constraint does not create a task grounding obligation or contribute a separate covered obligation.
+- Protocol v1.0.1 review: the explicit name ElonMusk establishes an empty match, not competing identities. Keep the existing absent/resolved cards and two-obligation count; no underspecified-selection object is needed.
 
 <details><summary>Assertion predicates from the test entry (A1, A2, …)</summary>
 
@@ -2282,22 +2284,24 @@ Oh, and Aisha left a great message earlier that I want to react to with a thumbs
 | 1. Resolve Sophie Dubois’s profile | resolved | `["U_SOPHIE"]` | no | None: No assertion constrains this described referent or its derived result. |
 | 2. Resolve Olena Petrenko’s profile | resolved | `["U_OLENA"]` | no | None: No assertion constrains this described referent or its derived result. |
 | 3. Resolve engineering as the source of discussion to review | resolved | `["C03IJKL9012"]` | no | None: No assertion constrains this described referent or its derived result. |
-| 4. Resolve channels already discussing the session’s topic | underspecified | Undetermined | no | None: No assertion constrains this described referent or its derived result. |
+| 4. Resolve channels already discussing the session’s topic | underspecified | `{"selection":"set(channels)","partial_constraints":["channels.channel_id in {\"C01ABCD1234\", \"C03IJKL9012\"}"],"candidate_sets":[[],["C01ABCD1234","C03IJKL9012"]]}` | no | None: No assertion constrains this described referent or its derived result. |
 | 5. Resolve core-infra as the announcement destination | resolved | `["C_INFRA"]` | no | None: No assertion constrains this described referent or its derived result. |
-| 6. Resolve Aisha’s earlier great message | underspecified | Undetermined | no | None: No assertion constrains this described referent or its derived result. |
-| 7. Resolve the person who is no longer on the team | underspecified | Undetermined | no | None: No assertion constrains this described referent or its derived result. |
-| 8. Resolve the project channel for the removal | underspecified | Undetermined | no | None: No assertion constrains this described referent or its derived result. |
+| 6. Resolve Aisha’s earlier great message | underspecified | `{"selection":"one(messages)","partial_constraints":["messages.user_id == \"U_AISHA\""],"candidate_sets":[["1706043661.000000"],["1706044159.000000"],["1706044630.000000"],["1706045415.000000"],["1706052665.000000"],["1706052950.000000"]]}` | no | None: No assertion constrains this described referent or its derived result. |
+| 7. Resolve the person who is no longer on the team | underspecified | `{"selection":"one(users)","partial_constraints":[],"candidate_sets":null}` | no | None: No assertion constrains this described referent or its derived result. |
+| 8. Resolve the project channel for the removal | underspecified | `{"selection":"one(channels)","partial_constraints":[],"candidate_sets":null}` | no | None: No assertion constrains this described referent or its derived result. |
 
 Boundary and selection notes:
 
+- Card protocol: v1.0.1.
 - **1.** The prompt’s name resolves to Sophie Dubois in the seed. This is one described person even when used repeatedly. Selection: users.real_name == 'Sophie Dubois'
 - **2.** The prompt’s name resolves to Olena Petrenko in the seed. This is one described person even when used repeatedly. Selection: users.real_name == 'Olena Petrenko'
 - **3.** User-approved permissive boundary: identify the engineering channel and do not impose an exact subset of its login-related messages. Selection: channels.channel_name == 'engineering'
-- **4.** User-approved underspecification: this topic and a dedicated space do not determine a justified relevance boundary from the seed.
+- **4.** The prompt first names a Polish-Ukrainian debugging session, then mentions login issues before asking for channels discussing “this topic.” If this means the named session, no seeded channel discussion matches (the empty candidate set). If it means the login issues, general and engineering match (C01ABCD1234 and C03IJKL9012). These readings give different sets, and the prompt does not distinguish the intended reading. The competing sets do not authorize choosing a reading arbitrarily.
 - **5.** Resolve the named channel #core-infra; its name selects one seeded conversation. Repeated uses in the task share this obligation. Selection: channels.channel_name == 'core-infra'
-- **6.** Six seeded messages are authored by Aisha; great and earlier do not distinguish one.
+- **6.** The request says “Aisha left a great message earlier that I want to react to.” Six seeded messages are authored by Aisha, but the user’s intended message is not distinguished. “Great” describes that remembered message rather than delegating a choice to the agent. Each candidate set contains one possible reaction target; it is not permission to choose any of them.
 - **7.** No person is named, and departure status is not recorded in the seed. This is unknown identity, not a demonstrated empty set.
 - **8.** Several project channels exist; one of our project channels does not distinguish the intended one.
+- Protocol v1.0.1: O4 retains competing topic interpretations; O6 retains Aisha’s authorship without resolving the user’s intended message. The login reading is supported by four engineering messages and two general messages about login failures/improvements. The food mention in general does not discuss the named session. O7’s departure fact and O8’s intended project channel are not distinguished by the supplied evidence; no departure or project-channel flag is invented.
 
 <details><summary>Assertion predicates from the test entry (A1, A2, …)</summary>
 
@@ -2520,28 +2524,30 @@ Oh, and let's update the channel topics for #product-growth and #project-alpha-d
 | 1. Resolve #product-growth | resolved | `["C_GROWTH"]` | no | None: No assertion constrains this described referent or its derived result. |
 | 2. Resolve #random | resolved | `["C02EFGH5678"]` | no | None: No assertion constrains this described referent or its derived result. |
 | 3. Resolve the discussions about badges | absent | `[]` | no | None: No assertion constrains this described referent or its derived result. |
-| 4. Resolve outdated messages about the old booth location | underspecified | Undetermined | no | None: No assertion constrains this described referent or its derived result. |
+| 4. Resolve outdated messages about the old booth location | absent | `[]` | no | None: No assertion constrains this described referent or its derived result. |
 | 5. Resolve Olena | resolved | `["U_OLENA"]` | no | A2: A membership addition is required but neither participant nor destination is specified. |
-| 6. Resolve the conversation in which to involve Olena | underspecified | Undetermined | no | None: No assertion constrains this described referent or its derived result. |
+| 6. Resolve the conversation in which to involve Olena | underspecified | `{"selection":"one(channels)","partial_constraints":[],"candidate_sets":null}` | no | None: No assertion constrains this described referent or its derived result. |
 | 7. Resolve John | resolved | `["U02JOHNDOE1"]` | no | A1: At least one DM is required; neither recipient is constrained. |
 | 8. Resolve Priya | resolved | `["U_PRIYA"]` | no | A1: At least one DM is required; neither recipient is constrained. |
 | 9. Resolve #project-alpha-dev | resolved | `["C06ALPHADEV"]` | no | None: No assertion constrains this described referent or its derived result. |
-| 10. Resolve the actor’s messages with incorrect setup times | underspecified | Undetermined | no | None: No assertion constrains this described referent or its derived result. |
-| 11. Resolve the key planning message | underspecified | Undetermined | no | None: No assertion constrains this described referent or its derived result. |
+| 10. Resolve the actor’s messages with incorrect setup times | absent | `[]` | no | None: No assertion constrains this described referent or its derived result. |
+| 11. Resolve the key planning message | absent | `[]` | no | None: No assertion constrains this described referent or its derived result. |
 
 Boundary and selection notes:
 
+- Card protocol: v1.0.1.
 - **1.** Resolve the named channel #product-growth; its name selects one seeded conversation. Repeated uses in the task share this obligation. Selection: channels.channel_name == 'product-growth'
 - **2.** Resolve the named channel #random; its name selects one seeded conversation. Repeated uses in the task share this obligation. Selection: channels.channel_name == 'random'
 - **3.** The description names a concrete subject (badge); the seed contains no matching message. Absence is relative to the supplied seed, not a running service. Selection: Case-insensitive content match for 'badge'.
-- **4.** The previous location is not supplied and no matching event is established; the text does not justify particular deletion targets.
+- **4.** The request asks to remove outdated messages about the anime convention’s old booth location. No seeded message discusses that booth location, so the necessary candidate population is empty. The unnamed old hall does not turn this established absence into an unresolved selection. Selection: Select messages whose content concerns the anime convention booth location, then the described old-location messages. The necessary booth-location population is empty in this seed; no old-hall predicate is needed to establish the empty result.
 - **5.** The prompt’s name resolves to Olena Petrenko in the seed. This is one described person even when used repeatedly. Selection: users.real_name == 'Olena Petrenko'
-- **6.** Loop in Olena does not specify an existing coordination destination. This missing destination is recorded separately from the named participant.
+- **6.** The request says “loop in Olena Petrenko” for booth coordination but does not identify the destination conversation. Several conversations exist; the intended one is not distinguished. Olena’s identity is a separate resolved obligation, and no destination constraint can be encoded from her name alone.
 - **7.** The prompt’s name resolves to John Doe in the seed. This is one described person even when used repeatedly. Selection: users.real_name == 'John Doe'
 - **8.** The prompt’s name resolves to Priya Sharma in the seed. This is one described person even when used repeatedly. Selection: users.real_name == 'Priya Sharma'
 - **9.** Resolve the named channel #project-alpha-dev; its name selects one seeded conversation. Repeated uses in the task share this obligation. Selection: channels.channel_name == 'project-alpha-dev'
-- **10.** The description does not justify a particular entity or entity set in the allowed evidence.
-- **11.** The description does not justify a particular entity or entity set in the allowed evidence.
+- **10.** The request asks to correct the actor’s earlier messages with wrong anime convention setup times. No seeded messages discuss setup times for that convention, including those authored by the actor. The necessary candidate population is empty despite the unspecified wrong and replacement times. Selection: Select messages authored by U01AGENBOT9 whose content concerns setup times for the anime convention, then the described incorrect-time messages. The necessary convention setup-time population is empty.
+- **11.** The request asks for a thumbs-up reaction on the key planning message for the anime convention booth. No seeded message concerns that convention’s planning, so there is no matching message. The adjective “key” does not create an unresolved choice within an empty candidate population. Selection: Select messages whose content concerns planning the anime convention booth. This necessary population is empty, so there is no key planning message.
+- Protocol v1.0.1: O4, O10, and O11 change from underspecified to absent because their necessary convention-related message populations are empty; O6 remains underspecified. These content judgments concern the described event, not generic planning, timing, or location language elsewhere in the seed. Empty computation inputs on these absent targets do not supply missing replacement times or certify an executable state change. Obligation counts and assertion coverage are unchanged.
 
 <details><summary>Assertion predicates from the test entry (A1, A2, …)</summary>
 
@@ -3735,6 +3741,7 @@ Kenji, Priya, Aisha, Sophie, Lukasz, and Mateo want to do a "Sunrise Relay" — 
 
 Boundary and selection notes:
 
+- Card protocol: v1.0.1.
 - **1.** The prompt’s name resolves to 佐藤健二 (Kenji Sato) in the seed. This is one described person even when used repeatedly. Selection: users.real_name == '佐藤健二 (Kenji Sato)'
 - **2.** The prompt’s name resolves to Priya Sharma in the seed. This is one described person even when used repeatedly. Selection: users.real_name == 'Priya Sharma'
 - **3.** The prompt’s name resolves to Aisha Okonkwo in the seed. This is one described person even when used repeatedly. Selection: users.real_name == 'Aisha Okonkwo'
@@ -3744,6 +3751,7 @@ Boundary and selection notes:
 - **7.** Resolve the named channel #frontend; its name selects one seeded conversation. Repeated uses in the task share this obligation. Selection: channels.channel_name == 'frontend'
 - **8.** Resolve the named channel #model-research; its name selects one seeded conversation. Repeated uses in the task share this obligation. Selection: channels.channel_name == 'model-research'
 - The schedule post and newly created/renamed channel are generated during this task and introduce no existing-referent obligations. Reusing named participants for timezone lookup, invitations, and removal does not multiply their obligations.
+- Protocol v1.0.1 review: all six named participants and the two named existing channels have determined referents. Requests to inspect timezones, invite the same people, and remove Mateo reuse those identities. The schedule post and renamed channel arise during the task, so uncertainty about downstream scheduling does not create an underspecified initial referent. All eight cards remain resolved, with unchanged coverage.
 
 <details><summary>Assertion predicates from the test entry (A1, A2, …)</summary>
 
@@ -3836,11 +3844,13 @@ Hubert does this thing he calls the "Apiary Report" — he sees the workspace as
 
 Boundary and selection notes:
 
+- Card protocol: v1.0.1.
 - **1.** Honeycomb cells are explicitly metaphorical channels; the whole channel population is one set obligation. Selection: Select public non-DM channels; retain archived channels for the active-versus-inactive survey.
 - **2.** Resolve growth as the broad source for the Forager’s Report. The assertion only requires the report label, not its source-derived content. Selection: channels.channel_name == 'growth'
-- **3.** Choose-one candidate boundary guided by the assertion: best is not objectively ranked. The six referents are eligible choices, not six requested reactions. Selection: Resolve growth by name; retain all six messages as eligible targets; choose one for the reaction.
+- **3.** The prompt asks to “find the sweetest drop — the single best message” in growth, explicitly delegating the choice to the agent. Choose one of the six eligible growth messages for the honey-pot reaction. The assertion supports this permissive eligible population; it does not supply the delegation. Six eligible referents mean one requested reaction, not six. Selection: Resolve growth by name; retain all six messages as eligible targets; choose one for the reaction.
 - **4.** Resolve the named channel #random; its name selects one seeded conversation. Repeated uses in the task share this obligation. Selection: channels.channel_name == 'random'
 - **5.** Resolve the named channel #project-alpha; its name selects one seeded conversation. Repeated uses in the task share this obligation. Selection: channels.channel_name == 'project-alpha'
+- Protocol v1.0.1 review: the best-message request delegates a choice, unlike Slack 98’s reference to Aisha’s remembered great message. The eligible set remains resolved and fully covered; no ranking or canonical best message is invented.
 
 <details><summary>Assertion predicates from the test entry (A1, A2, …)</summary>
 
