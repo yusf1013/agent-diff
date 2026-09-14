@@ -66,13 +66,14 @@ def validate(analysis, entries, seed):
                 assert row["assertion_indices"], entry["test_id"]
             refs = card["Referent set"]
             resolution = card["Resolution"]
+            protocol_version = row.get("protocol_version", item.get("protocol_version", "v1"))
+            assert protocol_version in {"v1", "v1.0.1"}
             if resolution == "underspecified":
                 assert card["Alternative sufficient identifying sets"] is None
-                if item.get("protocol_version", "v1") == "v1":
+                if protocol_version == "v1":
                     # Cases outside the explicitly migrated scope retain v1.
                     assert refs is None
                 else:
-                    assert item["protocol_version"] == "v1.0.1"
                     assert isinstance(refs, dict)
                     assert set(refs) == {"selection", "partial_constraints", "candidate_sets"}
                     entity = row["referent_entity"]
@@ -192,7 +193,10 @@ def make_outputs(analysis, entries, seed):
             card = row["card"]
             indices = ", ".join(f"A{a}" for a in row["assertion_indices"]) or "None"
             report.append(f"| {i}. {safe(card['Grounding obligation name'])} | {card['Resolution']} | {refs_text(card['Referent set'])} | {row['assertion_coverage']} | {indices}: {safe(row['coverage_explanation'])} |")
-            card_md += [f"### Obligation {i}", "", "```json", json.dumps(card, indent=2, ensure_ascii=False), "```", ""]
+            card_md += [f"### Obligation {i}", ""]
+            if "protocol_version" in row:
+                card_md += [f"Card protocol: {row['protocol_version']} (focused obligation review).", ""]
+            card_md += ["```json", json.dumps(card, indent=2, ensure_ascii=False), "```", ""]
         report += ["", "Boundary and selection notes:", ""]
         if "protocol_version" in item:
             report.append(f"- Card protocol: {item['protocol_version']}.")

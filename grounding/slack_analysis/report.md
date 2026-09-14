@@ -2,7 +2,7 @@
 
 See [method and source policy](README.md). These are benchmark annotations, not measurements of agent behavior. Cards use the locked schema in [cards.md](cards.md).
 
-59 tests; 197 task-expressed obligations: 168 resolved, 6 absent, 23 underspecified. Assertions fully cover 77, partially cover 34, and leave 86 unchecked.
+59 tests; 197 task-expressed obligations: 169 resolved, 11 absent, 17 underspecified. Assertions fully cover 77, partially cover 34, and leave 86 unchecked.
 
 Coverage concerns the grounded contribution in the final state or requested output; it never requires a trajectory or source provenance. Full coverage does not certify whole-task correctness. See [the focused coverage audit](coverage_audit.md). The denominator includes unresolved and absent obligations. Zero-obligation tasks have no coverage ratio.
 
@@ -45,13 +45,13 @@ Coverage concerns the grounded contribution in the final state or requested outp
 | 35 | [slack_91](#slack_91) | 1 | 1 | 0 | 0 | 1 | 0 | 0 |
 | 36 | [slack_92](#slack_92) | 2 | 2 | 0 | 0 | 1 | 1 | 0 |
 | 37 | [slack_93](#slack_93) | 1 | 1 | 0 | 0 | 1 | 0 | 0 |
-| 38 | [slack_94](#slack_94) | 8 | 5 | 0 | 3 | 0 | 0 | 8 |
-| 39 | [slack_95](#slack_95) | 10 | 6 | 1 | 3 | 0 | 0 | 10 |
+| 38 | [slack_94](#slack_94) | 8 | 5 | 1 | 2 | 0 | 0 | 8 |
+| 39 | [slack_95](#slack_95) | 10 | 6 | 2 | 2 | 0 | 0 | 10 |
 | 40 | [slack_96](#slack_96) | 4 | 2 | 0 | 2 | 0 | 0 | 4 |
 | 41 | [slack_97](#slack_97) | 11 | 9 | 0 | 2 | 0 | 0 | 11 |
 | 42 | [slack_98](#slack_98) | 8 | 4 | 0 | 4 | 0 | 0 | 8 |
-| 43 | [slack_99](#slack_99) | 5 | 2 | 0 | 3 | 0 | 0 | 5 |
-| 44 | [slack_100](#slack_100) | 7 | 5 | 0 | 2 | 0 | 0 | 7 |
+| 43 | [slack_99](#slack_99) | 5 | 2 | 2 | 1 | 0 | 0 | 5 |
+| 44 | [slack_100](#slack_100) | 7 | 6 | 1 | 0 | 0 | 0 | 7 |
 | 45 | [slack_101](#slack_101) | 8 | 6 | 0 | 2 | 0 | 0 | 8 |
 | 46 | [slack_102](#slack_102) | 11 | 6 | 4 | 1 | 0 | 0 | 11 |
 | 47 | [slack_103](#slack_103) | 5 | 4 | 0 | 1 | 2 | 0 | 3 |
@@ -2054,25 +2054,27 @@ Oh, and when you find any important messages about the hackathon prep, just give
 
 | Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |
 |---|---|---|---|---|
-| 1. Resolve channels relevant to the global hackathon | underspecified | Undetermined | no | None: No assertion constrains this described referent or its derived result. |
+| 1. Resolve channels relevant to the global hackathon | underspecified | `{"selection":"set(channels)","partial_constraints":[],"candidate_sets":null}` | no | None: No assertion constrains this described referent or its derived result. |
 | 2. Resolve #core-infra | resolved | `["C_INFRA"]` | no | None: No assertion constrains this described referent or its derived result. |
 | 3. Resolve Lukasz | resolved | `["U_LUKAS"]` | no | None: No assertion constrains this described referent or its derived result. |
 | 4. Resolve Kenji | resolved | `["U_KENJI"]` | no | None: No assertion constrains this described referent or its derived result. |
-| 5. Resolve the actor’s outdated message with wrong timezone information | underspecified | Undetermined | no | None: No assertion constrains this described referent or its derived result. |
+| 5. Resolve the actor’s outdated message with wrong timezone information | underspecified | `{"selection":"one(messages)","partial_constraints":["messages.user_id == \"U01AGENBOT9\"","\"PST\" in messages.message_text"],"candidate_sets":[[],["1699564900.000124"]]}` | no | None: No assertion constrains this described referent or its derived result. |
 | 6. Resolve #project-alpha-dev | resolved | `["C06ALPHADEV"]` | no | None: No assertion constrains this described referent or its derived result. |
 | 7. Resolve the current members of #frontend | resolved | `["U01AGENBOT9","U_PRIYA","U_LUKAS","U_SOPHIE","U_OLENA","U_MATEO","U_KENJI","U_ROBERT","U_AISHA"]` | no | None: No assertion constrains this described referent or its derived result. |
-| 8. Resolve important hackathon-preparation messages | underspecified | Undetermined | no | None: No assertion constrains this described referent or its derived result. |
+| 8. Resolve important hackathon-preparation messages | absent | `[]` | no | None: No assertion constrains this described referent or its derived result. |
 
 Boundary and selection notes:
 
-- **1.** The prompt gives no defensible boundary for relevance to this newly introduced event; the seed has no dedicated hackathon channel. As in slack_98, absence of the event name does not prove absence of potentially relevant channels.
+- **1.** The request asks which channels are relevant to a new global hackathon. Channels already discussing that event would yield an empty set; channels whose existing technical remit could support it would include engineering or core-infra and potentially other project channels. The prompt does not distinguish these relevance interpretations or fix the broader boundary. This is an unresolved collection, not proof that no useful channel exists.
 - **2.** The named infrastructure channel is also the infrastructure-team announcement destination; repeated use is one obligation. Selection: channels.channel_name == 'core-infra'
 - **3.** The prompt’s name resolves to Łukasz Kowalski in the seed. This is one described person even when used repeatedly. Selection: users.real_name == 'Łukasz Kowalski'
 - **4.** The prompt’s name resolves to 佐藤健二 (Kenji Sato) in the seed. This is one described person even when used repeatedly. Selection: users.real_name == '佐藤健二 (Kenji Sato)'
-- **5.** Yesterday and wrong timezone information do not identify a message without a supplied reference date or the incorrect text.
+- **5.** The request describes a message the actor posted “yesterday” with wrong timezone information. The actor’s watch-party message 1699564900.000124 is the only authored message explicitly naming a timezone (3pm PST). This task supplies neither a reference date for yesterday nor the intended timezone. The candidate set is that singleton if the description refers to it, or empty if it does not satisfy the date or correctness qualifier. The event context could instead mean a hackathon message, for which there is no match. This task cannot establish which set is intended.
 - **6.** Resolve the named channel #project-alpha-dev; its name selects one seeded conversation. Repeated uses in the task share this obligation. Selection: channels.channel_name == 'project-alpha-dev'
 - **7.** Resolve channel_name == 'frontend', join channel_members on channel_id, return member user_ids.
-- **8.** Important is subjective and no concrete preparation-message description or constraining assertion is supplied.
+- **8.** The request asks for thumbs-up reactions on important messages about the global hackathon preparation. The seed has technical discussions but no messages about preparation for this hackathon. The necessary event-specific population is empty; subjective importance does not create competing targets within it. Selection: Select messages whose content discusses preparation for the requested global hackathon. No such messages exist, so the important subset is also empty. General technical discussions do not establish preparation for this event.
+- Focused v1.0.1 review of previously underspecified obligations O1, O5, O8. Other cards in this test retain their prior annotations and are outside this review. Unrecorded intent stays in descriptions; partial constraints use real fields. Candidate sets do not grant permission to choose. All reviewed obligations remain unchecked by the supplied assertions.
+- O5 uses only this test’s prompt and seed: the watch-party message’s PST text is observable, but another test’s correction instruction is not evidence that PST is wrong here. No date is supplied to anchor yesterday. The PST predicate encodes the observed necessary candidate boundary; it does not prove date or correctness qualifications.
 
 <details><summary>Assertion predicates from the test entry (A1, A2, …)</summary>
 
@@ -2108,29 +2110,31 @@ Oh, and there's an old message I posted earlier about the event that has wrong d
 
 | Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |
 |---|---|---|---|---|
-| 1. Resolve channels relevant to the Diwali–Thanksgiving potluck | underspecified | Undetermined | no | None: No assertion constrains this described referent or its derived result. |
+| 1. Resolve channels relevant to the Diwali–Thanksgiving potluck | underspecified | `{"selection":"set(channels)","partial_constraints":[],"candidate_sets":null}` | no | None: No assertion constrains this described referent or its derived result. |
 | 2. Resolve #core-infra | resolved | `["C_INFRA"]` | no | None: No assertion constrains this described referent or its derived result. |
 | 3. Resolve the workspace user roster | resolved | `["U01AGENBOT9","U02JOHNDOE1","U02ARTEM23","U03ROBERT23","U04OMER23","U05MORGAN23","U06HUBERT23","U07MORGANFREE","U08NICK23","U09GABRIEL","U_PRIYA","U_LUKAS","U_SOPHIE","U_OLENA","U_MATEO","U_KENJI","U_ROBERT","U_AISHA","U_INCOGNITO"]` | no | None: No assertion constrains this described referent or its derived result. |
 | 4. Resolve #project-alpha | resolved | `["C05ALPHA"]` | no | None: No assertion constrains this described referent or its derived result. |
 | 5. Resolve #growth | resolved | `["C04MNOP3456"]` | no | None: No assertion constrains this described referent or its derived result. |
 | 6. Resolve the current members of #growth | resolved | `["U08NICK23","U09GABRIEL","U06HUBERT23","U01AGENBOT9"]` | no | None: No assertion constrains this described referent or its derived result. |
 | 7. Resolve Kenji | resolved | `["U_KENJI"]` | no | A1: A DM must be created, but its participant is unconstrained. |
-| 8. Resolve the actor’s earlier potluck message with wrong details | underspecified | Undetermined | no | None: No assertion constrains this described referent or its derived result. |
-| 9. Resolve the outdated announcement from last week | underspecified | Undetermined | no | None: No assertion constrains this described referent or its derived result. |
+| 8. Resolve the actor’s earlier potluck message with wrong details | absent | `[]` | no | None: No assertion constrains this described referent or its derived result. |
+| 9. Resolve the outdated announcement from last week | underspecified | `{"selection":"one(messages)","partial_constraints":[],"candidate_sets":null}` | no | None: No assertion constrains this described referent or its derived result. |
 | 10. Resolve Priya’s message about bringing samosas | absent | `[]` | no | None: No assertion constrains this described referent or its derived result. |
 
 Boundary and selection notes:
 
-- **1.** The description does not justify a particular entity or entity set in the allowed evidence.
+- **1.** The request asks which channels might be relevant to the Diwali–Thanksgiving potluck. Existing discussion of that celebration yields no channels, while suitability for organizing a social event could include random (social conversation) or general (team-wide announcements). The prompt also names channels for future topic updates, which does not prove prior event discussion or define the entire relevance set. These interpretations leave the intended collection unresolved.
 - **2.** Resolve core-infra for reviewing its history and changing its topic; no subjective message-level boundary is needed. Selection: channels.channel_name == 'core-infra'
 - **3.** Select all users in the seeded workspace.
 - **4.** Resolve project-alpha for the topic update and announcement; these repeated uses share one obligation. Selection: channels.channel_name == 'project-alpha'
 - **5.** Resolve the named channel #growth; its name selects one seeded conversation. Repeated uses in the task share this obligation. Selection: channels.channel_name == 'growth'
 - **6.** Resolve channel_name == 'growth', join channel_members on channel_id, return member user_ids.
 - **7.** The prompt’s name resolves to 佐藤健二 (Kenji Sato) in the seed. This is one described person even when used repeatedly. Selection: users.real_name == '佐藤健二 (Kenji Sato)'
-- **8.** The description does not justify a particular entity or entity set in the allowed evidence.
-- **9.** The description does not justify a particular entity or entity set in the allowed evidence.
+- **8.** The request asks to correct an old message the actor posted about the Diwali–Thanksgiving potluck. None of the actor’s seeded messages concerns that event. The necessary event-message population is empty regardless of which details were wrong or what replacements the user intended. Selection: Select messages authored by U01AGENBOT9 whose content concerns the Diwali–Thanksgiving potluck. No match exists; no wrong-detail predicate is needed to establish the empty result.
+- **9.** The request says “an outdated announcement from last week” without naming its author, channel, content, or a reference date. If it means an announcement about the potluck, no matching event announcement exists. If it means another workspace announcement, existing release or watch-party announcements remain possible but their intended relevance and last-week qualifier are not established. The prompt does not distinguish these readings; no author restriction is supplied.
 - **10.** The description names a concrete subject (samosa); the seed contains no matching message. Absence is relative to the supplied seed, not a running service. Selection: Case-insensitive content match for 'samosa', authored by Priya.
+- Focused v1.0.1 review of previously underspecified obligations O1, O8, O9. Other cards in this test retain their prior annotations and are outside this review. Unrecorded intent stays in descriptions; partial constraints use real fields. Candidate sets do not grant permission to choose. All reviewed obligations remain unchecked by the supplied assertions.
+- O8 explicitly says the event and is absent. O9 does not identify the announcement’s subject or author, so an event-specific empty reading and a broader unresolved reading are retained. No author constraint is inferred from the preceding sentence.
 
 <details><summary>Assertion predicates from the test entry (A1, A2, …)</summary>
 
@@ -2175,17 +2179,18 @@ Also, I noticed the #project-alpha-dev channel might have some people who aren't
 | Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |
 |---|---|---|---|---|
 | 1. Resolve the team roster as evidence of launch expertise | resolved | `["U01AGENBOT9","U02JOHNDOE1","U02ARTEM23","U03ROBERT23","U04OMER23","U05MORGAN23","U06HUBERT23","U07MORGANFREE","U08NICK23","U09GABRIEL","U_PRIYA","U_LUKAS","U_SOPHIE","U_OLENA","U_MATEO","U_KENJI","U_ROBERT","U_AISHA","U_INCOGNITO"]` | no | None: No assertion constrains this described referent or its derived result. |
-| 2. Resolve the frontend person for direct coordination | underspecified | Undetermined | no | None: No assertion constrains this described referent or its derived result. |
-| 3. Resolve the engineering lead for direct coordination | underspecified | Undetermined | no | None: No assertion constrains this described referent or its derived result. |
+| 2. Resolve the frontend person for direct coordination | underspecified | `{"selection":"one(users)","partial_constraints":[],"candidate_sets":null}` | no | None: No assertion constrains this described referent or its derived result. |
+| 3. Resolve the engineering lead for direct coordination | underspecified | `{"selection":"one(users)","partial_constraints":[],"candidate_sets":null}` | no | None: No assertion constrains this described referent or its derived result. |
 | 4. Resolve the current members of #project-alpha-dev | resolved | `["U01AGENBOT9","U_PRIYA","U_LUKAS","U_MATEO","U_KENJI","U_ROBERT","U_AISHA"]` | no | None: No assertion constrains this described referent or its derived result. |
 
 Boundary and selection notes:
 
 - **1.** Select all users in the seeded workspace.
-- **2.** The seed has several frontend participants but no explicit job-title field establishing one designated frontend person. Do not promote a plausible contributor into a justified unique referent.
-- **3.** Participation, an admin flag, and apparent leadership in discussion do not uniquely establish the requested job role.
+- **2.** The request asks to contact “our frontend person” about UI adaptations. Frontend discussion includes several contributors, including Aisha and Łukasz, but neither their participation nor the seeded profiles establishes whom the user designates as the frontend person. That role selection remains unresolved. No recorded role field supplies a partial predicate, and channel membership or authorship is not asserted as a necessary condition by the prompt.
+- **3.** The request asks to contact “our engineering lead” without naming a person. Several people contribute to engineering discussions, but the supplied profiles and messages do not establish the user’s designated lead. Apparent leadership is not a unique role assignment, and missing role data does not establish that the person is absent. The role remains in prose because no supported role field can encode it.
 - **4.** Resolve channel_name == 'project-alpha-dev', join channel_members on channel_id, return member user_ids.
 - May need to streamline membership is tentative context, not a definite instruction to remove a particular person/set; no removal obligation is invented.
+- Focused v1.0.1 review of previously underspecified obligations O2, O3. Other cards in this test retain their prior annotations and are outside this review. Unrecorded intent stays in descriptions; partial constraints use real fields. Candidate sets do not grant permission to choose. All reviewed obligations remain unchecked by the supplied assertions.
 
 <details><summary>Assertion predicates from the test entry (A1, A2, …)</summary>
 
@@ -2232,8 +2237,8 @@ There's also an outdated message I posted earlier that needs deleting, and I nee
 | 7. Resolve #project-alpha-dev | resolved | `["C06ALPHADEV"]` | no | None: No assertion constrains this described referent or its derived result. |
 | 8. Resolve Hubert | resolved | `["U06HUBERT23"]` | no | None: No assertion constrains this described referent or its derived result. |
 | 9. Resolve #core-infra | resolved | `["C_INFRA"]` | no | None: No assertion constrains this described referent or its derived result. |
-| 10. Resolve the actor’s outdated message to delete | underspecified | Undetermined | no | None: No assertion constrains this described referent or its derived result. |
-| 11. Resolve the actor’s previous update to correct | underspecified | Undetermined | no | None: No assertion constrains this described referent or its derived result. |
+| 10. Resolve the actor’s outdated message to delete | underspecified | `{"selection":"one(messages)","partial_constraints":["messages.user_id == \"U01AGENBOT9\""],"candidate_sets":[["1699564800.000123"],["1699564900.000124"],["1699564950.000125"],["1699651200.000321"],["1700143200.000999"],["1700153200.000999"]]}` | no | None: No assertion constrains this described referent or its derived result. |
+| 11. Resolve the actor’s previous update to correct | underspecified | `{"selection":"one(messages)","partial_constraints":["messages.user_id == \"U01AGENBOT9\""],"candidate_sets":[["1699564800.000123"],["1699564900.000124"],["1699564950.000125"],["1699651200.000321"],["1700143200.000999"]]}` | no | None: No assertion constrains this described referent or its derived result. |
 
 Boundary and selection notes:
 
@@ -2246,8 +2251,9 @@ Boundary and selection notes:
 - **7.** Resolve the named channel #project-alpha-dev; its name selects one seeded conversation. Repeated uses in the task share this obligation. Selection: channels.channel_name == 'project-alpha-dev'
 - **8.** The prompt’s name resolves to Hubert Marek in the seed. This is one described person even when used repeatedly. Selection: users.real_name == 'Hubert Marek'
 - **9.** Resolve the named channel #core-infra; its name selects one seeded conversation. Repeated uses in the task share this obligation. Selection: channels.channel_name == 'core-infra'
-- **10.** The description does not justify a particular entity or entity set in the allowed evidence.
-- **11.** The description does not justify a particular entity or entity set in the allowed evidence.
+- **10.** The request asks to delete “an outdated message I posted earlier” without specifying its content or channel. Six existing messages were authored by the acting user. The prompt does not distinguish which one the user now regards as outdated; their earlier contents are not a field recording current relevance. Each singleton is a competing target, not an authorized choice.
+- **11.** The request asks to correct information in “a previous update I sent.” The actor has five informational posts about a feature release, watch-party timing, a venue, login errors, and authentication improvements. The prompt does not identify which update or information needs correcting. The actor’s separate joke reply is not an informational update under this boundary. The five singleton sets express competing referents, not permission to edit any update.
+- Focused v1.0.1 review of previously underspecified obligations O10, O11. Other cards in this test retain their prior annotations and are outside this review. Unrecorded intent stays in descriptions; partial constraints use real fields. Candidate sets do not grant permission to choose. All reviewed obligations remain unchecked by the supplied assertions.
 
 <details><summary>Assertion predicates from the test entry (A1, A2, …)</summary>
 
@@ -2349,17 +2355,19 @@ Oh, and if you see the message where Priya or Mateo showed interest in participa
 |---|---|---|---|---|
 | 1. Resolve #random | resolved | `["C02EFGH5678"]` | no | None: No assertion constrains this described referent or its derived result. |
 | 2. Resolve #growth | resolved | `["C04MNOP3456"]` | no | None: No assertion constrains this described referent or its derived result. |
-| 3. Resolve the actor’s event messages needing corrected dates and details | underspecified | Undetermined | no | None: No assertion constrains this described referent or its derived result. |
-| 4. Resolve the actor’s outdated message to remove | underspecified | Undetermined | no | None: No assertion constrains this described referent or its derived result. |
-| 5. Resolve the message where Priya or Mateo expressed participation interest | underspecified | Undetermined | no | None: No assertion constrains this described referent or its derived result. |
+| 3. Resolve the actor’s event messages needing corrected dates and details | absent | `[]` | no | None: No assertion constrains this described referent or its derived result. |
+| 4. Resolve the actor’s outdated message to remove | underspecified | `{"selection":"one(messages)","partial_constraints":["messages.user_id == \"U01AGENBOT9\""],"candidate_sets":[[],["1699564800.000123"],["1699564900.000124"],["1699564950.000125"],["1699651200.000321"],["1700143200.000999"],["1700153200.000999"]]}` | no | None: No assertion constrains this described referent or its derived result. |
+| 5. Resolve the message where Priya or Mateo expressed participation interest | absent | `[]` | no | None: No assertion constrains this described referent or its derived result. |
 
 Boundary and selection notes:
 
 - **1.** Lunch and Gemini are contextual examples in a request to catch up on random; retain the named channel as one broad discussion source. Selection: channels.channel_name == 'random'
 - **2.** Resolve the named channel #growth; its name selects one seeded conversation. Repeated uses in the task share this obligation. Selection: channels.channel_name == 'growth'
-- **3.** The description does not justify a particular entity or entity set in the allowed evidence.
-- **4.** The description does not justify a particular entity or entity set in the allowed evidence.
-- **5.** The event-specific interest is not pinned to a concrete statement; the disjunction of authors does not establish a message.
+- **3.** The request asks to update the actor’s earlier messages about the Tokyo–Paris tea ceremony exchange with corrected dates and details. None of the actor’s seeded messages concerns that event. The necessary population is empty even though the replacement information is unspecified. Selection: Select messages authored by U01AGENBOT9 whose content concerns the Tokyo–Paris tea ceremony exchange. The event-specific population is empty.
+- **4.** After requesting edits to tea-ceremony messages, the prompt adds “one outdated message I sent” to remove, without identifying its content. Reading this as another tea-ceremony message yields an empty set; reading it as a separate earlier authored message leaves six competing singleton targets. The intended scope and which message is no longer relevant are not distinguished. The author restriction holds under both readings.
+- **5.** The request asks to acknowledge the message where Priya or Mateo expressed interest in participating in the Tokyo–Paris tea ceremony exchange. Neither author has a seeded message expressing interest in that event. Mateo’s lunch arrangements and the coffee conversation concern a different activity; they do not establish tea-ceremony participation. The requested message is absent, despite the two possible authors. Selection: Select messages authored by U_PRIYA or U_MATEO whose content expresses interest in participating in the Tokyo–Paris tea ceremony exchange. No such statement exists; shared authors or food-related vocabulary alone are insufficient.
+- Focused v1.0.1 review of previously underspecified obligations O3, O4, O5. Other cards in this test retain their prior annotations and are outside this review. Unrecorded intent stays in descriptions; partial constraints use real fields. Candidate sets do not grant permission to choose. All reviewed obligations remain unchecked by the supplied assertions.
+- O3 explicitly identifies event messages, and O5 describes participation in that exchange; both are absent. O4 leaves its subject unstated, allowing the empty event-specific reading and competing generic authored messages. Generic lunch interest is not treated as interest in the tea ceremony.
 
 <details><summary>Assertion predicates from the test entry (A1, A2, …)</summary>
 
@@ -2402,8 +2410,8 @@ Oh, and I think I sent a message earlier about the timeline that needs updating 
 | 3. Resolve Kenji | resolved | `["U_KENJI"]` | no | None: No assertion constrains this described referent or its derived result. |
 | 4. Resolve Robert Chen | resolved | `["U_ROBERT"]` | no | None: No assertion constrains this described referent or its derived result. |
 | 5. Resolve #project-alpha-dev | resolved | `["C06ALPHADEV"]` | no | None: No assertion constrains this described referent or its derived result. |
-| 6. Resolve the actor’s earlier timeline message to correct | underspecified | Undetermined | no | None: No assertion constrains this described referent or its derived result. |
-| 7. Resolve important messages in the reviewed histories | underspecified | Undetermined | no | None: No assertion constrains this described referent or its derived result. |
+| 6. Resolve the actor’s earlier timeline message to correct | absent | `[]` | no | None: No assertion constrains this described referent or its derived result. |
+| 7. Resolve important messages in the reviewed histories | resolved | `["1706000208.000000","1706000496.000000","1706000791.000000","1706001016.000000","1706001104.000000","1706001136.000000","1706001356.000000","1706001628.000000","1706001817.000000","1706001890.000000","1706001931.000000","1706002098.000000","1706002397.000000","1706012456.000000","1706012683.000000","1706012958.000000","1706013112.000000","1706013249.000000","1706013472.000000","1706013725.000000","1706013842.000000","1706014026.000000","1706014145.000000","1706014443.000000","1706014612.000000","1706014844.000000","1706067472.000000","1706067650.000000","1706067892.000000","1706068012.000000","1706068303.000000","1706068546.000000","1706068719.000000","1706068954.000000","1706069021.000000","1706069204.000000","1706069328.000000","1706069531.000000","1706069700.000001","1706076473.000000","1706076771.000000","1706076887.000000","1706077054.000000","1706077099.000000","1706077290.000000","1706077475.000000","1706077627.000000","1706077666.000000","1706077761.000000","1706078042.000000","1706078297.000000"]` | no | None: No assertion constrains this described referent or its derived result. |
 
 Boundary and selection notes:
 
@@ -2412,8 +2420,10 @@ Boundary and selection notes:
 - **3.** The prompt’s name resolves to 佐藤健二 (Kenji Sato) in the seed. This is one described person even when used repeatedly. Selection: users.real_name == '佐藤健二 (Kenji Sato)'
 - **4.** The prompt’s name resolves to Robert Chen in the seed. This is one described person even when used repeatedly. Selection: users.real_name == 'Robert Chen'
 - **5.** Resolve the named channel #project-alpha-dev; its name selects one seeded conversation. Repeated uses in the task share this obligation. Selection: channels.channel_name == 'project-alpha-dev'
-- **6.** The description does not justify a particular entity or entity set in the allowed evidence.
-- **7.** Important supplies no justified reaction target, and no assertion supplies a permissive candidate boundary.
+- **6.** In the Lunar New Year launch-coordination request, “the timeline” refers to that launch. The actor has no seeded message about its timeline. Other people discuss technical rollout timing, and the actor posted a watch-party time, but those do not match the described actor-authored launch timeline. The necessary population is empty regardless of the missing corrected dates. Selection: Select messages authored by U01AGENBOT9 whose content concerns the timeline for the requested Lunar New Year APAC launch. No match exists. The event interpretation follows the surrounding request.
+- **7.** The request asks the agent to acknowledge “anything important” worth acknowledging in the model-research and core-infra histories. This delegates judgment rather than referring to a particular message remembered by the user. All 51 seeded messages in those histories are eligible; react to whichever the agent judges worth acknowledging, with no fixed number of reactions. This eligible population is not a requirement to react to every message. Selection: Resolve the named model-research and core-infra channels, then collect their messages using channel_id. This gives 51 eligible targets; the delegated acknowledgment choice has no fixed cardinality.
+- Focused v1.0.1 review of previously underspecified obligations O6, O7. Other cards in this test retain their prior annotations and are outside this review. Unrecorded intent stays in descriptions; partial constraints use real fields. Candidate sets do not grant permission to choose. All reviewed obligations remain unchecked by the supplied assertions.
+- For O6, the timeline is interpreted as the launch timeline introduced by the request. O7 follows the user’s clarification: delegated acknowledgment choice over the two named histories, with no fixed reaction count. Empty computation inputs on absent targets supply neither corrected dates nor an executable state change.
 
 <details><summary>Assertion predicates from the test entry (A1, A2, …)</summary>
 
@@ -2465,10 +2475,10 @@ Once you've gathered all this info, I need updates posted to #engineering, #fron
 | 2. Resolve the CDN-discussion source | resolved | `["C_GROWTH"]` | no | None: No assertion constrains this described referent or its derived result. |
 | 3. Resolve Robert Chen | resolved | `["U_ROBERT"]` | no | None: No assertion constrains this described referent or its derived result. |
 | 4. Resolve Lukasz | resolved | `["U_LUKAS"]` | no | A2: The membership-addition assertion contains no user predicate. |
-| 5. Resolve the main coordination channel | underspecified | Undetermined | no | None: No assertion constrains this described referent or its derived result. |
+| 5. Resolve the main coordination channel | underspecified | `{"selection":"one(channels)","partial_constraints":[],"candidate_sets":null}` | no | None: No assertion constrains this described referent or its derived result. |
 | 6. Resolve #frontend | resolved | `["C_FRONTEND"]` | no | None: No assertion constrains this described referent or its derived result. |
 | 7. Resolve #general | resolved | `["C01ABCD1234"]` | no | None: No assertion constrains this described referent or its derived result. |
-| 8. Resolve channels relevant to festival streaming coordination | underspecified | Undetermined | no | None: No assertion constrains this described referent or its derived result. |
+| 8. Resolve channels relevant to festival streaming coordination | underspecified | `{"selection":"set(channels)","partial_constraints":[],"candidate_sets":null}` | no | None: No assertion constrains this described referent or its derived result. |
 
 Boundary and selection notes:
 
@@ -2476,10 +2486,11 @@ Boundary and selection notes:
 - **2.** Retain the containing conversation as the permissive reporting source. Selection: Select channels containing CDN/CloudFront routing discussion.
 - **3.** The prompt’s name resolves to Robert Chen in the seed. This is one described person even when used repeatedly. Selection: users.real_name == 'Robert Chen'
 - **4.** The prompt’s name resolves to Łukasz Kowalski in the seed. This is one described person even when used repeatedly. Selection: users.real_name == 'Łukasz Kowalski'
-- **5.** The main coordination channel is not named. Engineering is plausible but not established as the invitation destination.
+- **5.** The request asks to include Łukasz in “our main coordination channel” without naming it. Engineering is named for a topic update, while frontend and general are also announcement destinations and core-infra has relevant infrastructure discussion. These uses do not establish which conversation the user designates as the main coordination channel. The intended single destination remains unresolved; no main-channel field is invented.
 - **6.** Resolve the named channel #frontend; its name selects one seeded conversation. Repeated uses in the task share this obligation. Selection: channels.channel_name == 'frontend'
 - **7.** Resolve the named channel #general; its name selects one seeded conversation. Repeated uses in the task share this obligation. Selection: channels.channel_name == 'general'
-- **8.** The description does not justify a particular entity or entity set in the allowed evidence.
+- **8.** The request asks which channels might be relevant to the virtual Afrobeats festival streaming project. Channels already discussing that event yield no match, while channels with reusable technical material include product-growth’s CDN discussion and core-infra’s infrastructure discussion. A broader coordination interpretation could also include engineering, frontend, or general. The prompt does not distinguish these relevance boundaries, so the collection remains unresolved; illustrative possibilities are not an exhaustive candidate family.
+- Focused v1.0.1 review of previously underspecified obligations O5, O8. Other cards in this test retain their prior annotations and are outside this review. Unrecorded intent stays in descriptions; partial constraints use real fields. Candidate sets do not grant permission to choose. All reviewed obligations remain unchecked by the supplied assertions.
 
 <details><summary>Assertion predicates from the test entry (A1, A2, …)</summary>
 
@@ -2595,7 +2606,7 @@ Thanks!
 
 | Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |
 |---|---|---|---|---|
-| 1. Resolve existing channels relevant to the watch party | underspecified | Undetermined | no | None: No assertion constrains this described referent or its derived result. |
+| 1. Resolve existing channels relevant to the watch party | underspecified | `{"selection":"set(channels)","partial_constraints":[],"candidate_sets":null}` | no | None: No assertion constrains this described referent or its derived result. |
 | 2. Resolve Priya | resolved | `["U_PRIYA"]` | no | A2: A DM is required with no recipient constraint. |
 | 3. Resolve the workspace user roster | resolved | `["U01AGENBOT9","U02JOHNDOE1","U02ARTEM23","U03ROBERT23","U04OMER23","U05MORGAN23","U06HUBERT23","U07MORGANFREE","U08NICK23","U09GABRIEL","U_PRIYA","U_LUKAS","U_SOPHIE","U_OLENA","U_MATEO","U_KENJI","U_ROBERT","U_AISHA","U_INCOGNITO"]` | no | None: No assertion constrains this described referent or its derived result. |
 | 4. Resolve the actor’s incorrect 3pm PST watch-party message | resolved | `["1699564900.000124"]` | yes | A3: Assertions 3 constrain the resulting change to this seeded referent. |
@@ -2603,11 +2614,12 @@ Thanks!
 
 Boundary and selection notes:
 
-- **1.** General contains watch-party messages, but might be relevant does not establish which existing channels qualify. Retain the agreed underspecification convention for event-channel discovery.
+- **1.** The request asks for existing channels relevant to a Cricket World Cup watch party to avoid duplicating efforts. General already contains the actor’s watch-party time and venue messages. A boundary limited to existing discussion selects general; a broader suitability boundary could also include random for social coordination or core-infra for the requested streaming setup. The prompt does not distinguish these boundaries. General’s relevance is established, but the full intended collection remains unresolved.
 - **2.** The prompt’s name resolves to Priya Sharma in the seed. This is one described person even when used repeatedly. Selection: users.real_name == 'Priya Sharma'
 - **3.** Select all users in the seeded workspace.
 - **4.** Within general, select the actor’s watch-party message containing 3pm PST.
 - **5.** Select the actor’s message containing booking the downtown venue.
+- Focused v1.0.1 review of previously underspecified obligations O1. Other cards in this test retain their prior annotations and are outside this review. Unrecorded intent stays in descriptions; partial constraints use real fields. Candidate sets do not grant permission to choose. All reviewed obligations remain unchecked by the supplied assertions.
 
 <details><summary>Assertion predicates from the test entry (A1, A2, …)</summary>
 
