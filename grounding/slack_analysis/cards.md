@@ -418,17 +418,21 @@ No grounding-obligation cards: this task creates a new channel without describin
 
 ### Obligation 1
 
+Card protocol: v1.0.1 (focused obligation review).
+
 ```json
 {
   "Test ID": "slack_67",
   "Task type": "state-changing",
   "Grounding obligations": 2,
   "Grounding obligation name": "Resolve lunch-question messages in #random",
-  "Grounding obligation description": "Permissive assertion-guided boundary: the two lunch-question targets are supported by their text. The separately described pizza-combo message is assigned to the other obligation; no exhaustive classification of all food questions is imposed.",
+  "Grounding obligation description": "Select all lunch-question messages in random, excluding the pizza-combo message because the prompt separately assigns it a thumbs-down reaction. The four remaining targets ask about having lunch, pizza quantity, adding garlic knots, or shared lunch participation. The specific pizza-combo instruction is treated as an exception to the general thumbs-up instruction; this is not a general prohibition on overlapping obligations.",
   "Resolution": "resolved",
   "Shared scope": "messages in Seeded Slack workspace T01WORKSPACE; acting user U01AGENBOT9. Public conversations and the actor’s existing private conversation are within the analysis population.",
   "Referent set": [
     "1699572000.000789",
+    "1706052027.000000",
+    "1706052160.000000",
     "1706052665.000000"
   ],
   "Alternative sufficient identifying sets": [
@@ -760,20 +764,26 @@ No grounding-obligation cards: this task creates a new channel without describin
 
 ### Obligation 1
 
+Card protocol: v1.0.1 (focused obligation review).
+
 ```json
 {
   "Test ID": "slack_74",
   "Task type": "state-changing",
   "Grounding obligations": 2,
   "Grounding obligation name": "Resolve questions in #random for reposting",
-  "Grounding obligation description": "The assertions select a permissive subset of question messages, as authorized for subjective mutation-source boundaries. Other lunch/pizza questions exist; this is an assertion-guided boundary, not a claim to include every question in the prompt’s broad wording.",
+  "Grounding obligation description": "Select every question-bearing message in random for reposting to general as separate messages. Eight seeded messages qualify, including the lunch invitation, Gemini and preview questions, pizza-combo and pizza-quantity questions, garlic-knots and shared-lunch questions, and the French-press message’s confirmation question “non?”. These are a required collection, not choices or a subset defined by assertions.",
   "Resolution": "resolved",
   "Shared scope": "messages in Seeded Slack workspace T01WORKSPACE; acting user U01AGENBOT9. Public conversations and the actor’s existing private conversation are within the analysis population.",
   "Referent set": [
+    "1699572000.000789",
     "1700210000.000001",
     "1700210180.000004",
+    "1706051755.000000",
+    "1706052027.000000",
     "1706052160.000000",
-    "1706052665.000000"
+    "1706052665.000000",
+    "1706053102.000000"
   ],
   "Alternative sufficient identifying sets": [
     [
@@ -5103,33 +5113,40 @@ Card protocol: v1.0.1 (focused obligation review).
 
 ### Obligation 6
 
+Card protocol: v1.0.1 (focused obligation review).
+
 ```json
 {
   "Test ID": "slack_108",
   "Task type": "state-changing",
   "Grounding obligations": 7,
   "Grounding obligation name": "Resolve an espresso-machine message in #random",
-  "Grounding obligation description": "Permissive choose-one boundary: either of the two explicit espresso-machine messages is an eligible target; the task edits one, not both.",
-  "Resolution": "resolved",
+  "Grounding obligation description": "The request says “that message about the espresso machine in random” and expects one existing message to be edited. It does not delegate choice among matches. Four messages concern the machine directly or refer back to it as “that machine”: the initial noise report, the pizza-combo reply, the machine-dying reply, and the French-press replacement message. Their singleton candidate sets express competing possible targets; the prompt does not distinguish the intended one.",
+  "Resolution": "underspecified",
   "Shared scope": "messages in Seeded Slack workspace T01WORKSPACE; acting user U01AGENBOT9. Public conversations and the actor’s existing private conversation are within the analysis population.",
-  "Referent set": [
-    "1706051580.000000",
-    "1706052433.000000"
-  ],
-  "Alternative sufficient identifying sets": [
-    [
-      "channels.channel_name",
-      "channels.channel_id",
-      "messages.channel_id",
-      "messages.message_text"
+  "Referent set": {
+    "selection": "one(messages)",
+    "partial_constraints": [
+      "messages.channel_id == \"C02EFGH5678\"",
+      "ABOUT(messages.message_text, \"espresso machine\", channel_history)"
+    ],
+    "candidate_sets": [
+      [
+        "1706051580.000000"
+      ],
+      [
+        "1706051755.000000"
+      ],
+      [
+        "1706052027.000000"
+      ],
+      [
+        "1706052433.000000"
+      ]
     ]
-  ],
-  "Change-computation attributes": [
-    [
-      "messages.channel_id",
-      "messages.message_id"
-    ]
-  ],
+  },
+  "Alternative sufficient identifying sets": null,
+  "Change-computation attributes": null,
   "Written attributes": [
     "messages.message_text"
   ]
@@ -5697,41 +5714,55 @@ Card protocol: v1.0.1 (focused obligation review).
 
 ### Obligation 7
 
+Card protocol: v1.0.1 (focused obligation review).
+
 ```json
 {
   "Test ID": "slack_110",
   "Task type": "state-changing",
   "Grounding obligations": 7,
   "Grounding obligation name": "Resolve an engineering message as the infrastructure-edit target",
-  "Grounding obligation description": "Assertion-guided permissive boundary for the thematic phrase about infrastructure: select an eligible message from engineering, without claiming a unique subject-specific message. Exactly one is to be edited.",
-  "Resolution": "resolved",
+  "Grounding obligation description": "The request asks to find one message about infrastructure in engineering and edit it. It supplies a topic and channel condition but does not delegate the choice among matching messages. Nine technical messages are potential matches under a broad infrastructure interpretation covering authentication services, backend operation, and GPU/compute support. Each singleton is a competing possible target; the prompt does not distinguish the intended one. The joke and food-rotation messages do not match the infrastructure condition.",
+  "Resolution": "underspecified",
   "Shared scope": "messages in Seeded Slack workspace T01WORKSPACE; acting user U01AGENBOT9. Public conversations and the actor’s existing private conversation are within the analysis population.",
-  "Referent set": [
-    "1699651200.000321",
-    "1699737600.000654",
-    "1699824000.000987",
-    "1699910400.000246",
-    "1700143200.000999",
-    "1700153200.000999",
-    "1706110000.000100",
-    "1706110000.000200",
-    "1706110000.000300",
-    "1706112500.000001",
-    "1706115000.000001"
-  ],
-  "Alternative sufficient identifying sets": [
-    [
-      "channels.channel_name",
-      "channels.channel_id",
-      "messages.channel_id"
+  "Referent set": {
+    "selection": "one(messages)",
+    "partial_constraints": [
+      "messages.channel_id == \"C03IJKL9012\"",
+      "ABOUT(messages.message_text, \"infrastructure\")"
+    ],
+    "candidate_sets": [
+      [
+        "1699651200.000321"
+      ],
+      [
+        "1699737600.000654"
+      ],
+      [
+        "1699824000.000987"
+      ],
+      [
+        "1699910400.000246"
+      ],
+      [
+        "1700143200.000999"
+      ],
+      [
+        "1706110000.000100"
+      ],
+      [
+        "1706110000.000200"
+      ],
+      [
+        "1706110000.000300"
+      ],
+      [
+        "1706112500.000001"
+      ]
     ]
-  ],
-  "Change-computation attributes": [
-    [
-      "messages.channel_id",
-      "messages.message_id"
-    ]
-  ],
+  },
+  "Alternative sufficient identifying sets": null,
+  "Change-computation attributes": null,
   "Written attributes": [
     "messages.message_text"
   ]
@@ -6362,35 +6393,58 @@ Card protocol: v1.0.1.
 
 ### Obligation 5
 
+Card protocol: v1.0.1 (focused obligation review).
+
 ```json
 {
   "Test ID": "slack_113",
   "Task type": "state-changing",
   "Grounding obligations": 6,
   "Grounding obligation name": "Resolve a lunch-coordination message in #random",
-  "Grounding obligation description": "Assertion-guided choose-one boundary. The prompt’s singular lunch-coordination description is not forced into an arbitrary unique message.",
-  "Resolution": "resolved",
+  "Grounding obligation description": "The request says “that message about coordinating lunch plans” in random and expects one deletion. It does not delegate a choice. Ten messages are potential targets under a broad lunchtime-coordination reading covering meal invitations, food-order decisions, and arrangements to meet at lunch, including the coffee lesson. The singleton candidate sets do not establish which message the user intends or permit arbitrary deletion.",
+  "Resolution": "underspecified",
   "Shared scope": "messages in Seeded Slack workspace T01WORKSPACE; acting user U01AGENBOT9. Public conversations and the actor’s existing private conversation are within the analysis population.",
-  "Referent set": [
-    "1699572000.000789",
-    "1706051755.000000",
-    "1706052665.000000",
-    "1706053102.000000"
-  ],
-  "Alternative sufficient identifying sets": [
-    [
-      "channels.channel_name",
-      "channels.channel_id",
-      "messages.channel_id",
-      "messages.message_text"
+  "Referent set": {
+    "selection": "one(messages)",
+    "partial_constraints": [
+      "messages.channel_id == \"C02EFGH5678\"",
+      "ABOUT(messages.message_text, \"lunch coordination\", channel_history)"
+    ],
+    "candidate_sets": [
+      [
+        "1699572000.000789"
+      ],
+      [
+        "1706051755.000000"
+      ],
+      [
+        "1706052027.000000"
+      ],
+      [
+        "1706052160.000000"
+      ],
+      [
+        "1706052433.000000"
+      ],
+      [
+        "1706052665.000000"
+      ],
+      [
+        "1706052779.000000"
+      ],
+      [
+        "1706052950.000000"
+      ],
+      [
+        "1706053102.000000"
+      ],
+      [
+        "1706053181.000000"
+      ]
     ]
-  ],
-  "Change-computation attributes": [
-    [
-      "messages.channel_id",
-      "messages.message_id"
-    ]
-  ],
+  },
+  "Alternative sufficient identifying sets": null,
+  "Change-computation attributes": null,
   "Written attributes": []
 }
 ```

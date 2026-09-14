@@ -134,8 +134,10 @@ Use **permissive**, defensible inclusion boundaries when narrower boundaries req
 
 - For reviewing a named channel's discussion, the channel can be the grounded source container. Do not require an exact subjective subset of relevant messages when that precision is unnecessary.
 - For state-changing uses, valid assertion constraints can guide a permissive boundary. Document that choice; do not describe it as an exhaustive interpretation of a broader prompt. An assertion does not supply delegation missing from the request.
+- A request for all matching records requires the complete matching set. Missing assertion checks do not justify excluding clear matches. A specific instruction may establish a task-specific exception to a general instruction; explain that interpretation without treating overlapping obligations as inherently invalid.
 - When the intended boundary remains unresolved, use `underspecified`, including when several reasonable interpretations produce competing sets. Do not invent an exact set or claim absence merely because a topic's interpretation is uncertain.
 - For requests that **explicitly delegate selection**, such as “find the best message,” list all justified eligible targets and say **choose one** in the description. The set's cardinality counts eligible referents, not requested actions. Do not interpret six eligible messages as an instruction to react to all six.
+- Delegated choice requires authorization for the agent to select according to its judgment. Requesting one entity that satisfies a description does not, by itself, delegate choice among multiple potential matches.
 - A reference such as “Aisha's earlier great message” describes an intended item that may be known only to the user; it does not delegate the choice. **Listing competing possibilities does not itself grant permission to choose among them.**
 - A condition requiring an empty/nonempty result still creates an obligation. Absence is a possible resolution, not zero obligations.
 

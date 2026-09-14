@@ -2,7 +2,7 @@
 
 See [method and source policy](README.md). These are benchmark annotations, not measurements of agent behavior. Cards use the locked schema in [cards.md](cards.md).
 
-59 tests; 197 task-expressed obligations: 169 resolved, 11 absent, 17 underspecified. Assertions fully cover 77, partially cover 34, and leave 86 unchecked.
+59 tests; 197 task-expressed obligations: 166 resolved, 11 absent, 20 underspecified. Assertions fully cover 74, partially cover 37, and leave 86 unchecked.
 
 Coverage concerns the grounded contribution in the final state or requested output; it never requires a trajectory or source provenance. Full coverage does not certify whole-task correctness. See [the focused coverage audit](coverage_audit.md). The denominator includes unresolved and absent obligations. Zero-obligation tasks have no coverage ratio.
 
@@ -18,7 +18,7 @@ Coverage concerns the grounded contribution in the final state or requested outp
 | 8 | [slack_64](#slack_64) | 1 | 1 | 0 | 0 | 1 | 0 | 0 |
 | 9 | [slack_65](#slack_65) | 1 | 1 | 0 | 0 | 1 | 0 | 0 |
 | 10 | [slack_66](#slack_66) | 1 | 1 | 0 | 0 | 1 | 0 | 0 |
-| 11 | [slack_67](#slack_67) | 2 | 2 | 0 | 0 | 2 | 0 | 0 |
+| 11 | [slack_67](#slack_67) | 2 | 2 | 0 | 0 | 1 | 1 | 0 |
 | 12 | [slack_68](#slack_68) | 1 | 1 | 0 | 0 | 1 | 0 | 0 |
 | 13 | [slack_69](#slack_69) | 1 | 1 | 0 | 0 | 1 | 0 | 0 |
 | 14 | [slack_70](#slack_70) | 1 | 1 | 0 | 0 | 1 | 0 | 0 |
@@ -59,12 +59,12 @@ Coverage concerns the grounded contribution in the final state or requested outp
 | 49 | [slack_105](#slack_105) | 3 | 3 | 0 | 0 | 2 | 1 | 0 |
 | 50 | [slack_106](#slack_106) | 7 | 7 | 0 | 0 | 5 | 2 | 0 |
 | 51 | [slack_107](#slack_107) | 6 | 6 | 0 | 0 | 4 | 2 | 0 |
-| 52 | [slack_108](#slack_108) | 7 | 7 | 0 | 0 | 4 | 1 | 2 |
+| 52 | [slack_108](#slack_108) | 7 | 6 | 0 | 1 | 4 | 1 | 2 |
 | 53 | [slack_109](#slack_109) | 10 | 10 | 0 | 0 | 3 | 5 | 2 |
-| 54 | [slack_110](#slack_110) | 7 | 7 | 0 | 0 | 2 | 4 | 1 |
+| 54 | [slack_110](#slack_110) | 7 | 6 | 0 | 1 | 1 | 5 | 1 |
 | 55 | [slack_111](#slack_111) | 8 | 8 | 0 | 0 | 2 | 5 | 1 |
 | 56 | [slack_112](#slack_112) | 5 | 5 | 0 | 0 | 3 | 0 | 2 |
-| 57 | [slack_113](#slack_113) | 6 | 6 | 0 | 0 | 3 | 3 | 0 |
+| 57 | [slack_113](#slack_113) | 6 | 5 | 0 | 1 | 2 | 4 | 0 |
 | 58 | [slack_114](#slack_114) | 4 | 4 | 0 | 0 | 4 | 0 | 0 |
 | 59 | [slack_115](#slack_115) | 2 | 2 | 0 | 0 | 0 | 2 | 0 |
 
@@ -484,13 +484,14 @@ In #random, react with :thumbsup: to all messages that are questions about lunch
 
 | Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |
 |---|---|---|---|---|
-| 1. Resolve lunch-question messages in #random | resolved | `["1699572000.000789","1706052665.000000"]` | yes | A1, A2: Assertions 1, 2 constrain the resulting change to this seeded referent. |
+| 1. Resolve lunch-question messages in #random | resolved | `["1699572000.000789","1706052027.000000","1706052160.000000","1706052665.000000"]` | partial | A1, A2: A1/A2 require thumbs-up reactions on the lunch invitation and shared-lunch question, but do not require reactions on the pizza-quantity or garlic-knots questions. The two omitted targets can remain unacknowledged while these assertions pass. A3 separately checks the pizza-combo thumbs-down exception. |
 | 2. Resolve the pizza-combo message in #random | resolved | `["1706051755.000000"]` | yes | A3: Assertions 3 constrain the resulting change to this seeded referent. |
 
 Boundary and selection notes:
 
-- **1.** Permissive assertion-guided boundary: the two lunch-question targets are supported by their text. The separately described pizza-combo message is assigned to the other obligation; no exhaustive classification of all food questions is imposed. Selection: Within random, select a question about whether people want lunch or how shared lunch participation works.
+- **1.** Select all lunch-question messages in random, excluding the pizza-combo message because the prompt separately assigns it a thumbs-down reaction. The four remaining targets ask about having lunch, pizza quantity, adding garlic knots, or shared lunch participation. The specific pizza-combo instruction is treated as an exception to the general thumbs-up instruction; this is not a general prohibition on overlapping obligations. Selection: Within random, select messages asking about lunch participation or food-order decisions. Exclude the message explicitly mentioning pizza combo under the prompt’s specific thumbs-down exception. All four remaining matches are required, not optional choices.
 - **2.** Within random, select content containing pizza combo.
+- Boundary review: the user approved interpreting the specific pizza-combo thumbs-down instruction as an exception to the general lunch-question thumbs-up instruction. The lunch set includes all other matching questions. This does not rely on reaction order or assume one reaction overwrites another; independently described subjects may otherwise overlap.
 
 <details><summary>Assertion predicates from the test entry (A1, A2, …)</summary>
 
@@ -800,13 +801,14 @@ Find all questions in #random and post each one to #general as separate messages
 
 | Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |
 |---|---|---|---|---|
-| 1. Resolve questions in #random for reposting | resolved | `["1700210000.000001","1700210180.000004","1706052160.000000","1706052665.000000"]` | partial | A1, A2, A3, A4: The four output keywords do not require the actual question contents: four keyword-only messages satisfy the text constraints without reposting the questions. Source IDs or retrieval evidence are unnecessary; missing source-derived question content is the outcome gap. |
+| 1. Resolve questions in #random for reposting | resolved | `["1699572000.000789","1700210000.000001","1700210180.000004","1706051755.000000","1706052027.000000","1706052160.000000","1706052665.000000","1706053102.000000"]` | partial | A1, A2, A3, A4: A1–A4 check four output keywords but do not require reposting all eight question messages. The lunch invitation, pizza-combo, pizza-quantity, and French-press confirmation question can be omitted. Even the four checked outputs can be keyword-only messages rather than faithful reposts. The gaps concern final-content completeness and fidelity, not source IDs or retrieval traces. |
 | 2. Resolve #general | resolved | `["C01ABCD1234"]` | yes | A1, A2, A3, A4: Assertions 1, 2, 3, 4 constrain the resulting change to this seeded referent. |
 
 Boundary and selection notes:
 
-- **1.** The assertions select a permissive subset of question messages, as authorized for subjective mutation-source boundaries. Other lunch/pizza questions exist; this is an assertion-guided boundary, not a claim to include every question in the prompt’s broad wording. Selection: Within random, select question messages about Gemini, preview availability, garlic knots, or shared lunch.
+- **1.** Select every question-bearing message in random for reposting to general as separate messages. Eight seeded messages qualify, including the lunch invitation, Gemini and preview questions, pizza-combo and pizza-quantity questions, garlic-knots and shared-lunch questions, and the French-press message’s confirmation question “non?”. These are a required collection, not choices or a subset defined by assertions. Selection: Read random’s message contents and select each message containing a question, including suggestions phrased as questions and the confirmation tag “non?”. In this seed, the resulting eight messages coincide with those containing a question mark; punctuation corroborates the content review rather than defining questions for all benchmarks.
 - **2.** Resolve the named channel #general; its name selects one seeded conversation. Repeated uses in the task share this obligation. Selection: channels.channel_name == 'general'
+- Boundary review: all refers to the complete question-bearing message set. The same message is selected once even if it contains several questions. The pizza-combo exception belongs only to slack_67; it does not apply here. All eight referents follow from the prompt and seeded text, independently of the four assertion keywords.
 
 <details><summary>Assertion predicates from the test entry (A1, A2, …)</summary>
 
@@ -3343,7 +3345,7 @@ Sophie and Mateo want to bring the workspace's food culture together under one r
 | 3. Resolve the old archived channel to revive | resolved | `["C_OLD_PROJECT"]` | yes | A1, A2, A3: Assertions 1, 2, 3 constrain the resulting change to this seeded referent. |
 | 4. Resolve Mateo | resolved | `["U_MATEO"]` | yes | A4: Assertions 4 constrain the resulting change to this seeded referent. |
 | 5. Resolve #project-alpha-dev | resolved | `["C06ALPHADEV"]` | yes | A4: Assertions 4 constrain the resulting change to this seeded referent. |
-| 6. Resolve an espresso-machine message in #random | resolved | `["1706051580.000000","1706052433.000000"]` | partial | A5: A5 permits an edit to any message in random, including a non-espresso message. The resulting edited record need not belong to the card’s eligible espresso-message set. |
+| 6. Resolve an espresso-machine message in #random | underspecified | `{"selection":"one(messages)","partial_constraints":["messages.channel_id == \"C02EFGH5678\"","ABOUT(messages.message_text, \"espresso machine\", channel_history)"],"candidate_sets":[["1706051580.000000"],["1706051755.000000"],["1706052027.000000"],["1706052433.000000"]]}` | partial | A5: A5 permits an edit to any message in random, including a message unrelated to the espresso machine, provided the resulting text contains bazaar. It constrains the channel but neither the topic nor the intended message. Competing topic matches do not grant permission to select arbitrarily. |
 | 7. Resolve the large-pies lunch-planning message in #random | resolved | `["1706051755.000000"]` | yes | A6: Assertions 6 constrain the resulting change to this seeded referent. |
 
 Boundary and selection notes:
@@ -3353,8 +3355,9 @@ Boundary and selection notes:
 - **3.** The seed has exactly one channel explicitly marked archived. Missing archive flags on other channels are not treated as independently observed runtime values. Selection: Select the explicitly archived channel in the seed.
 - **4.** The prompt’s name resolves to Mateo Rivera in the seed. This is one described person even when used repeatedly. Selection: users.real_name == 'Mateo Rivera'
 - **5.** Resolve the named channel #project-alpha-dev; its name selects one seeded conversation. Repeated uses in the task share this obligation. Selection: channels.channel_name == 'project-alpha-dev'
-- **6.** Permissive choose-one boundary: either of the two explicit espresso-machine messages is an eligible target; the task edits one, not both. Selection: Within random, select messages explicitly mentioning espresso.
+- **6.** The request says “that message about the espresso machine in random” and expects one existing message to be edited. It does not delegate choice among matches. Four messages concern the machine directly or refer back to it as “that machine”: the initial noise report, the pizza-combo reply, the machine-dying reply, and the French-press replacement message. Their singleton candidate sets express competing possible targets; the prompt does not distinguish the intended one.
 - **7.** Within random, select content containing large pies.
+- Boundary review of O6: ABOUT is a semantic condition over message_text, interpreted using the existing channel history joined by messages.channel_id. The initial espresso-machine report establishes the referent for the two subsequent “that machine” replies; a later message explicitly mentions espresso-machine drama. No keyword-only limit or delegated choice is inferred. The pizza-combo record can also be a candidate here despite its separate deletion use; unlike slack_67, no agreed specific-reaction exception removes it from this topic population.
 
 <details><summary>Assertion predicates from the test entry (A1, A2, …)</summary>
 
@@ -3610,7 +3613,7 @@ Hubert, John, Morgan, and Omer want to start a mapping project for forgotten und
 | 4. Resolve the Morgan participating in engineering discussions | resolved | `["U05MORGAN23"]` | yes | A2, A6: Assertion 6 independently requires two membership additions for U05MORGAN23. |
 | 5. Resolve #core-infra | resolved | `["C_INFRA"]` | no | None: No assertion constrains this described referent or its derived result. |
 | 6. Resolve all messages mentioning supercomputer | resolved | `["1706069700.000001","1706112500.000001"]` | partial | A3: A3 accepts "supercomputer mentioned 99 times; 2 reviewers checked this." The regex requires a later standalone 2 but does not bind it to the reported occurrence count. Checking the correct count would suffice without source message IDs; this predicate leaves the numeric claim unconstrained. |
-| 7. Resolve an engineering message as the infrastructure-edit target | resolved | `["1699651200.000321","1699737600.000654","1699824000.000987","1699910400.000246","1700143200.000999","1700153200.000999","1706110000.000100","1706110000.000200","1706110000.000300","1706112500.000001","1706115000.000001"]` | yes | A7: The assertion fixes the edit to engineering, matching this explicitly broadened candidate boundary. |
+| 7. Resolve an engineering message as the infrastructure-edit target | underspecified | `{"selection":"one(messages)","partial_constraints":["messages.channel_id == \"C03IJKL9012\"","ABOUT(messages.message_text, \"infrastructure\")"],"candidate_sets":[["1699651200.000321"],["1699737600.000654"],["1699824000.000987"],["1699910400.000246"],["1700143200.000999"],["1706110000.000100"],["1706110000.000200"],["1706110000.000300"],["1706112500.000001"]]}` | partial | A7: A7 constrains the edited message to engineering and requires lost-rivers text, but neither identifies the intended message nor requires its prior content to concern infrastructure. Editing the seeded joke or food-rotation message can satisfy A7. This is a final-target constraint gap, not a missing retrieval trace. |
 
 Boundary and selection notes:
 
@@ -3620,7 +3623,8 @@ Boundary and selection notes:
 - **4.** Morgan Stanley authored an engineering login message; Morgan Freeman did not. This is one person used for both invitation and a DM. Selection: Select users named Morgan who authored messages in engineering.
 - **5.** Resolve the named channel #core-infra; its name selects one seeded conversation. Repeated uses in the task share this obligation. Selection: channels.channel_name == 'core-infra'
 - **6.** Case-insensitive whole-word supercomputer match across seeded accessible histories.
-- **7.** Assertion-guided permissive boundary for the thematic phrase about infrastructure: select an eligible message from engineering, without claiming a unique subject-specific message. Exactly one is to be edited. Selection: Resolve engineering by name; retain its history as the permissive choose-one edit population.
+- **7.** The request asks to find one message about infrastructure in engineering and edit it. It supplies a topic and channel condition but does not delegate the choice among matching messages. Nine technical messages are potential matches under a broad infrastructure interpretation covering authentication services, backend operation, and GPU/compute support. Each singleton is a competing possible target; the prompt does not distinguish the intended one. The joke and food-rotation messages do not match the infrastructure condition.
+- Focused v1.0.1 review of O7: the user clarified that requesting one infrastructure message does not delegate choice among potential matches. ABOUT is a semantic content condition over messages.message_text: the adopted broad infrastructure boundary includes authentication services, backend operation, and GPU/compute implementation or resources. The nine technical messages fit this potential-match boundary; the joke and food-rotation message do not. It is not a literal substring test or an invented environmental field. The channel ID is established from channels.channel_name == engineering in the seed. Concrete candidate sets preserve unresolved selection, not permission to choose.
 
 <details><summary>Assertion predicates from the test entry (A1, A2, …)</summary>
 
@@ -3934,7 +3938,7 @@ Think of the workspace as a coastline full of tide pools — each channel is its
 | 2. Resolve the workspace user roster for admin/member classification | resolved | `["U01AGENBOT9","U02JOHNDOE1","U02ARTEM23","U03ROBERT23","U04OMER23","U05MORGAN23","U06HUBERT23","U07MORGANFREE","U08NICK23","U09GABRIEL","U_PRIYA","U_LUKAS","U_SOPHIE","U_OLENA","U_MATEO","U_KENJI","U_ROBERT","U_AISHA","U_INCOGNITO"]` | partial | A2: The requested roster-derived result is the per-channel admin/member survey. A2 constrains counts for nine channels but omits two channels in the adopted population; their counts and members’ contribution can be omitted. Individual user IDs or a displayed full roster are not independently required for checking this aggregate result. |
 | 3. Resolve Omer | resolved | `["U04OMER23"]` | yes | A1: Assertions 1 constrain the resulting change to this seeded referent. |
 | 4. Resolve replies under the engineering circuit-tracer root | resolved | `["1706110000.000200","1706110000.000300"]` | partial | A5: A5 checks two replies and later Robert/Kenji substrings, but accepts "Field Report 2: 2 replies found under circuit-tracer in #engineering — organisms: Robert, Aisha. Report prepared by Kenji." It need not report the correct pair of authors. Reply IDs and retrieval provenance are unnecessary; the author attribution in the final report is the gap. |
-| 5. Resolve a lunch-coordination message in #random | resolved | `["1699572000.000789","1706051755.000000","1706052665.000000","1706053102.000000"]` | yes | A3: The removal assertion selects exactly this permissive channel-and-content candidate population. |
+| 5. Resolve a lunch-coordination message in #random | underspecified | `{"selection":"one(messages)","partial_constraints":["messages.channel_id == \"C02EFGH5678\"","ABOUT(messages.message_text, \"lunch coordination\", channel_history)"],"candidate_sets":[["1699572000.000789"],["1706051755.000000"],["1706052027.000000"],["1706052160.000000"],["1706052433.000000"],["1706052665.000000"],["1706052779.000000"],["1706052950.000000"],["1706053102.000000"],["1706053181.000000"]]}` | partial | A3: A3 accepts removal of any one message in random containing lunch. Four seeded records satisfy that predicate, but it does not distinguish the user’s intended lunch-coordination message. Other contextual meal-planning messages lack that word. The predicate provides a channel/topic constraint, not complete reference grounding. |
 | 6. Resolve the author of the original engineering circuit-tracer message | resolved | `["U_LUKAS"]` | yes | A4: A membership addition for U_LUKAS is explicitly required. The report’s delivery to that same conversation is not enforced. |
 
 Boundary and selection notes:
@@ -3943,8 +3947,9 @@ Boundary and selection notes:
 - **2.** Select all seeded workspace users.
 - **3.** The prompt’s name resolves to Omer Narwhal in the seed. This is one described person even when used repeatedly. Selection: users.real_name == 'Omer Narwhal'
 - **4.** The count and author list are computations over one described reply set. No separate optional user-lookup obligations are added. Selection: Resolve the engineering circuit-tracer root, then select messages whose parent_id is that root.
-- **5.** Assertion-guided choose-one boundary. The prompt’s singular lunch-coordination description is not forced into an arbitrary unique message. Selection: Within random, select messages containing lunch; choose one for deletion.
+- **5.** The request says “that message about coordinating lunch plans” in random and expects one deletion. It does not delegate a choice. Ten messages are potential targets under a broad lunchtime-coordination reading covering meal invitations, food-order decisions, and arrangements to meet at lunch, including the coffee lesson. The singleton candidate sets do not establish which message the user intends or permit arbitrary deletion.
 - **6.** Within engineering, identify the circuit-tracer root about layer-by-layer loading and return its author.
+- Boundary review of O5: ABOUT is a semantic content condition using message_text and channel history joined by messages.channel_id. The adopted broad potential-match population includes the standalone lunch invitation and the later meal-ordering/participation sequence, including plans for a coffee lesson at lunch. It excludes the opening espresso-noise report and the Gemini discussion. Exact lunch-word matching is the assertion’s rule, not the definition of the potential referent family.
 
 <details><summary>Assertion predicates from the test entry (A1, A2, …)</summary>
 
