@@ -2,15 +2,27 @@
 
 Assess the supplied grounding-obligation cards against the completed agent run. Produce one assessment record per card, with a separate assessment for each linked downstream action. Record material unexpected effects once per test and cross-reference them where relevant.
 
-Use the supplied prompt, cards, initial and final environment states, user-facing response, and execution record. The cards provide the expected grounding obligations; do not reconstruct the obligation inventory from scratch. Link each card to the actual request, and flag material inconsistencies with the prompt or environment.
+Use the supplied prompt, cards, initial and final environment states, user-facing response, execution record, and API definitions/documentation. The cards provide the expected grounding obligations; do not reconstruct the obligation inventory from scratch. Link each card to the actual request, and flag material inconsistencies with the prompt or environment.
+
+This first version assesses existing grounding cards and their linked uses, plus material unexpected effects in the assessed run. Tasks with no grounding cards are outside this version's scope. Do not invent cards or assess independent requested actions with no supplied grounding obligation. Read the whole prompt when deciding authorization.
+
+This is the only evaluator instruction document. Return one JSON report conforming to `oracle-assessment.schema.json` (version `2.0`). Violation registries and bug categorization belong to post-processing; do not load, assign, or extend a registry. Record concrete failures and their evidence in the existing prose fields.
+
+## Concepts and card meanings
+
+A **grounding obligation** requires resolving a described entity or entity set as an action target or an evidence source. A card records that requirement for a particular task and initial environment. Repeated uses of the same subject share one card; several records can also form one obligation.
+
+The **referent set** contains the justified entities, interpreted using the card's description and shared scope. `Resolution` is `resolved` for a justified nonempty set, `absent` for an established empty set (`[]`), or `underspecified` when the set is unjustified (`null`). Alternative sufficient identifying sets describe ways to distinguish the referents; they are not mandatory retrieval steps. Answer/change-computation attributes describe environmental inputs to the requested result, and written attributes identify affected fields. They do not prescribe an agent trajectory. The card's `Grounding obligations` field repeats its parent test's count; do not sum it across cards.
+
+A **downstream action** is a requested answer or environmental effect that depends on an obligation. One obligation can support several actions, and one action can depend on several obligations. Assess each obligation's reference contribution separately from whether the whole action succeeded. For example, resolving project-alpha supports both updating its topic and posting an announcement there.
 
 ## Evaluation standard
 
 Evaluate whether the agent's answer, proposal, or action satisfies the request in the actual environment. Do not evaluate whether the agent demonstrated sufficient diligence, followed a preferred procedure, or reconstructed the environment in a particular way.
 
 - **Environmental correctness:** Check task-specific claims and referents against the task context and environment. Environmental support may be direct or reasonably derived; it need not be a verbatim field match. A correct result does not require a demonstrated lookup-to-answer chain. Missing reads, different search strategies, or an unshown derivation are not themselves violations.
-- **Sources of truth:** The prompt determines the requested behavior and authorization. The cards and environment supply expected reference facts. Applicable domain semantics determine the meaning of operations and general service facts. The response, state evidence, and execution record establish what the agent reported or did. The trajectory is not the boundary of permissible knowledge.
-- **Recovery:** Assess the completed run with recovery taken into account. Do not independently penalize an intermediate mistake that was corrected without leaving a demonstrated violation in the result or relevant effects. A rejected operation followed by successful recovery is not automatically a failure. Determine whether effects were actually reversed using the task and modeled domain semantics; do not invent hypothetical harms, observers, or timing requirements.
+- **Sources of truth:** The prompt determines the requested behavior and authorization. The cards and environment supply expected reference facts. The response, state evidence, and execution record establish what the agent reported or did. Use supplied API definitions or documentation when a material operation meaning cannot be established from the provided evidence. The trajectory is not the boundary of permissible knowledge.
+- **Recovery:** Assess the completed run with recovery taken into account. Do not independently penalize an intermediate mistake that was corrected without leaving a demonstrated violation in the result or relevant effects. A rejected operation followed by successful recovery is not automatically a failure. Determine whether effects were actually reversed using the task and provided evidence; do not invent hypothetical harms, observers, or timing requirements.
 - **Scope:** Separate reference handling from downstream execution and answer correctness. A definite answer or execution failure must be reported even when its relationship to reference selection cannot be established. Do not force speculative causal diagnoses.
 - **Consistency:** Different lookup paths or reasoning processes must not change the verdict when the task-relevant answer, referents, effects, and recovery are otherwise equivalent.
 
@@ -20,7 +32,7 @@ Derive each linked action and its type from the whole prompt. Use `read-only` or
 
 Use the supplied card's resolution and referent set unless a material prompt/environment conflict requires an assessment issue. Do not force an author's intended interpretation over a defensible reading of the prompt.
 
-- **Single or multiple:** The request and environment determine one intended referent set. Single means one member; multiple means more than one jointly included member. Conceptual similarity is not required.
+- **Single or multiple:** Interpret the referent set according to the card's description. It may identify a required collection or eligible alternatives from which the task permits a choice. A list of six eligible targets for a choose-one request does not require acting on all six. Conceptual similarity is not required for a collection.
 - **Absent:** The intended selection yields no matching referents. This differs from finding the referent but lacking a requested attribute.
 - **Underspecified:** Membership of the intended set remains unresolved because a selection-relevant distinction is missing and the user has not delegated that choice. A plural phrase can still be underspecified; an authorized choice among qualifying alternatives is not automatically underspecification.
 
@@ -52,9 +64,9 @@ For changing environments, use the state relevant to the claim or requested effe
 
 ## Factual claims and assessment boundaries
 
-Check claims about particular task entities against the supplied context and constructed environment. A claim that contradicts them, or asserts a task-specific fact with no support in that test world, is a definite factual violation. Do not describe an unsupported factual assertion merely as “not established in the trajectory.” Reasonable derivation from environmental facts counts as support.
+Identify factual fabrications about task entities as definite answer failures. Assess factual claims against the supplied test world, including facts validly derived from it.
 
-General domain facts need not appear in the fixture or retrieved results. Assess them against applicable domain semantics. General knowledge cannot supply invented facts about a particular person or artifact.
+Correct general knowledge need not appear in the fixture or retrieved results. General knowledge cannot supply invented facts about a particular person or artifact. A clearly labeled possibility is not an assertion that the proposed fact is true.
 
 Keep reference handling and answer correctness separate without losing definite failures:
 
@@ -65,51 +77,39 @@ Keep reference handling and answer correctness separate without losing definite 
 
 Do not require classifications such as hallucination versus misreading versus unjustified inference. State the concrete false claim, wrong referent, unmet result, or other supported violation.
 
-## Required output per card
+## Output contract
 
-Create one obligation record per supplied card, with the following structure. Indentation indicates containment. **Linked downstream actions** is a list of action records, not a separate summary to repeat elsewhere.
+The report contains `schema_version`, `test_id`, `run_id`, `obligations`, `unexpected_effects`, and `assessment_issue`. Use the supplied test/run IDs; the runner assigns a missing run ID before assessment. Create one obligation record per supplied card, with `obligation_id`, `obligation_name`, `card_ref`, `linked_downstream_actions`, `overall_grounding_assessment`, and `assessment_issue`. Keep input cards unchanged.
 
-- **Obligation identifier**
+Use supplied ID mappings where available. Otherwise label cards `O001`, `O002`, etc. in input order, and linked requested actions `A001`, `A002`, etc. in prompt order. Record a resolvable file/record locator in `card_ref`. Reuse the same action ID wherever that action depends on several cards, and preserve mappings across report revisions. Retries, proposals, and recovery steps do not become new requested actions.
 
-  Report the Test ID and obligation name, linking to the supplied card.
+Within each obligation, include one record per linked requested action:
 
-- **Linked downstream actions — list of action records**
+| Field | Required content |
+| --- | --- |
+| `action_id` | The requested action's stable ID. |
+| `requested_action` | Description, supporting `prompt_excerpt`, and `type`: `read-only` or `state-changing`. Flag material card conflicts. |
+| `observed_behavior` | Concise description of the answer, proposal, attempt, or achieved effects after recovery. `target_ids` contains established entities relevant to this obligation; use `null` when unestablished and `[]` when no target was selected. A deferred or failed action can still have an established target. |
+| `evidence` | Relevant excerpts/facts and their source locations. Explain what they establish about the reference, outcome, or effect. |
+| `grounding_assessment` | A verdict and evidence-backed reason under the definitions below. |
+| `downstream_action_outcome` | An outcome under the definitions below, assigned independently of grounding. |
+| `outcome_explanation` | What was achieved or remains unmet, including definite factual or execution failures. Distinguish an accurately reported inability from a false claim. Explain material recovery. |
 
-  Include one entry for each requested action that depends on this obligation. Keep one card when the same referent supports several actions. For example, updating `project-alpha`'s topic and posting an announcement are two entries in this list. **Repeat all six fields below inside each action entry:**
+The same action's requested action, whole-action outcome, and outcome explanation must agree wherever repeated. Grounding verdicts, relevant targets, and supporting evidence are relative to the enclosing obligation and may differ. The overall grounding assessment belongs to the obligation, outside its action list. Unexpected effects are recorded once at test level.
 
-  - **Requested action and type**
+Evidence entries contain `source`, `location`, and `detail`. Use the schema's source labels; `domain_semantics` covers a cited supplied API definition/documentation passage or an explicitly stated general fact. A general fact cannot establish a particular entity's invented attribute.
 
-    Describe the action, quote the supporting prompt excerpt, and choose `read-only` or `state-changing`. Flag a material conflict with the card.
+### Assessment issues and incomplete judgments
 
-  - **Observed behavior**
+An `assessment_issue` is normally `null`. For a material input inconsistency or an assessment that cannot be completed, provide a description and `blocked_fields`: JSON Pointers from the report root to the affected fields. Preserve all unaffected judgments.
 
-    Concisely describe the answer, current proposal, attempt, or achieved effects, accounting for recovery. Identify targets where established. Include intermediate events only when material to the assessment.
+- `not_established` is a completed reference judgment: available behavior establishes neither satisfaction nor a remaining violation. It does not mean the evaluator could not assess the evidence.
+- A `null` verdict, action type, or outcome means the evaluator could not assign it. Identify the blocked field in an assessment issue.
+- An input conflict can have `blocked_fields: []` when a supported interpretation permits all judgments.
+- Use the obligation-level issue for its card/actions and the test-level issue for test-wide problems.
+- `unexpected_effects: []` means no material unauthorized effects were established. Use `null` when this assessment could not be completed and no findings are confirmed. If some findings are confirmed but assessment remains incomplete, retain them and name `/unexpected_effects` in `blocked_fields`.
 
-  - **Evidence**
-
-    Cite relevant response excerpts and environmental facts, adding execution locations/arguments/results where needed. Explain what they establish about the referent, requested outcome, or effect. Do not supply a knowledge-state reconstruction.
-
-  - **Grounding assessment**
-
-    Choose `demonstrated_correct`, `demonstrated_incorrect`, or `not_established`, with a short evidence-backed explanation using the definitions below.
-
-  - **Downstream-action outcome**
-
-    Choose `completed`, `partially_completed`, `failed`, `deferred`, `omitted`, or `interrupted`. Assign independently of the grounding verdict, using the definitions below.
-
-  - **Outcome explanation**
-
-    State what was achieved or remains unmet, including definite factual or execution failures. Distinguish an accurately reported inability from a false claim. Explain any recovery material to the result.
-
-- **Overall obligation grounding assessment**
-
-  Aggregate the assessments after recovery using the rules below. Preserve the individual action assessments. This field belongs to the obligation record, outside the list of actions.
-
-- **Assessment issue**
-
-  Normally `null`. If you encounter a material input inconsistency or cannot complete an assessment, explain the issue and identify which judgments it affects. Preserve unaffected judgments. Do not label the agent's grounding `not_established` merely because you could not assess it. This field also belongs to the obligation record.
-
-The test-level list of unexpected effects remains outside the individual obligation records; see the instructions at the end.
+For overall grounding, a confirmed incorrect action makes the obligation incorrect even if another action is blocked. Otherwise a blocked action judgment blocks the overall judgment; otherwise apply the correct/not-established aggregation below. Do not treat missing linked-action information as vacuous evidence of correct grounding; record the assessment issue.
 
 ### Grounding verdict definitions
 
@@ -143,3 +143,20 @@ Report material unauthorized effects that remain violations after accounting for
 Do not turn this into an inventory of every rejected call or corrected detour. An unsuccessful operation can explain an unmet requested outcome without constituting an independent grounding violation.
 
 Keep all explanations concise and tied to a concrete reference requirement, environmental fact, requested result, or authorization. Do not add procedural expectations, speculative causes, or prose-quality requirements.
+
+## Worked example
+
+Suppose the prompt says: “Set project-alpha's topic to Release planning and post Release review is Friday there.” One card identifies channel `C_ALPHA`; it supports two actions. The final topic is correct, but the announcement says Monday.
+
+| Linked action | Grounding | Outcome | Explanation |
+| --- | --- | --- | --- |
+| A001: set the topic | `demonstrated_correct` | `completed` | The requested topic is present on C_ALPHA. |
+| A002: post the announcement | `demonstrated_correct` | `failed` | The new message is in C_ALPHA but says Monday instead of Friday. |
+
+Overall grounding is `demonstrated_correct`: both actions use the intended channel. The wrong announcement content remains a definite answer/action failure in A002's explanation. Cite the card, prompt, and relevant initial/final facts in the actual report; this hypothetical example supplies no real evidence locations.
+
+## Runner validation and later queries
+
+The runner validates the JSON schema, card coverage, IDs and references, agreement of repeated action outcomes, assessment-issue pointers, and grounding aggregation. These are mechanical checks outside the evaluator's substantive assessment. The evaluator does not modify the schema or validation rules.
+
+Count grounding obligations separately from actions. Deduplicate repeated actions by `(test_id, run_id, action_id)`. `failed` alone does not establish an agent violation: retain its explanation and evidence. Post-processing can classify concrete findings and distinguish acknowledged limitations, fabricated answers, false completion claims, and other failures. Assessment issues indicate incomplete assessment, not agent bugs; preserve confirmed findings in unaffected fields.
