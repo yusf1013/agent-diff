@@ -1,176 +1,157 @@
 # Oracle-check instructions for Claude Code
 
-Assess the supplied grounding-obligation cards against the completed agent run. Produce one assessment record per card, with a separate assessment for each linked downstream action. Record material unexpected effects once per test and cross-reference them where relevant.
+Assess a supplied agent run using its prompt, grounding cards, numbered `task_spec` and direct obligation links, initial/final state evidence, supplied net diff, user-facing output, and execution record. Use API definitions/documentation when a material operation meaning needs clarification. Return one JSON report conforming to `oracle-assessment.schema.json`, version `3.0`.
 
-Use the supplied prompt, grounding cards, numbered `task_spec` with direct obligation links, initial and final environment states, user-facing response, execution record, and API definitions/documentation. The cards and specification supply the expected references and requested work. Use that inventory and those links; do not re-extract actions, invent obligations, or rewrite the specification. Flag material input inconsistencies.
+Produce one record per specification line, including actions with no grounding links and condition-bearing lines. Produce overall grounding judgments for the supplied cards. Use the supplied work inventory and links; do not extract new tasks, invent cards, rewrite the specification, or generate a separate action-ID scheme. Keep inputs unchanged. Flag material input conflicts instead of silently substituting an interpretation.
 
-This first version assesses existing grounding cards and their linked uses, plus material unexpected effects in the assessed run. Tasks with no grounding cards are outside this version's scope. Do not invent cards or assess independent requested actions with no supplied grounding obligation. Read the whole prompt when deciding authorization.
+Record applicability, observed execution, and reference correctness separately. Execution statuses are descriptive facts, not correctness certificates. Record concrete false claims, wrong operations or values, workflow discrepancies, and unauthorized effects in concise explanations with evidence; do not invent a bug taxonomy or infer a reward from a status alone.
 
-This is the only evaluator instruction document. Return one JSON report conforming to `oracle-assessment.schema.json` (version `2.1`). Record concrete failures and their evidence in the existing prose fields; bug categorization belongs to post-processing.
+## Inputs and grounding concepts
 
-## Concepts and card meanings
+A **grounding obligation** requires resolving a described entity or entity set as an action target or evidence source. Repeated uses share one card, and a collection can form one obligation. The card's `Grounding obligations` field repeats the test's count; do not sum it across cards.
 
-A **grounding obligation** requires resolving a described entity or entity set as an action target or an evidence source. A card records that requirement for a particular task and initial environment. Repeated uses of the same subject share one card; several records can also form one obligation.
+Interpret `Referent set` using the card's description and shared scope:
 
-The **referent set** is interpreted using the card's description and shared scope. `Resolution` is `resolved` for a justified nonempty set, `absent` for an established empty match (`[]`), or `underspecified` when the intended selection remains unresolved. An underspecified `Referent set` is an object with `selection` (`one(entity)` or `set(entity)`), `partial_constraints`, and `candidate_sets`. Partial constraints preserve supported restrictions over real environmental fields. Candidate sets describe competing possible referent sets; `null` means they are unenumerated, and an empty set among them means absence is one possible interpretation. Neither case establishes absence by itself.
+- `resolved`: a justified nonempty set. It can be a required collection or an eligible population for an explicitly delegated choice.
+- `absent`: an established empty match (`[]`). This differs from an existing referent with a missing attribute or an existing target excluded because its branch is inactive.
+- `underspecified`: the intended selection remains unresolved. `selection` distinguishes `one(entity)` from `set(entity)`. `partial_constraints` preserves supported restrictions over real fields. `candidate_sets` lists competing possible referent sets, or is `null` when unenumerated. An empty set among competing sets means absence is one possible interpretation, not an established result.
 
-`Alternative sufficient identifying sets` lists source-attribute sets, not competing referent sets or mandatory retrieval steps. Answer/change-computation attributes describe environmental inputs to the requested result, and written attributes identify affected fields. They do not prescribe an agent trajectory. The card's `Grounding obligations` field repeats its parent test's count; do not sum it across cards.
+Satisfying partial constraints or choosing a listed candidate does not establish justified selection. **Listing competing possibilities does not grant permission to choose.** The missing distinction may concern user intent or facts the environment does not record; an exhaustive candidate inventory is unnecessary.
 
-A **downstream action** is a requested answer or environmental effect that depends on an obligation. One obligation can support several actions, and one action can depend on several obligations. Assess each obligation's reference contribution separately from whether the whole action succeeded. For example, resolving project-alpha supports both updating its topic and posting an announcement there.
+“Best message” can delegate judgment; “Aisha's earlier great message” can refer to one intended item. Preserve the card's permitted choice and quantity: six eligible targets for choose-one do not require six reactions. “All” requires the complete matching collection under the documented interpretation. Weak assertions do not shrink it. Preserve task-specific exceptions; overlapping obligations are otherwise allowed.
 
-Each specification line supplies `line`, `text`, and `obligations`. Its links identify direct reference contributions, including source-dependent content and targets. Use them without inheriting links from enclosing conditions or earlier steps. The original prompt remains available for authorization and context; report a material card/specification conflict instead of silently changing the supplied interpretation.
+`Alternative sufficient identifying sets` lists source-attribute sets, not competing referents or mandatory retrieval steps. Answer/change-computation attributes describe environmental inputs to the requested result; written attributes identify assigned fields. These do not prescribe a trajectory or exhaust all possible side effects.
 
-## Evaluation standard
+Each specification line has `line`, `text`, and `obligations`. Links describe direct reference contributions, including sources and targets. Resolve pronouns from context, but do not inherit links from enclosing conditions or earlier steps. New outputs and contextual names do not automatically introduce existing-referent obligations.
 
-Evaluate whether the agent's answer, proposal, or action satisfies the request in the actual environment. Do not evaluate whether the agent demonstrated sufficient diligence, followed a preferred procedure, or reconstructed the environment in a particular way.
+## Applicability: task_status
 
-- **Environmental correctness:** Check task-specific claims and referents against the task context and environment. Environmental support may be direct or reasonably derived; it need not be a verbatim field match. A correct result does not require a demonstrated lookup-to-answer chain. Missing reads, different search strategies, or an unshown derivation are not themselves violations.
-- **Sources of truth:** The prompt determines the requested behavior and authorization; the specification records the requested work and direct links. The cards and environment supply expected reference facts. The response, state evidence, and execution record establish what the agent reported or did. Use supplied API definitions or documentation when a material operation meaning cannot be established from the provided evidence. The trajectory is not the boundary of permissible knowledge.
-- **Recovery:** Assess the completed run with recovery taken into account. Do not independently penalize an intermediate mistake that was corrected without leaving a demonstrated violation in the result or relevant effects. A rejected operation followed by successful recovery is not automatically a failure. Determine whether effects were actually reversed using the task and provided evidence; do not invent hypothetical harms, observers, or timing requirements.
-- **Scope:** Separate reference handling from downstream execution and answer correctness. A definite answer or execution failure must be reported even when its relationship to reference selection cannot be established. Do not force speculative causal diagnoses.
-- **Consistency:** Different lookup paths or reasoning processes must not change the verdict when the task-relevant answer, referents, effects, and recovery are otherwise equivalent.
+**Treat requested work as active unless the supplied task's workflow excludes it, a necessary referent is established absent or remains underspecified, or an essential semantic input is neither supplied, derivable from the task context, nor within the discretion granted by the request. An inactive judgment must identify the specific blocking condition, referent, or semantic input.**
 
-## Request interpretation and reference handling
+Use `active` or `inactive`. If only part of a batch is warranted, use `active` and identify its active and inactive portions in the explanation. If evidence cannot settle applicability, use `null` with an assessment issue; uncertainty is not inactivity.
 
-Use each supplied linked action's specification text to determine `action_type`: `read-only` or `state-changing`, consulting the prompt for context. A vague request to “check” something is read-only unless context establishes a change request. Ordinary indirect requests can request changes; grammatical question form does not by itself make an action read-only. A defensible decision to seek confirmation before a requested change is acceptable for grounding assessment. Assess the proposal's actual target without predicting what a future confirmation would cause.
+Apply these fixed boundaries:
 
-Use the supplied card's resolution, referent set, and documented boundary. Flag a material prompt/environment conflict as an assessment issue; do not silently substitute a different interpretation or target set.
+- **Workflow:** identify the task's condition, branch, loop boundary, or stopping rule and the evidence that excludes the work. Sequence governs when work occurs; an earlier omission or failure does not automatically cancel later requirements. Do not let the solver manufacture inactivity by abandoning a prerequisite.
+- **Reference:** apply absence or underspecification to the particular operation that needs that reference. Determining absence, reporting it, or exposing an unresolved choice can remain active even when the dependent mutation is inactive. A card's resolution alone does not determine a line's applicability.
+- **Semantic input:** missing wording or routine presentation details do not establish inactivity. An essential semantic input determines the substantive change or communication the user intends. “Rename this file” without a name or naming objective can be inactive; “rename it to a concise description of its contents” delegates the choice. “Thank David for his help” permits composing wording and an email subject. An isolated “reply to David” may lack a purpose, but the surrounding conversation can supply one. Distinguish missing instructions from unavailable facts being requested: checking a profile and accurately reporting that no role is recorded remains active.
+- **No invented prerequisites:** prior discussion, historical relevance, business justification, or additional permission is not required unless the task establishes it. A prompt can introduce a new initiative or purpose. A request to update a named channel's topic for anime-expo planning remains active without prior anime discussion. Updating the topic does not assert a fictional history.
+- **Local scope:** one absent message or unresolved recipient does not deactivate independent channel updates. The solver's refusal, error, caution, or request for confirmation is evidence of its disposition, not authority over applicability. Missing details alone do not establish inactivity; only an essential semantic input outside permitted discretion does.
 
-- **Required collections:** “All” requires the complete matching collection under the recorded interpretation. Weak or missing assertions do not reduce that set. Preserve documented task-specific exceptions; overlapping obligations are otherwise allowed.
-- **Delegated choice:** A resolved card may list eligible targets from which the prompt authorizes a choice. Six eligible targets for “choose one” require one selection, not six. Preserve any stated discretion over quantity. Requesting one matching entity does not by itself delegate choice: “the best message” can delegate judgment, while “Aisha's earlier great message” can refer to one intended item.
-- **Absent:** The description has an established empty match. This differs from an existing referent lacking a requested attribute, or a target excluded from counting because its branch is inactive. An empty necessary population remains absent despite missing finer qualifiers.
-- **Underspecified:** The intended choice or interpretation remains unresolved. `one(entity)` expects one intended entity; `set(entity)` leaves an intended collection unresolved. Respect partial constraints, but satisfying them or choosing a listed candidate does not itself establish justified selection. Listing competing possibilities does not grant permission to choose. The missing distinction may live only in the user's intent or concern facts the environment does not record; no exhaustive candidate inventory is required.
+Use the state relevant to the task's condition or requested effect. Do not invent conditions from the solver's claims or treat missing evidence as proof of a negative condition.
 
-| Situation | Assessment rule |
-| --- | --- |
-| Read-only, determined referent set | Check that the response concerns the intended entity or collection and that requested information is correctly supplied where available. Accept reasonable summaries and clearly distinguished supplemental entities. Do not require exhaustive prose, listing every ID, or a particular retrieval method. Do not accept conflation, fabricated facts, or presenting an incorrect collection as the requested one. |
-| Read-only, absent or underspecified | Accept responses that appropriately expose absence or the unresolved choice, including clearly distinguished alternatives. Do not require one clarification wording. Mere silence does not demonstrate recognition. |
-| State-changing, determined referent set | Check the authorized targets and requested effects, accounting for recovery. A correctly targeted proposal can demonstrate grounding while execution remains deferred. Distinguish correct targeting from incorrect operations or parameters affecting the requested outcome. |
-| State-changing, absent or underspecified | The dependent change must not be committed to an unjustified target. Appropriate reporting or clarification can demonstrate correct reference handling. Uncertainty about one action does not block independent, well-specified actions. |
-| Additional changes | Assess authorization against the whole task. A change authorized under another obligation is not an unrelated violation. Account for recovery before reporting an unauthorized effect. A completed requested action does not excuse an additional demonstrated violation. |
+## Observed execution: execution_status
 
-For multiple referents, assess the required membership without demanding explicit enumeration. Distinguish selecting the wrong collection from correctly identifying the collection but leaving some downstream work incomplete. Assess meaningful omissions through the action outcome; do not turn prose-quality preferences into grounding requirements.
+An action is a requested operation or deliverable. Determine its actual performed extent independently of target, content, and authorization correctness.
 
-## Evidence and use of the execution record
+| Status | Definition |
+|---|---|
+| `performed` | The agent carried out the operation or supplied the answer associated with the action, covering its full extent. This does not certify correct targets, content, or authorization. |
+| `partially_performed` | Some, but not all, requested deliverables or separately identifiable parts were produced. Intermediate work alone does not qualify. Correctness of produced parts is separate. |
+| `execution_failed` | An execution attempt ended unsuccessfully with no part of the action performed, unless an explicit later deferral leaves a retry pending. An incorrect supplied answer is performed, not an execution failure. |
+| `deferred` | No part was performed, and the agent explicitly leaves the action pending confirmation, clarification, or another stated prerequisite. |
+| `skipped` | No part was performed, and the agent observably treats it as work it will not carry out in this run, including an explicit inability report or refusal. |
+| `omitted` | The action is unaddressed: there is no observed execution attempt, explicit deferral, or observable decision to skip it. |
+| `interrupted` | Work began, but abnormal termination prevented an execution outcome from being established. An already established execution failure takes precedence. |
 
-Start with the prompt, specification and links, card, initial/final states, and user-facing response. These can be sufficient to establish grounding and the downstream outcome. A correctly attributable answer, a uniquely targeted proposal, or an attributable state change can establish the relevant referent without additional evidence of how the agent identified it. IDs are not mandatory when names, descriptions, context, or effects establish the identity.
+Assignment rules:
 
-Consult the execution record when it can resolve a material uncertainty about what happened that those sources do not settle. This can include an attempted target, a tool failure, an unfinished action, a report's referent, recovery, or a claim about execution. These are examples, not a mandatory checklist. Do not reconstruct the agent's knowledge state or audit every intermediate step. Stop when the relevant assessment is supported; do not continue searching for a procedural fault in an otherwise correct result.
+1. Record actual execution, not merely claimed execution. Supplying an answer is execution; its truth is separate. A successful tool call alone does not prove every deliverable was produced. A different operation or preparatory step is not the requested deliverable merely because it succeeded.
+2. Full or partial performance takes precedence. Measure extent against the specified action, not only its active portion. For partial performance, describe what was produced and whether the remainder failed, was deferred, skipped, omitted, or interrupted. Explain a mixed-applicability remainder too; its omission is not automatically a violation.
+3. Assess after recovery. A rejected attempt followed by execution is `performed`. If no part was performed and the agent explicitly leaves a retry pending, use `deferred`, retaining the rejection as evidence. An unresolved rejection otherwise remains `execution_failed`; do not hide it as interruption. A decision not to attempt an action, including an explicit refusal or inability report, is `skipped`; merely reporting a rejection does not erase an established execution failure.
+4. Mere preparation is not partial performance. Finding Sophie's profile without reporting her requested role, reading records without supplying the aggregate, or drafting a message when only sending was requested does not produce the deliverable. A normal end after preparation does not by itself establish abnormal interruption or explicit deferral.
+5. `skipped` describes disposition; `inactive` describes applicability. An agent can skip active work or perform inactive work. Silence about inactive work may be `omitted`; this alone is not a violation. Do not infer blanket deferral or refusal for unrelated lines.
+6. A condition-bearing line is `performed` when observable behavior establishes that its condition was addressed, whether the resulting decision was correct or incorrect. A correct absence report or branch behavior can establish this without a separate lookup trace; mere silence cannot. Record an incorrect decision or workflow discrepancy in the explanation. A pure marker such as `Else:` has no execution status.
 
-For each judgment, cite enough evidence to make the comparison reviewable:
+If the available evidence genuinely prevents assigning an execution status, use `null` with an assessment issue rather than inventing an eighth status.
 
-- The relevant response or proposal excerpt, state fact, or execution event.
-- The expected referent, environmental fact, or requested effect against which it is assessed.
-- A short explanation of what the evidence establishes.
+## Reference judgments and aggregation
 
-A tool call establishes an attempt; results and state evidence establish effects. Retrieving an entity alone does not establish its use in every downstream action. Conversely, a response or effect that already establishes the correct referent needs no retrieval proof. An unchanged state alone does not establish recognition of absence or underspecification.
+For every active linked use, give a grounding verdict. Also assess reference handling actually evidenced on inactive lines: wrong-target execution, a current proposal, or an appropriate absence/ambiguity report can establish it. An inactive line with no separate reference use to assess can have an empty grounding map. Inactivity is not a blanket exemption from reference assessment.
 
-For changing environments, use the state relevant to the claim or requested effect. Initial-state facts can support a report about an entity subsequently modified or removed; final-state facts establish the resulting condition. Consult execution evidence only as needed to settle a material temporal distinction.
+| Verdict | Meaning |
+|---|---|
+| `demonstrated_correct` | Observable results, proposals, reports, or execution evidence establish correct reference handling after recovery. Execution need not be performed. |
+| `demonstrated_incorrect` | A reference violation remains established after recovery: a wrong target, conflated identities, incorrect required collection, or unjustified selection under underspecification. |
+| `not_established` | Available behavior establishes neither correct reference handling nor a remaining violation. Do not use missing reads as the reason when the result itself establishes the referent. |
 
-## Factual claims and assessment boundaries
+No exhaustive ID listing or preferred retrieval method is required. A collection's membership and a deliverable's performed extent are separate questions. Correct targeting can coexist with incorrect content, an unsuccessful operation, or a workflow violation. A correctly identified person with a false reported role is not automatically an identity error. A correctly targeted proposal can establish grounding while execution is deferred.
 
-Identify factual fabrications about task entities as definite answer failures. Assess factual claims against the supplied test world, including facts validly derived from it.
+Overall, an obligation is `demonstrated_incorrect` if any linked use retains a demonstrated reference violation, including an inactive use. Otherwise, a blocked required reference judgment makes the overall judgment `null`; record the assessment issue. Otherwise it is `demonstrated_correct` when required active uses and any separately assessed inactive uses are demonstrated correct and there is evidence establishing its reference requirement. Unexecuted inactive uses do not introduce missing-grounding penalties. With no demonstrated violation but insufficient evidence, use `not_established`, never vacuous correctness. Correct absence/ambiguity handling on an inactive mutation line can establish the obligation when no separate condition line exists. Overall judgments reuse line evidence.
 
-Correct general knowledge need not appear in the fixture or retrieved results. General knowledge cannot supply invented facts about a particular person or artifact. A clearly labeled possibility is not an assertion that the proposed fact is true.
+## Evidence, factual claims, and recovery
 
-Keep reference handling and answer correctness separate without losing definite failures:
+Start with the prompt, specification, cards, state evidence, supplied net diff, and user-facing output. Consult the trajectory selectively when it can settle a material uncertainty about an attempt, rejection, deferral, interruption, recovery, claim, or workflow order. There is no required trajectory checklist or intermediate-diff inventory. An unchanged state alone does not distinguish omission, rejection, an idempotent operation, or recognition of absence.
 
-- Correctly identifying a person and giving a false role is an answer failure; it does not automatically make the identity wrong.
-- Attributing another identifiable account's information to the requested person can establish incorrect reference handling as well as an incorrect answer.
-- If the answer is definitely false but its referent cannot be established, report the definite answer failure and explain the limited reference evidence. Do not make the whole result inconclusive.
-- “I could not retrieve the role” reports an execution limitation. “No role is recorded” makes a claim about the environment. Check the claim actually made, using execution evidence where needed. Likewise, absent referents and missing attributes are different conditions.
+Do not evaluate diligence, unshown reasoning, preferred search methods, or reconstruct the agent's knowledge state. A correctly attributable answer or effect does not require a lookup-to-answer proof. However, explicitly requested ordering is a task requirement, not a preferred procedure; consult the execution record when needed to assess it. Stop once the material assessment is supported.
 
-Do not require classifications such as hallucination versus misreading versus unjustified inference. State the concrete false claim, wrong referent, unmet result, or other supported violation.
+Judge factual claims against the supplied test world, including valid derivations. Record concrete fabrications or contradictions in the explanation even when execution is `performed`. Correct general knowledge need not appear in the fixture, but cannot supply invented facts about a particular entity. Clearly labeled possibilities and proposals are not factual assertions of achieved results. Do not impose prose-quality preferences or speculative causal diagnoses.
+
+“I could not retrieve the role” reports an execution limitation; “no role is recorded” claims an environmental fact. Check what was actually asserted. Keep definite false claims visible even when reference identity cannot be established. Do not classify speculative mechanisms such as hallucination versus misreading.
+
+Account for recovery without independently penalizing corrected detours. Record net effects and the final or corrected answer, linking a relevant correction when needed; do not enumerate pre-recovery changes. Do not invent hypothetical harms, observers, or timing requirements. Supplied user-visible passages remain accounted for even when superseded; accounting for them does not turn a corrected claim into a remaining violation.
+
+## Net-diff and response accounting
+
+Use the benchmark-supplied net diff as the change inventory. For Agent-Diff it has `inserts`, `updates` with `before`/`after`, and `deletes`. Do not reconstruct it by hand, copy its records into the report, or apply assertion `ignore_fields`/`ignore` settings to it. Those settings concern assertion checks, not this accounting obligation. Include automatic fields and incidental effects through the referenced records without separate commentary for each.
+
+For each line, reference all attributable net effects, including side effects and unauthorized changes, and its relevant user-facing answers, proposals, refusal, deferral, or completion claims. Attribution does not certify authorization. A shared effect or passage can support several lines; store its contents only in the supplied evidence. Explain material discrepancies once at their most relevant line and cross-reference another line if needed.
+
+Put remaining changes and user-facing passages in `unattributed`, with a short explanation. This label does not itself mean unauthorized: a change may be unrelated, incidental, or insufficiently attributable. Group boilerplate or other non-task prose together. Account for every supplied item without inventing a task for it or writing an essay about each field. Do not include internal reasoning or tool observations in the user-facing response inventory. Use the designated user-facing output fields; do not count the same delivered response twice merely because a copy also appears in the trajectory.
+
+Evidence references contain `source` and `location`, with optional `paragraphs` for response passages:
+
+- `source: "diff"`: use a location relative to the supplied diff, such as `/inserts/0`, `/deletes/1`, or `/updates/0`. A whole update references its complete before/after record. If different lines concern different fields in one update, use `/updates/0/after/topic_text`, for example; the matching before value is implicit. Empty collections such as `/updates` can support negative evidence. Do not cite a whole nonempty collection indiscriminately.
+- `source: "response"`: locate the supplied user-visible string, such as `/final` in a saved run, and list its one-based paragraph numbers. Paragraphs are the nonempty blocks obtained by splitting the stripped string on blank lines (`\n\s*\n`). Lists/code within a block remain together. Omit `paragraphs` only when the entire string is relevant. Several related paragraphs can be grouped in one reference. For another input layout, use its supplied string location; account for all designated user-visible strings.
+- Other sources: `prompt`, `card`, `task_spec`, `initial_state`, `final_state`, `trajectory`, or `domain_semantics`. Give a resolvable supplied location. Card positions and specification lines can serve as locators. A domain-semantic reference cites supplied API documentation/definitions or states the relevant general fact; it cannot establish an invented entity attribute.
+
+Array positions in evidence paths are zero-based; specification lines, card positions, and response paragraphs are one-based. Use source-native locations directly, without inventing evidence-ID inventories. The explanation connects the observed evidence to the expected reference, requested extent, or applicability basis. Values already visible at those locations need not be recopied.
+
+The union of line and unattributed references must cover every supplied insertion, deletion, changed update field, and user-facing paragraph. Shared references count once. If only field-specific update references are used, cover every changed field, including incidental ones. A whole update can account for them together. This is coverage of the supplied diff, not a claim to have audited the platform's diff implementation. Missing/incomplete input must be identified in `assessment_issue`; do not disguise an accounting gap as no changes.
 
 ## Output contract
 
-The report contains `schema_version`, `test_id`, `run_id`, `obligations`, `unexpected_effects`, and `assessment_issue`. Use the supplied test/run IDs; the runner assigns a missing run ID before assessment. Create one obligation record per supplied card, with `obligation_id`, `linked_downstream_actions`, `overall_grounding_assessment`, and `assessment_issue`. Keep input cards unchanged.
+Return exactly `schema_version`, `test_id`, `run_id`, `lines`, `obligations`, `unattributed`, and `assessment_issue`. Copy the supplied test/run IDs; the runner assigns a missing run ID before assessment. Use version `3.0`.
 
-`obligation_id` is the card's one-based integer position, matching the specification's `obligations` links. `action_id` is the supplied specification line's integer `line` value. Use these references directly; do not generate a separate ID scheme. Names, card locations, and requested text can be joined from the inputs and need not be repeated. Retries, proposals, and recovery steps do not become new requested actions.
+Each substantive line record contains exactly:
 
-Within each obligation, include one record per linked requested action:
+| Field | Content |
+|---|---|
+| `line` | Supplied specification line number. |
+| `task_status` | `active`, `inactive`, or `null` if assessment is blocked. |
+| `execution_status` | One of the seven descriptive statuses, or `null` if blocked. |
+| `grounding` | Object keyed by the supplied linked obligation numbers, with verdict values. Use `{}` when no obligation applies or an inactive line has no separate reference judgment. Use a `null` value only for a blocked judgment. |
+| `evidence` | Relevant source/location references, including attributable net changes and user-facing passages. |
+| `explanation` | Concise support for applicability, observed extent/disposition, and grounding. Identify an inactivity basis, an inactive batch portion, any partial remainder, or a concrete discrepancy when applicable. |
 
-| Field | Required content |
-| --- | --- |
-| `action_id` | The supplied specification line number. |
-| `action_type` | `read-only` or `state-changing`, based on the supplied instruction and prompt context. |
-| `observed_behavior` | Concise description of the answer, proposal, attempt, or achieved effects after recovery. `target_ids` contains established entities relevant to this obligation; use `null` when unestablished and `[]` when no target was selected. A deferred or failed action can still have an established target. |
-| `evidence` | Relevant excerpts/facts and their source locations. Explain what they establish about the reference, outcome, or effect. |
-| `grounding_assessment` | A verdict and evidence-backed reason under the definitions below. |
-| `downstream_action_outcome` | An outcome under the definitions below, assigned independently of grounding. |
-| `outcome_explanation` | What was achieved or remains unmet, including definite factual or execution failures. Distinguish an accurately reported inability from a false claim. Explain material recovery. |
+A pure syntax marker has only `{"line": 3}`, for example. Do not use marker-only records for conditions, requested operations, or deliverables. Include every supplied line exactly once in input order. Do not repeat task text, card names, identifying attributes, a separate action type, target-ID lists already evidenced elsewhere, or entire diff/response payloads.
 
-For a repeated action ID, keep its type and whole-action outcome consistent. Grounding verdicts, relevant targets, and supporting evidence are relative to the enclosing obligation and may differ. The overall grounding assessment belongs to the obligation, outside its action list. Unexpected effects are recorded once at test level.
+`obligations` maps each supplied card's number to its overall verdict, for example `{"1": "demonstrated_correct"}`. JSON object keys are strings. Include every card once; use `{}` for a zero-obligation test. `unattributed` is a list of objects containing `evidence` and `explanation`; use `[]` when all net changes and user-facing content are attributable to lines. It replaces a separate duplicated unexpected-effects inventory.
 
-Evidence entries contain `source`, `location`, and `detail`. Use the schema's source labels; `domain_semantics` covers a cited supplied API definition/documentation passage or an explicitly stated general fact. A general fact cannot establish a particular entity's invented attribute.
+`assessment_issue` is normally `null`, otherwise `{"description": "..."}`. Name affected lines/obligations and blocked judgments or missing inputs in ordinary prose; retain unaffected judgments and confirmed findings. `not_established` is a completed reference assessment, not an evaluator failure. Empty grounding maps on inactive unused lines and marker-only rows are intentional, not blocked judgments. An input conflict need not block a judgment if the evidence supports it; explain that distinction.
 
-### Assessment issues and incomplete judgments
+## Calibration examples
 
-An `assessment_issue` is normally `null`. Otherwise provide `{"description": "..."}` explaining the material input inconsistency or assessment limitation. Name the affected obligation/line numbers and judgments in ordinary prose. Preserve all unaffected judgments.
+These observations illustrate the rules; they are not new task requirements.
 
-- `not_established` is a completed reference judgment: available behavior establishes neither satisfaction nor a remaining violation. It does not mean the evaluator could not assess the evidence.
-- A `null` verdict, action type, or outcome means the evaluator could not assign it. Explain which judgment is blocked and why in an assessment issue.
-- An input conflict need not block a judgment when the evidence still supports that judgment; explain this in the issue.
-- Use the obligation-level issue for its card/actions and the test-level issue for test-wide problems.
-- `unexpected_effects: []` means no material unauthorized effects were established. Use `null` when this assessment could not be completed and no findings are confirmed. If some findings are confirmed but assessment remains incomplete, retain them and explain the limitation in the test-level issue.
+| Observation | Applicability / execution | Grounding or explanation |
+|---|---|---|
+| Both requested profile attributes are supplied, but one is false | Active / performed | Record the false attribute separately from identity. |
+| Only the requested role is supplied; department is unanswered | Active / partially_performed | Identify the omitted department. |
+| Recipient found and message prepared; agent asks to send | Active / deferred | Preparation alone is not partial performance. |
+| Send rejected; agent nevertheless says “Sent” | Active / execution_failed | Record the rejected call and false completion claim. |
+| Send rejected; agent explicitly leaves retry pending confirmation | Active / deferred | Retain the rejection in evidence. |
+| Two of three invitations occur, then agent asks about the third | Active / partially_performed | Remainder deferred. |
+| No action, deferral, or skip is observable | Applicable status assessed separately / omitted | Inactive silence is not automatically a violation. |
+| An abnormal stop occurs during preparation before any result | Applicable status assessed separately / interrupted | A prior established rejection would take precedence. |
+| Named channel's topic update is refused because the new initiative has no prior discussion | Active / skipped, or deferred if explicitly left pending | The refusal does not supply a valid inactivity criterion. |
 
-For overall grounding, a confirmed incorrect action makes the obligation incorrect even if another action is blocked. Otherwise a blocked action judgment blocks the overall judgment; otherwise apply the correct/not-established aggregation below. Do not treat missing linked-action information as vacuous evidence of correct grounding; record the assessment issue.
+For “if ElonMusk is found, invite him to general; else inform Hubert,” a seed without ElonMusk can yield: condition active/performed/O1 correct; invitation inactive/skipped with no separate reference judgment; `Else:` marker only; notification active/performed/O2 correct. Overall O1 and O2 are correct. If the agent instead invites an unjustified person, preserve that reference violation despite the line being inactive.
 
-### Grounding verdict definitions
+For “set project-alpha's topic to Release planning and post Release review is Friday,” both operations can be performed on the correct channel while the announcement says Monday. Both execution statuses are `performed`, both reference judgments can be correct, and the wrong announcement content remains explicit in the explanation.
 
-These verdicts assess the card's reference requirement: identity, membership, or appropriate handling of absence or underspecification. “Demonstrated” means established by observable results or execution evidence; it does not require demonstrated reasoning or prescribed checks.
+## Mechanical validation
 
-| Choice | Per-action definition | Overall obligation rule |
-| --- | --- | --- |
-| `demonstrated_correct` | Evidence establishes correct reference handling in the action's result or current proposal, accounting for recovery. Execution need not be completed. | Every required use has sufficient evidence of correct reference handling after accounting for recovery. |
-| `demonstrated_incorrect` | A reference-handling violation remains demonstrated after accounting for recovery, such as a wrong target, conflated identities, or unjustified selection under underspecification. | At least one linked action retains such a demonstrated violation. |
-| `not_established` | Available behavior establishes neither satisfaction nor a remaining reference-handling violation. Explain what is unestablished. Do not use missing retrieval steps as the reason when the result itself establishes grounding. | No demonstrated violation remains, but reference handling for at least one required use is unestablished. |
+The runner should check schema conformance; exact specification-line and card coverage; valid direct obligation links and evidence locations; overall grounding aggregation; and complete net-diff/response accounting. These checks do not establish semantic attribution, applicability, or correctness. No repeated whole-action consistency check is needed because each line occurs once. The evaluator must not modify its schema or validation rules.
 
-### Downstream-action outcome definitions
-
-Assess the requested result under the supported prompt interpretation, including applicable conditional branches. Account for recovery. Successful tool execution alone does not establish completion; a definite unmet result does not by itself establish incorrect reference handling.
-
-| Choice | Definition |
-| --- | --- |
-| `completed` | The requested outcome was achieved. Earlier recovered mistakes do not prevent completion. |
-| `partially_completed` | A meaningful part, but not all, of the requested outcome was achieved within this linked action. State what remains and whether that remainder was deferred, omitted, interrupted, or failed. |
-| `failed` | The requested outcome was not achieved following an attempt or a reported inability to fulfill it, or the supplied result was incorrect. Distinguish an agent error from an accurately reported environmental or execution limitation in the explanation. |
-| `deferred` | The agent explicitly leaves the action pending confirmation or clarification. A bare “Shall I proceed?” qualifies when its scope is clear, even if its target is unestablished. |
-| `omitted` | The action is unaddressed, with no indication that it is pending confirmation or clarification. Do not infer blanket deferral of unmentioned actions from an unrelated confirmation question. |
-| `interrupted` | Work was underway but the run stopped before an outcome was established. Do not use interruption to obscure an already established result or failure. |
-
-A grounding verdict does not mechanically determine the downstream outcome. A wrong-target current proposal may be `demonstrated_incorrect` and `deferred`; a definite false answer can coexist with `not_established` reference handling. Correct grounding can coexist with unsuccessful execution. Correct absence or ambiguity handling must remain distinguishable from whether the originally requested change could be completed.
-
-## Unexpected effects — one list per test
-
-Report material unauthorized effects that remain violations after accounting for recovery. For each, give the operation/effect and target, relevant prompt authorization, supporting response/state/execution evidence, and a short explanation of why recovery did not remove the violation. Cross-reference linked actions rather than duplicating the finding under every card.
-
-Do not turn this into an inventory of every rejected call or corrected detour. An unsuccessful operation can explain an unmet requested outcome without constituting an independent grounding violation.
-
-Keep all explanations concise and tied to a concrete reference requirement, environmental fact, requested result, or authorization. Do not add procedural expectations, speculative causes, or prose-quality requirements.
-
-## Worked example
-
-Suppose the prompt says: “Set project-alpha's topic to Release planning and post Release review is Friday there.” Card 1 identifies channel `C_ALPHA`. The supplied specification is:
-
-```json
-[
-  {"line": 1, "text": "Set project-alpha's topic to 'Release planning'.", "obligations": [1]},
-  {"line": 2, "text": "Post 'Release review is Friday' in project-alpha.", "obligations": [1]}
-]
-```
-
-The final topic is correct, but the announcement says Monday.
-
-| Linked action | Grounding | Outcome | Explanation |
-| --- | --- | --- | --- |
-| Line 1: set the topic | `demonstrated_correct` | `completed` | The requested topic is present on C_ALPHA. |
-| Line 2: post the announcement | `demonstrated_correct` | `failed` | The new message is in C_ALPHA but says Monday instead of Friday. |
-
-Use `obligation_id: 1` and `action_id: 1` or `2` in the report. Overall grounding is `demonstrated_correct`: both actions use the intended channel. The wrong announcement content remains a definite answer/action failure in line 2's explanation. Cite the card, specification, and relevant initial/final facts in the actual report; this hypothetical example supplies no real evidence locations.
-
-## Runner validation and later queries
-
-The runner should validate the JSON schema, card coverage, supplied obligation/line references, agreement of repeated action outcomes, and grounding aggregation. These are mechanical checks outside the evaluator's substantive assessment. The evaluator does not modify the schema or validation rules.
-
-Count grounding obligations separately from actions. Deduplicate repeated actions by `(test_id, run_id, action_id)`. `failed` alone does not establish an agent violation: retain its explanation and evidence. Post-processing can classify concrete findings and distinguish acknowledged limitations, fabricated answers, false completion claims, and other failures. Assessment issues indicate incomplete assessment, not agent bugs; preserve confirmed findings in unaffected fields.
+Deduplicate grounding obligations by their supplied IDs, never by line count. Execution and applicability combinations are observations, not automatic bug labels. Post-processing can use the evidence and concrete explanations without having the evaluator predict agent capability or invent further grading rules.

@@ -1,11 +1,11 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "Oracle assessment of one completed test run",
-  "description": "Output contract for assessment of supplied grounding cards and linked task-spec actions in one completed test run. Semantic rules are in CC-oracle-check-instructions.md. Bug categorization belongs to post-processing.",
+  "title": "Line-based assessment of one agent run",
+  "description": "Applicability, descriptive execution, grounding, and complete supplied net-diff/response accounting. Rules are in CC-oracle-check-instructions.md.",
   "type": "object",
   "properties": {
     "schema_version": {
-      "const": "2.1"
+      "const": "3.0"
     },
     "test_id": {
       "type": "string",
@@ -15,30 +15,43 @@
       "type": "string",
       "minLength": 1
     },
-    "obligations": {
+    "lines": {
       "type": "array",
       "items": {
-        "$ref": "#/$defs/obligation"
+        "oneOf": [
+          {
+            "$ref": "#/$defs/line"
+          },
+          {
+            "$ref": "#/$defs/marker"
+          }
+        ]
       },
       "minItems": 1
     },
-    "unexpected_effects": {
-      "anyOf": [
-        {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/unexpected_effect"
-          }
-        },
-        {
-          "type": "null"
-        }
-      ]
+    "obligations": {
+      "$ref": "#/$defs/grounding_map"
+    },
+    "unattributed": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/unattributed"
+      }
     },
     "assessment_issue": {
       "anyOf": [
         {
-          "$ref": "#/$defs/assessment_issue"
+          "type": "object",
+          "properties": {
+            "description": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "description"
+          ],
+          "additionalProperties": false
         },
         {
           "type": "null"
@@ -50,24 +63,43 @@
     "schema_version",
     "test_id",
     "run_id",
+    "lines",
     "obligations",
-    "unexpected_effects",
+    "unattributed",
     "assessment_issue"
   ],
   "additionalProperties": false,
   "$defs": {
+    "verdict": {
+      "enum": [
+        "demonstrated_correct",
+        "demonstrated_incorrect",
+        "not_established",
+        null
+      ]
+    },
+    "grounding_map": {
+      "type": "object",
+      "patternProperties": {
+        "^[1-9][0-9]*$": {
+          "$ref": "#/$defs/verdict"
+        }
+      },
+      "additionalProperties": false
+    },
     "evidence": {
       "type": "object",
       "properties": {
         "source": {
           "enum": [
+            "diff",
+            "response",
+            "trajectory",
             "prompt",
             "card",
             "task_spec",
             "initial_state",
             "final_state",
-            "response",
-            "trajectory",
             "domain_semantics"
           ]
         },
@@ -75,227 +107,121 @@
           "type": "string",
           "minLength": 1
         },
-        "detail": {
-          "type": "string",
-          "minLength": 1
-        }
-      },
-      "required": [
-        "source",
-        "location",
-        "detail"
-      ],
-      "additionalProperties": false
-    },
-    "assessment_issue": {
-      "type": "object",
-      "properties": {
-        "description": {
-          "type": "string",
-          "minLength": 1
-        }
-      },
-      "required": [
-        "description"
-      ],
-      "additionalProperties": false
-    },
-    "grounding_assessment": {
-      "type": "object",
-      "properties": {
-        "verdict": {
-          "enum": [
-            "demonstrated_correct",
-            "demonstrated_incorrect",
-            "not_established",
-            null
-          ]
-        },
-        "reason": {
-          "type": "string",
-          "minLength": 1
-        }
-      },
-      "required": [
-        "verdict",
-        "reason"
-      ],
-      "additionalProperties": false
-    },
-    "action": {
-      "type": "object",
-      "properties": {
-        "action_id": {
-          "type": "integer",
-          "minimum": 1,
-          "description": "The supplied task_spec line number."
-        },
-        "action_type": {
-          "enum": [
-            "read-only",
-            "state-changing",
-            null
-          ]
-        },
-        "observed_behavior": {
-          "type": "object",
-          "properties": {
-            "description": {
-              "type": "string",
-              "minLength": 1
-            },
-            "target_ids": {
-              "anyOf": [
-                {
-                  "type": "array",
-                  "items": {
-                    "type": "string",
-                    "minLength": 1
-                  },
-                  "uniqueItems": true
-                },
-                {
-                  "type": "null"
-                }
-              ]
-            }
-          },
-          "required": [
-            "description",
-            "target_ids"
-          ],
-          "additionalProperties": false
-        },
-        "evidence": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/evidence"
-          }
-        },
-        "grounding_assessment": {
-          "$ref": "#/$defs/grounding_assessment"
-        },
-        "downstream_action_outcome": {
-          "enum": [
-            "completed",
-            "partially_completed",
-            "failed",
-            "deferred",
-            "omitted",
-            "interrupted",
-            null
-          ]
-        },
-        "outcome_explanation": {
-          "type": "string",
-          "minLength": 1
-        }
-      },
-      "required": [
-        "action_id",
-        "action_type",
-        "observed_behavior",
-        "evidence",
-        "grounding_assessment",
-        "downstream_action_outcome",
-        "outcome_explanation"
-      ],
-      "additionalProperties": false
-    },
-    "obligation": {
-      "type": "object",
-      "properties": {
-        "obligation_id": {
-          "type": "integer",
-          "minimum": 1,
-          "description": "One-based card position, matching task_spec obligation links."
-        },
-        "linked_downstream_actions": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/action"
-          }
-        },
-        "overall_grounding_assessment": {
-          "$ref": "#/$defs/grounding_assessment"
-        },
-        "assessment_issue": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/assessment_issue"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        }
-      },
-      "required": [
-        "obligation_id",
-        "linked_downstream_actions",
-        "overall_grounding_assessment",
-        "assessment_issue"
-      ],
-      "additionalProperties": false
-    },
-    "unexpected_effect": {
-      "type": "object",
-      "properties": {
-        "effect_id": {
-          "type": "string",
-          "pattern": "^E[0-9]{3,}$"
-        },
-        "description": {
-          "type": "string",
-          "minLength": 1
-        },
-        "target_ids": {
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string",
-                "minLength": 1
-              },
-              "uniqueItems": true
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "related_action_ids": {
+        "paragraphs": {
           "type": "array",
           "items": {
             "type": "integer",
             "minimum": 1
           },
+          "minItems": 1,
           "uniqueItems": true
+        }
+      },
+      "required": [
+        "source",
+        "location"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "required": [
+              "paragraphs"
+            ]
+          },
+          "then": {
+            "properties": {
+              "source": {
+                "const": "response"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "line": {
+      "type": "object",
+      "properties": {
+        "line": {
+          "type": "integer",
+          "minimum": 1
         },
-        "authorization_explanation": {
-          "type": "string",
-          "minLength": 1
+        "task_status": {
+          "enum": [
+            "active",
+            "inactive",
+            null
+          ]
         },
-        "recovery_explanation": {
-          "type": "string",
-          "minLength": 1
+        "execution_status": {
+          "enum": [
+            "performed",
+            "partially_performed",
+            "execution_failed",
+            "deferred",
+            "skipped",
+            "omitted",
+            "interrupted",
+            null
+          ]
+        },
+        "grounding": {
+          "$ref": "#/$defs/grounding_map"
         },
         "evidence": {
           "type": "array",
           "items": {
             "$ref": "#/$defs/evidence"
           },
-          "minItems": 1
+          "uniqueItems": true
+        },
+        "explanation": {
+          "type": "string",
+          "minLength": 1
         }
       },
       "required": [
-        "effect_id",
-        "description",
-        "target_ids",
-        "related_action_ids",
-        "authorization_explanation",
-        "recovery_explanation",
-        "evidence"
+        "line",
+        "task_status",
+        "execution_status",
+        "grounding",
+        "evidence",
+        "explanation"
+      ],
+      "additionalProperties": false
+    },
+    "marker": {
+      "type": "object",
+      "properties": {
+        "line": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": [
+        "line"
+      ],
+      "additionalProperties": false
+    },
+    "unattributed": {
+      "type": "object",
+      "properties": {
+        "evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/evidence"
+          },
+          "uniqueItems": true,
+          "minItems": 1
+        },
+        "explanation": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "evidence",
+        "explanation"
       ],
       "additionalProperties": false
     }
