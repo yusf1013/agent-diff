@@ -79,7 +79,7 @@ Supply the seed actually referenced by the test. Preparation checks that saved a
 
 Failed API calls, incomplete responses, and validation failures return a nonzero process exit code. Mechanical validation passing is not a correctness certificate. For example, active/performed on an underspecified mutation can be valid JSON and still violate the applicability policy.
 
-Pilot artifacts and a linked review are at `/tmp/bedrock-oracle-pilot/`. They are not model inputs. No prior CC answers, audit notes, or manually written expected verdicts were sent to Bedrock.
+Pilot artifacts, later comparisons, and a complete archive inventory are versioned in [experiments/oracle_evaluation](../../experiments/oracle_evaluation/README.md). They are not model inputs. No prior CC answers, audit notes, or manually written expected verdicts were sent to Bedrock.
 
 ## Verification
 
@@ -90,3 +90,7 @@ python -m unittest discover -s grounding/oracle_bedrock -p 'test_*.py' -v
 Tests cover complete record preservation, decoded observations with original locators, exact duplicate-text handling, indentation, paragraph/index conventions, invalid links/locators, substantive-line replacement by a marker, and accounting for incidental updates and memberships.
 
 API references: [AWS adaptive thinking](https://docs.aws.amazon.com/bedrock/latest/userguide/claude-messages-adaptive-thinking.html), [AWS structured output](https://docs.aws.amazon.com/bedrock/latest/userguide/structured-output.html), [Anthropic thinking-display documentation](https://platform.claude.com/docs/en/about-claude/models/extended-thinking-models). Actual endpoint compatibility is recorded by the invocation, not inferred from the documentation.
+
+## Versioned prompts and batch runs
+
+The exact experimental [lean](prompts/lean.md), [ordered](prompts/ordered.md), and [separated](prompts/separated.md) instructions are preserved here. `batch.py` repeats prepared cases with bounded concurrency, records every completion, and delegates the same-conversation repair to `run.py`. Use `--prepare-only` to verify assembly without API calls. Run `python grounding/oracle_bedrock/batch.py --help` for arguments. Historical experiment scripts and full native artifacts are archived separately; reference labels never enter evaluator requests.
