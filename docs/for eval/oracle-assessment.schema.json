@@ -1,11 +1,11 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Oracle assessment of one completed test run",
-  "description": "Proposed output contract. Input cards do not change. Semantic rules are in oracle-schema-guide.md.",
+  "description": "Output contract for assessment of supplied grounding cards and linked task-spec actions in one completed test run. Semantic rules are in CC-oracle-check-instructions.md. Bug categorization belongs to post-processing.",
   "type": "object",
   "properties": {
     "schema_version": {
-      "const": "1.0"
+      "const": "2.1"
     },
     "test_id": {
       "type": "string",
@@ -14,10 +14,6 @@
     "run_id": {
       "type": "string",
       "minLength": 1
-    },
-    "base_violation_registry_version": {
-      "type": "integer",
-      "minimum": 1
     },
     "obligations": {
       "type": "array",
@@ -48,23 +44,15 @@
           "type": "null"
         }
       ]
-    },
-    "new_violation_codes": {
-      "type": "array",
-      "items": {
-        "$ref": "#/$defs/code_definition"
-      }
     }
   },
   "required": [
     "schema_version",
     "test_id",
     "run_id",
-    "base_violation_registry_version",
     "obligations",
     "unexpected_effects",
-    "assessment_issue",
-    "new_violation_codes"
+    "assessment_issue"
   ],
   "additionalProperties": false,
   "$defs": {
@@ -75,6 +63,7 @@
           "enum": [
             "prompt",
             "card",
+            "task_spec",
             "initial_state",
             "final_state",
             "response",
@@ -104,19 +93,10 @@
         "description": {
           "type": "string",
           "minLength": 1
-        },
-        "blocked_fields": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "pattern": "^/"
-          },
-          "uniqueItems": true
         }
       },
       "required": [
-        "description",
-        "blocked_fields"
+        "description"
       ],
       "additionalProperties": false
     },
@@ -142,91 +122,20 @@
       ],
       "additionalProperties": false
     },
-    "violation": {
-      "type": "object",
-      "properties": {
-        "code": {
-          "type": "string",
-          "pattern": "^[a-z][a-z0-9_]*$"
-        },
-        "description": {
-          "type": "string",
-          "minLength": 1
-        }
-      },
-      "required": [
-        "code",
-        "description"
-      ],
-      "additionalProperties": false
-    },
-    "code_definition": {
-      "type": "object",
-      "properties": {
-        "code": {
-          "type": "string",
-          "pattern": "^[a-z][a-z0-9_]*$"
-        },
-        "applies_to": {
-          "enum": [
-            "outcome_violations",
-            "unexpected_effects"
-          ]
-        },
-        "definition": {
-          "type": "string",
-          "minLength": 1
-        },
-        "exclusions": {
-          "type": "string",
-          "minLength": 1
-        },
-        "example": {
-          "type": "string",
-          "minLength": 1
-        }
-      },
-      "required": [
-        "code",
-        "applies_to",
-        "definition",
-        "exclusions",
-        "example"
-      ],
-      "additionalProperties": false
-    },
     "action": {
       "type": "object",
       "properties": {
         "action_id": {
-          "type": "string",
-          "pattern": "^A[0-9]{3,}$"
+          "type": "integer",
+          "minimum": 1,
+          "description": "The supplied task_spec line number."
         },
-        "requested_action": {
-          "type": "object",
-          "properties": {
-            "description": {
-              "type": "string",
-              "minLength": 1
-            },
-            "type": {
-              "enum": [
-                "read-only",
-                "state-changing",
-                null
-              ]
-            },
-            "prompt_excerpt": {
-              "type": "string",
-              "minLength": 1
-            }
-          },
-          "required": [
-            "description",
-            "type",
-            "prompt_excerpt"
-          ],
-          "additionalProperties": false
+        "action_type": {
+          "enum": [
+            "read-only",
+            "state-changing",
+            null
+          ]
         },
         "observed_behavior": {
           "type": "object",
@@ -280,30 +189,16 @@
         "outcome_explanation": {
           "type": "string",
           "minLength": 1
-        },
-        "outcome_violations": {
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "$ref": "#/$defs/violation"
-              }
-            },
-            {
-              "type": "null"
-            }
-          ]
         }
       },
       "required": [
         "action_id",
-        "requested_action",
+        "action_type",
         "observed_behavior",
         "evidence",
         "grounding_assessment",
         "downstream_action_outcome",
-        "outcome_explanation",
-        "outcome_violations"
+        "outcome_explanation"
       ],
       "additionalProperties": false
     },
@@ -311,16 +206,9 @@
       "type": "object",
       "properties": {
         "obligation_id": {
-          "type": "string",
-          "pattern": "^O[0-9]{3,}$"
-        },
-        "obligation_name": {
-          "type": "string",
-          "minLength": 1
-        },
-        "card_ref": {
-          "type": "string",
-          "minLength": 1
+          "type": "integer",
+          "minimum": 1,
+          "description": "One-based card position, matching task_spec obligation links."
         },
         "linked_downstream_actions": {
           "type": "array",
@@ -344,8 +232,6 @@
       },
       "required": [
         "obligation_id",
-        "obligation_name",
-        "card_ref",
         "linked_downstream_actions",
         "overall_grounding_assessment",
         "assessment_issue"
@@ -358,10 +244,6 @@
         "effect_id": {
           "type": "string",
           "pattern": "^E[0-9]{3,}$"
-        },
-        "code": {
-          "type": "string",
-          "pattern": "^[a-z][a-z0-9_]*$"
         },
         "description": {
           "type": "string",
@@ -385,8 +267,8 @@
         "related_action_ids": {
           "type": "array",
           "items": {
-            "type": "string",
-            "pattern": "^A[0-9]{3,}$"
+            "type": "integer",
+            "minimum": 1
           },
           "uniqueItems": true
         },
@@ -408,34 +290,12 @@
       },
       "required": [
         "effect_id",
-        "code",
         "description",
         "target_ids",
         "related_action_ids",
         "authorization_explanation",
         "recovery_explanation",
         "evidence"
-      ],
-      "additionalProperties": false
-    },
-    "registry": {
-      "type": "object",
-      "properties": {
-        "registry_version": {
-          "type": "integer",
-          "minimum": 1
-        },
-        "codes": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/code_definition"
-          },
-          "minItems": 1
-        }
-      },
-      "required": [
-        "registry_version",
-        "codes"
       ],
       "additionalProperties": false
     }
