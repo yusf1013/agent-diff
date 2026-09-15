@@ -4,9 +4,11 @@
 
 **Changes from v1:** underspecified cards now describe the unresolved selection using `selection`, `partial_constraints`, and `candidate_sets` inside `Referent set`. The resolution rules cover competing interpretations, preserve real-field partial constraints, and distinguish unresolved intent from explicitly delegated choice. Section 8's formal-proof workflow has been removed; its useful card-review principles are retained in Section 9.
 
+**Task-specification addition:** Section 4.4 adds pre-execution task specifications and direct links to grounding obligations. Section 6 integrates their production after grounding extraction. This adds an output without changing the v1.0.1 grounding-card schema, counting, resolution, or coverage rules.
+
 ## 1. Your assignment
 
-Use this document to analyze a benchmark supplied by the user. Produce a grounding-obligation table for every in-scope test, one card per counted obligation, and per-test and aggregate measurements of assertion coverage. This document contains the methodology and examples; no previous conversation, Agent-Diff repository, AppWorld repository, or companion methodology document is required to understand it.
+Use this document to analyze a benchmark supplied by the user. Produce a grounding-obligation table for every in-scope test, one card per counted obligation, per-test and aggregate measurements of assertion coverage, and a task specification with direct obligation links for each test. This document contains the methodology and examples; no previous conversation, Agent-Diff repository, AppWorld repository, or companion methodology document is required to understand it.
 
 You still need the target benchmark's allowed evidence: its test entries, referenced initial-state data, API definitions, and API documentation. Locate those in the supplied material. Ask for essential missing evidence instead of inventing it or expanding the evidence boundary.
 
@@ -16,6 +18,8 @@ The measurement is about **the benchmark**, specifically:
 2. Which of those obligations its assertions constrain through the resulting state or requested output.
 
 Do not measure a solving agent's intelligence, actual retrievals, reasoning, trajectories, score, or behavior. Do not turn coverage measurements into predictions about random or capable agents. Such interpretation is a separate, later activity.
+
+Task specifications describe the requested operations, deliverables, and workflow before execution. They prepare inputs for later grading of grounding, downstream actions, and workflow correctness; writing them does not itself assess a run or define success, failure, deferral, or reward signals.
 
 The required completeness is coverage of all requested tests and their grounding obligations. It is **not** exhaustive discovery of every possible identifying attribute set or enumeration of every unresolved candidate. Use the locked schema below. The obligation description explains the reference and any unresolved distinction; detailed evidence, source references, and validation information belong outside the cards.
 
@@ -284,6 +288,85 @@ Aggregate by summing the per-test counts. Keep the denominator inclusive of abse
 
 Do not collapse partial and full into one “covered” statistic without explicitly labeling that different measure. Do not weight obligations by the number of assertions, API calls, records, or eligible targets. Do not present these measurements as agent scores or capability findings.
 
+### 4.4 Downstream task specifications and direct obligation links
+
+After constructing a test's grounding table and cards, rewrite its **original prompt** into light, numbered pseudocode. Retain the original language where practical. The aim is to make requested work and its grounding links easy to assess, without requiring a downstream grader to extract the task again. There is no uniquely correct decomposition; use the simplest faithful rewrite.
+
+The prompt remains authoritative for requested work. Cards guide reference interpretation but are not a complete action inventory: creation-only actions and inactive branches still belong in the specification. Do not weaken an action because an assertion is weak or missing. Do not replace an absent or underspecified reference with an arbitrary target, supply missing facts, delete the request, or invent a recovery procedure.
+
+**Format.** Store a `task_spec` list on the parent test, alongside its obligation list and supporting notes, outside all grounding cards. Each line has exactly these three fields:
+
+```json
+{
+  "task_spec": [
+    {"line": 1, "text": "If you find the user 'ElonMusk':", "obligations": [1]},
+    {"line": 2, "text": "    Invite him to #general.", "obligations": [1]},
+    {"line": 3, "text": "Else:", "obligations": []},
+    {"line": 4, "text": "    Inform me (Hubert) via Slack.", "obligations": [2]}
+  ]
+}
+```
+
+`line` is a consecutive one-based integer within the test. `text` is one nonempty physical line; leading spaces express branch indentation. Preserve output-format escapes such as `\n` within the text. `obligations` is a sorted, nonduplicated list of one-based positions in that test's grounding-card list. Use `[]` when no existing obligation applies directly. Test ID plus line number identifies a specification line; conditions and branch markers have numbers too, so line count is not action count. Reordering cards or renumbering lines requires updating their references.
+
+**Action and workflow boundaries:**
+
+- An action is a requested operation or deliverable. Updating a topic and posting an announcement are separate actions. Keep information within one deliverable together: a profile report containing role and department can remain one action with two components.
+- Keep batch scope within an action. “Invite all matching users” is one action over a collection, not a list of per-user actions. Preserve “all,” “each,” “one,” explicit counts, and selection qualifiers. A choose-one eligible population does not become a requirement to act on every candidate.
+- Keep alternative branches separate and attach their conditions. Retain both branches even when the seed establishes one is inactive. Use ordinary words such as `if`, `else`, `then`, and `after`, with indentation where helpful. Preserve requested sequences and dependencies on newly created outputs; other list order alone does not impose execution order.
+- Do not promote searching, resolving, reading, computing, or preparing into requested actions unless the prompt separately requests their result. “Find the message and edit it” can become “Edit the described message.” An expressly requested discussion review or count remains requested work. Tentative remarks such as “we may need to streamline membership” do not become definite removals.
+- Preserve relevant context, pronouns, exact output strings, formatting requirements, and conditions. Do not correct a typo inside an exact requested output. Do not add API-call plans, retry policies, outcome labels, or a formal workflow representation.
+
+**Linking rule:** assess each line's direct use of existing grounding obligations, including its targets and source-dependent content. Resolve pronouns from the task context, but do not propagate links through enclosing conditions or earlier workflow steps. A line may use several obligations, and one obligation may support several lines. Contextual names alone do not require a link: creating a channel for named people differs from inviting those people. Likewise, a person who only qualifies a described message does not automatically add a separate person link.
+
+In the ElonMusk example above, the supplied seed has no ElonMusk, while Hubert and general exist. O1 resolves ElonMusk's presence or absence; O2 resolves Hubert. L1 and L2 link O1 because their condition and invitation directly concern ElonMusk. L4 links O2 because its operation is informing Hubert; it does not inherit O1 from the branch condition. General has no card because it is used only by the inactive branch. Keeping that invitation line does not create a third obligation.
+
+Further self-contained examples:
+
+| Prompt and existing obligations | Task specification | Direct links |
+|---|---|---|
+| “Create a new channel called rl-project.” No existing-referent obligations. | L1: Create a new channel called rl-project. | L1: `[]` |
+| “Create rl-project and add Morgan Stanley.” O1: Morgan Stanley. | L1: Create rl-project.<br>L2: Then add Morgan Stanley to the new channel. | L1: `[]`; L2: `[1]` |
+| “Summarize the Gemini discussion in random and post the summary to engineering.” O1: source discussion; O2: destination channel. | L1: Post a summary of the Gemini discussion in random to engineering. | L1: `[1, 2]` |
+| “Copy the shift schedule from the message beginning 'Monday staffing' in #operations into a new message in #general, then give the new post a thumbs up.” O1: the described source message in #operations; O2: #general. | L1: Copy the shift schedule from the message beginning 'Monday staffing' in #operations into a new message in #general.<br>L2: Then react with :thumbsup: to that new post. | L1: `[1, 2]`; L2: `[]` |
+
+For Agent-Diff `slack_67`, the prompt asks for thumbs-up reactions on all lunch-question messages in random and a thumbs-down on the pizza-combo message. The agreed card interpretation treats the specific pizza-combo instruction as an exception to the general lunch instruction. O1 is the remaining lunch-question set; O2 is the pizza-combo message. Preserve that interpretation as:
+
+```text
+1: React with :thumbsup: to all lunch-question messages in #random, except the separately specified pizza-combo message.
+2: React with :thumbsdown: to the pizza-combo message in #random.
+```
+
+Links are L1–O1 and L2–O2. This is a task-specific exception, not a prohibition on overlapping obligations. A different prompt asking to repost all questions requires every matching question, including the pizza-combo question, without importing this exception.
+
+**Conditional batch example with an explicit stopping condition.** Consider this illustrative prompt:
+
+> Tell me how many active direct conversations I have. If I have fewer than seven, open new direct conversations with other non-bot users one by one in alphabetic display-name order, skipping users with whom I already have an active conversation, until I have exactly seven. If I have more than seven, close conversations in alphabetic order of the other participant's display name until I have exactly seven.
+
+Supplied seed facts: the actor has one active direct conversation, with Sophie. Six other non-bot users without active conversations with the actor have the distinct display names Aisha, Artem, Carlos, Gabriel, Hubert, and John. The existing cards are O1 for the actor's active direct-conversation set and O2 for those six eligible users. The closing branch is inactive in this seed and introduces no additional target card.
+
+```text
+1: Tell me how many active direct conversations I have.
+2: If I have fewer than seven active direct conversations:
+3:     Open new direct conversations with other non-bot users one by one in alphabetic display-name order, skipping users with whom I already have an active conversation, until I have exactly seven.
+4: Else if I have more than seven active direct conversations:
+5:     Close conversations in alphabetic order of the other participant's display name until I have exactly seven.
+```
+
+| Line | Direct obligation links |
+|---|---|
+| L1 | O1 |
+| L2 | O1 |
+| L3 | O1, O2 |
+| L4 | O1 |
+| L5 | O1 |
+
+L3 directly uses O1 for the exclusion and stopping condition, and O2 for the eligible users; its O1 link is not inherited from L2. L5 directly uses the existing conversation set, without linking the creation users or inventing an inactive-branch card. Each batch remains one action, with ordering and stopping expressed inside it. At exactly seven, neither mutation branch applies. Here the target of seven is explicit in the prompt; the rewrite does not infer a stopping condition from a card's referent count.
+
+Empty links never mean optional, completed, or exempt from later action/workflow assessment. Links are direct grounding associations, not a complete dependency graph. Keep the specification and its conditional structure together when handing them to a grader.
+
+Maintain specifications with the other annotations in one machine-readable source, such as `analysis.json`, and generate a readable projection with numbered pseudocode, a compact line-to-obligation mapping, and navigation to the prompt and individual cards. Every test receives a specification, including zero-obligation tests. Validate exact line fields, consecutive numbering, nonempty single-line text, valid unique obligation positions, and at least one appropriate link for every counted obligation. Semantic review must still establish prompt fidelity and link correctness; structural validation cannot do so.
+
 ## 5. Assertion coverage: final outcomes, never trajectories
 
 Assess each assertion against the counted obligation's contribution to the **resulting state or requested source-dependent output**.
@@ -314,19 +397,23 @@ Do not label partial solely because of missing source provenance, harmless forma
 
 ## 6. End-to-end workflow for a fresh session
 
+Produce grounding first, then task specifications, followed by a joint review, within the same assignment. Prefer completing these stages per test before moving to the next, then review consistency across the population. Separate sessions or approval between stages are unnecessary; ask only when the existing rules require clarification. If grounding annotations already exist, use and review those instead of re-deriving them merely to add specifications.
+
 1. **Inventory the requested scope.** Locate all in-scope full test entries, count them, preserve stable IDs/order, and identify each referenced seed and actor/context. Locate the allowed API definitions/docs. Do not assume another service's seed or one shared seed for all tests.
 2. **Record evidence boundaries.** List permitted source locations/versions and exclusions. Build only the native-field/API source mappings needed for the tasks. Record missing essential documentation rather than reading implementation.
-3. **Read each prompt for subjects before evaluating its assertions.** Mark independently described entities/sets, repeated uses, qualifiers, new outputs, contextual mentions, and conditional branches. Metadata such as create+read, single/multi, explicit/implicit information, or ambiguity can guide attention but cannot determine the count.
+3. **Read each prompt for subjects and requested work before evaluating its assertions.** Mark independently described entities/sets, repeated uses, qualifiers, new outputs, contextual mentions, actions, deliverables, conditional branches, and required sequences. Metadata such as create+read, single/multi, explicit/implicit information, or ambiguity can guide attention but cannot determine the count.
 4. **Resolve applicable branches against the supplied seed.** Count condition-resolving subjects and active-branch subjects. Exclude established inactive-branch-only subjects. Retain potentially needed subjects where the condition remains unsettled.
 5. **Write the first-stage table.** Establish candidate scopes, supported reference sets, and resolution states. Prefer justified broad boundaries to arbitrary narrow relevance judgments. Distinguish explicitly delegated choice, unresolved intent, and established absence. For underspecification, explain the competing interpretations or unresolved selection; do not require exhaustive candidate enumeration or needless pruning.
 6. **Inspect assertions for their contribution.** Map actual predicates to the counted rows; record one-based assertion indices or an equally stable native reference. Use valid assertions to guide ambiguous mutation boundaries where appropriate, but never create subjects just because a predicate names them. Assess final-state/output coverage using Section 5.
 7. **Construct one locked card per row.** Give each resolved/absent card supported identifying attributes with a selection explanation outside the card. For each underspecified card, populate `selection`, `partial_constraints`, and `candidate_sets`; use its description to explain what remains unresolved. Conditions use only real fields and supported operations, and may be omitted when unavailable or too complex. Keep sources and write targets distinct. Classify local computation contributions without investigating irrelevant downstream gaps. Do not expand the schema.
-8. **Review decisions across tests.** Check that similar descriptions, repeated names, conditional branches, choose-one requests, absent subjects, aggregates, and summaries receive consistent treatment. For any new convention that materially affects counts or labels, ask a concise question with the concrete case while continuing independent work. Record the decision outside cards; do not silently invent policy.
-9. **Validate what can be validated within the evidence boundary.** Recompute literal name/content selectors, joins, timestamps, memberships, and relevant scalar answers from supplied data where practical. Check missing/extra referents. For semantic selectors, preserve the human-readable justification and say whether execution checks were performed. Do not claim implementation or semantic certification from a structural validator.
-10. **Render and reconcile artifacts.** Produce readable tables, cards, supporting notes, and machine-readable measurements from one maintained annotation source. Verify all tests appear, every counted row has exactly one card, references/fields/assertion indices exist in allowed evidence, and the list/object/null/empty conventions hold for their respective fields. Check concrete candidate handles, selection cardinality, and compatibility with recorded partial constraints. Reconcile all counts; enumerated possibilities do not multiply obligations. Distinguish generated files from the annotation source.
-11. **Report results within scope.** State the tested population, obligation/resolution counts, full/partial/unchecked counts, validation actually performed, and outstanding source/interpretation limitations. Link or provide the artifacts. Make no agent-performance inference.
+8. **Write the task specification and direct links.** Rewrite the original prompt under Section 4.4, using the cards to guide reference interpretations. Retain actions without obligations, inactive branches, batch scopes, exact required content, and requested ordering. Attach only each line's direct grounding links; do not infer transitive dependencies.
+9. **Review grounding and the specification together.** Check every requested action is represented and every obligation has an appropriate link. Verify conditions, repeated uses, source-dependent deliverables, and created-object dependencies. If the rewrite exposes a missing obligation or inconsistent interpretation, address it under the extraction rules and reconcile affected artifacts; do not silently rewrite the prompt to fit the cards.
+10. **Review decisions across tests.** Check that similar descriptions, repeated names, conditional branches, choose-one requests, absent subjects, aggregates, summaries, action boundaries, and direct links receive consistent treatment. For any new convention that materially affects counts or labels, ask a concise question with the concrete case while continuing independent work. Record the decision outside cards; do not silently invent policy.
+11. **Validate what can be validated within the evidence boundary.** Recompute literal name/content selectors, joins, timestamps, memberships, and relevant scalar answers from supplied data where practical. Check missing/extra referents. For semantic selectors, preserve the human-readable justification and say whether execution checks were performed. Validate specification structure and references under Section 4.4. Do not claim implementation or semantic certification from a structural validator.
+12. **Render and reconcile artifacts.** Produce readable tables, cards, task specifications with direct links, supporting notes, and machine-readable measurements from one maintained annotation source. Verify all tests appear, every counted row has exactly one card, references/fields/assertion indices exist in allowed evidence, and the list/object/null/empty conventions hold for their respective fields. Check concrete candidate handles, selection cardinality, and compatibility with recorded partial constraints. Reconcile all counts; enumerated possibilities and repeated line links do not multiply obligations. Distinguish generated files from the annotation source.
+13. **Report results within scope.** State the tested population, obligation/resolution counts, full/partial/unchecked counts, task-specification completeness, validation actually performed, and outstanding source/interpretation limitations. Link or provide the artifacts. Make no agent-performance inference.
 
-A structural utility can enforce keys, referent/candidate existence, attribute names, assertion-index bounds, counts, and generated-file freshness. It does not establish the intended meaning of a request or certify that a selector identifies the right subject. Use the semantic review checks in Section 9 alongside structural checks; a formal task-solving proof is not required for this workflow.
+A structural utility can enforce keys, referent/candidate existence, attribute names, assertion-index bounds, counts, task-spec line numbering and obligation references, and generated-file freshness. It does not establish the intended meaning of a request, certify that a selector identifies the right subject, or prove faithful workflow representation. Use the semantic review checks in Section 9 alongside structural checks; a formal task-solving proof is not required for this workflow.
 
 ## 7. Worked examples requiring no external repository
 
@@ -613,11 +700,14 @@ Before handing off results, check:
 12. Per-test counts, aggregates, and resolution/coverage cross-counts reconcile. Repeated parent totals inside cards are not summed. Record the protocol version and any reclassification of older annotations.
 13. Sources, API mappings, interpretations, and remaining gaps are reviewable without expanding the evidence boundary. Structural checks, predicate execution, and semantic review establish different things. Do not claim formal verification, exhaustive discovery, minimality, or validity across other seed states from a successful local check.
 14. The conclusion remains a measurement of the benchmark. A full task-solving proof is not required to retain an obligation. Agent behavior, downstream outcome grading, and reward signals belong to separately requested work.
+15. Every test has a faithful task specification, including creation-only tasks. Requested operations and deliverables, batch scope, exact output requirements, and conditions/sequences are preserved. Intermediate work is not promoted into extra actions, and absent or underspecified references do not acquire invented targets or recovery behavior.
+16. Specification lines use exactly `line`, `text`, and `obligations`, outside grounding cards. Every counted obligation has an appropriate direct link. Links include directly used sources and targets without inheriting control-flow dependencies. Both branches remain conditional; excluded inactive targets and newly created outputs do not acquire extra cards. Empty links and numbered control lines are not action-completion judgments or action counts.
 
 The following decisions are final and override earlier versions of the approach:
 
 - The four-source evidence boundary replaces implementation-driven inspection.
 - The table-first measurement workflow and card-review checks do not require a formal task-solving proof.
+- Task specifications follow grounding extraction and receive a joint review against the original prompt. They preserve requested work beyond the grounding inventory and supply direct links for later assessment, without defining grading or reward policy.
 - The locked schema replaces earlier cards that contained prompt, seed, witness, or validation fields. Version v1.0.1 replaces the underspecified `Referent set: null` representation with `selection`, `partial_constraints`, and `candidate_sets`.
 - Underspecification can concern competing interpretations or an undistinguished selection. Preserve supported partial constraints over real fields, but do not require enumeration or marginal candidate pruning. Explicit delegation distinguishes permitted choices from unresolved intent.
 - Outcome-based coverage replaces the rule that source-derived words or counts are automatically partial without source-ID checks.
