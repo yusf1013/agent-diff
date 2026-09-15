@@ -73,7 +73,7 @@ Coverage concerns the grounded contribution in the final state or requested outp
 
 Send a 'hello' message to the general channel
 
-[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L1) · [Cards](cards.md#slack_57)
+[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L1) · [Cards](cards.md#slack_57) · [Task specification](task_specs.md#slack_57)
 
 | Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |
 |---|---|---|---|---|
@@ -110,7 +110,7 @@ Boundary and selection notes:
 
 Send a DM to John saying 'Can we sync later?'
 
-[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L2) · [Cards](cards.md#slack_58)
+[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L2) · [Cards](cards.md#slack_58) · [Task specification](task_specs.md#slack_58)
 
 | Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |
 |---|---|---|---|---|
@@ -157,7 +157,7 @@ Boundary and selection notes:
 
 Send a DM (group conversation not channel) to Artem and Hubert saying 'Hey, I've took a look at the presentation and I have some questions. Can you help me?'
 
-[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L3) · [Cards](cards.md#slack_59)
+[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L3) · [Cards](cards.md#slack_59) · [Task specification](task_specs.md#slack_59)
 
 | Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |
 |---|---|---|---|---|
@@ -206,7 +206,7 @@ Boundary and selection notes:
 
 Create a new channel called 'rl-project'
 
-[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L4) · [Cards](cards.md#slack_60)
+[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L4) · [Cards](cards.md#slack_60) · [Task specification](task_specs.md#slack_60)
 
 | Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |
 |---|---|---|---|---|
@@ -240,7 +240,7 @@ Boundary and selection notes:
 
 Add Morgan Stanley to the 'random' channel
 
-[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L5) · [Cards](cards.md#slack_61)
+[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L5) · [Cards](cards.md#slack_61) · [Task specification](task_specs.md#slack_61)
 
 | Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |
 |---|---|---|---|---|
@@ -279,7 +279,7 @@ Boundary and selection notes:
 
 Create a new channel called 'rl-project' and add Morgan Stanley to it
 
-[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L6) · [Cards](cards.md#slack_62)
+[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L6) · [Cards](cards.md#slack_62) · [Task specification](task_specs.md#slack_62)
 
 | Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |
 |---|---|---|---|---|
@@ -323,7 +323,7 @@ Boundary and selection notes:
 
 Remove John from the #random channel
 
-[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L7) · [Cards](cards.md#slack_63)
+[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L7) · [Cards](cards.md#slack_63) · [Task specification](task_specs.md#slack_63)
 
 | Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |
 |---|---|---|---|---|
@@ -362,7 +362,7 @@ Boundary and selection notes:
 
 Archive the #growth channel
 
-[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L8) · [Cards](cards.md#slack_64)
+[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L8) · [Cards](cards.md#slack_64) · [Task specification](task_specs.md#slack_64)
 
 | Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |
 |---|---|---|---|---|
@@ -400,7 +400,7 @@ Boundary and selection notes:
 
 Reply 'Next monday.' to the most recent message in #general
 
-[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L9) · [Cards](cards.md#slack_65)
+[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L9) · [Cards](cards.md#slack_65) · [Task specification](task_specs.md#slack_65)
 
 | Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |
 |---|---|---|---|---|
@@ -440,7 +440,7 @@ Boundary and selection notes:
 
 Reply 'Next monday.' to the to MCP deployment questions in #general
 
-[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L10) · [Cards](cards.md#slack_66)
+[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L10) · [Cards](cards.md#slack_66) · [Task specification](task_specs.md#slack_66)
 
 | Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |
 |---|---|---|---|---|
@@ -480,7 +480,7 @@ Boundary and selection notes:
 
 In #random, react with :thumbsup: to all messages that are questions about lunch, and react with :thumbsdown: to the message about piza combo
 
-[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L11) · [Cards](cards.md#slack_67)
+[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L11) · [Cards](cards.md#slack_67) · [Task specification](task_specs.md#slack_67)
 
 | Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |
 |---|---|---|---|---|
@@ -546,7 +546,7 @@ Boundary and selection notes:
 
 React with :thumbsup: to the most recent posted message in #general
 
-[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L12) · [Cards](cards.md#slack_68)
+[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L12) · [Cards](cards.md#slack_68) · [Task specification](task_specs.md#slack_68)
 
 | Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |
 |---|---|---|---|---|
@@ -586,7 +586,7 @@ Boundary and selection notes:
 
 Change the #general channel topic to 'Weekly standup discussions'
 
-[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L13) · [Cards](cards.md#slack_69)
+[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L13) · [Cards](cards.md#slack_69) · [Task specification](task_specs.md#slack_69)
 
 | Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |
 |---|---|---|---|---|
@@ -626,7 +626,7 @@ Boundary and selection notes:
 
 Find the message that says 'Hey team' and edit it to say 'Hello everyone'
 
-[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L14) · [Cards](cards.md#slack_70)
+[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L14) · [Cards](cards.md#slack_70) · [Task specification](task_specs.md#slack_70)
 
 | Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |
 |---|---|---|---|---|
@@ -669,7 +669,7 @@ Boundary and selection notes:
 
 Post to #general mentioning Artem with text 'Please review the pull request'
 
-[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L15) · [Cards](cards.md#slack_71)
+[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L15) · [Cards](cards.md#slack_71) · [Task specification](task_specs.md#slack_71)
 
 | Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |
 |---|---|---|---|---|
@@ -708,7 +708,7 @@ Boundary and selection notes:
 
 Send 'System maintenance tonight at 10pm' to both #general and #random
 
-[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L16) · [Cards](cards.md#slack_72)
+[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L16) · [Cards](cards.md#slack_72) · [Task specification](task_specs.md#slack_72)
 
 | Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |
 |---|---|---|---|---|
@@ -760,7 +760,7 @@ Boundary and selection notes:
 
 Delete the message about new feature you posted in #general
 
-[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L17) · [Cards](cards.md#slack_73)
+[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L17) · [Cards](cards.md#slack_73) · [Task specification](task_specs.md#slack_73)
 
 | Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |
 |---|---|---|---|---|
@@ -797,7 +797,7 @@ Boundary and selection notes:
 
 Find all questions in #random and post each one to #general as separate messages.
 
-[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L18) · [Cards](cards.md#slack_74)
+[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L18) · [Cards](cards.md#slack_74) · [Task specification](task_specs.md#slack_74)
 
 | Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |
 |---|---|---|---|---|
@@ -876,7 +876,7 @@ Boundary and selection notes:
 
 Search for all messages (4 messages) in the #engineering channel related to login issues and combine them into a single new message as DM to Hubert. Do not change the meaning of the original messages just combine them.
 
-[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L19) · [Cards](cards.md#slack_75)
+[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L19) · [Cards](cards.md#slack_75) · [Task specification](task_specs.md#slack_75)
 
 | Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |
 |---|---|---|---|---|
@@ -1005,7 +1005,7 @@ Boundary and selection notes:
 
 Search for all messages (6 messages) related to login issues and auth improvments. Combine them into a single new message as DM to Hubert. Do not change the meaning of the original messages just combine them.
 
-[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L20) · [Cards](cards.md#slack_76)
+[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L20) · [Cards](cards.md#slack_76) · [Task specification](task_specs.md#slack_76)
 
 | Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |
 |---|---|---|---|---|
@@ -1129,7 +1129,7 @@ Boundary and selection notes:
 
 Search for all messages (6 messages) related to login issues and auth improvments. Edit the message in the #engineering channel you sent before without details about issues and add the details about the issues and improvements. Do not change the meaning/ woring of the original messages just combine them.
 
-[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L21) · [Cards](cards.md#slack_77)
+[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L21) · [Cards](cards.md#slack_77) · [Task specification](task_specs.md#slack_77)
 
 | Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |
 |---|---|---|---|---|
@@ -1269,7 +1269,7 @@ Boundary and selection notes:
 
 You've replied to one of the messages with a bad joke. Edit it, for 'I will make a proposal for auth improvements tommorow EOD'
 
-[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L22) · [Cards](cards.md#slack_78)
+[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L22) · [Cards](cards.md#slack_78) · [Task specification](task_specs.md#slack_78)
 
 | Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |
 |---|---|---|---|---|
@@ -1318,7 +1318,7 @@ Boundary and selection notes:
 
 Send a message to #general saying 'Attention' in bold and 'check logs' in italics. Use Slack Block Kit rich_text blocks with style attributes (bold:true, italic:true).
 
-[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L23) · [Cards](cards.md#slack_79)
+[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L23) · [Cards](cards.md#slack_79) · [Task specification](task_specs.md#slack_79)
 
 | Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |
 |---|---|---|---|---|
@@ -1381,7 +1381,7 @@ Boundary and selection notes:
 
 Send a bulleted list to #random with three items: 'Bagels', 'Coffee', and 'Donuts'. Use Slack Block Kit rich_text blocks with rich_text_list (style:bullet).
 
-[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L24) · [Cards](cards.md#slack_80)
+[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L24) · [Cards](cards.md#slack_80) · [Task specification](task_specs.md#slack_80)
 
 | Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |
 |---|---|---|---|---|
@@ -1431,7 +1431,7 @@ Boundary and selection notes:
 
 Do two things using Slack Block Kit: 1) Send a code snippet to #engineering containing `{"status": 200}` using rich_text_preformatted element, and 2) Send a numbered list to #general with items 'Phase 1' and 'Phase 2' using rich_text_list with style:ordered.
 
-[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L25) · [Cards](cards.md#slack_81)
+[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L25) · [Cards](cards.md#slack_81) · [Task specification](task_specs.md#slack_81)
 
 | Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |
 |---|---|---|---|---|
@@ -1483,7 +1483,7 @@ Boundary and selection notes:
 
 Quote the text 'To be or not to be' in the #random channel. Use Slack Block Kit rich_text blocks with rich_text_quote element.
 
-[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L26) · [Cards](cards.md#slack_82)
+[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L26) · [Cards](cards.md#slack_82) · [Task specification](task_specs.md#slack_82)
 
 | Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |
 |---|---|---|---|---|
@@ -1520,7 +1520,7 @@ Boundary and selection notes:
 
 Send a table to #growth with headers 'Metric' and 'Value', and one row of data: 'DAU', '1500'. Use Slack Block Kit with a table block type.
 
-[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L27) · [Cards](cards.md#slack_83)
+[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L27) · [Cards](cards.md#slack_83) · [Task specification](task_specs.md#slack_83)
 
 | Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |
 |---|---|---|---|---|
@@ -1570,7 +1570,7 @@ Boundary and selection notes:
 
 Send a markdown formatted message to #engineering with a header 'Daily Report' and a bold item '**All Systems Go**'. Use Slack Block Kit with a markdown block type.
 
-[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L28) · [Cards](cards.md#slack_84)
+[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L28) · [Cards](cards.md#slack_84) · [Task specification](task_specs.md#slack_84)
 
 | Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |
 |---|---|---|---|---|
@@ -1607,7 +1607,7 @@ Boundary and selection notes:
 
 Mention @Artem in #general using Slack Block Kit rich_text blocks with a user element type containing Artem's user ID.
 
-[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L29) · [Cards](cards.md#slack_85)
+[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L29) · [Cards](cards.md#slack_85) · [Task specification](task_specs.md#slack_85)
 
 | Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |
 |---|---|---|---|---|
@@ -1659,7 +1659,7 @@ Boundary and selection notes:
 
 Find the user who complained about 'captcha' in #general and send them a DM saying 'I am looking into this.'
 
-[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L30) · [Cards](cards.md#slack_86)
+[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L30) · [Cards](cards.md#slack_86) · [Task specification](task_specs.md#slack_86)
 
 | Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |
 |---|---|---|---|---|
@@ -1716,7 +1716,7 @@ Boundary and selection notes:
 
 Create a new channel called 'auth-force' and invite everyone who has posted about 'login' or 'password'.
 
-[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L31) · [Cards](cards.md#slack_87)
+[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L31) · [Cards](cards.md#slack_87) · [Task specification](task_specs.md#slack_87)
 
 | Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |
 |---|---|---|---|---|
@@ -1767,7 +1767,7 @@ Boundary and selection notes:
 
 Try to invite the user 'ElonMusk' to #general. If you can't find him, inform me (Hubert) via Slack.
 
-[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L32) · [Cards](cards.md#slack_88)
+[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L32) · [Cards](cards.md#slack_88) · [Task specification](task_specs.md#slack_88)
 
 | Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |
 |---|---|---|---|---|
@@ -1839,7 +1839,7 @@ Boundary and selection notes:
 
 Who are the admins of the 'Test Workspace'? Reply with their names in #random.
 
-[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L33) · [Cards](cards.md#slack_89)
+[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L33) · [Cards](cards.md#slack_89) · [Task specification](task_specs.md#slack_89)
 
 | Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |
 |---|---|---|---|---|
@@ -1891,7 +1891,7 @@ Boundary and selection notes:
 
 Invite the Morgan who is NOT an admin to #random.
 
-[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L34) · [Cards](cards.md#slack_90)
+[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L34) · [Cards](cards.md#slack_90) · [Task specification](task_specs.md#slack_90)
 
 | Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |
 |---|---|---|---|---|
@@ -1930,7 +1930,7 @@ Boundary and selection notes:
 
 Post 'Status update: Alpha is on track' to the alpha dev channel.
 
-[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L35) · [Cards](cards.md#slack_91)
+[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L35) · [Cards](cards.md#slack_91) · [Task specification](task_specs.md#slack_91)
 
 | Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |
 |---|---|---|---|---|
@@ -1967,7 +1967,7 @@ Boundary and selection notes:
 
 Summarize the discussion about 'Gemini' in #random and post the summary to #engineering.
 
-[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L36) · [Cards](cards.md#slack_92)
+[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L36) · [Cards](cards.md#slack_92) · [Task specification](task_specs.md#slack_92)
 
 | Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |
 |---|---|---|---|---|
@@ -2006,7 +2006,7 @@ Boundary and selection notes:
 
 Check the discussion in #growth. If the team decided to double down on Reddit, react with :rocket: to the message proposing it.
 
-[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L37) · [Cards](cards.md#slack_93)
+[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L37) · [Cards](cards.md#slack_93) · [Task specification](task_specs.md#slack_93)
 
 | Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |
 |---|---|---|---|---|
@@ -2052,7 +2052,7 @@ I posted something outdated in one of the channels yesterday that needs to be re
 
 Oh, and when you find any important messages about the hackathon prep, just give them a thumbs up so people know we've seen them.
 
-[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L38) · [Cards](cards.md#slack_94)
+[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L38) · [Cards](cards.md#slack_94) · [Task specification](task_specs.md#slack_94)
 
 | Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |
 |---|---|---|---|---|
@@ -2108,7 +2108,7 @@ I also need you to check who's currently in #growth to make sure the right peopl
 
 Oh, and there's an old message I posted earlier about the event that has wrong details - can you update it with the correct information? There's also an outdated announcement from last week that's no longer relevant, so please delete that. Finally, just react to Priya's message about bringing samosas to show I've seen it!
 
-[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L39) · [Cards](cards.md#slack_95)
+[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L39) · [Cards](cards.md#slack_95) · [Task specification](task_specs.md#slack_95)
 
 | Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |
 |---|---|---|---|---|
@@ -2176,7 +2176,7 @@ First, can you help me figure out who on our team has the right expertise for th
 
 Also, I noticed the #project-alpha-dev channel might have some people who aren't really needed for this particular launch, and I want to keep discussions focused. Can you check who's currently in that channel? We may need to streamline the membership a bit - I think there are a couple of folks who were added for previous projects but don't need to be looped in on the APAC launch details.
 
-[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L40) · [Cards](cards.md#slack_96)
+[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L40) · [Cards](cards.md#slack_96) · [Task specification](task_specs.md#slack_96)
 
 | Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |
 |---|---|---|---|---|
@@ -2226,7 +2226,7 @@ Once you've got the lay of the land, please remove Artem Bogdanov from #project-
 
 There's also an outdated message I posted earlier that needs deleting, and I need to correct some information in a previous update I sent. Can you help me sort all this out?
 
-[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L41) · [Cards](cards.md#slack_97)
+[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L41) · [Cards](cards.md#slack_97) · [Task specification](task_specs.md#slack_97)
 
 | Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |
 |---|---|---|---|---|
@@ -2285,7 +2285,7 @@ Could you find any channels that might already be discussing this topic, and if 
 
 Oh, and Aisha left a great message earlier that I want to react to with a thumbs up. Also, I need to remove someone from one of our project channels who's no longer on the team. Thanks!
 
-[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L42) · [Cards](cards.md#slack_98)
+[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L42) · [Cards](cards.md#slack_98) · [Task specification](task_specs.md#slack_98)
 
 | Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |
 |---|---|---|---|---|
@@ -2351,7 +2351,7 @@ I posted a few messages earlier about the event that need updating with correcte
 
 Oh, and if you see the message where Priya or Mateo showed interest in participating, can you add a reaction to acknowledge it? I don't want to clutter the thread with another reply.
 
-[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L43) · [Cards](cards.md#slack_99)
+[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L43) · [Cards](cards.md#slack_99) · [Task specification](task_specs.md#slack_99)
 
 | Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |
 |---|---|---|---|---|
@@ -2403,7 +2403,7 @@ Once you've gathered that context, please set up a dedicated channel for this in
 
 Oh, and I think I sent a message earlier about the timeline that needs updating with the correct dates - can you fix that? And if there's anything important in those channel histories worth acknowledging, give it a thumbs up so people know we've seen it.
 
-[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L44) · [Cards](cards.md#slack_100)
+[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L44) · [Cards](cards.md#slack_100) · [Task specification](task_specs.md#slack_100)
 
 | Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |
 |---|---|---|---|---|
@@ -2469,7 +2469,7 @@ I also need to figure out who on our team should be involved. I know Robert Chen
 
 Once you've gathered all this info, I need updates posted to #engineering, #frontend, and #general to get everyone aligned on our festival streaming infrastructure plans. Also, check what channels we have available that might be relevant to this project.
 
-[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L45) · [Cards](cards.md#slack_101)
+[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L45) · [Cards](cards.md#slack_101) · [Task specification](task_specs.md#slack_101)
 
 | Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |
 |---|---|---|---|---|
@@ -2530,7 +2530,7 @@ I need to loop in Olena Petrenko on this since her perspective would be really h
 
 Oh, and let's update the channel topics for #product-growth and #project-alpha-dev to reflect that we're focusing on the anime expo booth setup now. There were a couple of my earlier messages that need corrections too - I posted the wrong setup times initially. Once you find the key planning message, just give it a thumbs up so everyone knows we're aligned.
 
-[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L46) · [Cards](cards.md#slack_102)
+[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L46) · [Cards](cards.md#slack_102) · [Task specification](task_specs.md#slack_102)
 
 | Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |
 |---|---|---|---|---|
@@ -2604,7 +2604,7 @@ Can you pull up our team roster so I can see who else might want to be involved?
 
 Thanks!
 
-[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L47) · [Cards](cards.md#slack_103)
+[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L47) · [Cards](cards.md#slack_103) · [Task specification](task_specs.md#slack_103)
 
 | Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |
 |---|---|---|---|---|
@@ -2691,7 +2691,7 @@ Post the audit results to #general - I want a message showing the exact member c
 
 After that, rename #engineering to "engineering-backend" since that's what the team mainly works on. Then post a follow-up message in #general confirming the rename was successful with the new channel name.
 
-[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L48) · [Cards](cards.md#slack_104)
+[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L48) · [Cards](cards.md#slack_104) · [Task specification](task_specs.md#slack_104)
 
 | Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |
 |---|---|---|---|---|
@@ -2784,7 +2784,7 @@ Sophie sent me a DM with her implementation plan and timeline since she's leadin
 
 After replying, add a checkmark reaction to the original thread message to mark it as addressed.
 
-[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L49) · [Cards](cards.md#slack_105)
+[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L49) · [Cards](cards.md#slack_105) · [Task specification](task_specs.md#slack_105)
 
 | Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |
 |---|---|---|---|---|
@@ -2857,7 +2857,7 @@ It's end of Q4 and I need to reorganize our Slack workspace. Help me with the fo
 
 6. Finally, post a Q1 kickoff message in the newly renamed channel. In the message, list which team members from #project-alpha-dev are in Americas timezones (the ones who remain after cleanup) - include their names and timezones.
 
-[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L50) · [Cards](cards.md#slack_106)
+[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L50) · [Cards](cards.md#slack_106) · [Task specification](task_specs.md#slack_106)
 
 | Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |
 |---|---|---|---|---|
@@ -3134,7 +3134,7 @@ Boundary and selection notes:
 
 Kenji, Olena, and Priya want to spin up a generative art project using the team's GPU infrastructure. They drew inspiration from the compute discussions and that circuit-tracer visualization work happening somewhere in the workspace. Can you get them organized? They need a channel — call it #fractal-forge — with a topic that contains "GPU-meets-art". Invite all three, and post an inaugural message that references whatever you can dig up about the GPU work and the circuit-tracer thread that got them excited -- those are going to be messeges on the topic, written by either three. Kenji also wants an :art: reaction on whichever message in #engineering first mentioned the circuit-tracer. Set up a group DM with just Kenji and Olena so they can sort out GPU scheduling privately. And actually, rename the channel to #silicon-dreams — everyone agreed it sounds better.
 
-[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L51) · [Cards](cards.md#slack_107)
+[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L51) · [Cards](cards.md#slack_107) · [Task specification](task_specs.md#slack_107)
 
 | Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |
 |---|---|---|---|---|
@@ -3336,7 +3336,7 @@ Boundary and selection notes:
 
 Sophie and Mateo want to bring the workspace's food culture together under one roof — a "Midnight Bazaar" inspired by all those coffee and pizza conversations scattered around the channels. Dig through the workspace to find what food chatter has been going on and who's been part of it - specifically, search for the authors of the messages that contain the words "food" or "eat". That old archived channel nobody uses anymore — revive it and repurpose it as bazaar headquarters. Set a topic that captures the night-market vibe (needs to include the words "street food"), and write an opening post that weaves in whatever food discussions you find. While you're at it, some housekeeping: Mateo says he's drowning in #project-alpha-dev notifications and wants out — remove him. Also, that message about the espresso machine in #random? Edit it to plug the bazaar. And delete that stale message in #random asking about ordering "large pies" — the bazaar makes casual lunch plans obsolete.
 
-[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L52) · [Cards](cards.md#slack_108)
+[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L52) · [Cards](cards.md#slack_108) · [Task specification](task_specs.md#slack_108)
 
 | Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |
 |---|---|---|---|---|
@@ -3467,7 +3467,7 @@ Boundary and selection notes:
 
 Aisha, Lukasz, Gabriel, Nick, and Priya want to launch a collaborative radio drama called "Phantom Frequencies" — a serialized fiction project where each person broadcasts a story from their timezone. They got the idea from all the talk about signal latency, CDN routing, and transmission in the workspace. Set them up with a channel called #phantom-frequencies, give it a topic that fits the concept (need to mention "Phantom Frequencies"), and get everyone in. Check Aisha's profile to confirm her timezone for the broadcast schedule, and DM her separately to ask about her episode's Lagos-blackout storyline. Write a first post in the channel that draws on whatever transmission and signal discussions you can find in the workspace. Also, that :eyes: reaction you left on the circuit-tracer message in #engineering — remove it, it's stale. There's a channel called #product-growth you're not in — pop in and check if there's anything about the APAC launch that could feed into the drama's world-building, then leave once you've got what you need. If you find in this chat a user with any user with a name that contains "incognito" ping them to change the nickname to "anything" - we need to maintain a trustful atmosphere here. And that #project-alpha channel that's basically just you — archive it, nobody's using it.
 
-[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L53) · [Cards](cards.md#slack_109)
+[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L53) · [Cards](cards.md#slack_109) · [Task specification](task_specs.md#slack_109)
 
 | Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |
 |---|---|---|---|---|
@@ -3603,7 +3603,7 @@ Boundary and selection notes:
 
 Hubert, John, Morgan, and Omer want to start a mapping project for forgotten underground rivers — they're calling it "Cartography of Lost Rivers". Pull up some details about #core-infra to see if that community would be a good match for cross-pollination. Now, "Morgan" — I mean the one who's been in the engineering discussions, not the other one. Also, that Morgan asked me to count all of the messages across all of the chats that mention the word "supercomputer." Do this please. Then create #lost-rivers-cartography, set a topic about mapping forgotten urban waterways, invite all four, and write a project manifesto as the opening post that will say: '"supercomputer" mentioned <your_count> number of times across all of the chats'. DM Morgan privately to ask whether they'd rather lead the cartography side or the field exploration. Lastly, find a message about infrastructure in #engineering and edit it to include a mention of the new project.
 
-[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L54) · [Cards](cards.md#slack_110)
+[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L54) · [Cards](cards.md#slack_110) · [Task specification](task_specs.md#slack_110)
 
 | Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |
 |---|---|---|---|---|
@@ -3742,7 +3742,7 @@ Boundary and selection notes:
 
 Kenji, Priya, Aisha, Sophie, Lukasz, and Mateo want to do a "Sunrise Relay" — a collaborative poetry chain where each person writes a verse when dawn breaks in their timezone, passing the baton westward as the sun moves around the earth. Pull up everyone's locale and timezone info so you can figure out the correct relay order from earliest sunrise to latest. Check what's been going on in #frontend for some creative inspiration to seed the poem's theme. Create a channel called #sunrise-relay, set the topic to the relay schedule showing each person and their timezone in sunrise order in exactly this format: "<username>: <timezone>\n" , invite all six, and post the full relay plan as the opening message. Drop a :sunrise: reaction on that schedule post. While you're looking at timezones, Mateo mentioned he can't keep up with #model-research because all the discussions happen during European hours and he's on Pacific time — pull him out of that channel. Oh, and rename #sunrise-relay to #dawn-chorus — the group decided the poem should be about birdsong at first light.
 
-[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L55) · [Cards](cards.md#slack_111)
+[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L55) · [Cards](cards.md#slack_111) · [Task specification](task_specs.md#slack_111)
 
 | Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |
 |---|---|---|---|---|
@@ -3848,7 +3848,7 @@ Boundary and selection notes:
 
 Hubert does this thing he calls the "Apiary Report" — he sees the workspace as a beehive, and he wants a quarterly survey. First he needs the full picture: how many honeycomb cells does this hive have, and which ones are alive? Then go taste the honey in #growth — read through whatever's been happening there. Find the sweetest drop — the single best message — and mark it with a :honey_pot:. That's Hubert's forager tradition. Once you've done your tasting, write up a Forager's Report and post it in #random for the rest of the colony, summarizing whatever noteworthy conversation you found in #growth. Note, that the report must contain the words "FORAGERS REPORT". Last thing: #project-alpha is an empty cell. Nobody's in it, nothing's happening. Seal it off.
 
-[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L56) · [Cards](cards.md#slack_112)
+[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L56) · [Cards](cards.md#slack_112) · [Task specification](task_specs.md#slack_112)
 
 | Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |
 |---|---|---|---|---|
@@ -3930,7 +3930,7 @@ Boundary and selection notes:
 
 Think of the workspace as a coastline full of tide pools — each channel is its own micro-ecosystem, and you're the naturalist on a field survey. Start by pulling a roster of every organism on this coast and classify them into two species: "admin" and "member." How many of each do you count? You need to sort the channel names in alphabetic order and send a message to Omer, in exactly this format: "Field Repoert 1: <channel_name>: [<admins_count>, <members_count>]". Then inspect #engineering. Probe under the circuit-tracer rock in that channel — there's a thread with replies most people never noticed. Count exactly how many replies are down there and note who left them. Over in #random, that message about coordinating lunch plans is an invasive species — remove it. And whoever originally posted that circuit-tracer message in #engineering — open a private channel with them and send them a field report formatted exactly like this: "Field Report 2: [N] replies found under circuit-tracer in #engineering — organisms: [comma-separated names of repliers]".
 
-[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L57) · [Cards](cards.md#slack_113)
+[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L57) · [Cards](cards.md#slack_113) · [Task specification](task_specs.md#slack_113)
 
 | Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |
 |---|---|---|---|---|
@@ -4019,7 +4019,7 @@ Boundary and selection notes:
 
 Robert and Nick want to do a "Palimpsest" — scraping off old marks in the workspace and writing over them with new ones. First, check what channels Nick is actually in — Robert suspects he's barely present anywhere. Count them. Then scrape off that :eyes: reaction you left on the circuit-tracer message in #engineering — it's old ink that needs to go. That lonely #project-alpha channel? Overwrite its name — rename it to #palimpsest-archive, it's being repurposed as a record of overwritten things. Finally, write the new text: post a message in #random that says exactly "PALIMPSEST COMPLETE: [N] channels found for Nick" where [N] is however many channels Nick turned out to be in.
 
-[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L58) · [Cards](cards.md#slack_114)
+[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L58) · [Cards](cards.md#slack_114) · [Task specification](task_specs.md#slack_114)
 
 | Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |
 |---|---|---|---|---|
@@ -4088,7 +4088,7 @@ Boundary and selection notes:
 
 How many active private conversations do I have? If I have less than seven conversations, please create new conversations with the users one by one in alphabetic order, skipping those with whom I already have conversations. If I have more than seven conversations, start removing conversations with those in alphabetic order until I have exactly seven conversations.
 
-[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L59) · [Cards](cards.md#slack_115)
+[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L59) · [Cards](cards.md#slack_115) · [Task specification](task_specs.md#slack_115)
 
 | Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |
 |---|---|---|---|---|

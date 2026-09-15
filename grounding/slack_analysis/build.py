@@ -48,6 +48,20 @@ def validate(analysis, entries, seed):
         entry = entries[item["test_id"]]
         assertions = json.loads(entry["answer"])["assertions"]
         assert item["number"] == entry["#"]
+        spec = item["task_spec"]
+        assert isinstance(spec, list) and spec, item["test_id"]
+        linked = set()
+        for number, line in enumerate(spec, 1):
+            assert set(line) == {"line", "text", "obligations"}, item["test_id"]
+            assert type(line["line"]) is int and line["line"] == number
+            assert isinstance(line["text"], str) and line["text"].strip()
+            assert not any(c in line["text"] for c in "\n\r\t"), item["test_id"]
+            links = line["obligations"]
+            assert isinstance(links, list)
+            assert all(type(i) is int and 1 <= i <= len(item["obligations"]) for i in links), item["test_id"]
+            assert links == sorted(set(links)), item["test_id"]
+            linked.update(links)
+        assert linked == set(range(1, len(item["obligations"]) + 1)), (item["test_id"], "Unlinked obligation")
         names = set()
         for row in item["obligations"]:
             count += 1
@@ -175,15 +189,27 @@ def make_outputs(analysis, entries, seed):
         "|---:|---|---:|---:|---:|---:|---:|---:|---:|"]
     for m in per_test:
         report.append(f"| {m['number']} | [{m['test_id']}](#{m['test_id']}) | " + " | ".join(str(m[k]) for k in ["obligations", "resolved", "absent", "underspecified", "fully_covered", "partially_covered", "unchecked"]) + " |")
-    card_md = ["# Slack obligation cards", "", "Only agreed card fields appear inside each JSON block. Test/obligation headings are document navigation, not card fields. `Grounding obligations` is the total for the parent test, repeated on each of its cards; count cards once. See [tables and evidence](report.md).", ""]
+    card_md = ["# Slack obligation cards", "", "Only agreed card fields appear inside each JSON block. Test/obligation headings are document navigation, not card fields. `Grounding obligations` is the total for the parent test, repeated on each of its cards; count cards once. See [tables and evidence](report.md) and [task specifications and action links](task_specs.md).", ""]
+    task_md = ["# Slack downstream task specifications", "",
+        "Pre-execution rewrites of all 59 Slack prompts, guided by their existing obligation cards. Editable source: [analysis.json](analysis.json). See [rewriting and linking rules](README.md#downstream-task-specifications).", "",
+        "Line numbers identify specification lines, including conditions; they are not action counts. Indentation, conditions, and explicit sequencing words express workflow. Other line order does not impose execution order. Links describe each line's direct use of existing obligations, including source-dependent content; they do not inherit enclosing conditions or other workflow dependencies. Empty links do not mean an action is optional or already complete.", "",
+        "Both conditional branches remain in the specification. Cards and links retain the seed-specific obligation inventory. Underspecified and absent references remain as requested; no arbitrary target or recovery behavior is supplied.", ""]
     for item in analysis:
         tid = item["test_id"]
         entry = entries[tid]
         report += ["", f'<a id="{tid}"></a>', f"## #{item['number']} — {tid}", "", entry["question"], "",
-            f"[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L{item['number']}) · [Cards](cards.md#{tid})", "",
+            f"[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L{item['number']}) · [Cards](cards.md#{tid}) · [Task specification](task_specs.md#{tid})", "",
             "| Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |",
             "|---|---|---|---|---|"]
-        card_md += [f'<a id="{tid}"></a>', f"## #{item['number']} — {tid}", ""]
+        card_md += [f'<a id="{tid}"></a>', f"## #{item['number']} — {tid}", "", f"[Task specification and links](task_specs.md#{tid})", ""]
+        task_md += [f'<a id="{tid}"></a>', f"## #{item['number']} — {tid}", "",
+            f"[Original prompt and evidence](report.md#{tid}) · [Obligation cards](cards.md#{tid})", "", "```text"]
+        task_md += [f"{line['line']:>2}: {line['text']}" for line in item["task_spec"]]
+        task_md += ["```", "", "| Line | Direct obligation links |", "|---|---|"]
+        for line in item["task_spec"]:
+            links = ", ".join(f"[O{i}](cards.md#{tid}-o{i})" for i in line["obligations"]) or "—"
+            task_md.append(f"| L{line['line']} | {links} |")
+        task_md.append("")
         if "protocol_version" in item:
             card_md += [f"Card protocol: {item['protocol_version']}.", ""]
         if not item["obligations"]:
@@ -193,7 +219,7 @@ def make_outputs(analysis, entries, seed):
             card = row["card"]
             indices = ", ".join(f"A{a}" for a in row["assertion_indices"]) or "None"
             report.append(f"| {i}. {safe(card['Grounding obligation name'])} | {card['Resolution']} | {refs_text(card['Referent set'])} | {row['assertion_coverage']} | {indices}: {safe(row['coverage_explanation'])} |")
-            card_md += [f"### Obligation {i}", ""]
+            card_md += [f'<a id="{tid}-o{i}"></a>', f"### Obligation {i}", ""]
             if "protocol_version" in row:
                 card_md += [f"Card protocol: {row['protocol_version']} (focused obligation review).", ""]
             card_md += ["```json", json.dumps(card, indent=2, ensure_ascii=False), "```", ""]
@@ -208,6 +234,7 @@ def make_outputs(analysis, entries, seed):
             json.dumps(json.loads(entry["answer"])["assertions"], ensure_ascii=False, indent=2), "```", "", "</details>"]
     outputs["report.md"] = "\n".join(report) + "\n"
     outputs["cards.md"] = "\n".join(card_md) + "\n"
+    outputs["task_specs.md"] = "\n".join(task_md) + "\n"
     sources = {}
     for path in [ENTRY, SEED, API]:
         sources[str(path.relative_to(ROOT))] = hashlib.sha256(path.read_bytes()).hexdigest()
@@ -240,7 +267,7 @@ def main():
             assert path.exists() and path.read_text() == text, f"Stale generated file: {name}"
         else:
             path.write_text(text)
-    print(f"Checked {len(analysis)} tests and {count} cards: locked fields, referent existence, assertion indices, counts, and generated artifacts. No semantic/procedure proof is claimed.")
+    print(f"Checked {len(analysis)} tests and {count} cards: locked fields, referent existence, assertion indices, counts, task-spec line structure and obligation links, and generated artifacts. No semantic/procedure proof is claimed.")
 
 
 if __name__ == "__main__":

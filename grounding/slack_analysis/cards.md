@@ -1,10 +1,13 @@
 # Slack obligation cards
 
-Only agreed card fields appear inside each JSON block. Test/obligation headings are document navigation, not card fields. `Grounding obligations` is the total for the parent test, repeated on each of its cards; count cards once. See [tables and evidence](report.md).
+Only agreed card fields appear inside each JSON block. Test/obligation headings are document navigation, not card fields. `Grounding obligations` is the total for the parent test, repeated on each of its cards; count cards once. See [tables and evidence](report.md) and [task specifications and action links](task_specs.md).
 
 <a id="slack_57"></a>
 ## #1 — slack_57
 
+[Task specification and links](task_specs.md#slack_57)
+
+<a id="slack_57-o1"></a>
 ### Obligation 1
 
 ```json
@@ -39,6 +42,9 @@ Only agreed card fields appear inside each JSON block. Test/obligation headings 
 <a id="slack_58"></a>
 ## #2 — slack_58
 
+[Task specification and links](task_specs.md#slack_58)
+
+<a id="slack_58-o1"></a>
 ### Obligation 1
 
 ```json
@@ -75,6 +81,9 @@ Only agreed card fields appear inside each JSON block. Test/obligation headings 
 <a id="slack_59"></a>
 ## #3 — slack_59
 
+[Task specification and links](task_specs.md#slack_59)
+
+<a id="slack_59-o1"></a>
 ### Obligation 1
 
 ```json
@@ -108,6 +117,7 @@ Only agreed card fields appear inside each JSON block. Test/obligation headings 
 }
 ```
 
+<a id="slack_59-o2"></a>
 ### Obligation 2
 
 ```json
@@ -144,11 +154,16 @@ Only agreed card fields appear inside each JSON block. Test/obligation headings 
 <a id="slack_60"></a>
 ## #4 — slack_60
 
+[Task specification and links](task_specs.md#slack_60)
+
 No grounding-obligation cards: this task creates a new channel without describing an existing referent.
 
 <a id="slack_61"></a>
 ## #5 — slack_61
 
+[Task specification and links](task_specs.md#slack_61)
+
+<a id="slack_61-o1"></a>
 ### Obligation 1
 
 ```json
@@ -180,6 +195,7 @@ No grounding-obligation cards: this task creates a new channel without describin
 }
 ```
 
+<a id="slack_61-o2"></a>
 ### Obligation 2
 
 ```json
@@ -214,6 +230,9 @@ No grounding-obligation cards: this task creates a new channel without describin
 <a id="slack_62"></a>
 ## #6 — slack_62
 
+[Task specification and links](task_specs.md#slack_62)
+
+<a id="slack_62-o1"></a>
 ### Obligation 1
 
 ```json
@@ -248,6 +267,9 @@ No grounding-obligation cards: this task creates a new channel without describin
 <a id="slack_63"></a>
 ## #7 — slack_63
 
+[Task specification and links](task_specs.md#slack_63)
+
+<a id="slack_63-o1"></a>
 ### Obligation 1
 
 ```json
@@ -276,6 +298,7 @@ No grounding-obligation cards: this task creates a new channel without describin
 }
 ```
 
+<a id="slack_63-o2"></a>
 ### Obligation 2
 
 ```json
@@ -307,6 +330,9 @@ No grounding-obligation cards: this task creates a new channel without describin
 <a id="slack_64"></a>
 ## #8 — slack_64
 
+[Task specification and links](task_specs.md#slack_64)
+
+<a id="slack_64-o1"></a>
 ### Obligation 1
 
 ```json
@@ -338,6 +364,9 @@ No grounding-obligation cards: this task creates a new channel without describin
 <a id="slack_65"></a>
 ## #9 — slack_65
 
+[Task specification and links](task_specs.md#slack_65)
+
+<a id="slack_65-o1"></a>
 ### Obligation 1
 
 ```json
@@ -377,6 +406,9 @@ No grounding-obligation cards: this task creates a new channel without describin
 <a id="slack_66"></a>
 ## #10 — slack_66
 
+[Task specification and links](task_specs.md#slack_66)
+
+<a id="slack_66-o1"></a>
 ### Obligation 1
 
 ```json
@@ -416,6 +448,9 @@ No grounding-obligation cards: this task creates a new channel without describin
 <a id="slack_67"></a>
 ## #11 — slack_67
 
+[Task specification and links](task_specs.md#slack_67)
+
+<a id="slack_67-o1"></a>
 ### Obligation 1
 
 Card protocol: v1.0.1 (focused obligation review).
@@ -456,6 +491,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_67-o2"></a>
 ### Obligation 2
 
 ```json
@@ -494,6 +530,9 @@ Card protocol: v1.0.1 (focused obligation review).
 <a id="slack_68"></a>
 ## #12 — slack_68
 
+[Task specification and links](task_specs.md#slack_68)
+
+<a id="slack_68-o1"></a>
 ### Obligation 1
 
 ```json
@@ -532,6 +571,9 @@ Card protocol: v1.0.1 (focused obligation review).
 <a id="slack_69"></a>
 ## #13 — slack_69
 
+[Task specification and links](task_specs.md#slack_69)
+
+<a id="slack_69-o1"></a>
 ### Obligation 1
 
 ```json
@@ -563,6 +605,9 @@ Card protocol: v1.0.1 (focused obligation review).
 <a id="slack_70"></a>
 ## #14 — slack_70
 
+[Task specification and links](task_specs.md#slack_70)
+
+<a id="slack_70-o1"></a>
 ### Obligation 1
 
 ```json
@@ -597,6 +642,9 @@ Card protocol: v1.0.1 (focused obligation review).
 <a id="slack_71"></a>
 ## #15 — slack_71
 
+[Task specification and links](task_specs.md#slack_71)
+
+<a id="slack_71-o1"></a>
 ### Obligation 1
 
 ```json
@@ -628,6 +676,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_71-o2"></a>
 ### Obligation 2
 
 ```json
@@ -661,6 +710,9 @@ Card protocol: v1.0.1 (focused obligation review).
 <a id="slack_72"></a>
 ## #16 — slack_72
 
+[Task specification and links](task_specs.md#slack_72)
+
+<a id="slack_72-o1"></a>
 ### Obligation 1
 
 ```json
@@ -692,6 +744,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_72-o2"></a>
 ### Obligation 2
 
 ```json
@@ -726,6 +779,9 @@ Card protocol: v1.0.1 (focused obligation review).
 <a id="slack_73"></a>
 ## #17 — slack_73
 
+[Task specification and links](task_specs.md#slack_73)
+
+<a id="slack_73-o1"></a>
 ### Obligation 1
 
 ```json
@@ -762,6 +818,9 @@ Card protocol: v1.0.1 (focused obligation review).
 <a id="slack_74"></a>
 ## #18 — slack_74
 
+[Task specification and links](task_specs.md#slack_74)
+
+<a id="slack_74-o1"></a>
 ### Obligation 1
 
 Card protocol: v1.0.1 (focused obligation review).
@@ -805,6 +864,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_74-o2"></a>
 ### Obligation 2
 
 ```json
@@ -839,6 +899,9 @@ Card protocol: v1.0.1 (focused obligation review).
 <a id="slack_75"></a>
 ## #19 — slack_75
 
+[Task specification and links](task_specs.md#slack_75)
+
+<a id="slack_75-o1"></a>
 ### Obligation 1
 
 ```json
@@ -876,6 +939,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_75-o2"></a>
 ### Obligation 2
 
 ```json
@@ -912,6 +976,9 @@ Card protocol: v1.0.1 (focused obligation review).
 <a id="slack_76"></a>
 ## #20 — slack_76
 
+[Task specification and links](task_specs.md#slack_76)
+
+<a id="slack_76-o1"></a>
 ### Obligation 1
 
 ```json
@@ -948,6 +1015,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_76-o2"></a>
 ### Obligation 2
 
 ```json
@@ -984,6 +1052,9 @@ Card protocol: v1.0.1 (focused obligation review).
 <a id="slack_77"></a>
 ## #21 — slack_77
 
+[Task specification and links](task_specs.md#slack_77)
+
+<a id="slack_77-o1"></a>
 ### Obligation 1
 
 ```json
@@ -1020,6 +1091,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_77-o2"></a>
 ### Obligation 2
 
 ```json
@@ -1058,6 +1130,9 @@ Card protocol: v1.0.1 (focused obligation review).
 <a id="slack_78"></a>
 ## #22 — slack_78
 
+[Task specification and links](task_specs.md#slack_78)
+
+<a id="slack_78-o1"></a>
 ### Obligation 1
 
 ```json
@@ -1094,6 +1169,9 @@ Card protocol: v1.0.1 (focused obligation review).
 <a id="slack_79"></a>
 ## #23 — slack_79
 
+[Task specification and links](task_specs.md#slack_79)
+
+<a id="slack_79-o1"></a>
 ### Obligation 1
 
 ```json
@@ -1128,6 +1206,9 @@ Card protocol: v1.0.1 (focused obligation review).
 <a id="slack_80"></a>
 ## #24 — slack_80
 
+[Task specification and links](task_specs.md#slack_80)
+
+<a id="slack_80-o1"></a>
 ### Obligation 1
 
 ```json
@@ -1162,6 +1243,9 @@ Card protocol: v1.0.1 (focused obligation review).
 <a id="slack_81"></a>
 ## #25 — slack_81
 
+[Task specification and links](task_specs.md#slack_81)
+
+<a id="slack_81-o1"></a>
 ### Obligation 1
 
 ```json
@@ -1193,6 +1277,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_81-o2"></a>
 ### Obligation 2
 
 ```json
@@ -1227,6 +1312,9 @@ Card protocol: v1.0.1 (focused obligation review).
 <a id="slack_82"></a>
 ## #26 — slack_82
 
+[Task specification and links](task_specs.md#slack_82)
+
+<a id="slack_82-o1"></a>
 ### Obligation 1
 
 ```json
@@ -1261,6 +1349,9 @@ Card protocol: v1.0.1 (focused obligation review).
 <a id="slack_83"></a>
 ## #27 — slack_83
 
+[Task specification and links](task_specs.md#slack_83)
+
+<a id="slack_83-o1"></a>
 ### Obligation 1
 
 ```json
@@ -1295,6 +1386,9 @@ Card protocol: v1.0.1 (focused obligation review).
 <a id="slack_84"></a>
 ## #28 — slack_84
 
+[Task specification and links](task_specs.md#slack_84)
+
+<a id="slack_84-o1"></a>
 ### Obligation 1
 
 ```json
@@ -1329,6 +1423,9 @@ Card protocol: v1.0.1 (focused obligation review).
 <a id="slack_85"></a>
 ## #29 — slack_85
 
+[Task specification and links](task_specs.md#slack_85)
+
+<a id="slack_85-o1"></a>
 ### Obligation 1
 
 ```json
@@ -1360,6 +1457,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_85-o2"></a>
 ### Obligation 2
 
 ```json
@@ -1393,6 +1491,9 @@ Card protocol: v1.0.1 (focused obligation review).
 <a id="slack_86"></a>
 ## #30 — slack_86
 
+[Task specification and links](task_specs.md#slack_86)
+
+<a id="slack_86-o1"></a>
 ### Obligation 1
 
 ```json
@@ -1433,6 +1534,9 @@ Card protocol: v1.0.1 (focused obligation review).
 <a id="slack_87"></a>
 ## #31 — slack_87
 
+[Task specification and links](task_specs.md#slack_87)
+
+<a id="slack_87-o1"></a>
 ### Obligation 1
 
 ```json
@@ -1473,8 +1577,11 @@ Card protocol: v1.0.1 (focused obligation review).
 <a id="slack_88"></a>
 ## #32 — slack_88
 
+[Task specification and links](task_specs.md#slack_88)
+
 Card protocol: v1.0.1.
 
+<a id="slack_88-o1"></a>
 ### Obligation 1
 
 ```json
@@ -1503,6 +1610,7 @@ Card protocol: v1.0.1.
 }
 ```
 
+<a id="slack_88-o2"></a>
 ### Obligation 2
 
 ```json
@@ -1539,6 +1647,9 @@ Card protocol: v1.0.1.
 <a id="slack_89"></a>
 ## #33 — slack_89
 
+[Task specification and links](task_specs.md#slack_89)
+
+<a id="slack_89-o1"></a>
 ### Obligation 1
 
 ```json
@@ -1572,6 +1683,7 @@ Card protocol: v1.0.1.
 }
 ```
 
+<a id="slack_89-o2"></a>
 ### Obligation 2
 
 ```json
@@ -1606,6 +1718,9 @@ Card protocol: v1.0.1.
 <a id="slack_90"></a>
 ## #34 — slack_90
 
+[Task specification and links](task_specs.md#slack_90)
+
+<a id="slack_90-o1"></a>
 ### Obligation 1
 
 ```json
@@ -1640,6 +1755,7 @@ Card protocol: v1.0.1.
 }
 ```
 
+<a id="slack_90-o2"></a>
 ### Obligation 2
 
 ```json
@@ -1674,6 +1790,9 @@ Card protocol: v1.0.1.
 <a id="slack_91"></a>
 ## #35 — slack_91
 
+[Task specification and links](task_specs.md#slack_91)
+
+<a id="slack_91-o1"></a>
 ### Obligation 1
 
 ```json
@@ -1708,6 +1827,9 @@ Card protocol: v1.0.1.
 <a id="slack_92"></a>
 ## #36 — slack_92
 
+[Task specification and links](task_specs.md#slack_92)
+
+<a id="slack_92-o1"></a>
 ### Obligation 1
 
 ```json
@@ -1756,6 +1878,7 @@ Card protocol: v1.0.1.
 }
 ```
 
+<a id="slack_92-o2"></a>
 ### Obligation 2
 
 ```json
@@ -1790,6 +1913,9 @@ Card protocol: v1.0.1.
 <a id="slack_93"></a>
 ## #37 — slack_93
 
+[Task specification and links](task_specs.md#slack_93)
+
+<a id="slack_93-o1"></a>
 ### Obligation 1
 
 ```json
@@ -1828,6 +1954,9 @@ Card protocol: v1.0.1.
 <a id="slack_94"></a>
 ## #38 — slack_94
 
+[Task specification and links](task_specs.md#slack_94)
+
+<a id="slack_94-o1"></a>
 ### Obligation 1
 
 Card protocol: v1.0.1 (focused obligation review).
@@ -1851,6 +1980,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_94-o2"></a>
 ### Obligation 2
 
 ```json
@@ -1883,6 +2013,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_94-o3"></a>
 ### Obligation 3
 
 ```json
@@ -1911,6 +2042,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_94-o4"></a>
 ### Obligation 4
 
 ```json
@@ -1939,6 +2071,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_94-o5"></a>
 ### Obligation 5
 
 Card protocol: v1.0.1 (focused obligation review).
@@ -1971,6 +2104,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_94-o6"></a>
 ### Obligation 6
 
 ```json
@@ -2000,6 +2134,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_94-o7"></a>
 ### Obligation 7
 
 ```json
@@ -2038,6 +2173,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_94-o8"></a>
 ### Obligation 8
 
 Card protocol: v1.0.1 (focused obligation review).
@@ -2070,6 +2206,9 @@ Card protocol: v1.0.1 (focused obligation review).
 <a id="slack_95"></a>
 ## #39 — slack_95
 
+[Task specification and links](task_specs.md#slack_95)
+
+<a id="slack_95-o1"></a>
 ### Obligation 1
 
 Card protocol: v1.0.1 (focused obligation review).
@@ -2093,6 +2232,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_95-o2"></a>
 ### Obligation 2
 
 ```json
@@ -2121,6 +2261,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_95-o3"></a>
 ### Obligation 3
 
 ```json
@@ -2164,6 +2305,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_95-o4"></a>
 ### Obligation 4
 
 ```json
@@ -2196,6 +2338,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_95-o5"></a>
 ### Obligation 5
 
 ```json
@@ -2224,6 +2367,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_95-o6"></a>
 ### Obligation 6
 
 ```json
@@ -2257,6 +2401,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_95-o7"></a>
 ### Obligation 7
 
 ```json
@@ -2290,6 +2435,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_95-o8"></a>
 ### Obligation 8
 
 Card protocol: v1.0.1 (focused obligation review).
@@ -2319,6 +2465,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_95-o9"></a>
 ### Obligation 9
 
 Card protocol: v1.0.1 (focused obligation review).
@@ -2343,6 +2490,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_95-o10"></a>
 ### Obligation 10
 
 ```json
@@ -2376,6 +2524,9 @@ Card protocol: v1.0.1 (focused obligation review).
 <a id="slack_96"></a>
 ## #40 — slack_96
 
+[Task specification and links](task_specs.md#slack_96)
+
+<a id="slack_96-o1"></a>
 ### Obligation 1
 
 ```json
@@ -2419,6 +2570,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_96-o2"></a>
 ### Obligation 2
 
 Card protocol: v1.0.1 (focused obligation review).
@@ -2448,6 +2600,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_96-o3"></a>
 ### Obligation 3
 
 Card protocol: v1.0.1 (focused obligation review).
@@ -2477,6 +2630,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_96-o4"></a>
 ### Obligation 4
 
 ```json
@@ -2516,6 +2670,9 @@ Card protocol: v1.0.1 (focused obligation review).
 <a id="slack_97"></a>
 ## #41 — slack_97
 
+[Task specification and links](task_specs.md#slack_97)
+
+<a id="slack_97-o1"></a>
 ### Obligation 1
 
 ```json
@@ -2549,6 +2706,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_97-o2"></a>
 ### Obligation 2
 
 ```json
@@ -2592,6 +2750,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_97-o3"></a>
 ### Obligation 3
 
 ```json
@@ -2620,6 +2779,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_97-o4"></a>
 ### Obligation 4
 
 ```json
@@ -2648,6 +2808,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_97-o5"></a>
 ### Obligation 5
 
 ```json
@@ -2677,6 +2838,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_97-o6"></a>
 ### Obligation 6
 
 ```json
@@ -2705,6 +2867,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_97-o7"></a>
 ### Obligation 7
 
 ```json
@@ -2733,6 +2896,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_97-o8"></a>
 ### Obligation 8
 
 ```json
@@ -2761,6 +2925,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_97-o9"></a>
 ### Obligation 9
 
 ```json
@@ -2793,6 +2958,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_97-o10"></a>
 ### Obligation 10
 
 Card protocol: v1.0.1 (focused obligation review).
@@ -2838,6 +3004,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_97-o11"></a>
 ### Obligation 11
 
 Card protocol: v1.0.1 (focused obligation review).
@@ -2885,8 +3052,11 @@ Card protocol: v1.0.1 (focused obligation review).
 <a id="slack_98"></a>
 ## #42 — slack_98
 
+[Task specification and links](task_specs.md#slack_98)
+
 Card protocol: v1.0.1.
 
+<a id="slack_98-o1"></a>
 ### Obligation 1
 
 ```json
@@ -2915,6 +3085,7 @@ Card protocol: v1.0.1.
 }
 ```
 
+<a id="slack_98-o2"></a>
 ### Obligation 2
 
 ```json
@@ -2943,6 +3114,7 @@ Card protocol: v1.0.1.
 }
 ```
 
+<a id="slack_98-o3"></a>
 ### Obligation 3
 
 ```json
@@ -2972,6 +3144,7 @@ Card protocol: v1.0.1.
 }
 ```
 
+<a id="slack_98-o4"></a>
 ### Obligation 4
 
 ```json
@@ -3001,6 +3174,7 @@ Card protocol: v1.0.1.
 }
 ```
 
+<a id="slack_98-o5"></a>
 ### Obligation 5
 
 ```json
@@ -3032,6 +3206,7 @@ Card protocol: v1.0.1.
 }
 ```
 
+<a id="slack_98-o6"></a>
 ### Obligation 6
 
 ```json
@@ -3078,6 +3253,7 @@ Card protocol: v1.0.1.
 }
 ```
 
+<a id="slack_98-o7"></a>
 ### Obligation 7
 
 ```json
@@ -3100,6 +3276,7 @@ Card protocol: v1.0.1.
 }
 ```
 
+<a id="slack_98-o8"></a>
 ### Obligation 8
 
 ```json
@@ -3125,6 +3302,9 @@ Card protocol: v1.0.1.
 <a id="slack_99"></a>
 ## #43 — slack_99
 
+[Task specification and links](task_specs.md#slack_99)
+
+<a id="slack_99-o1"></a>
 ### Obligation 1
 
 ```json
@@ -3154,6 +3334,7 @@ Card protocol: v1.0.1.
 }
 ```
 
+<a id="slack_99-o2"></a>
 ### Obligation 2
 
 ```json
@@ -3183,6 +3364,7 @@ Card protocol: v1.0.1.
 }
 ```
 
+<a id="slack_99-o3"></a>
 ### Obligation 3
 
 Card protocol: v1.0.1 (focused obligation review).
@@ -3212,6 +3394,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_99-o4"></a>
 ### Obligation 4
 
 Card protocol: v1.0.1 (focused obligation review).
@@ -3258,6 +3441,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_99-o5"></a>
 ### Obligation 5
 
 Card protocol: v1.0.1 (focused obligation review).
@@ -3291,6 +3475,9 @@ Card protocol: v1.0.1 (focused obligation review).
 <a id="slack_100"></a>
 ## #44 — slack_100
 
+[Task specification and links](task_specs.md#slack_100)
+
+<a id="slack_100-o1"></a>
 ### Obligation 1
 
 ```json
@@ -3324,6 +3511,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_100-o2"></a>
 ### Obligation 2
 
 ```json
@@ -3357,6 +3545,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_100-o3"></a>
 ### Obligation 3
 
 ```json
@@ -3385,6 +3574,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_100-o4"></a>
 ### Obligation 4
 
 ```json
@@ -3413,6 +3603,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_100-o5"></a>
 ### Obligation 5
 
 ```json
@@ -3444,6 +3635,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_100-o6"></a>
 ### Obligation 6
 
 Card protocol: v1.0.1 (focused obligation review).
@@ -3473,6 +3665,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_100-o7"></a>
 ### Obligation 7
 
 Card protocol: v1.0.1 (focused obligation review).
@@ -3562,6 +3755,9 @@ Card protocol: v1.0.1 (focused obligation review).
 <a id="slack_101"></a>
 ## #45 — slack_101
 
+[Task specification and links](task_specs.md#slack_101)
+
+<a id="slack_101-o1"></a>
 ### Obligation 1
 
 ```json
@@ -3594,6 +3790,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_101-o2"></a>
 ### Obligation 2
 
 ```json
@@ -3622,6 +3819,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_101-o3"></a>
 ### Obligation 3
 
 ```json
@@ -3650,6 +3848,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_101-o4"></a>
 ### Obligation 4
 
 ```json
@@ -3681,6 +3880,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_101-o5"></a>
 ### Obligation 5
 
 Card protocol: v1.0.1 (focused obligation review).
@@ -3708,6 +3908,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_101-o6"></a>
 ### Obligation 6
 
 ```json
@@ -3739,6 +3940,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_101-o7"></a>
 ### Obligation 7
 
 ```json
@@ -3770,6 +3972,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_101-o8"></a>
 ### Obligation 8
 
 Card protocol: v1.0.1 (focused obligation review).
@@ -3796,8 +3999,11 @@ Card protocol: v1.0.1 (focused obligation review).
 <a id="slack_102"></a>
 ## #46 — slack_102
 
+[Task specification and links](task_specs.md#slack_102)
+
 Card protocol: v1.0.1.
 
+<a id="slack_102-o1"></a>
 ### Obligation 1
 
 ```json
@@ -3826,6 +4032,7 @@ Card protocol: v1.0.1.
 }
 ```
 
+<a id="slack_102-o2"></a>
 ### Obligation 2
 
 ```json
@@ -3855,6 +4062,7 @@ Card protocol: v1.0.1.
 }
 ```
 
+<a id="slack_102-o3"></a>
 ### Obligation 3
 
 ```json
@@ -3878,6 +4086,7 @@ Card protocol: v1.0.1.
 }
 ```
 
+<a id="slack_102-o4"></a>
 ### Obligation 4
 
 ```json
@@ -3902,6 +4111,7 @@ Card protocol: v1.0.1.
 }
 ```
 
+<a id="slack_102-o5"></a>
 ### Obligation 5
 
 ```json
@@ -3933,6 +4143,7 @@ Card protocol: v1.0.1.
 }
 ```
 
+<a id="slack_102-o6"></a>
 ### Obligation 6
 
 ```json
@@ -3958,6 +4169,7 @@ Card protocol: v1.0.1.
 }
 ```
 
+<a id="slack_102-o7"></a>
 ### Obligation 7
 
 ```json
@@ -3991,6 +4203,7 @@ Card protocol: v1.0.1.
 }
 ```
 
+<a id="slack_102-o8"></a>
 ### Obligation 8
 
 ```json
@@ -4024,6 +4237,7 @@ Card protocol: v1.0.1.
 }
 ```
 
+<a id="slack_102-o9"></a>
 ### Obligation 9
 
 ```json
@@ -4052,6 +4266,7 @@ Card protocol: v1.0.1.
 }
 ```
 
+<a id="slack_102-o10"></a>
 ### Obligation 10
 
 ```json
@@ -4079,6 +4294,7 @@ Card protocol: v1.0.1.
 }
 ```
 
+<a id="slack_102-o11"></a>
 ### Obligation 11
 
 ```json
@@ -4109,6 +4325,9 @@ Card protocol: v1.0.1.
 <a id="slack_103"></a>
 ## #47 — slack_103
 
+[Task specification and links](task_specs.md#slack_103)
+
+<a id="slack_103-o1"></a>
 ### Obligation 1
 
 Card protocol: v1.0.1 (focused obligation review).
@@ -4132,6 +4351,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_103-o2"></a>
 ### Obligation 2
 
 ```json
@@ -4165,6 +4385,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_103-o3"></a>
 ### Obligation 3
 
 ```json
@@ -4208,6 +4429,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_103-o4"></a>
 ### Obligation 4
 
 ```json
@@ -4243,6 +4465,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_103-o5"></a>
 ### Obligation 5
 
 ```json
@@ -4276,6 +4499,9 @@ Card protocol: v1.0.1 (focused obligation review).
 <a id="slack_104"></a>
 ## #48 — slack_104
 
+[Task specification and links](task_specs.md#slack_104)
+
+<a id="slack_104-o1"></a>
 ### Obligation 1
 
 ```json
@@ -4304,6 +4530,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_104-o2"></a>
 ### Obligation 2
 
 ```json
@@ -4342,6 +4569,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_104-o3"></a>
 ### Obligation 3
 
 ```json
@@ -4376,6 +4604,9 @@ Card protocol: v1.0.1 (focused obligation review).
 <a id="slack_105"></a>
 ## #49 — slack_105
 
+[Task specification and links](task_specs.md#slack_105)
+
+<a id="slack_105-o1"></a>
 ### Obligation 1
 
 ```json
@@ -4412,6 +4643,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_105-o2"></a>
 ### Obligation 2
 
 ```json
@@ -4451,6 +4683,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_105-o3"></a>
 ### Obligation 3
 
 ```json
@@ -4489,6 +4722,9 @@ Card protocol: v1.0.1 (focused obligation review).
 <a id="slack_106"></a>
 ## #50 — slack_106
 
+[Task specification and links](task_specs.md#slack_106)
+
+<a id="slack_106-o1"></a>
 ### Obligation 1
 
 ```json
@@ -4534,6 +4770,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_106-o2"></a>
 ### Obligation 2
 
 ```json
@@ -4564,6 +4801,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_106-o3"></a>
 ### Obligation 3
 
 ```json
@@ -4592,6 +4830,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_106-o4"></a>
 ### Obligation 4
 
 ```json
@@ -4628,6 +4867,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_106-o5"></a>
 ### Obligation 5
 
 ```json
@@ -4669,6 +4909,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_106-o6"></a>
 ### Obligation 6
 
 ```json
@@ -4700,6 +4941,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_106-o7"></a>
 ### Obligation 7
 
 ```json
@@ -4741,6 +4983,9 @@ Card protocol: v1.0.1 (focused obligation review).
 <a id="slack_107"></a>
 ## #51 — slack_107
 
+[Task specification and links](task_specs.md#slack_107)
+
+<a id="slack_107-o1"></a>
 ### Obligation 1
 
 ```json
@@ -4772,6 +5017,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_107-o2"></a>
 ### Obligation 2
 
 ```json
@@ -4803,6 +5049,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_107-o3"></a>
 ### Obligation 3
 
 ```json
@@ -4834,6 +5081,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_107-o4"></a>
 ### Obligation 4
 
 ```json
@@ -4881,6 +5129,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_107-o5"></a>
 ### Obligation 5
 
 ```json
@@ -4920,6 +5169,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_107-o6"></a>
 ### Obligation 6
 
 ```json
@@ -4959,6 +5209,9 @@ Card protocol: v1.0.1 (focused obligation review).
 <a id="slack_108"></a>
 ## #52 — slack_108
 
+[Task specification and links](task_specs.md#slack_108)
+
+<a id="slack_108-o1"></a>
 ### Obligation 1
 
 ```json
@@ -4992,6 +5245,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_108-o2"></a>
 ### Obligation 2
 
 ```json
@@ -5022,6 +5276,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_108-o3"></a>
 ### Obligation 3
 
 ```json
@@ -5055,6 +5310,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_108-o4"></a>
 ### Obligation 4
 
 ```json
@@ -5083,6 +5339,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_108-o5"></a>
 ### Obligation 5
 
 ```json
@@ -5111,6 +5368,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_108-o6"></a>
 ### Obligation 6
 
 Card protocol: v1.0.1 (focused obligation review).
@@ -5153,6 +5411,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_108-o7"></a>
 ### Obligation 7
 
 ```json
@@ -5188,6 +5447,9 @@ Card protocol: v1.0.1 (focused obligation review).
 <a id="slack_109"></a>
 ## #53 — slack_109
 
+[Task specification and links](task_specs.md#slack_109)
+
+<a id="slack_109-o1"></a>
 ### Obligation 1
 
 ```json
@@ -5221,6 +5483,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_109-o2"></a>
 ### Obligation 2
 
 ```json
@@ -5252,6 +5515,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_109-o3"></a>
 ### Obligation 3
 
 ```json
@@ -5283,6 +5547,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_109-o4"></a>
 ### Obligation 4
 
 ```json
@@ -5314,6 +5579,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_109-o5"></a>
 ### Obligation 5
 
 ```json
@@ -5345,6 +5611,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_109-o6"></a>
 ### Obligation 6
 
 ```json
@@ -5382,6 +5649,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_109-o7"></a>
 ### Obligation 7
 
 ```json
@@ -5423,6 +5691,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_109-o8"></a>
 ### Obligation 8
 
 ```json
@@ -5454,6 +5723,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_109-o9"></a>
 ### Obligation 9
 
 ```json
@@ -5489,6 +5759,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_109-o10"></a>
 ### Obligation 10
 
 ```json
@@ -5520,6 +5791,9 @@ Card protocol: v1.0.1 (focused obligation review).
 <a id="slack_110"></a>
 ## #54 — slack_110
 
+[Task specification and links](task_specs.md#slack_110)
+
+<a id="slack_110-o1"></a>
 ### Obligation 1
 
 ```json
@@ -5551,6 +5825,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_110-o2"></a>
 ### Obligation 2
 
 ```json
@@ -5582,6 +5857,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_110-o3"></a>
 ### Obligation 3
 
 ```json
@@ -5613,6 +5889,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_110-o4"></a>
 ### Obligation 4
 
 ```json
@@ -5651,6 +5928,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_110-o5"></a>
 ### Obligation 5
 
 ```json
@@ -5680,6 +5958,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_110-o6"></a>
 ### Obligation 6
 
 ```json
@@ -5712,6 +5991,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_110-o7"></a>
 ### Obligation 7
 
 Card protocol: v1.0.1 (focused obligation review).
@@ -5772,8 +6052,11 @@ Card protocol: v1.0.1 (focused obligation review).
 <a id="slack_111"></a>
 ## #55 — slack_111
 
+[Task specification and links](task_specs.md#slack_111)
+
 Card protocol: v1.0.1.
 
+<a id="slack_111-o1"></a>
 ### Obligation 1
 
 ```json
@@ -5810,6 +6093,7 @@ Card protocol: v1.0.1.
 }
 ```
 
+<a id="slack_111-o2"></a>
 ### Obligation 2
 
 ```json
@@ -5846,6 +6130,7 @@ Card protocol: v1.0.1.
 }
 ```
 
+<a id="slack_111-o3"></a>
 ### Obligation 3
 
 ```json
@@ -5882,6 +6167,7 @@ Card protocol: v1.0.1.
 }
 ```
 
+<a id="slack_111-o4"></a>
 ### Obligation 4
 
 ```json
@@ -5918,6 +6204,7 @@ Card protocol: v1.0.1.
 }
 ```
 
+<a id="slack_111-o5"></a>
 ### Obligation 5
 
 ```json
@@ -5954,6 +6241,7 @@ Card protocol: v1.0.1.
 }
 ```
 
+<a id="slack_111-o6"></a>
 ### Obligation 6
 
 ```json
@@ -5990,6 +6278,7 @@ Card protocol: v1.0.1.
 }
 ```
 
+<a id="slack_111-o7"></a>
 ### Obligation 7
 
 ```json
@@ -6019,6 +6308,7 @@ Card protocol: v1.0.1.
 }
 ```
 
+<a id="slack_111-o8"></a>
 ### Obligation 8
 
 ```json
@@ -6050,8 +6340,11 @@ Card protocol: v1.0.1.
 <a id="slack_112"></a>
 ## #56 — slack_112
 
+[Task specification and links](task_specs.md#slack_112)
+
 Card protocol: v1.0.1.
 
+<a id="slack_112-o1"></a>
 ### Obligation 1
 
 ```json
@@ -6090,6 +6383,7 @@ Card protocol: v1.0.1.
 }
 ```
 
+<a id="slack_112-o2"></a>
 ### Obligation 2
 
 ```json
@@ -6123,6 +6417,7 @@ Card protocol: v1.0.1.
 }
 ```
 
+<a id="slack_112-o3"></a>
 ### Obligation 3
 
 ```json
@@ -6162,6 +6457,7 @@ Card protocol: v1.0.1.
 }
 ```
 
+<a id="slack_112-o4"></a>
 ### Obligation 4
 
 ```json
@@ -6193,6 +6489,7 @@ Card protocol: v1.0.1.
 }
 ```
 
+<a id="slack_112-o5"></a>
 ### Obligation 5
 
 ```json
@@ -6224,6 +6521,9 @@ Card protocol: v1.0.1.
 <a id="slack_113"></a>
 ## #57 — slack_113
 
+[Task specification and links](task_specs.md#slack_113)
+
+<a id="slack_113-o1"></a>
 ### Obligation 1
 
 ```json
@@ -6267,6 +6567,7 @@ Card protocol: v1.0.1.
 }
 ```
 
+<a id="slack_113-o2"></a>
 ### Obligation 2
 
 ```json
@@ -6319,6 +6620,7 @@ Card protocol: v1.0.1.
 }
 ```
 
+<a id="slack_113-o3"></a>
 ### Obligation 3
 
 ```json
@@ -6352,6 +6654,7 @@ Card protocol: v1.0.1.
 }
 ```
 
+<a id="slack_113-o4"></a>
 ### Obligation 4
 
 ```json
@@ -6391,6 +6694,7 @@ Card protocol: v1.0.1.
 }
 ```
 
+<a id="slack_113-o5"></a>
 ### Obligation 5
 
 Card protocol: v1.0.1 (focused obligation review).
@@ -6449,6 +6753,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_113-o6"></a>
 ### Obligation 6
 
 ```json
@@ -6490,6 +6795,9 @@ Card protocol: v1.0.1 (focused obligation review).
 <a id="slack_114"></a>
 ## #58 — slack_114
 
+[Task specification and links](task_specs.md#slack_114)
+
+<a id="slack_114-o1"></a>
 ### Obligation 1
 
 ```json
@@ -6524,6 +6832,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_114-o2"></a>
 ### Obligation 2
 
 ```json
@@ -6565,6 +6874,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_114-o3"></a>
 ### Obligation 3
 
 ```json
@@ -6593,6 +6903,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_114-o4"></a>
 ### Obligation 4
 
 ```json
@@ -6627,6 +6938,9 @@ Card protocol: v1.0.1 (focused obligation review).
 <a id="slack_115"></a>
 ## #59 — slack_115
 
+[Task specification and links](task_specs.md#slack_115)
+
+<a id="slack_115-o1"></a>
 ### Obligation 1
 
 ```json
@@ -6661,6 +6975,7 @@ Card protocol: v1.0.1 (focused obligation review).
 }
 ```
 
+<a id="slack_115-o2"></a>
 ### Obligation 2
 
 ```json

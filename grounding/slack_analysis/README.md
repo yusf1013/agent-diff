@@ -6,6 +6,8 @@ This directory annotates all **59 Slack tests** in `all_numbered.jsonl` (`slack_
 
 Start with [the per-test tables and aggregate counts](report.md), then [the cards](cards.md). [CSV measurements](metrics.csv) and [JSON measurements](metrics.json) are available for analysis. [cards.jsonl](cards.jsonl) contains the same cards without document headings.
 
+[Downstream task specifications](task_specs.md) rewrite each prompt into lightly structured, numbered instructions with direct links to the existing obligation cards. Their machine-readable source is the per-test `task_spec` in [analysis.json](analysis.json).
+
 The [focused coverage audit](coverage_audit.md) reviews all 36 initially partial obligations against the outcome-only standard. It promotes two to full coverage and retains 34 as partial, with revised explanations based on final content or final state.
 
 ## Fixed evidence boundary
@@ -94,6 +96,39 @@ For `slack_67` O1, all four lunch-question targets are required except the pizza
 
 `Written attributes: []` on a deletion/removal means no destination field is assigned; the described referent or relationship is removed. Generated IDs, authentication-supplied actor fields, and automatic timestamps are omitted. Changes driven by prompt constants can have empty computation inputs; routing/reference inputs are included when used to construct other records.
 
+## Downstream task specifications
+
+These specifications describe the task before execution. They support later assessment of grounding, requested operations and deliverables, and workflow; they contain no execution verdicts or new reward policy. The prompt supplies the request, with existing cards guiding reference interpretations. Weak assertions do not weaken the requested actions.
+
+Each test has one `task_spec` list alongside its existing `obligations` and `notes`. Each line has exactly:
+
+```json
+{"line": 1, "text": "Send a 'hello' message to #general.", "obligations": [1]}
+```
+
+`line` is a consecutive, one-based identifier local to the test. `text` is one physical line of informal pseudocode; leading spaces express branch indentation. `obligations` lists the directly relevant, one-based positions in that test's existing obligation list. Together, test ID and line number identify a specification line. Conditions and branch markers also have line numbers, so counting lines does not count actions. Renumbering lines or reordering cards requires updating consumers of those identifiers.
+
+Rewriting rules:
+
+- Retain the original language where practical, including relevant context, scope, quantities, literal message text, formatting requirements, and unresolved descriptions. Preserve exact requested output strings even when they contain typos.
+- An action is a requested operation or deliverable. Split different operations, such as setting a topic and posting an announcement. Keep a batch operation over a collection together. A single report can retain several required components.
+- Use `then`, `after`, conditions, and indentation for requested sequences and dependencies on newly created objects. Other list order alone does not impose execution order. Keep alternative branches conditional and separate, including branches inactive in the supplied seed.
+- Do not promote search, resolution, reading, computation, or preparation into extra actions unless their results are independently requested. Preserve an expressly requested review or count; integrate a lookup used only to supply a reply into that reply instruction. Tentative future work does not become a definite action.
+- Link each line's direct targets and source-dependent content to existing cards. A line may link several obligations, and one obligation may link several lines. Resolve pronouns from the local task context, but do not propagate obligation links through control flow or merely because an earlier action had them. Contextual names alone do not require links: creating a channel for named people differs from inviting those people.
+- Empty links are valid for branch markers, creation-only actions, and uses of newly created output handles. They do not mean an action is optional or completed. Do not invent obligations for inactive branch targets, intermediate lookups, or generated objects.
+- Retain absent and underspecified references without supplying missing facts, selecting an arbitrary candidate, adding fallback behavior, or deleting the request. Preserve explicitly delegated choice and its permitted cardinality.
+
+Examples and interpretation notes:
+
+- [Slack 67](task_specs.md#slack_67) retains the agreed pizza-combo exception to the otherwise complete lunch-question set. [Slack 74](task_specs.md#slack_74) requires posting every question separately.
+- [Slack 88](task_specs.md#slack_88) links the ElonMusk condition and invitation to O1, and the notification to Hubert to O2. The notification does not inherit O1 from its condition. The inactive #general destination does not gain a new card.
+- [Slack 60](task_specs.md#slack_60) has a creation action and no obligation links. [Slack 111](task_specs.md#slack_111) similarly gives the reaction to the newly created schedule post no existing-referent link; the schedule content and invitations do link the named participants.
+- [Slack 100](task_specs.md#slack_100) links the summary of gathered context to its channel/profile sources and its posting destination. Its acknowledgment choice retains the agreed discretion and has no fixed reaction count.
+- [Slack 109](task_specs.md#slack_109) preserves join → inspect → leave, and asks the matching incognito user to change their nickname. It does not replace the requested ping with the assertion's membership addition.
+- [Slack 115](task_specs.md#slack_115) preserves both branches. The creation branch's stopping point of seven follows the existing card's six eligible new users and the task's target of seven conversations. The removal line links the already-counted conversation set directly; it introduces no inactive removal-target card or link to the creation users.
+
+The builder checks exact line fields, numbering, nonempty single-line text, valid nonduplicated obligation links, and that every existing obligation has at least one link. It does not parse workflow semantics or infer links. Prompt fidelity, appropriate granularity, and direct mappings require manual review. The specifications do not alter the locked grounding-card schema or the grounding/coverage counts.
+
 ## Reproducibility and review
 
 [analysis.json](analysis.json) is the editable annotation source. It associates each locked card with its referent entity, semantic justification, selection description, assertion indices (one-based within the entry), and coverage explanation. These supporting fields are not card fields. All generated artifacts derive from this file.
@@ -103,6 +138,6 @@ python grounding/slack_analysis/build.py
 python grounding/slack_analysis/build.py --check
 ```
 
-The second command verifies schema keys, resolution/null conventions, referenced seed IDs, attribute names, assertion-index bounds, aggregate counts, known examples, and generated-file freshness. It does not assess semantic correctness, execute API operations, interpret the full evaluator, or constitute a formal proof checker. No proof-author/checker security claim is made for this rendering/consistency utility.
+The second command verifies schema keys, resolution/null conventions, referenced seed IDs, attribute names, assertion-index bounds, aggregate counts, known examples, task-spec line structure and obligation links, and generated-file freshness. It does not assess semantic correctness, execute API operations, interpret the full evaluator, or constitute a formal proof checker. No proof-author/checker security claim is made for this rendering/consistency utility.
 
 The tables cover the complete Slack subset, with the initial coverage labels revised by the focused audit. Their semantic boundaries and coverage explanations are reviewable measurements, not a claim that interpretation has been eliminated. The audit changes no card fields, referent sets, resolution labels, or obligation counts. The original annotation is preserved in commit `2ec3342`.
