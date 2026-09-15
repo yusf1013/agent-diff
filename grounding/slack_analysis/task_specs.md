@@ -879,7 +879,7 @@ Both conditional branches remain in the specification. Cards and links retain th
 | L1 | [O1](cards.md#slack_108-o1), [O2](cards.md#slack_108-o2) |
 | L2 | [O3](cards.md#slack_108-o3) |
 | L3 | [O3](cards.md#slack_108-o3) |
-| L4 | [O1](cards.md#slack_108-o1), [O3](cards.md#slack_108-o3) |
+| L4 | [O3](cards.md#slack_108-o3), [O8](cards.md#slack_108-o8) |
 | L5 | [O4](cards.md#slack_108-o4), [O5](cards.md#slack_108-o5) |
 | L6 | [O6](cards.md#slack_108-o6) |
 | L7 | [O7](cards.md#slack_108-o7) |

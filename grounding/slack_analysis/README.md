@@ -86,7 +86,7 @@ Attribute names follow seed/test-entry vocabulary, with documented API mappings.
 
 For migrated underspecified cards, `Referent set` has exactly `selection` (`one(entity)` or `set(entity)`), `partial_constraints` (predicates over real fields, or `[]`), and `candidate_sets` (concrete competing sets, or `null` if unenumerated). User intent and unrecorded facts stay in the description; do not invent departure or relationship fields. An empty inner candidate set is a possible absence alongside another interpretation, not an established absent resolution. Competing sets do not authorize arbitrary choice. Partial predicates are not sufficient identifying alternatives.
 
-Current totals: **197 obligations: 166 resolved, 11 absent, 20 underspecified; 74 fully covered, 37 partially covered, 86 unchecked**.
+Current totals: **198 obligations: 167 resolved, 11 absent, 20 underspecified; 74 fully covered, 37 partially covered, 87 unchecked**.
 
 The v1.0.1 reviews preserve obligation counts while distinguishing empty necessary populations from unresolved intent and explicitly delegated choice. All underspecified cards now use the structured referent representation. This does not claim that all prior semantic annotations have been re-derived.
 
@@ -141,3 +141,5 @@ python grounding/slack_analysis/build.py --check
 The second command verifies schema keys, resolution/null conventions, referenced seed IDs, attribute names, assertion-index bounds, aggregate counts, known examples, task-spec line structure and obligation links, and generated-file freshness. It does not assess semantic correctness, execute API operations, interpret the full evaluator, or constitute a formal proof checker. No proof-author/checker security claim is made for this rendering/consistency utility.
 
 The tables cover the complete Slack subset, with the initial coverage labels revised by the focused audit. Their semantic boundaries and coverage explanations are reviewable measurements, not a claim that interpretation has been eliminated. The audit changes no card fields, referent sets, resolution labels, or obligation counts. The original annotation is preserved in commit `2ec3342`.
+
+Ground-truth review found a missing source obligation in `slack_108`: the opening post permits broader food discussion than the explicit food/eat keyword search. O1 is now read-only, O2 retains the keyword-match authors, and new O8 supplies a resolved permissive source population for L4. L4 links O3/O8. This user-approved extraction correction adds one unchecked obligation without changing the v1.0.1 card schema or retrospectively changing historical experiment inputs.

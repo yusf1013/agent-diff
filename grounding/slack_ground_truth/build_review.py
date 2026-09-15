@@ -32,7 +32,7 @@ def main():
         assert sha(REPO / case['source_run']) == case['source_sha256'], tid
         assert report['run_id'] == case['run_id'], tid
         assert not checks[tid]['errors'], tid
-        case['status'] = 'draft_pending_adjudication' if tid in pending else 'manually_reviewed_draft'
+        case['status'] = 'draft_pending_adjudication' if tid in pending else 'reviewed'
         case['report'] = f'reports/{tid}.json'
         counts = Counter(report['obligations'].values())
         totals.update(counts)
@@ -49,13 +49,14 @@ def main():
         links = ' · '.join(f'[{label}](inputs/{tid}/{name}.json)' for label, name in (
             ('task', 'task'), ('spec', 'task_spec'), ('cards', 'cards'),
             ('diff', 'recorded_diff'), ('answer', 'response'), ('trajectory', 'trajectory')))
-        status = 'Pending clarification' if tid in pending else 'Reviewed draft'
+        status = 'Pending clarification' if tid in pending else 'Reviewed'
         rows.append(f'| [{tid}](reports/{tid}.json) | {status} | {n_actions} | {verdicts} | {count_diff} | {links} |')
     manifest['status'] = review['status']
     manifest['label_authoring'] = 'Personally authored annotations serialized by author_labels.py; no evaluator-model calls or model-report ingestion.'
     (ROOT / 'manifest.json').write_text(json.dumps(manifest, indent=2) + '\n')
     policy = [
         'grounding/card extraction.md',
+        'grounding/ground truth evaluation.md',
         'grounding/oracle_bedrock/prompts/lean.md',
         'docs/for eval/oracle-assessment.schema.json',
         'grounding/oracle_bedrock/prepare.py',
@@ -65,15 +66,15 @@ def main():
     (ROOT / 'content_hashes.json').write_text(json.dumps(provenance, indent=2) + '\n')
     intro = f'''# Slack ground-truth review
 
-**Draft: collaborative adjudication is still open.** These are personally authored assessments of all 59 saved Slack runs (`slack_57`–`slack_115`), not an evaluator-model consensus. Use the per-case JSONs to review the proposed reference answers; do not yet treat the collection as a frozen ground-truth release.
+**Reference labels finalized after collaborative adjudication.** These are personally authored assessments of all 59 saved Slack runs (`slack_57`–`slack_115`), not an evaluator-model consensus. All raised case questions are closed. The [ground-truth evaluation protocol](../ground%20truth%20evaluation.md) records the reusable procedure and settled standards.
 
 The [manifest](manifest.json) binds each assessment to its saved run and SHA256. [Content hashes](content_hashes.json) bind the prepared inputs, reports, policy, and checker. All 59 reports pass the unchanged [mechanical validator](validation.json); that checks structure, references, and accounting, not semantic correctness.
 
-The drafts contain {sum(totals.values())} overall obligation judgments: {totals['demonstrated_correct']} demonstrated correct, {totals['demonstrated_incorrect']} demonstrated incorrect, and {totals['not_established']} not established. These are judgments of the saved runs, **not** the benchmark's assertion-coverage metrics or a count of all task failures. A correct grounding judgment can coexist with false content, a wrong uncarded destination, or an omitted deliverable; read the associated explanation.
+The reference reports contain {sum(totals.values())} overall obligation judgments: {totals['demonstrated_correct']} demonstrated correct, {totals['demonstrated_incorrect']} demonstrated incorrect, and {totals['not_established']} not established. These are judgments of the saved runs, **not** the benchmark's assertion-coverage metrics or a count of all task failures. A correct grounding judgment can coexist with false content, a wrong uncarded destination, or an omitted deliverable; read the associated explanation.
 
-## Review the unresolved judgments first
+## Adjudicated decisions
 
-See [the four clarification topics](adjudication.md). A pending clarification may affect related cases, even where their table row currently says reviewed draft. No onboarding protocol or final accuracy score is issued until those decisions are settled.
+See [the settled decisions](adjudication.md). Slack 108 now uses eight cards: its keyword-search sources remain separate from a new permissive food-discussion source for the opening post. Historical evaluator runs used the earlier inventory. No model comparison scores have been recomputed against these finalized labels.
 
 ## Case index
 

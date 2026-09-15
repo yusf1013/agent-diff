@@ -2,7 +2,7 @@
 
 See [method and source policy](README.md). These are benchmark annotations, not measurements of agent behavior. Cards use the locked schema in [cards.md](cards.md).
 
-59 tests; 197 task-expressed obligations: 166 resolved, 11 absent, 20 underspecified. Assertions fully cover 74, partially cover 37, and leave 86 unchecked.
+59 tests; 198 task-expressed obligations: 167 resolved, 11 absent, 20 underspecified. Assertions fully cover 74, partially cover 37, and leave 87 unchecked.
 
 Coverage concerns the grounded contribution in the final state or requested output; it never requires a trajectory or source provenance. Full coverage does not certify whole-task correctness. See [the focused coverage audit](coverage_audit.md). The denominator includes unresolved and absent obligations. Zero-obligation tasks have no coverage ratio.
 
@@ -59,7 +59,7 @@ Coverage concerns the grounded contribution in the final state or requested outp
 | 49 | [slack_105](#slack_105) | 3 | 3 | 0 | 0 | 2 | 1 | 0 |
 | 50 | [slack_106](#slack_106) | 7 | 7 | 0 | 0 | 5 | 2 | 0 |
 | 51 | [slack_107](#slack_107) | 6 | 6 | 0 | 0 | 4 | 2 | 0 |
-| 52 | [slack_108](#slack_108) | 7 | 6 | 0 | 1 | 4 | 1 | 2 |
+| 52 | [slack_108](#slack_108) | 8 | 7 | 0 | 1 | 4 | 1 | 3 |
 | 53 | [slack_109](#slack_109) | 10 | 10 | 0 | 0 | 3 | 5 | 2 |
 | 54 | [slack_110](#slack_110) | 7 | 6 | 0 | 1 | 1 | 5 | 1 |
 | 55 | [slack_111](#slack_111) | 8 | 8 | 0 | 0 | 2 | 5 | 1 |
@@ -3340,24 +3340,27 @@ Sophie and Mateo want to bring the workspace's food culture together under one r
 
 | Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |
 |---|---|---|---|---|
-| 1. Resolve the workspace’s food/eat discussion | resolved | `["1706052779.000000","1706115000.000001","1706115500.000001"]` | no | A3: The opening post’s destination is checked, but nothing in its content must reflect the food discussion. |
+| 1. Resolve messages containing food or eat | resolved | `["1706052779.000000","1706115000.000001","1706115500.000001"]` | no | None: No assertion checks the keyword-search result or its content. |
 | 2. Resolve authors of food/eat messages | resolved | `["U_MATEO","U_KENJI","U_OLENA"]` | no | None: No assertion constrains this described referent or its derived result. |
 | 3. Resolve the old archived channel to revive | resolved | `["C_OLD_PROJECT"]` | yes | A1, A2, A3: Assertions 1, 2, 3 constrain the resulting change to this seeded referent. |
 | 4. Resolve Mateo | resolved | `["U_MATEO"]` | yes | A4: Assertions 4 constrain the resulting change to this seeded referent. |
 | 5. Resolve #project-alpha-dev | resolved | `["C06ALPHADEV"]` | yes | A4: Assertions 4 constrain the resulting change to this seeded referent. |
 | 6. Resolve an espresso-machine message in #random | underspecified | `{"selection":"one(messages)","partial_constraints":["messages.channel_id == \"C02EFGH5678\"","ABOUT(messages.message_text, \"espresso machine\", channel_history)"],"candidate_sets":[["1706051580.000000"],["1706051755.000000"],["1706052027.000000"],["1706052433.000000"]]}` | partial | A5: A5 permits an edit to any message in random, including a message unrelated to the espresso machine, provided the resulting text contains bazaar. It constrains the channel but neither the topic nor the intended message. Competing topic matches do not grant permission to select arbitrarily. |
 | 7. Resolve the large-pies lunch-planning message in #random | resolved | `["1706051755.000000"]` | yes | A6: Assertions 6 constrain the resulting change to this seeded referent. |
+| 8. Resolve food discussions for the bazaar opening post | resolved | `["1699572000.000789","1706051580.000000","1706051755.000000","1706052027.000000","1706052160.000000","1706052433.000000","1706052665.000000","1706052779.000000","1706052950.000000","1706053102.000000","1706053181.000000","1706069021.000000","1706069204.000000","1706069328.000000","1706115000.000001","1706115500.000001"]` | no | A3: A3 checks that a post exists in the revived channel but imposes no food-source or content constraint. |
 
 Boundary and selection notes:
 
-- **1.** The prompt explicitly supplies food and eat as words; whole-word matching avoids accidental matches in feature or great. Selection: Case-insensitive whole-word match for food or eat in message content.
+- **1.** The explicit keyword-search request selects messages containing the whole words food or eat. This narrow population supports that search and its author identification; the opening post has a separate, broader food-discussion source obligation. Selection: Case-insensitive whole-word match for food or eat in message content.
 - **2.** What food chatter and who participated are separately requested subjects; the same source messages support both. Selection: Select distinct authors of messages with whole-word food or eat.
 - **3.** The seed has exactly one channel explicitly marked archived. Missing archive flags on other channels are not treated as independently observed runtime values. Selection: Select the explicitly archived channel in the seed.
 - **4.** The prompt’s name resolves to Mateo Rivera in the seed. This is one described person even when used repeatedly. Selection: users.real_name == 'Mateo Rivera'
 - **5.** Resolve the named channel #project-alpha-dev; its name selects one seeded conversation. Repeated uses in the task share this obligation. Selection: channels.channel_name == 'project-alpha-dev'
 - **6.** The request says “that message about the espresso machine in random” and expects one existing message to be edited. It does not delegate choice among matches. Four messages concern the machine directly or refer back to it as “that machine”: the initial noise report, the pizza-combo reply, the machine-dying reply, and the French-press replacement message. Their singleton candidate sets express competing possible targets; the prompt does not distinguish the intended one.
 - **7.** Within random, select content containing large pies.
+- **8.** Permissive selection from the workspace’s food, lunch, pizza, coffee, and related food-culture discussions for the opening post. Choose relevant material to weave into the post; no fixed number of source messages or exhaustive recap is required. This broader source population is not restricted to literal food/eat keyword matches and includes Sophie’s and Lukasz’s coffee/pizza contributions. Selection: Select messages about food, meals, coffee, or related food culture, including contextual contributions in those discussions; the post may draw a permissive selection from this eligible population.
 - Boundary review of O6: ABOUT is a semantic condition over message_text, interpreted using the existing channel history joined by messages.channel_id. The initial espresso-machine report establishes the referent for the two subsequent “that machine” replies; a later message explicitly mentions espresso-machine drama. No keyword-only limit or delegated choice is inferred. The pizza-combo record can also be a candidate here despite its separate deletion use; unlike slack_67, no agreed specific-reaction exception removes it from this topic population.
+- User-adjudicated extraction correction during ground-truth review: O1 is the read-only keyword-search population; new O8 supplies the broader, permissively selected food-discussion sources explicitly requested for L4. Existing obligation numbers are preserved. O8 includes the coffee remarks embedded in three core-infra messages as well as random’s lunch/coffee discussion and the engineering/general food messages. This adds one resolved, unchecked obligation; historical evaluator runs used the earlier seven-card inventory and are not silently relabeled.
 
 <details><summary>Assertion predicates from the test entry (A1, A2, …)</summary>
 
