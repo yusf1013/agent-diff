@@ -25,6 +25,15 @@ are recorded separately in [writer_pilot_04](../../experiments/slack_campaign/wr
 [reflected outputs](../../experiments/slack_campaign/writer_pilot_04/reflection/outputs.md).
 This is development-set prompt iteration, not held-out validation or solver exposure.
 
+A fresh-world compiler is now implemented in
+[concept_compile.py](concept_compile.py), with a recorded
+[W01 compilation review](../../experiments/slack_campaign/compiler_pilot_01/review.md).
+It preserves the saved writer sketch, translates its selector, instantiates every
+row plus filler, and assembles the card and task line. Fixed checks recompute the
+entire seed; an independent model reviews semantic fidelity. The W01 pilot needed
+one automatic binding repair and one explicitly manual annotation correction.
+The native load/read check uses no LLM. No new solver exposure is measured here.
+
 The [methods document](../../experiments/slack_campaign/campaign_02/methods.md)
 records manual versus automated work, coverage accounting, repair passes and
 provenance limits. The superseded one-author pilot is documented separately in
@@ -62,6 +71,8 @@ assistant/thinking blocks intact. Historical outputs and costs are never replace
 |---|---|
 | [concept_writer.py](concept_writer.py), [prompts/v3/](prompts/v3/) | Seed-free conceptual Markdown writer pilot; deterministic mode injection and shared-prefix caching |
 | [concept_reflect.py](concept_reflect.py) | One common self-review follow-up in each original writer conversation; no case-specific diagnoses supplied |
+| [concept_compile.py](concept_compile.py), [prompts/v4/compiler.md](prompts/v4/compiler.md) | Compile a saved conceptual sketch into a fresh seed, fixed selector and mechanically assembled card; bounded conversational repairs |
+| [native_compile_check.py](native_compile_check.py) | Disposable PostgreSQL load and in-process native read checks, without a solver or model call |
 | [workflow.py](workflow.py) | Fixed route/mode plan; writer, compiler, reviewer; source-preserving mutation assembly |
 | [prompts/v2/](prompts/v2/) | Recorded development instructions; redesign pending |
 | [route_contract.py](route_contract.py) | Mechanical route variables and real foreign-key relationships |

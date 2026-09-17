@@ -43,3 +43,47 @@ assumption that a selected operation is necessarily supported by the current API
 
 This is a combined prompt intervention, not an ablation isolating one sentence.
 All source prompts are development work; Sonnet writes the measured sketches.
+
+## Fresh-world compiler
+
+[compiler.md](compiler.md) consumes the final reflected Markdown sketch, its fixed
+route/mode assignment, the [native contract](compiler_domain.md), schema, selector
+syntax and documented APIs. The writer still receives no seed or physical schema.
+The compiler builds a fresh environment with ordinary filler; it does not inherit
+the benchmark seed or rewrite the request. The card and task specification are
+assembled by code from fixed source labels, computed native bindings and minimal
+compiler annotations. Computation/write annotations require semantic review.
+
+Python checks keys, fields, row bindings, exact referent sets, intended counts and
+all declared negatives against the entire seed. It freezes the first structurally
+valid selector: later seed repairs cannot silently change it to pass. A structurally
+valid selector can still misinterpret the source; the
+[independent reviewer](compiler_review.md) checks that distinction. Only concrete
+compilation defects receive bounded repairs (at most three compiler turns), each
+as a continuation preserving the previous native responses. A source/selector
+conflict is reported for separate review. Quality issues remain visible separately.
+
+The current interface handles one focal obligation and one action per sketch;
+underspecified rows represent singleton alternatives. It does not claim arbitrary
+workflow or multi-obligation compilation. API access is a supplied domain contract,
+not an extra model task. Optional native load/read checks exercise that contract
+with Python and the real handlers, without a solver or LLM fallback.
+
+From the repository root, using a fresh output directory for each command:
+
+```sh
+# Prepare inputs without any model calls.
+python -m grounding.slack_campaign.concept_compile --case W01 --out /tmp/w01-input
+# Compile, check, review and record all calls/costs.
+python -m grounding.slack_campaign.concept_compile --case W01 --out /tmp/w01-run --run
+# Separate native load/read check; requires the backend dependencies and local DB.
+python -m grounding.slack_campaign.native_compile_check /tmp/w01-run/case.json \
+  --out /tmp/w01-native --database-url postgresql://postgres@127.0.0.1:15432/agentdiff_campaign
+```
+
+Static compiler/reviewer context uses explicit prompt caching. The first W01
+compiler prefix was 12,723 tokens: unlike the writer, compilation currently gets
+all documented Slack signatures. This is a measured pilot, not a minimal-context
+claim. Requests, responses, thinking summaries, repairs and native usage are saved.
+The [pilot report](../../../../experiments/slack_campaign/compiler_pilot_01/review.md)
+records the manual correction and does not count it as autonomous success.

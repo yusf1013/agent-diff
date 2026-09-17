@@ -274,7 +274,7 @@ def _lookup(value, path):
     return value
 
 
-def probe_environment(client, env_id, case, state):
+def probe_environment(client, env_id, case, state, *, get=None):
     """Record API visibility, not merely whether a corresponding DB row exists.
 
     Generic optional probes expose access gaps to validation without requiring
@@ -283,6 +283,7 @@ def probe_environment(client, env_id, case, state):
     These observations are private construction data and never solver context.
     """
     import requests
+    get = get or requests.get
     plans = [
         {"method": "auth.test", "required": True},
         {"method": "users.info", "params": {"user": case["acting_user_id"]}, "required": True},
@@ -312,7 +313,7 @@ def probe_environment(client, env_id, case, state):
         errors = []
         cursors = set()
         for _ in range(50):
-            response = requests.get(f"{client.base_url}/api/env/{env_id}/services/slack/{method}",
+            response = get(f"{client.base_url}/api/env/{env_id}/services/slack/{method}",
                                     params=params, headers=client._headers(), timeout=60)
             try:
                 body = response.json()
