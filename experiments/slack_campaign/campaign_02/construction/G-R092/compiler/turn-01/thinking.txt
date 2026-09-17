@@ -1,0 +1,16 @@
+The seed already covers the target message with its eyes reaction, replies, the AWS message, and Sophie's DM. But I still need Lukas's own eyes reaction on his message and the actor's eyes reaction on Nick's Reddit message, since neither is in the seed yet.
+
+Checking existing reactions, only one row exists so far, so I need to insert two more: Lukas's eyes reaction on the target message, and the actor's eyes reaction on Nick's message. I'm also confirming the actor's channel memberships cover engineering and growth channels, which matters for negative access checks.
+
+Now I'm working out the main selector query structure, starting from message_reactions as the root table and joining through to messages, filtering on the engineering channel, Lukas as author, the specific message text, and the actor's eyes reaction.
+
+Since user_id and reaction_type are root-level fields on message_reactions, I can filter them directly in scope rather than through joins. Then I need to figure out the join path to also check the message author, which requires branching from messages to both channels and users rather than a single linear path.
+
+Since the path syntax is linear, I can't chain both users and channels branches off messages simultaneously. But maybe I don't need both - the message text itself is specific enough (mentioning circuit-tracer OOM layer-by-layer) that combined with just the channel, it should uniquely identify the author without needing an explicit users join.
+
+So I'll build the path as message_reactions to messages to channels, joining on message_id and channel_id, filtering on message_text containing "circuit-tracer" and channel_name equal to "engineering", scoped to the reactor's user_id and reaction_type "eyes". That combination should isolate the single matching row.
+
+For negative referents, since the root entity is REACTION per resolution mode, I need to identify the other reaction rows to exclude: Lukas's own eyes reaction and the actor's eyes reaction on the other message. Now I'm working out the seed edits, inserting two message_reactions rows with their composite primary key of message_id, user_id, and reaction_type.
+
+I'm mapping each role label to its native handle value—target message, actor eyes reaction, the two new reaction rows for Lukas and the unrelated message, plus the reply and DM timestamps. Since there's only one obligation here (removing the actor's eyes reaction), the selectors list needs just a single entry, so I can assemble the final JSON now.
+

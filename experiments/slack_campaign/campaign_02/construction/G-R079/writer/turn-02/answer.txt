@@ -1,0 +1,115 @@
+```json
+{
+  "prompt": "Robert's been posting technical updates in one of our engineering channels here — can you pull together everything he's written there for me to review?",
+  "binding_note": "r0 (messages) is authored by r1 (users) via messages.user_id; r1 is also bound to r2 (channel_members) via channel_members.user_id, giving the same user's conversation membership; r2.channel_id ties to r3 (channels), and r3.team_id ties to r4 (teams), the workspace. Two distinct users share the first name Robert: Robert Walsh, a member of #engineering, and Robert Chen, a member of #core-infra, both channels in the same workspace T01WORKSPACE. The request names only 'Robert' and 'an engineering channel,' so the route resolves to two distinct candidate author/channel pairs and thus two distinct message sets, not one.",
+  "roles": [
+    {
+      "role": "subject_walsh_engineering_message",
+      "entity": "messages",
+      "facts": "Authored by user Robert Walsh (real_name 'Robert Walsh', user_id U03ROBERT23) in channel #engineering (C03IJKL9012): 'Crash report: retrying wrong password 3 times triggers login rate limit not allowing users to login.'",
+      "selection": "alternative",
+      "reason": "Candidate referent set A: the Robert whose channel membership binds him to #engineering."
+    },
+    {
+      "role": "subject_chen_infra_messages",
+      "entity": "messages",
+      "facts": "Authored by user Robert Chen (real_name 'Robert Chen', user_id U_ROBERT) in channel #core-infra (C_INFRA): a run of messages including 'Monthly cloud bill came in. We're $47K over budget, mostly spot instance fallbacks.' and follow-up replies in the same thread of discussion.",
+      "selection": "alternative",
+      "reason": "Candidate referent set B: the Robert whose channel membership binds him to #core-infra."
+    },
+    {
+      "role": "negative_walsh_general_message",
+      "entity": "messages",
+      "facts": "Robert Walsh also authored 'Does anyone know when the MCP deployment will be done?' in #general (C01ABCD1234), a channel that is not the engineering-focused membership binding this Robert.",
+      "selection": "negative",
+      "reason": "Same author as set A but the message sits in a different conversation than the one identifying membership; excluded by the channel-membership condition."
+    },
+    {
+      "role": "negative_priya_infra_message",
+      "entity": "messages",
+      "facts": "Priya Sharma, also a #core-infra member, authored 'Alert: High memory pressure on cluster-b inference pods. OOM kills detected.' in that channel.",
+      "selection": "negative",
+      "reason": "Matches the channel-membership relation but the author is not named Robert, so excluded on the user condition."
+    },
+    {
+      "role": "negative_chen_model_message",
+      "entity": "messages",
+      "facts": "Robert Chen also authored 'Appreciate the clarity here, team...' in #model-research (C_MODEL), a different channel he separately belongs to.",
+      "selection": "negative",
+      "reason": "Same author as set B but a different conversation-membership relationship than the one bounding set B (#core-infra); the conditions are split across a different joined channel record."
+    },
+    {
+      "role": "support_robert_walsh_user",
+      "entity": "users",
+      "facts": "Identity record for Robert Walsh (U03ROBERT23), real_name 'Robert Walsh', workspace member of T01WORKSPACE.",
+      "selection": "support",
+      "reason": "Binds r1 for candidate set A (author and channel member)."
+    },
+    {
+      "role": "support_robert_chen_user",
+      "entity": "users",
+      "facts": "Identity record for Robert Chen (U_ROBERT), real_name 'Robert Chen', workspace member of T01WORKSPACE.",
+      "selection": "support",
+      "reason": "Binds r1 for candidate set B (author and channel member)."
+    },
+    {
+      "role": "support_engineering_channel",
+      "entity": "channels",
+      "facts": "#engineering (C03IJKL9012), team_id T01WORKSPACE, topic 'Engineering Team'.",
+      "selection": "support",
+      "reason": "Binds r3 for candidate set A."
+    },
+    {
+      "role": "support_core_infra_channel",
+      "entity": "channels",
+      "facts": "#core-infra (C_INFRA), team_id T01WORKSPACE, topic 'Infrastructure, K8s, AWS, on-call, incidents'.",
+      "selection": "support",
+      "reason": "Binds r3 for candidate set B."
+    },
+    {
+      "role": "support_membership_walsh",
+      "entity": "channel_members",
+      "facts": "Membership row linking U03ROBERT23 to C03IJKL9012.",
+      "selection": "support",
+      "reason": "Binds r2, exercising the conversation-membership relationship for set A."
+    },
+    {
+      "role": "support_membership_chen",
+      "entity": "channel_members",
+      "facts": "Membership row linking U_ROBERT to C_INFRA.",
+      "selection": "support",
+      "reason": "Binds r2, exercising the conversation-membership relationship for set B."
+    },
+    {
+      "role": "support_workspace",
+      "entity": "teams",
+      "facts": "T01WORKSPACE ('Test Workspace'), the single workspace containing #engineering and #core-infra.",
+      "selection": "support",
+      "reason": "Binds r4, closing the route from channel to workspace."
+    }
+  ],
+  "obligations": [
+    {
+      "name": "robert_engineering_channel_messages",
+      "description": "The messages authored by the Robert whose conversation membership binds him to the engineering-type channel referenced, gathered for review. Two distinct users share the first name Robert, each identified through a different channel-membership relationship in the same workspace, leaving the intended referent set unresolved between them.",
+      "table": "messages",
+      "mode": "underspecified",
+      "task_type": "read-only",
+      "scope": "messages authored (r0.user_id = r1.user_id) by the Robert who holds a conversation-membership record (r2) in the specific engineering-focused channel (r3) within the shared workspace (r4)",
+      "target_roles": ["subject_walsh_engineering_message", "subject_chen_infra_messages"],
+      "candidate_role_sets": [["subject_walsh_engineering_message"], ["subject_chen_infra_messages"]],
+      "selection": "set",
+      "answer_attributes": [["messages.message_text"], ["messages.channel_id"], ["messages.created_at"]]
+    }
+  ],
+  "task_spec": [
+    {
+      "line": 1,
+      "text": "Gather the messages Robert wrote in the engineering-type channel where his membership places him, for review of his recent updates.",
+      "obligations": [1]
+    }
+  ],
+  "scope_exception": null,
+  "access_plan": "Use conversations.list to enumerate channels in the single workspace, then conversations.members on #engineering and #core-infra (and other technical channels) to find members named Robert, cross-checking with users.info/users.list to distinguish Robert Walsh from Robert Chen. Use conversations.history (or search.messages) on each qualifying channel to retrieve the messages authored by the matched Robert user_id, surfacing both the #engineering set (Robert Walsh) and the #core-infra set (Robert Chen) as unresolved alternatives."
+}
+```

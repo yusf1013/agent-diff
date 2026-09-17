@@ -1,0 +1,111 @@
+{
+  "seed_edits": [],
+  "bindings": {
+    "target_channel": [
+      "C_INFRA"
+    ],
+    "workspace": [
+      "T01WORKSPACE"
+    ],
+    "admin_robert": [
+      "U03ROBERT23"
+    ],
+    "admin_morgan": [
+      "U07MORGANFREE"
+    ],
+    "priya_member": [
+      "U_PRIYA"
+    ],
+    "lukas_member": [
+      "U_LUKAS"
+    ],
+    "robert_offtopic_message": [
+      "1700173200.000456"
+    ],
+    "priya_incident_messages": [
+      "1706000208.000000",
+      "1706000791.000000",
+      "1706001104.000000",
+      "1706001628.000000",
+      "1706001931.000000"
+    ]
+  },
+  "selectors": [
+    {
+      "root_table": "messages",
+      "scope": [
+        {
+          "field": "channel_id",
+          "op": "eq",
+          "value": "C_INFRA"
+        }
+      ],
+      "focal": {
+        "path": [
+          "messages",
+          "channels",
+          "teams",
+          "user_teams",
+          "users"
+        ],
+        "joins": [
+          "messages.channel_id",
+          "channels.team_id",
+          "user_teams.team_id",
+          "user_teams.user_id"
+        ],
+        "filters": [
+          {
+            "node": 1,
+            "field": "channel_name",
+            "op": "eq",
+            "value": "core-infra"
+          },
+          {
+            "node": 3,
+            "field": "role",
+            "op": "eq",
+            "value": "admin"
+          }
+        ]
+      },
+      "auxiliary": [
+        {
+          "path": [
+            "messages"
+          ],
+          "joins": [],
+          "filters": [
+            {
+              "node": 0,
+              "field": "user_id",
+              "op": "in",
+              "value": [
+                "U03ROBERT23",
+                "U07MORGANFREE"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "negative_referents": [
+    "1700173200.000456",
+    "1699824000.000987",
+    "1706000208.000000",
+    "1706000791.000000",
+    "1706001104.000000",
+    "1706001628.000000",
+    "1706001931.000000",
+    "1706001016.000000",
+    "1706001356.000000",
+    "1706001890.000000",
+    "1706002098.000000",
+    "1706000496.000000",
+    "1706001136.000000",
+    "1706001817.000000",
+    "1706002397.000000"
+  ],
+  "notes": "Minimal fix: the prior focal omitted the CONVERSATION node (channels) from the joined path, so it did not literally instantiate the assigned route MESSAGE->CONVERSATION->WORKSPACE->WORKSPACE_MEMBERSHIP->USER even though it happened to compute the correct (empty) answer. The corrected focal now walks the full route in the assigned order -- messages.channel_id->channels, channels.team_id->teams, user_teams.team_id->teams (workspace), user_teams.user_id->users -- filtering channel_name='core-infra' and role='admin', which establishes that a channel named core-infra exists in a workspace holding an admin member (always true here, since the workspace's admins are Robert Walsh and Morgan Freeman). Because this route-only chain cannot itself express that the admin must be the SPECIFIC message's own author (the selector language has no cross-node equality against another node's field, only literal-valued filters), the necessary additional constraint from the binding_note (r0.user_id = r4.user_id, i.e., the participant identified via workspace membership must be the message's author) is supplied as a genuinely independent auxiliary root-field filter: messages.user_id must be one of the workspace's actual admin-role user IDs (U03ROBERT23, U07MORGANFREE), which is the concrete, schema-derivable translation of 'authored by an admin.' Scope keeps the literal, request-supplied restriction to the core-infra channel. Recomputed over the full base seed (no edits needed), the core-infra candidate population (channel_id='C_INFRA', 25 messages) satisfies the route-existence check (an admin exists in the workspace) but none of those messages' authors (Priya Sharma, Łukasz Kowalski, Olena Petrenko, Robert Chen, and the bot) is Robert Walsh or Morgan Freeman, so the auxiliary filter excludes all of them, yielding zero matches -- correctly realizing the absent resolution mode described in the design (neither admin ever posts in core-infra). Negative referents include Robert Walsh's off-topic #general and #engineering messages (admin role, wrong conversation) and the core-infra incident messages authored by Priya, Łukasz, and Olena (right conversation/topic, member-role author). Access: actor U01AGENBOT9 is already a channel_members row for C_INFRA, enabling conversations.history discovery, and users.info exposes each author's single workspace-membership role for confirming admin status."
+}

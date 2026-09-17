@@ -15,7 +15,9 @@ def revise(cid):
     if (p/'route-revision-summary.json').exists():return
     audit=read(base/'manual_review.json')['cases'][cid]
     # Only the construction reason is passed; solver judgments stay outside.
-    reason=audit['reason'].split(' Independently of the unsupported tenure field')[0]
+    reason=audit.get('construction_feedback')
+    if not reason:
+        raise ValueError('An explicit construction_feedback field is required; never forward mixed audit prose containing solver judgments.')
     old=read(p/'summary.json');save(p/'summary-before-route-revision.json',old)
     save(p/'case-before-route-revision.json',read(p/'case.json'))
     save(base/'manual_review_history'/f'{cid}-before-route-revision.json',audit)

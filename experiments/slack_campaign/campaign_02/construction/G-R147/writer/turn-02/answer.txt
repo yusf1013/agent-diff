@@ -1,0 +1,98 @@
+```json
+{
+  "prompt": "In the engineering channel, someone reacted with a check mark to the message about the circuit-tracer library hitting OOM errors on layer-by-layer loading. Open a DM with that person and ask them for a timeline update on the PyTorch rewrite.",
+  "binding_note": "The target user (r0) is the reactor (message_reactions.user_id) on a message_reactions row (r1) whose reaction_type is 'check' and whose message_id matches the messages row (r2) describing the circuit-tracer OOM error; that message's channel_id must equal the engineering channel (r3). All three joins bind to the same reaction record, not independently satisfied facts.",
+  "roles": [
+    {
+      "role": "target_user",
+      "entity": "users",
+      "facts": "U_KENJI leaves a reaction with reaction_type 'check' on message 1706110000.000100 (the circuit-tracer OOM message) in channel C03IJKL9012 (engineering).",
+      "selection": "match",
+      "reason": "Satisfies reactor + reacted-to message + message location jointly via the same reaction record."
+    },
+    {
+      "role": "wrong_emoji_reactor",
+      "entity": "users",
+      "facts": "U_ROBERT reacts with reaction_type 'thumbsup' on the same OOM message 1706110000.000100 in engineering.",
+      "selection": "negative",
+      "reason": "Same message and channel but wrong emoji excludes this reactor."
+    },
+    {
+      "role": "wrong_message_reactor",
+      "entity": "users",
+      "facts": "U_LUKAS reacts with reaction_type 'check' on message 1706076473.000000 (the hallucinated refund-policy report) in channel C_MODEL, not the OOM message.",
+      "selection": "negative",
+      "reason": "Correct emoji but on an unrelated message in a different channel, so both the reacted-to message and its location fail."
+    },
+    {
+      "role": "no_reaction_author",
+      "entity": "users",
+      "facts": "U02JOHNDOE1 posts in the same engineering channel about AWS p5 instance pricing but leaves no reaction on the OOM message.",
+      "selection": "negative",
+      "reason": "Authorship/membership in the right channel without the qualifying reaction record does not satisfy the route."
+    },
+    {
+      "role": "wrong_channel_reactor",
+      "entity": "users",
+      "facts": "U_SOPHIE reacts with reaction_type 'check' on message 1706100000.000001 in the DM channel D01AGENTSOPHIE, which also references circuit-tracer but is a distinct message in a distinct conversation.",
+      "selection": "negative",
+      "reason": "Right emoji but on a different reacted-to message located in a different channel; topical overlap does not substitute for the identified message/channel."
+    },
+    {
+      "role": "anchor_message",
+      "entity": "messages",
+      "facts": "Message 1706110000.000100 in C03IJKL9012: 'The circuit-tracer library is hitting OOM errors when loading large models layer-by-layer... Need to rewrite this in PyTorch from scratch with proper streaming.'",
+      "selection": "support",
+      "reason": "This is the reacted-to message (r2) that the qualifying reaction must reference."
+    },
+    {
+      "role": "anchor_channel",
+      "entity": "channels",
+      "facts": "C03IJKL9012 'engineering' channel, containing the anchor message.",
+      "selection": "support",
+      "reason": "Supplies the message location (r3) required by the route."
+    }
+  ],
+  "obligations": [
+    {
+      "name": "identify_target_user",
+      "description": "Select the single user (r0) who is the reactor on a message_reactions row with reaction_type 'check' whose reacted-to message is the circuit-tracer OOM message located in the engineering channel.",
+      "table": "users",
+      "mode": "single",
+      "task_type": "read-only",
+      "scope": "reactions on messages within the engineering channel",
+      "target_roles": ["target_user"],
+      "candidate_role_sets": null,
+      "selection": "one",
+      "answer_attributes": [["users.user_id"], ["users.real_name"], ["users.email"]]
+    },
+    {
+      "name": "send_dm_to_target",
+      "description": "Open or resume a direct-message conversation with the identified user and post a message asking for a timeline update on the PyTorch rewrite.",
+      "table": "messages",
+      "mode": "single",
+      "task_type": "state-changing",
+      "scope": "new message in a direct-message conversation with the identified user",
+      "target_roles": [],
+      "candidate_role_sets": null,
+      "selection": "one",
+      "change_attributes": [[]],
+      "written_attributes": ["messages.message_text", "messages.channel_id"]
+    }
+  ],
+  "task_spec": [
+    {
+      "line": 1,
+      "text": "Identify the user who reacted with a check mark to the circuit-tracer OOM message in the engineering channel.",
+      "obligations": [1]
+    },
+    {
+      "line": 2,
+      "text": "Open a DM with that user and send them a message asking for a timeline update on the PyTorch rewrite.",
+      "obligations": [2]
+    }
+  ],
+  "scope_exception": null,
+  "access_plan": "Fetch conversations.history for the engineering channel (C03IJKL9012) to locate the circuit-tracer OOM message, then reactions.get on that message's channel/timestamp to find the reactor with reaction_type 'check', cross-checking identity via users.info; then use conversations.open with that user's ID to establish/resume a DM and chat.postMessage to send the status request."
+}
+```

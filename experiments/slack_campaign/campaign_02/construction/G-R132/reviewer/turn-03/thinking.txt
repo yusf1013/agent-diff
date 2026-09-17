@@ -1,0 +1,26 @@
+I'm verifying the compiled result against the design—checking that seed edits add the four reaction rows correctly and that bindings match roles, with U_OLENA and U_MATEO lining up as expected in target_roles. Now I'm double-checking the negative referents, noting that computed_focal_negatives comes back empty while U_KENJI, U_LUKAS, and U_PRIYA are tracked separately.
+
+The empty result seems fine since the focal query already excludes users with wrong emoji, wrong message, or no reaction—so an empty negatives list just confirms no unintended matches, which is consistent. Now I'm looking at the identifying paths card, which includes a main path through user_teams, teams, channels, and messages to message_reactions, plus an auxiliary path linking users directly to message_reactions via user_id, since the reactions table only joins to messages via message_id and needs this second path to tie the reaction back to the root user.
+
+Checking the schema closer, message_reactions has a composite key of message_id, user_id, and reaction_type. The focal path's joins only connect message_reactions to messages via message_id, filtering on reaction_type—there's no join condition binding message_reactions.user_id back to the root users node at all.
+
+This means under the focal path alone, any workspace member would satisfy the constraint as long as some reaction row exists with the right message_id and emoji, regardless of who actually posted it. That's why an auxiliary path is needed: it joins users directly to message_reactions via user_id, with the same message_id and reaction_type filters, which properly ties the specific root user to being the reactor. Together, the focal path establishes context while the auxiliary path pins down that this particular user made that reaction—a valid two-path representation of one predicate, consistent with the instruction not to reject such awkward but legitimate schema choices.
+
+So the focal condition is nearly always satisfied for any team member, since the tada reaction exists independent of who root is—it's the auxiliary path that's actually doing the discriminating work, correctly isolating {Mateo, Olena} on its own. Since the answer only depends on that auxiliary binding and the focal condition is essentially redundant, the AND combination still yields the correct result.
+
+I recall that message_reactions actually has a user_id column joinable to users, which is what the auxiliary path relies on. So the workspace hop's real purpose in the focal path is confirming channel context—establishing that the channel belongs to the workspace and the message belongs to that channel—which is legitimate, though it still doesn't directly bind to the reactor's identity.
+
+This means the focal path alone, without the auxiliary enforcing that message_reactions.user_id equals the root user, could incorrectly return every workspace member rather than just actual reactors. So the "identifying paths" recorded as two separate chains is technically misleading since only their combination provides the real constraint.
+
+Set B = users with a message_reactions row of "tada" on the target message, which is {Mateo, Olena}. The intersection with Set A gives the correct final result, so despite the focal path being weakly discriminating, the overall query still computes correctly and both paths represent legitimate entity/edge relationships—this seems like an odd but not invalid construction.
+
+Verifying the negative cases: Priya has no reaction row, Kenji reacted with the wrong emoji, and Lukas reacted with tada but on the wrong message—all correctly excluded. Access checks also confirm the actor has proper channel/workspace membership for the reactions API call.
+
+Reaction types used (tada, thumbsup, eyes) are all within the documented vocabulary, so nothing invented there. Overall the case looks solid — negatives are well chosen, matches computed correctly, and the seed edits are properly justified and summarized.
+
+The empty computed_focal_negatives list means no unexpected matches turned up, which is a good sign. I've also confirmed the identifying path and auxiliary selector line up correctly, and the alternative sufficient identifying set listed seems reasonable too.
+
+I don't see any blocking validity issues here. The slightly awkward focal-path construction is worth flagging as a minor quality note, but it's functionally correct and well explained, so it shouldn't count against the case.
+
+Given that repeated query shapes with different filters don't need per-path labels per the review criteria, I'll lean toward not flagging this at all, or at most noting it as a small clarity nit. My final verdict: this passes validity, with strong overall quality.
+

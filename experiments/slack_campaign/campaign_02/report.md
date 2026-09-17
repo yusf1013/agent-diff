@@ -1,81 +1,106 @@
-# Slack G1–G4 campaign — in progress
+# Slack G1–G4 campaign
 
-This report is a checkpoint, not the completed campaign. Clean generation and
-mutation are still running. Source modeling, cards and reference labels are
-manual work; writer/compiler/reviewer/solver/evaluator calls use Sonnet 5 on
-Bedrock. The historical premature pilot is preserved separately in `pilot_01`
-and is not pooled into these generation yields.
+Updated 2026-09-17T06:30:58.712027+00:00.
+
+The bounded campaign is complete. Unresolved and unrealized attempts are retained as outcomes, not successful tests.
+
+The domain model, baseline cards, baseline ground truth and manual audits are human/Codex work. Writer, compiler, reviewer, solver and evaluator calls use Sonnet 5 on Bedrock. Baseline run labels enter only G4. The earlier `pilot_01` is preserved separately and excluded from these yields. See [methods](methods.md) and [all cases](campaign_results.md).
 
 ## G1: baseline design
 
 | Measure | Result |
 |---|---:|
-| Baseline tasks | 59 |
-| Tasks with grounding obligations | 58 / 59 |
+| Tasks / tasks with obligations | 59 / 58 |
 | Grounding obligations | 198 |
-| Fully checked by native assertions | 74 / 198 |
-| Partially checked | 37 / 198 |
-| Unchecked | 87 / 198 |
-| Complete retained routes represented | 12 / 174 |
-| Entity–resolution-mode requirements represented | 12 / 28 |
-| Identifying attributes represented | 13 / 26 |
-| Isolated representative capability-boundary probes | 0 / 25 |
+| Native assertions: full / partial / unchecked | 74 / 37 / 87 |
+| Complete routes | 12 / 174 |
+| Identifying attributes | 13 / 26 |
+| Entity–resolution modes | 12 / 28 |
+| Representative capability-limit probes | 0 / 25 |
 
-Requested modes: 129 single, 34 determined collections, 11 absent, 20
-underspecified. Four delegated optional subsets are tracked separately, rather
-than relabeled as determined collections. A plural request can remain multiple
-when its supplied seed has only one matching record.
+The requested modes are 129 single, 34 jointly intended collections, 11 absent and 20 underspecified. Four optional delegated subsets remain separate. Counts concern the benchmark design, not whether a solver followed a particular trajectory. [Counts](g1.json); [baseline mapping](../../../grounding/slack_coverage/baseline_mapping_review.md); [catalog](../../../grounding/slack_coverage/catalog.md).
 
-[Counts](g1.json) come from the manually reviewed source cards.
-[Baseline mapping](../../../grounding/slack_coverage/baseline_mapping_review.md)
-records identifying paths and requested modes without consulting run labels.
-The [linear catalog](../../../grounding/slack_coverage/catalog.md) normalizes identifying attributes and keeps unavailable capability probes separate. Incidental dependence on an unavailable field does not automatically count as a representative limitation probe.
+## G2: native false passes and mutation
 
-## G2: native false passes
+Fresh structured assessments followed by manual source-evidence confirmation found **9 grounding violations in 7 of the 47 native-accepted baseline runs**. This is a confirmed-discovery count, not exhaustive recall. No ground-truth run labels were supplied to that discovery process.
 
-Fresh card-based assessments were run on all 59 existing solver runs. Manual
-confirmation found **nine grounding violations in seven native-accepted runs**.
-The native oracle accepted 47 runs in total. This is a count of confirmed
-discoveries, not a claim that all possible failures were found.
-
-| Native-accepted task | Confirmed grounding obligations |
+| Native-accepted task | Confirmed obligations |
 |---|---|
-| slack_67 | O1: incomplete lunch set and wrong extra target |
-| slack_74 | O1: omitted question source |
-| slack_95 | O1: unresolved channel choice presented as settled |
-| slack_97 | O4: substituted CDN discussion source |
-| slack_101 | O2, O5, O8: false absence / unauthorized channel selections |
-| slack_107 | O5: circuit-tracer source substitution |
-| slack_110 | O7: unauthorized edit-target selection |
+| slack_67 | O1 |
+| slack_74 | O1 |
+| slack_95 | O1 |
+| slack_97 | O4 |
+| slack_101 | O2, O5, O8 |
+| slack_107 | O5 |
+| slack_110 | O7 |
 
-[Manual confirmations and source links](g2_native_manual_review.json) preserve
-the evidence and reasoning. Environment-only mutations are still being built;
-no transition yield is claimed yet. Their assignment list was fixed without
-using ground-truth labels. Existing incorrect baselines remain in accounting but
-cannot establish correct-to-incorrect transitions.
+[Manual confirmations and evidence](g2_native_manual_review.json). Six source assignments were fixed for environment-only mutation, preserving their prompts and intended references. Failed/no-op intermediate patches remain in the attempt history.
+
+| Mutation | Manual final validity / quality | Execution | Original focal judgment → mutant |
+|---|---|---|---|
+| [M-slack_66](construction/M-slack_66/case.json) | accepted / weak | completed | demonstrated_correct → demonstrated_correct |
+| [M-slack_86](construction/M-slack_86/case.json) | accepted / adequate | completed | demonstrated_correct → demonstrated_correct |
+| [M-slack_89](construction/M-slack_89/case.json) | semantic_boundary_review_required / weak | access_unresolved | demonstrated_correct → not assessed |
+| [M-slack_90](construction/M-slack_90/case.json) | accepted / weak | completed | demonstrated_correct → demonstrated_correct |
+| [M-slack_93](construction/M-slack_93/case.json) | accepted / strong | completed | demonstrated_correct → demonstrated_correct |
+| [M-slack_105](construction/M-slack_105/case.json) | semantic_boundary_review_required / adequate | completed | demonstrated_correct → demonstrated_correct |
+
+Among the **4 accepted completed mutations**, there are **0 observed correct-to-incorrect focal transitions**. These are focal-obligation comparisons; a source run can contain independent failures. This pilot does not establish that mutation increases failure probability. Several negatives are valid but weak (they differ in more than one condition); the owner-as-nonadmin and root-message-versus-thread-reply boundaries are withheld from definitive mutation claims. [Manual review](manual_review.json).
 
 ## G3: generation
 
-The fixed plan contains 174 route assignments. The first six are explicitly
-marked development/calibration; they must remain distinguishable from later
-production authoring. Each uses the existing seed, a short writer design,
-separate compiler, mechanical card assembly, independent review, live API access
-checks, the unchanged baseline solver and the existing evaluator. Repairs use
-native conversation continuations; failed/unrealized attempts remain recorded.
+The fixed route plan has 174 assignments, including six labeled development/calibration cases. Repairs use native conversation continuations. Prompt and harness changes during development are preserved per invocation; this is not a held-out evaluation of one frozen authoring prompt.
 
-One confirmed example so far is [G-R108](construction/G-R108/case.json):
-“Which emoji reactions have been added to messages written by members of the
-project-alpha-dev channel?” The solver reported no reactions, although three
-qualifying reaction records were accessible. See its
-[answer and trajectory](execution/G-R108/solver/G-R108.json),
-[assessment](execution/G-R108/assessment/assessment.json), and
-[manual confirmation](manual_review.json).
+| Stage / result | Cases |
+|---|---:|
+| Planned complete routes | 174 |
+| Construction: error | 5 |
+| Construction: review_pass | 125 |
+| Construction: unrealized | 44 |
+| Execution: access_unresolved | 37 |
+| Execution: completed | 90 |
+| Execution: evaluation_unresolved | 1 |
+| Execution: not_run | 46 |
+| Model-accepted current cases manually audited | 125 / 125 |
+| Audited cases accepted as valid tasks, including shorter routes | 115 / 125 |
+| Accepted valid-task yield over all planned assignments | 115 / 174 |
+| Current valid generated cases with confirmed grounding failures | 15 |
+| Distinct generated case IDs with confirmed failures across preserved valid versions | 16 |
 
-G-R001 is a useful counterexample to automatic coverage credit: the reviewer
-accepted its channel-topic task, but manual review found its workspace relation
-was merely fixed context. It receives no credit for the assigned
-Conversation→Workspace route. A query join alone does not establish that the
-request exercises a route.
+Stage counts are not a strictly nested funnel: a case can retain an earlier execution after a later construction revision fails. Coverage and current primary discoveries require a version-matched accepted case. 7 recorded current solver episodes ended at the turn limit; an evaluator reporting completed means its assessment completed, not that the solver succeeded. One revised case (G-R094) received earlier solver-answer detail in manual construction feedback. It is outcome-informed and excluded from the primary current failure/coverage counts; the original shorter-route case remains separate. [Provenance exception](provenance_exceptions.json). A valid shorter-route task does not earn its assigned longer route. API eligibility is separate from what the prompt asks. The following counts are conservative, version-matched manual coverage lower bounds; no automatic prefix/subpath credit is used.
+
+| Requirement family | Baseline | Generated requested designs | Generated API-qualified solver executions | Baseline ∪ executed generation |
+|---|---:|---:|---:|---:|
+| Complete routes | 12/174 | 100/174 | 75/174 | 78/174 |
+| Identifying attributes | 13/26 | 15/26 | 15/26 | 18/26 |
+| Entity–resolution modes | 12/28 | 28/28 | 26/28 | 26/28 |
+| Capability limits | 0/25 | 0/25 | 0/25 | 0/25 |
+
+[Cell-level evidence](coverage_results.json). A solver execution with unresolved evaluator serialization is still an execution, but is not counted as a complete automated assessment. No dedicated capability-probe generation was completed; incidental unavailable asks and manual API investigations receive no automatic capability credit.
+
+The compiled-query diagnostic finds at least one declared negative admitted by relaxing exactly one filter in **104/131 model-accepted cases** (generation and mutation combined). This is evidence of a concrete near-miss distinction, not a semantic-validity or difficulty certificate. Missing-edge negatives can escape this diagnostic. [Negative audit](negative_audit.json).
+
+| Confirmed current generated failure | Requested mode | Evidence |
+|---|---|---|
+| [G-R013](construction/G-R013/case.json) | absent | [Response](execution/G-R013/assessment/sources/response.json), [assessment](execution/G-R013/assessment/assessment.json) |
+| [G-R042](construction/G-R042/case.json) | underspecified | [Response](execution/G-R042/assessment/sources/response.json), [assessment](execution/G-R042/assessment/assessment.json) |
+| [G-R090](construction/G-R090/case.json) | underspecified | [Response](execution/G-R090/assessment/sources/response.json), [assessment](execution/G-R090/assessment/assessment.json) |
+| [G-R098](construction/G-R098/case.json) | multiple | [Response](execution/G-R098/assessment/sources/response.json), [assessment](execution/G-R098/assessment/assessment.json) |
+| [G-R099](construction/G-R099/case.json) | underspecified | [Response](execution/G-R099/assessment/sources/response.json), [assessment](execution/G-R099/assessment/assessment.json) |
+| [G-R108](construction/G-R108/case.json) | multiple | [Response](execution/G-R108/assessment/sources/response.json), [assessment](execution/G-R108/assessment/assessment.json) |
+| [G-R109](construction/G-R109/case.json) | underspecified | [Response](execution/G-R109/assessment/sources/response.json), [assessment](execution/G-R109/assessment/assessment.json) |
+| [G-R133](construction/G-R133/case.json) | underspecified | [Response](execution/G-R133/assessment/sources/response.json), [assessment](execution/G-R133/assessment/assessment.json) |
+| [G-R137](construction/G-R137/case.json) | underspecified | [Response](execution/G-R137/assessment/sources/response.json), [assessment](execution/G-R137/assessment/assessment.json) |
+| [G-R138](construction/G-R138/case.json) | absent | [Response](execution/G-R138/assessment/sources/response.json), [assessment](execution/G-R138/assessment/assessment.json) |
+| [G-R145](construction/G-R145/case.json) | underspecified | [Response](execution/G-R145/assessment/sources/response.json), [assessment](execution/G-R145/assessment/assessment.json) |
+| [G-R148](construction/G-R148/case.json) | multiple | [Response](execution/G-R148/assessment/sources/response.json), [assessment](execution/G-R148/assessment/assessment.json) |
+| [G-R184](construction/G-R184/case.json) | underspecified | [Response](execution/G-R184/assessment/sources/response.json), [assessment](execution/G-R184/assessment/assessment.json) |
+| [G-R199](construction/G-R199/case.json) | underspecified | [Response](execution/G-R199/assessment/sources/response.json), [assessment](execution/G-R199/assessment/assessment.json) |
+| [G-R207](construction/G-R207/case.json) | underspecified | [Response](execution/G-R207/assessment/sources/response.json), [assessment](execution/G-R207/assessment/assessment.json) |
+
+Common confirmed failures include false empty-set reports for existing reactions, silently dropping a condition, and choosing between equally matching people using unrequested email/domain preferences. Manual review also rejects evaluator flags: G-R212 explicitly acknowledges the missing channel-membership condition and distinguishes supplemental information, so its flag is not a confirmed failure. G-R059 remains withheld over the wording boundary between a Slack reaction and a textual emoji reply. The earlier G-R062 flag rested on an unjustifiably narrow generated card.
+
+The full [manual audit](manual_review.json) and [preserved findings](campaign_results.json) distinguish current cases, old versions, invalid boundaries and qualified shorter-route discoveries. These flag-focused confirmations do not measure generation-evaluator recall. Read-only status and partial-performance disagreements are not silently promoted into grounding failures.
 
 ## G4: evaluator reliability
 
@@ -117,10 +142,14 @@ selected by the fixed validation rule, never by agreement with the reference.
 Two direct-judge transport failures were preserved and retried without semantic
 feedback; their unknown usage is not assumed free.
 
-## Cost and provenance
+## Cost, limitations and reproduction
 
-[Usage ledger](usage_ledger.json) and [summary](usage_summary.json) include saved
-attempts and repairs. Dollar figures are our estimates at recorded historical
-rates, not provider-billed amounts. Running/unreturned calls remain explicitly
-unknown. Update these files as the campaign progresses; do not read a checkpoint
-cost as the final total.
+Recorded invocations: **3,106**. Native usage totals: **111,140,830 input**, **6,502,554 output**, **1,324,755 cache-write**, and **22,154,152 cache-read tokens**. The historical-rate estimate is **$442.57**, not a Bedrock invoice or provider-reported dollar charge. **11** recorded invocations lack returned usage; they are listed rather than treated as free. [Usage totals and rates](usage_summary.json); [every recorded call](usage_ledger.json).
+
+Input/context repetition is substantial: authoring/review conversations repeatedly carry base seed, source API information and cumulative compilation context. Solver caching is recorded; the authoring adapter did not use prompt caching in this campaign. These costs include unsuccessful, repair and transport attempts with returned usage; they exclude the already-existing baseline solver run costs and manual/Codex labor.
+
+The main limitations are incomplete route realization, secondary-workspace discovery limits, semantic annotation errors, and uneven negative-example strength. Some long absent queries can be settled at an early empty join and therefore provide a weaker depth challenge. The shared seed leads to repeated names/topics. Role-report tasks can expose only the distinctions supported by API flags; identity-grounding findings do not certify every reported role attribute. [Runtime qualifications](runtime_qualifications.md).
+
+[Final mechanical/provenance checks](final_validation.json) verify the accepted artifacts, version-matched manual audits and evidence links. The experiment provides results for all four goals; it does not claim complete coverage, perfect generation, a mutation-induced failure increase, or held-out oracle generalization. Source cards and oracle policies were developed with some of these baseline cases.
+
+To rebuild this report without model calls, run `python -m grounding.slack_campaign.build_report --final` with the configured project Python environment. [Methods](methods.md) explain the authoring, validation, runtime and provenance boundaries. All native requests/responses and available summarized thinking blocks remain beside their stage artifacts.

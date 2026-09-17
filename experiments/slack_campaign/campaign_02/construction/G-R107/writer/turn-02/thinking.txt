@@ -1,0 +1,20 @@
+Ah, I see the route contract clarifies that the user_id join represents the message author, not the reactor. So the correct path is reaction to message to the author's user record to that author's conversation membership — I need to redo the binding since I'd previously used the reactor's membership instead.
+
+So the redesigned identifying condition is: find a reaction on a message whose author is a member of a specific channel like #project-alpha-dev, while the message itself lives elsewhere, e.g. a Postgres migration announcement in #core-infra. The reactor's identity is incidental and doesn't matter for uniqueness — only the author's channel membership does. I'm working out an example: someone like Lukas authors the migration message and is also a member of project-alpha-dev, while a different person reacts to it, and I need to make sure there's only one reaction on that message to keep the query result unique.
+
+U_PRIYA adding "thumbsup" to M1 gives a single clean match through reaction→message→author→membership. For negatives, I want a reaction on a message whose author isn't in project-alpha-dev (like U_SOPHIE) to break the membership link, and I'm considering whether a reaction on an off-topic message by U_LUKAS would still pass since the route only checks author membership, not content — so I may need to add an explicit text condition on the message to keep things distinguishable.
+
+I'll include a message-content attribute condition (mentions "Postgres migration") plus channel matching core-infra, tied to author U_LUKAS and his membership row. Negatives then become: same author posting an unrelated message with a reaction (excluded by content), a migration-related message by non-member U_SOPHIE with a reaction (excluded by membership), and a migration message by U_LUKAS with no reaction at all (missing-relationship negative).
+
+Now I'm assembling the full role list: target reaction (thumbsup by U_PRIYA on M1), the migration message M1 itself, author user U_LUKAS, his membership row, and a negative reaction on a different message M2 authored by non-member U_SOPHIE.
+
+I'm also adding two more negatives — a reaction on M3 authored by member U_LUKAS but off-topic (excluded by topic), and message M4 authored by member U_MATEO about migration but with no reactions at all (excluded by missing relation).
+
+Now I'll finalize the purpose statement: a read-only question asking which emoji reaction was added to the Postgres 16 migration message posted by a #project-alpha-dev member.
+
+Actually, adding a new reaction from the acting user rather than modifying the existing one works better as the consequential step — asking them to react with a checkmark to confirm they've seen it, which maps cleanly to the supported add-reaction operation while still requiring them to first identify the correct message and reaction.
+
+Now I'm drafting the two-obligation task spec: first, identify the emoji reaction on the Postgres 16 migration message from a #project-alpha-dev member; second, add a check mark reaction to that same message as confirmation, writing to message_reactions with message_id, user_id, and reaction_type fields for the acting user.
+
+I need to clarify the join logic: the message author's user_id must match the #project-alpha-dev membership record, distinct from whoever originally reacted to the message. Now I'm finalizing the roles and native table/field mappings for both obligations.
+

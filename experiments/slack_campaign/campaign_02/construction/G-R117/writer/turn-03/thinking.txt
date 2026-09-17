@@ -1,0 +1,22 @@
+I realize reactions.remove can only remove the acting user's own reaction, so removing another user's reaction is actually impossible—this means I need to reconsider whether the task should be read-only, or pivot the action to something feasible like adding a reaction or asking a question instead.
+
+I'm shifting toward a read-only question: asking which channel contains the 🙌 reaction Robert left on Lukas's infrastructure-issue message, since this fits the referent entity of REACTION while sidestepping the state-change problem. Given the ambiguity, this feels similar to the calibration example where the agent should recognize multiple possible interpretations rather than silently picking one.
+
+For the answer format, I'm checking whether message_reactions itself carries enough fields to answer the question directly, since it only holds message_id, user_id, reaction_type, and created_at -- meaning the channel would have to be derived through a join rather than being a native field of the referent table.
+
+I could ask directly which emoji Robert reacted with on Lukas's infrastructure message, but I realize both Roberts happened to use raised_hands, so the answer collapses regardless of which record is meant. That still tests route resolution conceptually, even though the emoji field itself doesn't distinguish the ambiguity practically.
+
+I'm considering instead asking about which channel Robert left the reaction in, since that answer would genuinely differ between the two candidates. That requires joining through the message to its channel, which feels acceptable since it's just reporting a related fact about the referent rather than introducing an unrelated table.
+
+This matches the calibration example's pattern closely enough — identifying the channel through the reactor's membership relation is a valid deliverable, satisfying the association-entity requirement. I'll settle on message_reactions as the target table with reaction_type and message_id as native answer attributes, with the channel derived through the message-to-channel link as a computed answer.
+
+Since this is a read-only task, I'll skip change/written attributes and keep only answer_attributes. The route contract fixes r0 as message_reactions, r1 as the reactor user, and r2 as their matching channel membership, confirming the identifying condition runs through the reactor's own channel membership.
+
+I need the binding_note to spell out that r0.user_id = r1.user_id names the reactor, and r2.user_id = r1.user_id (same user) identifies that reactor's channel membership -- with the message's channel only reported after identification rather than used as an additional filter, consistent with the CONVERSATION->MEMBERSHIP route going through the reactor's own membership, not the message's channel.
+
+But since removing someone else's reaction isn't a supported operation, I need to shift the task to a read-only question instead, since that keeps the same referent, route, and resolution mode while just changing the verb. So the final prompt becomes asking which channel has the 🙌 reaction that Robert left on Lukas's message about the infrastructure issue.
+
+Now I need to finalize the JSON with the corrected read-only task type, updated answer attributes, and drop any change/write-related fields, while keeping the negative records for Hubert and Morgan and the message_reactions entity as before. Since message_reactions doesn't store channel_id directly, I need to check whether the channel comes through the associated messages table.
+
+I'll settle on a single alternative set with message_id and reaction_type, letting the compiler derive the channel through the message_id-to-channel_id join, and include channel_name in answer_attributes since that's what the user is directly asking about.
+

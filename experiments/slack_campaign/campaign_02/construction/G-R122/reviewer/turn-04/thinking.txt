@@ -1,0 +1,40 @@
+Good, that confirms the channel scope fix for Priya's reaction match. Now I'm checking Lukas's reaction match to verify it's also correctly scoped in C_INFRA.
+
+Moving to the negative examples - I'm confirming that negative_wrong_emoji_priya, negative_wrong_emoji_lukas, and negative_wrong_reactor_olena all land on messages within C_INFRA, satisfying the channel scope requirement consistently. This resolves the primary validity issue with the reaction constraints.
+
+Now I want to double-check for any new problems this fix might have introduced, like whether relocating these reactions accidentally creates an unintended second valid match on the same message.
+
+Looking at the message roles for Kenji's Tokyo message, Sophie's checkpoint, and Aisha's dashboard - these remain defined but no longer serve as reaction targets since their bindings were relocated. The design originally specified these as targets for the match and negative reactions, but the compiled version reassigned those targets elsewhere, leaving these roles as vestigial identification markers rather than active binding points - a minor inconsistency between design intent and compiled output.
+
+I need to weigh whether this qualifies as a compiler repair or an unresolved design change that should be flagged back to the writer, per the rule that necessary design changes must return as explicit revisions rather than being silently patched by the compiler. The previous review already flagged this validity issue as needing a design-level fix, either rewording the prompt or relocating the reactions - and this iteration's compiler chose the relocation path itself, which effectively rewrites the underlying design facts rather than just implementing them.
+
+Now I'm noticing the design section still claims Priya reacts to Sophie's checkpoint message in C_MODEL, but the actual compiled binding for that role points to Robert's cloud bill message in C_INFRA instead - a direct contradiction between the stated design intent and the compiled facts.
+
+This violates the rule that compiler repairs must preserve the locked prompt: changing which message and entities a role refers to is a semantic design change, not a mechanical fix, and should have been sent back as an explicit revision rather than applied unilaterally.
+
+The design's roles section still lists the old referents while the compiled output silently uses different ones, leaving message_sophie_checkpoint, message_aisha_dashboard, and message_kenji_tokyo orphaned and misleadingly present. That's a design-compiled consistency failure worth flagging in the review.
+
+This confirms my concern: the repair should have gone back to design to update role facts rather than being silently patched during compilation, and the compiled.notes field frames the relocation as addressing prior review feedback — which raises the question of whether that compiled-level fix is actually sufficient cover for the unrevised design layer.
+
+Since the prompt text itself stays locked and unchanged, and only the underlying message targets for reactions shift from off-topic to on-topic channels, this looks like a legitimate environment-only mutation — the compiler is adjusting seed rows to satisfy the locked prompt's channel-scope requirement without touching task obligations or the selector logic, which remains identical.
+
+However, I'm noticing a subtler issue: the newly bound reaction targets (Robert's cloud bill message, Olena's OOM eviction message) weren't part of the design's explicit role enumeration for this purpose, even though they existed in the base seed data. That's a mismatch worth flagging — the compiled facts are introducing matching messages that weren't designated as roles in the original design.
+
+I'd call this a legitimate compiler repair rather than a design change, since the reactor's identity and emoji type stay the same, and only the specific message ID targeted shifted—something the design already treated as flexible since the reaction wasn't tied to the CUDA message.
+
+This is analogous to environment mutations fixing seed rows to resolve location-consistency issues without touching the prompt or route itself. The design's role text technically still references the old message facts, which is a paperwork discrepancy worth flagging, but it doesn't reflect a fundamentally different design intent, so I'm inclined to accept this as valid.
+
+I also notice the checkpoint, dashboard, and tokyo message roles are now orphaned as support roles not actually referenced in the final bindings—harmless bookkeeping leftover rather than a validity issue. Now I want to check the identifying paths in the card, looking at the entities and relationships involved.
+
+The relationship path linking message_reactions.user_id and messages.user_id matches the route nodes for REACTION, USER, and MESSAGE correctly, confirming the "same user is reactor and author" semantics. I also verify the answer attributes (message_id, user_id, reaction_type) are fine and retrievable, and cross-check that computed matches for Priya and Lukas align with their timestamps.
+
+Now I'm looking at the negative case for Olena's wrong reactor—her reaction lands on her own message in C_INFRA, which needs closer scrutiny.
+
+That reaction is on her own message, so it correctly fails the join condition and stays a negative case. Checking for other accidental matches, the original seed only had one pre-existing reaction row (U01AGENBOT9's eyes reaction), and the compiled seed_edits only add five new rows, so there shouldn't be hidden collisions. I confirm U01AGENBOT9's eyes reaction is on a circuit-tracer message in the wrong channel entirely, and its reaction_type doesn't match anyway.
+
+I also want to verify actor access — since all the matches and negatives now reside solely in C_INFRA, and the actor is a member there, conversations.history/reactions.get on that single channel is sufficient. The broader multi-channel access_plan in the design doc is no longer strictly necessary, but that's just a design-time description and not a defect.
+
+Checking the ambiguity itself still holds: Priya's confirming message and Lukas's original message remain the two candidates for "who identified the CUDA memory limit," unaffected by the relocation fix, so the design's central ambiguity is preserved. Overall I'd call validity a pass, with quality "adequate" — the negatives and access are solid, but there's a minor stale-documentation mismatch in the design's role text worth flagging.
+
+On reflection, since the design's role description is part of the artifact being reviewed and still misstates which messages the check reactions attach to, that's a genuine internal inconsistency a reviewer should call out, not just a cosmetic issue — I'll mark it as an annotation flaw. Finalizing the verdict now.
+

@@ -1,0 +1,26 @@
+I need to check whether Aisha is already listed as a member of C_INFRA and C_MODEL in the base seed data, since the design calls for her membership there but I want to confirm the current member lists before adding her.
+
+I'm confirming which membership and message entries already exist in the base seed versus what needs new seed edits — Aisha's channel memberships for C_INFRA and C_MODEL appear missing and need inserts, while several referenced messages (priya_infra, olena_model) already match existing rows by timestamp, channel, and author. I'm now cross-checking the robert_general message timestamp against the seed data.
+
+Now I'm working through the reaction inserts needed: check reactions from Priya and Olena on their own messages, a wrong-reactor case where Mateo reacts to Sophie's message, and a wrong-channel case involving Robert Walsh, distinguishing which reactions already exist versus need to be added.
+
+I'm also mapping out all the native handles for channels, users, and messages so each reference resolves correctly to its composite key or ID.
+
+Then I'm setting up the negative reaction cases — one on an unrelated existing message, one with the wrong reactor, and one with the wrong channel — to test that mismatches get properly rejected, keeping the reaction_type strings flexible since the seed doesn't restrict them. I still need to figure out who the actor is, since that's not explicit but matters for which channel memberships to seed.
+
+The actor is likely U01AGENBOT9, since it's already a generic member of most channels (C01ABCD1234, C02EFGH5678, C03IJKL9012, C04MNOP3456, C05ALPHA, C06ALPHADEV, D01AGENTSOPHIE, C_INFRA, C_MODEL, C_FRONTEND) but notably absent from C_GROWTH, which matters since Aisha belongs to C_GROWTH, C_FRONTEND, and C06ALPHADEV.
+
+I need the actor to have access to every channel Aisha belongs to in order to check her self-reactions properly, so I should add a channel_members entry granting U01AGENBOT9 access to C_GROWTH. The access_plan explicitly references C_INFRA, C_MODEL, C_GROWTH, and C_FRONTEND but oddly omits C06ALPHADEV even though Aisha is a member there too, which I want to double-check.
+
+Since actor already has membership in C06ALPHADEV, that channel's history is accessible regardless of the plan's omission, and there are no seeded messages there anyway so no self-reactions to worry about. The remaining gap is just adding actor's membership to C_GROWTH for completeness.
+
+Also adding Aisha's memberships to C_INFRA and C_MODEL per her design roles, then inserting the reciprocal reaction from U_PRIYA to complete reaction_match_1, continuing similarly for the next matching reaction.
+
+Then I'm adding two negative-case reactions - one where the reactor is wrong for the match, and another where the channel doesn't align - assigning explicit deterministic timestamps for consistency. Now I'm moving to build the main selector query for the qualifying_self_reactions obligation, joining message_reactions through users to messages back to users.
+
+Since selectors can't directly express a self-join equality between two joined instances of the same node type, I'm working out the route: reaction to the reactor user, then to the message, checking that the message's author matches the reactor, then to the conversation and membership to confirm Aisha belongs to that channel.
+
+This automatically enforces the same-user link since messages.user_id ties back to the reactor. From there, node3 becomes channels via messages.channel_id, node4 is channel_members via channel_members.channel_id, and node5 is users again via channel_members.user_id, where I filter on real_name to match the target person.
+
+With filters applied and the scope left unrestricted at the root, this gives the selector for the single obligation. I still need to identify the negative referents — the reaction rows that shouldn't be selected due to wrong existing state, wrong reactor, or wrong channel — and return their handles before finalizing.
+

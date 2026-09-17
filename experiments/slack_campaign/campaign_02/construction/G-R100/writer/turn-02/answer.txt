@@ -1,0 +1,105 @@
+```json
+{
+  "prompt": "For a workspace governance check, can you tell me what reactions were left on the message where someone asked about grabbing AWS p5 instance time for the circuit-tracer workload — that message is in the channel where one of our workspace admins sits as a member?",
+  "binding_note": "r0 (message_reactions) must attach to r1, the specific message asking about p5/supercomputer time for circuit-tracer; r1.channel_id binds to r2, the channel containing it; r3 (channel_members) binds a member of that same r2 to r4 (users); r5 (user_teams) binds that same r4 to a workspace membership carrying the admin/owner role. The admin/owner user need not be the reactor or the message author — only a channel member of r2. No stored message_reactions row satisfies r0 against this r1, so the collection is empty.",
+  "roles": [
+    {
+      "role": "target_message",
+      "entity": "messages",
+      "facts": "Message in the engineering channel asking whether anyone looked into getting AWS p5 supercomputer time for the circuit-tracer workload, authored by John Doe.",
+      "selection": "match",
+      "reason": "r1: the message whose reactions (r0) are requested; it carries no reaction records."
+    },
+    {
+      "role": "target_conversation",
+      "entity": "channels",
+      "facts": "The engineering channel (#engineering), which contains the target message and also has Robert Walsh as a member.",
+      "selection": "support",
+      "reason": "r2: conversation node linking r1 to r3 via channel_id."
+    },
+    {
+      "role": "admin_member_walsh",
+      "entity": "channel_members",
+      "facts": "Robert Walsh is a channel member of #engineering (and also #general, #random).",
+      "selection": "match",
+      "reason": "r3: membership record linking r2 to r4 as required by the route."
+    },
+    {
+      "role": "admin_user_walsh",
+      "entity": "users",
+      "facts": "Robert Walsh, a channel member of #engineering who separately holds a workspace-level admin role.",
+      "selection": "match",
+      "reason": "r4: the user shared by r3 and r5."
+    },
+    {
+      "role": "admin_workspace_membership_walsh",
+      "entity": "user_teams",
+      "facts": "Robert Walsh's workspace membership row has role 'admin'.",
+      "selection": "match",
+      "reason": "r5: terminal workspace-membership node whose admin/owner role satisfies the exposure qualification."
+    },
+    {
+      "role": "oom_message_same_channel",
+      "entity": "messages",
+      "facts": "Lukas's message in the same #engineering channel about circuit-tracer OOM errors during layer-by-layer loading; this message already carries an 'eyes' reaction.",
+      "selection": "negative",
+      "reason": "Shares r2/r3/r4/r5 (same qualifying channel and admin path) but is a different r1 (wrong topic); its existing reaction must not be reported as answering this request."
+    },
+    {
+      "role": "jax_reply_same_channel",
+      "entity": "messages",
+      "facts": "Kenji's threaded reply in #engineering offering to prototype a JAX implementation over the weekend; no reactions.",
+      "selection": "negative",
+      "reason": "Same channel/admin path but a different r1; not the supercomputer-time message."
+    },
+    {
+      "role": "dm_progress_message",
+      "entity": "messages",
+      "facts": "Sophie's DM to the agent about circuit-tracer PyTorch rewrite progress, in the private agent-Sophie DM channel.",
+      "selection": "negative",
+      "reason": "Related topic (circuit-tracer) but its r2 (the DM channel) has no member holding an admin/owner workspace role, breaking the r3-r4-r5 chain."
+    },
+    {
+      "role": "growth_channel_no_admin",
+      "entity": "channels",
+      "facts": "#growth channel, whose members (Nick, Gabriel, Hubert, Agent) all hold plain 'member' workspace role, none admin/owner.",
+      "selection": "negative",
+      "reason": "Illustrates an r2 that fails the route because no r3/r4 pairing there resolves to an r5 with admin/owner role, even though it holds unrelated messages."
+    },
+    {
+      "role": "admin_freeman_no_channel",
+      "entity": "user_teams",
+      "facts": "Morgan Freeman holds a workspace-level admin role but has no channel_members row in the seed.",
+      "selection": "negative",
+      "reason": "Shows an r5 admin role with no matching r3, so it cannot supply the required r2 linkage; split-record negative across r3 and r5."
+    }
+  ],
+  "obligations": [
+    {
+      "name": "reactions_on_supercomputer_message",
+      "description": "Reactions (r0) attached to the message (r1) about getting p5 supercomputer time for circuit-tracer, where that message's channel (r2) has a member (r3/r4) holding an admin/owner workspace role (r5). Requested as a collection; the seed contains zero qualifying reaction rows.",
+      "table": "message_reactions",
+      "mode": "absent",
+      "task_type": "read-only",
+      "scope": "reactions on the single identified message within the admin-linked #engineering channel",
+      "target_roles": [],
+      "candidate_role_sets": null,
+      "selection": "set",
+      "answer_attributes": [
+        ["message_reactions.reaction_type"],
+        ["message_reactions.user_id"],
+        ["message_reactions.created_at"]
+      ]
+    }
+  ],
+  "task_spec": [
+    {
+      "line": 1,
+      "text": "Identify the message about seeking AWS p5 supercomputer time for circuit-tracer in the channel that includes an admin/owner-level workspace member, and report any reactions on it.",
+      "obligations": [1]
+    }
+  ],
+  "scope_exception": null,
+  "access_plan": "Locate the message via conversations.history or search.messages on '#engineering' (or workspace-wide search for 'supercomputer'/'p5'), confirm channel membership via conversations.members, cross-check the admin/owner role of that member via users.info or the workspace membership record, then call reactions.get on the identified message's channel/timestamp to enumerate reactions (finding none)."
+}
+```

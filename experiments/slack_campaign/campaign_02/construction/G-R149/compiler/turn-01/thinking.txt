@@ -1,0 +1,30 @@
+I need to figure out which reactions to add: Morgan Freeman's eyes reaction and Hubert's thumbsup on the OOM message, Morgan Stanley's eyes reaction on the same message, and a distractor reaction elsewhere. I'm checking the base seed's existing message_reactions to see what's already there before adding the new entries.
+
+Morgan Freeman isn't currently a member of the channel, so I'll need to add him to channel_members first before he can react. Robert Walsh is already admin, so Morgan Freeman being admin too shouldn't cause any conflicts.
+
+I'll go with U01AGENBOT9 as the actor, already a member of C03IJKL9012, and confirm access to Robert Walsh's admin info via users.info within the single workspace. Now I'm compiling the message_reactions inserts, tracking who reacted eyes vs thumbsup on each relevant message.
+
+I also need to add a channel_members row for Morgan Freeman joining #engineering, since that's explicitly stated as a role fact alongside his eyes reaction on the OOM message.
+
+Now I'm working out the query path for the reacting-users obligation: starting from users, joining through message_reactions to messages, channels, teams, and user_teams, filtering on reaction_type eyes and the relevant message identifiers.
+
+Since messages lack a name field like channels do, I should filter on message_text containing "OOM" plus the channel name being 'engineering', rather than relying on internal IDs. I also realize I can't just filter user_teams by role='admin' to find Robert Walsh's workspace, since Morgan Freeman is also an admin — I need to disambiguate by matching Robert's actual name, not just his role.
+
+So the join path is: users → message_reactions → messages → channels → teams → user_teams → users(admin), seven nodes total, linked through user_id, message_id, channel_id, team_id fields. Filters needed: reaction_type equals 'eyes' on the reactions node, message_text contains 'OOM' on the messages node, and real_name matching Robert Walsh on the final admin users node.
+
+The route ends at WORKSPACE_MEMBERSHIP, but that table only has user_id, not the real_name field needed to filter for Robert Walsh specifically -- so identifying him requires an implicit link back to the users table, which the binding note seems to establish through the team_id connection rather than a direct join.
+
+Since resolution is underspecified, the main selector should naturally return both matching Morgans through the union, so this single query covers the whole obligation. Given there's only one obligation, the final selector list is just this one main selector.
+
+Now I'm mapping the role labels to their native handles — morgan_stanley, morgan_freeman, lukas_author, hubert_wrong_emoji, the distractor reaction, the out-of-message reference, engineering channel, workspace, and Robert's admin membership. I'm also noting the negative referents: lukas_author and hubert_wrong_emoji are plausible but incorrect user matches, since the root entity type here is USER.
+
+I also need to include U01AGENBOT9 as a negative referent — it already has an eyes reaction on the OOM message but isn't named Morgan, so it satisfies most conditions except the name match.
+
+Now I'm drafting the seed edits: inserting message_reaction rows linking specific messages to Morgan Stanley, Morgan Freeman, and Hubert with eyes/thumbsup reactions, adding the distractor eyes reaction, and adding Morgan Freeman to the engineering channel members. I'm making sure to supply explicit deterministic created_at timestamps for these rows since timing matters here, rather than relying on the default.
+
+I confirm Morgan Freeman's existing admin role in user_teams doesn't need modification since it's already part of the base seed, and I verify the default actor already has sufficient channel membership. Now I'm mapping out the join path for the selector filters, connecting users to message_reactions to messages to channels to teams to user_teams and back to users for the admin check.
+
+I'm setting the filters: reaction_type "eyes" on the reactions node, message_text containing "OOM" (case-insensitive), channel_name equal to "engineering", and real_name equal to "Robert Walsh" for the admin node. I'm also considering whether to add a real_name contains "Morgan" filter on the target user node, and decide it's justified since the prompt explicitly references a user named Morgan.
+
+Now I'm finalizing the selector JSON structure with the root table, path, joins, and full filter list, then noting the negative referents (other users who reacted with eyes but aren't named Morgan) before writing up the final answer.
+

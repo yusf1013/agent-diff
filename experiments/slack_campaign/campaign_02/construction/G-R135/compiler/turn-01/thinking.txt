@@ -1,0 +1,34 @@
+I'm cross-checking the base seed data—confirming that Priya, Mateo, Robert, and Carlos Vega, along with the channels for growth, infra, model, and frontend teams, match the established facts, and that Carlos Vega as the target user is uniquely tied to the growth channel and excluded from the others.
+
+Isha and Carlos Vega too - all check out against base seed for C_GROWTH, and C_INFRA's 8 members also match with Carlos absent. The new_core_infra_membership absence is confirmed too. Now I need to figure out who the actor should be - since it's not explicitly specified, I'm reasoning that the actor needs visibility into all the bounded channels (C_GROWTH, C_INFRA, C_MODEL, C_FRONTEND, C06ALPHADEV) to have proper access.
+
+Checking U01AGENBOT9's existing memberships in the base seed, this bot has almost all the needed channels except C_GROWTH is missing. This raises a question about whether conversations.members actually requires membership at all, or whether it works for any public channel visible to the token - which would resolve the gap without needing to add a membership row.
+
+For the invite action, U01AGENBOT9 already needs to be a member of C_INFRA to invite others, which it already is, so that's fine. For listing members of C_GROWTH, since it's a public channel this shouldn't require membership, and I'll avoid adding unnecessary membership edits given the instruction to preserve base records unless clearly justified.
+
+The task mentions channel histories specifically, but establishing workspace-wide absence really depends on membership visibility via conversations.members across the full channel set - C_GROWTH, C_INFRA, C_MODEL, C_FRONTEND, C06ALPHADEV - so I should ensure the actor has membership granted for each of those.
+
+Checking the actor's current membership list against this set, I notice C_GROWTH isn't included (there's a similarly-named but distinct channel that shouldn't be confused with it), while C_INFRA, C_MODEL, C_FRONTEND, and C06ALPHADEV are already covered - so C_GROWTH is the one channel needing added access.
+
+Now I'm working through the selector logic for identifying the isolated growth member - I need a query joining users through channel_members and channels to teams, scoped to the workspace, that positively matches product-growth membership while excluding membership in core-infra, model-research, frontend, and project-alpha-dev channels. The tricky part is that the selector syntax only supports positive filters like eq/ne/in/not_in, not a clean NOT construct, so I need to figure out how to express this exclusion pattern within those constraints.
+
+Actually, count comparisons support eq, so an auxiliary query counting matching channel memberships with count=0 would express absence directly - that's the key mechanism I need.
+
+With that, the focal path traces users through channel_members to channels to teams, filtering for channel 'product-growth' and team 'T01WORKSPACE' to find members of that channel in that workspace. Then I need an auxiliary query on the same user node asserting zero memberships in the excluded channels ('core-infra', 'model-research', 'frontend', 'project-alpha-dev') within that same team, using count eq 0 to enforce the negation.
+
+So auxiliary conditions act like correlated constraints on the same root entity rather than independent global queries - the focal establishes the required join chain for existence, while auxiliary counts (like the 0-count for absence) apply per-candidate. I'm now sketching the selector structure with root_table users, an empty scope, and a focal path through channel_members, channels, and teams with the corresponding join keys and filters.
+
+I'm confirming this selector correctly isolates users in product-growth with zero memberships in the excluded channel set, which uniquely resolves to Carlos Vega. Now moving to obligation 2, invite_to_core_infra, which requires creating a channel_members row pairing the identified user with #core-infra - this is a state-changing action, so its selector would just target the new membership handle directly.
+
+Since this row doesn't exist yet, I'm working through whether the selector should target a currently absent match or the target post-action state. This benchmark is about defining referents for grounding rather than executing the insert itself, so the actual row creation happens during evaluation, not in our seed data - we just need to specify a selector that identifies the target row by channel_id and user_id, even though it currently returns zero matches.
+
+Now I'm working through the binding assignments, mapping role names like target_user, overlapping_growth_member_priya, growth_channel, and infra_channel to their corresponding IDs.
+
+I need to identify negative referents - users who could be incorrectly selected as the target due to overlapping channel memberships, like Priya, Mateo, and Robert. I'm cross-checking the base seed data across channels (C_INFRA, C_MODEL, C_FRONTEND, C06ALPHADEV) to figure out exactly which of the eight users appear where, since Sophie seems to be missing from some channels.
+
+I'll settle on Priya, Mateo, and Robert as the negative_referents since those are the ones the design explicitly flags as growth members with overlap, even though Lukas, Sophie, Olena, Kenji, and Aisha share similar overlap patterns.
+
+Now I need to verify the seed edits: adding actor membership to C_GROWTH for U01AGENBOT9, confirming workspace membership already exists, and checking that core_infra_incumbent_robert matches the base data correctly. I should note in the access summary that C_GROWTH wasn't previously in the actor's membership and was just added.
+
+Confirming no existing pairing between U_INCOGNITO and C_INFRA in the base seed, so no edit is needed there either. With everything verified, I'm ready to write the final JSON.
+

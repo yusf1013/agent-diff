@@ -1,0 +1,19 @@
+{
+  "validity": "fail",
+  "quality": "weak",
+  "issues": [
+    {
+      "kind": "validity",
+      "location": "compiled.selectors[0].auxiliary / private.selector.auxiliary",
+      "problem": "The design/binding_note requires a genuine same-record equality: the message's author (r0.user_id) must be the SAME user who holds an 'admin' row in user_teams for the workspace (r4.user_id, joined through r3). The compiled focal path only checks that *some* admin exists in the channel's workspace (a route-existence fact, always true here since Robert Walsh and Morgan Freeman are admins), and the compiler itself admits the selector language cannot express the required cross-node equality. It then patches this gap with an auxiliary filter that hardcodes the literal, currently-known admin user IDs ('U03ROBERT23','U07MORGANFREE') as a messages.user_id IN (...) literal list. This is exactly the 'hidden exact-field assumption' / literal-value substitution the review criteria flag: the compiled query does not actually implement the requested join (author = admin-role holder); it only reproduces the correct empty answer because the writer happened to enumerate the admin IDs by hand. If the admin population changed (e.g., a new admin added, or one demoted) without updating this literal list, the compiled query would silently return a wrong answer despite claiming to encode the route MESSAGE->CONVERSATION->WORKSPACE->WORKSPACE_MEMBERSHIP->USER.",
+      "repair": "Rebuild the focal path so the equality is expressed as a genuine same-record binding across the join chain (e.g., select users who are both core-infra authors AND have an admin row in user_teams for the channel's workspace via an actual correlated join/self-join on user_id), rather than injecting the specific admin user_ids as a literal filter value discovered externally by the writer."
+    },
+    {
+      "kind": "annotation",
+      "location": "compiled.notes / private.selector.focal",
+      "problem": "The notes explicitly document this as a known limitation ('the selector language has no cross-node equality against another node's field, only literal-valued filters') rather than treating it as a defect requiring a design/compiler fix -- it is presented as an accepted workaround, which understates the severity of not implementing the assigned route's essential same-record constraint.",
+      "repair": "Escalate this selector-language limitation as a compiler capability gap requiring either richer selector syntax for same-record equality across joined nodes, or an explicit flag that this case's chain condition is approximated rather than truly enforced."
+    }
+  ],
+  "rationale": "The design intends a specific relational constraint: the message author and the workspace-admin-role holder must be the same person (r0.user_id = r4.user_id). The base seed genuinely supports the 'absent' resolution (no core-infra author is an admin), so the resolution mode itself is justified. However, the mechanical construction does not actually encode that same-record equality through the route; instead it verifies only that an admin exists somewhere in the workspace (a vacuous/always-true check here) and then bolts on a literal hardcoded list of the two known admin user_ids as a stand-in for the join. This is precisely the kind of hidden exact-field/literal-value substitution the review criteria instruct reviewers to reject, since it does not generalize and does not faithfully realize the assigned route's semantics -- it only happens to produce the right empty set because the writer manually supplied the current admin IDs. This is a construction/validity defect distinct from the (correct) resolution-mode judgment, so the case fails on mechanical grounds despite the underlying seed data and negatives being well-chosen."
+}

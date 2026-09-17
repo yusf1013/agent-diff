@@ -1,0 +1,88 @@
+```json
+{
+  "prompt": "Remove the eyes reaction I left on Lukas's message in #engineering where he described the circuit-tracer library hitting OOM errors when loading large models layer-by-layer.",
+  "binding_note": "r0 (message_reactions) is identified via r0.message_id = r1.message_id where r1 (messages) is Lukas's #engineering message describing the circuit-tracer OOM/layer-by-layer issue; r0 must additionally be the acting user's own row with reaction_type 'eyes', since reactions.remove only removes the caller's own reaction on a given message/emoji.",
+  "roles": [
+    {
+      "role": "target_message",
+      "entity": "messages",
+      "facts": "Message 1706110000.000100 in channel C03IJKL9012 (#engineering), authored by U_LUKAS: 'The circuit-tracer library is hitting OOM errors when loading large models layer-by-layer... Need to rewrite this in PyTorch from scratch with proper streaming.'",
+      "selection": "match",
+      "reason": "This is the r1 message that r0 must join to via message_id; it uniquely matches channel, author, and content described in the request."
+    },
+    {
+      "role": "actor_eyes_reaction",
+      "entity": "message_reactions",
+      "facts": "Reaction row keyed (message_id=1706110000.000100, user_id=U01AGENBOT9, reaction_type='eyes').",
+      "selection": "match",
+      "reason": "This is r0: it joins to the identified target_message and belongs to the acting user with the requested emoji, satisfying both the route join and the acting-user removal constraint."
+    },
+    {
+      "role": "other_user_eyes_reaction",
+      "entity": "message_reactions",
+      "facts": "Row (message_id=1706110000.000100, user_id=U_LUKAS, reaction_type='eyes') added when Lukas acknowledged his own report.",
+      "selection": "negative",
+      "reason": "Joins to the same r1 message and shares the same emoji, but is not the acting user's row; reactions.remove can only act on the caller's own reaction, so this row is excluded even though the message-side of the join matches."
+    },
+    {
+      "role": "actor_eyes_on_other_message",
+      "entity": "message_reactions",
+      "facts": "Row (message_id=1700300000.000001, user_id=U01AGENBOT9, reaction_type='eyes') on Nick's Reddit growth-results message in #growth.",
+      "selection": "negative",
+      "reason": "Same acting user and same emoji, but joins to a different r1 message unrelated to the circuit-tracer OOM topic, so the message-side identifying condition fails."
+    },
+    {
+      "role": "reply_message_timeline",
+      "entity": "messages",
+      "facts": "Reply message 1706110000.000200 by U_ROBERT in #engineering, parent_id pointing to the OOM message, asking when the PyTorch rewrite will be ready.",
+      "selection": "negative",
+      "reason": "A distinct r1 candidate in the same thread with no reaction from the actor; must not be conflated with its parent message."
+    },
+    {
+      "role": "reply_message_jax",
+      "entity": "messages",
+      "facts": "Reply message 1706110000.000300 by U_KENJI in #engineering, parent_id pointing to the OOM message, proposing a JAX prototype.",
+      "selection": "negative",
+      "reason": "Another reply in the same thread with no attached actor reaction; topically related but not the identified target message."
+    },
+    {
+      "role": "dm_update_message",
+      "entity": "messages",
+      "facts": "DM message 1706100000.000001 from U_SOPHIE to the actor in dm-agent-sophie, mentioning circuit-tracer PyTorch rewrite progress and multi-GPU sharding.",
+      "selection": "negative",
+      "reason": "Mentions the same project but in a different channel, authored by Sophie not Lukas, and has no reaction, so it fails the identifying conditions on r1."
+    },
+    {
+      "role": "unrelated_channel_message",
+      "entity": "messages",
+      "facts": "Message 1706112500.000001 by U02JOHNDOE1 in #engineering asking about AWS p5 supercomputer time for the circuit-tracer workload.",
+      "selection": "negative",
+      "reason": "Same channel and general topic area but different author and content, and carries no eyes reaction from the actor."
+    }
+  ],
+  "obligations": [
+    {
+      "name": "remove_actor_eyes_reaction",
+      "description": "Select the single message_reactions row where reaction.message_id equals the message_id of Lukas's #engineering message describing the circuit-tracer OOM/layer-by-layer issue, and where the reaction belongs to the acting user with reaction_type 'eyes'; remove that reaction.",
+      "table": "message_reactions",
+      "mode": "single",
+      "task_type": "state-changing",
+      "scope": "the acting user's own reaction on the one identified message",
+      "target_roles": ["actor_eyes_reaction"],
+      "candidate_role_sets": null,
+      "selection": "one",
+      "change_attributes": [[]],
+      "written_attributes": []
+    }
+  ],
+  "task_spec": [
+    {
+      "line": 1,
+      "text": "Remove the eyes reaction I left on Lukas's message in #engineering describing the circuit-tracer OOM/layer-by-layer streaming issue.",
+      "obligations": [1]
+    }
+  ],
+  "scope_exception": null,
+  "access_plan": "Use conversations.history on #engineering (C03IJKL9012) to locate Lukas's message describing the circuit-tracer OOM/layer-by-layer rewrite issue, distinguishing it from the reply messages (Robert's, Kenji's) and the unrelated AWS-instance message in the same channel, and from the similar-topic DM from Sophie; then use reactions.get on that message's timestamp to confirm the acting user's 'eyes' reaction exists there (as opposed to Lukas's own eyes reaction on it, or the actor's eyes reaction on the unrelated #growth message); then call reactions.remove with that channel, timestamp, and emoji name."
+}
+```

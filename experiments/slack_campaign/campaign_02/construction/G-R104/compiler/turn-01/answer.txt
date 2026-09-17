@@ -1,0 +1,124 @@
+```json
+{
+  "seed_edits": [
+    {
+      "table": "messages",
+      "op": "insert",
+      "values": {
+        "message_id": "1706110000.000400",
+        "channel_id": "C03IJKL9012",
+        "user_id": "U03ROBERT23",
+        "parent_id": "1706110000.000100",
+        "message_text": "Let's fast-track this - I'll get budget approved for extra GPU nodes to support the rewrite timeline.",
+        "type": "message",
+        "ts": "1706110000.000400"
+      },
+      "reason": "Adds admin_reply_no_reaction witness: an admin (U03ROBERT23) replying in-thread on the circuit-tracer rewrite topic, with no reaction present, to test that role+topic alone doesn't produce a false match."
+    },
+    {
+      "table": "messages",
+      "op": "insert",
+      "values": {
+        "message_id": "1706120000.000100",
+        "channel_id": "C_INFRA",
+        "user_id": "U07MORGANFREE",
+        "message_text": "We should push the cloud budget increase through finance before end of quarter.",
+        "type": "message",
+        "ts": "1706120000.000100"
+      },
+      "reason": "Adds admin_offtopic_message witness: an admin-authored message unrelated to the circuit-tracer rewrite topic, to test topic-filtering."
+    },
+    {
+      "table": "message_reactions",
+      "op": "insert",
+      "values": {
+        "message_id": "1706120000.000100",
+        "user_id": "U02ARTEM23",
+        "reaction_type": "tada"
+      },
+      "reason": "Adds admin_offtopic_reaction witness: a real reaction on an admin-authored but off-topic message, a plausible negative that fails only the topic condition."
+    },
+    {
+      "table": "channel_members",
+      "op": "insert",
+      "values": {
+        "channel_id": "C_INFRA",
+        "user_id": "U07MORGANFREE"
+      },
+      "reason": "U07MORGANFREE must be a member of C_INFRA to post the off-topic admin message there."
+    },
+    {
+      "table": "channel_members",
+      "op": "insert",
+      "values": {
+        "channel_id": "C_INFRA",
+        "user_id": "U02ARTEM23"
+      },
+      "reason": "U02ARTEM23 must be a member of C_INFRA to add the off-topic reaction there."
+    },
+    {
+      "table": "channel_members",
+      "op": "insert",
+      "values": {
+        "channel_id": "C_GROWTH",
+        "user_id": "U01AGENBOT9"
+      },
+      "reason": "Actor needs membership in every workspace public channel to establish the workspace-wide absence via readable history, including C_GROWTH."
+    },
+    {
+      "table": "channel_members",
+      "op": "insert",
+      "values": {
+        "channel_id": "C_OLD_PROJECT",
+        "user_id": "U01AGENBOT9"
+      },
+      "reason": "Actor needs membership in every workspace channel, including the archived one, to establish complete absence across the workspace's history."
+    }
+  ],
+  "bindings": {
+    "witness_reaction": [
+      {"message_id": "1706110000.000100", "user_id": "U01AGENBOT9", "reaction_type": "eyes"}
+    ],
+    "witness_message": ["1706110000.000100"],
+    "witness_author": ["U_LUKAS"],
+    "witness_membership": [
+      {"user_id": "U_LUKAS", "team_id": "T01WORKSPACE"}
+    ],
+    "admin_reply_no_reaction": ["1706110000.000400"],
+    "admin_author_reply": ["U03ROBERT23"],
+    "admin_offtopic_message": ["1706120000.000100"],
+    "admin_offtopic_reaction": [
+      {"message_id": "1706120000.000100", "user_id": "U02ARTEM23", "reaction_type": "tada"}
+    ],
+    "admin_offtopic_author": ["U07MORGANFREE"],
+    "reaction_reactor_offtopic": ["U02ARTEM23"],
+    "team_scope": ["T01WORKSPACE"]
+  },
+  "selectors": [
+    {
+      "root_table": "message_reactions",
+      "scope": [],
+      "focal": {
+        "path": ["message_reactions", "messages", "users", "user_teams", "teams"],
+        "joins": [
+          "message_reactions.message_id",
+          "messages.user_id",
+          "user_teams.user_id",
+          "user_teams.team_id"
+        ],
+        "filters": [
+          {"node": 1, "field": "message_text", "op": "contains_ci", "value": "rewrite"},
+          {"node": 3, "field": "role", "op": "eq", "value": "admin"},
+          {"node": 4, "field": "team_name", "op": "eq", "value": "Test Workspace"}
+        ]
+      },
+      "auxiliary": []
+    }
+  ],
+  "negative_referents": [
+    {"message_id": "1706110000.000100", "user_id": "U01AGENBOT9", "reaction_type": "eyes"},
+    {"message_id": "1706120000.000100", "user_id": "U02ARTEM23", "reaction_type": "tada"}
+  ],
+  "notes": "Main selector implements the full REACTION→MESSAGE→USER→WORKSPACE_MEMBERSHIP→WORKSPACE route within a single query, filtering on message topic via 'rewrite' substring (a mechanical proxy for the circuit-tracer PyTorch rewrite discussion, satisfied by the Lukas OOM message, the Robert reply asking about timing, and the new admin fast-track reply) and requiring admin role plus Test Workspace. The only stored reaction (agent's 'eyes' on Lukas's message) fails the role condition since Lukas is a member; the new off-topic admin reaction (Morgan Freeman's budget message, reacted to by Artem) fails the topic condition; the new admin in-thread reply (Robert Walsh) satisfies role+topic but has no reaction, so nothing binds at r0. Net result is the empty set, matching resolution_mode='absent'. Actor U01AGENBOT9 was given membership in C_INFRA (already had it), C_GROWTH, and C_OLD_PROJECT to allow conversations.history-based verification across the entire workspace's channels, avoiding reliance on an unreadable background channel. No changes were made to any base record; all edits are additive."
+}
+```

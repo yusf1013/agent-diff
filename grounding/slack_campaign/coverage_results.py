@@ -8,7 +8,7 @@ from .generate import ROOT,read
 from .bedrock import save
 from .campaign_metrics import collect,BASE
 
-VALID={'accepted','accepted_shorter_route','accepted_different_route'}
+VALID={'accepted','accepted_shorter_route','accepted_different_route','accepted_as_shorter_route','accepted_as_different_route','accepted_reference_design'}
 def build():
     data=collect();cat=read(ROOT/'grounding/slack_coverage/catalog.json');g1=read(BASE/'g1.json')
     attrset={a['table']+'.'+a['field'] for a in cat['attributes']}
@@ -17,7 +17,7 @@ def build():
     for stage in ['requested_design','api_qualified_executed']:
         routes={};attrs={};modes={};cases=[]
         for row in data['cases']:
-            if row['construction_type']!='clean_generation' or row['construction_status']!='review_pass':continue
+            if row['construction_type']!='clean_generation' or row['construction_status']!='review_pass' or row.get('outcome_informed_revision'):continue
             audit=row['manual_review'] or {}
             if audit.get('validity') not in VALID:continue
             cid=row['case_id'];folder=BASE/'execution'/cid

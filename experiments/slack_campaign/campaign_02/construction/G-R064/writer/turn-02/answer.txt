@@ -1,0 +1,35 @@
+```json
+{
+  "prompt": "In the core-infra channel, which messages were posted by someone who holds an admin role in our workspace, about the memory-pressure outage response?",
+  "binding_note": "r0 (message) is bound to r1 (core-infra channel) via messages.channel_id; r1 is bound to r2 (workspace) via channels.team_id; the participant is the message's own author (r0.user_id = r4.user_id), and that same r4 must hold an 'admin' row in user_teams (r3) for r2. No core-infra author holds the admin role, so the chain has no satisfying message.",
+  "roles": [
+    {"role": "target_channel", "entity": "channels", "facts": "core-infra (C_INFRA), public channel in Test Workspace, hosts the OOM/memory-pressure incident thread", "selection": "support", "reason": "fixes conversation node r1"},
+    {"role": "workspace", "entity": "teams", "facts": "T01WORKSPACE, single workspace linking channel and memberships", "selection": "support", "reason": "fixes r2"},
+    {"role": "admin_robert", "entity": "users", "facts": "Robert Walsh; user_teams row role='admin' for T01WORKSPACE; not a core-infra member, authors messages only in #general", "selection": "negative", "reason": "satisfies admin-role condition but never authors a core-infra message"},
+    {"role": "admin_morgan", "entity": "users", "facts": "Morgan Freeman; user_teams row role='admin' for T01WORKSPACE; no channel_members or messages rows in core-infra at all", "selection": "negative", "reason": "admin role present but no authorship relation to r1"},
+    {"role": "priya_member", "entity": "users", "facts": "Priya Sharma; user_teams row role='member'; authors several core-infra messages diagnosing the OOM incident", "selection": "negative", "reason": "correct channel/topic authorship but workspace role is 'member' not 'admin'"},
+    {"role": "lukas_member", "entity": "users", "facts": "Łukasz Kowalski; user_teams row role='member'; authors core-infra messages on CUDA memory limits during the same incident", "selection": "negative", "reason": "same failure: right channel authorship, wrong workspace role"},
+    {"role": "robert_offtopic_message", "entity": "messages", "facts": "Robert Walsh's message in #general asking about MCP deployment timing", "selection": "negative", "reason": "authored by an admin but channel_id points to general, not core-infra"},
+    {"role": "priya_incident_messages", "entity": "messages", "facts": "Priya's core-infra messages about OOM kills and the batch-size revert", "selection": "negative", "reason": "right channel and topic, but authored by a 'member'-role user, not an admin"}
+  ],
+  "obligations": [
+    {
+      "name": "admin_authored_incident_messages",
+      "description": "Messages in channel core-infra whose author (messages.user_id) also holds an 'admin' row in user_teams for the channel's workspace; concerns the memory-pressure/outage discussion",
+      "table": "messages",
+      "mode": "absent",
+      "task_type": "read-only",
+      "scope": "core-infra channel messages authored by a workspace member with admin role",
+      "target_roles": [],
+      "candidate_role_sets": null,
+      "selection": "set",
+      "answer_attributes": [["messages.message_text"], ["messages.channel_id"], ["messages.user_id"]]
+    }
+  ],
+  "task_spec": [
+    {"line": 1, "text": "Identify which core-infra messages about the memory-pressure outage were posted by a workspace admin, and report what they say.", "obligations": [1]}
+  ],
+  "scope_exception": null,
+  "access_plan": "Use conversations.history on C_INFRA to enumerate the outage-related messages and their authors; use conversations.members plus users.info on each author to read their workspace-membership role (user_teams.role) and confirm whether it is 'admin'; separately confirm via users.info/conversations.members that the two admin-role users (Robert Walsh, Morgan Freeman) are not core-infra participants, establishing the empty result."
+}
+```

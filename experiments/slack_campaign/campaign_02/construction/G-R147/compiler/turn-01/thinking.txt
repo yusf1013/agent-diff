@@ -1,0 +1,18 @@
+I'm checking the base seed and notice the reactions table only has one row - the eyes reaction from U01AGENBOT9 - but the design calls for U_KENJI to leave a check reaction too, which isn't there yet. I'll need to add that missing reaction record.
+
+Working through the design's role assignments, I map out which reactions need inserting: U_KENJI's check reaction on the target message, U_ROBERT's thumbsup as a wrong-emoji distractor on the same message, U_LUKAS's check reaction on the hallucinated refund policy message as a wrong-message distractor, and U_SOPHIE's check reaction in the DM channel as a wrong-channel distractor - the no-reaction-author case needs no insertion since that message simply stays unreacted. I confirm the actor agent1 already has membership in all the relevant channels needed to read these, then start thinking through whether the negatives being scattered across multiple channels matters for the task scope.
+
+Since the route narrows to one specific message and reaction type, the actor only needs to read the engineering channel history and call reactions.get on that message - the selector will naturally isolate the target_user's check reaction without needing to enumerate every negative case. Now I'm starting to write the seed edit for inserting the first message reaction record.
+
+I'm setting up the four message_reactions entries: the target match with U_KENJI's check reaction, plus three negatives - a wrong emoji from U_ROBERT, a check reaction on the wrong message from U_LUKAS, and a check reaction in the wrong channel from U_SOPHIE. I'm confirming there's no primary key conflict, noting U02JOHNDOE1's existing message serves as the no-reaction support case without needing an insert, and finalizing the bindings for target_user, wrong_emoji_reactor, wrong_message_reactor, no_reaction_author, wrong_channel_reactor, plus the anchor message and channel IDs before moving into the selector definitions.
+
+Now I'm designing the selector for identifying the target user by joining message_reactions to messages to channels, filtering on a check reaction, a message mentioning circuit-tracer's OOM error, and the engineering channel name.
+
+For obligation 2, sending a DM to the target, I'm noting this is more of a state-changing action than a data selection query, so the selector might just need to identify the DM conversation/channel being created rather than filter existing rows.
+
+I'm stuck on how to write a selector for a row that doesn't exist yet, since the DM message is something the solver creates rather than something seeded. I'll describe the selector as scope-only, targeting messages within the DM channel between the actor and Kenji once it's created, rather than pointing to a fixed existing row.
+
+Now I'm working out the negative referents — users like U_ROBERT, U_LUKAS, U_SOPHIE, and U02JOHNDOE1 who could be mistakenly identified as the main referent instead of Kenji.
+
+I should also add U01AGENBOT9, who reacted with the wrong "eyes" emoji on the same existing message, making it another plausible negative case. For the reaction timestamps, I'm checking whether created_at needs an explicit value — the schema has a default via SQLAlchemy, but the runtime qualifications suggest supplying deterministic values explicitly might still be preferred for the seed.
+

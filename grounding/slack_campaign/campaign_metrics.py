@@ -14,6 +14,7 @@ BASE=ROOT/'experiments/slack_campaign/campaign_02'
 def collect(base=BASE):
     plans=read(base/'assignments.json')+read(base/'mutation_assignments.json')
     manual=read(base/'manual_review.json')['cases']
+    exceptions=read(base/'provenance_exceptions.json')['exceptions'] if (base/'provenance_exceptions.json').exists() else []
     rows=[]
     for a in plans:
         cid=a['case_id'];folder=base/'construction'/cid
@@ -30,6 +31,7 @@ def collect(base=BASE):
              'model_grounding_flags':execution.get('automated_flags',[]),
              'manual_review':audit,'stale_manual_review':stale,
              'prompt':case['prompt'] if case else None,
+             'outcome_informed_revision':bool(case and any(e['case_id']==cid and e['case_sha256']==hashlib.sha256((folder/'case.json').read_bytes()).hexdigest() for e in exceptions)),
              'scope_exception':case.get('private',{}).get('scope_exception') if case else None}
         if a.get('source_context'):
             sid=a['source_context']['test_id'];ob=str(a.get('source_obligation',1))
@@ -55,10 +57,21 @@ def collect(base=BASE):
     historical=[]
     for path in sorted((base/'manual_review_history').glob('*.json')):
         audit=read(path);cid=re.match(r'(G-R\d+|M-slack_\d+)', path.name).group(1)
-        archive=base/'execution_attempts'/(cid+'-before-route-revision')
-        # Keep historical evidence links attached to the preserved old version.
-        audit['evidence']=[e.replace('execution/'+cid+'/', 'execution_attempts/'+cid+'-before-route-revision/') if archive.exists() else e for e in audit.get('evidence',[])]
-        audit['evidence']=[e.replace('construction/'+cid+'/case.json','construction/'+cid+'/case-before-route-revision.json') for e in audit['evidence']]
+        case_file=next((f for f in (base/'construction'/cid).glob('*case*.json') if hashlib.sha256(f.read_bytes()).hexdigest()==audit['case_sha256']),None)
+        execution_folder=None
+        if case_file:
+            case_value=read(case_file)
+            candidates=[base/'execution'/cid,*sorted((base/'execution_attempts').glob(cid+'-*'))]
+            matching=[f for f in candidates if (f/'preflight/case.json').exists() and read(f/'preflight/case.json')==case_value]
+            execution_folder=next((f for f in matching if (f/'assessment/sources/response.json').exists()),next(iter(matching),None))
+        evidence=[]
+        for e in audit.get('evidence',[]):
+            if case_file and e.startswith('construction/'+cid+'/') and e.rsplit('/',1)[-1].startswith('case'):
+                e=str(case_file.relative_to(base))
+            if execution_folder:
+                e=re.sub(r'^execution(?:_attempts)?/[^/]+/',str(execution_folder.relative_to(base))+'/',e)
+            evidence.append(e)
+        audit['evidence']=evidence
         save(path,audit)
         historical.append({'case_id':cid,'audit_file':str(path.relative_to(base)),**audit})
     confirmed={}

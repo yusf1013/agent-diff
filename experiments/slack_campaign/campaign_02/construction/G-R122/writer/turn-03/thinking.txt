@@ -1,0 +1,26 @@
+The route contract has changed: r0 (reactions) links to r1 (users) via reactor, and r2 (messages) links to r1 via author, meaning r2's user_id matches r1's, not r0's message_id matching r2's. So the actual relationship is that the reactor is the same person who authored some message — it's not about reacting to that specific message.
+
+I need to rebuild the scenario keeping the "Robert" ambiguity, but now the request becomes: find the reaction (e.g. ✅) left by whoever authored the message where Priya's investigation confirms root cause, regardless of what message that reaction was actually placed on.
+
+This route works since it selects r0 through the "authored by" and "reactor" relations chained together. For underspecified mode, I need ambiguity — a vague partial description of a message that could match two different messages by different authors, each of whom left a ✅ reaction somewhere, creating two candidate reactions instead of one uniquely determined answer.
+
+I'll use "the person who posted the update about the CUDA memory limit finding" as the ambiguous identifier — this could point to either Priya's message discussing the pprof delta confirming the hard CUDA memory limit, or Lukas's earlier message speculating whether the batch size increase might be hitting that same limit. Both are plausible referents for the vague description, so their respective reactions become the two competing candidates.
+
+Now I need to pick reaction targets: Priya's ✅ could go on Sophie's checkpoint message in C_MODEL, and Lukas's ✅ on Kenji's Tokyo stats message, since existing reactions don't cover these two yet.
+
+Now I need negative cases: Priya reacting with the wrong emoji on a different message, Lukas reacting with a wrong emoji directly on the CUDA message itself (testing that emoji matters and isn't just about message identity), and someone unrelated reacting with ✅ on the wrong message.
+
+I also want to make sure the reaction author matches the original message author -- confirming the reactor's user_id must equal the CUDA-limit message's author, and the reaction type must be from the checkmark emoji vocabulary.
+
+Since this is a read-only reporting question, I'll pull message_reactions.message_id, user_id, and reaction_type as the answer fields, with candidate roles covering both potential matches and unioning target roles across them.
+
+For the binding note, I'm clarifying the correct linkage: the reactor must match the author of a distinct, separately-identified message, not the message being reacted to. I'll leave change_attributes and written_attributes out entirely since this is a read-only task.
+
+For the actual prompt wording, I want to avoid tipping off which message is the decoy, so I'll phrase it as asking for the reactions marked with a check mark left by whoever identified the CUDA memory limit finding in core-infra, keeping the channel reference natural since both candidate messages live there anyway.
+
+Now I'm assembling the roles: Priya Sharma authored the confirming message in core-infra referencing the pprof delta showing the CUDA limit hit, and also left the matching reaction; Lukas Kowalski authored the earlier message raising the CUDA memory hypothesis.
+
+I'm defining the matching reactions: Priya's check-mark on Sophie's checkpoint message, and Lukas's check-mark on Aisha's dashboard message. Then I'm building distractor/negative reactions -- Priya using a thumbsup on Kenji's stats message, Lukas using eyes on his own CUDA message, and Olena using check on an unrelated message -- to test that the model doesn't overmatch on wrong emoji or wrong reactor.
+
+I'm defining the target roles as the union of the candidate reaction matches, and the answer needs to include message_id, user_id, and reaction_type from message_reactions, satisfying the task of reporting check-mark reactions from whoever identified the CUDA memory limit as root cause in #core-infra, with the access plan starting from conversations.history on the infra channel to locate the relevant messages.
+

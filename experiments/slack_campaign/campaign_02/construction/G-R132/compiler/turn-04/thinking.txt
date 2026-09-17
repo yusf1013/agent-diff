@@ -1,0 +1,18 @@
+I need to join messages with message_reactions properly through message_reactions.message_id, but closing identity back to the root user is tricky since filters only support literal values, not comparisons to a variable node like node0 — and the root user itself is what we're trying to solve for, not a fixed constant.
+
+If the join doesn't tie the reaction's user_id back to node0, node0 stays unconstrained and any qualifying reaction chain would incorrectly return all workspace members as candidates. Since only one users table can exist as root, and reusing it isn't possible, I'm stuck on how to structurally force the reactor identity to match node0 without a valid comparison mechanism.
+
+The explicit error confirms the adjacency must be strictly between messages and message_reactions via message_id, not user_id, so my earlier attempt to link user identity directly through that step was wrong.
+
+That said, revisiting 'users' as a second node isn't forbidden since the path is just a sequence of table names — so I try a 7-node path where users appears at both start and end, using message_reactions.user_id to connect the final two nodes validly. Now I need to figure out whether the answer set should be keyed off node0 or this repeated node6.
+
+I keep circling back to whether root_table implies node0 must be the true root, since if node0 is unconstrained, the answer would just be all users regardless of this path structure — which doesn't solve anything. Maybe the fix isn't in the path shape at all, but in whether node0 truly needs constraining through this chain.
+
+Actually my original submission had node0 adjacent to message_reactions, meaning node0's identity directly equals message_reactions.user_id — which is exactly what's needed. That got flagged for ordering relative to the expected route, so I need to reconcile the required order with keeping node0 adjacent to the reaction.
+
+One option: keep the route-order path but add a separate auxiliary query that directly links users to message_reactions via user_id, filtered on the target message and reaction type, to close the identity gap the main path leaves open.
+
+I'm finishing the query filters, applying the workspace, channel, message, and reaction-type constraints to each node, then adding the auxiliary path that ties reactors specifically to that message and emoji. This setup ensures the focal path enforces route compliance while the auxiliary path narrows results to actual matching reactors.
+
+The intersection of these constraints correctly yields Mateo and Olena as the answer set, given proper connectivity through the join structure. This feels like the most defensible resolution given the constraints, so I'll settle on this approach.
+

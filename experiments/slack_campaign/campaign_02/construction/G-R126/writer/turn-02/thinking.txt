@@ -1,0 +1,20 @@
+Looking at the route contract, both joins point to the same variable r1 — reactor's user_id and message author's user_id are both bound to r1. That would mean this route only matches cases where the reactor and the message author are the same person, which seems like an unusual constraint but appears to be exactly what's specified.
+
+Right, I need an identifying condition on r4 too - a specific member of the channel. Checking the seed data, the existing reaction has U01AGENBOT9 reacting to a message authored by U_LUKAS - not a self-reaction, so this serves as a useful negative example for the missing same-user condition I need to construct.
+
+I'll design new records where authors react to their own messages with a checkmark emoji to mark task completion, framing the query as finding self-acknowledged action items within channels that a specific teammate (like Aisha Okonkwo) belongs to - giving me the needed identifying membership condition on r4.
+
+Since no self-reaction data currently exists, I need to add fresh matches: Priya reacting "check" to her own root-cause message in C_INFRA, and Olena reacting "check" to her own diagnosis message in C_MODEL, since both channels have Aisha as a member.
+
+For negatives, the existing agent bot reaction to Lukas's message doesn't count since it fails both the self-reactor and channel-membership conditions. I'll add Mateo reacting to Sophie's message (not his own) in C_MODEL to test the same-user requirement specifically, while avoiding accidental true matches like Kenji reacting to his own message in C_GROWTH.
+
+For the third negative, I'll use Robert Walsh self-reacting with "thumbsup" on his own MCP deployment message in C01ABCD1234 — this satisfies the self-reaction condition but fails because Aisha isn't a member of that channel. So the three negatives cover: wrong reactor entirely, reactor≠author, and correct self-reaction but wrong channel membership.
+
+Since resolution_mode is "multiple" and this is read-only, I can add ≥2 seeded matches as coherent new records rather than mutating the environment. For emoji, I'll stick to "check" since it's in the verified supported reaction list alongside thumbsup, thumbsdown, eyes, and raised_hands.
+
+Now I'm drafting the prompt about people reacting to their own messages in Aisha Okonkwo's channels, and writing binding notes clarifying r1 as a self-reaction case and r4 as the membership record identifying Aisha's channels. Then I'm laying out the roles table, mapping each channel_members and channels record to its support/negative status across C_INFRA, C_MODEL, and the general channel where Aisha isn't a member.
+
+I continue enumerating roles: users involved as self-reactors and negative-case reactors/authors (Priya, Olena, Robert Walsh, Mateo, Sophie), their corresponding messages, and the reaction rows -- with reaction_match_1 and reaction_match_2 marked as genuine self-reaction matches ("check" emoji), while other reactions like the bot's "eyes" reaction serve as negative examples.
+
+I settle on the final answer being multiple matches (count 2), targeting reaction_match_1 and reaction_match_2 with attributes reaction_type, user_id, and message_id, and this is read-only so I omit change/written attributes. I describe the access plan: discover Aisha's channel memberships, pull message history, fetch reactions per message, and filter for cases where the reactor matches the message author.
+

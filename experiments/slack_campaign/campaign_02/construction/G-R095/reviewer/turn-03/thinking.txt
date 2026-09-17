@@ -1,0 +1,24 @@
+I'm checking the join path from message_reactions through messages, channels, teams, to user_teams — the filter just verifies Test Workspace has an admin somewhere, without actually linking that admin to the reactor's user_id, so it's really an existence check rather than a direct constraint on the reacting user.
+
+The auxiliary query separately enforces that message_reactions.user_id specifically maps to an admin in team T01WORKSPACE, so the true correct result set is the intersection of both conditions, not just the focal query's loosely-satisfied filter on core-infra messages.
+
+But checking the computed focal negatives, I spot two entries flagged as failing that seem to actually be in #engineering rather than #core-infra - which shouldn't even pass the focal channel filter in the first place, suggesting some inconsistency in how these negatives were computed.
+
+More likely they represent cases where the reactor is an admin (satisfying the auxiliary condition) but the message is in the wrong channel (failing focal) - meaning these are already captured as near-misses rather than true focal negatives.
+
+Checking the candidate population now, I confirm it includes the four eyes reactions and correctly excludes Robert's thumbsup based on the emoji filter.
+
+The final computed_matches is empty, which makes sense since no one satisfies both the core-infra channel condition and admin reactor condition together—Priya's in core-infra but isn't admin, while Robert and Morgan are admin but in the wrong channels. I'm now scrutinizing the construction_explanation's reasoning about the missing direct foreign key between message_reactions and user_teams, and how the focal query works around this by instantiating the full assigned route to establish workspace membership and channel context separately from the auxiliary admin check.
+
+Though the declared route doesn't inherently tie the reactor's identity to admin status—it just checks if any admin exists in the team—the auxiliary path correctly resolves this by reusing the same root table with a direct message_reactions-to-user_teams join via user_id, which functions as intended even though it's not part of the declared route order. I'm confirming this second identifying path is legitimate as a supplemental path per the review rules, since repeated query shapes with different filters don't need separate schema fields.
+
+The exposure_qualification field explicitly sanctions identifying the reaction contributor as a participant tied to workspace_membership, which is exactly what the auxiliary path does—so this checks out as consistent with the design intent, and the binding_note properly documents the equality tying the two user_id fields together. Base seed data and answer computation attributes also look correct, with no unavailable fields being referenced.
+
+The candidate_population and near_misses check out too—five near_misses correctly reflect their stated reasons (wrong channel twice, wrong role, wrong emoji, existing bot reaction), expected_matches is empty matching the "absent" mode, and require_near_miss is satisfied. computed_matches is also correctly empty.
+
+Now I'm verifying actor access: the acting bot user is a member of the relevant channel per channel_members, giving it conversations.history access, and it can also read workspace membership roles via users.info/users.list per the runtime qualifications.
+
+I also confirm reactions.get correctly notes only name/user is exposed, no timestamp, matching the earlier fix. The design appears resolved, but I want to double check the mechanical construction—specifically whether the node4 filter on user_teams.role='admin' being an existence filter (not tied directly to the reactor) still produces correct semantics through the auxiliary path's user_id tie-in, and whether the "absent" mode evaluates correctly across this two-path intersection the way a solver using conversations.history plus reactions.get would actually compute it.
+
+That checks out functionally, so validity passes and quality stays strong: plain wording, plausible content, good negatives, meaningful read-only retrieval action. I also verify the compiled seed_edits align with the design roles—only four new reactions were mutated in (wrong_channel, wrong_role, wrong_emoji, wrong_channel_morgan), while existing_bot_reaction stays pre-existing and isn't redundantly re-inserted, satisfying the environment-only mutation requirement.
+

@@ -1,0 +1,90 @@
+```json
+{
+  "prompt": "Add the person from #product-growth who isn't already part of any of our other team channels to #core-infra as well — they'll need infra visibility for the upcoming launch.",
+  "binding_note": "Per the route contract, r0 (users) is identified through r1 (channel_members) binding r0.user_id, r1 joining to r2 (channels) via channel_id, and r2 joining to r3 (teams) via team_id. The identifying condition requires r0 to hold a channel_members row (r1) whose channel (r2) is #product-growth within the workspace (r3, T01WORKSPACE), while r0 must lack any such channel_members row whose channel (a distinct r2 instance) is #core-infra, #model-research, #frontend, or #project-alpha-dev in that same workspace. These are separate r1/r2 instances per excluded channel; none is required to coincide with the product-growth membership record beyond sharing r0 and r3.",
+  "roles": [
+    {
+      "role": "target_user",
+      "entity": "users",
+      "facts": "Carlos Vega (username shadow.lurker, user_id U_INCOGNITO) holds exactly one channel_members row within workspace T01WORKSPACE, joining to #product-growth (C_GROWTH); no channel_members row ties him to #core-infra, #model-research, #frontend, or #project-alpha-dev.",
+      "selection": "match",
+      "reason": "The only user whose full set of channel_members rows in this workspace's channels resolves to product-growth alone, per the route contract's join chain."
+    },
+    {
+      "role": "overlapping_growth_member_priya",
+      "entity": "users",
+      "facts": "Priya Sharma holds channel_members rows joining her to #product-growth, #core-infra, #model-research, and #frontend, all within workspace T01WORKSPACE.",
+      "selection": "negative",
+      "reason": "Satisfies the product-growth membership join but fails the exclusion because she also has channel_members rows to other channels in the same workspace."
+    },
+    {
+      "role": "overlapping_growth_member_mateo",
+      "entity": "users",
+      "facts": "Mateo Rivera holds channel_members rows joining him to #product-growth, #core-infra, #model-research, #frontend, and #project-alpha-dev, all within workspace T01WORKSPACE.",
+      "selection": "negative",
+      "reason": "Same exclusion failure; shows the negative condition applies across the whole bounded channel corpus, not a single comparison channel."
+    },
+    {
+      "role": "core_infra_incumbent_robert",
+      "entity": "users",
+      "facts": "Robert Chen holds channel_members rows joining him to #core-infra, #model-research, #frontend, and #product-growth within workspace T01WORKSPACE.",
+      "selection": "negative",
+      "reason": "Already a core-infra member and also fails the product-growth-only exclusion, so he is neither the intended target nor a plausible invite candidate."
+    },
+    {
+      "role": "growth_channel",
+      "entity": "channels",
+      "facts": "#product-growth (C_GROWTH), team_id T01WORKSPACE, has channel_members rows for Priya, Lukas, Sophie, Olena, Mateo, Kenji, Robert, Aisha, and Carlos Vega.",
+      "selection": "support",
+      "reason": "The r2 channel instance anchoring the required product-growth join in the route contract."
+    },
+    {
+      "role": "infra_channel",
+      "entity": "channels",
+      "facts": "#core-infra (C_INFRA), team_id T01WORKSPACE, currently has eight channel_members rows (Priya, Lukas, Sophie, Olena, Mateo, Kenji, Robert, Aisha); no row yet exists for Carlos Vega.",
+      "selection": "support",
+      "reason": "The destination channel for the requested invite action and one of the excluded r2 instances in the negative condition."
+    },
+    {
+      "role": "new_core_infra_membership",
+      "entity": "channel_members",
+      "facts": "No channel_members row currently exists pairing user_id U_INCOGNITO with channel_id C_INFRA.",
+      "selection": "match",
+      "reason": "The absent row that the requested invite action is meant to create, matching table/referent constraints for the state-changing obligation."
+    }
+  ],
+  "obligations": [
+    {
+      "name": "identify_isolated_growth_member",
+      "description": "Select the single user (r0) whose channel_members rows within workspace T01WORKSPACE join only to #product-growth and to none of #core-infra, #model-research, #frontend, or #project-alpha-dev.",
+      "table": "users",
+      "mode": "single",
+      "task_type": "read-only",
+      "scope": "channel_members rows bounded to workspace T01WORKSPACE's named channel corpus (#product-growth, #core-infra, #model-research, #frontend, #project-alpha-dev)",
+      "target_roles": ["target_user"],
+      "candidate_role_sets": null,
+      "selection": "one",
+      "answer_attributes": [["users.user_id"], ["users.real_name"], ["users.username"]]
+    },
+    {
+      "name": "invite_to_core_infra",
+      "description": "Create a channel_members row pairing the identified user with #core-infra, adding the previously absent membership.",
+      "table": "channel_members",
+      "mode": "single",
+      "task_type": "state-changing",
+      "scope": "one new membership row linking the identified user to the #core-infra channel",
+      "target_roles": ["new_core_infra_membership"],
+      "candidate_role_sets": null,
+      "selection": "one",
+      "change_attributes": null,
+      "written_attributes": ["channel_members.channel_id", "channel_members.user_id"]
+    }
+  ],
+  "task_spec": [
+    {"line": 1, "text": "Find the product-growth channel member who has no membership in any other team channel within the workspace.", "obligations": [1]},
+    {"line": 2, "text": "Invite that identified person into the #core-infra channel.", "obligations": [2]}
+  ],
+  "scope_exception": null,
+  "access_plan": "Use conversations.members on #product-growth (C_GROWTH) to enumerate its membership, then cross-check each member against conversations.members results for #core-infra, #model-research, #frontend, and #project-alpha-dev (the bounded, visible channel-ID corpus of workspace T01WORKSPACE) to find the one member absent from all of them. Then call conversations.invite on #core-infra with that user's ID to create the new channel_members row."
+}
+```

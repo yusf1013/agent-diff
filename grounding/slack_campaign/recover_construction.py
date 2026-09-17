@@ -34,9 +34,9 @@ def finish(folder, result):
     save(folder/'summary.json',result)
 
 
-def recover(cid):
+def recover(cid, *, claimed=False):
     folder=ROOT/'experiments/slack_campaign/campaign_02/construction'/cid
-    if (folder/'recovery-summary.json').exists():return
+    if (folder/'recovery-summary.json').exists() and not claimed:return
     old=read(folder/'summary.json')
     if old['status']=='review_pass':return
     save(folder/'summary-before-recovery.json',old)

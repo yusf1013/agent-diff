@@ -1,0 +1,110 @@
+I notice two issues: the C_INFRA/U_AISHA and C_MODEL/U_AISHA edits duplicate what's already in the seed data, so I need to remove those inserts. I also realize my selector wrongly matched the "wrong_reactor" negative case because the join between message_reactions and messages doesn't properly enforce that the reactor equals the author.
+
+Actually tracing it further, the real bug is I never joined message_reactions.message_id to messages.message_id, so the query could match any message authored by that user rather than the specific message they reacted to. I need to add that missing join condition to fix the false match.
+
+Since the selector syntax only supports field-vs-value filters, not cross-node comparisons, I realize the join itself must enforce the self-reaction constraint. The route's USER node between REACTION and MESSAGE likely represents the shared reactor/author identity, meaning the message_reactions row already points to the specific reacted message, so no extra join to MESSAGE is needed beyond that.
+
+This linear join chain can't really express the "reactor equals author" constraint since I'd need two paths from message_reactions converging on the same user, and filters only compare node fields to literal values, not to another node's field. I'm checking whether the syntax has any mechanism for cross-node field equality that could work around this limitation.
+
+I can trace message_reactions to messages to get the author, but that only gives me "the author of this message" as a node, not a way to constrain it to equal the reactor without a cross-node identity filter. I'm wondering if joining message_reactions.user_id to a users node separately, then somehow forcing that same identity to align with the author path, could work, but it's not clear this is expressible without an explicit equality constraint mechanism.
+
+Auxiliary queries also can't share bindings with the focal row since they're independent existence checks, so they won't solve the joint-identity problem either. Joining message_reactions.message_id to messages.message_id does get me the correct author, but I can't find any syntax to compare that author field against the root row's own user_id — filters only compare against literals, not other nodes.
+
+I traced the failed validation: joining users back to messages via user_id loses the message_id constraint entirely, so it matches any message by that reactor rather than the specific one, which is why Mateo's reaction incorrectly matched Aisha's membership through an unrelated message of his. The fix is to join message_reactions to messages directly via message_id instead of routing through user_id.
+
+I'm now questioning whether we even need a separate users node for the reactor, since filters seem to only compare fields to literal values, not to other node fields—so I need to check whether the syntax supports cross-node field equality checks for detecting self-reactions.
+
+I'm realizing the error about "Main identifying path differs from assigned complete route" suggests my node ordering is wrong. The assigned route is actually five nodes: REACTION, USER, MESSAGE, CONVERSATION, CONVERSATION_MEMBERSHIP, so I need to restructure the path to match that exact sequence.
+
+But conversation_membership's node only exposes channel_id, user_id, and joined_at, with no real_name field to filter on, so I'm stuck using user_id as the literal even though the guidance prefers name-based predicates. I think that's acceptable here since there's simply no name field available on this node to substitute in.
+
+Actually, tracing through this path, I realize the join between users and messages just links the reactor to any message they've authored, not specifically the reacted-to message - which reproduces the same false-match bug from before. The five-node route alone doesn't force the linkage to the specific message_id, so I need to reconsider how the joins should actually chain together.
+
+Right, message_reactions.message_id can't serve as the users-to-messages edge since it's not a direct FK between those two tables — the only valid connector there is messages.user_id, which loses the specific message identity tied to the original reaction. So structurally, routing through USER can't preserve which exact message the reaction was on, unless the join semantics around identity preservation work differently than I'm assuming.
+
+Maybe the intended structure skips a direct join and instead routes reaction to message directly via message_reactions.message_id, then message to user via messages' author field, so the "same user" constraint naturally falls out of that chain rather than needing an explicit cross-node filter.
+
+So this incorrectly matched Mateo's unrelated message in an Aisha channel as a self-reaction, rather than the actual Sophie message he reacted to. The real fix is to restructure the path so node2 (messages) resolves specifically to the message referenced by the reaction's message_id, not just any message authored by that user—meaning I need node1=messages (via message_id) then node2=users (via user_id) to get the true author, though this conflicts with the required route ordering.
+
+Given the validator wants exactly five nodes matching REACTION, USER, MESSAGE, CONVERSATION, CONVERSATION_MEMBERSHIP, I need to figure out how the join between users and messages via messages.user_id inherently constrains this.
+
+I'm wondering if a root scope filter comparing message_reactions fields could substitute for that missing constraint, but root scope filters only compare a field to a literal, not across rows. Alternatively, maybe node1 should use the message_reactions.message_id edge instead, treating users as a pass-through rather than the reactor identity itself.
+
+But that breaks the adjacency rule: each join in the list must connect consecutive nodes in the path, so hop2 (node1-node2, users-messages) can only use messages.user_id since that's the only valid FK linking those two tables directly. message_reactions.message_id belongs to a different, non-adjacent hop, so it can't be substituted here given this structural constraint.
+
+So hop1 must use message_reactions.user_id (the reactor FK to users), and hop2 must use messages.user_id (author FK), since those are the only valid joins for those node types. That structurally means the route can only express "some message authored by this reactor," not the specific reacted message.
+
+Let me reconsider the actual path order: maybe it's really REACTION, USER, MESSAGE, CONVERSATION, CONVERSATION_MEMBERSHIP as the design states, with USER coming before MESSAGE in the route rather than after. I need to recheck the binding note tied to that route.
+
+Actually, the identity binding does enforce a single user variable across both hops, but it doesn't force the message from hop2 to be the exact same message referenced by the reaction in hop0 - it just needs to be some message by that same author. That's the real gap: multiple messages by the same author could satisfy hop2 even if it's not the one actually reacted to.
+
+This seems inherent to the engine's JOIN semantics rather than something my query caused - each hop is evaluated independently unless there's an explicit filter tying node2.message_id to node0.message_id, and since filters typically only support literal comparisons rather than cross-node equality, there's no obvious way to add that constraint even though message_reactions.message_id is technically a foreign key into messages.message_id.
+
+I wonder if the fixed table order (REACTION, USER, MESSAGE) actually allows an alternate join path, like node0 linking directly to node2 while skipping through node1's user table, though that seems to contradict how the join list is supposed to reference immediately-preceding nodes.
+
+Rereading the spec, joins must strictly connect adjacent tables in the path, so hop2 needs a valid foreign key linking users and messages specifically.
+
+Given that, enforcing an exact match against the original reaction's message seems impossible unless filters support cross-node value references, which the documented syntax doesn't seem to allow—only literal comparisons. I should trust the given syntax and assume the intended solution doesn't require that kind of comparison.
+
+Instead, I think the seed data itself must be structured so the ambiguity never arises: no user should have multiple messages in Aisha's channels, and reactors shouldn't independently self-react to their own messages in those channels. The earlier false match on Mateo happened only because Mateo authored other messages in a channel Aisha later joined—if Mateo had zero self-authored messages in any Aisha channel, that spurious match wouldn't occur at all.
+
+I wonder if the reactor-hop should instead trace through the message's author field rather than the reactor field, but root-level scope filters can only compare against literals, not another node's field, so there's no way to enforce reactor-equals-author within this structure.
+
+Actually the error message says the path differs from the assigned route, which suggests the validator strictly checks the sequence against route_nodes: exactly five nodes in order message_reactions, users, messages, channels, channel_members matching REACTION, USER, MESSAGE, CONVERSATION, CONVERSATION_MEMBERSHIP. That's why my six-node version failed, but fixing to five nodes now creates a different problem.
+
+I'm reconsidering the join logic since message_reactions only has one user_id (the reactor), so hop1 must use that field, and hop2 needs a separate connection between users and messages that isn't simply reusing message_reactions.user_id in reverse. This ambiguity might be intentional in the design, but I need to figure out what semantics the query is actually supposed to capture.
+
+Rereading the spec, "adjacent tables" confirms each join must connect consecutive nodes in the path sequence, so joins are strictly sequential after all.
+
+Given that constraint, I'm reconsidering whether the reactor and message-author roles can both bind to a single shared user node. Since only one FK applies per hop and the user node sits between reaction and message, hop1 must use message_reactions.user_id (the reactor) and hop2 must connect that same user forward to messages.
+
+This gives any message authored by that reactor, not necessarily the one they reacted to -- but that may actually be consistent with how the answer set is defined: the root node is included if any valid combination of matching rows exists across the full chain, treating underspecified links as a union over eligible alternatives.
+
+But this raises a real problem: nothing forces message2 to be the specific message referenced by the reaction, and the validator's flagged mismatch (Mateo having some unrelated self-authored message in C_MODEL) confirms this "any message by author" ambiguity breaks the intended semantics for this route.
+
+So maybe the real fix belongs at the seed level instead — Mateo already authored multiple messages in C_MODEL in the base seed, and since C_MODEL is now Aisha's channel, any user who authored messages there and has any reaction row at all will spuriously satisfy hop2, which affects U_MATEO directly.
+
+I'm realizing this collision is essentially unavoidable given the design: the wrong_reactor negative specifically needs Aisha membership in C_MODEL to prove the failure is due to reactor mismatch alone, so removing that membership isn't an option — and since C_MODEL has many messages from many authors, any user appearing in the reaction table who also authored a C_MODEL message will trigger the same false match.
+
+I'm now questioning whether the join direction for hop1 could be flipped, treating the reaction's message rather than its user_id as the anchor, which might avoid this ambiguity in the route structure.
+
+I could try hardcoding a filter with the known matching message IDs as a literal "in" list, but that feels like cheating since it bakes the expected answer directly into the selector rather than deriving it structurally — which conflicts with using auxiliary queries only for verification, not for constructing the answer itself.
+
+Instead, I should look for a legitimate FK path — maybe through message_reactions' composite key (message_id, user_id, reaction_type) — that lets hop2 connect back naturally without hardcoding anything.
+
+Looking at the design's answer_attributes confirms root_table should be message_reactions, since the output fields are all message_reactions columns. I'm now considering whether the chain hops between users and messages might implicitly enforce the message_id equality through some join structure rather than requiring an explicit extra condition.
+
+Let me reconsider the hop structure practically: maybe hop1 connects reaction to user via the reactor's user_id, and hop2 connects user to message via the author's user_id — meaning this route doesn't inherently restrict to the same message at all. Under that interpretation, "self-reaction" via this path would just mean the reactor is also an author of some message, not necessarily the one being reacted to.
+
+That seems too loose for a proper test, so I need to check whether this looseness is by design or whether the seed data needs adjusting so that negative cases (like Mateo) don't accidentally satisfy this broader criterion through unrelated messages in shared channels.
+
+I still need Mateo tied to the entity role, so maybe I should keep the wrong-reactor reaction in C_MODEL despite the collision risk, since that's the whole point of this negative case. Let me reconsider whether the hop2 join between users and messages could work bidirectionally through the foreign key, which might resolve the ambiguity differently.
+
+Actually maybe node1 should be messages (via message_reactions.message_id) and node2 be users via messages.user_id, giving the author. But then I still need to verify that author equals the reactor - which means comparing node2's user_id against the root's user_id field, and a plain join condition can't express that self-referential check without an explicit equality constraint back to node0.
+
+Actually, this loses the reactor check since node2 only verifies the message author, not the reactor. But node0 itself already carries user_id as the reactor without needing a join, so maybe the USER node for reactor isn't even necessary in this path.
+
+Then I try rerouting hop2 through message_reactions.message_id instead of messages.user_id, but that FK doesn't connect users and messages directly, so it can't serve as a valid hop between those adjacent path tables.
+
+But the spec says one join per step with a single equality condition, so I can't smuggle in that extra predicate — the engine structurally can't express "same message, same user" this way. Given the validator wants exactly 2 matches instead of 3, I should instead adjust the seed data itself to avoid the ambiguous collision rather than fight the engine's constraints.
+
+The trouble is Mateo, the wrong-reactor negative, has messages scattered across several Aisha-member channels, so removing all overlap would be invasive. Moving his negative reaction to a non-Aisha channel would fix the collision but make it redundant with the wrong-channel negative case, so that's not a clean solution either.
+
+Rather than redesigning the fixed spec, I need to check if this ambiguity is truly unavoidable given the schema — if any route of this shape inevitably collapses this distinction, that points toward flagging it as a design defect.
+
+With the single-hop join, any user who's both a reactor and an author in Aisha's channels matches on ALL their reaction rows, not just the intended one. So for the seed to produce exactly 2 matches, every reactor besides Priya and Olena must not be an author in Aisha's channels — I need to trace through each existing reaction row (agent bot, Mateo, Robert) to verify none of them accidentally qualify.
+
+Confirming Robert isn't found in any of Aisha's channels either, so his negative correctly fails to match. Checking whether the agent bot authored anywhere in those channels—it only appears in C01ABCD1234, C02EFGH5678, C03IJKL9012, C04MNOP3456, none of which belong to Aisha.
+
+So Mateo is the real problem case: he's designed to be the wrong-reactor negative in C_MODEL, but he also legitimately authors many messages there for the narrative, creating an unavoidable collision under the loose join semantics unless I swap in a different message outside C_MODEL for that negative or reconsider whether the query construction should even go through messages.user_id at all.
+
+Reconsidering hop2, there's really only one FK path between users and messages, so I can't reroute the join differently. I'm now wondering whether the scope filters could restrict message_reactions before the join happens, verifying the message through some auxiliary lookup rather than the main join path.
+
+Auxiliary queries only handle constraints independent of the focal bindings, though, not identity re-verification across shared rows. Given the engine's limitation, the most workable fix seems to be picking a WRONG_REACTOR who genuinely has no self-authored messages in any Aisha channel, while keeping the reacted-to message as Sophie's in C_MODEL.
+
+But the design explicitly requires "user_mateo" as the reactor for this negative case, and I have to preserve base records unless there's a justified reason to change them—so I can't just swap Mateo out for someone else while staying faithful to the card's fixed requirement.
+
+Maybe instead the fix lies in whether the engine actually supports comparing a filter value against another node's field (like referencing node0's message_id), which isn't shown in the given examples but could be an unexplored extension. Given the practical constraints of this compile task, I'm now considering restructuring the second hop's join to better express the intended semantics.
+
+Since the original route probably only needed 5 tables, let me try a different order this time: message_reactions -> messages -> users -> channels -> channel_members, using message_reactions.message_id then messages.user_id, and checking what the third hop should connect to.
+

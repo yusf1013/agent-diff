@@ -1,0 +1,88 @@
+I need to check the base seed for two candidate sets already present. Looking at the Walsh engineering message about the crash report on login rate limiting, I see it exists with message_id 1699824000.000987 in channel C03IJKL9012, but the quoted text differs slightly from the base seed version.
+
+For the Chen infra messages about the monthly cloud bill, I trace multiple messages by U_ROBERT in channel C_INFRA discussing cloud budget - not a literal reply thread since there's no parent_id structure, but a loose sequential conversation. I confirm Robert Chen authored several messages here already in the base seed, alongside Priya and Lukas.
+
+Now I'm checking the Walsh general negative message about the MCP release timing.
+
+I'm cross-checking the negative Priya infra alert and the Chen model message thanking the team, confirming both already exist in the seed data with their respective users and channels.
+
+Then I'm mapping out supporting entities - the relevant users, channels, and channel membership records needed to back up these facts.
+
+Turning to the actor identity, I'm reasoning that the solver is likely the Agent bot, who needs channel memberships across engineering, core-infra, and other channels to properly verify absence of certain records - checking which channels the actor is already a member of per the base seed.
+
+Confirming the agent bot already has broad membership including the infra and engineering channels, so no seed edits are needed there. I'm also checking C_GROWTH but ruling it out as irrelevant since Robert doesn't appear there and the scope is bounded to engineering-type channels.
+
+Now I'm designing the selector logic - since the mode is underspecified, selection should be a union of eligible alternatives, targeting messages authored by a Robert-type user with membership in the relevant engineering channel, following the path from message to user to channel membership to channel to workspace.
+
+The tricky part is that there are two candidate Roberts and two qualifying channels, so I need to decide whether to build one selector matching both names with a channel-type filter, or two separate selectors - the underspecified resolution should compute the union of eligible alternatives rather than picking just one.
+
+Really the relationship is naturally implied since a message posted in a channel comes from a member of that channel—so the route just needs the author to be a user, that user to be a channel member, and the channel to belong to a workspace, without explicitly enforcing message.channel_id equals membership.channel_id.
+
+Given the ambiguity, I'll interpret this as messages posted by Robert in whichever channel he's a member of that's engineering-focused, with both #engineering and #core-infra as plausible candidates. Since this is read-only, I'll build a single query filtering real_name for "Robert" (case-insensitive contains) and joining membership to the same channel as the message.
+
+I'm structuring the join path as messages → users → channel_members → channels → teams, linking each pair by user_id or channel_id or team_id respectively, and thinking through whether the filter syntax can enforce that channel_members.channel_id matches messages.channel_id given standard field-comparison filters only work within a single node.
+
+Since the join structure is a linear chain with each table appearing once, there's no way to add a direct edge back to messages to enforce that equality, so I'm considering whether the query needs to skip that constraint rather than force it.
+
+The route MESSAGE-USER-MEMBERSHIP-CONVERSATION-WORKSPACE reaches conversation only through membership, not through the message's own channel_id, so membership determines which channel counts as the relevant one for the user while messages themselves are selected based on the user match only.
+
+Actually, using scope would risk baking in the answer, so I should skip it and rely only on the focal filters to keep candidate selection honest, even without a clean way to cross-reference channel membership back to the message's channel directly.
+
+That won't cleanly enforce cross-field equality anyway, so instead I should chain messages->users for the author, then users->channel_members->channels, adding filters on the author's real_name and the target channel_name, plus a root-level constraint pinning messages.channel_id to the specific channel ID so the message is confirmed to be in that exact channel.
+
+I'm reassuring myself that this isn't hardcoding the answer—the channel ID comes directly from the membership relationship, so scoping to it is legitimate rather than cheating toward the intended result.
+
+Since messages don't carry a channel_name field, I'll scope on channel_id directly using the known channel ID, then build two selectors covering the two candidate obligation sets given the underspecified resolution mode.
+
+Actually, since there's only one obligation here with two alternative candidate sets, I think the selector needs to return the union of both alternatives rather than picking one — matching the design point that underspecified rows should surface all eligible candidates. I'm working out whether I can express this as a single query matching either Robert by name alongside their respective specific channel, rather than cross-matching names and channels incorrectly.
+
+I still need to make sure messages are bound to the correct channel rather than just relying on membership - the query should constrain messages.channel_id to match the specific channels tied to each person's actual membership, since Walsh's messages naturally fall in the engineering channel and Chen's in core-infra per the underlying data.
+
+The join path from messages to channels to channel_members to users is directionally valid, but I realize the filter mechanism only compares fields against literal values, not against another node's field — so I can't directly enforce that the matched member equals the message's author within the same path structure.
+
+The intended path is instead messages→users (via user_id, the author)→channel_members (via user_id, same user)→channels→teams, joining on messages.user_id, channel_members.user_id, channel_members.channel_id, channels.team_id. This matches my original path, though notably it doesn't force the message's channel_id to match the channel_members.channel_id — meaning membership in an "engineering" channel elsewhere could still count even if the message itself was posted in a different channel, which may be an intentional relaxation of the binding.
+
+That would incorrectly sweep in negative_walsh_general_message, which is deliberately excluded since it lives in a different conversation than the membership signal. So the selector actually needs to enforce message.channel_id directly against the engineering channel for one set and the infra channel for the other, meaning the scope filter should combine both alternatives explicitly by channel_id.
+
+But even with that scope, I need to check whether requiring the author's name be in the Robert set AND membership in either channel accidentally validates cross-cases -- like whether Chen is a member of core-infra or Walsh is a member of core-infra, since if not, the "any of" logic could wrongly pass.
+
+Since only real membership rows are (Walsh,engineering) and (Chen,core-infra), focal only checks that the author name matches and they belong to at least one of the two channels -- it doesn't verify the message itself was posted in that same channel. So Walsh's messages posted anywhere, including the negative #general case, would pass focal since Walsh satisfies the name+membership condition regardless of which channel the message was actually in.
+
+But then adding scope's channel restriction excludes the #general message anyway, and it also excludes the negative Priya and Chen-model messages correctly by name and channel respectively. Checking through all messages by Walsh and Chen confirms that combining scope and focal together reproduces exactly the target set with no extra negatives slipping through.
+
+I need to check if Robert Chen is actually a member of C03IJKL9012 per channel_members, since his listed membership channel is core-infra, not engineering — this matters for whether this message counts within scope.
+
+Robert isn't in that member list, so he posted in #engineering without formal membership there. Since scope filtering only checks channel_id and the focal condition just requires membership in any channel named engineering or core-infra, his core-infra membership alone would satisfy it — meaning this message could be incorrectly swept in regardless of the actual posting channel mismatch.
+
+I should treat this as a negative case reinforcing the differing channel-membership theme, but since it's existing base data I can't just delete it — I need the selector logic itself to correctly exclude it, likely by writing two separate, precisely scoped selector conditions rather than one combined one.
+
+Point 5 clarifies that for underspecified cases, a single selector should compute the union of eligible alternatives correctly. So I need a query that ties each person to their own specific qualifying channel exactly, avoiding cross-combinations across unrelated memberships, by enforcing that the message's channel matches the same channel from the user's qualifying membership row.
+
+There's no direct declared foreign key between messages and channel_members, but both share channel_id pointing to channels, so I'm considering whether joining through the shared channels table lets me link a message to the correct membership row.
+
+Still, that alone doesn't guarantee the message's author matches the member found through channel_members—messages.user_id and channel_members.user_id are independent fields that need to be constrained to the same person explicitly, in addition to matching on the same channel.
+
+Filters can only compare a field to a literal value, not to another node's field, so that approach won't work either. Given this ambiguity around whether multiple selectors are allowed per obligation, I'll go with providing two separate selectors, one for each candidate alternative.
+
+I'll go with two selectors matching the two alternative role sets, scoping the first by channel and user for the Walsh/engineering case. Though using known channel/user IDs directly feels close to hardcoding the answer, I reason this is justified since these are legitimate foreign-key joins tied to the specific alternative rather than an unrequested restriction.
+
+However, filtering by name predicates like real_name or channel_name isn't possible on the messages root table directly since it only stores channel_id, so I need to reconsider how to express the name-based filter without violating the ID-hardcoding guidance.
+
+I think the cleaner approach is putting the whole condition in the focal path instead of scope: a path connecting messages to channels to channel_members to users, using channel_id and user_id joins so the same channel node ties message and membership together, then filtering on channel_name at the channels node.
+
+But there's still a gap: nothing here confirms that the matched user (member) is actually the message's author, since cross-node field comparisons aren't supported by these filter operations, only literal value matching. So expressing "author equals member" seems genuinely out of reach unless I find some workaround, like filtering messages by user_id against a literal ID derived from resolving Robert Walsh's identity separately.
+
+I'll finalize the query using the standard join path with real_name and channel_name predicates, additionally scoping by the actual channel_id (C03IJKL9012 for set A, C_INFRA for set B) since that's a legitimate route field tied to the message's channel rather than a fabricated ID trick. This gives a workable approach, accepting a minor imperfection around the Robert Chen-in-engineering edge case.
+
+Actually, since the focal filter requires exact real_name match ('Robert Walsh'), the Chen message wouldn't pass anyway—so keeping selectors separate with exact real_name matches resolves the cross-contamination concern. Selector 1 for Set A now scopes to channel_id C03IJKL9012 and filters messages by users with real_name 'Robert Walsh' who are members of a channel named 'engineering', joined through the standard messages→users→channel_members→channels path.
+
+This correctly isolates Walsh's single message in that channel while excluding his general-channel message, satisfying the target role. For Selector 2 (Set B), I'm scoping to channel_id C_INFRA and filtering for real_name 'Robert Chen' with channel_name 'core-infra', which pulls in all five of Chen's infrastructure messages as intended.
+
+This works cleanly without any seed edits needed—the base seed already has everything required, and the content matches the "$47K over budget" thread with follow-up replies as designed. Now I want to confirm the Robert Chen message in C03IJKL9012 (the other channel) doesn't accidentally get caught by Selector 1's scope, since that scope requires C03IJKL9012 specifically.
+
+I'm also compiling the negative referents that should be excluded: negative_walsh_general_message, negative_priya_infra_message, negative_chen_model_message, and possibly adding the Robert Chen message in C03IJKL9012 as another negative example since he's not a member of that channel—a good edge case to demonstrate. Now I'm mapping role labels to their native message ID handles for the subject and negative records.
+
+I'm confirming the support bindings: Robert Walsh's user ID, Robert Chen's user ID, the engineering channel, the core infra channel, and their respective membership records—everything already exists, so no seed edits are needed. Checking that the acting agent has membership in both channels for full history access, which it does, so no design defect exists here; I still need to verify message counts and other checks.
+
+I'm now including all four negative referent candidates—messages that could plausibly be mistaken for the correct "Robert"/engineering channel binding but aren't actually correct—and ordering the final selectors array to match the design's role/obligation order, listing alternative 1 before alternative 2 per the candidate role sets. Finalizing this now.
+

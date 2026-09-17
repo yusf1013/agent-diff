@@ -71,8 +71,11 @@ usage, responses and intermediate artifacts are saved per turn.
 The first construction pass used bounded design and compilation review loops.
 Subsequent development passes address diagnosed format/transport problems,
 actual API access failures, or manual route findings. They are separately marked;
-manual construction feedback never includes solver responses or reference
-labels. Some recovery output limits were raised to 24,000 tokens after truncated
+manual construction feedback is intended to exclude solver responses and reference
+labels. One audited exception, G-R094’s explicit route revision, received a summary
+of the earlier solver answer. That revised case is excluded from primary
+outcome-blind coverage/failure counts; see `provenance_exceptions.json`. No
+baseline reference run labels were supplied to authoring. Some recovery output limits were raised to 24,000 tokens after truncated
 responses. Each recorded request, rather than the latest prompt file, identifies
 the settings used for that invocation. There is no claim of one unchanged prompt
 throughout the campaign.

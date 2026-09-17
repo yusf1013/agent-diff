@@ -1,0 +1,46 @@
+```json
+{
+  "prompt": "Which reactions have people added to their own messages in the channels where Aisha Okonkwo is a member, and what emoji did they use?",
+  "binding_note": "The route binds a single user variable to both roles: the person who left the reaction and the person who authored the reacted-to message must be the same user (a self-reaction). That message's channel is then checked separately for a conversation-membership record belonging to Aisha Okonkwo. Reactions where the reactor differs from the message author, or where the self-reacted message sits in a channel lacking Aisha's membership, do not satisfy the route.",
+  "roles": [
+    {"role": "membership_aisha_infra", "entity": "channel_members", "facts": "Membership row linking U_AISHA to C_INFRA.", "selection": "support", "reason": "Establishes Aisha's membership in the channel containing the first matching self-reaction."},
+    {"role": "membership_aisha_model", "entity": "channel_members", "facts": "Membership row linking U_AISHA to C_MODEL.", "selection": "support", "reason": "Establishes Aisha's membership in the channel containing the second matching self-reaction."},
+    {"role": "channel_infra", "entity": "channels", "facts": "C_INFRA ('core-infra'), incident/infra discussion channel.", "selection": "support", "reason": "Conversation node linking the first matching message to Aisha's membership."},
+    {"role": "channel_model", "entity": "channels", "facts": "C_MODEL ('model-research'), model training/evals discussion channel.", "selection": "support", "reason": "Conversation node linking the second matching message to Aisha's membership."},
+    {"role": "channel_general", "entity": "channels", "facts": "C01ABCD1234 ('general'), company-wide channel; Aisha Okonkwo has no membership record here.", "selection": "support", "reason": "Conversation used for a negative: satisfies the self-reaction condition but fails the Aisha-membership condition."},
+    {"role": "user_priya", "entity": "users", "facts": "U_PRIYA, Priya Sharma, infra engineer, member of C_INFRA.", "selection": "support", "reason": "Both reactor and author for the first matching self-reaction."},
+    {"role": "user_olena", "entity": "users", "facts": "U_OLENA, Olena Petrenko, ML engineer, member of C_MODEL.", "selection": "support", "reason": "Both reactor and author for the second matching self-reaction."},
+    {"role": "user_robert_walsh", "entity": "users", "facts": "U03ROBERT23, Robert Walsh, workspace admin, member of C01ABCD1234 but not of any of Aisha's channels.", "selection": "support", "reason": "Both reactor and author for a self-reaction negative excluded by the membership condition."},
+    {"role": "user_mateo", "entity": "users", "facts": "U_MATEO, Mateo Rivera, product lead, member of C_MODEL.", "selection": "support", "reason": "Reactor in a negative where the reactor differs from the message author."},
+    {"role": "user_sophie", "entity": "users", "facts": "U_SOPHIE, Sophie Dubois, ML lead, member of C_MODEL, authors the message reacted to in the wrong-reactor negative.", "selection": "support", "reason": "Message author in the negative where reactor and author differ."},
+    {"role": "message_priya_infra", "entity": "messages", "facts": "Message ts 1706001931.000000 in C_INFRA authored by U_PRIYA, confirming the CUDA memory-limit root cause and announcing the batch-size revert.", "selection": "support", "reason": "Self-authored message reacted to by its own author, in a channel where Aisha is a member."},
+    {"role": "message_olena_model", "entity": "messages", "facts": "Message ts 1706077290.000000 in C_MODEL authored by U_OLENA, reporting that the Acme hallucination logs have been pulled.", "selection": "support", "reason": "Self-authored message reacted to by its own author, in a channel where Aisha is a member."},
+    {"role": "message_robert_general", "entity": "messages", "facts": "Message ts 1700173200.000456 in C01ABCD1234 authored by U03ROBERT23, asking when the MCP deployment will be done.", "selection": "support", "reason": "Self-authored message satisfying the self-reaction condition, but sitting in a channel without Aisha's membership."},
+    {"role": "message_sophie_model", "entity": "messages", "facts": "Message ts 1706012456.000000 in C_MODEL authored by U_SOPHIE, announcing the new 7B checkpoint's MMLU and cost results.", "selection": "support", "reason": "Sits in a channel where Aisha is a member, but is reacted to by someone other than its author."},
+    {"role": "reaction_match_1", "entity": "message_reactions", "facts": "Priya Sharma reacts with 'check' to her own message ts 1706001931.000000 in C_INFRA after confirming the revert is complete.", "selection": "match", "reason": "Reactor equals message author, and the message's channel (C_INFRA) has Aisha as a member."},
+    {"role": "reaction_match_2", "entity": "message_reactions", "facts": "Olena Petrenko reacts with 'check' to her own message ts 1706077290.000000 in C_MODEL after confirming the logs were pulled.", "selection": "match", "reason": "Reactor equals message author, and the message's channel (C_MODEL) has Aisha as a member."},
+    {"role": "reaction_negative_existing", "entity": "message_reactions", "facts": "The existing seeded reaction: agent bot (U01AGENBOT9) reacts with 'eyes' to Łukasz Kowalski's message ts 1706110000.000100 in C03IJKL9012 (engineering).", "selection": "negative", "reason": "Reactor differs from the message author, and the channel is not one of Aisha's memberships, failing both route conditions."},
+    {"role": "reaction_negative_wrong_reactor", "entity": "message_reactions", "facts": "Mateo Rivera reacts with 'rocket' to Sophie Dubois's message ts 1706012456.000000 in C_MODEL.", "selection": "negative", "reason": "The channel satisfies Aisha's membership condition, but the reactor is not the message's author, breaking the required same-user binding."},
+    {"role": "reaction_negative_wrong_channel", "entity": "message_reactions", "facts": "Robert Walsh reacts with 'thumbsup' to his own message ts 1700173200.000456 in C01ABCD1234 (general).", "selection": "negative", "reason": "The reactor equals the message author, but the containing channel (general) has no membership record for Aisha Okonkwo."}
+  ],
+  "obligations": [
+    {
+      "name": "qualifying_self_reactions",
+      "description": "Reactions where the reacting user is the same person who authored the reacted-to message, and that message's channel has a conversation-membership record for Aisha Okonkwo; report the user and emoji for each.",
+      "table": "message_reactions",
+      "mode": "multiple",
+      "task_type": "read-only",
+      "scope": "ordinary requested scope: self-authored-message reactions inside channels where Aisha Okonkwo holds membership",
+      "target_roles": ["reaction_match_1", "reaction_match_2"],
+      "candidate_role_sets": null,
+      "selection": "set",
+      "answer_attributes": [["message_reactions.reaction_type"], ["message_reactions.user_id"], ["message_reactions.message_id"]]
+    }
+  ],
+  "task_spec": [
+    {"line": 1, "text": "Identify the channels where Aisha Okonkwo holds membership, find messages in those channels whose author also reacted to their own message, and report each such reaction together with who added it and which emoji was used.", "obligations": [1]}
+  ],
+  "scope_exception": null,
+  "access_plan": "Use conversations.members (or users.conversations for the acting user's visibility) on C_INFRA, C_MODEL, C_GROWTH, and C_FRONTEND to confirm Aisha Okonkwo's memberships; use conversations.history/search.messages scoped to those channels to enumerate messages and their authors; then use reactions.get (or the reaction data surfaced in conversations.history) on each message to check whether any reactor matches the message's own author, discarding self-reactions found in channels lacking Aisha's membership and reactions where reactor and author differ."
+}
+```

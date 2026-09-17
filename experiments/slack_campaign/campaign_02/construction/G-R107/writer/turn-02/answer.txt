@@ -1,0 +1,51 @@
+```json
+{
+ "prompt": "In #core-infra, what emoji reaction is on the message about the Postgres 16 migration that was posted by someone who's also a member of #project-alpha-dev? Please add a ✅ reaction to that same message too, to confirm you've seen it.",
+ "binding_note": "r0 (message_reactions) joins to r1 (messages) via message_id — the reacted-to message. r1.user_id joins r2 (users) as the message's AUTHOR, not the reactor. r3 (channel_members) joins r2.user_id, i.e. the author's membership in #project-alpha-dev. The reactor identity (r0.user_id) is not part of the identifying chain and is left unconstrained.",
+ "roles": [
+  {"role":"target_reaction","entity":"message_reactions","facts":"U_PRIYA left a 'thumbsup' reaction on the #core-infra message about the Postgres 16 migration, which was authored by U_LUKAS","selection":"match","reason":"The reacted-to message's author (U_LUKAS) has a channel_members row for #project-alpha-dev, satisfying the full route; the reactor's own identity is incidental"},
+  {"role":"migration_message","entity":"messages","facts":"Message in #core-infra authored by U_LUKAS: 'We're moving the primary database to Postgres 16 this weekend — expect brief downtime, please pause any long-running migration jobs.'","selection":"support","reason":"The message bound to the target reaction; its author is the join target for the membership condition"},
+  {"role":"author_user","entity":"users","facts":"U_LUKAS (Łukasz Kowalski), author of the migration message","selection":"support","reason":"The author record that both the message and the membership condition join through"},
+  {"role":"author_membership","entity":"channel_members","facts":"channel_members row for U_LUKAS in #project-alpha-dev (C06ALPHADEV)","selection":"support","reason":"Establishes that the message author is a member of #project-alpha-dev, completing the route"},
+  {"role":"negative_reaction_nonmember_author","entity":"message_reactions","facts":"U_MATEO left a 'eyes' reaction on a #core-infra message about a Postgres replica-lag issue authored by U_SOPHIE, who has no channel_members row for #project-alpha-dev","selection":"negative","reason":"Message topic is migration-adjacent and it has a reaction, but the author fails the #project-alpha-dev membership condition"},
+  {"role":"negative_reaction_wrong_topic","entity":"message_reactions","facts":"U_ROBERT left a 'tada' reaction on a #core-infra message authored by U_LUKAS about the office espresso machine being fixed","selection":"negative","reason":"The author (U_LUKAS) is a #project-alpha-dev member, but the message is not about the Postgres migration, so it fails the message-content condition"},
+  {"role":"negative_message_no_reaction","entity":"messages","facts":"Message in #core-infra authored by U_MATEO (also a #project-alpha-dev member) describing a secondary Postgres migration follow-up task, with no reactions attached","selection":"negative","reason":"Satisfies author/topic/membership conditions but has no reaction at all, so no reaction record exists to select"},
+  {"role":"nonmember_author_user","entity":"users","facts":"U_SOPHIE, author of the replica-lag message, has channel_members rows only for #core-infra, #model-research, #product-growth, #frontend, and the DM with the agent — none for #project-alpha-dev","selection":"support","reason":"Shows the membership contrast that excludes the nonmember-author negative"},
+  {"role":"scope_channel","entity":"channels","facts":"#project-alpha-dev (C06ALPHADEV), whose members include U_LUKAS, U_PRIYA, U_MATEO, U_KENJI, U_ROBERT, U_AISHA, U01AGENBOT9","selection":"support","reason":"The membership channel that the message author must belong to"},
+  {"role":"announcement_channel","entity":"channels","facts":"#core-infra (C_INFRA), hosting the migration message and its reaction, plus the negative messages","selection":"support","reason":"The channel scoping the message search"}
+ ],
+ "obligations": [
+  {
+   "name":"target_reaction",
+   "description":"Select the single reaction on the #core-infra Postgres-16-migration message whose author (via messages.user_id) has a channel_members row for #project-alpha-dev.",
+   "table":"message_reactions",
+   "mode":"single",
+   "task_type":"read-only",
+   "scope":"reactions on messages in #core-infra about the Postgres 16 migration, filtered by the message author's #project-alpha-dev membership",
+   "target_roles":["target_reaction"],
+   "candidate_role_sets":null,
+   "selection":"one",
+   "answer_attributes":[["message_reactions.reaction_type"],["message_reactions.message_id"]]
+  },
+  {
+   "name":"confirmation_reaction",
+   "description":"Add a new checkmark reaction from the acting user onto the same migration message identified in the target_reaction obligation, to confirm it was seen.",
+   "table":"message_reactions",
+   "mode":"single",
+   "task_type":"state-changing",
+   "scope":"a new reaction row on the migration message identified above, added by the acting user",
+   "target_roles":[],
+   "candidate_role_sets":null,
+   "selection":"one",
+   "change_attributes":[[]],
+   "written_attributes":["message_reactions.message_id","message_reactions.user_id","message_reactions.reaction_type"]
+  }
+ ],
+ "task_spec":[
+  {"line":1,"text":"Identify the emoji reaction on the #core-infra message about the Postgres 16 migration that was posted by a #project-alpha-dev member.","obligations":[1]},
+  {"line":2,"text":"Add a check-mark reaction to that same message to confirm you've seen it.","obligations":[2]}
+ ],
+ "scope_exception": null,
+ "access_plan": "Use conversations.history on #core-infra to locate migration-related messages, then check each message author's membership via conversations.members on #project-alpha-dev (or users.conversations for the author) to find the one authored by a #project-alpha-dev member. Use reactions.get on that message to read its existing reaction, then reactions.add to place the acting user's own checkmark reaction on it."
+}
+```
