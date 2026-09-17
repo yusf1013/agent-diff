@@ -20,6 +20,13 @@ def g1():
             'mode_coverage':{'covered':len(modecells),'total':28,'cells':modecells},
             'mode_distribution':mapping['summary']['requested_resolution_modes'],
             'provenance':'Manual source/card annotations; counts mechanically aggregated. No solver labels used.'}
+    catalog=read(ROOT/'grounding/slack_coverage/catalog.json')
+    fields={x['table']+'.'+x['field'] for x in catalog['attributes']}
+    observed=set(mapping['summary']['identifying_attributes'])
+    result['attribute_coverage']={'covered':len(fields & observed),'total':len(fields),
+                                  'fields':sorted(fields & observed),'outside_scalar_inventory':sorted(observed-fields)}
+    result['capability_coverage']={'covered':0,'total':len(catalog['limitations']),
+       'qualification':'No baseline task was annotated as an isolated representative unavailable-capability probe. Incidental unavailable fields (e.g. workspace name in an admin query) are recorded but receive no automatic boundary-test credit.'}
     save(BASE.parent/'g1.json',result)
     return result
 

@@ -18,6 +18,8 @@ and is not pooled into these generation yields.
 | Unchecked | 87 / 198 |
 | Complete retained routes represented | 12 / 174 |
 | Entity–resolution-mode requirements represented | 12 / 28 |
+| Identifying attributes represented | 13 / 26 |
+| Isolated representative capability-boundary probes | 0 / 25 |
 
 Requested modes: 129 single, 34 determined collections, 11 absent, 20
 underspecified. Four delegated optional subsets are tracked separately, rather
@@ -27,9 +29,7 @@ when its supplied seed has only one matching record.
 [Counts](g1.json) come from the manually reviewed source cards.
 [Baseline mapping](../../../grounding/slack_coverage/baseline_mapping_review.md)
 records identifying paths and requested modes without consulting run labels.
-The [linear catalog](../../../grounding/slack_coverage/catalog.md) also has 26
-identifying-attribute and 25 capability-boundary requirements; their detailed
-realization accounting is being completed.
+The [linear catalog](../../../grounding/slack_coverage/catalog.md) normalizes identifying attributes and keeps unavailable capability probes separate. Incidental dependence on an unavailable field does not automatically count as a representative limitation probe.
 
 ## G2: native false passes
 

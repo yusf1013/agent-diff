@@ -13,7 +13,7 @@ def report(folder):
         if 'usage' not in obj:continue
         rel=str(path.relative_to(folder))
         parts=path.parts
-        stage=next((s for s in ('writer','compiler','reviewer','direct_judge') if s in parts),'evaluator')
+        stage=next((s for s in ('writer','compiler','reviewer','direct_judge','access_review') if s in parts),'evaluator')
         calls.append({'source':rel,'stage':stage,'status':obj.get('status'),'usage':obj.get('usage'),
                       'native_cost_usd':obj.get('cost_usd'),'elapsed_seconds':obj.get('elapsed_seconds')})
     for path in sorted((folder/'execution').glob('*/solver/*.json')):
