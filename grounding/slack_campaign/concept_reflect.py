@@ -20,7 +20,7 @@ def digest(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def prepare(folder):
+def prepare(folder, prompts=PROMPTS):
     """Freeze the common follow-up and originals before any paid continuation."""
     cases = [a['case_id'] for a in read(folder / 'assignments.json')]
     originals = [folder / 'system.md', folder / 'assignments.json']
@@ -32,7 +32,7 @@ def prepare(folder):
         originals.extend([folder / cid / 'input.md', writer / 'instructions.md'])
         originals.extend(p for p in first.iterdir() if p.is_file())
     hashes = {str(p.relative_to(folder)): digest(p) for p in sorted(originals)}
-    text = (PROMPTS / 'self_reflection.md').read_text()
+    text = (prompts / 'self_reflection.md').read_text()
     meta = folder / 'reflection'
     meta.mkdir(exist_ok=True)
     manifest = {
@@ -113,8 +113,8 @@ def verify_originals(folder):
         raise ValueError(f'Original artifacts changed: {changed}')
 
 
-def run(folder, concurrency):
-    cases, followup = prepare(folder)
+def run(folder, concurrency, prompts=PROMPTS):
+    cases, followup = prepare(folder, prompts)
     first = reflect_one(folder, cases[0], followup)
     second = reflect_one(folder, cases[1], followup)
     check = {'first_usage': first.get('usage'), 'second_usage': second.get('usage'),
@@ -140,6 +140,7 @@ def run(folder, concurrency):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--folder', type=Path, default=DEFAULT_FOLDER)
+    parser.add_argument('--prompts', type=Path, default=PROMPTS)
     parser.add_argument('--run', action='store_true', help='Make one paid continuation per original case.')
     parser.add_argument('--concurrency', type=int, default=8)
     args = parser.parse_args()
@@ -147,9 +148,9 @@ def main():
         parser.error('concurrency must be 1..15')
     try:
         if args.run:
-            run(args.folder, args.concurrency)
+            run(args.folder, args.concurrency, args.prompts)
         else:
-            prepare(args.folder)
+            prepare(args.folder, args.prompts)
     finally:
         if args.run:
             account(args.folder)

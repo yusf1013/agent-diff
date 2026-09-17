@@ -55,10 +55,10 @@ def relationship(left, right):
     raise ValueError(f'Unsupported conceptual edge: {left} -> {right}')
 
 
-def system_prompt():
+def system_prompt(prompts=PROMPTS):
     return '\n\n'.join([
-        (PROMPTS / 'writer.md').read_text().strip(),
-        (PROMPTS / 'slack_capabilities.md').read_text().strip(),
+        (prompts / 'writer.md').read_text().strip(),
+        (prompts / 'slack_capabilities.md').read_text().strip(),
         '# Adopted conceptual domain model\n\n' +
         (ROOT / 'systematic modeling/slack-conceptual-model.md').read_text().strip(),
     ]) + '\n'
@@ -85,10 +85,10 @@ def assignments():
     return result
 
 
-def user_prompt(assignment):
+def user_prompt(assignment, prompts=PROMPTS):
     nodes = assignment['route_nodes']
     mode = assignment['resolution_mode']
-    mode_text = (PROMPTS / 'modes' / f'{mode}.md').read_text().format(
+    mode_text = (prompts / 'modes' / f'{mode}.md').read_text().format(
         match_count=assignment['match_count'], alternative_count=assignment['alternative_count'])
     edges = '\n'.join(
         f'- {label(left)} (position {i}) {relationship(left, right)} '
@@ -97,6 +97,10 @@ def user_prompt(assignment):
     )
     extra = ('\nInclude a distinct conversation-member count as an identifying condition. '
              'Count every member, including the actor if present.\n') if assignment['route_id'] == 'R009' else ''
+    menu = ''
+    if (prompts / 'root_operations.json').exists():
+        operations = json.loads((prompts / 'root_operations.json').read_text())
+        menu = '\nDownstream operation menu for this referent:\n' + operations[nodes[0]] + '\n'
     return (
         f'# Assignment {assignment["case_id"]}\n\n'
         f'Referent: {label(nodes[0])}\n\n'
@@ -107,18 +111,18 @@ def user_prompt(assignment):
         'Identify the first entity using this complete chain. Conditions on one '
         'intermediate role must concern that same record. Do not invent equality '
         'between a membership channel and a message location.\n'
-        f'{extra}\n# Instructions for this assigned mode\n\n{mode_text.strip()}\n'
+        f'{extra}{menu}\n# Instructions for this assigned mode\n\n{mode_text.strip()}\n'
     )
 
 
-def prepare(folder):
+def prepare(folder, prompts=PROMPTS):
     folder.mkdir(parents=True, exist_ok=True)
-    system = system_prompt()
+    system = system_prompt(prompts)
     plan = assignments()
     # Fixed copies make authoring inputs inspectable without running a model.
     files = {folder / 'system.md': system}
     for a in plan:
-        files[folder / a['case_id'] / 'input.md'] = user_prompt(a)
+        files[folder / a['case_id'] / 'input.md'] = user_prompt(a, prompts)
     for path, content in files.items():
         if path.exists() and path.read_text() != content:
             raise ValueError(f'Existing input differs; use a new experiment folder: {path}')
@@ -130,6 +134,7 @@ def prepare(folder):
         'manual_work': 'Instructions, capability brief, assignment selection, and output assessments.',
         'automated_work': 'Separate Sonnet 5 authoring of Markdown sketches.',
         'system_sha256': hashlib.sha256(system.encode()).hexdigest(),
+        'prompt_directory': str(prompts.resolve()),
         'seed_supplied': False, 'native_schema_supplied': False,
         'mode_instructions': 'Exactly the assigned fragment is injected; alternatives stay out of the input.',
         'examples': 'Reviewed manual scenarios adapted to supported operations; not measured pilot cases.',
@@ -157,8 +162,8 @@ def run_one(folder, system, a):
     return json.loads((out.parent / 'summary.json').read_text())
 
 
-def run(folder, concurrency):
-    system, plan = prepare(folder)
+def run(folder, concurrency, prompts=PROMPTS):
+    system, plan = prepare(folder, prompts)
     # The first two substantive cases also verify caching; no throwaway probe calls.
     first = run_one(folder, system, plan[0])
     second = run_one(folder, system, plan[1])
@@ -185,6 +190,7 @@ def run(folder, concurrency):
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--folder', type=Path, default=DEFAULT_FOLDER)
+    p.add_argument('--prompts', type=Path, default=PROMPTS)
     p.add_argument('--run', action='store_true', help='Make ten paid writer calls; otherwise only prepare inputs.')
     p.add_argument('--concurrency', type=int, default=8)
     args = p.parse_args()
@@ -192,9 +198,9 @@ def main():
         p.error('concurrency must be 1..15')
     try:
         if args.run:
-            run(args.folder, args.concurrency)
+            run(args.folder, args.concurrency, args.prompts)
         else:
-            prepare(args.folder)
+            prepare(args.folder, args.prompts)
     finally:
         if args.run:
             from .usage import report

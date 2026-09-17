@@ -16,6 +16,15 @@ need repair before compilation, and no generation-quality or exposure-rate claim
 is established. Keep experiments separate from `campaign_02`; do not resume the
 paid commands below as part of housekeeping.
 
+A fresh comparison uses the revised [v4 instructions](prompts/v4/README.md) on the
+same ten assignments, followed by one native reflection each. Its inputs and outputs
+are recorded separately in [writer_pilot_04](../../experiments/slack_campaign/writer_pilot_04/review.md):
+5/10 first-pass sketches and 6/10 reflected sketches are conceptually ready, versus
+3/10 and 5/10 in v3. All ten reflections returned. Read the
+[first outputs](../../experiments/slack_campaign/writer_pilot_04/outputs.md) and
+[reflected outputs](../../experiments/slack_campaign/writer_pilot_04/reflection/outputs.md).
+This is development-set prompt iteration, not held-out validation or solver exposure.
+
 The [methods document](../../experiments/slack_campaign/campaign_02/methods.md)
 records manual versus automated work, coverage accounting, repair passes and
 provenance limits. The superseded one-author pilot is documented separately in
@@ -129,6 +138,16 @@ Read the [reflection comparison](../../experiments/slack_campaign/writer_pilot_0
 and [all second-turn outputs](../../experiments/slack_campaign/writer_pilot_03/reflection/outputs.md).
 The experiment's root usage ledger includes both first and second turns. This is
 an author review experiment, not evidence of runnable-test validity or solver failure.
+
+Both entrypoints accept `--prompts` and `--folder` so historical prompts and runs
+remain intact. The v4 comparison uses:
+
+```sh
+python -m grounding.slack_campaign.concept_writer --prompts grounding/slack_campaign/prompts/v4 --folder experiments/slack_campaign/writer_pilot_04 --run --concurrency 8
+python -m grounding.slack_campaign.concept_reflect --prompts grounding/slack_campaign/prompts/v4 --folder experiments/slack_campaign/writer_pilot_04 --run --concurrency 8
+```
+
+These are recorded paid commands, not instructions to rerun the experiment.
 
 ## Historical campaign paid execution
 

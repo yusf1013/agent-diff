@@ -1,9 +1,20 @@
 """Check input isolation and role-preserving assembly without model calls."""
 import unittest
-from .concept_writer import assignments, relationship, system_prompt, user_prompt
+from .concept_writer import PROMPTS, assignments, relationship, system_prompt, user_prompt
 
 
 class ConceptWriterTests(unittest.TestCase):
+    def test_versioned_inputs_inject_only_relevant_operation_menu(self):
+        prompts = PROMPTS.parent / 'v4'
+        reaction = next(a for a in assignments() if a['referent_entity'] == 'REACTION')
+        text = user_prompt(reaction, prompts)
+        self.assertIn("Prefer removing the actor's own selected reaction", text)
+        self.assertNotIn('Ordinary-member versus guest classification', text)
+        self.assertIn('The assigned mode is SINGLE.', text)
+        self.assertNotIn('The assigned mode is MULTIPLE.', text)
+        self.assertNotIn('Downstream operation menu', user_prompt(reaction))
+        self.assertNotEqual(system_prompt(), system_prompt(prompts))
+
     def test_mode_instructions_are_exclusive(self):
         for a in assignments():
             text = user_prompt(a)
