@@ -1,0 +1,73 @@
+```json
+{
+  "prompt": "Whoever reacted with a 👍 to Priya's message in workspace T01WORKSPACE confirming the CUDA memory limit was the root cause of the pod OOM incident — which channels do they belong to?",
+  "binding_note": "r0 (channel_members) is identified only through its user_id matching r1, the same user who is the reactor (r2.user_id=r1.user_id) on the reacted-to message r2.message_id=r3.message_id. r3 is located via its channel r4 (r3.channel_id=r4.channel_id) and that channel's workspace r5 (r4.team_id=r5.team_id) — this workspace/channel path identifies the message, not the membership: r0's own channel_id is not required to equal r4's channel_id, so the reactor's memberships in any channel are the deliverable. Since the anchor message (Priya's CUDA memory-limit root-cause post in C_INFRA, workspace T01WORKSPACE) carries zero reactions of any kind, no user qualifies as the 👍 reactor, so no channel_members row satisfies the chain.",
+  "roles": [
+    {
+      "role": "workspace_scope",
+      "entity": "teams",
+      "facts": "T01WORKSPACE is the workspace containing the channel where the anchor message was posted; identifies r5 in the route.",
+      "selection": "support",
+      "reason": "Scopes the channel (r4) that must belong to this workspace, which in turn locates the anchor message (r3)."
+    },
+    {
+      "role": "message_channel",
+      "entity": "channels",
+      "facts": "core-infra (C_INFRA), team_id T01WORKSPACE, contains the anchor message discussed below.",
+      "selection": "support",
+      "reason": "This is r4: the channel of the reacted-to message, joined to r5 (workspace) and r3 (message), distinct from the target r0's own channel."
+    },
+    {
+      "role": "root_cause_message",
+      "entity": "messages",
+      "facts": "Message 1706001931.000000 in C_INFRA, authored by U_PRIYA, states the pod OOM incident was caused by hitting a hard CUDA memory limit from the batch size increase; this message has zero reaction rows attached.",
+      "selection": "support",
+      "reason": "This is r3, the message a qualifying reaction (r2) must target; its total absence of reactions is why the chain to r0 cannot be completed."
+    },
+    {
+      "role": "unrelated_reaction",
+      "entity": "message_reactions",
+      "facts": "The only stored reaction in the workspace is 'eyes' by U01AGENBOT9 on message 1706110000.000100 in channel C03IJKL9012 (engineering), about a circuit-tracer OOM rewrite, not the CUDA memory-limit finding.",
+      "selection": "negative",
+      "reason": "Wrong emoji and wrong message: even though a reaction exists somewhere, it does not satisfy r2's join to r3 (the specific root-cause message)."
+    },
+    {
+      "role": "engaged_but_unreacted",
+      "entity": "users",
+      "facts": "U_PRIYA, U_LUKAS, and U_OLENA discussed the CUDA memory-limit finding by posting messages in C_INFRA, but none of them left a reaction row on the root-cause message or any message in that thread.",
+      "selection": "negative",
+      "reason": "Missing relationship: these users would be r1 candidates via text engagement, but no message_reactions row connects any of them to r3 as required."
+    },
+    {
+      "role": "near_miss_memberships",
+      "entity": "channel_members",
+      "facts": "channel_members rows exist for U_PRIYA, U_LUKAS, and U_OLENA in C_INFRA, C_MODEL, C_GROWTH, and C_FRONTEND (per base_seed).",
+      "selection": "negative",
+      "reason": "These are the memberships that would have been reported as r0 had any of these engaged users actually left the required 👍 reaction on r3; since none did, these rows are excluded from the result."
+    }
+  ],
+  "obligations": [
+    {
+      "name": "reactor_memberships",
+      "description": "Channel_members rows for the user who reacted with thumbsup to Priya's specific CUDA memory-limit root-cause message located in C_INFRA under workspace T01WORKSPACE; the membership's own channel need not match the message's channel. No such reaction exists, so no membership qualifies.",
+      "table": "channel_members",
+      "mode": "absent",
+      "task_type": "read-only",
+      "scope": "channel_members joined via user_id to the user who holds a message_reactions row (reaction_type=thumbsup) on the identified root-cause message, whose channel belongs to workspace T01WORKSPACE",
+      "target_roles": [],
+      "candidate_role_sets": null,
+      "selection": "set",
+      "answer_attributes": [["channel_members.user_id"], ["channel_members.channel_id"]]
+    }
+  ],
+  "task_spec": [
+    {
+      "line": 1,
+      "text": "Find whoever reacted with a 👍 to Priya's message in workspace T01WORKSPACE confirming the CUDA memory limit as the root cause of the pod OOM incident, and report which channels that person belongs to.",
+      "obligations": [1]
+    }
+  ],
+  "scope_exception": null,
+  "access_plan": "Use conversations.history on C_INFRA (workspace T01WORKSPACE) to locate Priya's message confirming the CUDA memory-limit root cause; call reactions.get on that message's channel/timestamp to check for a thumbsup reactor. If a reactor were found, use conversations.members or users.conversations for that user to list their channel memberships. Since the anchor message carries no reactions, this discovery path yields no qualifying user and therefore no membership rows."
+}
+```

@@ -1,0 +1,127 @@
+{
+  "prompt": "Before we finalize the contractor invite for the ClientOps workspace, can you tell me who currently holds the owner role there so I can loop them in for sign-off?",
+  "binding_note": "The workspace is anchored not by a name lookup (unsupported) but by the #clientops-main channel, whose stored team_id ties it to the target workspace; the single workspace-membership record whose team_id matches that channel's workspace and whose stored role is 'owner' is the target, discovered by listing that channel's members and checking each member's single workspace-membership role.",
+  "roles": [
+    {
+      "role": "clientops_team",
+      "entity": "teams",
+      "facts": "A workspace named 'ClientOps Workspace' (team_id T02CLIENTOPS) used for a client-facing support engagement, distinct from the original Test Workspace.",
+      "selection": "support",
+      "reason": "Supplies the workspace that the membership route is conditioned on; not itself the target table."
+    },
+    {
+      "role": "dataops_team",
+      "entity": "teams",
+      "facts": "A separate workspace named 'DataOps Guild' (team_id T03OPS) with its own membership roster, unrelated to ClientOps.",
+      "selection": "support",
+      "reason": "Provides a second workspace so an 'owner' role value elsewhere does not collide with the ClientOps owner, forcing the workspace-specific binding to do real work."
+    },
+    {
+      "role": "clientops_anchor_channel",
+      "entity": "channels",
+      "facts": "Channel #clientops-main (channel_id C_CLIENTOPS_MAIN) belongs to team_id T02CLIENTOPS and includes the acting bot as a member, giving a documented ID-based path from a known conversation to the ClientOps workspace's team_id.",
+      "selection": "support",
+      "reason": "Serves as the discoverable anchor that lets the actor resolve the workspace's team_id via conversations.info/conversations.members, since no team-name lookup API exists."
+    },
+    {
+      "role": "dataops_anchor_channel",
+      "entity": "channels",
+      "facts": "Channel #dataops-main (channel_id C_DATAOPS_MAIN) belongs to team_id T03OPS and includes the acting bot as a member.",
+      "selection": "support",
+      "reason": "Gives an equivalent documented anchor into the DataOps Guild workspace, supporting the negative owner-elsewhere record."
+    },
+    {
+      "role": "owner_membership",
+      "entity": "user_teams",
+      "facts": "Nora Kessler (U_NORA) holds role 'owner' in ClientOps Workspace (team_id T02CLIENTOPS) and has no other workspace membership, so her users.info profile deterministically reflects this role.",
+      "selection": "match",
+      "reason": "The unique membership record satisfying both the workspace binding (via the clientops-main channel's team_id) and the role='owner' condition."
+    },
+    {
+      "role": "admin_membership_clientops",
+      "entity": "user_teams",
+      "facts": "Diego Alvarez (U_DIEGO) holds role 'admin' in ClientOps Workspace, with no other workspace membership.",
+      "selection": "negative",
+      "reason": "Correct workspace but wrong role value; excluded because the request specifically asks for the owner role."
+    },
+    {
+      "role": "member_membership_clientops",
+      "entity": "user_teams",
+      "facts": "Felix Turner (U_FELIX) holds role 'member' in ClientOps Workspace, with no other workspace membership.",
+      "selection": "negative",
+      "reason": "Correct workspace but wrong role value."
+    },
+    {
+      "role": "owner_membership_dataops",
+      "entity": "user_teams",
+      "facts": "Zara Ahmed (U_ZARA) holds role 'owner' in DataOps Guild (team_id T03OPS), with no other workspace membership.",
+      "selection": "negative",
+      "reason": "Same role value ('owner') but the workspace binding fails, showing the route must match the role together with the specific workspace, not either condition alone."
+    },
+    {
+      "role": "member_membership_dataops_1",
+      "entity": "user_teams",
+      "facts": "Ivy Chen (U_IVY) holds role 'member' in DataOps Guild.",
+      "selection": "negative",
+      "reason": "Wrong workspace and wrong role; unrelated distractor membership."
+    },
+    {
+      "role": "member_membership_dataops_2",
+      "entity": "user_teams",
+      "facts": "Tom Becker (U_TOM) holds role 'member' in DataOps Guild.",
+      "selection": "negative",
+      "reason": "Wrong workspace and wrong role; unrelated distractor membership."
+    },
+    {
+      "role": "actor_access_clientops",
+      "entity": "user_teams",
+      "facts": "The acting bot agent1 also holds membership in ClientOps Workspace and is a member of #clientops-main, granting visibility into that workspace's roster.",
+      "selection": "support",
+      "reason": "Grounds the actor's ability to discover the ClientOps roster through documented conversations.members/users.info calls."
+    },
+    {
+      "role": "actor_access_dataops",
+      "entity": "user_teams",
+      "facts": "The acting bot agent1 also holds membership in DataOps Guild and is a member of #dataops-main, granting visibility into that workspace's roster.",
+      "selection": "support",
+      "reason": "Grounds the actor's ability to discover the DataOps Guild roster, which supplies the negative owner-elsewhere record for contrast."
+    }
+  ],
+  "obligations": [
+    {
+      "name": "clientops_owner_membership",
+      "description": "Select the single workspace-membership record whose workspace is the one containing the #clientops-main channel (team_id T02CLIENTOPS) and whose stored role is 'owner', to report who holds that role for sign-off purposes.",
+      "table": "user_teams",
+      "mode": "single",
+      "task_type": "read-only",
+      "scope": "membership roles within the ClientOps Workspace only",
+      "target_roles": [
+        "owner_membership"
+      ],
+      "candidate_role_sets": null,
+      "selection": "one",
+      "answer_attributes": [
+        [
+          "user_teams.user_id"
+        ],
+        [
+          "user_teams.role"
+        ],
+        [
+          "user_teams.team_id"
+        ]
+      ]
+    }
+  ],
+  "task_spec": [
+    {
+      "line": 1,
+      "text": "Identify who holds the owner role in the ClientOps Workspace and report that person before the contractor invite proceeds.",
+      "obligations": [
+        1
+      ]
+    }
+  ],
+  "scope_exception": null,
+  "access_plan": "No team-name lookup exists, so resolve the workspace via a known ID-based anchor: the actor calls conversations.info/conversations.members on the #clientops-main channel (which the actor already belongs to) to obtain that channel's team_id and its member user_ids (Nora, Diego, Felix). Because each of these users has exactly one workspace membership, calling users.info on each returns a role/owner-admin flag that deterministically reflects their ClientOps Workspace role; the single user whose profile indicates the owner role is the target. The same pattern applied to #dataops-main (team_id T03OPS) surfaces Zara as owner of a different workspace, confirming the role-plus-workspace binding rather than role alone."
+}

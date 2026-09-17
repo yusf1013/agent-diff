@@ -1,0 +1,58 @@
+```json
+{
+  "seed_edits": [],
+  "bindings": {
+    "target_workspace": ["T01WORKSPACE"],
+    "source_channel": ["C03IJKL9012"],
+    "oom_message": ["1706110000.000100"],
+    "author_lukas": ["U_LUKAS"],
+    "lukas_modelresearch_membership": [{"channel_id": "C_MODEL", "user_id": "U_LUKAS"}],
+    "reply_robert_chen": ["1706110000.000200"],
+    "reply_kenji_jax": ["1706110000.000300"],
+    "unrelated_supercompute_msg": ["1706112500.000001"],
+    "dm_progress_msg": ["1706100000.000001"],
+    "john_doe_membership_check": []
+  },
+  "selectors": [
+    {
+      "root_table": "teams",
+      "scope": [],
+      "focal": {
+        "path": ["teams", "channels", "messages", "users", "channel_members"],
+        "joins": [
+          "channels.team_id",
+          "messages.channel_id",
+          "messages.user_id",
+          "channel_members.user_id"
+        ],
+        "filters": [
+          {"node": 2, "field": "message_text", "op": "contains_ci", "value": "circuit-tracer"},
+          {"node": 2, "field": "message_text", "op": "contains_ci", "value": "OOM errors"},
+          {"node": 4, "field": "channel_id", "op": "eq", "value": "C_MODEL"}
+        ]
+      },
+      "auxiliary": []
+    },
+    {
+      "root_table": "teams",
+      "scope": [],
+      "focal": {
+        "path": ["teams", "channels", "messages", "users", "channel_members"],
+        "joins": [
+          "channels.team_id",
+          "messages.channel_id",
+          "messages.user_id",
+          "channel_members.user_id"
+        ],
+        "filters": [
+          {"node": 2, "field": "message_id", "op": "eq", "value": "1706112500.000001"},
+          {"node": 4, "field": "channel_id", "op": "eq", "value": "C_MODEL"}
+        ]
+      },
+      "auxiliary": []
+    }
+  ],
+  "negative_referents": [],
+  "notes": "Fix 1: the main selector's focal path is now trimmed to exactly the five assigned route node types (teams->channels->messages->users->channel_members), dropping the extra trailing 'channels' node that previously re-entered CONVERSATION. Because the route terminates at CONVERSATION_MEMBERSHIP, the #model-research channel cannot be re-identified by name via a further join within the same path; the design's own facts explicitly identify C_MODEL as the #model-research channel_id, so filtering channel_members.channel_id eq 'C_MODEL' is a legitimate foreign-key-literal use (not a hidden construction artifact) rather than an invented name predicate. The two content filters were also tightened to the exact phrase 'OOM errors' rather than the bare token 'OOM', since the pre-existing base-seed DM message 1706100000.000001 ('...without OOM issues...') otherwise mechanically satisfies separate 'circuit-tracer' and 'OOM' substrings despite being a progress report, not an OOM-failure report; 'OOM errors' correctly discriminates the true oom_message from that negative without touching seed content.\n\nFix 2: added a second, explicitly recomputed focal-negative selector following the identical assigned route, scoped to unrelated_supercompute_msg (1706112500.000001, authored by U02JOHNDOE1) and requiring a channel_members row for C_MODEL. Because no such channel_members row exists for U02JOHNDOE1, this selector yields zero matching tuples, giving an explicit, route-faithful demonstration that this negative case is correctly excluded from the workspace answer.\n\nnegative_referents remains empty: the seed's candidate population contains exactly one workspace (T01WORKSPACE per computed_matches/candidate_population), so there is no distinct alternate workspace row that a faithful selector could wrongly select as a false positive — every negative role's underlying message/membership, even if mismatched, still resolves only to the single correct workspace rather than to a spurious second one. The negative discrimination is therefore demonstrated at the message/membership level via the added focal-negative selector rather than via a distinct excluded workspace handle."
+}
+```

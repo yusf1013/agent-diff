@@ -1,0 +1,30 @@
+I'm mapping out how to find the "on-call" channel per workspace, pull its members, and cross-check whether any of them holds admin rights there—though I need to account for users.info only returning a single workspace association per lookup, which complicates checking role in the right context.
+
+For the negative case, Priyanka Rao is only an admin in Northstar (T02) while being a plain member of Summit's on-call channel, which is exactly the trap the test wants—her admin status shouldn't count for Summit. But since each user can only have one workspace-membership record per the runtime constraint, I need to figure out which workspace her single record should reflect to keep this consistent.
+
+So the on-call channel has two members: Priyanka, who looks like an admin but only holds that admin role in Northstar, and Farah, a plain member local to Summit. Priyanka's only documented workspace-membership is in T02NORTHSTAR, with no mention of a workspace-membership record for T03SUMMIT, so for the route to work she can't have admin status there—her conversation membership in Summit's channel doesn't carry over any admin role from a different workspace.
+
+This is a well-built distractor testing whether the model incorrectly treats her admin-looking profile as valid for the wrong workspace. Since users.info only exposes one selected workspace association per user for reproducibility, and she's tied to Northstar, Summit correctly has no record of her being admin there, so the absence should be read as "not admin" for that workspace.
+
+Wait, this actually reveals a critical flaw: users.info likely returns the user's single global workspace association regardless of which team context I'm checking against. So if Priyanka's actual membership is in T02NORTHSTAR as admin, calling users.info while operating in T03SUMMIT would still return that same association, not something scoped to T03SUMMIT at all.
+
+Summit would get the identical response as Northstar would - role=admin - unless the API actually includes a team_id field alongside role, which would let the solver verify the mismatch and correctly exclude Priyanka. I need to check whether users.info's response schema actually specifies that team association field.
+
+If the API response includes the team_id alongside the role, the solver can correctly attribute it to T02 and conclude there's no admin role for T03. This aligns with the domain constraint of giving each queried person a single workspace membership, which keeps results unambiguous since testers avoid needing a team parameter in the query.
+
+So really the concern is whether users.info's response ties the role to a specific team_id at all, since the endpoint doesn't take a team_id parameter. If it just returns a global role without team scoping, there's no reliable way to confirm the queried user's admin status applies to the specific workspace being tested, which undermines the whole verification approach.
+
+The plural "workspaces" matches the multiple resolution mode correctly. The route WORKSPACE -> CONVERSATION -> CONVERSATION_MEMBERSHIP -> USER -> WORKSPACE_MEMBERSHIP lines up with the binding note about on-call conversations naming a user whose workspace membership confirms admin status. For negatives, T04 covers a workspace with no admin at all, while T01 covers a split-record case where admins exist but aren't in the on-call channel, using existing base seed admins like Robert Walsh and Morgan Freeman.
+
+I'm also adding a new on-call channel with only Nick Fury as a plain member, which is consistent with the base seed since he's not yet in that channel's membership table. The distractor "incident-response" channel has an admin member but the wrong channel name, which tests exact-name matching as a good negative. Checking the identifying path again, the referent entity is workspace and the route correctly translates the prompt's relation about a channel including a workspace admin among its members.
+
+Now I'm verifying access mechanics: conversations.list doesn't support server-side name filtering, so filtering would happen client-side, which is fine, and the per-member role check via users.info needs a scoping mechanism that the qualification document already addresses by having each queried person hold one workspace membership, so I'll treat this as satisfied rather than a defect. The negative admin roles on other base members are just supporting the split-record negative narrative and aren't required for the core obligation, so those look fine too.
+
+Checking each on-call channel's membership composition against expectations — Summit, Vertex, Lumen, and Northstar all match the intended admin/non-admin patterns correctly, and the design otherwise looks consistent and well-built, with workspace_neg_base properly excluded from the target roles.
+
+Confirming the task spec matches the prompt about identifying workspaces with an on-call channel containing an admin member, this design holds up well with strong distractors testing exact naming, cross-workspace admin splits, missing admins, and non-overlapping membership. The quality feels solid since these negatives test subtle semantic distinctions rather than just surface keyword absence.
+
+Checking mechanical details: no writes needed since this is a read-only multi-workspace listing task, and the answer_attributes correctly map to the teams table per normalization rules. The users.info team-scoping ambiguity is worth flagging as a minor issue since the runtime qualification addresses it, but it shouldn't sink the case's validity overall.
+
+I'll settle on validity pass, quality strong, with one minor caveat about relying on undocumented team-scoping behavior in users.info.
+

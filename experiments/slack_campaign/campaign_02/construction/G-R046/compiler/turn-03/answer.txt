@@ -1,0 +1,116 @@
+```json
+{
+  "seed_edits": [
+    {
+      "table": "users",
+      "op": "insert",
+      "values": {
+        "user_id": "U_ROBERTK",
+        "username": "robert.kim",
+        "email": "robertk@neuroflow.ai",
+        "real_name": "Robert Kim",
+        "display_name": "Robert",
+        "timezone": "America/Chicago",
+        "is_bot": false,
+        "created_at": "2023-11-01T09:00:00"
+      },
+      "reason": "Design requires a second admin-role user named Robert (Robert Kim) to realize genuine ambiguity between two workspace admins sharing the first name 'Robert', with a disjoint channel-membership set from Robert Walsh."
+    },
+    {
+      "table": "user_teams",
+      "op": "insert",
+      "key": {"user_id": "U_ROBERTK", "team_id": "T01WORKSPACE"},
+      "values": {"user_id": "U_ROBERTK", "team_id": "T01WORKSPACE", "role": "admin"},
+      "reason": "Robert Kim's workspace-membership role must be admin so he qualifies alongside Robert Walsh under the admin-role filter, producing the intended two-candidate ambiguity (a third admin, Morgan Freeman, already exists and fails the name condition)."
+    },
+    {
+      "table": "channel_members",
+      "op": "insert",
+      "key": {"channel_id": "C_GROWTH", "user_id": "U_ROBERTK"},
+      "values": {"channel_id": "C_GROWTH", "user_id": "U_ROBERTK", "joined_at": "2023-11-05T10:00:00"},
+      "reason": "Robert Kim's candidate conversation-membership set (product-growth), disjoint from Robert Walsh's general/random/engineering set, as required by the design."
+    },
+    {
+      "table": "channel_members",
+      "op": "insert",
+      "key": {"channel_id": "C_FRONTEND", "user_id": "U_ROBERTK"},
+      "values": {"channel_id": "C_FRONTEND", "user_id": "U_ROBERTK", "joined_at": "2023-11-05T10:05:00"},
+      "reason": "Robert Kim's candidate conversation-membership set (frontend), disjoint from Robert Walsh's general/random/engineering set, as required by the design."
+    }
+  ],
+  "bindings": {
+    "robert_walsh_user": ["U03ROBERT23"],
+    "robert_kim_user": ["U_ROBERTK"],
+    "robert_walsh_workspace_membership": [
+      {"user_id": "U03ROBERT23", "team_id": "T01WORKSPACE"}
+    ],
+    "robert_kim_workspace_membership": [
+      {"user_id": "U_ROBERTK", "team_id": "T01WORKSPACE"}
+    ],
+    "robert_walsh_memberships": [
+      {"channel_id": "C01ABCD1234", "user_id": "U03ROBERT23"},
+      {"channel_id": "C02EFGH5678", "user_id": "U03ROBERT23"},
+      {"channel_id": "C03IJKL9012", "user_id": "U03ROBERT23"}
+    ],
+    "robert_kim_memberships": [
+      {"channel_id": "C_GROWTH", "user_id": "U_ROBERTK"},
+      {"channel_id": "C_FRONTEND", "user_id": "U_ROBERTK"}
+    ],
+    "morgan_freeman_admin_workspace_membership": [
+      {"user_id": "U07MORGANFREE", "team_id": "T01WORKSPACE"}
+    ],
+    "robert_chen_member_workspace_membership": [
+      {"user_id": "U_ROBERT", "team_id": "T01WORKSPACE"}
+    ],
+    "hubert_member_workspace_membership": [
+      {"user_id": "U06HUBERT23", "team_id": "T01WORKSPACE"}
+    ],
+    "robert_chen_memberships": [
+      {"channel_id": "C06ALPHADEV", "user_id": "U_ROBERT"},
+      {"channel_id": "C_INFRA", "user_id": "U_ROBERT"},
+      {"channel_id": "C_MODEL", "user_id": "U_ROBERT"},
+      {"channel_id": "C_GROWTH", "user_id": "U_ROBERT"},
+      {"channel_id": "C_FRONTEND", "user_id": "U_ROBERT"}
+    ]
+  },
+  "selectors": [
+    {
+      "root_table": "channel_members",
+      "scope": [],
+      "focal": {
+        "path": ["channel_members", "users", "user_teams"],
+        "joins": ["channel_members.user_id", "user_teams.user_id"],
+        "filters": [
+          {"node": 1, "field": "real_name", "op": "contains_ci", "value": "Robert"},
+          {"node": 2, "field": "role", "op": "eq", "value": "admin"}
+        ]
+      },
+      "auxiliary": []
+    },
+    {
+      "root_table": "user_teams",
+      "scope": [],
+      "focal": {
+        "path": ["user_teams", "users"],
+        "joins": ["user_teams.user_id"],
+        "filters": [
+          {"node": 0, "field": "role", "op": "eq", "value": "admin"},
+          {"node": 1, "field": "real_name", "op": "contains_ci", "value": "Robert"}
+        ]
+      },
+      "auxiliary": []
+    }
+  ],
+  "negative_referents": [
+    {"channel_id": "C06ALPHADEV", "user_id": "U_ROBERT"},
+    {"channel_id": "C_INFRA", "user_id": "U_ROBERT"},
+    {"channel_id": "C_MODEL", "user_id": "U_ROBERT"},
+    {"channel_id": "C_GROWTH", "user_id": "U_ROBERT"},
+    {"channel_id": "C_FRONTEND", "user_id": "U_ROBERT"},
+    {"channel_id": "C02EFGH5678", "user_id": "U06HUBERT23"},
+    {"channel_id": "C03IJKL9012", "user_id": "U06HUBERT23"},
+    {"channel_id": "C04MNOP3456", "user_id": "U06HUBERT23"}
+  ],
+  "notes": "Added Robert Kim as a new user with an admin user_teams row and two channel_members rows (product-growth, frontend) so the admin-role pool contains exactly three people (Robert Walsh, Morgan Freeman, Robert Kim) and the name filter 'Robert' leaves exactly two genuinely ambiguous admin candidates with disjoint channel sets, matching the binding_note precisely. Both selectors traverse the assigned route (CONVERSATION_MEMBERSHIP-USER-WORKSPACE_MEMBERSHIP): obligation 1's focal query joins channel_members->users->user_teams in one query so the real_name-contains-'Robert' and role='admin' conditions co-occur on the same joined tuple, correctly excluding Robert Chen (name match, wrong role) and Morgan Freeman (role match, wrong name) while returning the union of Robert Walsh's and Robert Kim's channel_members rows per the underspecified resolution rule. Obligation 2's selector (user_teams->users) applies the same two conditions to return the displayed admin membership pair for both candidates. Negative referents are restricted to channel_members rows (the CONVERSATION_MEMBERSHIP root entity): Robert Chen's five memberships (fails the admin-role condition despite matching the name) and Hubert Marek's three memberships (fails both conditions) are the plausible roots a careless name-only or role-only match could wrongly include; Morgan Freeman has no channel_members row and so is not a root-entity negative, though his admin/wrong-name user_teams row remains the documented negative supporting record for the role-side discrimination. The acting agent bot is already a member of all channels needed to enumerate both candidates' memberships via users.conversations/conversations.members, and users.list exposes real_name and workspace role without requiring any hidden or cross-workspace access, since every channel involved is public."
+}
+```

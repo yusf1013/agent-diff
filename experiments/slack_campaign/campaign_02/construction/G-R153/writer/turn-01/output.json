@@ -1,0 +1,109 @@
+{
+  "prompt": "Find the workspace where a member named Robert also belongs to the on-call/incident-response channel there, and tell me that workspace's name and ID.",
+  "binding_note": "The workspace is identified via WORKSPACE→WORKSPACE_MEMBERSHIP→USER→CONVERSATION_MEMBERSHIP: the same person must hold both the workspace membership (matched by first name 'Robert') and the conversation membership in a channel whose topic/purpose concerns on-call/incident response. Two separate workspaces each contain a distinct 'Robert' satisfying this chain, so the referent workspace is left unresolved by the request as worded.",
+  "roles": [
+    {
+      "role": "target_workspace_test",
+      "entity": "teams",
+      "facts": "T01WORKSPACE ('Test Workspace') has workspace members Robert Walsh (U03ROBERT23) and Robert Chen (U_ROBERT), both also conversation members of channel C_INFRA ('core-infra'), whose topic is 'Infrastructure, K8s, AWS, on-call, incidents'.",
+      "selection": "alternative",
+      "reason": "Satisfies the full route: a workspace member named Robert who is also a conversation member of an on-call/incident channel in that same workspace."
+    },
+    {
+      "role": "target_workspace_velocity",
+      "entity": "teams",
+      "facts": "New team T02VELOCITY ('Velocity Labs') has workspace member Robert Kim (U_ROBK, real_name 'Robert Kim'), who is also a conversation member of new channel C_ONCALL ('ops-oncall'), topic 'On-call rotation and incident triage', purpose 'Coordinate on-call schedules and incident response.'",
+      "selection": "alternative",
+      "reason": "A second, independent workspace that also fully satisfies the identifying route, creating genuine referent ambiguity for 'the workspace'."
+    },
+    {
+      "role": "user_robert_walsh",
+      "entity": "users",
+      "facts": "Robert Walsh, real_name 'Robert Walsh', workspace member of T01WORKSPACE (role admin) and conversation member of C_INFRA.",
+      "selection": "support",
+      "reason": "Supplies the USER hop binding workspace membership to conversation membership for target_workspace_test."
+    },
+    {
+      "role": "user_robert_chen",
+      "entity": "users",
+      "facts": "Robert Chen (U_ROBERT), workspace member of T01WORKSPACE and conversation member of C_INFRA among other channels.",
+      "selection": "support",
+      "reason": "A second qualifying user within the same workspace, reinforcing target_workspace_test without altering the referent set."
+    },
+    {
+      "role": "user_robert_kim",
+      "entity": "users",
+      "facts": "Robert Kim (U_ROBK), workspace member of T02VELOCITY and conversation member of C_ONCALL.",
+      "selection": "support",
+      "reason": "Supplies the USER hop for target_workspace_velocity."
+    },
+    {
+      "role": "membership_walsh_infra",
+      "entity": "channel_members",
+      "facts": "Row (C_INFRA, U03ROBERT23) recording Robert Walsh's conversation membership in the on-call channel.",
+      "selection": "support",
+      "reason": "Concrete CONVERSATION_MEMBERSHIP record completing the route for target_workspace_test."
+    },
+    {
+      "role": "negative_workspace_gamma",
+      "entity": "teams",
+      "facts": "New team T03GAMMA ('Gamma Corp') has workspace member Robert Diaz (U_ROBG), who is a conversation member only of channel C_GAMMA_SOCIAL ('team-social'), a plain watercooler-chat channel unrelated to on-call or incidents.",
+      "selection": "negative",
+      "reason": "Contains a 'Robert' workspace member, but that Robert's conversation membership is in a non-incident channel, so the workspace is excluded by the channel-topic condition on the route."
+    },
+    {
+      "role": "negative_user_roberta",
+      "entity": "users",
+      "facts": "In new team T04DELTA ('Delta Systems'), user Roberta Nguyen is a workspace member and conversation member of channel C_DELTA_INCIDENT ('incident-response'), topic '24/7 incident and on-call ops'.",
+      "selection": "negative",
+      "reason": "Matches the incident-channel condition but the first name 'Roberta' does not match 'Robert', excluding this workspace via the identifying name condition."
+    },
+    {
+      "role": "negative_user_robert_fields",
+      "entity": "users",
+      "facts": "Robert Fields, workspace member of T01WORKSPACE, authored a message in C_INFRA but has no channel_members row for C_INFRA (or any channel).",
+      "selection": "negative",
+      "reason": "Tests that message authorship in the incident channel does not substitute for the required CONVERSATION_MEMBERSHIP relation; his workspace membership alone should not independently qualify T01WORKSPACE beyond the already-valid Walsh/Chen memberships."
+    }
+  ],
+  "obligations": [
+    {
+      "name": "identify_target_workspace",
+      "description": "Select the workspace(s) whose member named Robert also holds conversation membership in a channel focused on on-call/incident response; report the workspace's name and ID. Two independent workspaces satisfy the chain, so the correct handling reports or asks about both candidates rather than silently picking one.",
+      "table": "teams",
+      "mode": "underspecified",
+      "task_type": "read-only",
+      "scope": "ordinary requested scope",
+      "target_roles": [
+        "target_workspace_test",
+        "target_workspace_velocity"
+      ],
+      "candidate_role_sets": [
+        [
+          "target_workspace_test"
+        ],
+        [
+          "target_workspace_velocity"
+        ]
+      ],
+      "selection": "one",
+      "answer_attributes": [
+        [
+          "teams.team_name",
+          "teams.team_id"
+        ]
+      ]
+    }
+  ],
+  "task_spec": [
+    {
+      "line": 1,
+      "text": "Find the workspace where a member named Robert also belongs to the on-call/incident-response channel there, and report its name and ID.",
+      "obligations": [
+        1
+      ]
+    }
+  ],
+  "scope_exception": null,
+  "access_plan": "Discover candidate users named 'Robert' via users.list within each workspace the actor can access, then use users.conversations or conversations.members for each such user to find channels they belong to, and conversations.info to inspect each channel's topic/purpose text for on-call/incident relevance. Confirm the same user holds both the workspace membership (user_teams) and the conversation membership (channel_members) before attributing a match to that workspace; T01WORKSPACE and T02VELOCITY both surface as full matches, while T03GAMMA and T04DELTA fail on channel-topic or name-match conditions respectively."
+}

@@ -1,0 +1,22 @@
+I'm working out the seed edits: adding a reaction row for Aisha's thumbsup on the OOM message, one for Mateo's eyes reaction on Kenji's vending machine message, and another for U09Gabriel's eyes reaction on the OOM message as a non-member reactor case.
+
+I also need to verify the actor's channel memberships since it needs access to all five channels to read histories and members - checking whether U01AGENBOT9 is in C_GROWTH (product-growth), since it's already confirmed in engineering, core-infra, and model-research but seems to be missing from growth, which would require adding that membership.
+
+Actually, the existing base seed already has a qualifying match - U01AGENBOT9's eyes reaction on the target message in engineering channel, which it's already a member of. This means the answer set is simply {T01WORKSPACE} since there's only one workspace in this replica, so I don't need to add anything to establish the positive match.
+
+Now I'm thinking through what additional inserts are needed for the negative cases.
+
+For the negatives, I need message_reactions rows referencing existing messages by their message_id (since reactions use a composite key of message_id, user_id, reaction_type, and don't need new message rows): one for a wrong-emoji reactor using thumbsup instead of eyes, one for the right emoji but wrong message, and one for a non-member user reacting to the target message with eyes. I also need to add a channel_members row for the actor into the product-growth channel so it can discover that channel's membership during its search.
+
+Checking membership requirements: U_MATEO is already listed as a member of product-growth, satisfying the bounded-scope condition for the wrong-message reactor. U_AISHA is already a member of frontend. U09GABRIEL is only in the growth channel outside the bounded scope, which matches the intended description without needing edits.
+
+Now I'm working out the query path for the qualifying workspaces obligation, tracing teams through channels, channel members, users, reactions, and messages, filtering to the five named channels, an eyes reaction, and message text that references the circuit-tracer OOM issue.
+
+I see the pattern now: joins use the child table's foreign key field name regardless of direction. So the five joins are channels.team_id, channel_members.channel_id, channel_members.user_id, message_reactions.user_id, and message_reactions.message_id, connecting teams through channels, channel_members, users, message_reactions, to messages.
+
+I'm also filtering channels by team names (engineering, core-infra, model-research, product-growth, frontend), filtering reactions to type "eyes", and filtering messages for text containing both "circuit-tracer" and "OOM". Now I'm tracing through the actual data to bind concrete values: workspace T01WORKSPACE, the qualifying channel C03IJKL9012, its membership record for user U01AGENBOT9, the reaction on message 1706110000.000100 with type "eyes", and checking a mismatched reactor case for a different user.
+
+I've identified several negative counterexamples that shouldn't qualify -- a reaction with the wrong emoji, a reaction on the wrong message, a non-member reacting, and an author who never reacted. Since there's only one workspace in this replica, I'm reasoning that no negative referents apply at the root level. Now I'm assembling the seed edits: three inserts into message_reactions plus one insert into channel_members, and double-checking the primary key structure for message_reactions before finalizing.
+
+I've confirmed the message referenced by the wrong-message reactor actually exists, and that there's exactly one selector needed since there's only one obligation to satisfy. Everything checks out, so I'm ready to produce the final JSON.
+

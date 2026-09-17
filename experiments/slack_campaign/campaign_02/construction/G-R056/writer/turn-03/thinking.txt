@@ -1,0 +1,24 @@
+Since join time isn't exposed, I need to adjust the deliverable. The identifying join route only covers channel_members, users, and message_reactions, so I can't use message or channel conditions as identifying criteria—that would exceed the assigned route.
+
+The valid conditions along this route are on reaction_type, user attributes, and channel_members fields like channel_id. So I'll identify a user by their reaction emoji type generally (not tied to a specific message, since messages aren't in route), then pin down their membership row via a specific channel_id. Since joined_at isn't available, I need a different answer_attribute—likely just confirming membership existence in that channel.
+
+I could go with a state-changing task instead: since the user is identified by reacting with "fire," and channel_members is the referent table, I could design an invite action (conversations.invite) that inserts a new channel_members row for that user into a target channel, rather than reading joined_at.
+
+I'll pick #project-alpha, currently only containing the agent bot, as the target channel since inviting the reactor there produces a genuinely new membership row consistent with a mutation. I need to seed data so someone plausibly reacts with "fire" — Olena reacting on some message would let me uniquely identify her via message_reactions without depending on message content.
+
+Since reaction_type is just a string field for reading, I can use any values, but I'll stick with supported ones like "fire", "thumbsup", "eyes" for cleanliness. For negatives, I'm thinking of using a different reaction type by a different user (Mateo reacting with 'thumbsup') as a wrong-value distractor, plus noting the target user's existing memberships elsewhere as supporting context rather than a required negative.
+
+Another negative could be a similarly-spelled but distinct reaction like "fireworks" from Kenji, which differs from the target value. I also want to confirm only the bot is currently a member of C05ALPHA, so any other real user would need a fresh membership row to serve as the correct match.
+
+Sophie fits well since she reacted with fire uniquely and isn't already a member of project-alpha, making her invitation a clean new row. So the prompt becomes: invite whoever reacted with a fire emoji to #project-alpha, which is a natural operation that only requires matching user and reaction, no message lookup needed.
+
+I need negative examples too: Mateo's thumbsup and Kenji's differently-valued reaction don't qualify as the fire reactor; Sophie's existing membership in core-infra is a decoy showing she's active elsewhere but not yet in the target channel; and the bot's membership in the target channel is a decoy for wrong-user matching. Since this is a mutation task, I should describe the existing positive/negative signals and let the actual patch create the new membership row.
+
+For the assignment itself: mode is single since there's exactly one user to add, task_type is state-changing, and written_attributes should be channel_members.channel_id and channel_members.user_id as the target fields without values. For change_attributes I'll use null since this is a creation rather than a computed value scenario.
+
+Target_roles should stay limited to membership_target for the channel_members table, with candidate_role_sets null since it's not underspecified. The decoy roles (decoy_bot_membership, decoy_existing_membership) belong here too since they're negatives on the same entity.
+
+For the access plan, I'm mapping out using reactions.get or conversations.history plus reactions.get to find who reacted with fire, confirming identity via users.info, then using conversations.invite to add them to project-alpha.
+
+Since there's no direct API for reactions across the workspace, discovery has to go through enumerating channels with conversations.list, then pulling history and reactions per channel -- that's the supported discovery path. Now I'll write the final JSON.
+

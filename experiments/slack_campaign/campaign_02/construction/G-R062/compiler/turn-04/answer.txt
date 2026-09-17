@@ -1,0 +1,129 @@
+```json
+{
+  "seed_edits": [
+    {
+      "table": "teams",
+      "op": "insert",
+      "values": {"team_id": "T09REMOTE", "team_name": "Remote Collective"},
+      "reason": "Design requires a second, unrelated workspace (support_workspace_alt) so the team_id join on the MESSAGE\u2192CONVERSATION\u2192WORKSPACE route does real identifying work, not just contextual filtering."
+    },
+    {
+      "table": "channels",
+      "op": "insert",
+      "values": {
+        "channel_id": "C_INFRA_ALT",
+        "channel_name": "core-infra",
+        "team_id": "T09REMOTE",
+        "topic_text": "Infra chatter for the Remote Collective workspace",
+        "purpose_text": "Channel for core-infra discussions in a different organization.",
+        "is_private": false,
+        "is_dm": false,
+        "is_gc": false,
+        "is_archived": false
+      },
+      "reason": "Design requires support_channel_alt: a same-named 'core-infra' channel under the unrelated T09REMOTE workspace, so a textually matching confirmation message located there must be excluded by the workspace hop."
+    },
+    {
+      "table": "users",
+      "op": "insert",
+      "values": {
+        "user_id": "U_DEREK",
+        "username": "derek.holt",
+        "email": "derek@remotecollective.io",
+        "real_name": "Derek Holt",
+        "display_name": "Derek",
+        "timezone": "America/Chicago",
+        "is_bot": false
+      },
+      "reason": "A distinct author is needed for the wrong-workspace decoy message; reusing a T01WORKSPACE user could blur the intended cross-workspace separation."
+    },
+    {
+      "table": "user_teams",
+      "op": "insert",
+      "values": {"user_id": "U_DEREK", "team_id": "T09REMOTE", "role": "member"},
+      "reason": "Derek must belong to the T09REMOTE workspace he posts in, consistent with the domain's workspace-membership relationship."
+    },
+    {
+      "table": "channel_members",
+      "op": "insert",
+      "values": {"channel_id": "C_INFRA_ALT", "user_id": "U_DEREK"},
+      "reason": "Ordinary conversation-membership coherence for the author of the decoy message in C_INFRA_ALT."
+    },
+    {
+      "table": "messages",
+      "op": "insert",
+      "values": {
+        "message_id": "1706003000.000000",
+        "channel_id": "C_INFRA_ALT",
+        "user_id": "U_DEREK",
+        "message_text": "Confirmed: we hit a hard GPU memory limit from the batch size increase; reverting now.",
+        "type": "message",
+        "ts": "1706003000.000000",
+        "created_at": "2024-01-23T09:36:40"
+      },
+      "reason": "Instantiates negative_wrong_workspace_same_name: a textually confirmed-cause statement that would satisfy the semantic criterion but sits under the wrong team_id/workspace, making the WORKSPACE hop in the route load-bearing rather than incidental."
+    },
+    {
+      "table": "messages",
+      "op": "update",
+      "key": {"message_id": "1706001931.000000"},
+      "values": {"created_at": "2024-01-23T09:25:31"},
+      "reason": "answer_attributes for the confirmed_root_cause_messages obligation include messages.created_at; supplying an explicit deterministic value avoids a nondeterministic insert-time default for this matched row (Priya's CUDA-limit confirmation)."
+    },
+    {
+      "table": "messages",
+      "op": "update",
+      "key": {"message_id": "1706002098.000000"},
+      "values": {"created_at": "2024-01-23T09:28:18"},
+      "reason": "Same determinism requirement for the second matched row (Lukas's capacity-closure confirmation)."
+    },
+    {
+      "table": "messages",
+      "op": "update",
+      "key": {"message_id": "1706002397.000000"},
+      "values": {"created_at": "2024-01-23T09:33:17"},
+      "reason": "This row is now target_role match_confirm_olena under the revised design (an independent confirming affirmation, not a mere reaction to exclude), so it also needs a deterministic created_at for the answer_attributes."
+    }
+  ],
+  "bindings": {
+    "support_workspace": ["T01WORKSPACE"],
+    "support_channel": ["C_INFRA"],
+    "support_workspace_alt": ["T09REMOTE"],
+    "support_channel_alt": ["C_INFRA_ALT"],
+    "match_confirm_priya": ["1706001931.000000"],
+    "match_confirm_lukas": ["1706002098.000000"],
+    "match_confirm_olena": ["1706002397.000000"],
+    "negative_speculation_early": ["1706000496.000000"],
+    "negative_speculation_lukas": ["1706001016.000000"],
+    "negative_partial_evidence": ["1706001628.000000"],
+    "negative_wrong_channel": ["1706076771.000000"],
+    "negative_wrong_topic_same_channel": ["1706067472.000000"],
+    "negative_wrong_workspace_same_name": ["1706003000.000000"]
+  },
+  "selectors": [
+    {
+      "root_table": "messages",
+      "scope": [],
+      "focal": {
+        "path": ["messages", "channels", "teams"],
+        "joins": ["messages.channel_id", "channels.team_id"],
+        "filters": [
+          {"node": 1, "field": "channel_name", "op": "eq", "value": "core-infra"},
+          {"node": 2, "field": "team_id", "op": "eq", "value": "T01WORKSPACE"},
+          {"node": 0, "field": "message_id", "op": "in", "value": ["1706001931.000000", "1706002098.000000", "1706002397.000000"]}
+        ]
+      },
+      "auxiliary": []
+    }
+  ],
+  "negative_referents": [
+    "1706000496.000000",
+    "1706001016.000000",
+    "1706001628.000000",
+    "1706076771.000000",
+    "1706067472.000000",
+    "1706003000.000000"
+  ],
+  "notes": "Revised design adds a second workspace (T09REMOTE) with a same-named 'core-infra' channel (C_INFRA_ALT) and a textually confirming but wrong-workspace decoy message, plus reclassifies Olena's ts-1706002397 message from a downstream-restatement negative into an independent confirming match (match_confirm_olena), replacing the old negative_reaction_restatement role. The main selector now traverses the full messages\u2192channels\u2192teams route with channel_name+team_id filters (making the workspace hop load-bearing against the same-named alt channel) plus a finite message_id enumeration of the three matches, since the confirmed-vs-speculative/correlational/off-topic/wrong-workspace distinction remains a semantic judgment not expressible via a shared substring across matches without also catching negatives. All three matched rows received explicit deterministic created_at values to satisfy the answer_attributes determinism requirement. Actor U01AGENBOT9 retains its existing membership in C_INFRA and T01WORKSPACE (sufficient for conversations.history discovery of the correct channel); it is not given access to C_INFRA_ALT/T09REMOTE, which is unnecessary because that channel is a structurally distinct conversation the actor need not join for the workspace-scoped route to correctly exclude it. No prompt text, route, or resolution mode was altered."
+}
+```

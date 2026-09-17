@@ -1,0 +1,70 @@
+I need to fix my identified path since it doesn't match the assigned route. My path went through channels twice (teams->channels->messages->users->channel_members->channels), but the correct route only has five nodes: WORKSPACE, CONVERSATION, MESSAGE, USER, CONVERSATION_MEMBERSHIP.
+
+So I need to drop that final channels join and instead filter directly on channel_members, but that raises a question about how to identify the 'model-research' channel without joining back to CONVERSATION for its name. I want to avoid hardcoding a hidden seed-ID constant, yet the route seems to end at CONVERSATION_MEMBERSHIP without allowing a second join to CONVERSATION.
+
+Maybe the resolution is to treat the channel-name check as a separate auxiliary query, since it's arguably independent of the main join path even though it references the same channel.
+
+Actually since auxiliary paths root at their own table (teams here), that won't tie back to the same channel_members row from focal. So it's simpler to just filter directly on channel_id within the focal path itself, since that's a legitimate selector field rather than a constructed test artifact.
+
+So filtering the focal membership on channel_id equal to the literal channel id value would precisely establish that identity, even though it's not a name-based predicate. Given the route can't extend further to reach the real channel name, and the binding note implies the membership record itself already identifies the channel, using the channel_id constant seems like the necessary compromise here.
+
+Actually rechecking: the route lists exactly five node types—WORKSPACE, CONVERSATION, MESSAGE, USER, CONVERSATION_MEMBERSHIP—but my path had six steps because it revisited CHANNELS at the end, which isn't part of the route sequence. That extra node is exactly what's causing the mismatch error.
+
+So I need to drop that final channels node, but then I lose a direct way to verify the "model-research" channel name since the route ends at CONVERSATION_MEMBERSHIP. I'm considering whether an auxiliary query filtering channels by name could work, but auxiliary and focal queries seem to be evaluated independently, so I can't simply feed the auxiliary's result into the focal filter as a parameter.
+
+Given that constraint, it seems reasonable to just use the known literal channel_id in the filter since it's a real foreign key referring to an actual existing channel that matches #model-research, not some artificial seed constant being substituted for a name-based predicate.
+
+But I need to check the routing itself: to actually verify the channel name "model-research", I'd need to traverse from CONVERSATION_MEMBERSHIP to a CONVERSATION node, and I'm checking whether the specified route (WORKSPACE, CONVERSATION, MESSAGE, USER, CONVERSATION_MEMBERSHIP) actually supports that path.
+
+I'm reconsidering the architecture: the root table should probably be teams, with the focal chain establishing workspace/channel/message/author/membership, then using an auxiliary query to resolve #model-research's real channel_id by name so the membership filter can match against that literal.
+
+The channel_members table itself lacks a channel_name field, so I need to check whether the routing actually cares about entity type sequence rather than exact path length—meaning my extra "channels" step might not match the assigned route of WORKSPACE, CONVERSATION, MESSAGE, USER, CONVERSATION since it introduces a sixth node type outside that five-node sequence.
+
+I should drop the trailing extra CONVERSATION node from the focal path and instead add a separate auxiliary constraint that verifies the channel_id resolves to channel_name via a proper foreign key join, rather than trying to force it into the main path.
+
+Actually, maybe CONVERSATION_MEMBERSHIP in the route refers to the membership record itself, filtered by joining on channel_id equal to C_MODEL's literal ID — that's legitimate since it's a real foreign-key value for an actual named channel, not a hidden test-construction constant. Since channel_members lacks a name field, the literal ID is the only way to reference it, which the rules permit.
+
+To fix the "path differs from assigned route" error, I should match the route exactly: teams, channels, messages, users, channel_members — five nodes with the same joins as before but dropping the extra final join and node, then filtering channel_members directly on channel_id equal to 'C_MODEL'.
+
+That's fine since C_MODEL is explicitly disclosed in the design facts as the ID for #model-research, so it's a legitimate FK reference rather than a hidden artifact. Now I need to address the second error, which requires adding an explicit focal negative selector — something that demonstrates a deliberately empty or negative match along the focal path.
+
+I'm thinking the selectors list needs additional entries beyond the main answer selector, specifically ones querying negative-role records that yield zero matches to prove exclusion. This "recomputed focal negative" requirement likely means I need at least one selector entry that computes against negative referents and returns nothing, confirming those records don't satisfy the focal criteria.
+
+So the negative computation must be automatic based on selectors I provide, and it needs at least one non-empty result -- my empty negative_referents is the problem. Since there's only a single workspace in the seed, excluding the main referent seems impossible, so maybe the validator wants negatives defined at a different level than I assumed.
+
+Perhaps the real fix is adding a negative selector that runs the focal query scoped to a candidate negative message, expecting zero matches, which proves negatives don't wrongly produce a workspace answer. I should add this as another entry in the selectors array, following the design order pattern.
+
+Actually, rereading the task, negative_referents should be native handles of main-referent records excluded by the complete request, where main-referent maps to the target workspace/teams entity. Since only one workspace exists in this seed, I may need to actually design a second, plausible-but-invalid workspace so there's a genuine negative to reference, rather than leaving the field empty.
+
+That second workspace would need a legitimate membership path for the actor too, but since no scope_exception was declared for multi-workspace access, adding it risks violating the documented access boundaries — since users.list only reveals a single workspace per actor.
+
+Actually, given the seed only has one real workspace, the "multiple" resolution mode naturally collapses to a single answer anyway, and the exposure_qualification confirms the candidate population is bounded to T01WORKSPACE alone. So maybe the negative case I need isn't about adding a workspace at all, but about recomputing at the message/route level to show the same bounded-scope property holds there too.
+
+I want to verify this negative case actually fails by recomputing the full chain and confirming zero matches at the team node, so I'll add a second selector scoped specifically to dm_progress_msg that demonstrates its exclusion from the route.
+
+I'm unsure what to populate for negative_referents given there's only one workspace present. Maybe I should treat other absent teams as the plausible negative referent, since the DM message's path would still resolve to the same workspace handle even if it had matched.
+
+Given the constraints, I'll pragmatically add a second team via seed edits with its own channel and message from an author not in the current one, so there's a genuine negative referent to point to.
+
+The message should come from U_NADIA with matching content, but she'd need no membership in a model-research channel there since none exists in that workspace. For the actor to confirm this absence, they'd need visibility into that workspace's channel list or her membership records, which raises questions about how absence-verification should actually work given limited cross-workspace visibility.
+
+Actually, introducing a second workspace here conflicts with the access model — since conversations.list and users.list are scoped to a single actor workspace, and no scope exception or visible anchor is defined for multi-workspace tasks, the design keeps us confined to the single-workspace corpus already specified.
+
+So the "focal negative" requirement has to be satisfied within that single workspace, using a recomputed negative selector over scoped messages rather than a second workspace entirely. But since there's only one team, any naive incorrect selector would coincidentally still return the right workspace, so there's no genuinely distinct negative root to point to — meaning the validator's complaint about a missing "computed focal negative" likely refers to the selectors list itself being empty, not the negative_referents field.
+
+I think I should append a dedicated negative selector entry that scopes to a negative-role message path and confirms it yields an empty match, documenting this as the explicit negative check, and figure out what candidate (if any) negative_referents should list given there's only one team.
+
+Now I'm rethinking whether negative_referents should reference the correct workspace handle at all—since that's the right answer, it can't serve as a negative. Re-reading the definition, it seems negative_referents actually refers to handles of main-referent-entity records excluded by the request, which points back to WORKSPACE-type records rather than message or user handles.
+
+Maybe the "focal negative" requirement isn't about negative_referents or a second workspace at all, but about adding a recomputed negative selector for one of the already-specified negative roles into the selectors array—meaning the empty computed_focal_negatives just reflects that I hadn't supplied one yet.
+
+I'll add a negative selector following the same route (WORKSPACE→CONVERSATION→MESSAGE→USER→CONVERSATION_MEMBERSHIP), but targeting unrelated_supercompute_msg (U02JOHNDOE1), since he's not a member of model-research at all — a clean true negative where the chain has no matching channel_members row.
+
+Since this is a single-workspace corpus, though, the message still belongs to T01WORKSPACE, so I'm realizing I can't cleanly produce a workspace-level exclusion this way — the negative only works at the user/channel_members level, not the top of the chain.
+
+I'll leave negative_referents empty with a note justifying this, since the validator's flagged errors weren't about that field, and instead focus on fixing the main selector to match the route exactly: five nodes, no trailing channels node, and using a literal channel_id filter instead of channel_name. Now I'm rebuilding the final main selector with the correct path, joins, and filters on message text and channel_id.
+
+This matches the assigned route exactly with five nodes, and the channel_id filter correctly references C_MODEL since the design facts explicitly identify that as the model-research channel's ID, not a hidden construction. Now I'm working out whether the selectors list should just be the main selector plus this extra negative selector, since the "one selector per obligation" rule seems to allow additional entries when the validator specifically requires them.
+
+I'm deciding to leave negative_referents empty since there's no distinct excludable record here—the true positive team can't itself be listed as excluded—so I'll finalize the answer with that field blank.
+

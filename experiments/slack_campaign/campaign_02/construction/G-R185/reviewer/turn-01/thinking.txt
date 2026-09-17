@@ -1,0 +1,32 @@
+I'm tracing the route from workspace membership through workspace, conversation, and conversation membership to the user, with workspace membership as the referent entity and absent resolution. The query needs to find who reacted with a rocket emoji to Łukasz's message in #engineering, then report that person's workspace role.
+
+The exposure qualification note says a participant can be a channel member, message author, or reaction contributor, so identifying someone via their reaction is permitted. But the given route nodes don't explicitly include message or reaction tables, which makes me wonder if the path is meant to abstract that connection through conversation membership rather than tracing directly through the reaction table.
+
+Now I want to verify whether Łukasz's message actually has no rocket reactor - the reaction table only shows one row, an eyes reaction, so I need to check if the rocket reaction from Kenji is really tied to a different message entirely.
+
+Checking the base seed's message_reactions table, there's only one entry: the eyes reaction on message 1706110000.000100. Kenji's rocket reaction on message 1706115000.000001 isn't there yet, but since the instructions allow planned additions not yet in the seed, this is fine - the wrong_emoji_reactor negative is already confirmed correct, and wrong_message_reactor is a valid planned mutation.
+
+The requested "workspace role" attribute maps to user_teams.role, which matches the allowed answer attributes. After the mutation, no rocket reaction exists on the correct message, so the target obligation genuinely resolves to absent - that checks out.
+
+The deliverable's entity matches the obligation table user_teams, consistent with workspace_membership, and the calibration flag is false so there's nothing extra to reconcile there. The access plan using conversations and reactions API calls is realistic given the actor's channel membership, and none of the qualification restrictions on reaction removal apply since this is a read-only task.
+
+The message timestamp is discoverable naturally through conversation history rather than being a hidden ID, so that's legitimate. The added reaction row for Kenji on his existing vending machine message is a proper environment-only mutation introducing a plausible negative signal, while the eyes-emoji reaction from another user is just pre-existing background noise, both of which fit the design requirements.
+
+Now I'm tracing whether the route actually matches the intended relationship: since reaction contributors are explicitly allowed participants, identifying a user through their reaction on a message in the channel, then following their workspace membership, aligns with the WORKSPACE_MEMBERSHIP referent. But I need to verify whether that membership traversal starts from the requestor's own context or the reactor's, since the path goes from WORKSPACE_MEMBERSHIP to WORKSPACE to CONVERSATION to CONVERSATION_MEMBERSHIP to USER.
+
+This route seems to end at USER but the deliverable is WORKSPACE_MEMBERSHIP, so the actual answer requires looping back to that user's own membership - making the initial and final membership records distinct despite sharing an entity type, similar to patterns in other route designs I've seen.
+
+But I need to check the flagged concern: the route text specifies CONVERSATION_MEMBERSHIP to reach USER, yet the actual qualification allows a reaction-based contributor as valid identification too, which doesn't strictly match conversation membership.
+
+I'm reasoning this is likely just shorthand in the route language for "some link between conversation and user," where the real join would use messages plus message_reactions to find the user, then user_teams from there. Since the mechanical design errors list is empty, this reaction-based interpretation is probably an accepted convention in this benchmark's route language, so overall the design still looks largely sound to me.
+
+Checking the card roles more closely - target_channel, target_message, wrong_emoji_reactor, wrong_message_reactor, workspace_context - there's no explicit role for the correct reactor, which makes sense since the mode is absent and no positive match is expected. The binding_note also looks consistent with the requirements, and the null candidate_role_sets/target_roles fields fit an absent mode. Now I'm weighing whether the prompt itself is plausible given someone reacting with a rocket emoji to signal budget approval.
+
+The wrong_message_reactor negative is solid since Kenji's rocket reaction sits on an unrelated vending machine message in the same channel, forcing the solver to verify message identity rather than just matching the emoji. The bot's eyes reaction on the correct message also tests emoji specificity well. I don't see any mechanical errors, and checking the reaction vocabulary, rocket is a valid supported emoji name, so that's fine even though this is read-only.
+
+Confirming eyes is also an allowed emoji name, the design overall looks solid. The root referent entity is WORKSPACE_MEMBERSHIP at position 1 in route_nodes, which matches the stated root, and the singular scope ("that person's workspace role") aligns with the singular answer given the single message/channel context.
+
+This holds up as valid, with strong quality from the concrete scenario and plausible negation via mutation, and no mechanical design errors flagged in this pre-compilation review.
+
+One minor note is that route_nodes abstraction doesn't explicitly include MESSAGE/REACTION nodes, but the exposure qualification justifies this pattern as valid, so it's not enough to fail the review.
+

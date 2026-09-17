@@ -1,0 +1,14 @@
+This new design adds an explicit constraint that the root and terminal nodes share the same user_id—the "same person" requirement. I'm realizing the selector syntax doesn't support arbitrary equality between two nodes' fields directly, only FK-based joins, but since r0.user_id = r5.user_id is essentially what a join would enforce, that could work as the mechanism.
+
+I'm working through whether this equality needs to be independent (like an auxiliary constraint) or if it's embedded within the join path itself, since the route strictly follows a fixed table order and this comparison isn't a normal adjacency-based join—it's a filter comparing the root's field against a field several joins downstream.
+
+Since the selector syntax only allows comparing a field to a literal value, not another node's field, this cross-node equality actually can't be expressed directly. But since the resolution is "absent" anyway (no checkmark reaction exists), this detail may not matter practically—what matters now is that the path order matches the required sequence and the reaction_type value is 'check' rather than 'white_check_mark'.
+
+I'm updating the seed edits to match the revised design: the wrong_emoji_reaction stays as thumbsup by Lukas, but the wrong_message_reaction now uses 'check' as reaction_type. The absent obligation means no reaction row with a checkmark-type emoji should exist on the target message, and I'm deciding to only check for the literal 'check' value the design specifies rather than also excluding 'white_check_mark' or other checkmark variants.
+
+Now I'm structuring the focal selector nodes in route order — user_teams, teams, channels, messages, message_reactions, users — with filters on channel name, message id, and reaction_type set to 'check', scoped by team_id. Since no reaction row with 'check' exists on the target message, this correctly returns empty for the absent case, and I'm now considering whether the extra user_id equality constraint between the first and last node still matters given the selector already returns nothing.
+
+Since the selector is vacuously empty, that equality doesn't need enforcement — no defect there. I'm cross-checking the seed data: messages 1706028746.000000 and 1706001931.000000 already exist, so I need to insert two negative reaction rows — U_LUKAS with 'thumbsup' on the first message, and U_PRIYA with 'check' on the second — while U_OLENA's unrelated channel membership needs no changes. I'm also updating the reaction_type value referenced in the wrong_message_reaction binding and adjusting the negative_referents for U_LUKAS and U_PRIYA's user_teams rows accordingly.
+
+Now I'm putting together the final answer, making sure the selector matches the exact route order and all the design facts line up.
+

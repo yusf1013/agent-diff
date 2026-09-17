@@ -1,0 +1,48 @@
+I'm checking whether the compiled artifacts match the design—specifically, the actor has membership in T01WORKSPACE and T02NORTHSTAR but not T03GHOSTORG, yet still holds channel_membership in the ghost channel despite lacking team membership there. I need to figure out if that's consistent with the runtime qualifications around single workspace association exposure.
+
+Since the runtime quals allow "all workspaces for access," having two workspace memberships isn't a violation. The domain model explicitly allows conversation membership without workspace membership, so the actor being in C_GHOST without joining T03GHOSTORG is legitimate and lets them discover the channel via conversations.info/history—matching the design's intent to test a negative case. Now I want to verify how the actor would even discover T02NORTHSTAR and T03GHOSTORG mechanically, since there's no teams.list API and discovery relies on teams/user_teams.
+
+That checks out with the design. I'm now verifying the selector's node indexing against the path structure—messages at index 3, message_reactions at index 4—and confirming the message_text filter deliberately excludes the ghost workspace's text, since that message fails on membership grounds rather than content matching.
+
+This selector is functioning as a construction witness rather than a live semantic search, which lines up with the framework's stance that the code's query demonstrates the design's intent without needing to independently derive it. Since deployment completion is a semantic notion that can't be queried directly, hardcoding the two matching texts is reasonable practice—the identifying paths track entities and edges while the semantic predicate lives in the description layer.
+
+I'm now cross-checking other candidate messages to make sure nothing was wrongly excluded: the "when will deployment be done" question is asking about timing, not announcing completion, so it's correctly left out; the "500 errors during rollout investigation" message describes an ongoing incident rather than a rollout completion, so that's also rightly excluded. I'm continuing this same check against the circuit-tracer OOM message next.
+
+Going through the remaining candidates, I confirm the DM about circuit-tracer describes upcoming work targeted for next week rather than a completed deployment, and it has no check reaction, so it's rightly excluded. I also verify U_LUKAS's GPU cluster message has no relevant claim or check reaction. That leaves exactly four seeded reactions accounted for -- eyes on the OOM message, and checks on the shipped-feature, v3-deployment, and ghost rollout messages -- with no stray reactions elsewhere.
+
+Now I'm confirming the candidate population of three teams matches the seeded teams table, and that the answer attributes (team_id, team_name) are real columns. I'm also working through whether an actor could realistically discover its own workspace memberships via the API -- there's no direct listing endpoint for that, but users.info seems to expose one workspace association per query.
+
+I'm digging into whether conversations.info could reveal team_id for each channel, since actor's membership in channels across workspaces might be how discovery of T02NORTHSTAR actually happens, given there's no teams.list endpoint.
+
+So the mechanism seems to be: actor calls users.conversations() to enumerate all channels they belong to, which surfaces channel IDs across workspaces even without a direct team listing API—channel membership itself becomes the discovery anchor.
+
+That checks out too - actor is only channel_member (not user_teams) for T03GHOSTORG, correctly reflecting that the ghost workspace has no user_teams for anyone. Giving actor multi-workspace membership does feel like a slightly artificial premise, but I'm checking whether it aligns with the runtime qualifications anyway.
+
+I'm verifying the reactor requirements next - reactors for main and second workspace just need to be "someone" with no membership constraint, and the ghost workspace reactor is fine since it's already a channel_member. I'm also confirming that adding U01AGENBOT9 to T02NORTHSTAR's user_teams doesn't create any unintended qualifying match, since that user doesn't author any deployment-completion message there.
+
+But I need to check something more subtle: since the join structure only requires the author to have team membership somewhere, not that the message's channel belongs to that team, could U01AGENBOT9's message in C01ABCD1234 (tied to T01WORKSPACE) now also satisfy the query for T02NORTHSTAR just because he's a member of both teams?
+
+So the shipped-feature message with the check reaction from U02JOHNDOE1 satisfies both node3 and node4's filters regardless of which team is being evaluated, since the join to messages never actually checks that the channel belongs to the team in question.
+
+This means the selector will spuriously match T02NORTHSTAR through U01AGENBOT9's workspace membership rather than through the message's actual channel-team relationship — a genuine design flaw where "member of workspace" gets conflated with "message posted in workspace." Luckily this doesn't corrupt the answer in this particular seed since T02NORTHSTAR is already a true match via U_NS_DEV's message, but it exposes a real bug worth flagging.
+
+Nothing in the binding_note actually requires the qualifying message's channel to belong to the workspace being evaluated, so T02NORTHSTAR ends up a "true match" via two independent routes: the intended one plus an accidental one where U01AGENBOT9's unrelated T01WORKSPACE message satisfies the letter of the rule. This doesn't flip the answer, but it does expose a real gap where the requirement isn't tying the message's channel to the workspace, only the author's membership.
+
+So this is consistent with the assigned route nodes - since CHANNEL/CONVERSATION isn't included, the message's channel doesn't need to correspond to the workspace at all, meaning any message globally, from any channel, qualifies as long as its author is a workspace member.
+
+Actually, the actor's membership in T02NORTHSTAR was added purely for API access purposes—so it can enumerate members/history—not as an intended semantic role. That means the actor unintentionally becomes an additional valid witness for this obligation despite not holding a designated "member" role for it.
+
+Checking whether this accidental path leaks into T03GHOSTORG: since U01AGENBOT9 isn't in user_teams for the ghost workspace at all, this coincidence doesn't create a false positive there, so the negative case stays correctly negative. The overall computed_matches result remains correct, but the true satisfying witness for T02NORTHSTAR isn't the one the design intended.
+
+This surfaces a subtler design inconsistency: the binding_note warns against the reverse loose-binding case (channel-in-workspace but author-not-member), yet the compiled route allows the opposite loophole on the positive side—member of workspace whose message actually lives in an unrelated channel still counts. It's a minor annotation-level gap rather than a correctness bug, since route_nodes lacks a CHANNEL node to enforce that constraint.
+
+This likely traces back to actor access grants rather than the design's core role logic—adding U_NS_DEV's membership for API access purposes accidentally created a second, out-of-role justification for T02NORTHSTAR's match. So while the current answer is unaffected, this accidental path is a latent fragility: if that message were removed, the workspace would seem to still qualify through this unintended route. I think this is worth flagging as an accidental extra witness, per the instructions about hidden assumptions and incidental matches.
+
+I'll note this as a minor construction/quality issue rather than something that invalidates the case, since it doesn't corrupt the actual answer. Checking further, I confirm U_LUKAS is only a member of T01WORKSPACE, his OOM message with the eyes reaction is excluded by the filter text, so there's no interference from that negative case either.
+
+Overall, this looks like a legitimate, well-constructed case with one subtle latent flaw: the extra workspace membership given to the actor creates an accidental true-positive path for T02NORTHSTAR through an unrelated message-author pair outside the intended witnessing chain — worth flagging, but not invalidating. I'm also noting that the hardcoded literal message-text filter serves as an intentional witness rather than a live semantic query, which matches the design notes.
+
+I'm double-checking supporting seed data — user timezones/emails look standard, channel_members for C_GHOST match design, and the near_miss/negative_referents fields are internally consistent. Verifying whether U01AGENBOT9's existing membership in its home channel creates any conflict with the genuine reaction check from U02JOHNDOE1.
+
+Overall the design holds up well; I'll flag the actor-membership side effect as a minor quality note without downgrading validity, since the answer set remains correct. Time to write this up as the final JSON assessment.
+

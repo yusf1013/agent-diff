@@ -1,0 +1,38 @@
+This new case with the same case_id G-R041 is actually a different design, not a repair of the previous one, so I need to check it fresh against the updated review criteria—particularly the distinction between a channel where a member posted versus a channel merely containing a post, plus the API constraints around reactions and unavailable joined_at data.
+
+The prompt asks for the members of the channel containing a message about circuit-tracer OOM errors that got an 👀 reaction, requesting only user_id and channel_id—not joined_at—which avoids the earlier problem entirely. Tracing the route CONVERSATION_MEMBERSHIP -> CONVERSATION -> MESSAGE -> REACTION, membership only needs to share channel identity with the reacted message, not authorship, so this design correctly implements the "channel-containing-a-post" pattern and is valid.
+
+Checking the expected matches, the five engineering channel members (U01AGENBOT9, U02JOHNDOE1, U03ROBERT23, U05MORGAN23, U06HUBERT23) align with the seed data for C03IJKL9012. Priya and Lukas are correctly excluded as negatives—Lukas especially, since he authored the reacted message but isn't a member of that channel, nicely testing the authorship-vs-membership distinction. I'm also verifying the wrong-channel reaction case, where Mateo's eyes reaction on Sophie's message in C_MODEL confirms that a matching emoji on an unrelated channel doesn't incorrectly redirect the scope.
+
+Hubert's thumbsup on Robert's message adds a redundant but valid robustness check that a different emoji in the right channel doesn't count. I confirm the emoji types used (eyes, thumbsup) fall within the documented reaction vocabulary, and that the selector relies on content-based text filters rather than a hardcoded channel ID, which matches the review's guidance on genuine discovery over hidden field assumptions.
+
+I'm checking the access plan uses only documented APIs (conversations.history/search.messages, reactions.get, conversations.members), and the actor is confirmed as a member of the engineering channel so access is valid. No answer field requires anything beyond what conversations.members can provide, and the negatives list looks like it's just the full set of non-matching pairs, with "multiple" as a reasonable resolution mode given five matches.
+
+The negative_member_lukas_infra case is testing the distinction between a channel member versus someone who merely posted in the channel, which is a meaningful failure mode. I'm also verifying the referent entity maps correctly to channel_members, and that the identifying paths and alternative sufficient identifying sets in the cards accurately describe the entity/relationship route without conflating descriptive predicates with the locked path itself.
+
+Now I'm checking for ambiguity risk — scanning other messages for the "circuit-tracer" and "OOM" text combination to make sure only the intended message matches both filters, since a DM mention and other channel messages with just one of the two terms wouldn't qualify.
+
+Also found another message mentioning both "circuit-tracer" and "OOM" in the DM channel with Sophie, but checking its reactions shows no eyes reaction attached, so it doesn't create ambiguity with the filter.
+
+Confirming there's no cross-channel duplicate: message 1706110000.000100 is the only one containing both terms with an eyes reaction, since the search isn't scoped to one channel but no other candidates exist elsewhere.
+
+Everything checks out - the seed edits only touch reactions, not channel membership, so this remains a clean negative test that intentionally excludes Lukas from the results.
+
+I'm confirming the route matches the assigned chain: channel membership to conversation to messages to reactions, using the correct join edges throughout. The mode is correctly "multiple" since the request asks for a list and there are five matches, so that checks out. Now I'm moving on to check the near-miss cases in the private spec.
+
+These near-misses correctly exclude wrong-channel members and out-of-scope people, which is the right call since they don't match the intended channel scope. I'm also verifying the design correctly distinguishes "channel-containing-a-post" from "channel-with-a-member-who-posted," properly treating workspace membership as separate from authorship. Overall the design looks solid, with well-targeted negatives testing the authorship-versus-membership distinction and the emoji/channel mismatches, so now I'm considering what issues, if any, are worth flagging.
+
+The scenario wording seems plausible and purposeful—pulling members into a sync is a reasonable consequential action, and listing members functions as a justified pre-step rather than bare retrieval. I'm double-checking that identifying paths only reference entity/edge sequences without predicates, and that field names like message_text are just labels rather than literal values, both of which look correct. Now I'm reviewing how the compiled set of negative referents was assembled across the full candidate population to make sure nothing was missed.
+
+I also want to confirm the channel scope isn't being secretly hard-coded—since the selector's scope is empty rather than pinning a specific channel_id, this design genuinely discovers the channel through content, which aligns well with the review's requirement that supplemental conditions be requested rather than silently enforced. Now I'm verifying the message role IDs match correctly against the compiled bindings.
+
+Checking the five matched roles—agent, john, robert, morgan, hubert—against the base seed, they're all pre-existing channel members of C03IJKL9012, so no phantom additions or membership edits are needed, only the two reaction additions in seed_edits. This all lines up correctly with the requirement that roles must already be present rather than newly injected.
+
+Overall the design looks valid and well-constructed, with negatives that cleanly test the intended distinctions around authorship, membership, wrong channel, and wrong emoji. I'm now looking at the large mechanically computed focal negatives list to see if anything stands out there.
+
+I want to double check whether the wrong-emoji negative role is actually necessary, since the selector requires the message text and eyes reaction to jointly match on the same message record. Tracing the join chain from channel_members to messages to message_reactions confirms it links members to messages in the same channel and then to that specific message's reactions.
+
+This confirms the pattern matches the earlier selector too, so the eyes reaction is tied precisely to the identified message via the message_id join, meaning a wrong reaction on a different message can't satisfy the condition. The extra negative example (a thumbsup on Robert's message) just reinforces that not any reaction in the channel counts—only one on the exact matching message does.
+
+Checking the table normalization for the referent entity against channel_members, everything looks consistent. I don't see any violation, so this passes with strong quality.
+

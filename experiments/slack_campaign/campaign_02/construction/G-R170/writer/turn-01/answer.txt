@@ -1,0 +1,35 @@
+```json
+{
+  "prompt": "Which workspace contains the channel where a teammate's message diagnosing the root cause of our GPU memory incident got a 🎉 reaction from someone in that channel?",
+  "binding_note": "The workspace must be reached through a channel (core-infra) whose member (Priya) authored the specific root-cause diagnosis message, and that same message must carry a tada/🎉 reaction from a channel member. Priya's membership, her authorship of the diagnosis message, and a stored tada reaction on that exact message must all bind to the same records; the only stored reaction in the environment is an 'eyes' reaction on an unrelated message by a different author, so no workspace satisfies the full chain.",
+  "roles": [
+    {"role": "workspace_root", "entity": "teams", "facts": "T01WORKSPACE is the only workspace; it owns core-infra, engineering, and other channels.", "selection": "negative", "reason": "The sole visible workspace is the candidate answer, but the full route condition never resolves to it because no matching reaction exists."},
+    {"role": "infra_channel", "entity": "channels", "facts": "C_INFRA ('core-infra') belongs to T01WORKSPACE; discusses infra incidents including GPU memory pressure.", "selection": "support", "reason": "Supplies the conversation node on the route toward the workspace."},
+    {"role": "priya_membership", "entity": "channel_members", "facts": "U_PRIYA is a member of C_INFRA.", "selection": "support", "reason": "Establishes the conversation-membership binding required before the authored message can count."},
+    {"role": "priya_user", "entity": "users", "facts": "U_PRIYA (Priya Sharma), core-infra member, authored the pprof root-cause diagnosis.", "selection": "support", "reason": "The user node the route must pass through between membership and message."},
+    {"role": "diagnosis_message", "entity": "messages", "facts": "Message 1706001931 in C_INFRA by U_PRIYA: 'Got the pprof delta—it's definitely the batch size increase hitting a hard CUDA memory limit...' identifies the actual root cause; no reaction is stored on it.", "selection": "match", "reason": "This is the message the identifying description points to, but it carries no reaction at all, so the chain breaks here."},
+    {"role": "other_infra_message", "entity": "messages", "facts": "Message 1706001890 in C_INFRA by U_LUKAS discusses CUDA allocator ceilings and tensor allocation, related but not the root-cause conclusion; no reaction stored.", "selection": "negative", "reason": "Same channel and topic area, wrong authored message for the 'diagnosis' description, and still lacks any reaction."},
+    {"role": "circuit_tracer_message", "entity": "messages", "facts": "Message 1706110000.000100 in C03IJKL9012 (engineering) by U_LUKAS about circuit-tracer OOM errors; unrelated to the GPU memory-incident diagnosis in core-infra.", "selection": "negative", "reason": "Different channel, different topic, wrong message for the described diagnosis."},
+    {"role": "eyes_reaction", "entity": "message_reactions", "facts": "The only stored reaction in the environment: 'eyes' on message 1706110000.000100 by U01AGENBOT9.", "selection": "negative", "reason": "Wrong emoji (eyes, not tada) and on the wrong message entirely, so it cannot satisfy the 🎉-on-diagnosis-message condition."}
+  ],
+  "obligations": [
+    {
+      "name": "workspace_answer",
+      "description": "Identify the workspace reached via: a channel containing a member who authored the specific GPU-memory-incident root-cause diagnosis message, where that message received a tada/🎉 reaction from a channel member. No workspace satisfies this full chain because the diagnosis message carries no reaction and the only stored reaction in the system is a different emoji on an unrelated message.",
+      "table": "teams",
+      "mode": "absent",
+      "task_type": "read-only",
+      "scope": "workspace(s) reachable through core-infra-style channels via a member's authored, reacted-to root-cause message",
+      "target_roles": [],
+      "candidate_role_sets": null,
+      "selection": "one",
+      "answer_attributes": [["teams.team_name"], ["teams.team_id"]]
+    }
+  ],
+  "task_spec": [
+    {"line": 1, "text": "Determine which workspace contains a channel where a member's message diagnosing the root cause of the GPU memory incident received a 🎉 reaction from a teammate; report the workspace or state that none qualifies.", "obligations": [1]}
+  ],
+  "scope_exception": null,
+  "access_plan": "Use auth.test/users.info to confirm the acting user's visible workspace, then conversations.list (types=public_channel,private_channel) to enumerate channels including core-infra; use conversations.members on core-infra to confirm Priya's membership, and conversations.history to locate her root-cause message about the CUDA memory limit. Call reactions.get on that message's timestamp/channel to check for a tada reaction, finding none. Broaden the check to other stored reactions (only the unrelated 'eyes' reaction on a circuit-tracer message in the engineering channel) to confirm no channel/message pair in the visible workspace meets the described condition, so no workspace can be returned as a match."
+}
+```

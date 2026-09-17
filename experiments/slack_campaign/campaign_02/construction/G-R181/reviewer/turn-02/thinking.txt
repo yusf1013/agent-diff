@@ -1,0 +1,60 @@
+I'm looking at the compiled selector that hardcodes specific channel IDs for the "infra" channels rather than using a topic-based predicate, which raises a validity concern since identifying paths should record entity/edge sequences while predicates belong in descriptions or identifying fields.
+
+Since there's no way to filter channels by topic text and rejoining channels is forbidden by the route, the compiler substituted literal channel_id values that happen to match the intended referents -- effectively baking the answer into the query instead of deriving it from an actual topic match. This looks like exactly the "hidden exact-field assumption" the review criteria flags, and I'm also noting that T03SIGNAL was compiled as a negative team despite having no infra channel membership at all.
+
+The design note actually justifies this: since channel_members has no name/topic field and rejoining is forbidden, hardcoding the two known infra channel IDs is presented as the only route-compliant way to express "infra/on-call" at that node. Still, this feels like literal ID substitution rather than a real computed predicate, which conflicts with the rule that written attributes must be genuine table.column references, not baked-in values.
+
+Let me check node numbering against the path - teams, channels, messages, message_reactions, users, channel_members map to indices 0-5, so the message_text filter at node2 aligns with messages, and message_reactions filter at node3 aligns correctly too. But the channel_members filter at node5 referencing the "infra" channel's topic is actually a property of "channels" at index1, which is a different channel entity than whatever channel the message itself belongs to in this path.
+
+Since channel_members.channel_id points to that different infra channel, filtering by its topic would require rejoining the channels table, which the route architecture forbids since it only visits one conversation node per path. That's why literal channel ID enumeration becomes the only route-compliant way to express this filter.
+
+The compiled path only traverses "channels" once, tied to messages, then jumps directly to channel_members without a second channels hop—so the infra-channel identity gets baked in as literal ID enumeration rather than being represented as a real queryable relationship in the graph.
+
+This is a genuine mechanical defect: the selector doesn't compute the "infra channel" predicate honestly, it hardcodes the precomputed answer into the filter, exactly matching the "hidden exact-field assumption" pattern flagged by the review guidelines. Now I need to gauge severity—the literal enumeration happens to match the correct set exactly, excluding T03SIGNAL since it lacks an infra channel entirely.
+
+But the flaw would surface if a third workspace had an infra channel with a different name; it would be wrongly excluded. Since this is a closed-world synthetic benchmark, it may still pass grading, but conceptually it violates the rule that the identifying paths field should record genuine entity/edge relationships rather than hardcoded ID-based filters standing in for semantic conditions.
+
+Actually, since two distinct conversation entities are needed—one for the message, one for the membership—the compiled route conflates them and lacks a second CONVERSATION node to properly bind the infra-channel-topic predicate, which is a route assignment flaw. The mechanical_design_errors list came up empty, but that check happened at an earlier design stage.
+
+Checking whether this issue was already flagged, I find the compiled notes explicitly admit the tension: because CONVERSATION_MEMBERSHIP carries no name/topic field, the design identifies the infra/on-call channel by hardcoding the literal channel_id values instead of deriving them computationally. That's exactly the hidden exact-field assumption the review criteria warn about—answer leakage into the query rather than genuine reasoning—so this needs to be flagged as a validity issue, and I'm now weighing whether it's disqualifying or just an annotation concern.
+
+This does seem like a legitimate defect worth reporting, though maybe not a hard "fail" since the answer set is still correct for the given base_seed — T01WORKSPACE and T02NOVA are properly matched, T03SIGNAL properly excluded. The "attributes must be real" rule seems aimed at answer/table columns rather than filter design logic, so I'm not sure it strictly applies here.
+
+Looking more carefully, the identifying paths field correctly lists only entities and relationships, matching the rule that it records entity/edge sequences only. But the actual partial_constraints hardcode literal channel IDs (like "in [C_INFRA, C_NOVA_INFRA]") rather than expressing the semantic condition ("channel where topic contains infra/on-call") — this is a real hidden exact-field assumption, since a solver couldn't derive those IDs without already knowing which channels qualify.
+
+That said, this only matters for internal grading construction, not the solver's actual solving process, since solvers discover channel topics/names via APIs and never see this selector directly. The real question is whether the selector's computed_matches correctly capture the intended referent set — and since these literal IDs were chosen specifically because they match the verified topic_text semantics for infra/on-call channels, the outcome is functionally correct even though it bakes in an assumption during query construction.
+
+I'm also confirming T03SIGNAL was deliberately built as a "near miss" test case, lacking infra channel membership despite similar message content, which validates that the selector correctly excludes it on precision grounds — solid design choice.
+
+Checking another negative example: the refund policy message doesn't match the OOM/loading/models content filter at all, so it's correctly excluded regardless of who reacted to it.
+
+Then verifying the wrong-reaction-type case: a thumbsup reaction on the correct OOM message should be excluded since the filter requires eyes specifically. And I'm checking whether a QA user reacting on the Nova OOM message but only belonging to the QA channel rather than the infra channel gets properly excluded by the membership filter.
+
+The multiquery correctness holds since selection happens per matching row combination and team-level dedup works properly. The message_reactions constraint on message_id, user_id, reaction_type is fine here since these are different users reacting to the same message, and I'm checking whether there's a double-reaction case where two different users both react with eyes on the same message timestamp.
+
+Both users' eyes reactions are plausible under the composite key constraint since distinct users are allowed. The mechanical checks show no errors, and the computed matches and focal negatives align with the private section's expectations, giving me confidence in overall consistency. The written attributes reference valid columns, and is_private correctly defaults to false for a public channel without needing explicit specification.
+
+Now I'm considering whether the bot actor actually has sufficient permission scope to invoke conversations.create with a team parameter.
+
+I'll flag it as a quality/annotation issue rather than a failure, since the matches are still correct and the single-node structural limitation on checking two channels' topics is an inherent constraint the compiler handled reasonably, documenting it transparently as a known limitation rather than an outright error.
+
+I'm leaning toward flagging this as a validity issue instead: the selector filter hardcodes specific channel IDs that happen to match the infra channels, rather than deriving them from a content-based predicate like the topic text — effectively baking the answer into the filter rather than deriving it.
+
+Repair-wise, this is only acceptable if the route architecture genuinely can't support two distinct conversation nodes; otherwise the route should add a second node to allow topic-based filtering instead. Since the note frames the hardcoded literal as "the only route-compliant way to express that predicate," and the route itself was fixed by the task assignment, I'll treat this as an acceptable construction compromise rather than a hard violation.
+
+Since it doesn't affect the solver's actual task—which relies on genuine documented APIs to discover channel topics and names—this is purely an internal mechanical construction concern, only mattering for reproducibility if underlying data changes without updating literal IDs. Given the scored case has a fixed base_seed, it stays internally consistent without producing erroneous computed_matches, so I'll flag it as a minor quality issue rather than a validity failure. Now I'm checking other potential issues, like whether U01AGENBOT9's team and channel memberships correctly allow discovery to rule it out.
+
+I'm scanning message_reactions for stray negative reactions that could create false matches with T01WORKSPACE or unintended matches elsewhere, checking each reaction's message text against the OOM/loading/models keyword filter to confirm nothing slips through incorrectly. I also need to verify no other base_seed messages accidentally contain all three keywords case-insensitively, so I'm examining a DM message mentioning "OOM issues" to see if it also references "loading" and "models".
+
+I'm checking whether any other user besides U01AGENBOT9 posted the corrected OOM message—doesn't look like it. I'm also verifying the channel topic for C_MODEL isn't ambiguously matching the infra/on-call description, since it's actually about model training, evals, and papers.
+
+Now I'm checking each OOM message variant across teams—circuit-tracer, tensor pipeline, and signal processing—confirming they all contain the keywords "OOM," "loading," and "models," but the signal one gets excluded since its channel isn't infra-related.
+
+Confirming that U_SIGNAL_DEV only belongs to C_SIGNAL_ENG and not to any infra channel, so it's correctly excluded from the results. Overall the query logic seems sound; the hardcoded ID list is a minor workaround given the fixed-route constraints but doesn't break functional correctness for this seed—I'll flag it as a small annotation note but mark the validity check as passing.
+
+Checking the alternative identifying sets and answer attributes for team_id and create_channel, these look correctly specified with no issues. I'm also verifying that the inserted seed rows for user_teams, channels, and related tables match the schema's column types and enum constraints, particularly that the role field value "member" is a valid enum option.
+
+The actor being a member of all three teams is a bit contrived but justified by the access plan for testing discovery without unsupported enumeration. Overall the artifact seems largely valid, though I want to flag the hardcoded channel-ID literal filter as a genuine annotation concern since it's standing in for topic-based "infra channel" semantics rather than truly representing that concept.
+
+I'll note this as a validity/annotation issue but keep validity as "pass" since it doesn't create incorrect matches, just documents a compromise inherent to the fixed test route. Quality-wise I'll still rate it "strong" since the core criteria are about wording, negatives, and consequential actions rather than this kind of mechanical annotation subtlety, though I should still flag it per the instructions to identify hidden exact-field assumptions.
+

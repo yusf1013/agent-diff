@@ -1,0 +1,36 @@
+```json
+{
+ "prompt":"Someone reacted with 👀 to the message in #product-growth where Kenji pasted the raw Q3 salary bands. Please remove that person from the channel—we don't want unauthorized screenshotting of comp data floating around in there.",
+ "binding_note":"The channel_members row to remove is bound to the user who left the 'eyes' reaction on the salary-bands message inside #product-growth itself (message location = membership channel), and that same user's user_teams row confirms they are a genuine T01WORKSPACE member, not a stray/orphan reactor.",
+ "roles":[
+  {"role":"target_channel","entity":"channels","facts":"C_GROWTH '#product-growth', public channel in workspace T01WORKSPACE","selection":"support","reason":"Anchors both the salary-bands message and the membership to be removed"},
+  {"role":"target_message","entity":"messages","facts":"New message in C_GROWTH authored by U_KENJI: 'Here are the raw Q3 salary bands by level for benchmarking: L4 $145k, L5 $175k, L6 $210k.'","selection":"support","reason":"The exact message the request describes, used to anchor the reaction lookup"},
+  {"role":"target_reactor","entity":"users","facts":"U_INCOGNITO ('El Incognito' / Carlos Vega) reacts with 'eyes' on the target_message; also has a user_teams row for T01WORKSPACE with role member","selection":"match","reason":"Identified purely via the message+reaction+workspace-membership chain as the person to remove"},
+  {"role":"target_membership","entity":"channel_members","facts":"Existing row (channel_id=C_GROWTH, user_id=U_INCOGNITO) from the base seed, to be deleted","selection":"match","reason":"The channel membership record the request asks to remove"},
+  {"role":"decoy_wrong_emoji_reactor","entity":"users","facts":"U_MATEO, an existing C_GROWTH member, reacts with 'thumbsup' (not eyes) on the same target_message","selection":"negative","reason":"Right message and right channel, but wrong emoji, so their membership must not be removed"},
+  {"role":"decoy_wrong_channel_reaction","entity":"messages","facts":"U_INCOGNITO also reacts with 'eyes' on an unrelated message in C_FRONTEND about the React 19 hydration bug","selection":"negative","reason":"Same reactor and same emoji, but wrong channel/message, so this reaction does not justify removal from product-growth"},
+  {"role":"decoy_member_no_reaction","entity":"channel_members","facts":"U_LUKAS is an existing member of C_GROWTH but never reacted to the salary-bands message","selection":"negative","reason":"Ordinary membership lacking the qualifying reaction link, so excluded from removal"},
+  {"role":"decoy_reactor_not_member","entity":"users","facts":"U06HUBERT23 reacts with 'eyes' on the target_message but has no channel_members row for C_GROWTH","selection":"negative","reason":"Satisfies the message+emoji condition but has no corresponding membership in that channel to select or remove"}
+ ],
+ "obligations":[
+  {
+   "name":"remove_reactor_membership",
+   "description":"Select the single channel_members row for the user who reacted with 'eyes' on the Q3 salary-bands message inside #product-growth, confirmed as a workspace member via user_teams, and remove (kick) that membership from the channel.",
+   "table":"channel_members",
+   "mode":"single",
+   "task_type":"state-changing",
+   "scope":"membership rows for #product-growth, narrowed to the one whose holder reacted with eyes on the specified message and is a confirmed T01WORKSPACE member",
+   "target_roles":["target_membership"],
+   "candidate_role_sets":null,
+   "selection":"one",
+   "change_attributes":[["channel_members.channel_id","channel_members.user_id"]],
+   "written_attributes":[]
+  }
+ ],
+ "task_spec":[
+  {"line":1,"text":"Remove from #product-growth the person who reacted with 👀 to the message where the raw Q3 salary bands were pasted.","obligations":[1]}
+ ],
+ "scope_exception":null,
+ "access_plan":"Use search.messages or conversations.history on the product-growth channel to locate the salary-bands message, call reactions.get on that message to find the 'eyes' reactor, cross-check they appear in conversations.members for product-growth (and are an active workspace user via users.info), then call conversations.kick with that user and the product-growth channel."
+}
+```

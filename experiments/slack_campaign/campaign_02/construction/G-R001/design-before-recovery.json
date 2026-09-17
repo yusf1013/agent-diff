@@ -1,0 +1,111 @@
+{
+  "prompt": "Archive the channel in our workspace whose topic covers Kubernetes, AWS, and on-call incident response — we're folding it into a broader ops channel.",
+  "binding_note": "The target channel must be both topically about K8s/AWS/on-call incidents and a member of the workspace the acting bot actually belongs to; a topically similar channel exists in a separate workspace the bot has no membership in, so the workspace relationship — not just the topic wording — is what picks out the correct conversation.",
+  "roles": [
+    {
+      "role": "target_conversation",
+      "entity": "channels",
+      "facts": "C_INFRA, channel_name='core-infra', team_id=T01WORKSPACE, topic_text='Infrastructure, K8s, AWS, on-call, incidents', is_archived=false; actor U01AGENBOT9 is a channel member and a member of team T01WORKSPACE",
+      "selection": "match",
+      "reason": "Matches the topic wording and lies in the workspace the actor is actually a member of, so it is reachable through the actor's own conversation list"
+    },
+    {
+      "role": "workspace_scope",
+      "entity": "teams",
+      "facts": "T01WORKSPACE ('Test Workspace'); actor U01AGENBOT9 holds membership here (user_teams)",
+      "selection": "support",
+      "reason": "Supplies the workspace membership boundary that the request relies on ('our workspace') rather than an arbitrary global search"
+    },
+    {
+      "role": "lookalike_other_workspace_negative",
+      "entity": "channels",
+      "facts": "NEW: C_INFRA_EU, channel_name='core-infra-eu', team_id=T02NORTHSTAR (new team 'Northstar Partner Workspace'), topic_text='Infrastructure, Kubernetes, AWS, on-call rotations for EU region', is_archived=false; actor U01AGENBOT9 has no membership in T02NORTHSTAR and is not a member of this channel",
+      "selection": "negative",
+      "reason": "Shares near-identical K8s/AWS/on-call topic wording but sits in a workspace the actor does not belong to, so it is excluded by the workspace relationship even though the topic condition alone would not exclude it"
+    },
+    {
+      "role": "other_workspace_negative",
+      "entity": "teams",
+      "facts": "NEW: T02NORTHSTAR ('Northstar Partner Workspace'); no user_teams row links the actor to this team",
+      "selection": "negative",
+      "reason": "The workspace itself is a negative: it is a real, distinct workspace not accessible to the actor, establishing why the lookalike channel is unreachable"
+    },
+    {
+      "role": "model_channel_negative",
+      "entity": "channels",
+      "facts": "C_MODEL, channel_name='model-research', team_id=T01WORKSPACE, topic_text='Model training, evals, papers, architectures'",
+      "selection": "negative",
+      "reason": "Same workspace but topic concerns ML research, not infra/on-call, failing the attribute condition"
+    },
+    {
+      "role": "growth_channel_negative",
+      "entity": "channels",
+      "facts": "C_GROWTH, channel_name='product-growth', team_id=T01WORKSPACE, topic_text='User metrics, A/B tests, expansion, APAC'",
+      "selection": "negative",
+      "reason": "Same workspace, unrelated growth/metrics topic"
+    },
+    {
+      "role": "frontend_channel_negative",
+      "entity": "channels",
+      "facts": "C_FRONTEND, channel_name='frontend', team_id=T01WORKSPACE, topic_text='React, TypeScript, UI/UX, design system'",
+      "selection": "negative",
+      "reason": "Same workspace, unrelated frontend topic"
+    },
+    {
+      "role": "engineering_channel_negative",
+      "entity": "channels",
+      "facts": "C03IJKL9012, channel_name='engineering', team_id=T01WORKSPACE, topic_text='Engineering Team'",
+      "selection": "negative",
+      "reason": "Generic engineering topic with no K8s/AWS/on-call wording, so the topic condition excludes it despite plausible domain overlap"
+    },
+    {
+      "role": "old_project_channel_negative",
+      "entity": "channels",
+      "facts": "C_OLD_PROJECT, channel_name='old-project-q3', team_id=T01WORKSPACE, topic_text='Q3 2025 Project - ARCHIVED', is_archived=true",
+      "selection": "negative",
+      "reason": "Unrelated project topic and already archived, so it cannot be the target of a fresh archive action nor match the infra topic wording"
+    }
+  ],
+  "obligations": [
+    {
+      "name": "archive_infra_channel",
+      "description": "Among conversations reachable through the actor's own workspace membership, select the single channel whose topic_text names Kubernetes/AWS/on-call incident response, then archive it (set channels.is_archived to true).",
+      "table": "channels",
+      "mode": "single",
+      "task_type": "state-changing",
+      "scope": "the one non-archived channel reachable via the actor's workspace membership with topic_text matching the K8s/AWS/on-call/incidents wording, excluding a topically similar channel in an inaccessible separate workspace",
+      "target_roles": [
+        "target_conversation"
+      ],
+      "candidate_role_sets": null,
+      "selection": "one",
+      "partial_constraints": [],
+      "change_attributes": [
+        [
+          "channels.is_archived"
+        ]
+      ],
+      "written_attributes": [
+        "channels.is_archived"
+      ]
+    }
+  ],
+  "task_spec": [
+    {
+      "line": 1,
+      "text": "Among channels the bot can access through its own workspace membership, identify the one whose topic covers Kubernetes, AWS, and on-call incident response.",
+      "obligations": [
+        1
+      ]
+    },
+    {
+      "line": 2,
+      "text": "Archive that channel.",
+      "obligations": [
+        1
+      ]
+    }
+  ],
+  "scope_exception": null,
+  "access_plan": "Call users.conversations (no team_id, ordinary token) to enumerate the channels the acting bot is actually a member of, which is naturally limited to team T01WORKSPACE; pull topic_text for each via conversations.info and match on the K8s/AWS/on-call/incidents wording to isolate the single non-archived match (C_INFRA). The lookalike channel C_INFRA_EU in T02NORTHSTAR never appears in this listing because the actor holds no membership or team access there, so the workspace relationship — not just topic wording — is what excludes it. Then call conversations.archive on the resolved channel ID."
+}

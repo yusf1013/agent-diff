@@ -78,9 +78,31 @@ def role_handles(design, bindings, labels):
     return list({dump(x):x for x in output}.values())
 
 
+def assemble_source_mutation(assignment, design, compiled):
+    """An unchanged request already has cards; never re-extract its references."""
+    source = assignment['source_context']
+    if len(compiled['selectors']) != 1:
+        raise ValueError('Source-preserving mutation requires exactly one focal selector')
+    case = materialize({'case_id':assignment['case_id'], 'prompt':source['prompt'],
+                        'acting_user_id':source['acting_user_id'], 'seed_edits':compiled['seed_edits']}, source['seed'])
+    cards = copy.deepcopy(source['cards'])
+    for card in cards:
+        card['Test ID'] = case['case_id']
+    focal = assignment.get('source_obligation',1)
+    case.update(cards=cards,task_spec=copy.deepcopy(source['task_spec']),private={
+        'mode':assignment['resolution_mode'],'focal_obligation':focal,
+        'selector':compiled['selectors'][0],'expected_matches':copy.deepcopy(cards[focal-1]['Referent set']),
+        'near_misses':compiled['negative_referents'],'require_near_miss':True,'candidate_sets':None,
+        'construction_explanation':design['binding_note'],'mutation_summary':'Environment-only patch with mechanically preserved source cards/spec.',
+        'scope_exception':None,'workflow_version':2,'card_provenance':'Original source cards/spec copied; only Test ID changes.'})
+    return case
+
+
 def assemble(assignment, design, compiled):
     if compiled.get('design_defect'):
         raise ValueError('Design defect: '+compiled['design_defect'])
+    if assignment.get('preserve_source_cards'):
+        return assemble_source_mutation(assignment,design,compiled)
     case = materialize({'case_id':assignment['case_id'], 'prompt':design['prompt'],
                         'acting_user_id':'U01AGENBOT9','seed_edits':compiled['seed_edits']}, read(BASE))
     cards=[]
@@ -127,14 +149,6 @@ def assemble(assignment, design, compiled):
         'construction_explanation':design['binding_note'],
         'mutation_summary':'Base seed plus declared patches; separate writer and compiler',
         'scope_exception':design.get('scope_exception'),'workflow_version':2})
-    if assignment.get('preserve_source_cards'):
-        source = assignment['source_context']
-        case['cards'] = copy.deepcopy(source['cards'])
-        for card in case['cards']:
-            card['Test ID'] = case['case_id']
-        case['task_spec'] = copy.deepcopy(source['task_spec'])
-        case['private']['focal_obligation'] = assignment.get('source_obligation', 1)
-        case['private']['card_provenance'] = 'Original mutation source cards/spec copied mechanically; only Test ID changes.'
     return case
 
 
@@ -163,7 +177,7 @@ def check(case, assignment, design, compiled):
             errors.append(f'O{i+1}: selector root differs from design')
         try:
             actual=evaluate_selector(case['seed'],selector)['matches']
-            expected=role_handles(design,compiled['bindings'],ob['target_roles'])
+            expected=(assignment['source_context']['cards'][assignment.get('source_obligation',1)-1]['Referent set'] if assignment.get('preserve_source_cards') else role_handles(design,compiled['bindings'],ob['target_roles']))
             if {dump(x) for x in actual}!={dump(x) for x in expected}:
                 errors.append(f'O{i+1}: complete selector matches {actual}, but planned bindings are {expected}')
         except Exception as exc:
@@ -176,14 +190,20 @@ def check_design(design, assignment):
     if design.get('unrealized_reason'):return errors
     roles={r['role']:r for r in design['roles']}
     for i,ob in enumerate(design['obligations'],1):
-        for role in ob['target_roles'] + [r for group in (ob.get('candidate_role_sets') or []) for r in group]:
+        required = ('answer_attributes',) if ob.get('task_type') == 'read-only' else ('change_attributes','written_attributes')
+        for field in required:
+            if field not in ob:
+                errors.append(f'O{i}: missing required {field} in writer metadata; compiler cannot change a locked design.')
+        if not isinstance(ob.get('target_roles'), list):
+            errors.append(f'O{i}: target_roles must be an array, including [] for absence.')
+        for role in (ob.get('target_roles') or []) + [r for group in (ob.get('candidate_role_sets') or []) for r in (group or [])]:
             if role not in roles or MAPPING.get(roles[role]['entity'],roles[role]['entity']) != ob['table']:
                 errors.append(f'O{i}: target/candidate role {role} must name only the referent table {ob["table"]}; intermediate records belong in support roles.')
-        for field in ob.get('written_attributes',[]):
+        for field in (ob.get('written_attributes') or []):
             parts=field.split('.')
             if len(parts)!=2 or parts[0] not in SCHEMA or parts[1] not in SCHEMA[parts[0]].columns:
                 errors.append(f'O{i}: written attribute {field!r} must be a real table.column, with values in prose instead.')
-        if 'messages.user_id' in ob.get('written_attributes',[]):
+        if 'messages.user_id' in (ob.get('written_attributes') or []):
             errors.append(f'O{i}: omit authentication-supplied actor messages.user_id unless the request specifically controls it.')
     if design['obligations'][0]['table'] != MAPPING[assignment['route_nodes'][0]]:
         errors.append('Main obligation referent differs from assignment')

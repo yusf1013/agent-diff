@@ -1,0 +1,18 @@
+I'm mapping out a route from workspace membership through workspace to conversation to message, with workspace membership as the referent entity in single resolution mode, and working out how to phrase the identifying reference back to the message content.
+
+Since there's only one workspace in the seed data, all channels belong to it, so this mostly reduces to identifying by channel plus message content, then retrieving the author's workspace membership record. The actual task seems to involve a state-changing operation on that membership—like promoting the user to admin via the role field in user_teams.
+
+I'm thinking of a scenario: Priya posted a message in core-infra identifying that the memory issue was a CUDA batch size limit, and I want to promote her workspace role to admin as recognition, tracing the route from membership through workspace, conversation, and message with binding checks on the author and workspace match.
+
+For negatives, Lukas and Olena discussed similar diagnostics but neither posted the specific conclusive message, so Priya remains the unique referent — since there's only one workspace, that constraint stays trivial but the route is still meaningful. This is a state-changing task type updating workspace membership.
+
+I'm structuring the roles: target_membership pointing to Priya's row in user_teams for T01WORKSPACE, plus target_message, target_channel, and target_workspace as supporting roles that establish identity, alongside a negative role for Lukas's non-conclusive message.
+
+The actual identifying quote is Priya's message confirming the pprof delta showed the batch size increase hit a hard CUDA memory limit rather than fragmentation — that's the message that satisfies the prompt's condition for promoting her workspace role to admin.
+
+This gives one obligation: target the workspace membership record, mode single, table user_teams, task type state-changing, updating the role attribute. The discovery of the message is folded into identification rather than a separate obligation, so I'll build the access plan using the conversation history to locate that message and then update the role.
+
+But now I realize there's a real problem: scanning the API list, I don't see any endpoint that actually updates a workspace membership's role — no "update user_teams.role" call exists among auth.test, chat.delete, chat.postMessage, chat.update, or the conversations.* endpoints. Without a supported API for that mutation, this state-changing obligation might not be achievable at all, which could make this an unrealized case.
+
+Given that, maybe I should pivot the task type to read-only — instead of changing someone's workspace role, I could frame it as reporting or looking up their current role using users.info, since that data is accessible even without an update endpoint.
+

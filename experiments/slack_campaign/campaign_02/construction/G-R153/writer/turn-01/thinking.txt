@@ -1,0 +1,30 @@
+I'm mapping the route from workspace to conversation membership through the user, and since only one workspace exists in the seed data, I can likely resolve it directly to T01WORKSPACE without needing further disambiguation.
+
+Actually, looking closer, the seed only has one workspace so both existing Roberts land in the same place regardless. I'll need to introduce a second workspace with its own "Robert" user who has conversation membership in a channel matching some description, so the identifying condition genuinely splits across two workspaces rather than converging on one.
+
+Actually, I should frame the prompt so the workspace is the deliverable target, not just an intermediate fact. Maybe the ask is about adding someone to that workspace's onboarding channel, using "Robert who's in the incident-response channel" purely as the identifying clue to figure out which workspace to act on.
+
+Actually, maybe the real design here is intentional ambiguity: since the shared first name "Robert" could match members across multiple workspaces, the correct answer isn't a single resolved workspace at all — the task should surface that ambiguity rather than force a resolution. So the obligation isn't to name one workspace's engineering channel members, but to recognize that the referent itself is underdetermined.
+
+I should simplify the deliverable to just asking which workspace it is, since determining archived channel counts would require the team_id first anyway. Given the genuine ambiguity between "Test Workspace" and "Velocity Labs," the correct response should surface both matches or ask for clarification, matching the calibration guidance on handling multiple valid referents.
+
+Let me build out the new records: a new team "Velocity Labs" (T02VELOCITY), a user Robert Kim on that team, and a new channel "ops-oncall" with an on-call/incident topic containing that user. Then checking the first match set, Robert Walsh and Robert Chen both belong to C_INFRA in T01WORKSPACE, whose topic covers on-call/incidents too — so that's a legitimate second match creating the ambiguity I need to preserve.
+
+Now I want a clear negative case: a distinct workspace T03GAMMA ("Gamma Corp") with a user Robert Diaz, who belongs only to a purely social channel with no on-call relevance — this proves the match logic requires the specific role/channel context, not just any user named Robert.
+
+I'll also add a name-matching trap: team T04DELTA "Delta Systems" has an incident/on-call channel, but the member there is "Roberta Nguyen," not "Robert" — testing that the system binds to the exact first name rather than a substring match. Then I still need a negative testing the wrong relationship role, where a Robert exists but with an unrelated permission/role.
+
+Another good negative case is a user who authored messages in an on-call channel without being a registered member of that channel — testing that authorship isn't mistaken for membership. I'll add "Robert Fields" as a workspace member of T01WORKSPACE who posts in C_INFRA but isn't listed in that channel's channel_members, since the model doesn't enforce posting permissions, so this checks whether role logic wrongly treats message authorship as equivalent to formal channel membership.
+
+Now I'm laying out the roles table: the workspace itself as a matched entity since Walsh and Chen are both real members of the C_INFRA incident channel, then Walsh and Chen individually as matched users, and the channel_members records as the binding evidence tying them to that conversation.
+
+I'm also adding negative roles: Robert Diaz in the social channel only, Roberta Nguyen with the wrong first name in T04DELTA, and Robert Fields who authored something but lacks conversation membership. Now I'm shifting to define the main obligation around identifying the workspace, tied to the teams table with an underspecified mode and a read-type task.
+
+The target roles are the union of two candidate sets pointing to either the test workspace or the velocity workspace, and I'm setting the answer attributes to the team name and team ID fields. I'm drafting the final natural-language prompt asking to find the workspace where a member named Robert also belongs to the on-call channel.
+
+I'm checking that the phrasing doesn't hint at ambiguity or reveal the decoy candidates, and jotting a binding note clarifying that the same Robert must be both a workspace member and a conversation member of a channel related to on-call or incident response.
+
+For the access plan, I'll use users.list per workspace to find people named Robert, then check their channel memberships via conversations.members or conversations.list to match against on-call/incident-response topics. I'm noting that the acting user's team membership only lists one workspace, but the runtime qualifications suggest the actor should be treated as having access across all workspaces for this query, so I won't worry about that discrepancy further.
+
+Now I'm finalizing the JSON structure: obligations table set to "teams", mode "underspecified", candidate_role_sets listing the possible role labels, selection "one" since a normal request would want a single referent despite the ambiguity, and scope covering the two candidate workspaces that match.
+

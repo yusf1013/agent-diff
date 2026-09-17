@@ -1,0 +1,24 @@
+All the necessary records already exist in the base seed, so no edits are needed—I'm verifying the message, membership, channel, and agent access records are all already in place.
+
+Now I'm mapping out the bindings for the target membership, identifying message, core-infra channel, workspace, and the negative test cases for Lukas, Olena, and Priya's other channel. Then I'm working out the join path: starting from user_teams, joining through teams to channels to messages, matching on team_id and channel_name filters to build the correct selector route.
+
+The tricky part is that filters only compare a field to a literal value, not one field to another, so I can't directly enforce that the message author equals the same user as the membership. I need to instead chain through users -> messages so the identity link happens naturally through the join sequence rather than a same-value filter constraint.
+
+Actually the natural chain of joins already enforces this: starting from the workspace membership, through the user, to their authored messages, to the channel, to that channel's team, the equality holds implicitly since we're tracing a single connected path rather than needing a separate equality filter. But maybe the cleaner route starts from the workspace side instead—membership to workspace to conversation to message—rather than through the user's authored messages.
+
+I'm reconsidering whether the mandated route order (workspace membership to workspace to conversation to message) can still implicitly enforce author identity, since the path doesn't literally traverse back through users -- the only way to tie authorship to the membership row is by matching user_teams.user_id against messages.user_id directly, even though that connection isn't part of the prescribed table sequence.
+
+I could add a users node after messages joined on messages.user_id to filter by author name, but that only constrains the final users node in the path, not the root user_teams.user_id — there's no join that ties the message author back to the specific membership row I'm selecting.
+
+Actually the join chain doesn't require users.user_id to equal user_teams.user_id — the query would match any workspace member as root, as long as some message in that workspace was authored by the matching user, not necessarily tied specifically to the root's own identity.
+
+Since the whole base is confined to a single workspace, every user_teams row would satisfy the same tuple, making the result ambiguous rather than uniquely selecting one root. I need an extra condition that specifically ties the root user to the message's author to force a single answer.
+
+Filters can only compare a field to a literal value, not field-to-field, so I need to bind actual values: filter a users node on real_name matching "Priya Sharma", and connect that same user to the root via user_teams.user_id join. But that same users node would then need to also connect to the message chain through users.user_id to messages.user_id, meaning the same table gets visited twice in the path as distinct nodes.
+
+So the path becomes user_teams → users → messages → channels → teams, joined via user_teams.user_id to users.user_id, then messages.user_id to that same user, then messages.channel_id to channels, then channels.team_id to teams. This ties the root membership's user to a message author (same person), filtered so the message mentions the target phrase, the channel is core-infra, and the team matches the workspace.
+
+For safety, I'll add a scope filter on the root requiring team_id to equal T01WORKSPACE, since root scope filters don't reference a node index. That aligns with the intended design.
+
+Now for negative referents, I need to identify other root-record candidates that could be mistakenly matched: U_LUKAS's membership and U_OLENA's membership in the same workspace, both distinct from Priya's target membership. So negative_referents becomes the composite keys for those two users' workspace memberships.
+

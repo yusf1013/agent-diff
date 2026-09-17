@@ -1,0 +1,42 @@
+I'm mapping out the seed edits for the workspace, checking existing message reactions in #general and planning to add a check reaction from a fellow member on that shipped-feature message.
+
+For the second workspace, I need to build out T02NORTHSTAR entirely: new team, users, team memberships, a channel, messages, and reactions.
+
+For the ghost workspace, I need to set up T03GHOSTORG with a channel where U_INCOGNITO posts a migration rollout message, gets a check reaction from another user, and has channel membership but deliberately no user_teams row for that team—since U_INCOGNITO is already a member elsewhere.
+
+I'm confirming the Lukas OOM message and its eyes reaction already exist and need no changes, since it matches the fact I'm verifying.
+
+"Ghost Org" with channel C_GHOST and just U_INCOGNITO as a member, no team-level membership needed for T03GHOSTORG. I'll add a message from U_INCOGNITO about finishing the migration script rollout, then add a check reaction from U02JOHNDOE1 who's already part of T01WORKSPACE — reaction membership in the channel itself isn't strictly required.
+
+Actually I'll simplify and use U03ROBERT23 as the reactor since they're an existing T01WORKSPACE user, and add a channel_members entry for them in C_GHOST to keep it plausible. Now I need to work out the bindings and selectors, since the actor needs enough access to enumerate workspaces through teams, user_teams, users, messages, and reactions using conversations.list with a team_id, so the actor's membership must support that history access.
+
+I'm thinking the actor likely needs membership in T02NORTHSTAR and the ghost workspace channels too, to properly verify the absence there. The runtime qualifications suggest actor membership could span multiple workspaces via user_teams, which would explain cross-workspace history access.
+
+But I catch a design conflict: if I add the actor to user_teams for T03GHOSTORG to enable discovery, that undermines the ghost workspace's whole premise -- nobody should hold a membership row there. The actor's own membership is distinct from whether message authors in ghost channels have memberships, but I need to think through whether this distinction actually holds up under the intended criteria.
+
+I'll add channel_members entries for both C_NORTHSTAR_ENG and C_GHOST plus user_teams for both workspaces so the actor can access history across them, since channel membership seems to be what actually gates history access regardless of the workspace-switch limitation.
+
+But then I realize there's no teams.list API to discover all workspaces in the first place -- so I need to figure out how the solver is even supposed to enumerate which workspaces exist before it can traverse WORKSPACE->MEMBERSHIP->USER->MESSAGE->REACTION.
+
+Discovery must rely on the actor's own memberships (user_teams) plus any team_ids exposed through channels the actor happens to belong to, like ghost channels whose conversations.info reveals a team_id even outside direct membership. So the setup likely needs the actor to have user_teams entries in each relevant workspace (T01, T02, T03) to make enumeration possible at all.
+
+Since actor can't call users.list for T03GHOSTORG (not a member there), the qualifying chain simply can't be established for anyone in that team — which is exactly the negative result needed, since user_teams for T03GHOSTORG has no rows at all. This confirms the seed and selector setup align with the intended answer; the actual chain-checking happens through API calls rather than direct table queries.
+
+Now I'm drafting the seed edits: adding new teams (Northstar Labs, Ghost Org), new users with proper usernames/emails to avoid null constraint issues, new channels (northstar-eng, ghost-ops), and the corresponding user_teams and channel_members rows needed to establish membership for the actor and other users.
+
+I'm also mapping out sample messages for these new channels showing deployment and rollout activity, plus a new message_reaction row for an existing main_workspace message to satisfy a qualifying reaction condition.
+
+Now I'm thinking through the selector logic: since the obligation requires qualifying_workspaces at the teams level with multiple resolution mode targeting main_workspace and second_workspace, I need one focal query joining teams through user_teams, users, messages, and message_reactions, filtering for completion-related messages with check reactions while linking the same user across membership and auth tables.
+
+I'm working out the join path naming convention, following the pattern seen in the example query where each join step is named by the foreign key connecting adjacent tables in the chain.
+
+For filtering, I realize a single text match won't work since the target messages have different wording ("shipped" vs "Deployment of v3 pipeline complete") — I need a more generic keyword or approach that captures both.
+
+This is really a semantic condition rather than a keyword match, so instead of trying to find a common substring, I should just use an "in" operator listing the exact message texts that qualify, since these are the known finite set of matching messages by design.
+
+Since there's just one obligation here, I only need a single selector for the qualifying workspaces. Now I need to map the role labels to their native handles, binding main_workspace to T01WORKSPACE and second_workspace to T02NORTHSTAR.
+
+Continuing the bindings: member and reactor handles for both workspaces, plus the wrong-reaction and no-reaction message identifiers by their timestamps. For negative referents, since the root entity is teams, T03GHOSTORG stands out as the negative team that could be mistakenly selected via channel-team association -- I'm checking whether wrong_reaction_lukas or ns_member_no_reaction could also count as negatives, but they both belong to workspaces that are already matches, so T03GHOSTORG appears to be the only negative root.
+
+Now I'm assembling the seed_edits list with reasons, adding minimal required fields like is_private, is_dm, is_gc, and is_archived for channels, and confirming the reaction message id already exists in the base seed so I just need to add the reaction row. Writing the final JSON...
+

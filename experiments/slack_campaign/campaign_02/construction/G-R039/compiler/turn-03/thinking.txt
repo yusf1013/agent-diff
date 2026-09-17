@@ -1,0 +1,36 @@
+I need to avoid hardcoded IDs like literal user_id or channel values, and instead use identifying fields like channel_name or message content that reflect user-facing phrasing rather than assumed equality. Let me rebuild the selector around a channel_name reference like 'engineering' instead.
+
+Since the join chain requires channel_members through channels through messages through users through user_teams through teams, and there's no operator to directly equate two path nodes' fields, I need to bind r0.user_id to r3.user_id conceptually through the phrasing itself, using concrete value matching but framed with user-facing predicates instead of raw IDs.
+
+So I'll filter channels by channel_name eq 'engineering' rather than the literal channel_id, and messages by their actual text content, while letting the channel_members-to-channels join already anchor the correct channel implicitly.
+
+I still need to check whether channel_members.user_id actually needs to match the message author's user_id — since the join path doesn't directly connect channel_members back to the users node, that constraint might not be automatically enforced and could require an explicit equality condition.
+
+Since the path list fixes adjacency, I can't insert a channel_members-users join directly since they aren't sequential neighbors — the connecting fields have to match whatever pairs the sequence defines, not any arbitrary shared key.
+
+So the path order holds. The tricky part is enforcing that the same user connects both channel_members and messages—since channel_members doesn't expose real_name directly, I need to identify the target via users.real_name at the messages join, but that join happens after node0 in the path, so I can't use it to constrain channel_members' user_id without a literal reference.
+
+The two table instances (message author and channel member) only share channel_id through node1, with no adjacent path linking their user identities directly.
+
+Reconsidering the guidance though: since user_id is a legitimate field rather than an arbitrary constant, this rejection was really about identity binding not literal filtering. Rereading the latest instructions, they're just guiding revision going forward, so I should follow them by using user-facing identifiers like real_name and channel_name instead of hidden seed-ID constants.
+
+Since channel_members lacks real_name, I need to reconsider the join path—maybe restructuring as CONVERSATION_MEMBERSHIP -> USER -> MESSAGE -> CONVERSATION instead, to keep identity resolution consistent without needing table aliases.
+
+Actually, recalling the previous accepted fix, it used path channel_members->channels->messages->users->user_teams->teams with literal ID filters at specific nodes, which apparently passed the route-order check. The new requirement seems to be swapping those hardcoded ID constants for user-facing named attributes instead.
+
+I could identify the channel with channel_name = 'engineering', keep the distinctive message text as-is, but the author identity check still needs a literal join value since channel_members lacks a name field -- though FK equality joins are explicitly allowed as legitimate, so that's fine; it's only the substitute-for-named-criteria filters that need to become user-facing.
+
+Similarly, the workspace can be identified by team_name = 'Test Workspace' rather than a literal ID, which is good. For linking channel_members.user_id to the right author without a direct adjacency, I could use the real_name filter (Łukasz Kowalski) at that node as a legitimate user-facing predicate rather than a hidden seed-ID constant, though it still doesn't structurally connect the two user_id values across nodes.
+
+Actually, users and channel_members ARE directly FK-connected, so I confirm the route: channel_members → channels (channel_id) → messages (channel_id) → users (user_id) → workspace_membership (user_id) → workspace (team_id), which matches what I had before.
+
+The equality between the membership's user and the message's user isn't an explicit join in this route—it's a design note, not a structural constraint. Since user_id is a legitimate FK field, using a literal user ID as a filter value is acceptable and doesn't violate the rule against replacing name-based criteria with IDs.
+
+So I'll switch the channel filter from a literal channel_id to a literal channel_name at the channels node, while keeping the user_id literal filter at the channel_members node since there's no named alternative for that identity binding. The channel_id at that node doesn't need its own filter since it's already tied via the join to the channel_name filter.
+
+For the messages node, I'll keep the distinctive text-content filters and skip any channel_id filter since it's linked through the join too. At the users node, I can swap the literal user_id filter for a real_name filter matching the same person, since real_name is the more user-facing identifier. The teams node's team_name filter already looks fine as is.
+
+That leaves the question of whether the literal user_id at the channel_members node is still justified, since it's the only way to bind the channel member to the message author without a direct path connecting them except through the channels-messages-users chain.
+
+I'm settling on keeping that literal ID as a necessary mechanical binding since channel_members has no name field to reference instead, and the instructions explicitly permit supplied actor IDs and foreign-key joins as legitimate. This creates a slightly redundant but consistent match between the two identity filters, which is acceptable. I'll finalize by swapping hardcoded channel_id literals for channel_name, replacing the user node's ID filter with real_name, and retaining the necessary literal at channel_members.
+

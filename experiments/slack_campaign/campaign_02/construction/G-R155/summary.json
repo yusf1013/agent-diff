@@ -1,0 +1,16 @@
+{
+  "status": "unrealized",
+  "review": {
+    "validity": "fail",
+    "quality": "weak",
+    "issues": [
+      {
+        "kind": "validity",
+        "location": "compiled.selectors[0].focal.joins / private.selector.focal.joins",
+        "problem": "The route is supposed to bind the SAME user as workspace member, channel member, and message author (per binding_note: 'All five records must bind to the same user and same channel'; and the prompt clearly describes a workspace member who personally posted the question). The compiled join chain is user_teams.user_id = channel_members.user_id (binds workspace membership to channel membership for one user) and channel_members.channel_id = messages.channel_id (binds channel membership to a channel containing some message), but there is no join equating messages.user_id to channel_members.user_id / user_teams.user_id. This means the query actually implements 'a workspace member who is also a member of a channel that happens to contain a matching message', not 'a workspace member who authored the matching message in a channel they belong to.' The compiler's own notes admit this explicitly: 'T01WORKSPACE is independently reachable via any pre-existing engineering-channel member (e.g., U01AGENBOT9) ... the single answer does not depend on Robert being the unique qualifying user, only on the message filter being satisfied within a channel he/any T01 member belongs to.' This is exactly the distinguished pitfall the review guidelines warn against: 'Channel-with-a-member-who-posted and channel-containing-a-post are different routes; workspace membership is not authorship.' The query's semantics silently diverge from the prompt's requested relationship and from the design's own binding_note, even though the current seed happens to still produce the intended single correct answer.",
+        "repair": "Add an explicit join/filter equating messages.user_id to the same user bound at channel_members.user_id/user_teams.user_id (i.e., require the message's author to be the traversed workspace-member/channel-member), so the compiled query enforces 'the workspace member who posted the message,' matching the binding_note and the prompt's plain-language description."
+      }
+    ],
+    "rationale": "The design and binding_note explicitly require all five relationship records (workspace membership, channel membership, and the message) to bind to the same user, mirroring the prompt's description of a workspace member who personally posted the blocked-on-rewrite question. However, the compiled selector's join list omits any linkage between messages.user_id and the user traversed via user_teams/channel_members, so the query in fact answers a different, weaker question ('workspace member who is a channel member of a channel that contains a matching message, authored by anyone'). The compiler's own construction notes confirm this gap, stating the correct workspace is reachable through an unrelated existing channel member rather than through Robert specifically. This is a substantive validity defect distinguishing authorship from mere co-membership, a case explicitly called out in the review criteria as invalid route construction, even though the decoy data happens to keep the single computed answer correct in this instance."
+  }
+}

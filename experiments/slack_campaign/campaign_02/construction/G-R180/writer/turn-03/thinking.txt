@@ -1,0 +1,34 @@
+I'm checking whether the join list actually connects r5's team_id back to r0's team_id, since it's not explicitly listed among the joins I traced.
+
+Since no such equality is explicitly requested, per the route contract's rule that distinct variables stay distinct unless equality is stated, r5 doesn't need to share the same team_id as r0. This overturns my earlier assumption of a "same-workspace admin" — the actual requirement is just that r5 is some workspace membership for user r4, not necessarily in r0's workspace.
+
+So the corrected task becomes: workspaces with a channel containing a message that got a rocket reaction from a user who holds an admin role in any workspace, not necessarily the one being queried. This resolves the reviewer's access-plan concern entirely, since it's now a trivial single lookup rather than a cross-workspace binding check. I should redesign the binding_note to reflect that r5's team isn't equated to r0's team.
+
+For the matches, I'll keep workspace_test satisfied via the existing Robert reaction, and satisfy workspace_neuro by having Morgan Freeman - who's admin of T01WORKSPACE - react with a rocket on a message in a new channel under a newly created T02NEURO workspace, since the route only requires him to be admin somewhere, not specifically in T02NEURO.
+
+Actually, checking the route logic, the reactor doesn't even need membership in T02NEURO's channel—only the message needs to belong to r0's channel, and the reaction just needs to come from r4 with no required relation between them beyond that. It's not strictly realistic but the model doesn't enforce channel access for reactions, so for coherence I'll still tie U07MORGANFREE into the scenario anyway.
+
+For negatives, I want a clean example where an admin-role user reacts with the wrong emoji instead of reusing the existing non-admin case. I'll have U07MORGANFREE react with "eyes" on a separate message in a different channel, since that keeps it negative without conflicting with a valid rocket reaction elsewhere.
+
+I also need a case where a non-admin member reacts with the correct rocket emoji, which shouldn't qualify the workspace since role r5 requires admin status—I can use an existing plain member like U08NICK23 for that.
+
+Then to keep things clean, I'll settle on exactly two matching workspaces plus two negative ones: one failing purely on wrong emoji, one failing purely on non-admin reactor status, which covers the distinct failure cases without overcomplicating the dataset.
+
+Actually, since resolution happens at the workspace level, testing negatives properly requires workspaces where the only candidate reaction fails a single condition, so that workspace correctly gets excluded.
+
+I'll set up T02NEURO as a matching case (admin reacts with rocket), T03OTHER as negative where the only reaction is the wrong emoji from an admin, and T04THIRD as negative where the only reaction is a rocket from a non-admin. This exercises both exclusion paths, while T01WORKSPACE already serves as the seed match through existing base data with Robert Walsh as admin reacting with rocket. I want to double check Robert Walsh's user_teams entry confirms his admin role is scoped to T01WORKSPACE specifically.
+
+I should add channel_members rows so each reactor is actually a member of the channel they're reacting in, and have each reactor also author their own message to keep things simple.
+
+Now assembling the workspace/team mappings: T01WORKSPACE ties to the existing message and reaction by U03ROBERT23, while T02NEURO is new, tied to C_NEURO_LAUNCH and U07MORGANFREE. I want to avoid having someone react to their own message, so let me reconsider the author/reactor pairing for that one.
+
+I'll simplify by having U07MORGANFREE be both author and reactor since self-reactions are technically valid in Slack, then continue listing the supporting roles: the neuro launch channel, the launch message, Morgan Freeman's existing admin membership in T01WORKSPACE, and their rocket reaction.
+
+For the negative cases, I'm setting up T03OTHER with a wrong-emoji reaction from admin Robert Walsh, and T04THIRD with a correct-emoji reaction from Nick Fury, who isn't an admin anywhere—both designed to fail the admin-reaction check. I still need the general channel and shipped message roles for workspace_test, then I'll move on to writing out the obligations table.
+
+I'm setting the mode to multiple with target roles for workspace_test and workspace_neuro, answering with team_id and team_name. Now I'm working through the access plan logic—checking whether the solver can actually determine if a reactor is an admin of any workspace, given that users.info might only expose one associated workspace per query.
+
+Checking each reactor's membership, I find they each have exactly one workspace association: Robert Walsh and Morgan Freeman as admin in T01, Nick as member in T01. Since there's no ambiguity with multiple memberships, I can now write the access plan: enumerate workspaces via teams, then use conversations.list scoped by team_id to pull channels, conversations.history for messages, and reactions.get per message.
+
+Time to write the full JSON with the access plan.
+

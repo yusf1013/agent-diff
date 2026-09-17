@@ -1,0 +1,112 @@
+I realize my path was missing a hop — I need to go through user_teams and teams before reaching channels, so the correct chain is users -> user_teams -> teams -> channels -> messages, with joins filtered on matching team_id, channel_name, message_text, and consistent authorship.
+
+The binding note requires that the message author actually be the identified participant, not just any channel member. So the join needs to loop back: users → user_teams → teams → channels → messages, then tie messages.user_id back to that same root user, effectively closing the chain since MESSAGE must resolve to the original participant's identity.
+
+Working out the join chain for revisiting the users table: linking user_teams by user_id, teams by team_id, channels by team_id, messages by channel_id, and finally back to users by messages.user_id to enforce the self-referencing constraint. I'm mapping each step of the six-node path to its corresponding foreign key relationship.
+
+With filters set on channel_name matching 'core-infra' and message_text containing '47K over budget', I'm reasoning about whether node0 and node5 (both users) need to be forced equal, since the selector syntax lacks an explicit "same row" mechanism -- the identity linkage seems implied by the cyclical path structure itself rather than stated directly.
+
+Given the error about the identifying path mismatching the assigned route, I think the fix is to align the focal path exactly with USER -> WORKSPACE_MEMBERSHIP -> WORKSPACE -> CONVERSATION -> MESSAGE, ending at MESSAGE, while still returning users as the target since node0 must equal the message author by the route's design.
+
+But I'm now questioning whether that constraint actually holds structurally: node0 links to WORKSPACE_MEMBERSHIP via a direct user_id join, but the messages node only connects through channels, meaning node0 isn't necessarily tied to the message's actual author unless something further enforces that equality.
+
+Actually the resolution is simpler - since users.user_id has a direct foreign key relationship to messages.user_id, I can join node0 straight to the messages table as author, bypassing the team/channel chain entirely for that particular edge.
+
+So the correct order should be users, user_teams, teams, channels, messages, and then back to users again to close the loop — that final self-join enforces that the message author matches node0's identity, but I need to check whether visiting "users" twice actually guarantees that constraint or if I need to make it explicit rather than assumed.
+
+That maps cleanly onto users, user_teams, teams, channels, messages, ending exactly where I need. But the real problem is that this join path doesn't actually tie the message's author back to node0 - so any workspace member joined to a matching message in the right channel would qualify, not just the specific user I want, since messages.channel_id ties to channels but not to node0's identity.
+
+This contradicts the fact that only U_ROBERT matched previously when I joined users directly to messages via user_id and then to channels - that path enforced authorship correctly. The validator flagged that my path skipped the WORKSPACE_MEMBERSHIP and WORKSPACE hops, so I need to keep those hops while still forcing messages.user_id to reference back to node0 so the author identity constraint holds.
+
+The specified route order is USER, WORKSPACE_MEMBERSHIP, WORKSPACE, CONVERSATION, MESSAGE, which maps to user -> user_teams -> teams -> channels -> messages using the standard FK chain, but this sequence never touches messages.user_id, so nothing guarantees the message was actually authored by that user rather than just being in a channel they belong to. Since the design requires the target user to be the author, I think the extra join messages.user_id can be added to link the final messages node back to node0 directly, since join keys should be able to connect nodes regardless of the listed order as long as they link adjacent identities correctly.
+
+Actually, maybe the path doesn't need to explicitly revisit "users" — messages already has a user_id FK, so that final hop back to the author could just be an implicit field read off the message node rather than a separate path entry. Since root_table defines the entity type returned, perhaps the engine allows collecting that entity from any node along the path where it naturally appears, not just node 0.
+
+I'm working through extending the path to teams->user_teams, checking whether the final join's user_id would need to loop back and equal node0's user_id through an implicit FK connection.
+
+The problem is that revisiting the users table doesn't automatically enforce that it's the same row as node0 -- SQL treats it as potentially a different user unless explicitly constrained, so I need to reconsider whether the intended design actually mirrors the route where node0's membership determines the team, and the message's author constraint ties back to that same node.
+
+That would make nearly every workspace member match, which can't be right since we need a unique answer. So the message author must actually be constrained to equal node0 itself, meaning the real join path needs that extra FK linking the message back to the user, not just an independent existence check.
+
+Actually, maybe the returned rows come from the last node in the path rather than node0, since that's the identified participant—so node0 and the final node might be constructed to coincide naturally through the cyclical foreign key structure connecting users back to teams and messages.
+
+Reconsidering the join count: with five nodes (users, user_teams, teams, channels, messages), there should only be four joins linking adjacent pairs, meaning the join list connects node0-1, 1-2, 2-3, and so on without a redundant final link back to users.
+
+So node0 is left unconstrained by message authorship, which would just match any team member rather than the message's actual author. Since the validator's error was about the path mismatching the route, maybe I need to reconsider whether authorship is actually being checked, or whether adding an extra node to properly tie the author back to users is the right fix.
+
+I'm reconsidering whether the fix should keep all conditions within a single query on the same route so the bindings stay consistent, rather than trying to add auxiliary constraints or subqueries.
+
+The route needs to span users through membership, workspace, conversation, to message, plus enforce that the message author matches the starting user. Since messages.user_id references users, maybe that join can loop back to the same starting node rather than treating it as a separate node in the path.
+
+So the likely correct path is users → user_teams → teams → channels → messages → users, with joins connecting user_teams to users and teams, channels to teams, messages to channels, and finally messages back to users via user_id. The final node being users again matches the root table type, so the query presumably returns based on that closing node.
+
+That example path confirms the pattern: it starts at root_table "messages" and ends at "channels", filtering on channel name, with the return type being root's node0 filtered by conditions on later nodes. So message_reactions links message and user, user links to channel_members, which links to channels—meaning the query returns messages where the reactor is a member of the "security" channel, and that reactor is a separate person from the message's author.
+
+By analogy, for my case, root_table should be "users" as the returned entity, with the chain following from user through workspace membership to team to channel to message, filtering on the message node—though this is just the naive path and doesn't tie the specific user to being the author.
+
+But that route actually parallels "channel member" semantics, not "message author," which is a distinct one of the three allowed participant readings. Since my design specifically requires author, the fix likely needs the FK from messages to its author user_id, combined with a check that this same author user has workspace membership.
+
+So actually the message's user_id is the terminal identifier for the author, meaning the final entity should be extracted from that join rather than the starting node. That suggests the path should really run from users through teams and channels down to messages, with the author resolved by collapsing back to the users table at the end.
+
+I could try adding a filter that ties messages.user_id directly to node0's identity, but filters only compare fields to static literal values, not cross-node references. That means I'd need to hardcode the actual user ID as a constant, which risks conflicting with the rule against replacing hidden seed-ID constants.
+
+Given that tension, maybe the cleanest fix is to restructure the join path itself: start at users, follow through messages via the user_id foreign key, then to channels via channel_id, then to teams via team_id, then back to team membership—using structural joins instead of a literal ID filter to establish the identity link.
+
+Right, so my original path stopped too early at channels — I need to extend it through teams and user_teams to fully satisfy the required route order: USER, WORKSPACE_MEMBERSHIP, WORKSPACE, CONVERSATION, MESSAGE, just traversed in reverse starting from USER.
+
+I realize the forward chain via user_teams->teams->channels->messages doesn't structurally tie message authorship back to node0, since messages.user_id is a separate FK not enforced by this join path. I'm unsure if there's a way to filter node4 against a node-relative reference, since the examples don't show that pattern explicitly.
+
+Given this practical difficulty, maybe the accepted resolution is to simply place the message-author relationship at the front of the path—since it's a data dependency rather than a strict ordering constraint—using path=["users","user_teams","teams","channels","messages"].
+
+I'm ordering the joins as user_teams.user_id, user_teams.team_id, channels.team_id, messages.channel_id, matching the declared route type sequence exactly. To ensure author uniqueness, I could add a filter on node4 hardcoding the user_id value, and since that's a legitimate foreign-key join rather than a hidden name constant, it should satisfy the rules.
+
+But hardcoding the ID bypasses the semantic matching the design wants — identifying the author through message content characteristics rather than a pre-known key — so reviewers might flag it as invalid. Instead, I should filter on message text content and rely on the "single" resolution mode, which just requires at least one complete matching tuple to exist for each returned node0 candidate, since the filter constrains message/channel rather than the ID directly.
+
+But that runs into a problem: since nearly every user is a workspace member of that same team, and the channel belongs to that team too, every user in the workspace would satisfy the tuple, not just the intended one — violating "single" resolution's requirement of exactly one match. So I need message authorship structurally tied to node0, and I'm reconsidering whether the validator error about the path differing from the assigned route actually means the sequence of node types must exactly match the official route (USER, WORKSPACE_MEMBERSHIP, WORKSPACE, CONVERSATION, MESSAGE).
+
+My original submission only had 3 nodes (users, messages, channels), skipping the WM and WORKSPACE hops, which is why it errored — the fix needs the full 5-node path in that exact order: users, user_teams, teams, channels, messages. Now I'm wondering if I can just filter directly on the message's own message_id, since I already know the specific real ID for that $47K over-budget message from the seed data, which would sidestep the uniqueness problem entirely.
+
+But even combining message_id and content filters doesn't actually tie the message back to node0 as the author. Then again, maybe that tie isn't strictly necessary for uniqueness here — since node0 only needs to range over users who are members of a team that owns the 'core-infra' channel containing that message, and that existence check doesn't depend on node0 at all, meaning almost every workspace member would satisfy the query except users like Kenji who aren't in that specific channel.
+
+This makes me realize the naive interpretation is wrong: node0's role is only asserting workspace membership through user_teams, not channel membership, so virtually the whole workspace would match, which can't be the intended design. This means node0 must actually be extracted via the message's author field, requiring the FK chain to terminate by identifying node0 as the author — the connection needs to go through an actual participant (channel member, message author, or reaction contributor), not just a generic workspace tie.
+
+So the route likely goes from the user's workspace membership to the workspace, into the conversation/channel, and then to identifying a participant there — but that participant could be a completely different user than node0. That would mean node0 is just an anchor establishing workspace context, while the actual returned single USER entity is the participant found downstream.
+
+So the route_nodes list only shows five nodes ending at MESSAGE, but resolving the actual target USER requires an implicit final hop through the message's author field, since the referent_entity type doesn't match the last listed node. This aligns with the rule that the stated root entity must be reached via the full route, with inverse or association fields not merged into it directly.
+
+I'll settle on the six-node path (users → user_teams → teams → channels → messages → users) with joins linking membership, team, channel, and message ownership, filtering on channel_name 'core-infra' and message_text containing '47K over budget', treating the final users node as the identified author whose handle gets returned.
+
+Actually, checking the syntax convention more carefully: the root_table (node0, the first node) is what gets returned, while filters apply to the last node in the chain. So looking at the message_reactions example again, the returned type is "messages" and the filter sits on the final "channels" node — meaning the query returns matches for the first node, not the last.
+
+Applying that same logic to my case, root_table should be "users" (node0), with filters at the tail on "messages" narrowing results down through the join — since the direct FK from messages to author is messages.user_id, this fits the convention naturally.
+
+Since messages.user_id directly references users via a foreign key, the connecting relation here is simply authorship, not a separate join table like in the reaction example. So the path should be: users (root, node0) directly linked to messages through that authorship relation.
+
+So the required node order is USER, WORKSPACE_MEMBERSHIP, WORKSPACE, CONVERSATION, MESSAGE, mapped to tables users, user_teams, teams, channels, messages, with NODE0 as the return value. That still leaves the authorship requirement unresolved—maybe the design treats workspace membership as a stand-in for channel membership rather than literal authorship, even though the binding note explicitly says author. If so, the validator might expect both the membership chain (for the required route) and a direct join from messages to users to actually enforce authorship.
+
+Actually, maybe the last hop itself resolves to the author implicitly - so node0 isn't the returned entity at all; instead the terminal field of the message (its user_id) supplies the actual USER instance we resolve to, even though the type declared is "users" throughout the route.
+
+I'm going with the 6-node path, letting node0 stay unconstrained since it just needs to prove the workspace/team linkage exists, while node5 (the author) is fully pinned down by the content filter. So regardless of which anchor user gets picked, the actual returned entities should reduce to the distinct rows achievable at whatever position counts as "root" — and given the ambiguity, I'll settle that in favor of the author position.
+
+Actually I realize there's a simpler fix: keep the original two-hop chain from users to messages to channels, but extend it forward to teams and user_teams, forcing user_teams.user_id back to node0's own id, since node0 is already tied to the author via the messages.user_id join.
+
+That would enforce authorship correctly, but since the path is linear, node4 (user_teams) only connects to node3 (teams) via team_id, not back to node0's user_id directly -- so I need another way to close that loop.
+
+Actually, if paths are strictly linear with one join per adjacent pair, I could reorder the path so "users" sits between "messages" and "user_teams" - that way node1 (users) connects to node0 via messages.user_id and to node2 via user_teams.user_id, satisfying both relationships through the same node without needing non-adjacent joins.
+
+But then continuing to teams and channels, I still can't force messages.channel_id to match the same channel node4 at the far end of the path, since node0 and node4 are non-adjacent. So this shows a strictly linear path structure can't express all three constraints at once - it would require a graph rather than a simple path.
+
+Actually I realize the channel filter isn't in the path at all, so I need to reconsider the join order—messages needs to connect both to channels (for the channel name filter) and to users (for the author), but the path can only be linear, so I'm working out whether messages should sit between channels and users in the sequence.
+
+Actually my path is reversed from the required route order, which likely still fails the validator's strict sequential type-matching check. Given a strict linear adjacency requirement, enforcing authorship via direct FK within that exact order may be structurally impossible without a diamond shape, so maybe authorship doesn't need to be enforced structurally through the join path at all.
+
+I'm considering whether terminal-field resolution is distinct from adding a node, and wondering if root_table constrains node0's type strictly to "users" since the path must start there, even if the framework's actual entity-selection logic remains uncertain to me.
+
+Let me try the direct approach: keep the path matching the route order across five nodes and see if filtering the final node helps, though I suspect this needs a way to reference a value that isn't hardcoded. Maybe the tool treats the path as a set of tables rather than a strict sequential join chain, allowing cycles when a table reappears through the join structure.
+
+But actually if "users" shows up at two positions, standard SQL joins would treat those as separate aliases unless explicitly tied together, and if I want them treated as the same row, it's simpler to just use one node and reference its user_id across multiple join conditions instead of repeating the table.
+
+Given the complexity, I'll go with a good-faith fix: re-reading the validation output, my previous selector already matched only U_ROBERT correctly - the error was purely structural about path conformance, not about wrong matches.
+
+So the fix just needs to restructure the path to literally follow the assigned route order while still yielding the same correct match set.
+

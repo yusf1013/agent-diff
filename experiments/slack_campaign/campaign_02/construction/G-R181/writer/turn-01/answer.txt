@@ -1,0 +1,52 @@
+{
+  "prompt": "In the workspace where someone reacted with the 👀 emoji to a message about repeated out-of-memory errors from loading large models layer-by-layer, and that same person is also a member of the channel used for infrastructure incidents and on-call, please create a new public channel called retro-notes.",
+  "binding_note": "The reactor of the 👀 reaction on the OOM/layer-streaming message must be the same person who holds membership in the infra/on-call channel; the workspace is whichever team contains that channel and that message. Two teams each contain a matching chain (message+reaction+membership), so the workspace is not pinned down by the phrase alone.",
+  "roles": [
+    {"role":"workspace_T01","entity":"teams","facts":"Existing team T01WORKSPACE, containing #engineering (C03IJKL9012) and #core-infra (C_INFRA, topic: Infrastructure, K8s, AWS, on-call, incidents).","selection":"alternative","reason":"Satisfies the route: U01AGENBOT9 reacted 👀 on the OOM message in #engineering and is also a member of #core-infra."},
+    {"role":"workspace_T02","entity":"teams","facts":"New team T02NOVA, containing #nova-eng (C_NOVA_ENG) and #nova-infra (C_NOVA_INFRA, topic: Infrastructure, on-call, incidents for Nova cluster).","selection":"alternative","reason":"Satisfies the same route via a parallel chain: U_NOVA_OPS reacted 👀 on the Nova OOM message and is also a member of #nova-infra."},
+    {"role":"message_oom_T01","entity":"messages","facts":"Message 1706110000.000100 in C03IJKL9012 authored by U_LUKAS: 'circuit-tracer library is hitting OOM errors when loading large models layer-by-layer... rewrite in PyTorch from scratch with proper streaming.'","selection":"support","reason":"Anchor message for the reaction condition in workspace_T01."},
+    {"role":"reactor_T01","entity":"users","facts":"U01AGENBOT9, reacted 👀 on message_oom_T01 and is a channel_members row for C_INFRA.","selection":"match","reason":"Fulfills reactor + membership binding for workspace_T01."},
+    {"role":"reaction_T01","entity":"message_reactions","facts":"{message_id:1706110000.000100, user_id:U01AGENBOT9, reaction_type:eyes} (already present in base seed).","selection":"match","reason":"The identifying reaction for workspace_T01's chain."},
+    {"role":"infra_membership_T01","entity":"channel_members","facts":"{channel_id:C_INFRA, user_id:U01AGENBOT9}.","selection":"match","reason":"Confirms same reactor holds infra-channel membership in workspace_T01."},
+    {"role":"message_oom_T02","entity":"messages","facts":"New message in C_NOVA_ENG authored by U_NOVA_DEV: 'The tensor pipeline library keeps hitting OOM errors when loading big models across shards - need a full rewrite with proper streaming.'","selection":"support","reason":"Anchor message for the reaction condition in workspace_T02."},
+    {"role":"reactor_T02","entity":"users","facts":"U_NOVA_OPS, reacted 👀 on message_oom_T02 and is a channel_members row for C_NOVA_INFRA.","selection":"match","reason":"Fulfills reactor + membership binding for workspace_T02."},
+    {"role":"reaction_T02","entity":"message_reactions","facts":"{message_id:message_oom_T02, user_id:U_NOVA_OPS, reaction_type:eyes}.","selection":"match","reason":"The identifying reaction for workspace_T02's chain."},
+    {"role":"infra_membership_T02","entity":"channel_members","facts":"{channel_id:C_NOVA_INFRA, user_id:U_NOVA_OPS}.","selection":"match","reason":"Confirms same reactor holds infra-channel membership in workspace_T02."},
+    {"role":"neg_reaction_wrong_type","entity":"message_reactions","facts":"{message_id:1706110000.000100, user_id:U_PRIYA, reaction_type:thumbsup}; U_PRIYA is also a C_INFRA member.","selection":"negative","reason":"Right message and right infra membership, but wrong emoji (thumbsup, not eyes) breaks the binding."},
+    {"role":"neg_reaction_wrong_message","entity":"message_reactions","facts":"{message_id:1706076473.000000 (Acme hallucinated-refund-policy message in C_MODEL), user_id:U_OLENA, reaction_type:eyes}; U_OLENA is also a C_INFRA member.","selection":"negative","reason":"Right emoji and right infra membership, but the reacted message is about a hallucinated refund policy, not OOM/layer-streaming, breaking the binding."},
+    {"role":"neg_user_not_infra_member","entity":"users","facts":"U_NOVA_QA reacted 👀 on message_oom_T02 (message_reactions row {message_oom_T02, U_NOVA_QA, eyes}) but is only a channel_members row for C_NOVA_ENG, not C_NOVA_INFRA.","selection":"negative","reason":"Right emoji and right message, but this reactor lacks the infra-channel membership, so the full chain fails for this person."}
+  ],
+  "obligations": [
+    {
+      "name":"identify_workspace",
+      "description":"Resolve which workspace contains a message about OOM/layer-streaming that received a 👀 reaction from a user who is also a member of that workspace's infra/on-call channel; two teams (workspace_T01 via U01AGENBOT9, workspace_T02 via U_NOVA_OPS) each satisfy this chain, so the intended workspace is underspecified pending clarification or explicit selection.",
+      "table":"teams",
+      "mode":"underspecified",
+      "task_type":"read-only",
+      "scope":"teams reachable via the actor's channel memberships and reaction history",
+      "target_roles":["workspace_T01","workspace_T02"],
+      "candidate_role_sets":[["workspace_T01"],["workspace_T02"]],
+      "selection":"one",
+      "answer_attributes":[["teams.team_id"]]
+    },
+    {
+      "name":"create_channel",
+      "description":"Create a new public channel named retro-notes inside the workspace resolved by identify_workspace.",
+      "table":"channels",
+      "mode":"absent",
+      "task_type":"state-changing",
+      "scope":"a brand-new channel scoped to the resolved workspace's team_id",
+      "target_roles":[],
+      "candidate_role_sets":null,
+      "selection":"one",
+      "change_attributes":[[]],
+      "written_attributes":["channels.channel_name","channels.team_id"]
+    }
+  ],
+  "task_spec":[
+    {"line":1,"text":"Determine which workspace contains the message-reaction-membership chain described (OOM/layer-streaming message, 👀 reaction, same reactor also in the infra/on-call channel).","obligations":[1]},
+    {"line":2,"text":"Create a public channel named retro-notes inside that resolved workspace.","obligations":[2]}
+  ],
+  "scope_exception": null,
+  "access_plan":"The acting bot (U01AGENBOT9) is a member of channels in both T01WORKSPACE (#engineering, #core-infra) and the newly added T02NOVA (#nova-eng, #nova-infra), so conversations.history/conversations.replies can surface the OOM/layer-streaming messages in each team, reactions.get can confirm the 👀 reactor on each, and conversations.members can confirm that same reactor's presence in the respective infra/on-call channel. Because two teams satisfy the chain, the workspace remains underspecified until clarified or a deliberate choice is made; conversations.create then takes the resolved team_id to add the retro-notes channel."
+}

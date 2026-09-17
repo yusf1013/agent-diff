@@ -1,0 +1,28 @@
+I'm sketching route R202, starting from workspace membership and resolving multiple entities by chaining through user, conversation membership, conversation, message, and finally reaction to identify the target set.
+
+Since there's no write API for workspace membership itself, this needs to be a read-only task reporting the membership records (with role) for users tied to a conversation containing a message that got a specific reaction. I'm working out a scenario around a channel like C_INFRA where a message received a "fire" reaction, and I need the workspace memberships of everyone in that conversation.
+
+The route chains: workspace membership target, back through user, through conversation membership, through conversation, through message, through reaction. So I need a reaction type/emoji, a message, the conversation it's in, its members, and their workspace roles — I'm sketching this out using the base seed's reaction data.
+
+Actually let me reframe with a concrete scenario: a channel like core-infra has a message about incident recovery that got a specific reaction, and I want to find the members of that channel and check their workspace roles (owner/admin vs regular member) — this fits a plausible audit purpose, like verifying whether guests can access an incident channel.
+
+This gives a broad set — everyone in that channel, and their workspace roles collectively. That fits the "multiple" resolution mode fine, since the goal is a quarterly access review listing the workspace role of each member of the channel where the incident postmortem got the ✅ confirmation.
+
+I need to build negative cases: a similar message in another channel reacted with "rocket" instead of check, and a check-reacted message in a different conversation entirely — both should fail to match since they're not the specific incident postmortem message in the target channel.
+
+I'll settle on a specific identifying phrase for the target message: the one confirming the CUDA memory-limit root cause with a check reaction, distinct from the eyes-reacted OOM thread message elsewhere. Now I'm drafting the actual review prompt asking for the workspace role of every member in that channel.
+
+I'm mapping the binding path from the check reaction to Priya's root-cause message, into its conversation, then to that conversation's membership list, then to each user's workspace role. I also need to add a new reaction record (Robert's check reaction on that message) since it isn't in the seed data, and start defining the roles table with a "target_message" entry.
+
+Checking user_teams roles, I notice none of these 8 C_INFRA members have admin/owner status—they're all "member". I need to be careful here since there are two different Roberts in the seed data: U_ROBERT (Robert Chen) and U03ROBERT23 (Robert Walsh), who actually holds an admin role, unlike Robert Chen.
+
+I could artificially bump someone like U_PRIYA to admin for variety, but I should preserve the base data unless there's real justification—keeping everyone as "member" is still a valid, useful outcome for the access review report. Now I'm moving on to defining the negative test cases, starting with a message in the C_MODEL channel.
+
+Negative 2 covers a Tokyo launch message reacted with the wrong emoji and topic. Negative 3 is a batch-size revert message in C_INFRA that never gets the "check" reaction, testing that the exact reacted message is required. Negative 4 is an existing seeded reaction on an OOM-error message in a different channel and topic, which should be excluded for mismatching both subject and channel.
+
+I also need to add a workspace membership negative: U_INCOGNITO belongs to C_GROWTH but not C_INFRA, so his membership record shouldn't surface since he isn't in the target conversation -- and since several channels share nearly identical member lists except for him, I need to be precise about scoping strictly to C_INFRA.
+
+Now I'm structuring the full JSON: a single obligation on workspace_memberships_of_channel_members against the user_teams table, read-only, multiple mode, with target_roles covering the membership roles and answer_attributes including role, user_id, and team_id. Then I'm listing out the target roles: target_message on messages, target_reaction on message_reactions as the match/confirmation role, and target_conversation on channels as a supporting role.
+
+I'm noting that intermediate roles don't need to be restricted to the referent table -- only target_roles and candidate_role_sets are constrained that way, so I can freely include roles like channel_members for narrative structure. I'm assigning eight workspace_membership match roles for each of the C_INFRA members, plus negative roles: wrong reaction types in C_MODEL (rocket) and C_GROWTH (thumbsup), the stray eyes reaction in the seeded C03IJKL9012 channel as a wrong-channel negative, and U_INCOGNITO's membership as an excluded negative since he isn't in the target conversation. I'm also adding a support role for the channel_members records of the eight C_INFRA users, and now I'm ready to write out the final JSON with all these obligations assigned.
+

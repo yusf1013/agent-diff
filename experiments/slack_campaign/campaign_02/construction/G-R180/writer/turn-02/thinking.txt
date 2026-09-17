@@ -1,0 +1,26 @@
+I should give each queried user just one workspace membership, but Robert Chen is heavily referenced across many T01WORKSPACE channels in the base seed data, so removing that membership could break other references — I need to think about how to reconcile this.
+
+Instead of overloading Robert Chen, I'll create a fresh user, U_NEURO_ADMIN, who is solely admin of T02NEURO with no T01WORKSPACE ties, keeping memberships clean and unambiguous for users.info lookups. Now I need to figure out how to handle the negative cross-workspace reaction case without reusing someone who'd end up with two memberships.
+
+That works since channel membership doesn't guarantee workspace membership. I'll create a new user, Diego Fernandez, with a single team membership as admin in T02NEURO, and use him for the decisive role instead, leaving Robert Chen's existing membership untouched.
+
+Let me simplify: Diego reacts to Mateo's launch message, since authorship doesn't require workspace membership so this works fine. For workspace_test, I can reuse Robert Walsh who's already a single-membership T01WORKSPACE user.
+
+For the negative cross-workspace reaction case, I'll have Diego react on the T01WORKSPACE message even though he's only an admin in T02NEURO, which correctly fails the "admin of same workspace" check for both workspaces.
+
+This lets me drop Robert Chen's dual-membership entirely and use Diego for both the positive and negative roles, since he only has one clean membership. For negative_nonadmin_rocket, Nick Fury with his single T01WORKSPACE membership as a regular member works fine — reacting rocket on a message there fails since he's not admin.
+
+I'm swapping the old Robert Chen facts for Diego across user, membership, and reaction records, keeping the positive match and adding a separate cross-workspace negative reaction using the same underlying facts. Robert Walsh and the other single-membership users still check out with no changes needed, and channel membership assignments for C_NEURO_LAUNCH look consistent too.
+
+Now I'm considering the review's point about representing negative referents in the role table itself: beyond just the supporting records (message, reaction, user, membership), each negative case should also include a role entry for the referent's own table — essentially a workspace/team entry showing which one is the non-matching option, not just the entities backing it up.
+
+But there's a wrinkle: currently both teams (T01WORKSPACE and T02NEURO) actually qualify as matches, so there's no genuinely non-matching workspace to serve as a negative referent. To properly test discrimination, I probably need to introduce a third team — something like "Random Co" — that has its own channel and message but fails one of the matching conditions, so it can act as the negative referent role.
+
+Adding U_OTHERADMIN as a single-membership admin in T03OTHER, plus a channel C_WIDGETS_GEN they belong to, with the reacted message authored by a different, unrelated user since author role doesn't require the single-membership check.
+
+The reaction on that message uses 'eyes' rather than 'rocket', so T03OTHER fails the emoji condition and should be excluded from the final match despite being structurally sound otherwise. I'm now listing out the entity roles for this negative case—workspace, admin user, membership, channel, message, and the wrong-emoji reaction—and thinking about how to also represent the near-miss for the cross-workspace negative involving T01WORKSPACE.
+
+This negative reaction evidence is fine without a dedicated teams role since it doesn't produce a distinct workspace beyond the existing ones. I should also verify that target_roles/candidate_role_sets only include the referent-entity roles that actually matter — workspace_test and workspace_neuro — and confirm workspace_other shouldn't be added there since it's negative and not part of the expected answer set.
+
+I'm revising the access_plan to avoid relying on multi-team lookups per user: instead, use users.info per reactor to get their single workspace association, then compare that against the channel/message's team_id via conversations.info/list. I'll also restructure the example data—dropping Robert Chen's dual membership in favor of Diego as a single-membership user for positive/negative cross-workspace cases, adding a T03OTHER negative-workspace scenario, and updating the roles and access_plan accordingly.
+

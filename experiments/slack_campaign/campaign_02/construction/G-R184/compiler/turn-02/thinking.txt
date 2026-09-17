@@ -1,0 +1,90 @@
+The route needs to go through workspace membership to conversation membership, so the join path has to flow through teams and channels rather than directly through users - meaning I should route from user_teams to teams to channels to channel_members, filtering appropriately.
+
+So the connection implicitly links the participant's identity through the path itself rather than an explicit join to a users table for the name filter—meaning I need to identify Robert's membership row directly rather than trying to bridge through a separate users node that isn't part of the allowed route. I'm stuck on how to apply a real-name predicate without a disallowed join, since filtering must use user-facing fields already exposed along the permitted path.
+
+So the correct route should be user_teams -> teams -> channels -> channel_members without going through USER. But then there's no explicit join back to confirm the same user's identity across the chain, since filters seem to be node-indexed field comparisons against literal values rather than cross-node equality checks, so I'm not sure how to encode that identity constraint within the given selector syntax.
+
+But user_teams and channel_members don't share a direct FK—both only connect through users, so a join between them isn't valid unless the path explicitly routes through the users table.
+
+Right, so the flagged path ["user_teams","users","channel_members","channels"] includes "users" which isn't part of the required route_nodes (WORKSPACE_MEMBERSHIP, WORKSPACE, CONVERSATION, CONVERSATION_MEMBERSHIP). The correct path should instead go user_teams -> teams -> channels -> channel_members, matching the route exactly.
+
+I don't think there's an explicit real_name filter needed in the focal query, since "Robert" identification happens elsewhere. But the real constraint is that the same user (via user_teams.user_id) must also appear as channel_members.user_id in the qualifying channel, which requires linking those fields through the join chain rather than a simple filter.
+
+Actually, looking at the assigned route (WORKSPACE_MEMBERSHIP → WORKSPACE → CONVERSATION → CONVERSATION_MEMBERSHIP mapped to user_teams, teams, channels, channel_members), it seems the intended query might just chain those joins by team_id and channel_id without explicitly re-enforcing that the same user appears at both ends.
+
+But that raises a problem: without filtering on the actual person, joining user_teams to channel_members through teams and channels would produce every workspace member paired with every member of the qualifying channels, since the join only requires matching team_id — this would return the entire workspace membership, not isolate a specific person like Robert.
+
+So I'm realizing this path alone can't establish per-person identity; there needs to be a self-join on user_id linking user_teams.user_id to channel_members.user_id directly, matching the requirement that the workspace membership and channel membership belong to the same underlying user. I'm considering whether the path should instead go directly from user_teams to channel_members via a shared user_id foreign key, bypassing teams and channels first.
+
+Since user_teams.user_id also targets users, the framework might treat this as an FK-based join with user_id as the shared key, no intermediate node required. This matches the valid example given in the instructions, where the path messages→message_reactions→users→channel_members→channels pairs with joins listing each FK relationship in sequence.
+
+Counting nodes and joins confirms the pattern: n nodes need n-1 joins, and FK fields like user_id can be reused bidirectionally to traverse between adjacent nodes, with "users" explicitly listed as an intermediate node. So my path structure for user_teams→channel_members was actually correct in format, meaning the validator's complaint about the route differing must point to something else, likely a mismatch in the exact table sequence expected.
+
+I'm now reconsidering whether the "same user" identification even needs an explicit users node, since user_teams.user_id is already the root's own field, and channel_members.user_id is a separate identifier that might not need bridging through users at all.
+
+Looking at how channel_members.channel_id joins channel_members to channels, I'm wondering if a similar direct join could work between user_teams and channel_members using user_id, even though it's not a literal foreign key — both sides ultimately reference the users table with matching values, so the join naming convention might still apply there.
+
+Actually the identity preservation seems inherent to the path itself: since the route goes workspace membership to workspace to conversation to conversation membership, each join implicitly carries forward the identity from the prior node, so the conversation membership at the end should indeed correspond to the same user as the root.
+
+Actually, maybe the example itself already validates threading through "users" as an acceptable pattern, so that's not the issue here. The real problem might be that this design's assigned route runs through WORKSPACE_MEMBERSHIP, WORKSPACE, CONVERSATION, and CONVERSATIONMEMBERSHIP, and I need to check whether that specific route is the one required for the main selector.
+
+This tells me the connection flows from workspace membership through the channel to the participant, and identifying that participant's identity is part of forming the connection—but the query still needs to tie back so the output workspace membership belongs to that same identified user, meaning the equality constraint has to hold within the single query rather than across separate joins.
+
+Maybe the physical join path can include implicit connector tables even when not listed explicitly in route_nodes, since "users" is a natural bridge. But re-checking my submitted focal path with joins through user_teams→users→channel_members→channels, the computed matches actually already show the correct two answers, and the computed negatives appear to correctly exclude the wrong ones too.
+
+So the results were correct, but the validator flags a purely structural issue — the path doesn't match the assigned route order exactly, independent of correctness. That means I need to force the path through user_teams→teams→channels→channel_members using the proper FK chain, but then I'm unsure how to still filter by matching user identity ("Robert") without joining users, since that table isn't part of route_nodes — perhaps the join to users has to happen after the last route node instead.
+
+But then I realize this raises a real problem: if I don't explicitly enforce that the root user_teams.user_id equals the channel_members.user_id, the query would match any user in any channel of that team, not just Robert specifically, which would break correctness even though the route stays "structurally" valid.
+
+Actually, this must mean the computed_matches shown were results of my current query's actual logic, which happened to still work correctly since the WHERE clause implicitly ties things together - the issue is only about path/route structure, not filtering logic. So I just need to reshape the traversal path to satisfy the validator while preserving the same effective join conditions, likely by treating root fields as implicitly bound anchors during evaluation.
+
+Continuing the chain: join3 connects users(2) to channel_members(3) via channel_members.user_id, reversing the FK direction, and join4 links channel_members(3) to channels(4) via channel_id. This forms a single linear chain, so the users node naturally serves as the shared identity for both the reactor and the channel member without needing an extra equality filter.
+
+But now I'm second-guessing whether the validator expects an explicit users node at all — the "assigned complete route" for the analogous case (WORKSPACE_MEMBERSHIP→WORKSPACE→CONVERSATION→CONVERSATION_MEMBERSHIP) doesn't list a USER node explicitly, even though same-user identity should still need enforcing. Maybe the validator treats WORKSPACE_MEMBERSHIP as already implicitly tied to USER, so an explicit shared users node in the path isn't required the way I assumed.
+
+Right, the join field's adjacent tables would be channel_members and users, not user_teams, since that's the FK's actual target—there's no direct FK from channel_members to user_teams. So the only structurally valid link between user_teams and channel_members enforcing identity has to route through users, which conflicts with what the validator expects unless the route requirement doesn't strictly demand identity enforcement at that node.
+
+I'm also wondering whether the design instead relies on matching real names through an auxiliary filter rather than an explicit user node in the route, though it's unclear how that alone would narrow things down to just the two correct rows without some additional restriction on the root table.
+
+Actually I see the real problem now: I placed "users" right after user_teams, completely skipping teams and channels, so my path never passed through the workspace node at all. It went straight to conversation membership via users, and only tacked on channels afterward in the wrong position relative to channel_members.
+
+The fix is to order the path as user_teams -> teams -> channels -> channel_members, using team_id and channel_id joins in sequence, and then extend to users at the very end to enforce the same-participant filter for identifying Robert - that extension beyond channel_members is legitimate.
+
+But even with this path, I realize it still doesn't force equality between the root user_teams.user_id and the channel_members.user_id for Robert - it just checks whether any channel in the shared workspace happens to have a member named Robert, which is true for essentially everyone since the workspace is common and Robert is likely in those channels regardless of the root user.
+
+So this interpretation must be flawed since it would match every user_teams row in that workspace, not just the two expected results. The identity between root and downstream nodes must instead come from reusing the same node explicitly in the path, like when a "users" node bridges two separate foreign key arrows to guarantee they refer to the same underlying person.
+
+Comparing to the valid example: the "users" node there acts as a pivot, forcing message_reactions.user_id to equal channel_members.user_id since both point to that same node. That's exactly the structure of my original submission too — the "users" node bridges user_teams.user_id and channel_members.user_id, enforcing that same identity constraint. So structurally, my original path is analogous to the accepted example.
+
+Maybe WORKSPACE_MEMBERSHIP inherently ties USER and WORKSPACE together, so the path to CONVERSATION would then go through channel_members to channels, but I need to double check the actual ordering here.
+
+Actually the sequence should be membership to workspace, then workspace to conversation, then conversation to conversation membership—so I need teams and channels explicitly in the path rather than skipping straight from user_teams to channel_members. Let me reorder: user_teams to teams to channels to channel_members, while still preserving the user identity filter.
+
+But channel_members has no name field, so identifying Robert that way isn't possible without the users table. Using a literal user ID directly would violate the rule requiring user-facing identifying attributes rather than raw IDs.
+
+I'm considering keeping the path at exactly four nodes and filtering by comparing user_id against candidates from an auxiliary query on real_name — but auxiliary queries must remain independent and can't feed values into the focal query, so that approach doesn't work either.
+
+Actually, re-reading the selector definition more carefully, both focal and auxiliary queries start from the same root_table, meaning their results are effectively intersected — auxiliary just adds independent constraints on the same rows rather than passing values across. That resolves the tension I was worried about.
+
+Testing this on the concrete example, if I set root_table to user_teams and use a focal path through teams, channels, and channel_members filtering for specific channel names, that condition ends up being true for every user_teams row in the workspace, since it only checks that a matching channel exists somewhere with any member — not that this particular user is a member. So I need to add an auxiliary constraint that actually ties the membership check back to the specific user in question.
+
+I'm wondering if user_teams.user_id also being an FK to users.user_id means the selector engine could treat "user_id" as a virtual join key wherever it appears, letting it bypass the explicit users node entirely—though the given examples always seem to route through that intermediate table.
+
+Since it's unclear, maybe "usable in either direction" actually implies you can join two tables sharing the same referenced column implicitly, as a same-referent join, even though the practical example doesn't demonstrate this. I'll try testing the interpretation where the constraint uses "channel_members.user_id" to connect user_teams and channel_members directly via their shared reference.
+
+So a direct 2-node join without a formal FK isn't valid here. That means the aux path needs 3 nodes: user_teams, users, channel_members, joining on user_id through users, with filters for real_name containing "Robert" on users and channel_id on channel_members.
+
+Since the aux constraint (this user is Robert AND a member of the qualifying channel) intersects with the focal constraint on the same root row via AND, the final result narrows down to exactly Robert Walsh and Rob... in T01WORKSPACE.
+
+This confirms rule #4 is satisfied: the focal path matches the full route exactly, and the name+membership check is genuinely independent of the route since it references the user identity rather than the route itself, so pushing it into the auxiliary query is correct rather than adding unrequested restrictions.
+
+I'm deciding to use channel_name instead of channel_id in the aux filter to avoid relying on hidden identifiers, keeping identification consistent through real names across the join path. Now I'm assembling the final selector structure with root_table set to user_teams and starting to define the focal clause.
+
+But I realize this focal condition alone would match essentially every user_teams row for that workspace, since the "exists a channel with that name" check isn't actually scoped to the specific member—so I need to reconsider how the auxiliary clause narrows this down.
+
+That's fine though, since the final result requires intersection with the auxiliary condition, which restricts things tightly to the same root row. So the semantics I'm relying on is: a row is selected only if the focal query AND every auxiliary query independently have at least one matching tuple for that same row—standard AND logic across all conditions.
+
+Now I'm verifying the join chain makes sense: user_teams to teams via team_id, teams to channels via team_id, channels to channel_members via channel_id—this sequence lines up exactly with the expected route through workspace membership, workspace, conversation, and conversation membership. Checking this against the expected output, the intersection produces the correct candidate rows matching what's expected.
+
+Also confirming robert_nguyen gets excluded correctly since he has no channel_members entry, so the negative referent filtering works as intended. Now I'll write out the complete corrected JSON, keeping the seed edits, bindings, negative referents, and notes unchanged, and just fixing the selectors.
+

@@ -1,0 +1,38 @@
+```json
+{
+  "prompt": "In our engineering channel there's a thread where someone raised the circuit-tracer library hitting OOM errors when loading large models layer-by-layer, and proposed rewriting it in PyTorch with proper multi-GPU streaming. For everyone who posted in that thread, what is their role in our workspace (member, admin, etc.)?",
+  "binding_note": "Workspace memberships are selected by joining through the single shared workspace to the engineering channel's specific OOM-rewrite thread: the anchor message plus its direct replies in that channel, then binding each reply/anchor author's user_id to their workspace-membership record (user_teams) in the same workspace. Messages in the same channel that are not part of that thread, or thread-adjacent messages posted in a different channel, do not satisfy the join.",
+  "roles": [
+    {"role": "workspace", "entity": "teams", "facts": "T01WORKSPACE, the single shared workspace containing the engineering channel and all memberships.", "selection": "support", "reason": "Anchors the WORKSPACE hop of the route."},
+    {"role": "engineering_channel", "entity": "channels", "facts": "C03IJKL9012 'engineering', team_id=T01WORKSPACE; contains the OOM/circuit-tracer thread.", "selection": "support", "reason": "The CONVERSATION identified by content, used to locate the thread and its participants."},
+    {"role": "thread_anchor_message", "entity": "messages", "facts": "message_id 1706110000.000100 in C03IJKL9012 by U_LUKAS: 'The circuit-tracer library is hitting OOM errors when loading large models layer-by-layer... Need to rewrite this in PyTorch from scratch with proper streaming.'", "selection": "match", "reason": "Anchor message defining the thread; its author is a participant."},
+    {"role": "reply_robert_message", "entity": "messages", "facts": "message_id 1706110000.000200, parent_id=1706110000.000100, channel C03IJKL9012, by U_ROBERT: 'When will the PyTorch rewrite be ready? ... currently blocked on this.'", "selection": "match", "reason": "Direct reply in the thread; author is a participant."},
+    {"role": "reply_kenji_message", "entity": "messages", "facts": "message_id 1706110000.000300, parent_id=1706110000.000100, channel C03IJKL9012, by U_KENJI: 'I can try a JAX implementation this weekend... might help us compare performance with the PyTorch approach.'", "selection": "match", "reason": "Direct reply in the thread; author is a participant."},
+    {"role": "membership_lukas", "entity": "user_teams", "facts": "U_LUKAS in T01WORKSPACE, role=member.", "selection": "match", "reason": "Workspace membership of the thread's anchor author, joined via workspace+channel."},
+    {"role": "membership_robert", "entity": "user_teams", "facts": "U_ROBERT in T01WORKSPACE, role=member.", "selection": "match", "reason": "Workspace membership of a direct reply author in the thread."},
+    {"role": "membership_kenji", "entity": "user_teams", "facts": "U_KENJI in T01WORKSPACE, role=member.", "selection": "match", "reason": "Workspace membership of a direct reply author in the thread."},
+    {"role": "membership_johndoe", "entity": "user_teams", "facts": "U02JOHNDOE1 in T01WORKSPACE, role=member; posted message 1706112500.000001 in the SAME channel C03IJKL9012 about circuit-tracer supercomputer time, but with no parent_id -- not a reply in the anchored thread.", "selection": "negative", "reason": "Same channel, related topic keyword, but not part of the identified thread -- must be excluded by the ordinary route."},
+    {"role": "membership_sophie", "entity": "user_teams", "facts": "U_SOPHIE in T01WORKSPACE, role=member; posted message 1706100000.000001 in DM channel D01AGENTSOPHIE about the circuit-tracer PyTorch rewrite progress, a different conversation than the engineering-channel thread.", "selection": "negative", "reason": "Discusses the same rewrite but in a different conversation (a DM), not the engineering channel's thread -- wrong conversation binding."},
+    {"role": "membership_kenji_food_context", "entity": "user_teams", "facts": "Same U_KENJI membership record, but his separate standalone message 1706115000.000001 about eating during crunch weeks is unrelated and not part of the thread.", "selection": "negative", "reason": "Illustrates that only the thread-bound message ties Kenji's membership to this selection, not his other unrelated posts in the same channel."}
+  ],
+  "obligations": [
+    {
+      "name": "thread_participant_memberships",
+      "description": "The workspace-membership records (role, etc.) for the users who authored the OOM/circuit-tracer-rewrite thread's anchor message and its direct replies in the engineering channel.",
+      "table": "user_teams",
+      "mode": "multiple",
+      "task_type": "read-only",
+      "scope": "workspace memberships of the thread's participants within the single shared workspace",
+      "target_roles": ["membership_lukas", "membership_robert", "membership_kenji"],
+      "candidate_role_sets": null,
+      "selection": "set",
+      "answer_attributes": [["user_teams.role"], ["user_teams.user_id"], ["user_teams.team_id"]]
+    }
+  ],
+  "task_spec": [
+    {"line": 1, "text": "Find the engineering-channel thread about the circuit-tracer OOM/PyTorch-rewrite issue, identify who authored the anchor message and its direct replies, and report each of their workspace roles.", "obligations": [1]}
+  ],
+  "scope_exception": null,
+  "access_plan": "Use conversations.list/conversations.history on the engineering channel to locate the message describing circuit-tracer OOM errors and the PyTorch rewrite proposal, then conversations.replies on that anchor ts to enumerate its direct replies and their authors. For each author, use users.info to read their workspace role (owner/admin/member derived from user_teams.role) within the shared workspace."
+}
+```

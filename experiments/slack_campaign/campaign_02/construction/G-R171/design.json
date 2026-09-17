@@ -1,0 +1,125 @@
+{
+  "prompt": "In the workspace that contains the channel where one of its members reacted with :eyes: to the message about circuit-tracer hitting OOM errors during layer-by-layer loading, create a new private channel called circuit-tracer-followup so the team can continue that rewrite discussion there.",
+  "binding_note": "The route runs WORKSPACE→CONVERSATION→CONVERSATION_MEMBERSHIP→USER→REACTION: the engineering channel (C03IJKL9012) has a conversation-membership record for user U01AGENBOT9, and that same user id is the one who left the eyes reaction on the circuit-tracer OOM message; the workspace is the team owning that channel, not merely a workspace containing any matching message or reaction elsewhere.",
+  "roles": [
+    {
+      "role": "target_workspace",
+      "entity": "teams",
+      "facts": "T01WORKSPACE owns channel C03IJKL9012 (engineering) among others.",
+      "selection": "match",
+      "reason": "This is the workspace the route resolves to, via the channel/membership/user/reaction chain."
+    },
+    {
+      "role": "engineering_channel",
+      "entity": "channels",
+      "facts": "C03IJKL9012, named engineering, belongs to T01WORKSPACE, hosts the circuit-tracer OOM thread.",
+      "selection": "support",
+      "reason": "Conversation node in the route; supplies the membership and message context."
+    },
+    {
+      "role": "reacting_member",
+      "entity": "channel_members",
+      "facts": "U01AGENBOT9 is a member of C03IJKL9012.",
+      "selection": "support",
+      "reason": "Establishes the conversation-membership link required before checking that member's reaction."
+    },
+    {
+      "role": "reactor_user",
+      "entity": "users",
+      "facts": "U01AGENBOT9, a member of engineering, is the same user who reacted with eyes.",
+      "selection": "match",
+      "reason": "Same-record binding: the user id from membership equals the user id on the qualifying reaction."
+    },
+    {
+      "role": "qualifying_reaction",
+      "entity": "message_reactions",
+      "facts": "Reaction on message 1706110000.000100 (the OOM/layer-by-layer streaming message) by U01AGENBOT9 with reaction_type 'eyes'.",
+      "selection": "match",
+      "reason": "This is the specific reaction the request's emoji condition must match."
+    },
+    {
+      "role": "nonmember_reactor",
+      "entity": "users",
+      "facts": "U08NICK23, a member only of the growth channel (C04MNOP3456), reacts 'thumbsup' on an unrelated growth message.",
+      "selection": "negative",
+      "reason": "Reactor is not a member of the engineering channel, so the CONVERSATION_MEMBERSHIP leg of the route fails even though a reaction exists."
+    },
+    {
+      "role": "wrong_emoji_reactor",
+      "entity": "message_reactions",
+      "facts": "U05MORGAN23, who is a member of C03IJKL9012, adds a 'thumbsup' reaction to a different engineering message about login rate limiting.",
+      "selection": "negative",
+      "reason": "Correct membership relation but wrong emoji and wrong message, so it does not satisfy the reaction condition tied to the OOM message."
+    },
+    {
+      "role": "new_followup_channel",
+      "entity": "channels",
+      "facts": "To-be-created private channel 'circuit-tracer-followup' inside T01WORKSPACE.",
+      "selection": "support",
+      "reason": "This is the record created by the requested action once the workspace is identified."
+    }
+  ],
+  "obligations": [
+    {
+      "name": "identify_target_workspace",
+      "description": "Select the single workspace (team) that owns the channel whose member (matched via conversation membership) is the same user who reacted with the eyes emoji on the circuit-tracer OOM message; used to scope the channel-creation call.",
+      "table": "teams",
+      "mode": "single",
+      "task_type": "read-only",
+      "scope": "ordinary route identification, no name-based workspace lookup",
+      "target_roles": [
+        "target_workspace"
+      ],
+      "candidate_role_sets": null,
+      "selection": "one",
+      "answer_attributes": [
+        [
+          "teams.team_id"
+        ]
+      ]
+    },
+    {
+      "name": "create_followup_channel",
+      "description": "Create a new private channel named circuit-tracer-followup inside the identified workspace.",
+      "table": "channels",
+      "mode": "single",
+      "task_type": "state-changing",
+      "scope": "single new channel creation scoped to the identified workspace",
+      "target_roles": [
+        "new_followup_channel"
+      ],
+      "candidate_role_sets": null,
+      "selection": "one",
+      "change_attributes": [
+        [
+          "channels.channel_name",
+          "channels.team_id",
+          "channels.is_private"
+        ]
+      ],
+      "written_attributes": [
+        "channels.channel_name",
+        "channels.team_id",
+        "channels.is_private"
+      ]
+    }
+  ],
+  "task_spec": [
+    {
+      "line": 1,
+      "text": "Identify the workspace that contains the channel where a member reacted with :eyes: to the circuit-tracer OOM/layer-by-layer-loading message.",
+      "obligations": [
+        1
+      ]
+    },
+    {
+      "line": 2,
+      "text": "Create a new private channel named circuit-tracer-followup within that identified workspace.",
+      "obligations": [
+        2
+      ]
+    }
+  ],
+  "scope_exception": null,
+  "access_plan": "Use users.conversations/conversations.list to locate the engineering channel among visible channels, conversations.members to confirm the reacting user's membership, conversations.history/replies plus reactions.get to confirm the eyes reaction is on the circuit-tracer OOM message, then conversations.info to resolve that channel's team_id as the target workspace; finally call conversations.create with that team_id to create the new private channel."
+}

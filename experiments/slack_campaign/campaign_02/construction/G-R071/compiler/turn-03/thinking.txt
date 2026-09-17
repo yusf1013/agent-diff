@@ -1,0 +1,26 @@
+This is a new design, though same case ID G-R071, involving Hubert Marek. I need to find a channel where he's a member and has reacted with thumbsup to a teammate's post somewhere, then locate a crash report about login rate limiting within that channel to reply to. I'm mapping out the route through message, conversation, and conversation membership data.
+
+But looking closer at the facts, Hubert's thumbsup reaction is on a message in the general channel, not engineering - yet the crash report target is in engineering. So the qualifying channel for the reaction and the channel holding the reply target might be different channels, and I need to reconcile which channel actually satisfies all the conditions in the binding note.
+
+So the reaction doesn't need to be tied to the same message being replied to - it just confirms Hubert is a reactor and a channel member, satisfying the design without a diamond issue. Now I'm setting the filters: users.real_name = 'Hubert Marek', message_reactions.reaction_type = 'thumbsup', and messages.message_text matching the crash report content.
+
+Checking channel membership: Hubert belongs to C02EFGH5678, C03IJKL9012, and C04MNOP3456, and the crash report message sits in C03IJKL9012 which he's part of, so that condition holds. The thumbsup reaction from Hubert exists on the general channel message independently of channel membership, satisfying that piece as a pure existential check.
+
+Now I'm working through the negative test cases: the 500-errors message and the generic auth message both get excluded by the content filter for not mentioning "rate limit," while the Morgan case (a member with no reactions anywhere) tests whether channel qualification alone is sufficient without an accompanying reaction.
+
+I'm now considering the Kenji case, where he reacts on a general channel message but isn't a member of engineering - this checks that the reactor must actually belong to the same channel as the reacted message.
+
+Since we're specifically filtering the user to Hubert Marek by real_name, this constraint is already handled by the design, so it isn't ambiguous. Now I'm starting to sketch the selector, beginning with messages as the root table and no additional scope restriction needed.
+
+I'm defining the join path from messages through channels, channel_members, users, and message_reactions, filtering on Hubert's real name, a thumbsup reaction, and message text containing both "rate limit" and "crash report". No auxiliary query is needed since this resolves as a single joined query, so now I'm double-checking which messages actually satisfy all these conditions by cross-referencing which channels Hubert is a member of.
+
+I go through each channel Hubert belongs to and scan messages for text matching both phrases, and find a unique match: the message about a "Crash report" describing repeated wrong password attempts triggering a login rate limit. Now I need to confirm the thumbsup reaction on that message.
+
+I still need to add the missing reactions per seed_edits: Hubert's thumbsup on message 1699564800.000123, and Kenji's thumbsup on message 1699572000.000789 for the negative reactor case.
+
+For negative_member_no_reaction, Morgan being a member of C03IJKL9012 with no reactions is already true in the base seed, so no edit is needed there.
+
+Now I'm finalizing the bindings for target_message, engineering_channel, hubert_membership, hubert_user, hubert_reaction, and the negative test cases (wrong_login_issue, generic_auth, member_no_reaction, reactor_not_member). I also note the crash_report_reply obligation requires the assembler to create a reply message with specific text, channel_id, and parent_id attributes, which falls outside the selector's scope.
+
+Checking that my selector path matches the assigned route order exactly: MESSAGE→CONVERSATION→CONVERSATION_MEMBERSHIP→USER→REACTION, mapped to messages→channels→channel_members→users→message_reactions, satisfying the identifying path requirement without needing an auxiliary join this time. I'm also working out which negative referent messages should be excluded from root selection, listing the wrong-login and generic-auth message IDs as the clear exclusions.
+

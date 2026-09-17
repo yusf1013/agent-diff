@@ -1,0 +1,36 @@
+```json
+{
+ "prompt": "For a cross-workspace status report, I need to know which workspaces have a member who posted a deployment- or rollout-completion message that received a ✅ (check) reaction from someone. Which workspaces qualify?",
+ "binding_note": "For each candidate workspace, the same person must (a) hold a workspace membership in that workspace via user_teams, (b) have authored the deployment/rollout-completion message, and (c) that exact message must carry a message_reactions row with reaction_type='check'. A channel merely belonging to the workspace's team_id, or a reaction on a different message by the same author, does not satisfy the binding.",
+ "roles": [
+  {"role":"main_workspace","entity":"teams","facts":"T01WORKSPACE ('Test Workspace'); contains member U01AGENBOT9 who authored the 'Hey team, we just shipped the new feature!' message in #general, which now carries a check reaction from a fellow member.","selection":"match","reason":"A genuine member authored a shipped/deployed announcement that received the check reaction."},
+  {"role":"second_workspace","entity":"teams","facts":"New team T02NORTHSTAR ('Northstar Labs'); member U_NS_DEV posts 'Deployment of v3 pipeline complete, ready for review.' in a Northstar channel, and fellow member U_NS_LEAD adds a check reaction to it.","selection":"match","reason":"Independent workspace satisfying the same membership-authorship-reaction chain, producing a genuine second match for the multiple-selection collection."},
+  {"role":"member_agent1","entity":"users","facts":"U01AGENBOT9, workspace member of T01WORKSPACE, author of the shipped-feature message.","selection":"support","reason":"Establishes the membership+authorship leg of the route for main_workspace."},
+  {"role":"reactor_john","entity":"users","facts":"U02JOHNDOE1, also a T01WORKSPACE member, adds the check reaction to U01AGENBOT9's shipped-feature message.","selection":"support","reason":"Supplies the qualifying reaction for main_workspace."},
+  {"role":"member_ns_dev","entity":"users","facts":"U_NS_DEV, newly added member of T02NORTHSTAR, authors the deployment-complete message.","selection":"support","reason":"Establishes membership+authorship leg for second_workspace."},
+  {"role":"reactor_ns_lead","entity":"users","facts":"U_NS_LEAD, T02NORTHSTAR member, adds the check reaction.","selection":"support","reason":"Supplies the qualifying reaction for second_workspace."},
+  {"role":"ghost_workspace","entity":"teams","facts":"New team T03GHOSTORG owns a channel C_GHOST, but no user_teams row ties any user to T03GHOSTORG. U_INCOGNITO (a T01WORKSPACE member) is only a conversation member of C_GHOST and posts 'Rollout of the migration script finished, ready to merge.' there; another user adds a check reaction to it.","selection":"negative","reason":"The check-reacted rollout message sits in a channel owned by T03GHOSTORG, but no one holds actual workspace membership in T03GHOSTORG, so the membership leg of the route fails; the route must not be satisfied by channel-team association alone."},
+  {"role":"wrong_reaction_lukas","entity":"messages","facts":"U_LUKAS (T01WORKSPACE member) authors the circuit-tracer OOM message in #engineering; it already carries an 'eyes' reaction from U01AGENBOT9, not a check.","selection":"negative","reason":"Same workspace membership and authorship, but the reaction type fails the check-mark condition; must not be treated as a qualifying record (though it doesn't hurt T01WORKSPACE since another message qualifies it)."},
+  {"role":"ns_member_no_reaction","entity":"messages","facts":"A second Northstar member, U_NS_OPS, posts 'Starting deployment prep for v3, will update shortly' in the same Northstar channel; it receives no reactions.","selection":"negative","reason":"Deployment-adjacent message from a genuine workspace member but missing the reaction relationship entirely, so it cannot itself qualify a workspace (though second_workspace still qualifies via member_ns_dev's message)."}
+ ],
+ "obligations": [
+  {
+   "name": "qualifying_workspaces",
+   "description": "The workspaces where some workspace member authored a deployment/rollout-completion message that carries a check-mark reaction; report their identities for the status update.",
+   "table": "teams",
+   "mode": "multiple",
+   "task_type": "read-only",
+   "scope": "ordinary requested scope",
+   "target_roles": ["main_workspace","second_workspace"],
+   "candidate_role_sets": null,
+   "selection": "set",
+   "answer_attributes": [["teams.team_id"],["teams.team_name"]]
+  }
+ ],
+ "task_spec": [
+  {"line": 1, "text": "Identify the workspaces that have a member whose deployment/rollout-completion message received a check-mark reaction, and list them for the report.", "obligations": [1]}
+ ],
+ "scope_exception": null,
+ "access_plan": "For each workspace known via teams/user_teams, use users.list(team_id=...) to enumerate members, then search.messages or conversations.history across that workspace's channels (scoped via conversations.list(team_id=...)) to find deployment/rollout-completion style messages authored by those members. For each candidate message, call reactions.get(channel, timestamp) to confirm a 'check' reaction is present, then confirm the reactor is any user (no membership constraint on the reactor). Cross-check that the author's workspace membership (user_teams) matches the workspace being evaluated, rather than merely the channel's team_id, to correctly exclude channel-only associations like the ghost workspace."
+}
+```

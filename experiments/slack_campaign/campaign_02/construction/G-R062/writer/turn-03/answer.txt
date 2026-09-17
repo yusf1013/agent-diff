@@ -1,0 +1,40 @@
+```json
+{
+ "prompt": "For the cluster-b memory-outage postmortem, pull the messages in our core-infra channel that actually confirm what caused the OOM kills, not just the ones speculating about possible causes.",
+ "binding_note": "r0 (messages) is identified by r0.channel_id = r1 (the core-infra conversation) and r1.team_id = r2 (workspace T01WORKSPACE, the actor's own workspace). A same-named 'core-infra' channel exists under a different team_id (r2 alternative), so the workspace join is not merely contextual: an otherwise-matching confirmation message located under that other team_id must be excluded. Within the correctly-scoped channel, messages are further split into confirmed-cause statements (matches) versus speculative, correlational, or off-topic statements (negatives); a message affirming the same confirmed cause in different words still counts as a confirming match, not a corroboration-only exclusion.",
+ "roles": [
+  {"role": "support_workspace", "entity": "teams", "facts": "Team T01WORKSPACE, the actor's workspace, containing core-infra, model-research, etc.", "selection": "support", "reason": "Anchors the correct WORKSPACE end of the route the actor belongs to."},
+  {"role": "support_channel", "entity": "channels", "facts": "Channel C_INFRA, channel_name 'core-infra', team_id T01WORKSPACE, topic on infra/on-call/incidents; actor is a member.", "selection": "support", "reason": "Anchors the CONVERSATION the target messages must belong to."},
+  {"role": "support_workspace_alt", "entity": "teams", "facts": "Team T09REMOTE, a separate workspace unrelated to the actor's team.", "selection": "support", "reason": "Provides the competing workspace that makes the team_id join identifying rather than incidental."},
+  {"role": "support_channel_alt", "entity": "channels", "facts": "Channel C_INFRA_ALT, channel_name 'core-infra' also, but team_id T09REMOTE; actor is not a member.", "selection": "support", "reason": "Same channel name as the target conversation but under the wrong workspace, forcing the team_id condition to do real work."},
+  {"role": "match_confirm_priya", "entity": "messages", "facts": "In C_INFRA (T01WORKSPACE): 'it's definitely the batch size increase hitting a hard CUDA memory limit, not fragmentation... Reverting the batch size config now.'", "selection": "match", "reason": "States the confirmed root cause as a definitive causal claim, in the correctly-scoped conversation/workspace."},
+  {"role": "match_confirm_lukas", "entity": "messages", "facts": "In C_INFRA (T01WORKSPACE): 'Perfect. That's exactly what we needed to know... Sounds like we're just at capacity with the current hardware.'", "selection": "match", "reason": "Restates the diagnosis as a definitive causal claim about hardware capacity, closing the investigation."},
+  {"role": "match_confirm_olena", "entity": "messages", "facts": "In C_INFRA (T01WORKSPACE), ts 1706002397: 'Nice work getting to the root cause so fast... that hard CUDA limit makes sense—we're just maxed out on the hardware we have.'", "selection": "match", "reason": "Also affirms the same confirmed cause as a settled fact rather than speculating; per the prompt's actual boundary (confirmed vs speculative) this is a match, not merely a downstream reaction to exclude."},
+  {"role": "negative_speculation_early", "entity": "messages", "facts": "In C_INFRA, Olena: 'Pretty sure it's that batch size bump someone pushed last night... might need to dial back the batch size or look at quantizing.'", "selection": "negative", "reason": "Hedging speculation ('pretty sure', 'might need'), not a confirmed cause."},
+  {"role": "negative_speculation_lukas", "entity": "messages", "facts": "In C_INFRA, Lukas: 'Before you revert, grab the memory profiles from the last 24h... I want to see if it's gradual creep or a hard cliff.'", "selection": "negative", "reason": "Requests further investigation rather than confirming the cause."},
+  {"role": "negative_partial_evidence", "entity": "messages", "facts": "In C_INFRA, Priya: 'Initial scan shows a sharp spike correlating with the 2AM batch size push, not gradual creep, which is good news.'", "selection": "negative", "reason": "Correlational, interim observation ('initial scan', 'good news') rather than a definitive causal claim."},
+  {"role": "negative_wrong_channel", "entity": "messages", "facts": "In C_MODEL, Olena: about the hallucinated-refund-policy incident, discussing retrieval ranking as the likely cause.", "selection": "negative", "reason": "Wrong conversation (model-research) and a different incident entirely."},
+  {"role": "negative_wrong_topic_same_channel", "entity": "messages", "facts": "In C_INFRA, Robert: 'Monthly cloud bill came in. We're $47K over budget, mostly spot instance fallbacks.'", "selection": "negative", "reason": "Correct conversation/workspace but a cost-overrun topic, not the OOM memory incident."},
+  {"role": "negative_wrong_workspace_same_name", "entity": "messages", "facts": "In C_INFRA_ALT (team_id T09REMOTE, channel_name also 'core-infra'): 'Confirmed: we hit a hard GPU memory limit from the batch size increase; reverting now.'", "selection": "negative", "reason": "Textually matches the confirmed-cause criterion but sits under the wrong team_id/workspace, so the WORKSPACE hop excludes it even though the CONVERSATION name is identical."}
+ ],
+ "obligations": [
+  {
+   "name": "confirmed_root_cause_messages",
+   "description": "The messages in the core-infra channel of the actor's own workspace (team_id T01WORKSPACE) that state a confirmed diagnosis of the cluster-b OOM memory incident's root cause, for inclusion in the postmortem, excluding speculative, correlational, off-topic, or wrong-workspace messages.",
+   "table": "messages",
+   "mode": "multiple",
+   "task_type": "read-only",
+   "scope": "core-infra channel (C_INFRA) history within workspace T01WORKSPACE",
+   "target_roles": ["match_confirm_priya", "match_confirm_lukas", "match_confirm_olena"],
+   "candidate_role_sets": null,
+   "selection": "set",
+   "answer_attributes": [["messages.message_text"], ["messages.channel_id"], ["messages.created_at"]]
+  }
+ ],
+ "task_spec": [
+  {"line": 1, "text": "Identify the messages in our workspace's core-infra channel that confirm the root cause of the cluster-b memory OOM incident, excluding speculative, correlational, off-topic, or same-named channel messages from a different workspace, and list them for the postmortem.", "obligations": [1]}
+ ],
+ "scope_exception": null,
+ "access_plan": "Actor U01AGENBOT9 is a member of team T01WORKSPACE and channel C_INFRA; use users.conversations to confirm which channels named 'core-infra' the actor actually belongs to (only C_INFRA under T01WORKSPACE, not C_INFRA_ALT under T09REMOTE), then use conversations.history on C_INFRA to enumerate the OOM-incident thread and separate confirmed causal statements from speculative, correlational, or off-topic ones."
+}
+```

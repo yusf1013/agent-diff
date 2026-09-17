@@ -1,0 +1,108 @@
+{
+  "prompt": "Which workspace has the channel where the postmortem write-up for the checkout latency incident was posted?",
+  "binding_note": "The workspace is identified transitively: WORKSPACE(teams.team_id) = CONVERSATION.team_id, and the conversation must contain a MESSAGE whose text is the posted postmortem for the checkout latency incident. Two channels in two different workspaces both carry a matching postmortem message, so the request resolves to two distinct candidate workspaces rather than one.",
+  "roles": [
+    {
+      "role": "workspace_infra",
+      "entity": "teams",
+      "facts": "T01WORKSPACE (Test Workspace) contains channel core-infra.",
+      "selection": "alternative",
+      "reason": "One candidate workspace whose channel holds a matching checkout-latency postmortem."
+    },
+    {
+      "role": "workspace_nova",
+      "entity": "teams",
+      "facts": "T02NOVA (Nova Robotics), a second workspace the acting user also belongs to, contains channel ops-incidents.",
+      "selection": "alternative",
+      "reason": "Second candidate workspace whose channel holds a matching checkout-latency postmortem."
+    },
+    {
+      "role": "conversation_infra",
+      "entity": "channels",
+      "facts": "Channel core-infra (C_INFRA), team_id=T01WORKSPACE, actor is a member.",
+      "selection": "support",
+      "reason": "Supplies the workspace link for the matching message in workspace_infra."
+    },
+    {
+      "role": "conversation_nova",
+      "entity": "channels",
+      "facts": "Channel ops-incidents (C_NOVA_OPS), team_id=T02NOVA, actor is also a member.",
+      "selection": "support",
+      "reason": "Supplies the workspace link for the matching message in workspace_nova."
+    },
+    {
+      "role": "message_infra",
+      "entity": "messages",
+      "facts": "Priya posts in core-infra: 'Postmortem posted: checkout latency incident from last Tuesday — root cause traced to connection pool exhaustion under peak load.'",
+      "selection": "match",
+      "reason": "Directly matches the requested postmortem content and binds to workspace_infra via its channel."
+    },
+    {
+      "role": "message_nova",
+      "entity": "messages",
+      "facts": "Jordan Lee posts in ops-incidents: 'Postmortem posted: checkout latency incident from last Tuesday — root cause was a stale Redis cache serving expired pricing data.'",
+      "selection": "match",
+      "reason": "Also matches the requested postmortem content and binds to workspace_nova via its channel."
+    },
+    {
+      "role": "negative_tokyo_postmortem",
+      "entity": "messages",
+      "facts": "Kenji posts in product-growth: 'Postmortem posted: Tokyo launch activation incident — root cause traced to CDN misrouting through Singapore.'",
+      "selection": "negative",
+      "reason": "Uses the same 'postmortem posted' phrasing but concerns a different incident (activation/CDN, not checkout latency), so it must not be treated as a match."
+    },
+    {
+      "role": "negative_infra_memory",
+      "entity": "messages",
+      "facts": "Existing core-infra thread about GPU memory pressure and OOM kills, unrelated to checkout latency.",
+      "selection": "negative",
+      "reason": "Same channel/workspace as a true match but wrong topic; shows the workspace alone isn't sufficient without the specific postmortem message."
+    },
+    {
+      "role": "negative_growth_latency_discussion",
+      "entity": "messages",
+      "facts": "Existing product-growth thread discussing Tokyo p95 latency fixes without ever framing it as a 'postmortem posted' for checkout latency.",
+      "selection": "negative",
+      "reason": "Topically adjacent (latency) but neither a postmortem nor about checkout, so it does not satisfy the identifying condition."
+    }
+  ],
+  "obligations": [
+    {
+      "name": "postmortem_workspace",
+      "description": "Select the workspace(s) whose channel contains the message announcing the checkout latency incident postmortem; report which workspace(s) that is.",
+      "table": "teams",
+      "mode": "underspecified",
+      "task_type": "read-only",
+      "scope": "workspaces reachable through channels the acting user is a member of",
+      "target_roles": [
+        "workspace_infra",
+        "workspace_nova"
+      ],
+      "candidate_role_sets": [
+        [
+          "workspace_infra"
+        ],
+        [
+          "workspace_nova"
+        ]
+      ],
+      "selection": "one",
+      "answer_attributes": [
+        [
+          "teams.team_name"
+        ]
+      ]
+    }
+  ],
+  "task_spec": [
+    {
+      "line": 1,
+      "text": "Identify which workspace hosts the channel where the checkout latency incident postmortem was posted, and report the workspace.",
+      "obligations": [
+        1
+      ]
+    }
+  ],
+  "scope_exception": null,
+  "access_plan": "List the acting user's own conversation memberships (channel_members / users.conversations) to obtain the bounded set of channels the user can see across any workspaces they belong to; for each channel, pull message history (conversations.history / search.messages) looking for a message whose text announces a posted postmortem for the checkout latency incident; each matching message's channel carries a team_id that identifies its workspace. Do not rely on any workspace-name lookup or full workspace enumeration, since neither is exposed."
+}

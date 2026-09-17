@@ -1,0 +1,32 @@
+I need to design a task around workspace membership where the resolution path traces through a chain: identify a user via their reaction on a message, that message's conversation, and then that conversation's membership record.
+
+I want the query to fail, so I need to construct a scenario where following that chain—user reacts to a message, message belongs to a conversation, conversation has a membership entry matching a stated condition—ultimately has no matching workspace membership at the end.
+
+I'm sketching a concrete example: a "tada" reaction on a roadmap message posted in #product-growth, with the target being the workspace membership of whoever reacted, contingent on some conversation membership condition that won't actually hold.
+
+Since conversation_membership only exposes join time (not a role), the only usable condition on that node is whether a specific member exists in the conversation at all — so the query hinges on membership existence rather than any role-based distinction.
+
+This suggests the identification chain is: the workspace membership of whoever reacted with a given emoji to a message in a channel where a specific named user is also a member. Now I need to construct a concrete absent-case scenario, starting with a channel like #frontend, where either the reaction or the co-membership condition fails to hold.
+
+Carlos is only in C_GROWTH, not C_FRONTEND, so anchoring the message there makes the "channel where Carlos is a member" condition fail — no reactor satisfies both, giving a natural absent case. I want to phrase the prompt as a genuine actionable request (like looking up that person's membership or role) rather than exposing the decoy logic directly.
+
+I'm also weighing whether the action should be a state-changing one, like granting workspace admin rights to the mystery reactor — that would work as a test since the agent must recognize no match exists rather than fabricate one. But since role changes aren't actually exposed through the API, that specific mutation isn't realistic, so I need a different consequential action that's actually supported.
+
+Actually, since no endpoint updates team member roles, I should keep this read-only: reporting the workspace role of whoever reacted with 🎉 to the onboarding deployment message, in a channel Carlos Vega also belongs to. Now I need to craft the message and reactions carefully — adding a deployment announcement with a "fire" reaction from someone (not 🎉) to keep things plausible, while making sure no channel satisfies both the reaction and Carlos's membership.
+
+I'll post the message from U_AISHA in C_FRONTEND, with U_MATEO reacting "rocket" (a distractor) and U_LUKAS reacting "tada" — but since C_FRONTEND doesn't include Carlos Vega, this fails the channel condition. Then I'll add a separate message in C_GROWTH, where Carlos is a member, with a "tada" reaction from Kenji, but on an unrelated topic so it doesn't match "onboarding flow deployment." This splits the correct conditions across different records so no single record satisfies everything.
+
+This confirms the answer should come back as absent since no user matches emoji, channel, and message content simultaneously. I'll note that an agent would need to search for "onboarding" messages with "tada" reactions and cross-check channel membership for Carlos Vega to correctly conclude there's no match, and I should list the negative role assignments accordingly since no target role applies here.
+
+Now I'm drafting the final prompt text asking who reacted with 🎉 to the redesigned onboarding flow deployment message in a channel shared with Carlos Vega, using "tada" as the correct emoji identifier for the JSON structure.
+
+My access plan describes searching channel history and messages for the onboarding text, retrieving reactions to filter for tada reactions, checking channel membership for Carlos Vega, then cross-referencing user_teams to find the reactor's role — concluding no match satisfies both conditions, so I need to report the finding as absent. The answer_attributes should reference the role and user_id fields from user_teams.
+
+Now I'm building out candidate roles: Lukas reacted tada on the deployment message but in the wrong channel (not one Carlos Vega belongs to), so he fails the channel condition; Kenji reacted tada but on an unrelated message in Carlos's channel, so he fails the message-identity condition. Both are negative selections.
+
+I'm continuing with Mateo, who reacted with the wrong emoji ("rocket" instead of "tada") on the correct message and channel, also negative. Then I'm laying out supporting entities: the actual onboarding deployment message authored by Aisha in C_FRONTEND, an unrelated growth-channel message from Kenji, the two channels (C_FRONTEND excluding Carlos, C_GROWTH including him), and Carlos's own conversation membership record in C_GROWTH -- all serving as the valid path anchors.
+
+Now I'm defining the primary obligation, which is to identify the reactor's workspace membership by looking up the user_teams row matching the route, with target roles and candidate role sets left empty. I'm also confirming U_INCOGNITO is already a member of C_GROWTH in the base seed data, so no additional membership entry is needed there, and I'm working out consistent message IDs so the reaction records properly reference the onboarding message.
+
+I'm now setting up the new messages for the negative scenario: an onboarding deployment message in C_FRONTEND from U_AISHA with reactions from U_LUKAS and U_MATEO, plus an unrelated reaction using an existing C_GROWTH message authored by U_KENJI, where I'll have U_PRIYA add the "tada" reaction to keep the author and reactor distinct.
+

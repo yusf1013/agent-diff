@@ -1,0 +1,42 @@
+```json
+{
+  "prompt": "Someone named Robert who's a member of #general reacted with a 🎉 to a message — what does it say?",
+  "binding_note": "Route: message ← reaction (reactor) ← user (named Robert) ← channel_members ← #general channel ← workspace. Two workspace members are named Robert and both hold #general membership: Robert Walsh (also in #engineering) tada-reacted to a login-fix message there, and Robert Chen (also in #core-infra) tada-reacted to a Tokyo-latency message there — neither message needs to be in #general itself, only the reactor's membership does. A third Robert (Robert Kim) also tada-reacted to a message but is not a #general member, so the membership condition genuinely excludes him.",
+  "roles": [
+    {"role":"robert_walsh","entity":"users","facts":"Robert Walsh (U03ROBERT23), a member of #general (C01ABCD1234) and #engineering (C03IJKL9012) in the workspace.","selection":"support","reason":"one candidate reactor satisfying both the name and the #general membership condition"},
+    {"role":"robert_chen","entity":"users","facts":"Robert Chen (U_ROBERT), a member of #general (C01ABCD1234, added) and #core-infra (C_INFRA) in the workspace.","selection":"support","reason":"second candidate reactor satisfying both the name and the #general membership condition"},
+    {"role":"robert_kim","entity":"users","facts":"Robert Kim (U_ROBERTK, new user), a member only of #random (C02EFGH5678), not of #general.","selection":"support","reason":"shares the first name Robert but fails the #general membership condition, motivating a negative"},
+    {"role":"general_channel","entity":"channels","facts":"#general (C01ABCD1234), workspace T01WORKSPACE.","selection":"support","reason":"the identifying conversation whose membership narrows candidate reactors"},
+    {"role":"workspace_scope","entity":"teams","facts":"T01WORKSPACE, the single workspace containing #general, #engineering, #core-infra, and #random.","selection":"support","reason":"joins channels to a common workspace along the route without itself disambiguating"},
+    {"role":"login_fix_message","entity":"messages","facts":"Message 1706120000.000001 in #engineering, authored by John Doe: 'Just merged the fix for the login rate-limit bug reported last sprint!'","selection":"alternative","reason":"the message Robert Walsh reacted to with tada"},
+    {"role":"tokyo_latency_message","entity":"messages","facts":"Message 1706120100.000002 in #core-infra, authored by Priya: 'Tokyo edge deployment is fully stable now, latency back to target.'","selection":"alternative","reason":"the message Robert Chen reacted to with tada"},
+    {"role":"reaction_walsh_tada","entity":"message_reactions","facts":"Reaction on 1706120000.000001 by U03ROBERT23, reaction_type 'tada'.","selection":"match","reason":"binds Robert Walsh (a #general member) to the login-fix message via the reaction"},
+    {"role":"reaction_chen_tada","entity":"message_reactions","facts":"Reaction on 1706120100.000002 by U_ROBERT, reaction_type 'tada'.","selection":"match","reason":"binds Robert Chen (a #general member) to the Tokyo-latency message via the reaction"},
+    {"role":"walsh_thumbsup_message","entity":"messages","facts":"Message 1706120200.000003 in #random, authored by Hubert: 'Coffee machine fixed, finally!' reacted to by Robert Walsh with thumbsup, not tada.","selection":"negative","reason":"same #general-member reactor, wrong emoji — excluded by the 🎉 condition"},
+    {"role":"walsh_thumbsup_reaction","entity":"message_reactions","facts":"Reaction on 1706120200.000003 by U03ROBERT23, reaction_type 'thumbsup'.","selection":"negative","reason":"supporting record showing Robert Walsh's non-matching reaction type"},
+    {"role":"lukas_tada_message","entity":"messages","facts":"Message 1706120300.000004 in #model-research, authored by Sophie: 'Quantization results are in, we beat baseline!' reacted to by Lukas with tada.","selection":"negative","reason":"same emoji, but the reactor is not named Robert — excluded by the name condition"},
+    {"role":"lukas_tada_reaction","entity":"message_reactions","facts":"Reaction on 1706120300.000004 by U_LUKAS, reaction_type 'tada'.","selection":"negative","reason":"supporting record showing the tada reaction came from a non-Robert user"},
+    {"role":"robertkim_tada_message","entity":"messages","facts":"Message 1706120400.000005 in #random, authored by Hubert: 'Anyone want to grab drinks after work today?' reacted to by Robert Kim with tada.","selection":"negative","reason":"reactor is named Robert and used the right emoji, but is not a #general member — excluded by the channel-membership condition"},
+    {"role":"robertkim_tada_reaction","entity":"message_reactions","facts":"Reaction on 1706120400.000005 by U_ROBERTK, reaction_type 'tada'.","selection":"negative","reason":"supporting record showing Robert Kim's tada reaction outside the #general-member population"}
+  ],
+  "obligations": [
+    {
+      "name":"robert_general_tada_message",
+      "description":"Select the single message that was reacted to with a 🎉 (tada) by a user named Robert who is a member of #general, resolved along message→reaction→user→channel_members→channels→teams; ambiguous between two same-named #general members until one is chosen or both reported.",
+      "table":"messages",
+      "mode":"underspecified",
+      "task_type":"read-only",
+      "scope":"messages anywhere in the workspace that received a tada reaction from a user named Robert who holds #general membership",
+      "target_roles":["login_fix_message","tokyo_latency_message"],
+      "candidate_role_sets":[["login_fix_message"],["tokyo_latency_message"]],
+      "selection":"one",
+      "answer_attributes":[["messages.message_text"]]
+    }
+  ],
+  "task_spec":[
+    {"line":1,"text":"Find the message that a Robert who's a #general member reacted to with a 🎉 and report its text.","obligations":[1]}
+  ],
+  "scope_exception": null,
+  "access_plan":"The acting bot is a member of #general, #engineering, #core-infra, and #random, so it can call conversations.members on #general to get the roster, cross-reference with users.info to find members named Robert (Robert Walsh, Robert Chen), then call conversations.history on channels it can reach plus reactions.get on individual messages to locate their tada reactions. This surfaces both Robert Walsh's reaction on the login-fix message and Robert Chen's reaction on the Tokyo-latency message as legitimate candidates, while Robert Kim's tada reaction is discoverable but excluded because users.info/conversations.members shows he is not on the #general roster — all without any workspace-name lookup or hidden timestamp fields."
+}
+```

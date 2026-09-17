@@ -1,0 +1,113 @@
+```json
+{
+  "prompt": "Can you list the channels our workspace admin named Robert belongs to, and confirm that he's actually flagged as admin rather than just a regular member?",
+  "binding_note": "Workspace admin role is the identifying join, not a fact reported after the fact: filtering users by admin role in user_teams narrows the pool to three people, and filtering those by the first name 'Robert' leaves two distinct admins (Robert Walsh and Robert Kim) with disjoint channel-membership sets, so which conversation-membership records are intended stays unresolved.",
+  "roles": [
+    {
+      "role": "robert_walsh_user",
+      "entity": "users",
+      "facts": "real_name Robert Walsh, username robertwalsh, member of workspace T01WORKSPACE",
+      "selection": "alternative",
+      "reason": "First candidate matching both the name condition and the admin workspace-role condition"
+    },
+    {
+      "role": "robert_kim_user",
+      "entity": "users",
+      "facts": "new user real_name Robert Kim, username robert.kim, email robertk@neuroflow.ai, member of workspace T01WORKSPACE",
+      "selection": "alternative",
+      "reason": "Second candidate matching both the name condition and the admin workspace-role condition; added to realize genuine ambiguity under the assigned route"
+    },
+    {
+      "role": "robert_walsh_workspace_membership",
+      "entity": "user_teams",
+      "facts": "Robert Walsh's user_teams row carries role=admin",
+      "selection": "alternative",
+      "reason": "Workspace-membership role that identifies Robert Walsh as an eligible admin along the assigned route"
+    },
+    {
+      "role": "robert_kim_workspace_membership",
+      "entity": "user_teams",
+      "facts": "new user_teams row for Robert Kim carries role=admin",
+      "selection": "alternative",
+      "reason": "Workspace-membership role that identifies Robert Kim as an eligible admin along the assigned route"
+    },
+    {
+      "role": "robert_walsh_memberships",
+      "entity": "channel_members",
+      "facts": "Robert Walsh holds conversation memberships in general, random, and engineering",
+      "selection": "alternative",
+      "reason": "Candidate conversation-membership set if the intended admin Robert is Robert Walsh"
+    },
+    {
+      "role": "robert_kim_memberships",
+      "entity": "channel_members",
+      "facts": "new conversation memberships for Robert Kim in product-growth and frontend",
+      "selection": "alternative",
+      "reason": "Candidate conversation-membership set if the intended admin Robert is Robert Kim"
+    },
+    {
+      "role": "morgan_freeman_admin_workspace_membership",
+      "entity": "user_teams",
+      "facts": "Morgan Freeman's user_teams row carries role=admin",
+      "selection": "negative",
+      "reason": "Satisfies the admin-role condition but fails the name condition ('Robert'), so his channel memberships are excluded"
+    },
+    {
+      "role": "robert_chen_member_workspace_membership",
+      "entity": "user_teams",
+      "facts": "Robert Chen's user_teams row carries role=member",
+      "selection": "negative",
+      "reason": "Satisfies the name condition but fails the admin-role condition, so his channel memberships are excluded"
+    },
+    {
+      "role": "hubert_member_workspace_membership",
+      "entity": "user_teams",
+      "facts": "Hubert Marek's user_teams row carries role=member",
+      "selection": "negative",
+      "reason": "Fails both the name and the admin-role condition"
+    },
+    {
+      "role": "robert_chen_memberships",
+      "entity": "channel_members",
+      "facts": "Robert Chen holds conversation memberships in project-alpha-dev, core-infra, model-research, product-growth, and frontend",
+      "selection": "negative",
+      "reason": "Named Robert but his workspace role is member, not admin, so these memberships are excluded by the role condition"
+    }
+  ],
+  "obligations": [
+    {
+      "name": "admin_robert_channel_memberships",
+      "description": "Conversation memberships held by whichever workspace-admin user named Robert is intended; two disjoint candidate sets exist (Robert Walsh's and Robert Kim's) since the admin-role filter narrows the pool but the name still leaves two matches.",
+      "table": "channel_members",
+      "mode": "underspecified",
+      "task_type": "read-only",
+      "scope": "conversation memberships of the workspace-admin user named Robert",
+      "target_roles": ["robert_walsh_memberships", "robert_kim_memberships"],
+      "candidate_role_sets": [["robert_walsh_memberships"], ["robert_kim_memberships"]],
+      "selection": "set",
+      "answer_attributes": [["channel_members.channel_id"], ["channel_members.user_id"]]
+    },
+    {
+      "name": "admin_robert_workspace_role",
+      "description": "The workspace membership role of the same candidate Robert, confirming admin status as displayed alongside the selected memberships (not used to further disambiguate between the two Roberts).",
+      "table": "user_teams",
+      "mode": "underspecified",
+      "task_type": "read-only",
+      "scope": "workspace membership role of the workspace-admin user named Robert",
+      "target_roles": ["robert_walsh_workspace_membership", "robert_kim_workspace_membership"],
+      "candidate_role_sets": [["robert_walsh_workspace_membership"], ["robert_kim_workspace_membership"]],
+      "selection": "one",
+      "answer_attributes": [["user_teams.role"]]
+    }
+  ],
+  "task_spec": [
+    {
+      "line": 1,
+      "text": "List the channels our workspace admin named Robert belongs to, and confirm his admin status.",
+      "obligations": [1, 2]
+    }
+  ],
+  "scope_exception": null,
+  "access_plan": "Use users.list to enumerate workspace users and their real_name fields to find those named Robert, then check each candidate's workspace role (admin vs member) via team membership info; for each candidate whose role is admin, use users.conversations (or channel_members lookups) to enumerate the channels they belong to."
+}
+```

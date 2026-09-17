@@ -1,0 +1,38 @@
+```json
+{
+  "prompt": "Priya posted an alert about OOM kills hitting the cluster-b inference pods in one of our channels. For the incident postmortem, pull the member list — with each person's workspace role — for whichever workspace contains that channel.",
+  "binding_note": "The route is workspace_membership -> workspace -> conversation -> message -> user. Priya authoring the cluster-b/OOM alert message pins the conversation (#core-infra, C_INFRA) and, through its team_id, pins the workspace (T01WORKSPACE) rather than the similarly-themed Orbit Labs workspace where a different person posted about an OOM issue in a different channel. The deliverable is the set of workspace_membership rows (stored as user_teams) belonging to that pinned workspace, each carrying its own role attribute.",
+  "roles": [
+    {"role":"alert_message","entity":"messages","facts":"Message in C_INFRA authored by U_PRIYA: 'Alert: High memory pressure on cluster-b inference pods. OOM kills detected.'","selection":"support","reason":"Anchors the identifying chain to one conversation via its author."},
+    {"role":"alert_channel","entity":"channels","facts":"C_INFRA ('core-infra'), team_id=T01WORKSPACE, contains alert_message.","selection":"support","reason":"Links the message to its workspace via team_id."},
+    {"role":"alert_author","entity":"users","facts":"U_PRIYA, member of T01WORKSPACE.","selection":"support","reason":"Identifies who authored the pinning message."},
+    {"role":"target_workspace","entity":"teams","facts":"T01WORKSPACE ('Test Workspace'), the workspace owning C_INFRA.","selection":"support","reason":"The workspace resolved by the route, whose memberships are the deliverable."},
+    {"role":"priya_membership","entity":"user_teams","facts":"U_PRIYA + T01WORKSPACE, role=member.","selection":"match","reason":"A workspace_membership row of the pinned workspace."},
+    {"role":"lukas_membership","entity":"user_teams","facts":"U_LUKAS + T01WORKSPACE, role=member.","selection":"match","reason":"Another workspace_membership row of the pinned workspace, showing the population extends beyond the message's author."},
+    {"role":"robert_admin_membership","entity":"user_teams","facts":"U03ROBERT23 + T01WORKSPACE, role=admin.","selection":"match","reason":"Shows role diversity within the correct workspace's membership set."},
+    {"role":"orbit_alert_message","entity":"messages","facts":"New message in C_ORBIT_INFRA authored by U_ORBIT_ELENA: 'GPU nodes hitting OOM during batch resize on autoscaler group, checking memory limits now.'","selection":"negative","reason":"Similar OOM topic but different author and different workspace; must not be mistaken for the pinning message."},
+    {"role":"orbit_channel","entity":"channels","facts":"C_ORBIT_INFRA ('infra-ops'), team_id=T02ORBIT, contains orbit_alert_message.","selection":"negative","reason":"Wrong workspace's channel; a plausible distractor conversation."},
+    {"role":"orbit_workspace","entity":"teams","facts":"T02ORBIT ('Orbit Labs'), a separate workspace unrelated to Priya's alert.","selection":"negative","reason":"The workspace that must be excluded despite the topical similarity of its incident message."},
+    {"role":"orbit_membership","entity":"user_teams","facts":"U_ORBIT_ELENA + T02ORBIT, role=member.","selection":"negative","reason":"A workspace_membership row that belongs to the wrong workspace and must not appear in the result."}
+  ],
+  "obligations": [
+    {
+      "name": "pinned_workspace_membership_roster",
+      "description": "Select all user_teams (workspace_membership) rows belonging to the workspace that owns the conversation containing the message where Priya reported the cluster-b/OOM alert; report each member's user and role.",
+      "table": "user_teams",
+      "mode": "multiple",
+      "task_type": "read-only",
+      "scope": "ordinary requested scope: every workspace_membership row for the single workspace resolved via the message-authorship route",
+      "target_roles": ["priya_membership","lukas_membership","robert_admin_membership"],
+      "candidate_role_sets": null,
+      "selection": "set",
+      "answer_attributes": [["user_teams.user_id"],["user_teams.team_id"],["user_teams.role"]]
+    }
+  ],
+  "task_spec": [
+    {"line": 1, "text": "Find the channel containing Priya's cluster-b/OOM memory-pressure alert message, determine which workspace it belongs to, and list that workspace's members together with their workspace roles.", "obligations": [1]}
+  ],
+  "scope_exception": null,
+  "access_plan": "Use conversations.list/conversations.history (or search.messages with a query like 'OOM cluster-b') to locate the alert message and confirm its author is Priya and its channel is core-infra; use conversations.info on that channel to obtain its team_id (T01WORKSPACE). Then call users.list scoped with team_id=T01WORKSPACE to enumerate the workspace's members and their roles, which corresponds to the user_teams rows for that team."
+}
+```

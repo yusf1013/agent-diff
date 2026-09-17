@@ -1,0 +1,50 @@
+```json
+{
+  "prompt": "In #core-infra, find whoever posted the message pinning the OOM incident's root cause specifically on hitting a hard CUDA memory allocation limit. Then create a new private channel called incident-retro and invite every workspace admin from that same workspace to it for a postmortem.",
+  "binding_note": "The witness is identified by authoring a specific message content (root-cause diagnosis) inside #core-infra, not merely by channel membership; that witness's workspace membership (via the channel's workspace) anchors the search for OTHER workspace members whose workspace-membership role is 'admin'. The admins need not be members of #core-infra themselves.",
+  "roles": [
+    {"role": "witness_author", "entity": "users", "facts": "U_PRIYA authored the core-infra message stating the pprof delta shows a hard CUDA memory allocation limit, not fragmentation, as the OOM root cause; she is a workspace-member of T01WORKSPACE.", "selection": "support", "reason": "Content-identifying participant whose workspace membership anchors the route to the target workspace."},
+    {"role": "target_admin_robert", "entity": "users", "facts": "U03ROBERT23 (Robert Walsh) holds an 'admin' role in the workspace_membership record for T01WORKSPACE, the same workspace containing #core-infra.", "selection": "match", "reason": "Workspace admin in the witness's workspace; satisfies the route and role condition."},
+    {"role": "target_admin_morgan", "entity": "users", "facts": "U07MORGANFREE (Morgan Freeman) holds an 'admin' role in the workspace_membership record for T01WORKSPACE.", "selection": "match", "reason": "Second workspace admin in the same workspace; belongs to the intended collection."},
+    {"role": "negative_regular_member", "entity": "users", "facts": "U_LUKAS is a member of #core-infra and holds only 'member' role in the T01WORKSPACE workspace_membership.", "selection": "negative", "reason": "Excluded by the admin-role condition despite sharing both the channel and workspace."},
+    {"role": "negative_other_infra_author", "entity": "users", "facts": "U_OLENA also posted extensively in #core-infra during the OOM investigation (discussing tensor allocation and reload-per-request theories) but did not author the message identifying the hard CUDA limit as root cause; her workspace role is 'member'.", "selection": "negative", "reason": "Wrong message authored inside the same channel; illustrates that ordinary channel co-membership without the specific content match does not qualify as the witness."},
+    {"role": "support_channel", "entity": "channels", "facts": "C_INFRA, channel_name 'core-infra', belongs to team_id T01WORKSPACE, contains the diagnostic message thread.", "selection": "support", "reason": "Anchoring conversation for locating the witness author."},
+    {"role": "support_workspace", "entity": "teams", "facts": "T01WORKSPACE ('Test Workspace') contains #core-infra and holds all workspace_membership records including the two admins.", "selection": "support", "reason": "Workspace joined from the channel to reach other workspace memberships."}
+  ],
+  "obligations": [
+    {
+      "name": "invite_workspace_admins",
+      "description": "Select the users holding an 'admin' workspace_membership role in the same workspace as #core-infra (found via the message author who diagnosed the CUDA memory limit root cause), for invitation to the new incident-retro channel.",
+      "table": "users",
+      "mode": "multiple",
+      "task_type": "state-changing",
+      "scope": "workspace admins of T01WORKSPACE reached via the core-infra root-cause message author's workspace membership",
+      "target_roles": ["target_admin_robert", "target_admin_morgan"],
+      "candidate_role_sets": null,
+      "selection": "set",
+      "change_attributes": [["channel_members.user_id", "channel_members.channel_id"]],
+      "written_attributes": []
+    },
+    {
+      "name": "create_incident_retro_channel",
+      "description": "Create the new private destination channel that the identified admins will be invited to.",
+      "table": "channels",
+      "mode": "single",
+      "task_type": "state-changing",
+      "scope": "new private channel in T01WORKSPACE",
+      "target_roles": [],
+      "candidate_role_sets": null,
+      "selection": "one",
+      "change_attributes": [["channels.channel_name", "channels.is_private", "channels.team_id"]],
+      "written_attributes": ["channels.channel_name", "channels.is_private"]
+    }
+  ],
+  "task_spec": [
+    {"line": 1, "text": "Locate the #core-infra message that attributes the OOM incident's root cause to a hard CUDA memory allocation limit and identify its author to determine the relevant workspace.", "obligations": [1]},
+    {"line": 2, "text": "Create a new private channel named incident-retro.", "obligations": [2]},
+    {"line": 3, "text": "Invite every user holding an admin workspace membership role in that same workspace to incident-retro.", "obligations": [1, 2]}
+  ],
+  "scope_exception": null,
+  "access_plan": "Use conversations.history (or search.messages with a query on 'CUDA memory' / 'hard limit') scoped to #core-infra to find the specific diagnostic message and its author (U_PRIYA), confirming her workspace via the channel's team. Use users.list/users.info to enumerate T01WORKSPACE members and their workspace-membership role, filtering to role='admin' (U03ROBERT23, U07MORGANFREE). Call conversations.create to make incident-retro, then conversations.invite with the identified admin user IDs."
+}
+```

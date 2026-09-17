@@ -1,0 +1,32 @@
+I'm mapping out a task following the chain from workspace to conversation to membership to user to reaction to message, thinking through how selecting a workspace connects down through these relationships even though there's likely just one workspace involved.
+
+This matches the pattern requiring an explicit candidate scope when no discovery route exists, so I need to identify workspaces via a route through conversations, membership, users, and reactions—where a member reacted to some message, without assuming that reaction sits on the specifically selected message itself.
+
+Tracing this concretely: the reaction from U01AGENBOT9 landed on Lukas's circuit-tracer OOM message in the engineering channel C03IJKL9012, and since U01AGENBOT9 belongs to that channel's membership, that membership ties back to whichever workspace contains this conversation.
+
+Given the seed only supplies one workspace (T01WORKSPACE), a single match satisfies the "multiple" mode intent. Since I can't assume general workspace enumeration, I need to scope this to a bounded set of channel IDs rather than searching broadly.
+
+I'm working out the query chain: workspace to conversation to membership to user to reaction to message, tracing which workspace has a channel where a member reacted with eyes to the OOM message.
+
+Since there's only one workspace in this environment, the answer is trivially the single team, but since there's no API for listing workspaces generally, I need to have the user supply candidate workspace IDs directly rather than asking an open-ended "which workspaces" question—I'll note this scoping limitation explicitly in the prompt.
+
+I need an obligation table for the answer attributes, and since workspace names aren't generally resolvable, I'll settle on using teams.team_id as the answer attribute rather than team_name. Now I'm working out the roles needed, starting with defining the workspace_match role.
+
+For negatives, I'm considering other candidates that don't satisfy the route: Sophie's DM message about circuit-tracer progress has no reaction, and the MCP deployment message also lacks a matching reaction from a channel member, so neither qualifies as a false positive to include.
+
+Checking the seed data, only one reaction record exists at all - the eyes reaction on the circuit-tracer message. Since the schema allows adding fresh reactions, I can design negative examples like a core-infra member reacting with a different emoji on an unrelated message, keeping the actual match distinct from these decoys.
+
+Actually the route ends at REACTION linking directly to MESSAGE, which pins down the exact message the reaction is on, so the conversation membership constraint only applies to the user, not to where the message lives. This mirrors the calibration guidance about membership routes not requiring the target content to be in that same conversation, so I need to reconsider whether the message or reaction actually has to belong to the identified conversation at all.
+
+Now let me work through the negative cases: wrong emoji on the right message, right emoji on an unrelated message, someone who authored the message but never reacted, and cases where the reaction and channel membership come from different, non-overlapping records.
+
+I need to reconsider — Gabriel's actual channel membership is a different growth channel (C04MNOP3456), distinct from C_GROWTH, so he's not part of any bounded corpus channel. I'll use U09GABRIEL reacting eyes on the OOM message as the negative example instead.
+
+With four negatives established, U01AGENBOT9's existing eyes reaction on the OOM message serves as the positive match, since that user belongs to several bounded corpus channels except growth. Now I'm drafting the final prompt asking which workspace has a member across those specific channels who reacted with eyes on the circuit-tracer OOM message, using plural phrasing since the mode is "multiple."
+
+I'll frame it as a cross-workspace audit question to give it a concrete, actionable purpose: identifying who acknowledged the OOM report across the engineering, core-infra, model-research, product-growth, and frontend channels, asking which workspaces have such a reacting member.
+
+For obligations, I'm targeting the teams table with a set-based read-only workspace match, returning team_id and team_name.
+
+My access plan is to discover the bounded channels, pull membership via conversations.members, locate the OOM message through history or search, check reactions.get for 👀 reactors, cross-reference membership against the bounded channel list, and map qualifying channels back to their team_id via conversations.info -- then I'll write this up as JSON.
+

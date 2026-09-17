@@ -1,0 +1,20 @@
+I'm double-checking the compiled query's logic—it seems to treat the on-call channel check as a separate existential rather than verifying that the same channel membership tying Robert to the team is actually in an on-call topic channel, which looks like a decomposition flaw.
+
+For T03GAMMA that mismatch doesn't matter since there's only one channel and it's correctly excluded. But for T04DELTA, I need to check whether Roberta Nguyen's display name actually matches "Robert" as required by the filter, since C_DELTA_INCIDENT's topic does contain "on-call."
+
+Checking: Roberta's display_name is "Roberta," which fails an exact equality match against "Robert," so T04DELTA is correctly excluded regardless of the auxiliary check.
+
+However, I'm noticing a real logic flaw: the focal path only requires that a Robert-named user be a member of *some* channel, while the auxiliary check independently verifies that *some* channel in the same team has an on-call topic -- without requiring these to be the same channel. This could produce false positives where a Robert is a member of an unrelated channel while a different, unrelated channel happens to be on-call. I need to check T01WORKSPACE to see if this flaw actually triggers a false positive there, or if the Robert-named users there happen to genuinely be members of the on-call channel itself.
+
+Checking whether computed_matches for T01WORKSPACE and T02VELOCITY line up with expected, and confirming no false positives arise for T03GAMMA or T04DELTA. The decomposition's join-order weakness is a theoretical risk, but this particular seed doesn't have data that would expose it, so the results end up mechanically correct anyway.
+
+Even though mechanical checks show the computed matches align with expected output, that doesn't mean the query logic is sound—it might just be lucky given this seed. The real issue: the identifying path includes two separate paths, one through channel_members and one through channels via team_id only, and the second path never actually links back to the channel_members.channel_id, so the "same channel" constraint isn't truly encoded in the identifying condition despite passing this test.
+
+Checking the relevant instruction about identifying paths only recording entity/edge sequences, I still think the dual-path selector doesn't correctly enforce conjunction on the same channel - the auxiliary path is missing a filter tying it back to the focal channel_id, which is a real construction flaw rather than an acceptable pattern.
+
+design intent isn't strictly enforced even though current seed data doesn't exploit the gap. I'll flag this as an annotation-level issue rather than a validity failure, since mechanical checks pass and computed matches align with expected—more of a quality/fragility concern. Now I want to double-check negative_workspace_gamma to see if this decomposition could falsely match T03GAMMA.
+
+This is more of a construction fragility issue than a validity failure, since mechanical checks pass and the matches are correct—I'll rate quality as adequate with validity passing. Now I want to double-check the user_teams additions giving the actor access to T02VELOCITY, T03GAMMA, and T04DELTA, since it needs discovery access across these teams.
+
+This looks like legitimate compiled scaffolding rather than a hidden constraint violation - the access_plan calls for the actor to reach each candidate workspace, so those membership rows make sense. Overall I'm settling on this being valid with just a note about the query decomposition fragility.
+

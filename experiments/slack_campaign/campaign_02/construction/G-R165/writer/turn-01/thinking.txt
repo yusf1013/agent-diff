@@ -1,0 +1,34 @@
+I'm working out a route from WORKSPACE to CONVERSATION where the referent entity is WORKSPACE, meaning I need to resolve which workspace to select based on conditions tied to a conversation attribute.
+
+But there's only one workspace in the seed data, so genuine ambiguity between multiple workspace candidates isn't possible as-is. Since exposure qualification blocks direct enumeration of workspaces, I'm considering adding a second team to the seed so there's a real underspecified case with multiple candidate workspace sets to disambiguate between.
+
+I'm considering whether conversations.list requires a team_id and how the actor's session scoping might interact with multiple workspaces. The cleanest ambiguous scenario seems to be two teams each containing a channel about "incident retrospectives," so a request like "in the workspace running the incident retrospectives channel, create a new channel" would force disambiguation by topic rather than a known workspace name.
+
+I'll frame this as a state-changing operation: conversations.create, scoped by identifying the workspace through an existing conversation's topic rather than pre-resolving it. The tricky part is that if two workspaces both have a channel literally named the same thing (like "core-infra"), the identification becomes genuinely ambiguous rather than just requiring lookup.
+
+I need a concrete scenario, so I'm considering adding a second team with its own "core-infra" channel that has a distinguishing topic, but since there's no team-archive endpoint (only conversations.archive), I need a different action to pair with this ambiguity.
+
+Since there's no workspace-mutation API available, the deliverable has to be read-only — identifying the correct workspace and then answering a question about its attributes, or listing its members/conversations, rather than performing any mutation on the workspace itself.
+
+The workspace maps to the "teams" table, so the obligation should be underspecified/read-only against that table, returning attributes like team name once resolved. Since we can't query by name directly, identification likely has to flow through conversation-level data — a channel's team_id field visible via conversations.info or similar — rather than any direct workspace lookup.
+
+For "which workspace has channel X," the answer should be a team_id, not a name, since name resolution isn't available. The actor U01AGENBOT9 only has membership in T01WORKSPACE, so if a second workspace is introduced, the actor may lack direct access there — meaning the scenario needs to explicitly supply visible workspace IDs as a bounded candidate set rather than relying on general enumeration.
+
+I'm giving the actor cross-workspace membership by adding it to both T01WORKSPACE and a new T02NORTHSTAR, along with specific channel memberships in each, so it can discover channels through a normal conversations.list-style call. To create genuine ambiguity, I'll set up two channels with the same name, "beta-signups," in each of the two workspaces, so the phrasing in the prompt doesn't clarify which workspace is meant.
+
+I'm defining the second workspace's data: a new team "Northstar Ventures" with a "beta-signups" channel that has its own distinct topic and purpose, plus a matching same-named channel in the original workspace, so the contractor-access question genuinely has two valid answers.
+
+I still need to add channel membership for the actor bot in both channels and team membership in the new workspace, so it can discover both via the conversations API, plus a decoy channel named "beta-launch" in a third team as a plausible-but-wrong negative.
+
+I'm also considering an archived "beta-signups-archive" private channel as a distinguishable negative due to its differing name, plus a same-named "beta-signups" channel in another team where the actor lacks membership — since that one wouldn't be discoverable anyway, it's naturally excluded without needing explicit negative-candidate treatment.
+
+For the actual prompt, I'm drafting: "Which workspace has a channel called beta-signups? I need the workspace ID to grant a new contractor access to it." This works well since the answer genuinely depends on the ambiguous pair of matching channels, fitting the underspecified mode without an explicit "pick one" instruction.
+
+For the read-only task type, the target roles are the two matched teams, workspace_main and workspace_north, each forming its own candidate set since they're mutually exclusive resolutions. For answer attributes, I'm leaning toward just team_id since workspace names aren't assumed generally available, though once resolved through the channel path revealing the name might be acceptable since it's tied to that specific resolved record rather than open enumeration.
+
+Beyond the actor and the two workspace roles, I need channel roles too: the matching beta-signups channels in each workspace, plus negative examples like a same-named channel with a different purpose in workspace_main, and a same-named "beta-signups" channel sitting in yet another team entirely to test that the model doesn't conflate workspaces just because channel names match.
+
+I'm now compiling the roles array along with the obligation structure, starting with an "identify_workspace" obligation over the teams table with underspecified mode, targeting both workspace roles as candidate sets.
+
+Since the request implies a single workspace should be granted access, I'm setting selection to "one" and answer_attributes to team_id. The task spec line asks for identifying which workspace contains the beta-signups channel and providing its ID, tied to that obligation, with the access plan describing discovery through conversation listing scoped to the actor's own memberships and matching by channel name.
+

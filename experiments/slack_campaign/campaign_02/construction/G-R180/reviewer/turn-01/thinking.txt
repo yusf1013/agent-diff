@@ -1,0 +1,18 @@
+I'm mapping out the workspace setup: workspace_test already exists as T01WORKSPACE, while workspace_neuro is new (T02NEURO). I'm tracing the relationship chain from workspace through conversation, message, reaction, user, to workspace membership, since this determines whether the reactor holds admin rights in the same workspace, and I'm cross-referencing against the existing base seed data for T01WORKSPACE's message.
+
+Checking the seed data, the only existing reaction is an "eyes" reaction from a bot, so there are currently no rocket reactions in the base seed — the design plans to add a new rocket reaction from Robert Walsh, who's already an admin member of T01WORKSPACE, so this only adds a reaction row without touching membership. For workspace_neuro, everything is new: the team, channel, launch message, Robert Chen's admin membership, and his rocket reaction — all valid planned additions. I'm now considering a negative test case where Robert Chen, admin only of T02NEURO, reacts to a message in T01WORKSPACE instead, which should trigger a cross-workspace violation.
+
+Since Robert Chen already exists as a plain member of T01WORKSPACE in the base seed while gaining admin status at T02NEURO, that's consistent for setting up the cross-workspace negative test via a new reaction row. I'm also mapping out other negative cases: Nick Fury, a non-admin, reacting with a rocket to test role restrictions, and the bot's existing "eyes" reaction as a wrong-emoji negative case.
+
+Checking the answer attributes, I see they cover teams.team_id and teams.team_name across both workspaces. But I'm now worried about the access plan - since users.info only exposes one selected workspace association per call, verifying an actor's role for a specific team_id might not work cleanly when checking membership across multiple workspaces.
+
+This creates a conflict: the runtime qualification suggests reproducible predicates should give each queried person one workspace membership, but the design deliberately gives Robert Chen two distinct memberships (member at T01, admin at T02), so relying on users.info to determine role could yield ambiguous results.
+
+This is a genuine gap: the test requires distinguishing role per team_id for the same user, but users.info only surfaces one selected workspace association, not arbitrary team-scoped lookups. I should check if the domain model's stored workspace-membership data offers an alternate path to resolve role per specific team.
+
+This confirms the runtime notes explicitly flag this as a limitation, meaning the test design creates a scenario that can't actually be executed against the real API. Checking the users.info documentation, it only takes a user parameter (plus include_locale) with no team_id, so it can only return one workspace association at a time rather than per-team role info across multiple workspaces.
+
+This means distinguishing Robert Chen's role in one team versus another isn't actually possible via this endpoint, which breaks the whole mechanism the task depends on for generating valid matches or negatives. That's a real access-layer defect undermining the task's solvability and validity.
+
+This ambiguity undermines the core relationship check needed for both match determination and the negative discrimination test, so I'll flag this as a validity failure.
+

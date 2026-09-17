@@ -1,0 +1,34 @@
+I'm tracing the path from user through conversation membership to conversation to workspace to workspace membership, since this looks like a two-step task: first identify the message author in #core-infra, then find that workspace's admins to invite.
+
+But I notice a mismatch — the witness is supposed to be identified by authoring a specific message, yet the route nodes don't include MESSAGE at all, only CONVERSATION_MEMBERSHIP. That's a real inconsistency since channel membership alone can't establish who authored a particular message.
+
+This fits the pattern where the CONVERSATION_MEMBERSHIP edge functions as a category covering channel members, message authors, or reaction contributors, so identifying the witness via message authorship still counts as a valid participant identification within that group.
+
+But then I second-guess: the instructions warn that channel-membership and post-authorship are distinct routes, and here the actual database linkage tying the witness to the channel is authorship (via message.channel_id), not her separate membership record — so there may be a mismatch between the route label and the real join being used.
+
+Still, since U_PRIYA does have a channel_members row for C_INFRA, the conversation_membership route is technically satisfiable for her too, purely by coincidence that she's both member and author. But the task framing ("whoever posted the message") is fundamentally an authorship-based identification, and the binding_note explicitly warns against conflating that with mere membership, so I need to make sure my query traces through message content rather than relying on the membership edge alone.
+
+However, the exposure_qualification text explicitly allows treating channel members, message authors, and reaction contributors interchangeably as "participants," so identifying via authorship is within the sanctioned scope of the CONVERSATION_MEMBERSHIP-labeled route. I'll accept this and move on to checking the remaining obligations, starting with selecting users holding an admin role in the workspace.
+
+For the second obligation, the change_attributes listed are the channel_members fields, reflecting the invite action that adds the selected admins to the newly created channel rather than the workspace_membership.role read used to identify them. That's consistent -- the obligation bundles the read-based admin selection together with the resulting state change from the invite call, which seems fine.
+
+I confirm target_admin_robert and target_admin_morgan both hold admin roles in T01WORKSPACE per user_teams, matching the seed. The negative regular member and the other infra author with different message content are both correctly excluded as negatives.
+
+For the witness author U_PRIYA, I check the actual message text against the claimed root cause — she attributes it to hitting a hard CUDA memory limit, which is a close enough paraphrase of "CUDA memory allocation limit." I verify this is uniquely identifying by checking whether anyone else in core-infra makes the same root-cause claim; U_LUKAS mentions CUDA memory allocation but only as a question, not a conclusion, so no ambiguity there.
+
+I confirm the admin role count in T01WORKSPACE is exactly two (Robert and Morgan Freeman), matching the multiple mode requirement, and verify C_INFRA's team_id and U_PRIYA's own workspace membership are both consistent and singular. Finally, I check that the private channel creation and admin-invite tasks are supported by valid Slack APIs — both conversations.create and conversations.invite check out.
+
+This is realistically exposed through standard API fields, not a hidden capability. I should also verify witness identification: finding the core-infra channel via conversations.list to get its ID, then searching messages within it—standard and consistent with the structure, so the supplemental identifying conditions and scoped witness search hold up.
+
+There's a subtlety worth flagging: identifying the author requires matching specific message content (CUDA memory limit as root cause) versus other discussion, which demands careful reading but is reasonable—more a quality nuance than a validity flaw. Overall this design is elaborate and plausible, with negatives testing precise content-match versus mere channel-membership, plus consequential actions like creating a channel and inviting members, making it a fairly strong task. The "multiple" mode also checks out since there are two admins.
+
+Checking task_spec ordering: identify witness/workspace, create channel, invite admins—this flow is fine, and the workspace target resolves correctly through the route even though it's statically known. The witness_author's anchoring fact of being a workspace-member also checks out, and no mechanical design errors were flagged. Scope-wise, requiring admins to be invited without needing prior channel membership seems reasonable and unconstrained, so overall this looks like a solid, valid design.
+
+Confirming the negative example holds, then verifying route generalization: Robert Walsh isn't a member of core-infra but belongs to other channels, and Morgan Freeman isn't in channel_members at all—both correctly test that admins don't need any core-infra relation except through workspace membership, which properly validates using WORKSPACE_MEMBERSHIP as the final edge rather than conversation membership.
+
+Tracing the witness path fully: Priya's conversation membership in core-infra connects to the channel, which connects to the workspace, which connects to the target admins' workspace memberships—this matches the route nodes exactly, so the route is completely satisfied. Overall validity looks solid given the realistic complexity and useful negative distinctions, though I want to flag one nuance: the change_attributes for the retro channel creation list the channel name, privacy, and team_id fields, but written_attributes is empty—I should check whether the literal channel name "incident-retro" ought to be recorded as a written attribute.
+
+Since written_attributes should list bare table.column names for actor-written fields, and "incident-retro" is a literal value the actor provides, "channels.channel_name" probably belongs there even though change_attributes already covers it. This looks like a minor annotation inconsistency rather than a real defect in the underlying logic.
+
+Given the design otherwise holds up under core validity checks, I'll rate it as passing with strong quality, noting the written_attributes omission as a minor flaw.
+

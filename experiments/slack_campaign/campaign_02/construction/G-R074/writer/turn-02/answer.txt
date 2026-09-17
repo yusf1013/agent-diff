@@ -1,0 +1,34 @@
+```json
+{
+"prompt": "Show me the messages posted by an admin-role member of the Test Workspace team that lay out the plan to rewrite circuit-tracer in PyTorch for multi-GPU support.",
+"binding_note": "The route binds r0.user_id = r1.user_id (message author), r2.user_id = r1.user_id (same person's workspace membership), and r2.team_id = r3.team_id where r3.team_name = 'Test Workspace' (the identified workspace endpoint). All three joins must resolve on the same person and the same workspace: the message's author must be the specific user who holds an admin-role membership record in the team named 'Test Workspace', not merely any admin somewhere or any author of matching text.",
+"roles": [
+ {"role":"workspace_test","entity":"teams","facts":"team_id T01WORKSPACE, team_name 'Test Workspace' — the workspace explicitly named in the request; identification runs through this name rather than being assumed as background context.","selection":"support","reason":"Endpoint of the route that the admin-role membership must belong to; the request names it explicitly, so it is resolved rather than defaulted."},
+ {"role":"admin_membership_robert_walsh","entity":"user_teams","facts":"U03ROBERT23 holds role='admin' in team_id T01WORKSPACE (Test Workspace).","selection":"negative","reason":"Satisfies the workspace+admin-role join, but this user's own messages concern deployment timing, not the circuit-tracer rewrite, so the message-content condition fails."},
+ {"role":"admin_membership_morgan_freeman","entity":"user_teams","facts":"U07MORGANFREE holds role='admin' in team_id T01WORKSPACE (Test Workspace).","selection":"negative","reason":"Satisfies the workspace+admin-role join, but this user authored no messages at all in the seed, so no candidate message exists from this author."},
+ {"role":"author_robert_walsh","entity":"messages","facts":"U03ROBERT23 (admin member of Test Workspace) posted 'Does anyone know when the MCP deployment will be done?' in #general.","selection":"negative","reason":"Author correctly resolves through admin membership in Test Workspace, but message content is about deployment scheduling, not the circuit-tracer PyTorch rewrite."},
+ {"role":"author_lukas_rewrite_plan","entity":"messages","facts":"U_LUKAS, an ordinary ('member') Test Workspace member, posted in #engineering describing circuit-tracer's OOM problem and the need to rewrite it in PyTorch from scratch with proper multi-GPU streaming.","selection":"negative","reason":"Matches the message-content condition, but this author's own team_teams row has role='member', not 'admin', so the workspace-membership-role condition fails for this same person."},
+ {"role":"author_sophie_dm_update","entity":"messages","facts":"U_SOPHIE, also an ordinary Test Workspace member, sent a DM update on the circuit-tracer PyTorch rewrite progress (multi-GPU sharding, CUDA kernels) to the acting user.","selection":"negative","reason":"Same rewrite topic again, but author's membership role in Test Workspace is 'member', not 'admin'."},
+ {"role":"author_kenji_prototype","entity":"messages","facts":"U_KENJI, an ordinary Test Workspace member, offered to build a parallel JAX prototype for circuit-tracer.","selection":"negative","reason":"Related thread but wrong topic (JAX prototype, not the PyTorch multi-GPU rewrite plan) and wrong role (member, not admin) for this author."}
+],
+"obligations": [
+ {
+  "name":"admin_authored_circuit_tracer_messages_in_test_workspace",
+  "description":"Messages whose author is the same person holding an admin-role user_teams membership specifically in the team named 'Test Workspace', and whose text describes the plan to rewrite circuit-tracer in PyTorch for multi-GPU support; no message in the seed satisfies both the workspace-admin-role condition and the content condition on the same author.",
+  "table":"messages",
+  "mode":"absent",
+  "task_type":"read-only",
+  "scope":"messages across Test Workspace's channels/DMs whose author holds an admin-role membership in the team named 'Test Workspace' (resolved via user_teams.team_id = teams.team_id where teams.team_name = 'Test Workspace'), restricted to the circuit-tracer PyTorch multi-GPU rewrite topic",
+  "target_roles":[],
+  "candidate_role_sets":null,
+  "selection":"set",
+  "answer_attributes":[["messages.message_text"],["messages.channel_id"],["messages.user_id"]]
+ }
+],
+"task_spec":[
+ {"line":1,"text":"Show me the messages posted by an admin-role member of the Test Workspace team that lay out the plan to rewrite circuit-tracer in PyTorch for multi-GPU support.","obligations":[1]}
+],
+"scope_exception": null,
+"access_plan": "Resolve the workspace by name via teams (team_name = 'Test Workspace') to its team_id, then find its admin-role members via user_teams (role='admin', team_id matches); for each such user, scan their authored messages across channels/DMs discoverable through conversations.list/history/replies and users.info for the circuit-tracer PyTorch multi-GPU rewrite topic. Cross-reference message.user_id against the resolved admin-member set; no message in the seed satisfies both the workspace-admin-role condition and the topic condition on the same author."
+}
+```

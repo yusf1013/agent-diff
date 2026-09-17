@@ -1,0 +1,28 @@
+I'm checking that the seed data already covers the message and reaction needed, verifying that the negative case for U08NICK23 isn't already seeded since only one reaction entry currently exists in the list.
+
+I need to add two more negative reaction rows: a nonmember reactor and a wrong-emoji reactor on unrelated messages. As for the new_followup_channel, that's created by the action execution itself, not something I insert into the seed - so I'll leave that out and only handle the pre-existing entities.
+
+Now for selectors, I'm tracing the route from workspace through conversation, membership, and user to reaction, filtering by channel and reaction_type='eyes'. Since messages aren't part of the route_nodes list, I need to find another way to pin down which specific message the reaction belongs to without joining through a message node.
+
+I realize the seed data already gives me the exact message_id (1706110000.000100), so I can filter message_reactions directly on that id plus reaction_type='eyes' -- this is a legitimate seed value, not something I'm fabricating, so it satisfies the "specific reaction" requirement without needing a message node in the path. I'm starting to build the focal query with the path through teams and channels.
+
+Now I'm working out the join chain: teams to channels via team_id, channels to channel_members via channel_id, channel_members to users via user_id, and users to message_reactions via user_id -- this correctly ties the reaction back to the same user as the channel membership. No root scope restriction is needed since the route already narrows to the right workspace.
+
+Moving to the create_followup_channel obligation, I need a selector on the channels table in single mode with a state-changing task type, identifying the new channel to create by matching its name.
+
+For the new channel selector, I'm matching on channel_name equal to 'circuit-tracer-followup' with a filter on team_id equal to the real workspace ID T01WORKSPACE -- this is fine since it's an actual seed value, not a constructed artifact.
+
+For bindings, I'm mapping out target_workspace as T01WORKSPACE, engineering_channel as C03IJKL9012, the reacting member combining channel_id and user_id, reactor_user as U01AGENBOT9, and the qualifying_reaction object with the message_id, user_id, and reaction_type fields.
+
+I still need to work out nonmember_reactor U08NICK23 and wrong_emoji_reactor as a composite handle over message_reactions with the message_id, user_id, and reaction_type. Since new_followup_channel doesn't exist yet in seed, I'll omit it from bindings but keep it in the selector -- bindings need native handles for existing records, and this one is to-be-created.
+
+Now I need to add message_reactions rows for the nonmember and wrong-emoji negative cases, since the base seed only has the eyes reaction. I found that U08NICK23 authored message 1700300000.000001 in the growth channel C04MNOP3456, where he's already a member, so I can use that as the unrelated message he reacts to and insert a corresponding message_reactions row.
+
+Actually, I'll have U08NICK23 react to Gabriel's message 1700300060.000002 instead, and have U05MORGAN23 (member of C03IJKL9012) add a thumbsup to Robert's unrelated login rate limiting message 1699824000.000987. Both users are already members of their respective channels, so no membership edits are needed, and now I'm moving on to the access plan -- the actor needs membership in C03IJKL9012 and conversations.list capability to discover the channel.
+
+Since the agent is already a member of every relevant channel, including C04MNOP3456, that covers any workspace-wide absence checks. Given only one engineering channel matches the criteria of having the OOM message and eyes reaction from a member, the resolution is unambiguous, and I'm now identifying negative referents at the workspace level that a flawed reasoning process could mistakenly select instead.
+
+Since there's only a single team (T01WORKSPACE) in the seed data, there's no alternate workspace to serve as a genuine negative root—every channel belongs to the same team, so nonmember or wrong-emoji reactors still resolve to that same team. I may need to leave negative_referents empty or find some other plausible negative candidate despite the instruction to include at least one.
+
+I'm verifying the qualifying reaction fact for message 1706110000.000100 matches the base_seed's message_reactions entry, which it does, so no insertion is needed there. Now I'm ready to finalize the output.
+

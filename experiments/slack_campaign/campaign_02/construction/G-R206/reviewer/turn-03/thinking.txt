@@ -1,0 +1,20 @@
+I'm reviewing the added channel_members row for the actor in that channel, questioning whether conversations.history actually requires membership—since that restriction isn't explicitly documented, this mutation might be unnecessary or unjustified rather than a required fix.
+
+Since public channels are typically readable via discoverable IDs without membership, the added channel_members row seems like an extra precaution rather than something the correctness rules require, and it doesn't appear to cause harm since it's just granting additional access rather than introducing a negative outcome.
+
+Checking the selector's path and filters, I trace through the join chain from user_teams through users, messages, channels, to channel_members, filtering on channel_members.user_id equal to U_INCOGNITO — this correctly forces Carlos's channel membership on the same channel as the messages, which is the right construction. The computed matches align with expectations, and the focal negatives correctly capture all remaining user-team rows that didn't match, including unrelated bots and general channel members, which is fine for this purpose.
+
+The near-miss cases (Lukas as member, Incognito as member, Robert Walsh as admin) match the intended negative roles, and the mechanical checks report no errors, confirming the earlier issue is fixed. I also verify that Carlos's channel membership row is unique — only appearing in C_GROWTH — matching the witness fact, and now I'm moving on to double-checking the message-author correctness.
+
+Only Kenji, Mateo, and Priya authored messages in C_GROWTH, matching the referent set, and their user_teams roles are all "member" as expected. None of the negative cases (Lukas, Incognito, Robert Walsh) appear among the message authors, and the answer_attributes fields reference valid schema columns from user_teams, so nothing is fabricated there.
+
+Now I'm verifying the identifying path entities and relationships match the join structure across user_teams, users, messages, channels, and channel_members, with relationships properly expressed as join columns rather than predicates. The alternative identifying set starting from channel_members.user_id looks like a valid optional supplementary path.
+
+I'm now checking the seed edit rationale — the actor needs membership in product-growth to retrieve message history since that channel isn't currently in its memberships — by cross-referencing the base seed's channel_members entries for the actor bot's existing channels.
+
+Confirming U01AGENBOT9 wasn't previously a member of C_GROWTH, so if this replica enforces membership checks for conversations.history the same way a real implementation might, granting access here is a reasonable and justified patch that doesn't conflict with witness uniqueness constraints tied to Carlos or U_INCOGNITO.
+
+Overall the design and compilation look consistent — workspace scoping is uniform under T01WORKSPACE, and I don't see remaining defects; mechanical checks report no errors. The exposure_qualification note about scoped witnesses and membership pairs reads as standard boilerplate rather than something specific to this case, so I'll treat it as fine and move on to verifying that "channel_members" is a valid mechanical entity name matching the underlying table.
+
+Checking the remaining entities confirms "channels" and the user identity role align correctly with the schema and are non-referent supporting roles. Everything checks out, so I'll finalize this as a strong pass.
+

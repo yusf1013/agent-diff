@@ -1,0 +1,34 @@
+I'm mapping out a workspace-referent task following the path from workspace to membership, user, reaction, message, and finally conversation. Since the seed only has a single workspace, I'm thinking through how single-resolution mode would apply here given there's just one entity to select.
+
+Checking the seed data, the eyes reaction does exist on a specific message in the engineering channel, left by a user who belongs to the single workspace - so this uniquely resolves. Since workspace itself has limited standalone actions, I'm thinking the practical task framing should be something like listing channels in the workspace containing that member, tying the resolution to a concrete follow-up operation.
+
+Actually a cleaner framing: use that workspace resolution to justify creating a new channel there, since conversations.create with team_id is a supported, consequential state-changing action. I'll set up the task as creating a channel in the workspace identified by whoever reacted with 👀 on the circuit-tracer OOM message in #engineering.
+
+Since only one team exists in this seed, I don't need cross-workspace ambiguity — the negatives should instead distinguish the correct message/reaction pair from similar-but-wrong ones, like a different reaction emoji on the same message, or an eyes reaction on a different message or channel.
+
+I could add a second workspace to make the routing meaningful, giving it its own decoy channel also named "engineering" but with a different reaction emoji, so the test genuinely requires matching both the exact emoji and channel name to the correct workspace rather than trivially resolving to the only option.
+
+I should also make sure no other message with an eyes reaction exists in a non-engineering channel within the same workspace, keeping this occurrence unique. I'll also test a tricky negative case: a reactor who reacts with 👀 in the "engineering" channel of workspace T02NOVAWORKS but isn't actually a registered member of that workspace, checking that membership validation isn't silently bypassed.
+
+I want a hard negative testing workspace membership specifically: a guest user, U_GUEST_DRIFTER, who reacts with eyes on the engineering message but is never added to user_teams for that workspace, so the reaction exists without valid membership.
+
+Meanwhile, the actual match is already covered by the existing seed data: U01AGENBOT9, a genuine member of T01WORKSPACE, reacted eyes on the message in the "engineering" channel C03IJKL9012. No new records are needed for the match itself, so now I'm turning to writing the actual task prompt around creating a new channel in that workspace's team context.
+
+I'll phrase it as: "Create a new channel called 'gpu-scheduling-followup' in the workspace where a member left a 👀 reaction on the message about the circuit-tracer OOM errors in the engineering channel." This traces the full route from workspace membership to reactor to reaction to message to conversation, binding everything together through the same user_id and the message's content/channel name. It's a bit coincidental that the actor performing the task is the very same user who left the reaction, but that's still consistent and fine.
+
+The obligation here is the channel creation itself, targeting the "channels" table — even though the identification chain grounds through the workspace, the actual thing being created and referenced is the new channel record.
+
+I'm laying out the roles: the workspace match on T01WORKSPACE, the reactor and message matches supporting the reaction binding, the engineering channel match, plus decoy entries like T02NOVAWORKS and a mismatched channel to test for wrong combinations.
+
+I'm also planning decoy message records with wrong emoji reactions and wrong channels, plus a non-member reactor decoy to test relationship role violations, along with the corresponding message_reactions rows to back them up.
+
+Now I'm drafting the task obligations: first, a read-only obligation to identify the correct workspace from the teams table with the team_id and team_name as answer attributes. Then I'm setting up a state-changing obligation to create a new channel, specifying that its written attributes are the channel name and team_id, with empty target_roles since this involves creating a new record rather than selecting an existing one.
+
+Actually, checking the format more carefully - written_attributes should be a flat list like the example shows, so I'll set written_attributes to ["channels.channel_name","channels.team_id"] and leave change_attributes empty since this is a creation, not a modification of existing fields.
+
+I'll include change_attributes as an empty list alongside written_attributes with the relevant fields.
+
+Now for the task spec: I need to identify the workspace where a member left a 👀 reaction on the circuit-tracer OOM message in the engineering channel, then create the 'gpu-scheduling-followup' channel there. Combining both into one natural request: "Create a new channel called 'gpu-scheduling-followup' in the workspace where a member left a 👀 reaction on the message about the circuit-tracer OOM errors, in the engineering channel."
+
+For the access plan, I'm thinking through the discovery process: listing conversations per team or checking channel history to find the engineering channel messages, using reactions to verify the 👀, confirming the reactor's identity and membership, then resolving the team_id to call conversations.create in that workspace. I want to emphasize the binding constraint that the reactor must hold workspace membership in the resolved workspace, and the message's conversation must specifically be named "engineering" in that same workspace, not just any similarly-named channel elsewhere. Now I'll write out the complete JSON answer.
+

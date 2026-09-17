@@ -1,0 +1,32 @@
+This route fits well: finding teammates who reacted with 🚀 to messages in two specific channels. I'm checking whether reactor_kenji actually reacted with a rocket to Priya's CDN-fix message in product-growth, looking through the message reactions data to verify.
+
+The seed only has one reaction entry listed, but the role facts describe several rocket reactions not yet present - that's expected since the compiler generates those mechanical rows later, so this isn't a rejection reason.
+
+Now I'm cross-checking each claimed reaction against the actual messages: reactor_priya reacting on Robert Chen's cloud-bill message in core-infra checks out against the real message content and metadata, and reactor_kenji's reaction on Priya's CDN-fix message in product-growth also matches correctly.
+
+I continue verifying: Mateo's reaction on Aisha's dashboard-loading message in frontend checks out, Sophie's thumbsup on Priya's GPU utilization message matches, and Robert Chen's rocket reaction on Sophie's 7B-checkpoint message in model-research is also correct. Łukasz's negative role (authoring without reactions) is fine since it concerns authorship, not reaction behavior.
+
+I also notice some message text itself contains emoji characters like 🚀 as literal content (e.g., Mateo's message about MMLU results) - but that's just text within the message, not an actual reaction record, so it shouldn't be confused with the reaction data.
+
+Now I'm thinking through whether the access plan's use of hardcoded channel IDs (C_INFRA, C_GROWTH) is realistic given that workspace name enumeration is unavailable - since the actor would need conversations.list to resolve channel names to IDs, but the plan sidesteps this by assuming the IDs are already known.
+
+I'm reasoning that the actor likely already has the channel IDs for core-infra and product-growth, since the corpus is explicitly bounded to those two channels rather than derived from a workspace-wide lookup — plausible if the actor is a member of those channels. Still, conversations.list would technically return channel names too, so name-based discovery isn't fully ruled out even if not the intended path.
+
+Following that, using conversations.list on public channels and filtering by name would trivially resolve the channel IDs, then reactions.get retrieves the reactions — so this path is realistically achievable and not a defect. Checking the route USER->REACTION->MESSAGE->CONVERSATION->WORKSPACE confirms it matches the binding: reactor via Reaction->User, message via Reaction->Message, conversation via Message->Conversation, workspace via Conversation->Workspace, so no hidden ID issue here since channel discovery by name is feasible.
+
+I also verify the "multiple" mode matches with Priya and Kenji as the correct plural, and confirm the reactions.get plan aligns with enumerating messages via conversations.history per channel. Checking for accidental extra matches, the seed reactions table only has one unrelated eyes reaction, so no conflict there — but I notice several messages in core-infra and product-growth contain the 🚀 emoji as literal text content rather than as reactions, which I need to distinguish from actual reaction matches.
+
+Since these are separate database columns, a naive text-scanning grader could mistake in-text emoji for reactions, but the design correctly relies on compiled message_reactions rows rather than text content, so this is really just a compile-time risk worth flagging rather than a structural flaw.
+
+Checking the negative examples now: mateo's off-scope reaction is in the frontend channel, correctly outside the two target channels, and robert's off-scope case works the same way. Robert Chen appears twice with different roles - author of the cloud-bill message and reactor in model-research - which is consistent rather than duplicated, and I'm verifying that binding_note ordering and the target_roles list line up correctly with the matches.
+
+I'm also confirming the "quick thank-you DM" phrasing is just motivating context for a read-only identification task, not an actual obligation to send DMs, so the read-only task_type still holds.
+
+That "so they can DM" phrase is just motivation for the request, not a formal instruction, so it's not a validity defect. Overall the design looks solid: correct route, correct match selection, plausible negative cases like wrong channel/emoji combos and authors without reactions, and a realistic access plan with no apparent errors.
+
+Checking the reaction entity's access path through message_reactions keyed by message, user, and reaction type confirms the route direction is fine, and since explicit channels are public and discoverable there's no hidden-ID access issue. The answer attributes are all valid bare columns with no assignment expressions, so I'm satisfied this design passes validity and represents a reasonably strong quality construction.
+
+Though I'm reconsidering quality as merely "adequate" since it's a pure read-only listing without real consequential action -- the DM mention is narrative flavor rather than an enacted step, which matches the note that bare retrieval can be valid but weaker. The 🚀 reaction appearing as emoji text rather than a simulated database row is a compiler-level detail to defer, and the negative about Łukasz Kowalski authoring messages but leaving no reactions anywhere holds up as valid.
+
+I'm satisfied there are no major flaws, so I'll rate this as passing validity with adequate quality overall, since most negatives check out fine even where different users' messages use the same rocket emoji across channels.
+

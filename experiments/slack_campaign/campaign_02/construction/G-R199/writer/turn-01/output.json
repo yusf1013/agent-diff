@@ -1,0 +1,114 @@
+{
+  "prompt": "There's a Robert on our workspace who's part of a channel where the team works on engineering or infrastructure issues. Can you check whether that Robert's workspace membership is set to owner, admin, member, or guest?",
+  "binding_note": "The route is WORKSPACE_MEMBERSHIP -> USER -> CONVERSATION_MEMBERSHIP -> CONVERSATION: we look for a workspace member named Robert whose conversation membership places them in a channel dedicated to engineering/infrastructure work. Two users match the first-name-plus-technical-channel description (Robert Walsh in #engineering, Robert Chen in #core-infra), each with a different stored workspace-membership role, so the referent membership is not resolved by this description alone.",
+  "roles": [
+    {
+      "role": "robert_walsh_user",
+      "entity": "users",
+      "facts": "real_name Robert Walsh, username robertwalsh, workspace T01WORKSPACE",
+      "selection": "alternative",
+      "reason": "First candidate Robert on the technical-channel route"
+    },
+    {
+      "role": "robert_chen_user",
+      "entity": "users",
+      "facts": "real_name Robert Chen, username robert.chen, workspace T01WORKSPACE",
+      "selection": "alternative",
+      "reason": "Second candidate Robert on the technical-channel route"
+    },
+    {
+      "role": "engineering_channel",
+      "entity": "channels",
+      "facts": "channel_name engineering, topic_text 'Engineering Team', member includes Robert Walsh",
+      "selection": "support",
+      "reason": "Technical channel supporting Robert Walsh's route qualification"
+    },
+    {
+      "role": "infra_channel",
+      "entity": "channels",
+      "facts": "channel_name core-infra, topic_text 'Infrastructure, K8s, AWS, on-call, incidents', member includes Robert Chen",
+      "selection": "support",
+      "reason": "Technical channel supporting Robert Chen's route qualification"
+    },
+    {
+      "role": "membership_walsh",
+      "entity": "user_teams",
+      "facts": "user Robert Walsh, team T01WORKSPACE, role admin",
+      "selection": "alternative",
+      "reason": "Candidate workspace membership to report if Robert Walsh is meant"
+    },
+    {
+      "role": "membership_chen",
+      "entity": "user_teams",
+      "facts": "user Robert Chen, team T01WORKSPACE, role member",
+      "selection": "alternative",
+      "reason": "Candidate workspace membership to report if Robert Chen is meant"
+    },
+    {
+      "role": "morgan_freeman_admin",
+      "entity": "user_teams",
+      "facts": "user Morgan Freeman, team T01WORKSPACE, role admin, but Morgan Freeman has no conversation membership at all",
+      "selection": "negative",
+      "reason": "Admin role but fails the conversation-membership leg of the route entirely, and wrong first name"
+    },
+    {
+      "role": "robert_walsh_random_channel",
+      "entity": "channel_members",
+      "facts": "Robert Walsh is also a member of #general and #random, non-technical channels",
+      "selection": "negative",
+      "reason": "Shows Robert Walsh has other memberships that don't satisfy the technical-channel qualifier by themselves, ruling out mis-binding on the wrong channel"
+    },
+    {
+      "role": "priya_infra_member",
+      "entity": "channel_members",
+      "facts": "Priya Sharma is a member of #core-infra and #model-research",
+      "selection": "negative",
+      "reason": "Correct technical-channel membership but wrong first name, so excluded"
+    }
+  ],
+  "obligations": [
+    {
+      "name": "robert_workspace_membership",
+      "description": "The workspace membership record (role field) for the Robert who is identified via being a conversation member of a channel devoted to engineering/infrastructure work; two distinct users satisfy this description with different roles, so the specific membership is unresolved without further disambiguation.",
+      "table": "user_teams",
+      "mode": "underspecified",
+      "task_type": "read-only",
+      "scope": "workspace membership role of a Robert-named user tied to a technical channel membership",
+      "target_roles": [
+        "membership_walsh",
+        "membership_chen"
+      ],
+      "candidate_role_sets": [
+        [
+          "membership_walsh"
+        ],
+        [
+          "membership_chen"
+        ]
+      ],
+      "selection": "one",
+      "answer_attributes": [
+        [
+          "user_teams.role"
+        ],
+        [
+          "user_teams.user_id"
+        ],
+        [
+          "user_teams.team_id"
+        ]
+      ]
+    }
+  ],
+  "task_spec": [
+    {
+      "line": 1,
+      "text": "Identify the Robert who belongs to a channel where engineering/infrastructure work is discussed, and report whether their workspace membership role is owner, admin, member, or guest; if more than one Robert fits, surface both possibilities rather than guessing.",
+      "obligations": [
+        1
+      ]
+    }
+  ],
+  "scope_exception": null,
+  "access_plan": "Use conversations.list to find channels with engineering/infrastructure topics (#engineering, #core-infra), call conversations.members on each to get member user IDs, cross-reference with users.list/users.info to find users whose real_name starts with 'Robert', then call users.info on each matching user to read their workspace owner/admin/member role. Since two Roberts (Robert Walsh via #engineering, Robert Chen via #core-infra) satisfy the description with different roles, report both memberships as candidates rather than silently picking one."
+}

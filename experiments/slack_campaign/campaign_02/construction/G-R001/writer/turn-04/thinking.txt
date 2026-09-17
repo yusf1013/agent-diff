@@ -1,0 +1,34 @@
+I'm rethinking the channel-to-workspace route: with only one team in the base seed, the workspace link isn't truly distinguishing. I need multiple workspaces so the channel is identified by which workspace it actually belongs to, using a real identifying condition on that side.
+
+But there's a snag—since there's no supported API to look up a team by name (only conversations.list with team_id directly), asking the user to reference the workspace by its name won't translate into something the assistant can resolve, since stored workspace names and general enumeration aren't assumed available.
+
+So instead I'm thinking the identifying condition should rely on something the actor already has visibility into, like a directly stated workspace ID, rather than a name. That fits the exposure_qualification guidance about using visible workspace IDs on an explicitly bounded channel corpus while preserving the candidate scope.
+
+I'm designing two workspaces where the same channel name "core-infra" exists in both, and disambiguation requires the workspace ID. The actor is a member of both channels, and the request explicitly names one workspace ID, so I want to check whether stating that ID literally is actually the intended approach — since name-based lookup isn't supported, explicit IDs seem like the natural literal identifier here, similar to how exact channel names work as literal identity conditions elsewhere.
+
+Without a lookup function, referencing the workspace by name isn't really supported unless the actor already knows the ID-name mapping from context, so the safer design is to reference the workspace directly by its visible ID. I'll phrase the prompt as something like "Archive the core-infra channel that belongs to workspace T02NORTHSTAR," even if a bit awkward, since it satisfies the stated requirement to use visible workspace IDs.
+
+Now I'm working out the join contract: channels connect to teams via channels.team_id = teams.team_id, with the channel identified by exact name plus team_id since exact channel names carry literal identity.
+
+Since channel_name is unique within a team, giving both name and team ID matters only when the same channel name exists across multiple workspaces—so I can set up two "core-infra" channels, one per team, making the name alone ambiguous and the team_id necessary to disambiguate. That genuinely exercises the CONVERSATION->WORKSPACE route for single-mode resolution.
+
+I'm also checking whether the mode-selection note about avoiding manufactured positives in environment-only mutations applies here, but since we're in single mode this constraint likely doesn't come into play.
+
+Since this is a state-changing archive task, I need change_attributes and written_attributes only (field names, no values), omitting answer_attributes—already handled. Now I'm working out the concrete setup: the existing "Test Workspace" team and its channel.
+
+I'll add a second workspace, "Partner Bridge Ops," with its own channel sharing the same channel_name "core-infra" but a distinct channel_id and team_id, then ensure the actor has membership in both teams and channels so they have the necessary permissions to archive. The request specifically targets archiving the core-infra channel within the new Partner Bridge Ops workspace.
+
+Since the request pairs the channel name with its workspace ID, resolving to the correct channel requires joining on both fields — the workspace qualifier genuinely disambiguates rather than being incidental, satisfying the intended lookup pattern. The original core-infra channel in T01WORKSPACE becomes a negative case since it matches the channel name but not the required workspace.
+
+I don't think an already-archived duplicate negative is necessary. For the access plan, I'll use conversations.list with team_id=T09PARTNERBRIDGE to find the channel named "core-infra" within that workspace's results, then archive it—this fully leverages the API's team_id filtering and name matching.
+
+Now I'm laying out the roles table: target_conversation is the channel C_INFRA_PARTNER, support role is target_workspace T09PARTNERBRIDGE as the join anchor, and I'm adding two negatives—a same-named channel in the wrong workspace, and a differently-named channel in the correct workspace.
+
+I'm also including membership rows as support entities: actor_access_target from channel_members showing the actor belongs to the target channel, and actor_team_membership from user_teams showing the actor's membership in T09PARTNERBRIDGE. I'm considering whether the negative team T01WORKSPACE needs its own explicit role row to represent the negative referent properly.
+
+Now I'm drafting the obligation itself: an archive_partner_core_infra task that selects the single 'core-infra' channel whose team_id matches T09PARTNERBRIDGE (distinguishing it from the same-named channel in T01WORKSPACE), targets it as target_conversation, and writes channels.is_archived. I'm starting to write out the task_spec steps for identifying that channel.
+
+For the prompt phrasing, I'm settling on something concise like "Archive the core-infra channel that's part of workspace T09PARTNERBRIDGE" since the user references the workspace ID directly. I'm also finalizing the binding_note explaining that the exact channel_name plus team_id join is what genuinely distinguishes this channel from the identically-named one in T01WORKSPACE, rather than the workspace being incidental context.
+
+For the access plan, I'll call conversations.list with team_id=T09PARTNERBRIDGE to pull that workspace's channels, find the one named core-infra, confirm with conversations.info, and then archive it — skipping any name-based team lookup since the workspace ID is already given. I'm also reconsidering the negative roles list, dropping the old topic-based exclusions (model/growth/frontend/etc.) since the routing is now based on name+workspace rather than topic, and adding new ones that fit the current identification criteria, plus support roles for actor access before finalizing the JSON.
+

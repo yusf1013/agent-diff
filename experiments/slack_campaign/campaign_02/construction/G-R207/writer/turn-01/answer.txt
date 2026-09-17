@@ -1,0 +1,108 @@
+```json
+{
+  "prompt": "For our permissions audit, can you tell me the workspace membership role for Robert — specifically the one whose message got a 🔥 reaction?",
+  "binding_note": "Two workspace members share the first name Robert: Robert Walsh (U03ROBERT23, role admin) and Robert Chen (U_ROBERT, role member). Each authored a distinct message that received a fire reaction from someone else, so the route workspace_membership->user->message->reaction resolves to two distinct candidate membership rows. A fire reaction merely left BY a Robert on someone else's message does not satisfy the route; the reaction must land on a message that Robert authored.",
+  "roles": [
+    {
+      "role": "membership_robert_walsh",
+      "entity": "user_teams",
+      "facts": "Robert Walsh (U03ROBERT23) holds an admin role on T01WORKSPACE.",
+      "selection": "alternative",
+      "reason": "Candidate referent membership: Robert Walsh authored the 'MCP deployment' message which received a fire reaction."
+    },
+    {
+      "role": "membership_robert_chen",
+      "entity": "user_teams",
+      "facts": "Robert Chen (U_ROBERT) holds a member role on T01WORKSPACE.",
+      "selection": "alternative",
+      "reason": "Candidate referent membership: Robert Chen authored the 'monthly cloud bill' message which received a fire reaction."
+    },
+    {
+      "role": "user_robert_walsh",
+      "entity": "users",
+      "facts": "Robert Walsh, real_name 'Robert Walsh', member of C01ABCD1234 among others.",
+      "selection": "support",
+      "reason": "Author whose membership is the first candidate."
+    },
+    {
+      "role": "user_robert_chen",
+      "entity": "users",
+      "facts": "Robert Chen, real_name 'Robert Chen', member of C_INFRA among others.",
+      "selection": "support",
+      "reason": "Author whose membership is the second candidate."
+    },
+    {
+      "role": "message_robert_walsh_fire",
+      "entity": "messages",
+      "facts": "Message 1700173200.000456 in C01ABCD1234 by U03ROBERT23: 'Does anyone know when the MCP deployment will be done?'",
+      "selection": "match",
+      "reason": "Authored by Robert Walsh and carries the fire reaction that binds his membership into the candidate set."
+    },
+    {
+      "role": "message_robert_chen_fire",
+      "entity": "messages",
+      "facts": "Message 1706067472.000000 in C_INFRA by U_ROBERT: 'Monthly cloud bill came in. We're $47K over budget...'",
+      "selection": "match",
+      "reason": "Authored by Robert Chen and carries the fire reaction that binds his membership into the candidate set."
+    },
+    {
+      "role": "reaction_on_walsh_message",
+      "entity": "message_reactions",
+      "facts": "fire reaction by U02JOHNDOE1 on message 1700173200.000456.",
+      "selection": "support",
+      "reason": "The reaction that qualifies Robert Walsh's message under the requested condition."
+    },
+    {
+      "role": "reaction_on_chen_message",
+      "entity": "message_reactions",
+      "facts": "fire reaction by U_PRIYA on message 1706067472.000000.",
+      "selection": "support",
+      "reason": "The reaction that qualifies Robert Chen's message under the requested condition."
+    },
+    {
+      "role": "negative_wrong_reaction_type",
+      "entity": "message_reactions",
+      "facts": "eyes reaction by U05MORGAN23 on Robert Walsh's other message 1699824000.000987 ('Crash report: retrying wrong password...').",
+      "selection": "negative",
+      "reason": "Same author but wrong emoji, so this message does not satisfy the fire-reaction condition."
+    },
+    {
+      "role": "negative_reactor_not_author",
+      "entity": "message_reactions",
+      "facts": "fire reaction by U03ROBERT23 (as reactor) on U06HUBERT23's message 1700083200.000888 ('Reminder: auth improvements... captcha').",
+      "selection": "negative",
+      "reason": "Robert Walsh here is the reactor, not the author of the reacted message; this reversed role must not be mistaken for the identifying route."
+    },
+    {
+      "role": "negative_wrong_person",
+      "entity": "message_reactions",
+      "facts": "fire reaction by U_OLENA on U_LUKAS's message 1706001016.000000 ('To be honest, reverting is the right call...').",
+      "selection": "negative",
+      "reason": "A fire-reacted message authored by someone not named Robert; excluded by the name condition."
+    }
+  ],
+  "obligations": [
+    {
+      "name": "robert_membership_role_lookup",
+      "description": "Identify the workspace membership (user_teams row) of the user named Robert whose authored message received a fire reaction, and report its role. Two full-name matches exist (Robert Walsh, Robert Chen), each satisfying the route independently, so the request's intended referent is not resolved without further input.",
+      "table": "user_teams",
+      "mode": "underspecified",
+      "task_type": "read-only",
+      "scope": "workspace membership role lookup for a message author matching a partial name and reaction condition",
+      "target_roles": ["membership_robert_walsh", "membership_robert_chen"],
+      "candidate_role_sets": [["membership_robert_walsh"], ["membership_robert_chen"]],
+      "selection": "one",
+      "answer_attributes": [["user_teams.role"], ["user_teams.user_id"], ["user_teams.team_id"]]
+    }
+  ],
+  "task_spec": [
+    {
+      "line": 1,
+      "text": "Determine the workspace membership role of the Robert whose posted message received a fire reaction, surfacing the ambiguity between the two matching Roberts rather than silently picking one.",
+      "obligations": [1]
+    }
+  ],
+  "scope_exception": null,
+  "access_plan": "Discover candidates via users.list filtered to real_name containing 'Robert' within T01WORKSPACE, then for each such user retrieve their authored messages (conversations.history/search.messages) and check reactions.get/reactions on those messages for a 'fire' entry; for each user whose message qualifies, pull their workspace membership role via users.info (owner/admin flags derived from user_teams.role). Two qualifying users are discoverable this way, producing two candidate membership answers instead of one determinate answer."
+}
+```

@@ -1,0 +1,38 @@
+Since the reasoning mode is absent and no one reacted with :rocket: to Łukasz's message, the referent selector for workspace_membership should resolve to nothing. I'm checking the seed data to confirm there's no matching reaction on that message.
+
+Now I need to insert a wrong reaction: U_KENJI leaving :rocket: on his own vending-machine message instead. I'm also confirming the actor is U01AGENBOT9, already a member of C03IJKL9012, so no membership changes are needed there before building out the selectors.
+
+For the reactor_workspace_membership obligation, I'm designing an "absent" mode selector so it finds zero matches, representing that the rocket reactor's workspace membership shouldn't join up under this deliverable. I'm tracing the route through workspace membership, workspace, conversation, and conversation membership to the user, though I need to reconcile this with how the reaction itself connects to that path since message_reactions isn't directly in the route nodes.
+
+The selector syntax only permits joins between adjacent tables via foreign keys, so bringing message_reactions into the path would require MESSAGE and REACTION nodes not formally part of the route. Still, exposure_qualification's language about "contained records" and reaction contributors suggests identifying the participant this way counts as part of the connection, even if following a further relation from that participant may not.
+
+So I'm trying to trace a valid join chain: user_teams to teams to channels to messages to message_reactions to users, ending at the reactor. But the root table is user_teams, so I need the tuple to include the original user_teams row matching the same user as the reactor rather than terminating at a separate users node.
+
+Let me reconsider how the path joins actually work: each step names the join key on the source side, so connecting user_teams to teams uses "user_teams.team_id" since that's the FK pointing to teams.team_id.
+
+Continuing along the chain: teams to channels via "channels.team_id", channels to messages via "messages.channel_id", messages to message_reactions via "message_reactions.message_id", and message_reactions to users via "message_reactions.user_id". But this means the end user's identity isn't tied back to the root user_teams row's user_id — that connection was never made through the join chain, so I likely need an extra filter to enforce that constraint.
+
+Actually, filters seem to compare fields against literal values rather than cross-node equalities, so there's no way to express "user_teams.user_id equals message_reactions.user_id" directly. Maybe the intended path is simpler: user_teams -> teams -> channels -> channel_members -> users, using channel_members.user_id -> users.user_id as the final hop, with the reaction-related filtering handled separately as a qualification condition rather than a join constraint.
+
+I wonder whether identifying the reactor should intersect with the main route's users field via a literal filter, but the guidance against "unrequested ID restrictions" makes me cautious since this constraint is actually core to the request. Still, since this is an "absent" scenario, there's likely no matching reactor for that message anyway, so the result set should come out empty regardless of exactly how the selector is built.
+
+Given the binding note about joining workspace membership to a channel's contained records, I'm considering a path from user_teams through users to message_reactions, then to messages and channels, filtering on channel name, message text, and reaction type. This route ties user_teams.user_id directly to the reaction data rather than looping back through channel membership.
+
+Then node1 users connects to node2 message_reactions via the shared user_id field, node2 links to node3 messages via message_id, and node3 messages continues on to node4 channels using their matching FK relationship.
+
+I'm working through the filter conditions: reaction_type must equal 'rocket', a specific message identifier or text match, and channel_name equal to 'engineering'. I'm reconciling this against the expected route pattern of WORKSPACE_MEMBERSHIP through USER, noting that the exposure qualification rules seem to permit treating message_reactions as a stand-in for the participant-identification step in that canonical route.
+
+Given this, I'm leaning toward using message_reactions as the valid substitute for the CONVERSATION_MEMBERSHIP node, since reaction contributors qualify as a permitted participant type, and considering whether the join path still needs to explicitly pass through a teams table or can rely on the channel's embedded team reference instead.
+
+But I realize this path doesn't actually tie the root user back to the final user identity node — the workspace join only anchors team membership, not the specific user connection, so I need a path that ties the root user_teams.user_id directly to the terminal users node through an actual participant/identity connection.
+
+So the correct route should start with user_teams joining to users on user_id, then that same users.user_id joins message_reactions.user_id, which threads through messages and finally channels for the filter conditions — channel already implies the workspace, so a separate teams join isn't strictly required.
+
+node1 (users) linking to user_teams for membership, treating the reaction path as a substitution allowed by exposure qualification. This query should return zero tuples, since no rocket reaction exists on that specific message—only an eyes reaction from the bot, and Kenji's rocket reaction is on a different message entirely. That's the correct absent result. I'm now considering whether auxiliary queries are needed, likely tied to workspace context.
+
+For the seed edits, I need to add Kenji's rocket reaction on the vending machine message; that message already exists in the base seed, so only the reaction row needs inserting. The bot's eyes reaction on the other message is already present too, so nothing more to add there. I still need to confirm which actor is asking, since that isn't specified in this portion of the input.
+
+Now mapping role labels to the actual native identifiers: the target channel and message, the wrong emoji reaction from U01AGENBOT9, and the new wrong rocket reaction to insert from U_KENJI, along with their respective team membership rows.
+
+I'm setting up one selector for the reactor_workspace_membership obligation with an absent mode, rooting the query on user_teams with no additional scope restriction. With everything constructed, I'm ready to finalize the JSON output.
+

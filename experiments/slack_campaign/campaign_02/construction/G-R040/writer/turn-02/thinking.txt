@@ -1,0 +1,26 @@
+Wait, the join contract shows r4's user_id links back to r3, which is the message author's user_id — not a separate reactor identity. So the reaction join is actually tying to the author, not distinguishing a different reacting user. I need to re-check what this means for the query logic.
+
+Checking the base seed data, the eyes reaction on that message was actually left by the agent account, not by U_LUKAS the message author - so that scenario doesn't satisfy r4.user_id = r3.user_id. I need to find or construct a case where the same user both authored a channel message and separately left a reaction with a specific emoji somewhere.
+
+I'll set up: U_LUKAS authors the OOM message in #engineering and also adds a "fire" reaction to some message. Then I need negatives: another #engineering author without a fire reaction, U_LUKAS authoring a message in a different channel, another user reacting fire but posting elsewhere, and a #engineering author reacting with thumbsup instead of fire.
+
+I'm confirming U_KENJI authored a #engineering message but has no fire reaction anywhere, which serves as a good missing-reaction negative case since he only has an "eyes" reaction elsewhere.
+
+For U_ROBERT, I'm setting up a wrong-emoji negative: he authored an #engineering message, but I'll attach a thumbsup reaction from him instead of fire to his own cloud-bill message, ensuring the reaction type doesn't match.
+
+I'm also planning a negative where U_LUKAS authors a message in C_INFRA rather than #engineering, so it falls outside the target channel scope.
+
+Since the prompt names #engineering explicitly, that pins down which of U_LUKAS's messages counts, avoiding ambiguity even though he posts in multiple channels — as long as only one #engineering message matches the described content about circuit-tracer OOM.
+
+I'm now checking negative cases: U_LUKAS's message in C_INFRA with a fire reaction is already excluded by the channel constraint, and other users reacting fire on messages outside #engineering face the same exclusion. I need to make sure no other user has both a message in #engineering and a fire reaction, which would create a second false match — checking candidates like U_MATEO and U_KENJI confirms neither creates a conflict, since U_KENJI's #engineering message has no reaction.
+
+I'm also verifying the existing base reactions won't accidentally satisfy the same-user condition — the only existing reaction is "eyes" from the agent on Lukas's message, and since the reactor isn't the author, that's fine. Now I'm going through the full list of users who posted in #engineering (U01AGENBOT9, U02JOHNDOE1, U03ROBERT23, U05MORGAN23) to confirm none of them already have a matching self-reaction that would create ambiguity.
+
+With that confirmed, only Lukas's message should carry the fire reaction, making the target unique. So I can write the prompt as: "In #engineering, remove the member who posted the message about the circuit-tracer library running out of memory and has reacted with a fire emoji."
+
+I'll settle on: "In #engineering, remove the member who posted the message about the circuit-tracer library running out of memory and separately reacted with a fire emoji" — this keeps the reaction general rather than tied to that specific message.
+
+I confirm I'm using native table names (channel_members, messages, users, message_reactions, channels) throughout. Since resolution_mode is "single" per the assignment, I'll keep it that way despite the general guidance about collections, since it doesn't specifically contradict this case.
+
+For the conversations.kick mutation, since it's state-changing I need change_attributes and written_attributes but should omit answer_attributes, with change_attributes as removal entries. I'm also adding support roles for the conversation channel, message, target user, and reaction, then assembling the final JSON.
+

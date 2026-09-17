@@ -1,0 +1,39 @@
+{
+  "prompt": "List the channels in the workspace where Robert holds an admin role.",
+  "binding_note": "Route is channels.team_id -> teams.team_id -> user_teams.team_id (+ user_teams.user_id -> users.user_id): a channel is selected by belonging to a workspace that has a workspace-membership record naming a user 'Robert' with role admin. Robert Walsh is admin of T01WORKSPACE and Robert Kim is admin of T02STARLABS, so two distinct workspaces (and therefore two distinct channel sets) satisfy 'Robert, admin' before any further disambiguation.",
+  "roles": [
+    {"role": "team_T01", "entity": "teams", "facts": "T01WORKSPACE, 'Test Workspace'.", "selection": "support", "reason": "Workspace anchor for the first candidate channel set."},
+    {"role": "team_T02", "entity": "teams", "facts": "New team T02STARLABS, 'StarLabs Workspace'.", "selection": "support", "reason": "Workspace anchor for the second candidate channel set."},
+    {"role": "team_T03", "entity": "teams", "facts": "New team T03BETACORP, 'BetaCorp Workspace'.", "selection": "support", "reason": "A third workspace used only to host negative records."},
+    {"role": "membership_robert_walsh", "entity": "user_teams", "facts": "U03ROBERT23 (Robert Walsh) holds membership in T01WORKSPACE with role admin.", "selection": "match", "reason": "Satisfies 'Robert, admin' for the first candidate workspace via the exact route joins."},
+    {"role": "membership_robert_kim", "entity": "user_teams", "facts": "New user U_ROBERTK (Robert Kim) holds membership in T02STARLABS with role admin.", "selection": "match", "reason": "Satisfies 'Robert, admin' for the second candidate workspace via the same route joins."},
+    {"role": "membership_robert_diaz", "entity": "user_teams", "facts": "New user U_ROBERTD (Robert Diaz) holds a single membership in T01WORKSPACE with role member (not admin, and not in T03BETACORP at all).", "selection": "negative", "reason": "Robert Diaz is only an ordinary member in T01 and has no workspace-membership row in BetaCorp, so he cannot make BetaCorp match and does not add an admin role in T01 beyond Robert Walsh's."},
+    {"role": "membership_sam_cole", "entity": "user_teams", "facts": "New user U_SAMCOLE (Sam Cole) holds a single membership in T03BETACORP with role admin.", "selection": "negative", "reason": "BetaCorp has an admin, but he is not named Robert, so the workspace fails the name condition on this route despite matching the role condition."},
+    {"role": "user_robert_walsh", "entity": "users", "facts": "U03ROBERT23, real_name 'Robert Walsh'.", "selection": "alternative", "reason": "First same-first-name candidate whose admin membership selects a workspace."},
+    {"role": "user_robert_kim", "entity": "users", "facts": "New user U_ROBERTK, real_name 'Robert Kim', email robertk@starlabs.io.", "selection": "alternative", "reason": "Second same-first-name candidate whose admin membership selects a different workspace."},
+    {"role": "user_robert_diaz", "entity": "users", "facts": "New user U_ROBERTD, real_name 'Robert Diaz', email robertd@betacorp.io; participates only as a channel member of a BetaCorp channel, never as a workspace member there.", "selection": "negative", "reason": "Demonstrates that channel participation (channel_members) is a different relation than workspace membership (user_teams) and does not satisfy this route."},
+    {"role": "user_sam_cole", "entity": "users", "facts": "New user U_SAMCOLE, real_name 'Sam Cole', email sam@betacorp.io.", "selection": "negative", "reason": "Admin of BetaCorp but wrong name, excluding that workspace."},
+    {"role": "workspace_T01_channels", "entity": "channels", "facts": "Existing channels with team_id T01WORKSPACE: general, random, engineering, growth, project-alpha, project-alpha-dev, core-infra, model-research, product-growth, frontend, old-project-q3 (archived); excludes the private DM dm-agent-sophie.", "selection": "alternative", "reason": "First candidate channel set, reachable only through Robert Walsh's admin membership in T01WORKSPACE."},
+    {"role": "workspace_T02_channels", "entity": "channels", "facts": "New channels with team_id T02STARLABS: starlabs-general (C_STAR_GENERAL), starlabs-engineering (C_STAR_ENG); Robert Kim is a channel member of both.", "selection": "alternative", "reason": "Second candidate channel set, reachable only through Robert Kim's admin membership in T02STARLABS."},
+    {"role": "chan_beta_general", "entity": "channels", "facts": "New channel betacorp-general (C_BETA_GENERAL) with team_id T03BETACORP; Robert Diaz and Sam Cole are channel members there.", "selection": "negative", "reason": "BetaCorp's admin is Sam Cole, not a Robert, and Robert Diaz there is only a channel member without workspace membership, so this channel is excluded by the ordinary request on both counts."}
+  ],
+  "obligations": [
+    {
+      "name": "target_channels",
+      "description": "The channels belonging to whichever workspace has a workspace-membership record naming a user 'Robert' with an admin role; two workspaces (via Robert Walsh and Robert Kim) each qualify with a distinct channel set, leaving the intended workspace/channel set unresolved.",
+      "table": "channels",
+      "mode": "underspecified",
+      "task_type": "read-only",
+      "scope": "channels whose team_id matches a workspace containing a user_teams row for a 'Robert' with role admin",
+      "target_roles": ["workspace_T01_channels", "workspace_T02_channels"],
+      "candidate_role_sets": [["workspace_T01_channels"], ["workspace_T02_channels"]],
+      "selection": "set",
+      "answer_attributes": [["channels.channel_name"], ["channels.channel_id"], ["channels.team_id"]]
+    }
+  ],
+  "task_spec": [
+    {"line": 1, "text": "List the channels belonging to the workspace where Robert holds an admin role.", "obligations": [1]}
+  ],
+  "scope_exception": null,
+  "access_plan": "Discover users via users.list, then users.info on each 'Robert'-named user to read the exposed workspace association and its derived admin flag; cross-reference the associated team_id, then call conversations.list with that team_id (and, for comparison, T03BETACORP) to enumerate each workspace's channels and confirm which admins are actually named Robert versus which channel merely has a Robert as an ordinary channel member."
+}

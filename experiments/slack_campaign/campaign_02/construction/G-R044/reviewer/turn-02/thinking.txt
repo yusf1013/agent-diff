@@ -1,0 +1,46 @@
+conversations.kick is a legitimate documented API for removing a user from a channel, so this action itself is valid. The reactions.remove restriction about only removing one's own reaction doesn't apply here since this task uses conversations.kick instead, though the access plan does reference reactions.get for finding reactions.
+
+On the reaction vocabulary restriction, both "eyes" and "thumbsup" used here are within the allowed set, and since these are pre-existing seed reactions rather than freshly created ones via API, reading them through reactions.get should work regardless. I still need to verify that the reactor identified matches the correct user and that the message location binds correctly to #product-growth where Kenji's salary bands were pasted.
+
+Checking membership: the identified reactor is already a member of C_GROWTH from the base seed, so this is a pre-existing membership consistent with the task rather than something newly created. The mutation requirement is satisfied since the seed edits genuinely add a new message plus three new reactions and a channel_members insert, creating real negatives rather than just re-listing old background noise. I also need to confirm the decoy member with no reaction exists as a C_GROWTH member without a corresponding reaction to that message.
+
+I'm cross-checking that the private near-misses list matches my decoy design, and now tracing the focal query's join logic across channel_members, channels, messages, message_reactions, and user_teams to make sure the channel_id used for membership matches the channel where the salary-bands message lives.
+
+I realize the query has a structural gap: message_reactions.user_id is joined to user_teams but never bound back to channel_members.user_id, so the focal query would actually match any channel member in that channel paired with a reaction from any qualifying user, not just the actual reactor - which is exactly the ambiguity the notes flagged.
+
+This means a second, independent auxiliary query is needed to explicitly bind channel_members.user_id to the same person who left the reaction, closing that gap the forward chain leaves open.
+
+Actually, re-tracing the join chain more carefully: it links channel_members to channels, channels to messages, messages to message_reactions, and reactions to users and then to user_teams and teams -- so the whole path constrains the reactor to be a real workspace member via team membership, not just any user.
+
+But crucially, the focal query never binds channel_members.user_id to message_reactions.user_id, so any membership row in that channel would satisfy it regardless of who reacted. The auxiliary path instead binds the membership's user_id directly to the reactor's user_id, which is a fundamentally different (and stricter) join condition.
+
+So intersecting focal and auxiliary means the combined query effectively needs a channel_members row where channel=C_GROWTH and the user also matches U_INCOGNITO's membership condition from auxiliary — meaning focal alone would still return all C_GROWTH members regardless of the auxiliary constraint, since auxiliary doesn't actually narrow by channel.
+
+I'm double-checking whether this holds semantically rather than by coincidence — if U_INCOGNITO belonged to multiple channels, the aux query alone might yield extra rows, but intersecting with the focal condition on C_GROWTH would still narrow it down correctly. So the combination logic remains valid either way.
+
+Given the instructions allow repeated query shapes with different filters to be intersected without needing separate schema fields, this two-path structure seems like an acceptable representational choice rather than a defect. Checking computed_matches confirms it resolves to exactly the expected single row for C_GROWTH and U_INCOGNITO, so the mechanical checker validates the result.
+
+But computed_focal_negatives is odd -- it lists U06HUBERT23 memberships in channels other than C_GROWTH (C02EFGH5678, C03IJKL9012, C04MNOP3456), which seems inconsistent since the focal query's filter on channel_name='product-growth' should restrict channel_id to C_GROWTH only. I'm trying to figure out how the focal query alone could produce candidates outside that channel scope.
+
+This confirms the intersection design is working correctly, properly excluding U06HUBERT23 since they lack C_GROWTH membership, matching the intended decoy_reactor_not_member role. Now I'll check the next negative case, U_MATE.
+
+Even though U_MATEO belongs to C_GROWTH and could satisfy the focal filters, their own reaction is thumbsup rather than eyes, so the auxiliary query correctly fails to match them since it specifically requires the channel member to be the one who added the eyes reaction.
+
+This confirms the two-path structure is semantically sound: the auxiliary path enforces same-record binding that the main path alone can't achieve, and since checks.computed_matches validates the final combined result yields exactly the intended match with correct exclusions, this representational choice satisfies the validity requirements.
+
+This is a state-changing kick operation, so written_attributes should be empty since it's a delete rather than a field-write, while change_attributes should reflect the identity fields channel_id and user_id. Now I'm checking whether the acting user has the necessary access permissions to perform this kick operation.
+
+Looking at the domain model, there's no explicit role-based restriction documented for conversations.kick beyond general access—no admin permission requirement is specified, so a normal member performing the kick seems within scope for this replica unless there's a hidden capability restriction I'm missing.
+
+Since there's no scope_exception documented for this case, the guidance to validate against a documented limitation doesn't apply here—the membership addition looks like a standard seed edit granting access, and it fits a plausible workplace-harassment scenario. Now I'm checking that the message anchors align with the assignment's required WORKSPACE_MEMBERSHIP/WORKSPACE traversal path, confirming the focal query joins user_teams to teams filtering on team_name.
+
+The single-mode result checks out mechanically with only one true match. There's also a decoy reaction from U_INCOGNITO on an unrelated frontend message that doesn't affect correctness since neither query touches that channel, so it's just narrative noise rather than a defect. Overall this looks like a solid, well-constructed case with a sophisticated two-path binding fix.
+
+The membership being removed belongs to the same channel where the reaction occurred (#product-growth), matching the literal request to remove that person from the channel—no channel mismatch here.
+
+Overall this looks like a valid, well-designed case, with no extra fields needed beyond confirming role. I should also verify the near-miss requirement is satisfied, since near_misses list U_MATEO and U_LUKAS matching the decoys.
+
+One thing worth flagging: the focal query alone is under-constrained since it doesn't bind channel_members.user_id to the reactor, which is a mechanical fragility if the auxiliary path is removed. But since the compiled checks confirm the combined result is correct and the design documents this dependency, it's just a minor design note rather than a real defect.
+
+Overall I'll mark this as a validity pass with strong quality—design is robust, mechanical checks are sound, decoys are well-placed, and actor access is legitimately granted. I'll include the focal-path binding fragility as a minor, non-blocking annotation in the final output.
+

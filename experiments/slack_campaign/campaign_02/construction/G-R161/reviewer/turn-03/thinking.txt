@@ -1,0 +1,26 @@
+I'm noticing the compiled case hardcodes specific message IDs in the filter rather than deriving them through an actual text-based search for the shipping announcement, which smuggles in an identifying condition through literal values instead of genuine content matching.
+
+This one added a third workspace where Robert Nguyen only reacted 'eyes' on a non-shipping message, confirming the route correctly excludes it as a valid negative test against three-way ambiguity. I also check that the actor lacks membership in T03SIGNALCORP itself, but since this near-miss is only meant for mechanical verification rather than something the solver needs to discover, that's not a problem.
+
+The mechanical checks confirm computed_matches = [T01WORKSPACE, T02NIMBUS] and computed_focal_negatives = [T03SIGNALCORP], matching the design intent. Now I'm verifying workspace_alpha's public non-archived channels match the expected ten channels exactly, correctly excluding the DM and old project channel.
+
+Similarly, workspace_beta's ten channels are all public non-archived and match cleanly, with no seeded DM or archived channels for that workspace requiring symmetric negatives. Since T03SIGNALCORP is excluded from the resolved matches, its single channel would never surface in the answer set, confirming no leakage across workspaces.
+
+Checking access next: the "rocket" action type is valid per vocabulary. Actor U01AGENBOT9 has workspace_beta membership through team T02NIMBUS and is a channel member of C_NIMBUS_LAUNCH, giving them access to the needed data, but I need to verify whether they're also members of the other public channels like C_NIMBUS_GENERAL, C_NIMBUS_HARDWARE, C_NIMBUS_QA, and the rest.
+
+I'm reasoning through whether conversations.list requires channel membership to enumerate public channels or if it just needs team-level access via team_id, since Slack's API typically returns all public channels in a workspace regardless of membership -- I'm trying to pin down whether actor needs to belong to the team itself to query across workspaces this way.
+
+Since the actor is added as a member of T02NIMBUS via user_teams, that grants access to query with team_id=T02NIMBUS, and they're already a member of workspace_alpha. For finding "Robert" identities, users.list/search operates per selected workspace, so the actor can search each workspace they belong to. For checking reactions, actor needs channel membership on the specific channel -- they're already in #general for workspace_alpha, and now need to confirm membership in the NIMBUS launch channel for workspace_beta.
+
+But T03SIGNALCORP is different: the actor has no user_teams entry there and no channel_members row for the signal-general channel, meaning they have no documented API route to discover or verify that workspace's data. This raises a real access question -- the actor can't confirm whether T03SIGNALCORP is a genuine third match without membership access.
+
+Actually this resolves cleanly: since the actor lacks access, T03SIGNALCORP simply never enters their candidate set, so it can't cause a spurious third match. Their search is naturally bounded to the teams they belong to (T01WORKSPACE and T02NIMBUS), making this an intentional "invisible" negative consistent with the hidden-ID design.
+
+But its value is really as a mechanical check - confirming the underlying selector logic algorithmically excludes this workspace, even if a solver would never actually encounter it during reasoning. That's fine for validating the grading query itself.
+
+I also want to confirm read-only task type is fully supported since listing channels and identifying workspaces are all read operations with no impossible actions, and that the negatives are well-grounded in real seeded content like reaction patterns, archived/DM channels, and the near-miss workspace. Now I'm checking whether the reaction row counts align with the design's intended totals.
+
+Verifying the final reaction list matches: eyes on the unrelated bot message, rocket reactions from Walsh and Kim on shipping messages, eyes from Chen and Nguyen marking the wrong/near-miss cases. I'm also confirming both shipping-related messages read plausibly as genuine announcements, and double-checking that no other messages or "Robert" users in either workspace could introduce unintended ambiguity beyond the ones already accounted for.
+
+Overall this looks like a solid, well-constructed case addressing the earlier issues, so I'd rate it strong and passing. The obligation resolution chain for listing channels also appears structurally sound, and including is_private/is_archived as answer attributes seems fine as verification annotation rather than an error, even though it's slightly redundant given they're pre-filtered.
+

@@ -1,0 +1,155 @@
+{
+  "seed_edits": [
+    {
+      "table": "users",
+      "op": "insert",
+      "values": {
+        "user_id": "U_ROBERT_NGUYEN",
+        "username": "robert.nguyen",
+        "email": "robert.nguyen@neuroflow.ai",
+        "real_name": "Robert Nguyen",
+        "display_name": "Robert",
+        "timezone": "America/Chicago",
+        "is_active": true,
+        "is_bot": false
+      },
+      "reason": "Decoy user sharing first name 'Robert' with the two candidate referents, needed to test that name-matching alone (without conversation membership in a qualifying AI-model channel) does not yield a valid workspace-membership answer."
+    },
+    {
+      "table": "user_teams",
+      "op": "insert",
+      "values": {
+        "user_id": "U_ROBERT_NGUYEN",
+        "team_id": "T01WORKSPACE",
+        "role": "member"
+      },
+      "reason": "Robert Nguyen's workspace membership row, which must be excluded from the answer since he holds no conversation membership in engineering or model-research."
+    },
+    {
+      "table": "messages",
+      "op": "insert",
+      "values": {
+        "message_id": "1706080000.000001",
+        "channel_id": "C_MODEL",
+        "user_id": "U_ROBERT_NGUYEN",
+        "message_text": "Just double-checked the eval numbers from last night's run — looks consistent with the earlier benchmark set.",
+        "type": "message",
+        "ts": "1706080000.000001"
+      },
+      "reason": "Message authored by Robert Nguyen in the model-research channel without a corresponding channel_members row, to test that message authorship does not substitute for conversation membership along the route."
+    }
+  ],
+  "bindings": {
+    "engineering_channel": [
+      "C03IJKL9012"
+    ],
+    "model_research_channel": [
+      "C_MODEL"
+    ],
+    "robert_walsh_channel_membership": [
+      {
+        "channel_id": "C03IJKL9012",
+        "user_id": "U03ROBERT23"
+      }
+    ],
+    "robert_chen_channel_membership": [
+      {
+        "channel_id": "C_MODEL",
+        "user_id": "U_ROBERT"
+      }
+    ],
+    "robert_walsh_workspace_membership": [
+      {
+        "user_id": "U03ROBERT23",
+        "team_id": "T01WORKSPACE"
+      }
+    ],
+    "robert_chen_workspace_membership": [
+      {
+        "user_id": "U_ROBERT",
+        "team_id": "T01WORKSPACE"
+      }
+    ],
+    "robert_nguyen_decoy_user": [
+      "U_ROBERT_NGUYEN"
+    ],
+    "robert_nguyen_decoy_message": [
+      "1706080000.000001"
+    ],
+    "robert_nguyen_workspace_membership": [
+      {
+        "user_id": "U_ROBERT_NGUYEN",
+        "team_id": "T01WORKSPACE"
+      }
+    ]
+  },
+  "selectors": [
+    {
+      "root_table": "user_teams",
+      "scope": [],
+      "focal": {
+        "path": [
+          "user_teams",
+          "teams",
+          "channels",
+          "channel_members"
+        ],
+        "joins": [
+          "user_teams.team_id",
+          "channels.team_id",
+          "channel_members.channel_id"
+        ],
+        "filters": [
+          {
+            "node": 2,
+            "field": "channel_name",
+            "op": "in",
+            "value": [
+              "engineering",
+              "model-research"
+            ]
+          }
+        ]
+      },
+      "auxiliary": [
+        {
+          "path": [
+            "user_teams",
+            "users",
+            "channel_members",
+            "channels"
+          ],
+          "joins": [
+            "user_teams.user_id",
+            "channel_members.user_id",
+            "channel_members.channel_id"
+          ],
+          "filters": [
+            {
+              "node": 1,
+              "field": "real_name",
+              "op": "contains_ci",
+              "value": "Robert"
+            },
+            {
+              "node": 3,
+              "field": "channel_name",
+              "op": "in",
+              "value": [
+                "engineering",
+                "model-research"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "negative_referents": [
+    {
+      "user_id": "U_ROBERT_NGUYEN",
+      "team_id": "T01WORKSPACE"
+    }
+  ],
+  "notes": "Focal now follows the assigned route literally (user_teams -> teams -> channels -> channel_members), matching the requested workspace membership to a workspace-hosted, AI-model-work channel via team_id/channel_id joins only. The independent 'same participant, named Robert' requirement is expressed as an auxiliary query from the same root (user_teams -> users -> channel_members -> channels), which pins the workspace-membership's own user (via users.real_name contains 'Robert') to actual channel membership in engineering or model-research. Intersecting focal and auxiliary yields exactly Robert Walsh's and Robert Chen's user_teams rows (the underspecified union of both legitimate candidates), while Robert Nguyen is excluded because he holds no channel_members row in either qualifying channel. Both qualifying channels are public and discoverable via conversations.list/conversations.members without special actor access."
+}

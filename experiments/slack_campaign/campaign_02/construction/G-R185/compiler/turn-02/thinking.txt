@@ -1,0 +1,14 @@
+I'm mapping out the join path from user_teams through teams, channels, and channel_members to reach users, matching it to the required route_nodes sequence.
+
+For filtering, I'm filtering on channel_name equal to 'engineering'. The tricky part is that this route doesn't include messages or reactions, so identifying a "reaction contributor" participant requires an auxiliary lookup separate from the main channel-membership route -- the main query then just needs to verify that identified user is a channel member without adding extra unrequested restrictions. I'm also noting that the computed negatives include all 19 team members, suggesting the main route should scope over the full team membership rather than something narrower.
+
+I think the failure is really just a route mismatch, not incorrect matching logic, so I'll fix the path to align with the assigned route while handling reaction identification through the auxiliary query.
+
+The route only specifies WORKSPACE_MEMBERSHIP, WORKSPACE, CONVERSATION, CONVERSATION_MEMBERSHIP, and USER — no message or reaction tables are in it. That means the rocket-emoji reactor constraint on a specific message has to be resolved outside the route, likely as an independent auxiliary condition rather than embedded in the join path itself.
+
+So the engine likely intersects candidate sets between focal and auxiliary based on matching root entity, since both must start at root_table per the constraint. That means my auxiliary path should mirror the user_teams→users→message_reactions→messages→channels chain with the rocket reaction filter, message_id, and channel_name=engineering — essentially what I had as focal before — while the main focal now shifts to using that shared identity differently.
+
+I'm now assigning the focal query its own full route through workspace membership, workspace, conversation, and conversation membership to establish the general population of channel members in #engineering, while the auxiliary query independently narrows down to the actual reactor via message_reactions. Since no user satisfies the auxiliary constraint, the intersection is empty, matching the expected "absent" outcome — I'm defining the focal path with team/channel joins and a channel_name filter.
+
+Now I'm building the auxiliary path through user_teams to message_reactions to messages to channels, filtering on reaction_type "rocket," the specific message_id, and channel_name "engineering," then verifying node indices align correctly for each filter before finalizing the answer.
+

@@ -1,0 +1,36 @@
+```json
+{
+  "prompt": "We're writing up the infrastructure incident for onboarding notes. In the channel where the team traced a batch-size increase to a hard CUDA memory limit (ruling out fragmentation) as the root cause, one of that channel's members is based in the Lagos timezone. What is that person's workspace role (owner, admin, member, or guest)?",
+  "binding_note": "The target workspace membership belongs to the user who (a) has a conversation-membership row in the conversation identified by the CUDA-memory-limit diagnosis message, and (b) has timezone Africa/Lagos. Conversation membership, not message authorship, ties the user to that channel; the message (authored by a different member) only identifies which conversation to look at.",
+  "roles": [
+    {"role": "target_membership", "entity": "user_teams", "facts": "Aisha Okonkwo's workspace membership row for T01WORKSPACE, stored role 'member'.", "selection": "match", "reason": "This is the workspace membership record the request ultimately asks about."},
+    {"role": "target_user", "entity": "users", "facts": "Aisha Okonkwo, timezone Africa/Lagos, member of several channels including core-infra.", "selection": "match", "reason": "The user is disambiguated among the channel's members by the Lagos timezone attribute."},
+    {"role": "target_channel_membership", "entity": "channel_members", "facts": "Aisha's channel_members row for core-infra (C_INFRA), linking her to that conversation.", "selection": "match", "reason": "Conversation membership is the required link from user to the identified conversation."},
+    {"role": "target_conversation", "entity": "channels", "facts": "core-infra channel (C_INFRA), topic on K8s/AWS/on-call/incidents, contains the GPU memory incident thread.", "selection": "match", "reason": "The conversation is identified purely through the content of the diagnosis message posted in it."},
+    {"role": "target_message", "entity": "messages", "facts": "Priya's message in C_INFRA: 'Got the pprof delta—it's definitely the batch size increase hitting a hard CUDA memory limit, not fragmentation...' concluding the root-cause diagnosis.", "selection": "match", "reason": "This message's specific content is what pins down which conversation is meant."},
+    {"role": "negative_other_member_diff_tz", "entity": "users", "facts": "Priya Sharma, timezone Asia/Kolkata, also a member of core-infra and author of the diagnosis message.", "selection": "negative", "reason": "Same conversation membership, but wrong timezone, and being the message's author does not substitute for the Lagos-timezone condition."},
+    {"role": "negative_other_channel_membership", "entity": "channel_members", "facts": "Aisha's channel_members row for product-growth (C_GROWTH), an unrelated conversation she also belongs to.", "selection": "negative", "reason": "Same user, but this membership is in a different conversation than the one identified by the diagnosis message, so it must not be used as the qualifying link."},
+    {"role": "negative_other_message", "entity": "messages", "facts": "Priya's earlier message in core-infra: 'Alert: High memory pressure on cluster-b inference pods. OOM kills detected.' — raises the issue but does not state the CUDA-limit root-cause conclusion.", "selection": "negative", "reason": "Discusses a related memory problem in the same channel but is not the root-cause diagnosis message, so it cannot be used to identify the conversation."},
+    {"role": "negative_unrelated_membership", "entity": "user_teams", "facts": "Robert Walsh's workspace membership row for T01WORKSPACE, stored role 'admin'; Robert is not a core-infra member with Lagos timezone.", "selection": "negative", "reason": "A workspace membership with a different (admin) role belonging to a user who does not satisfy the conversation-membership plus timezone conditions."}
+  ],
+  "obligations": [
+    {
+      "name": "resolve_lagos_core_infra_membership",
+      "description": "Select the single workspace membership record for the user who is a conversation member of the channel identified by the CUDA-memory-limit root-cause diagnosis message and whose timezone is Africa/Lagos; report the owner/admin/member/guest role on that membership pair.",
+      "table": "user_teams",
+      "mode": "single",
+      "task_type": "read-only",
+      "scope": "ordinary workspace membership lookup scoped to one identified user in Test Workspace",
+      "target_roles": ["target_membership"],
+      "candidate_role_sets": null,
+      "selection": "one",
+      "answer_attributes": [["user_teams.role"], ["user_teams.user_id"], ["user_teams.team_id"]]
+    }
+  ],
+  "task_spec": [
+    {"line": 1, "text": "Identify the channel where the team diagnosed the batch-size-induced hard CUDA memory limit, find its Lagos-timezone member, and report that member's workspace role.", "obligations": [1]}
+  ],
+  "scope_exception": null,
+  "access_plan": "Discover the conversation by scanning channel message history/content for the batch-size/CUDA-memory-limit root-cause diagnosis (core-infra); list that conversation's members via channel membership; cross-reference each member's user profile timezone to find the Lagos-based member (Aisha Okonkwo); then look up her workspace membership role via user-team association."
+}
+```

@@ -1,0 +1,24 @@
+I need to figure out what seed edits are required since the base doesn't include the onboarding message in #frontend or the specific reactions described—Lukas's tada, Mateo's rocket, and Priya's tada on the Tokyo message. I'm working through adding a new onboarding deployment message from Aisha in C_FRONTEND with a proper message_id, plus Lukas's tada reaction on it, which seems to be a negative case given the wrong channel context.
+
+Now I'm checking Mateo's rocket reaction (wrong emoji, negative case) and Priya's tada on the existing Tokyo message in C_GROWTH (wrong message, negative case). I'm also verifying Carlos Vega's channel memberships align with the design facts—he's only in C_GROWTH, not C_FRONTEND, which checks out.
+
+The bigger issue is figuring out which actor needs membership visibility to discover all this. Looking at the agent bot's channel memberships, it has C_FRONTEND but I don't see it listed among C_GROWTH's members, so I likely need to add that membership for the absence check to work properly across the workspace.
+
+For the actual absence check, I only need C_GROWTH access since Carlos is only a member there, and only that channel's history matters for detecting tada reactions on his messages. I'll need to add a channel_members row for the agent bot in C_GROWTH, then focus on creating the new onboarding deployment message in C_FRONTEND (from Aisha) with a fresh timestamp ID that doesn't collide with existing ones, along with the associated reactions.
+
+I'm setting up three reactions to test different failure modes: one tada reaction on the new message from the wrong reactor (Lukas), a rocket reaction with the wrong emoji type (Mateo), and a tada reaction on an unrelated existing message in C_GROWTH (Priya, on Kenji's Tokyo stats message) to test wrong-message matching. I'm also noting Carlos's membership binding uses a different user ID than expected, which I should flag as a potential mismatch to verify.
+
+Now I'm designing the join path for the main selector: connecting user_teams to users, then to message_reactions, then to messages, then to channels, then to channel_members to check for Carlos's presence in the channel.
+
+The tricky part is filtering by Carlos's real name, which would require joining the users table again to link to Carlos specifically -- but since aliases aren't allowed and each table can likely only appear once in the path, I need to figure out how to express this constraint without reusing the users table.
+
+Table names can repeat across nodes in the path, so I can structure it as user_teams, users (the reactor), message_reactions, messages, channels, channel_members, and then users again for Carlos, joining channel_members to that final users node on the user_id column.
+
+I'll filter node6's real_name to 'Carlos Vega'. For the message content, I'll use a contains_ci filter on message_text for something like 'onboarding', plus add a reaction_type filter on the message_reactions node, keeping the channel join intact through channel_id.
+
+Running this selector against the seed data should return an empty tuple set since no single reaction satisfies all three conditions at once, confirming the absence I need. Now I need to assemble the negative_referents too—since the root entity is WORKSPACE_MEMBERSHIP, wrong candidates like Lukas and Priya's user_teams rows need to map back to that root record.
+
+I'm also weighing whether to include Mateo's membership as a negative referent, given he reacted with the wrong emoji and could be mistakenly selected if the emoji filter were ignored. I'll add it for completeness alongside the seed edits: inserting the onboarding message, adding channel membership for the bot actor, and inserting the reaction rows.
+
+Confirming the actor already has membership on C_FRONTEND from the seed data, so that's covered—now I'm ready to write out the final answer.
+

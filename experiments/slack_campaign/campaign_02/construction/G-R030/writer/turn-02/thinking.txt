@@ -1,0 +1,66 @@
+I need to fix the route contract mapping: r0 is channel_members, r1 channels, r2 teams, r3 user_teams, joined via channel_id and team_id relationships—but r3 connects only through team_id to r2, not directly to r0 by user_id. So identifying the correct condition means treating r3 as a workspace membership tied to a specific user through the team relationship rather than a direct channel link.
+
+Since the exposure qualification says a participant could be a channel member, message author, or reaction contributor, but the joins don't equate r3.user_id with r0.user_id, this route actually describes channel memberships within channels of a workspace that separately contains some qualifying workspace member—not necessarily the same person as the channel member. That distinction matters because otherwise the query wouldn't specifically isolate one person's channels.
+
+Given the prior feedback that this path doesn't bind the requested person or terminate correctly, I need to redesign so that identifying "Robert" happens through r0's own attributes—directly constraining r0.user_id to a specific person—rather than relying on an implied equality with r3 that isn't actually part of the join contract.
+
+Meanwhile the workspace membership route (r3) can serve a different purpose: identifying the workspace through a condition like "the workspace where someone has admin role," which then constrains which channels and channel memberships are relevant, without assuming r3's person equals r0's person.
+
+Right, that's actually what I tried before, and it failed because I bound r0.user_id directly to Robert's identity while also needing r3's workspace membership tied to that same person, which the contract disallows since r3 only joins via team_id. So the fix is to make r3's identifying condition independent—something like requiring the workspace to have an admin (r3.role='admin')—rather than reusing the person equality.
+
+Now I'm second-guessing this: the construction finding says there's no terminal identifying condition, meaning I still need actual selectivity at r3 through the team_id chain, not just a vacuous admin check that happens to be trivial since there's only one workspace.
+
+I'm working through whether the "Robert" condition should live on r0's participant directly, or whether pinning a specific admin's name at r3 creates confusion by tying that name to the workspace membership instead of the channel membership.
+
+Stepping back, this route just travels forward from channel membership through channel to workspace and lands on a workspace membership—with only one workspace, this doesn't actually add real filtering power, so I need to figure out how to frame a business question that still makes the route meaningful.
+
+Given the earlier failure explicitly flagged that I conflated Robert's identity across r0 and r3, and that joins don't support equating user_id across those two relations directly, I need to design a scenario with genuinely distinct identifying roles—separating who identifies the channel membership from who identifies the workspace membership.
+
+Actually, I realize admin role itself is ambiguous since there are two admins in the seed data (Robert Walsh and Morgan Freeman), so I can use that ambiguity at the workspace-membership level instead of at the participant level for r0. That reframes the task as something like listing members of channels within a workspace administered by an admin, rather than trying to pin down a single identifying condition.
+
+Actually rereading the exposure text, it's clearer: we join the workspace membership (person's profile shows they belong to a workspace) to a channel in that workspace, or to that channel's messages/reactions/members. So the identifying person could be a workspace admin, and the query asks about a channel they can access, or the participants tied to a specific message/reaction within it.
+
+So r0 (conversation membership) refers to the members of that particular channel — not the identified person's own memberships elsewhere. I was wrong earlier to treat r0 as Robert's channels; instead I need a specific channel identified by Robert's affiliation or activity, then find who belongs to that one channel.
+
+But nothing in the joins actually links r3's user directly to being a member of channel r1 — the joins only guarantee shared workspace, not shared channel membership. So maybe r3 is just there to pin down the workspace context (e.g. locating the admin's workspace), while r1, the specific channel, gets identified separately through its own attributes like name or topic, rather than through r3 at all.
+
+But since almost all channels belong to the single workspace, that framing is too broad and doesn't really need the Robert condition — it's weak identifying work even if technically valid. A better approach might be using r3 to pin down a specific user through their workspace role, then following that person to a channel they directly participate in.
+
+But the formal joins only bind r0-r1, r1-r2, and r3-r2 — there's no direct join connecting r3's user to r0's channel or user. So the only real link between r3 and r0 has to run through the shared team/workspace r2, since adding an extra hop isn't supported by the listed contract.
+
+Realistically since r3 can only narrow the workspace, and there's a single workspace in this seed, that identifying role is trivial rather than a genuine design flaw — the reviewer's actual complaint is that I never attached a real attribute condition to r3 at all. I should fix this by adding something like a role='admin' filter on r3, even though it won't reduce workspace candidates given only one workspace exists.
+
+This r3 witness combines with r1's channel condition and r0's participant match to form the overall selection criteria. I'm trying to figure out the simplest natural framing—maybe something like "members of the channel within admin Robert Walsh's workspace"—though that framing might not actually require the P condition from r3 unless it's meaningfully tied into the request.
+
+This satisfies the requirement of using ordinary identifying conditions along the route — admin role plus name pins down the workspace. But since the task calls for underspecified mode, I need genuine ambiguity somewhere, so I'm considering introducing it in how the channel itself gets identified.
+
+Since ambiguity among admins wouldn't actually change which workspace gets picked, that route is a dead end. So the ambiguity has to live at the channel level instead — using a vague phrase like "the engineering team channels" that could plausibly match several channels at once.
+
+Alternatively I could exploit a shared substring in channel names, like two channels both containing "alpha" (project-alpha and project-alpha-dev), giving a genuine structural ambiguity on the channel field. I'll build the path starting from a specific admin like Robert Walsh to fix the workspace.
+
+Even though there's only one workspace here, keeping the workspace-membership check as a scoping witness still exercises the query logic properly at the compiler level, even if it's vacuous in this particular seed.
+
+I could phrase it as "the workspace where Robert Walsh has admin rights" to invoke the membership binding naturally, or more casually as "Robert Walsh is one of our workspace admins, can you pull the member..." — either works to establish the scoping through his identity.
+
+Since we're in underspecified mode, not absent mode, that guidance doesn't apply, and this is read-only so I can skip written metadata requirements. Now I'm laying out the actual roles needed, drawing from the native tables: teams, users, channels, user_teams, channel_members, messages, and message_reactions.
+
+The workspace scope role points to T01WORKSPACE as support, and robert_walsh_admin marks the user_teams row confirming U03ROBERT23's admin role there as another supporting witness for the workspace context, not a target since channel_members is the actual referent table. For alpha_channel, I'm weighing whether C05ALPHA should just be contextual support given the referent table is channel_members rather than channels itself.
+
+The real ambiguity centers on which channel is meant, splitting into two candidate sets: the alpha_main_channel (C05ALPHA) versus alpha_dev_channel (C06ALPHADEV), each treated as support roles. Checking membership, C05ALPHA has only one member (U01AGENBOT9) while C06ALPHADEV has seven members including Priya, Lukas, Mateo, Kenji, Robert, and Aisha — both sets are distinct and non-trivial, so I'm setting mode=underspecified with these two member sets as the competing candidates.
+
+For negatives, I'm considering that someone belonging to an unrelated channel like model-research wouldn't naturally match "alpha" naming at all, so that's an obvious exclusion rather than something worth stating explicitly — I want a subtler negative instead.
+
+I'm thinking a better subtle negative might be a channel with a similar theme but different name entirely, like an "old-project" channel that could be confused with "project" but not "alpha", or checking whether someone authored a message in the alpha channels without actually being a member there — though scanning the seed data, there don't seem to be any messages in those channels to test that distinction.
+
+Since I've explicitly named Robert Walsh as the admin rather than saying "an admin" generically, that avoids any ambiguity with the other admin, Morgan Freeman, so no double-referent issue there.
+
+I'm checking C_OLD_PROJECT for members to add as a negative but it has none, so I'll skip that. I'll instead add the growth channel as a negative role since it's in the same workspace but doesn't match the "alpha" naming, which helps demonstrate the exclusion is based on name mismatch.
+
+Now I'm moving on to writing the main obligation.
+
+Since both project-alpha and project-alpha-dev match "Alpha project channel," I get two candidate rosters. My access plan is to first resolve Robert Walsh's admin membership to establish the workspace, then find channels matching "alpha" in that workspace, and finally pull member rosters for each matching channel.
+
+I need entity names to match the schema exactly - teams, users, channels, user_teams, channel_members, messages, message_reactions - and I'm mapping each role to its correct table: workspace_scope and admin checks go to teams/user_teams, the alpha channels go to channels, and the alternative candidate rosters go to channel_members. I'm also weighing whether to add a users entity for Robert Walsh himself, since user_teams only captures membership and role, not name attributes.
+
+I can just reference Robert Walsh by name within the fact text describing the related record, without needing a separate users role, since facts are allowed to mention related records without changing the entity type. Now I'm finalizing the obligations JSON, leaving out change/written attributes since everything here is read-only.
+

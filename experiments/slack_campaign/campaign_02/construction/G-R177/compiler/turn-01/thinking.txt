@@ -1,0 +1,52 @@
+This is an underspecified resolution case with two workspaces both matching the pattern, so I need to build out seed edits for workspace_B along with related records—Riverbend Labs, the incident-response channel, Lukas Berg, messages, reactions—plus handle the lukas_bianchi and kenji_sato entities (the latter already existing as U_KENJI) and a negative case for lukas_ferreira, building on the existing base seed with T01WORKSPACE and U_LUKAS.
+
+Checking the existing message_reactions data, I see the current "eyes" reaction is by U01AGENBOT9 on U_LUKAS's own investigation message, not a reaction by U_LUKAS himself—so I need a new reaction_kowalski entry where U_LUKAS reacts with "eyes" on Priya's alert message, requiring an insert into message_reactions rather than modifying the existing one.
+
+For workspace_B, I now need to build out a parallel structure: team T02RIVERBEND, channel C_RB_INCIDENT, user U_LUKASB (Lukas Berg) and Nova Reyes, plus the corresponding user_teams, channel_members, alert/investigation messages, and a reaction_berg entry mirroring the Kowalski pattern. I also need to make sure the agent U01AGENBOT9 is properly added to workspace_B's teams and channels.
+
+I'm also working out the negative-role users: lukas_bianchi needs a new workspace_A presence with a casual #random message plus a thumbsup reaction on a lunch-poll message I still need to create, while lukas_ferreira only needs channel membership (not team membership) in a new #general channel in workspace_B with a message but no reaction. Kenji Sato already satisfies his negative case via existing seed data, so no changes needed there.
+
+Now I'm starting to lay out the actual insertion plan, beginning with the new team and channel records.
+
+Also need to add C_RB_GENERAL for workspace_B's #general channel under the new team, then insert the new users (Lukas Berg, Nova Reyes, Lukas Bianchi, Lukas Ferreira), and set up user_teams membership rows for everyone except Lukas Ferreira, who should have channel_members access to #general without any user_teams entry for that workspace—though I'm still deciding whether he needs some other team membership for realism.
+
+I'm planning channel_members inserts to place the incident responders into C_RB_INCIDENT, Lukas Ferreira into C_RB_GENERAL, and Lukas Bianchi into the existing #random channel alongside its current members.
+
+Now I'm drafting the two new messages for the incident channel — Nova's initial alert about the EU payment gateway outage and Lukas Berg's follow-up about investigating load balancer health and recent deploys — along with their message IDs, plus starting to draft Lukas Bianchi's message.
+
+I'm adding a boba-related message from Bianchi in #random, a team lunch poll from John Doe for Bianchi to react to, and a generic welcome message from Lukas Ferreira in #general, each with their own message IDs.
+
+Now I'm setting up the message_reactions inserts — an eyes reaction from Kowalski, an eyes reaction from Berg on Nova's alert, and a thumbsup from Bianchi on the lunch poll — while also checking what reaction entries already exist to avoid duplicates.
+
+Now I'm defining the variable bindings for both workspaces: mapping workspace IDs, channel IDs for engineering, incident, and infra channels, user IDs for Kowalski, Berg, Bianchi, Sato, and Ferreira, plus the investigation and alert message IDs I've created so far.
+
+I'm working through the selector logic for the "identify_workspace" obligation, which is underspecified between workspace A and B, so I need to determine how the selector should resolve this by computing the union of eligible candidates.
+
+I'm wrestling with whether the selector syntax can express a single query that captures both conditions - a user authoring a message and that same user having an eye reaction elsewhere - since the selector needs to trace one focal path from a root of teams through both requirements simultaneously.
+
+Actually the auxiliary structure starts fresh at root_table, but binding the same user across two joins needs a single continuous path instead—so I should build one path from teams through channels, messages, users, and into message_reactions, keeping the joins tied to that same user node rather than splitting into separate auxiliary queries.
+
+This linear path with joins on team_id, channel_id, and user_id lets me filter on the user's name and separately on the reaction type, without requiring the reaction to be on the same message they authored, since the reaction join only depends on user_id. That satisfies the "not necessarily the one they authored" condition.
+
+Since there's only one obligation here (identifying the workspace), I only need this single selector rather than a list of several. Root referent entity is the workspace/teams table, with no additional scope restrictions needed.
+
+For negative referents, both teams are legitimate alternatives rather than false matches — with only two teams total in this world, there isn't really a competing team that should be excluded, so negative_referents likely ends up empty unless the instructions require at least one placeholder.
+
+I'm double-checking whether Bianchi or Ferreira could falsely create matches elsewhere - T01WORKSPACE already legitimately matches via Kowalski regardless, and Bianchi's reaction is "thumbsup" not "eyes" so it wouldn't satisfy that condition anyway.
+
+Checking Kenji Sato - his real name doesn't contain "Lukas" so he's filtered out. I'm reconsidering whether the design actually calls for a third negative team at all, since the role list only covers workspace_A/B, but the instructions insist there should be at least one plausible negative referent.
+
+Thinking further, negative_referents might just be empty since there's no separate workspace containing only negative users - Bianchi matches legitimately in T01WORKSPACE, and there's no implied third team beyond T01WORKSPACE and T02RIVERBEND.
+
+So I'll conclude negative_referents = [] with a note that no additional workspace exists to exclude beyond the two legitimate alternatives, and move on to finalizing the seed_edits values.
+
+Now I'm creating the new team record for Riverbend Labs, plus new user records for Lukas Berg, Nova Reyes, and Lukas Bianchi with their usernames, emails, display names, and timezones.
+
+I'm also setting up two channels for the Riverbend Labs team—an incident-response channel and a general channel—then linking users to the team through membership records, making sure the bot account has access per the plan.
+
+I'm mapping out channel membership and drafting sample messages: an incident investigation thread about the payment gateway outage, plus some unrelated banter in another channel to round out realistic test data.
+
+Now I'm adding reactions to these messages (eyes, thumbsup) and starting to define the workspace and channel ID bindings needed to cover all roles in this scenario.
+
+I still need to build out the selectors array for the one selector described, along with an access plan noting which actors belong to which channels. Then I'll verify the node indices for the path through teams, channels, messages, users, and message reactions to make sure everything lines up correctly.
+

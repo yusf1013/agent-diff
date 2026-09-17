@@ -1,0 +1,22 @@
+I'm mapping out a route from WORKSPACE_MEMBERSHIP through USER, REACTION, and MESSAGE to CONVERSATION, since we need to find workspace memberships of users who reacted with a given emoji to a message in a particular conversation.
+
+The exposure rules point toward reporting owner/admin role for those users rather than exposing full membership lists. I'm thinking through a scenario in the infra channel where users react with a rocket emoji to a message about the circuit-tracer OOM fix going live, and I need to add matching reaction data to support that scenario.
+
+I'll craft this as Priya announcing the Tokyo edge location is live with ~150ms latency, asking teammates to confirm validation from their region. Checking who reacted and confirming they're all members of C_GROWTH, then cross-referencing their workspace roles, which are mostly "member" except for a couple of admins.
+
+Actually U03ROBERT23 is only in C01ABCD1234, C02EFGH5678, and C03IJKL9012, so I should pick the engineering channel C03IJKL9012 for this scenario. There's already an existing message there about the circuit-tracer OOM issue with a reaction from the acting bot user, so I could add another reaction from a different member like Robert to build out the scenario.
+
+I'll set the message as U_LUKAS's post about circuit-tracer OOM errors needing a PyTorch rewrite, then add reactions: U03ROBERT23 and U05MORGAN23 both thumbsup (matching the target), U06HUBERT23 reacting with eyes instead (wrong emoji, negative case), and U02JOHNDOE1 thumbsup but on an unrelated message (wrong message, another negative case).
+
+I'm also flagging U_KENJI as a negative case since he authored a thread reply but didn't react, and U01AGENBOT9's existing eyes reaction as another wrong-emoji negative.
+
+Confirming the route: WORKSPACE_MEMBERSHIP -> USER -> REACTION -> MESSAGE -> CONVERSATION, joining from workspace membership through the user who reacted with thumbsup on the OOM message in #engineering to find their role.
+
+I'm drafting a natural-language prompt asking for the workspace roles (admin, owner, member) of everyone who reacted with a thumbsup to Łukasz's circuit-tracer OOM message in #engineering, since there are two matching members with different roles.
+
+Now I'm listing distractor cases to exclude: someone who reacted with a different emoji, someone who reacted thumbsup on a different message, and someone who replied in the thread without reacting at all — these test that only actual thumbsup reactors on that exact message count.
+
+Turning to the actual matches, Robert and Morgan both reacted thumbsup on the right message, so I'm pulling their workspace membership records to confirm their roles (admin and member respectively), using the user_teams table as the source for workspace membership.
+
+Hubert, John, and Kenji all have distinct memberships but weren't part of the correct match, so they're excluded from the target roles. I'll frame the obligation as a read-only, multiple-selection query against user_teams targeting Robert's and Morgan's membership rows, pulling their role and user_id fields, while treating the channel and message details as supporting context rather than separate obligations.
+

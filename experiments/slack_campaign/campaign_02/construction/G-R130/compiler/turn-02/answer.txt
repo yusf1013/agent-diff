@@ -1,0 +1,54 @@
+```json
+{
+  "seed_edits": [],
+  "bindings": {
+    "workspace": [
+      {"user_id":"U01AGENBOT9","team_id":"T01WORKSPACE"},
+      {"user_id":"U_AISHA","team_id":"T01WORKSPACE"},
+      {"user_id":"U_MATEO","team_id":"T01WORKSPACE"},
+      {"user_id":"U_LUKAS","team_id":"T01WORKSPACE"},
+      {"user_id":"U_SOPHIE","team_id":"T01WORKSPACE"},
+      {"user_id":"U_OLENA","team_id":"T01WORKSPACE"}
+    ],
+    "target_channel": ["C_FRONTEND"],
+    "author_negative_staging_only": [
+      {"channel_id":"C_FRONTEND","user_id":"U_AISHA"}
+    ],
+    "author_negative_lint_rule": [
+      {"channel_id":"C_FRONTEND","user_id":"U_LUKAS"}
+    ],
+    "author_negative_wrong_channel": [
+      {"channel_id":"C_INFRA","user_id":"U_PRIYA"}
+    ],
+    "member_negative_no_relevant_post": [
+      {"channel_id":"C_FRONTEND","user_id":"U_MATEO"}
+    ]
+  },
+  "selectors": [
+    {
+      "root_table": "users",
+      "scope": [],
+      "focal": {
+        "path": ["users", "user_teams", "teams", "channels", "channel_members"],
+        "joins": ["user_teams.user_id", "user_teams.team_id", "channels.team_id", "channel_members.channel_id"],
+        "filters": [
+          {"node": 3, "field": "channel_name", "op": "eq", "value": "frontend"}
+        ]
+      },
+      "auxiliary": [
+        {
+          "path": ["users", "messages", "channels"],
+          "joins": ["messages.user_id", "messages.channel_id"],
+          "filters": [
+            {"node": 2, "field": "channel_name", "op": "eq", "value": "frontend"},
+            {"node": 1, "field": "message_text", "op": "contains_ci", "value": "48 hours"},
+            {"node": 1, "field": "message_text", "op": "contains_ci", "value": "production"}
+          ]
+        }
+      ]
+    }
+  ],
+  "negative_referents": ["U_AISHA", "U_LUKAS", "U_PRIYA", "U_MATEO"],
+  "notes": "Fixed the focal query so it literally traverses the assigned route USER -> WORKSPACE_MEMBERSHIP -> WORKSPACE -> CONVERSATION -> CONVERSATION_MEMBERSHIP (users -> user_teams -> teams -> channels -> channel_members), filtering the conversation node on #frontend's channel_name. The message-authorship content check (the specific 48-hours/production claim) is retained as an independent auxiliary query rooted at the same users table, since message authorship is an alternate/necessary condition layered onto the fixed route rather than a replacement of it. All records needed (target channel, three negative messages, and the no-post member) already exist verbatim in base_seed, so no seed_edits are required. The acting bot's existing memberships in #frontend and #core-infra provide documented API access (users.conversations/conversations.list + conversations.history) sufficient to confirm the absence: no seeded message anywhere satisfies both the '48 hours' and 'production' substrings in combination with #frontend authorship, so the auxiliary yields no matching tuple for any candidate user, correctly producing the absent result over the full candidate population."
+}
+```

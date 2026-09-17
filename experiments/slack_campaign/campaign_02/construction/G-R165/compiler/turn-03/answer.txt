@@ -1,0 +1,111 @@
+```json
+{
+  "seed_edits": [
+    {
+      "table": "teams",
+      "op": "insert",
+      "key": {"team_id": "T02NORTHSTAR"},
+      "values": {"team_id": "T02NORTHSTAR", "team_name": "Northstar Labs"},
+      "reason": "New workspace required as the second candidate containing a channel literally named 'beta-signups', creating the intended ambiguity."
+    },
+    {
+      "table": "teams",
+      "op": "insert",
+      "key": {"team_id": "T03GHOSTCORP"},
+      "values": {"team_id": "T03GHOSTCORP", "team_name": "Ghost Corp"},
+      "reason": "New workspace required as the negative: contains a same-named channel but actor has no channel membership there, so it must not be selectable."
+    },
+    {
+      "table": "channels",
+      "op": "insert",
+      "key": {"channel_id": "C_BETA_MAIN"},
+      "values": {"channel_id": "C_BETA_MAIN", "channel_name": "beta-signups", "team_id": "T01WORKSPACE", "is_private": false, "is_dm": false, "is_gc": false, "topic_text": "Signups for our closed beta program", "purpose_text": "Tracking sign-ups for the closed beta cohort.", "is_archived": false},
+      "reason": "Exact-name match channel in workspace_main, identifying that workspace via the route."
+    },
+    {
+      "table": "channels",
+      "op": "insert",
+      "key": {"channel_id": "C_BETA_NORTH"},
+      "values": {"channel_id": "C_BETA_NORTH", "channel_name": "beta-signups", "team_id": "T02NORTHSTAR", "is_private": false, "is_dm": false, "is_gc": false, "topic_text": "Early access signups for the Northstar pilot", "purpose_text": "Sign-up tracking for the Northstar early-access pilot.", "is_archived": false},
+      "reason": "Exact-name match channel in workspace_north, producing the second candidate workspace."
+    },
+    {
+      "table": "channels",
+      "op": "insert",
+      "key": {"channel_id": "C_WAITLIST_MAIN"},
+      "values": {"channel_id": "C_WAITLIST_MAIN", "channel_name": "beta-waitlist", "team_id": "T01WORKSPACE", "is_private": false, "is_dm": false, "is_gc": false, "topic_text": "Waitlist coordination", "purpose_text": "Managing overflow beta waitlist requests.", "is_archived": false},
+      "reason": "Negative channel with a different name in a candidate workspace, correctly excluded by the exact-name condition."
+    },
+    {
+      "table": "channels",
+      "op": "insert",
+      "key": {"channel_id": "C_BETA_GHOST"},
+      "values": {"channel_id": "C_BETA_GHOST", "channel_name": "beta-signups", "team_id": "T03GHOSTCORP", "is_private": false, "is_dm": false, "is_gc": false, "topic_text": "Beta signups (Ghost Corp)", "purpose_text": "Ghost Corp's own beta signup tracking.", "is_archived": false},
+      "reason": "Same exact name but in a workspace the actor cannot reach through any documented conversation membership; must not be silently included."
+    },
+    {
+      "table": "user_teams",
+      "op": "insert",
+      "key": {"user_id": "U01AGENBOT9", "team_id": "T02NORTHSTAR"},
+      "values": {"user_id": "U01AGENBOT9", "team_id": "T02NORTHSTAR", "role": "member"},
+      "reason": "Actor needs workspace membership in T02NORTHSTAR so users.conversations/conversations.list can surface conversations there."
+    },
+    {
+      "table": "channel_members",
+      "op": "insert",
+      "key": {"channel_id": "C_BETA_MAIN", "user_id": "U01AGENBOT9"},
+      "values": {"channel_id": "C_BETA_MAIN", "user_id": "U01AGENBOT9"},
+      "reason": "Actor must be a member of channel_main_beta to discover it via conversation-membership-based listing, matching the access_plan."
+    },
+    {
+      "table": "channel_members",
+      "op": "insert",
+      "key": {"channel_id": "C_BETA_NORTH", "user_id": "U01AGENBOT9"},
+      "values": {"channel_id": "C_BETA_NORTH", "user_id": "U01AGENBOT9"},
+      "reason": "Actor must be a member of channel_north_beta to discover it within workspace_north, producing the ambiguity through the actor's own conversation memberships."
+    },
+    {
+      "table": "channel_members",
+      "op": "insert",
+      "key": {"channel_id": "C_WAITLIST_MAIN", "user_id": "U01AGENBOT9"},
+      "values": {"channel_id": "C_WAITLIST_MAIN", "user_id": "U01AGENBOT9"},
+      "reason": "Actor membership in the negative-name channel establishes it is genuinely visible yet excluded only by name mismatch."
+    }
+  ],
+  "bindings": {
+    "actor_user": ["U01AGENBOT9"],
+    "workspace_main": ["T01WORKSPACE"],
+    "workspace_north": ["T02NORTHSTAR"],
+    "channel_main_beta": ["C_BETA_MAIN"],
+    "channel_north_beta": ["C_BETA_NORTH"],
+    "channel_main_other": ["C_WAITLIST_MAIN"],
+    "channel_hidden_beta": ["C_BETA_GHOST"],
+    "workspace_ghost": ["T03GHOSTCORP"]
+  },
+  "selectors": [
+    {
+      "root_table": "teams",
+      "scope": [],
+      "focal": {
+        "path": ["teams", "channels"],
+        "joins": ["channels.team_id"],
+        "filters": [
+          {"node": 1, "field": "channel_name", "op": "eq", "value": "beta-signups"}
+        ]
+      },
+      "auxiliary": [
+        {
+          "path": ["teams", "channels", "channel_members"],
+          "joins": ["channels.team_id", "channel_members.channel_id"],
+          "filters": [
+            {"node": 1, "field": "channel_name", "op": "eq", "value": "beta-signups"},
+            {"node": 2, "field": "user_id", "op": "eq", "value": "U01AGENBOT9"}
+          ]
+        }
+      ]
+    }
+  ],
+  "negative_referents": ["T03GHOSTCORP"],
+  "notes": "The focal path follows the assigned WORKSPACE\u2192CONVERSATION route exactly (teams\u2192channels on channels.team_id, filtered to channel_name='beta-signups'). Reachability is now enforced through the actor's actual conversation (channel) membership rather than workspace membership: the auxiliary re-traverses teams\u2192channels\u2192channel_members, filtering to the same channel_name and to channel_members.user_id = the actor, matching the design's stated 'reachable through the actor's own conversation memberships' condition and the access_plan's users.conversations/conversations.list discovery mechanism. A team qualifies only if it has a channel named exactly 'beta-signups' AND the actor is a member of that channel. This yields the intended ambiguous pair {T01WORKSPACE, T02NORTHSTAR} and excludes T03GHOSTCORP, whose same-named channel the actor cannot reach via any channel membership."
+}
+```

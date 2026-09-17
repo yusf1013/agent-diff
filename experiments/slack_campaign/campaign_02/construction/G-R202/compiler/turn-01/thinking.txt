@@ -1,0 +1,22 @@
+I'm checking the existing message_reactions table and see only one reaction present, so the target reaction of Robert checking Priya's CUDA pprof delta message doesn't exist yet and needs to be inserted. I also need to account for the decoy reactions mentioned in the design, including one from Mateo.
+
+Confirming the eyes reaction already in seed matches Lukas's circuit-tracer OOM message, so that decoy is already covered. I still need to insert three reactions: Robert's check on Priya's CUDA root cause message, Mateo's rocket on Sophie's checkpoint message, and Kenji's thumbsup on Priya's Tokyo CDN message. I'm also confirming Robert Chen is a member of C_INFRA, which supports him reacting there, and I'm now considering what access the actor needs to view channel history and add reactions.
+
+Since the actor's identity isn't explicitly specified in this task, I'll assume they have standard workspace access, and since C_INFRA is a public channel, normal discovery and history rules should apply without requiring membership.
+
+Now I'm building the selector for the core_infra_member_workspace_roles obligation, which targets all 9 team members via user_teams. I'm tracing a path from user_teams through channel_members and channels to messages and message_reactions, so I can identify the channel by finding the message with the confirming reaction and check reaction, then join back to find which users are members of that channel.
+
+I'm reconsidering the join logic though -- there's no direct foreign key linking user_teams to channel_members, since both connect to users independently rather than to each other, so I need to figure out how to properly chain these tables through actual foreign key relationships instead of an implicit shared column.
+
+Tracing the FK chain, the path should go user_teams to users to channel_members to channels to messages to message_reactions, using each table's actual foreign key relationship to the next. With that path established, I can now set filters: reaction_type equal to 'check' on message_reactions, and a distinctive substring match on the message text to pinpoint the right message.
+
+This yields the set of user_teams rows for members of the channel where that message with a check reaction lives — matching the 8 humans plus the bot. Since the scope stays unrestricted at the user_teams root and there's just one filtering obligation, I only need a single selector, confirming the design against the actual data (message text matches, bot membership in C_INFRA confirmed).
+
+Now I'm mapping each role label to its native handles: target_message resolves to the message ID, target_reaction resolves to the composite key of message ID, user ID, and reaction type, and the remaining member roles will resolve to user_teams composite handles since that table's primary key is user_id plus team_id.
+
+Now I'm also adding a decoy incognito membership row and preparing to seed three message_reactions rows for the target and decoy reactions, checking the primary key structure to see if a created_at timestamp is needed.
+
+For negative referents, the root entity is workspace membership, and the key decoy is U_INCOGNITO's user_teams row—a plausible but incorrect membership that could be mistakenly selected as the answer.
+
+Now I'll define one selector for the obligation and assemble the complete JSON structure.
+

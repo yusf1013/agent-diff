@@ -5,6 +5,7 @@ exact reviewed case bytes; revised cases require a new confirmation.
 """
 from collections import Counter
 import hashlib
+import re
 from .generate import ROOT,read
 from .bedrock import save
 
@@ -51,7 +52,20 @@ def collect(base=BASE):
                         'manual_confirmed_failing_runs':[r['case_id'] for r in group if 'confirmed' in (r['manual_review'] or {}).get('grounding_flags',{}).values()],
                         'manually_confirmed_assigned_routes':sorted({r['assigned_route'] for r in group if (r['manual_review'] or {}).get('assigned_route_realized') is True}),
                         'manual_rejected_assigned_routes':[r['case_id'] for r in group if (r['manual_review'] or {}).get('assigned_route_realized') is False]}
-    output={'note':'Model review/flags are claims; manual confirmations and route credit are separately recorded. Ground-truth baseline labels are not read. Denominators include unsuccessful attempts.','summary':summaries,'cases':rows}
+    historical=[]
+    for path in sorted((base/'manual_review_history').glob('*.json')):
+        audit=read(path);cid=re.match(r'(G-R\d+|M-slack_\d+)', path.name).group(1)
+        archive=base/'execution_attempts'/(cid+'-before-route-revision')
+        # Keep historical evidence links attached to the preserved old version.
+        audit['evidence']=[e.replace('execution/'+cid+'/', 'execution_attempts/'+cid+'-before-route-revision/') if archive.exists() else e for e in audit.get('evidence',[])]
+        audit['evidence']=[e.replace('construction/'+cid+'/case.json','construction/'+cid+'/case-before-route-revision.json') for e in audit['evidence']]
+        save(path,audit)
+        historical.append({'case_id':cid,'audit_file':str(path.relative_to(base)),**audit})
+    confirmed={}
+    for audit in [*historical,*[{'case_id':r['case_id'],**r['manual_review']} for r in rows if r['manual_review']]]:
+        for ob,verdict in audit.get('grounding_flags',{}).items():
+            if verdict=='confirmed':confirmed[(audit['case_id'],audit['case_sha256'],ob)]={'case_id':audit['case_id'],'case_sha256':audit['case_sha256'],'obligation':ob,'validity':audit['validity'],'assigned_route_realized':audit['assigned_route_realized'],'evidence':audit.get('evidence',[])}
+    output={'confirmed_findings_all_versions':list(confirmed.values()),'historical_manual_reviews':historical,'note':'Model review/flags are claims; manual confirmations and route credit are separately recorded. Ground-truth baseline labels are not read. Denominators include unsuccessful attempts.','summary':summaries,'cases':rows}
     save(base/'campaign_results.json',output)
     lines=['# Live generation and mutation inventory','',output['note'],'', '| Case | Route | Mode | Construction | Execution | Model flags | Manual route |','|---|---|---|---|---|---|---|']
     for r in rows:

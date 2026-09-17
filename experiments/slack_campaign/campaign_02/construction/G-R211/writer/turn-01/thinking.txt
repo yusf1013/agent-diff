@@ -1,0 +1,46 @@
+I'm mapping out the route: starting from workspace membership, tracing to the user, their reaction, the message, its conversation, and finally the workspace it belongs to, so I can build an identifying description that ties a specific membership to who reacted with a given emoji on a particular message.
+
+Since there's only one workspace in the seed data, distinguishing solely by workspace won't work — I need to consider whether a second workspace should be added, or find another way to make the identifying path unambiguous.
+
+The referent here is workspace membership, reached through a user's reaction on a message in a channel that belongs to a workspace. I'm checking whether the API supports updating a workspace membership's role—it doesn't seem documented, so this likely needs to be a read-only action reporting the role held by the matching membership rather than a state change. For the ambiguity requirement, I'm thinking through a scenario where a reaction like "eyes" on a message could plausibly point to two distinct candidate memberships.
+
+I want to avoid using the acting user as the target, so I'm designing a fresh scenario instead. The seed data conveniently has two different users both named "Robert" — Robert Walsh and Robert Chen — which gives a clean ambiguity case similar to the "two Alexes" calibration pattern. So the request would reference "Robert" reacting with an emoji to a message, with the ambiguity resting on which Robert is meant.
+
+Since both belong to the same single workspace, ending the route at WORKSPACE doesn't disambiguate between them but instead just confirms path coherence across the shared T01WORKSPACE membership. I'm now picking a specific emoji, like "rocket," that Robert reacted with on a message to complete the route conditions.
+
+I need actual reaction data to exist. Currently there's only the eyes reaction from seed data, so I'll add fresh ones: Robert Walsh reacting with rocket on a message in C01ABCD1234, and Robert Chen reacting with rocket on a message in C_GROWTH -- both within T01WORKSPACE. Since the workspace is identical for both, this creates genuine ambiguity between their two distinct membership records, which fits the underspecified mode I'm aiming for.
+
+I want the identifying detail to stay deliberately ambiguous since both people share the first name "Robert" — enough context to point at the reaction and message, but not enough to disambiguate which Robert it is.
+
+Actually maybe better to make the ambiguity about which Robert rather than which message: both Roberts reacted with a rocket emoji, but to different messages, so the generic condition "reacted with 🚀" matches both users even though the underlying messages differ, keeping the route valid but the user identity ambiguous.
+
+Actually, that approach makes the message/conversation path do real identifying work: I'll pin down one specific message and channel precisely, then have both Roberts react to that exact same message with the exact same emoji, so the ambiguity lives purely in which user named Robert left the reaction, not in which message or channel.
+
+But then I hit a snag — Robert Walsh isn't actually a member of that channel, and reactions realistically require channel membership even if not structurally enforced, so I need to reconsider which channel and message to anchor this on.
+
+Checking membership overlap between the two Roberts, there isn't any shared channel in the current seed, so adding one of them to a channel as a necessary access membership seems like the cleanest fix.
+
+Rather than picking a message authored by one of the Roberts themselves, I want a neutral message both can react to. The pprof delta message from Priya in the infra channel looks like a good candidate for both Roberts to react to.
+
+I need to add Robert Walsh's membership to the infra channel so his presence there is plausible, then add matching rocket-emoji reactions from both Robert accounts to that message. For the actual question, I'll frame it around their workspace role — Robert Walsh as admin, Robert Chen as member — asking which role corresponds to the Robert who left that reaction on the cloud budget message.
+
+This turns out to be genuinely ambiguous: both Roberts reacted with 🚀 to the exact same message about the cloud bill overrun in core-infra, so the route matches two distinct records rather than resolving to one. That satisfies the requirement for real ambiguity rather than a coincidental name match, so I should present both candidate roles as the answer set.
+
+Now I'm thinking through negative examples to reinforce the distinction: someone reacting with a different emoji to the same message, someone reacting rocket to a different message, or another non-Robert user reacting rocket to the correct message — each of these should fail to match so they serve as contrastive negatives against the true ambiguous case.
+
+Now I'm drafting the final natural-language prompt: asking what workspace role belongs to whichever Robert reacted with 🚀 to the message about the monthly cloud bill overrun in core-infra, phrasing it so no candidate ambiguity is disclosed to the user.
+
+I'm tracing the join chain from reaction to user to workspace membership to role, and noting the ambiguity: both Robert Walsh and Robert Chen have rocket reactions on the same message, giving two possible membership candidates whose roles need to be checked separately.
+
+I need to lock down the correct anchor message — reconsidering whether it's the pprof performance message or the actual "$47K over budget on cloud bill" message from Robert Chen, since that changes which reaction and user records I'm binding together.
+
+Actually, let me pick a cleaner anchor instead—Priya's message about checking the current instance mix, within the same thread, so both Roberts can react to it without the odd self-reaction issue.
+
+I'll target that message from U_PRIYA in C_INFRA, adding rocket reactions from U03ROBERT23 and U_ROBERT, and making sure Robert Walsh is added as a channel member (Robert already belongs). This message is identifiable as the one about checking instance utilization to recoup the $47K overspend.
+
+For negatives, I'm considering a few options: Robert Walsh reacting with a different emoji to a different message he authored (wrong emoji/message), another user with a different name reacting with rocket to the same target message (wrong identity), or someone whose display name includes "Robert" but isn't an actual channel member.
+
+I'll settle on two negatives - Robert Walsh's own message with an "eyes" reaction (wrong message and emoji), and a non-Robert user reacting with the correct rocket emoji on the actual target message (correct emoji but filtered out by name). The single obligation returns workspace membership records with underspecified mode, targeting the union of both possible Robert candidates' membership roles.
+
+The task spec asks to check the workspace role of the Robert who reacted with a rocket to the cloud-overspend message in core-infra, with an access plan involving channel history search, reaction lookup, user identification by name, and then a team membership check.
+

@@ -1,0 +1,68 @@
+I need to build out team T02NOVA with its channels, users, messages, reactions, and memberships to mirror the existing workspace_T01 pattern, while also verifying the existing seed data—like the message in C03IJKL9012 and U01AGENBOT9's reaction and channel membership—is already accounted for.
+
+Now I'm figuring out the new additions: the team T02NOVA itself, channels C_NOVA_ENG and C_NOVA_INFRA under it, and three new users. I also need to work out whether U01AGENBOT9 requires user_teams rows for T02NOVA in addition to channel memberships, since conversations.create takes team_id directly and channel history access seems to depend on membership rather than team affiliation.
+
+So channel_members rows for the bot in both Nova channels should suffice, and conversations.create shouldn't require team membership checks.
+
+Now I'm drafting the seed edits: adding team T02NOVA, the two Nova channels with realistic names and topics, and new users like U_NOVA_DEV and U_NOVA_OPS to populate the scenario.
+
+I'm also adding U_NOVA_QA as a user who reacted but isn't an infra channel member (the negative case), assigning member roles for all three plus the bot to T02NOVA, and setting channel_members so nova-eng includes everyone while nova-infra excludes U_NOVA_QA intentionally. Then I'm drafting the new OOM message for T02.
+
+For reactions, I'm checking the base seed's existing entries against the design's negative test cases—noting I need to insert U_PRIYA's thumbsup reaction and U_OLENA's eyes reaction as new edits since they aren't already present, confirming both users are already members of C_INFRA so no membership changes are needed there.
+
+For the U_NOVA_QA reaction row, that's already accounted for since U_NOVA_QA isn't a member of C_NOVA_INFRA, only C_NOVA_ENG, satisfying that negative case already.
+
+Now I'm assigning a message_id for message_oom_T02 and thinking through the selector design—for the underspecified-mode obligation with two candidate role sets, I need a selector that computes the union of eligible team alternatives satisfying the full chain: message about OOM/layer-streaming, an eyes reaction, and the reactor also being an infra channel member.
+
+I'm designing the path so it joins teams to channels to messages to reactions to users to channel_members and back to channels (the infra one), leaving team_id unrestricted so both team alternatives surface naturally, with the channels table appearing twice via distinct node indices and foreign key joins connecting each step.
+
+Then I'm working out the filters: message text needs to contain both "OOM" and "layer" as separate conjoined conditions, the reaction type should equal 'eyes', and the second channels node should filter on channel name containing 'infra', though I'm reconsidering whether that filter is too loose.
+
+Checking the other negative cases too: U_OLENA's eyes reaction was on the hallucinated refund message, which doesn't mention "OOM" or "layer" so it gets filtered out correctly. Now looking at U_PRIYA's thumbsup reaction to see if it also gets excluded for the wrong reason.
+
+The selector for obligation 1 works correctly, returning both team_id T01WORKSPACE and T02NOVA as matching tuples. Moving to obligation 2 for create_channel, I'm thinking through how to handle a state-changing action rather than a data selector, since it needs an "absent" mode selector targeting the channels table.
+
+I'm building a selector on the channels table that scopes to channel_name eq 'retro-notes' filtered by the resolved team_id values, expecting zero current matches to confirm absence before the creation happens. Now I'm compiling the role_label bindings for each native handle - workspace teams, message timestamps, reactor and reaction IDs, and starting on the infra-related binding.
+
+Continuing to fill out bindings for the second workspace's message, reactor, reaction, and infra membership, then negative-case bindings for a wrong reaction type, a wrong message target, and a user who isn't an infra member. From here I'm drafting the seed_edits list, starting with inserting the second team and its channels, then the users and their team memberships.
+
+Adding user_teams entries...
+
+I add channel_members for the engineering and infra channels, then insert the message, the reaction, and the three negative-case reactions to test wrong user, wrong type, and wrong message. I confirm U_PRIYA and U_OLENA are already infra channel members from the base seed, and verify the new message text references "OOM" and "layer" as expected.
+
+Wait, checking the actual message text again - it mentions OOM errors and shards, but I don't see "layer" explicitly. Since the design text is fixed and shouldn't be altered, I need to work with what's actually there rather than what I assumed the filter required.
+
+Given that constraint, I'll settle on filtering by "OOM" plus "loading" plus "models" as the common signal terms, then verify both candidate messages actually contain all three substrings.
+
+Checking against other messages in the base dataset to make sure no false positives exist elsewhere, particularly around the "OOM kills detected" entry, which lacks "loading" and "models" so it's safely excluded.
+
+Now I'll finalize the selector filters at node2 with these three contains_ci conditions.
+
+I'm confirming everything else already exists correctly in the base seed: the oom message, its reaction, the infra channel membership, and the reactor user all check out with no edits needed. For the three new Nova users, I'll assign them neutral-looking IDs, realistic names, and emails that don't hint at their role in this construction.
+
+Actually, using name-based IDs like real names would be safer than team-labeled ones since "Nova" reveals team association. I'll switch to something like U_DANIEL for the dev user, keeping the naming convention consistent with existing name-based IDs in the base seed.
+
+Naming channel_name "nova-infra" for consistency. For the team itself, I'll keep team_id "T02NOVA" with team_name "Nova Cluster" as already fixed by the design, since it specifies this workspace contains #nova-eng and #nova-infra channels.
+
+These IDs are locked design facts, not something I should rename. Since the design explicitly named T02NOVA, C_NOVA_ENG, C_NOVA_INFRA, and users U_NOVA_OPS, U_NOVA_DEV, U_NOVA_QA in its role facts, I should honor those exact handles rather than inventing new ones -- reverting to the design's given IDs across the board.
+
+Now I'm assigning realistic display names to the human-facing fields while keeping the fixed IDs: Elena Vasquez for U_NOVA_DEV (São Paulo timezone), Marcus Chen for U_NOVA_OPS (Chicago timezone), and Fatima Noor for U_NOVA_QA, each with corresponding usernames and emails at nova-cluster.ai.
+
+I'm also fleshing out the team name "Nova Cluster" along with two channels—nova-eng and nova-infra—each with realistic topics and purposes, plus constructing the sample message record with proper timestamps. Now I'm turning to figure out negative referents at the workspace/team level, thinking through which team handles could be plausibly but incorrectly matched as the main referent.
+
+I'm checking each negative-example case against the real qualifying chain: the wrong-reaction-type case, wrong-message case, and non-infra-member case all point back to teams that already legitimately qualify through a valid chain, so none of them introduce a false positive team match on their own.
+
+I'm considering whether a naive selector checking only for the OOM message plus an eyes reaction, without verifying infra membership, could mistakenly pull in T01WORKSPACE based on U_OLENA's reaction landing on an unrelated refund-policy message rather than the correct one.
+
+Working through the wrong-reaction-type case too, I find the same team T01WORKSPACE keeps resurfacing as the erroneous match, not a distinct third team, so no genuinely new false-positive candidate emerges. Since both legitimate workspaces (T01 and T02) are explicitly excluded from counting as negatives, I'm left wondering whether the negative_referents list should simply be empty here.
+
+But that path leads to the same team that's already correctly matching, so it wouldn't count as a genuine wrong answer—just a redundant route to the right conclusion. Given that all the negatives sit inside workspaces that already validate correctly, maybe the intended design is that these negatives simply test whether the selector applies proper precedence rather than introducing a truly distinct wrong team.
+
+I keep going back and forth on whether to force in a fabricated negative root just to satisfy the "at least one" instruction, but nothing in the actual scenario supports a plausible wrong team candidate. I'm leaning toward leaving negative_referents empty and explaining that reasoning in the notes rather than inventing an unsupported entry.
+
+But then I reconsider: maybe a negative referent could surface if a reviewer naively substring-matched on terms like "OOM" or "eyes" without respecting the chain constraints, which could wrongly implicate a workspace.
+
+I confirm there's no third workspace here, so I'll return an empty negative_referents list with a note explaining the reasoning. Now I'm defining the selector to trace the workspace identification chain—joining teams, channels, messages, reactions, and channel members, with filters on message text and reaction type.
+
+I'm building the second selector for the create_channel check on absent channels named "retro-notes." Now I'll map out the role-to-handle bindings and assemble the final JSON output.
+

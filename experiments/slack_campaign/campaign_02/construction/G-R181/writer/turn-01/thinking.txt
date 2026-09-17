@@ -1,0 +1,52 @@
+I'm mapping out the route from WORKSPACE through CONVERSATION, MESSAGE, REACTION, USER, to CONVERSATION_MEMBERSHIP, but I'm noticing a mismatch—the referent entity is WORKSPACE while the route nodes end at CONVERSATION_MEMBERSHIP, so I need to trace the path backward to reconcile it.
+
+Since the seed only contains one workspace (T01WORKSPACE), I'm wrestling with how underspecified resolution mode is supposed to work here, since that mode requires at least two distinct possible referent sets and workspace enumeration isn't assumed available.
+
+So it seems like I'll need to add one or two additional workspaces to the seed data to create genuine ambiguity, along with the necessary ordinary records and access memberships to support them.
+
+Since the resolution mode calls for an underspecified route with candidate role sets, I need identifying conditions that point to the workspace without naming it directly — something like referencing a channel where a specific reaction occurred plus membership in another channel — but structured so that two distinct workspaces both satisfy that pattern, giving multiple valid candidate answers.
+
+Actually, since workspace-level create/invite APIs don't exist, this needs to be read-only: identifying which team_id hosts a particular channel event, then performing some follow-on action scoped to that workspace's channels once identified.
+
+Actually, creating a channel via conversations.create with team_id feels like a solid workspace-scoped mutation to anchor the task. I want to construct a chain like WORKSPACE → CONVERSATION → MESSAGE → REACTION → USER → CONVERSATION_MEMBERSHIP, e.g. "the workspace containing a channel where a message got an eyes reaction from someone who's also in the incident-response channel" — but this naming pattern could exist in multiple workspaces, creating ambiguity I need to resolve.
+
+Checking the existing seed data, I see there's already an eyes reaction from the agent bot itself on a message, but I shouldn't lean on that alone. All the seed channels currently live in a single workspace, so I'll need to add a genuinely separate team/workspace to make the ambiguity real, rather than relying on channels that already coexist under one team ID.
+
+I'll create a second workspace, T02NOVA, with parallel channels mirroring the core-infra/engineering structure, and add a user there who also reacted with eyes to a debugging/OOM message and belongs to that workspace's incident channel. Then the prompt can reference "the workspace where someone reacted with eyes to an OOM-related message and is also a member of the core infra incident channel" -- forcing correct binding between the reaction, the reactor, and their channel membership to resolve which workspace is meant.
+
+This confirms T01WORKSPACE already satisfies the conditions, so I can reuse that existing seed data directly. Now I need to build a second candidate workspace, T02NOVA, mirroring the same structure with a debugging/OOM message, an eyes reaction from another user, and that user belonging to an infra channel with a matching incident-related topic.
+
+I'm noticing this creates ambiguity—U_NOVA_OPS reacted with 👀 to the OOM message and is also a member of the infra incident channel, which mirrors the same pattern as the other candidate workspace, so I now have two matches for the same identifying phrase.
+
+To force a real resolution I need negatives: someone who reacted eyes to the OOM message but isn't in the infra channel, or someone in the infra channel who reacted with a different emoji, or someone who reacted eyes to an unrelated message while still being in the infra channel. I'm confirming that in the first workspace, the OOM message author didn't react to his own post, which already serves as one such negative.
+
+I'll add a second negative where a user reacts thumbsup instead of eyes on the OOM message despite being in the infra channel, and a third where a user reacts eyes on some unrelated message while still belonging to the infra channel.
+
+I should also test wrong channel membership by having someone in the engineering channel (not infra) react eyes on the OOM message. Then I want to figure out the actual consequential task, maybe something about creating a new "#retro-notes" channel.
+
+For that task, resolving which workspace requires finding the person who reacted eyes to the OOM message and confirming they're also a member of the infra/on-call channel - since this could match two workspaces, the model should surface that ambiguity rather than guessing, which fits the benchmark's design for underspecified prompts.
+
+I'll build similar roles for T02, then work through negatives: a thumbsup reaction on the OOM message instead of eyes, an eyes reaction on an unrelated hallucination message, and possibly a Nova user reacting eyes without being a member of the infra channel.
+
+I'm finalizing the T02NOVA setup now — new users U_NOVA_DEV, U_NOVA_OPS, and U_NOVA_QA all on the team, with channels C_NOVA_ENG and C_NOVA_INFRA. U_NOVA_QA is deliberately left out of the infra channel membership so their eyes reaction on the OOM message tests that the missing channel relationship correctly excludes them, while U_NOVA_OPS's eyes reaction should count as a valid positive match.
+
+For the T01 workspace I'm adding two more negative cases: U_PRIYA reacting with thumbsup (wrong reaction type despite being infra) and U_OLENA reacting eyes on an unrelated message (right reaction, wrong content, though still infra). Then I need to think through the obligations structure — resolving the ambiguous target workspace as an underspecified read task, followed by the state-changing obligation to create the channel once that workspace is determined.
+
+Now I'm laying out the two obligations formally: identifying the workspace with candidate_role_sets covering both T01 and T02, then creating the channel as a new record with written attributes for the channel name and team_id, deciding whether change_attributes should be omitted since this is a creation rather than an update.
+
+I'm now drafting the task_spec lines, considering whether to split into two obligation-linked steps (identify workspace, then create channel) or write it as a single combined action line referencing both obligations.
+
+For access_plan, I need to think through whether the bot actor needs membership in additional Nova channels to discover the workspace via reactions/history, but adding that membership might alter the intended semantics of the scenario, so I should be careful there.
+
+I'll add channel_members entries granting the bot access to C_NOVA_ENG and C_NOVA_INFRA plus a user_teams record for T02NOVA to support cross-workspace discovery, consistent with the note that the actor may have all workspaces for access. Now I'm finalizing the JSON facts per role, checking that "eyes" is indeed in the allowed reaction vocabulary for the write action.
+
+For the answer, I'll set answer_attributes for the first obligation to just the teams identifying attribute since that's what's needed for the next action, then structure candidate_role_sets as lists of role labels referencing the teams table for both workspaces, plus separate supporting roles for channels, messages, reactions, and memberships.
+
+I'm now listing out the roles: workspace_T01 for the main seed team matched via the eyes reaction and infra membership, workspace_T02 for the Nova team matched via a different user, the OOM message role as supporting evidence for identifying the reaction, the reactor role for the user who left the eyes reaction, the reaction record itself as a matching role, and now I'm defining the infra channel membership role.
+
+Continuing with the Nova team's parallel structure - the Nova OOM message, its reactor, reaction, and infra membership all serving as matching or supporting roles. Then I'm laying out three negative examples: a reaction with the correct message and infra member but wrong reaction type, a reaction with the correct type but on an unrelated message, and a reactor who left the right reaction on the right message but isn't actually a member of the infra channel.
+
+Now I'm reworking that last negative case as a users-role entity instead, noting the reaction fact separately without making it its own role. I'm moving into the obligations table, defining the first obligation as an underspecified read-only workspace lookup across two candidate team roles, then starting a second obligation for creating a channel as a state-changing task, working out whether to omit answer_attributes entirely for state-changing obligations per the instructions.
+
+For access_plan, I'm outlining how the actor's membership across both workspaces' engineering and infra channels lets them use conversation history and reaction lookups to trace the OOM message, verify infra channel membership, then create the new channel with the resolved team id. I'm drafting the final natural-language prompt referencing the emoji reaction and infra channel membership to request creating a public "retro-notes" channel, confirming I'm not surfacing the ambiguity between candidates, and then moving to write out the final JSON.
+

@@ -1,0 +1,36 @@
+```json
+{
+"prompt":"We're rolling out the multi-GPU interpretability fix and want to loop in the right teams. Lukas's circuit-tracer message about the OOM errors already got acknowledged with an 👀 reaction — which workspaces have a member sitting in that same channel? I need the list of workspaces to notify.",
+"binding_note":"The route requires one user who simultaneously (a) holds a workspace membership in the candidate workspace and (b) holds a conversation membership in the channel containing Lukas's circuit-tracer OOM message. The 👀 reaction just needs to exist on that message; it need not have been added by that same user. Since conversation-workspace linkage is independent of user-workspace linkage, a user's second, unrelated workspace membership still qualifies that workspace through their pre-existing channel membership.",
+"roles":[
+ {"role":"primary_workspace","entity":"teams","facts":"T01WORKSPACE ('Test Workspace') owns channel C03IJKL9012 (#engineering) where the circuit-tracer OOM message lives; nearly all channel members hold membership here.","selection":"match","reason":"Contains the channel with the reacted message, and its members (e.g. Robert, Morgan, Hubert, John, Agent) are workspace members here."},
+ {"role":"secondary_workspace","entity":"teams","facts":"New workspace T02NOVATECH ('NovaTech Robotics'); John Doe additionally holds membership here while retaining his pre-existing #engineering channel membership.","selection":"match","reason":"John Doe is both a NovaTech workspace member and a #engineering conversation member, satisfying the full route even though NovaTech itself has no channel with the message."},
+ {"role":"unrelated_workspace","entity":"teams","facts":"New workspace T03QUANTUM ('Quantum Labs'); Aisha holds membership here.","selection":"negative","reason":"Aisha is a Quantum Labs workspace member but is only a member of #frontend/#core-infra/#model-research/#product-growth, never #engineering, so the conversation-membership leg of the route fails."},
+ {"role":"bridging_user_match","entity":"users","facts":"U02JOHNDOE1 (John Doe), long-standing #engineering channel member, newly also a NovaTech workspace member.","selection":"support","reason":"Provides the same-user binding that qualifies NovaTech via an unrelated channel membership."},
+ {"role":"bridging_user_negative","entity":"users","facts":"U_AISHA, member of several other channels and now also a Quantum Labs workspace member, but never in #engineering.","selection":"support","reason":"Shows why Quantum Labs fails despite a superficially similar cross-workspace membership pattern."},
+ {"role":"target_channel","entity":"channels","facts":"C03IJKL9012, #engineering channel in T01WORKSPACE, holding the circuit-tracer OOM discussion thread.","selection":"support","reason":"The conversation node anchoring the route between user membership and the message."},
+ {"role":"target_message","entity":"messages","facts":"Message 1706110000.000100 by U_LUKAS in C03IJKL9012 describing circuit-tracer hitting OOM errors and needing a PyTorch rewrite.","selection":"support","reason":"The message identified by content that must carry the qualifying reaction."},
+ {"role":"target_reaction","entity":"message_reactions","facts":"Reaction on message 1706110000.000100 with reaction_type 'eyes' by U01AGENBOT9.","selection":"support","reason":"Establishes that the message received the described 👀 acknowledgement, satisfying the terminal REACTION hop regardless of reactor identity."},
+ {"role":"decoy_channel","entity":"channels","facts":"C_FRONTEND, a channel Aisha belongs to that has no relation to the circuit-tracer message.","selection":"negative","reason":"Confirms Aisha's actual channel memberships are unrelated to the qualifying conversation."}
+],
+"obligations":[
+ {
+  "name":"notify_workspaces",
+  "description":"Identify the workspaces (teams) that have a member who is also a member of the #engineering channel containing Lukas's circuit-tracer OOM message that received an eyes reaction, for rollout notification purposes.",
+  "table":"teams",
+  "mode":"multiple",
+  "task_type":"read-only",
+  "scope":"workspaces reachable from the identified channel-membership/reaction chain, not all workspaces in the deployment",
+  "target_roles":["primary_workspace","secondary_workspace"],
+  "candidate_role_sets":null,
+  "selection":"set",
+  "answer_attributes":[["teams.team_name"],["teams.team_id"]]
+ }
+],
+"task_spec":[
+ {"line":1,"text":"Find the workspaces that should be notified based on having a member in the channel where the circuit-tracer OOM message received its 👀 acknowledgement, and report them.","obligations":[1]}
+],
+"scope_exception":null,
+"access_plan":"Actor (agent) is a member across workspaces. Locate the circuit-tracer OOM message via conversations.history/conversations.replies in #engineering (C03IJKL9012), confirm its 👀 reaction via reactions.get, then list that channel's members with conversations.members. For each member, resolve workspace membership(s) via users.info (single exposed workspace) supplemented by known cross-workspace membership facts (e.g. John Doe's added NovaTech membership), compiling the set of distinct workspaces reached this way; Quantum Labs is excluded because its only bridging member (Aisha) never appears in this channel's member list."
+}
+```

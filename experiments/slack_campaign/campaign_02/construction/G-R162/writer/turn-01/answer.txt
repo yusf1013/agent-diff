@@ -1,0 +1,73 @@
+```json
+{
+  "prompt": "Which workspace has a member who reacted with a 🚀 (rocket) emoji to the message reporting the $47K monthly cloud bill overage?",
+  "binding_note": "The reaction, its emoji name, and the target message must all belong to the same reaction record; the reacting user must hold workspace membership in the workspace being identified. A user reacting elsewhere, or a different emoji on the target message, does not satisfy the chain.",
+  "roles": [
+    {
+      "role": "workspace_candidate",
+      "entity": "teams",
+      "facts": "T01WORKSPACE ('Test Workspace') is the only stored workspace; all seed users hold workspace_membership rows in it.",
+      "selection": "negative",
+      "reason": "The workspace exists and has many members, but no member's reaction record satisfies the full chain (rocket emoji on the specific cloud-bill message), so it fails the identifying condition despite being the sole candidate universe."
+    },
+    {
+      "role": "target_message",
+      "entity": "messages",
+      "facts": "Message 1706067472.000000 in #core-infra, authored by U_ROBERT: 'Monthly cloud bill came in. We're $47K over budget, mostly spot instance fallbacks.'",
+      "selection": "support",
+      "reason": "This is the specific message the reaction must land on to satisfy the route; it anchors the REACTION→MESSAGE leg."
+    },
+    {
+      "role": "wrong_emoji_same_message",
+      "entity": "message_reactions",
+      "facts": "U_ROBERT reacts with 'fire' on message 1706067472.000000 (his own cloud-bill message).",
+      "selection": "negative",
+      "reason": "Right message, wrong emoji name — the reaction exists but does not use the rocket emoji required by the request."
+    },
+    {
+      "role": "wrong_message_same_emoji",
+      "entity": "message_reactions",
+      "facts": "U_PRIYA reacts with 'rocket' on message 1706028105.000000 (Mateo's Tokyo CDN routing message, unrelated to the cloud bill).",
+      "selection": "negative",
+      "reason": "Right emoji, wrong message — the reacted-on message is a different cost/infra topic, not the cloud-bill overage message, so the REACTION→MESSAGE binding fails."
+    },
+    {
+      "role": "unrelated_reaction",
+      "entity": "message_reactions",
+      "facts": "U01AGENBOT9 reacts with 'eyes' on message 1706110000.000100 (circuit-tracer OOM report in #engineering).",
+      "selection": "negative",
+      "reason": "Neither the emoji nor the message matches; included as ordinary background reaction activity in the workspace."
+    },
+    {
+      "role": "member_context",
+      "entity": "users",
+      "facts": "U_ROBERT, U_PRIYA, and other neuroflow.ai users hold workspace_membership rows in T01WORKSPACE and are active channel members in #core-infra.",
+      "selection": "support",
+      "reason": "Establishes the WORKSPACE_MEMBERSHIP→USER leg of the route for the candidate reactors, without which the reaction cannot be tied back to a workspace."
+    }
+  ],
+  "obligations": [
+    {
+      "name": "matching_workspace",
+      "description": "Identify the workspace(s) having a workspace member whose reaction (specifically the rocket emoji) was left on the message reporting the $47K monthly cloud bill overage. No such workspace exists in the current data because no rocket reaction lands on that particular message.",
+      "table": "teams",
+      "mode": "absent",
+      "task_type": "read-only",
+      "scope": "Single workspace universe (T01WORKSPACE); evaluate the full membership→user→reaction→message chain against the specified emoji and message.",
+      "target_roles": [],
+      "candidate_role_sets": null,
+      "selection": "set",
+      "answer_attributes": [["teams.team_id"], ["teams.team_name"]]
+    }
+  ],
+  "task_spec": [
+    {
+      "line": 1,
+      "text": "Determine which workspace has a member who reacted with a rocket emoji specifically on the message about the $47K monthly cloud bill overage, and report the workspace (or that none qualifies).",
+      "obligations": [1]
+    }
+  ],
+  "scope_exception": null,
+  "access_plan": "Locate the cloud-bill-overage message via conversations.history in #core-infra (matches on its distinctive text), then use reactions.get on that message's channel/timestamp to enumerate its reactions and their emoji names. Cross-check each reacting user's workspace membership via users.info/users.conversations. Since reactions.get on the target message returns only a 'fire' reaction (not rocket), and the sole rocket reaction found elsewhere (via search.messages/conversations.history sweep of reactions) is on an unrelated CDN-routing message, no workspace satisfies the full chain."
+}
+```

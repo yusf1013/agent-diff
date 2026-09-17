@@ -1,0 +1,83 @@
+```json
+{
+  "seed_edits": [
+    {
+      "table": "teams",
+      "op": "insert",
+      "values": {"team_id": "T02NOVATECH", "team_name": "NovaTech Robotics"},
+      "reason": "New workspace needed as the secondary_workspace match role, distinct from the primary workspace, discoverable through a #engineering member's sole workspace membership."
+    },
+    {
+      "table": "teams",
+      "op": "insert",
+      "values": {"team_id": "T03QUANTUM", "team_name": "Quantum Labs"},
+      "reason": "New workspace needed as the unrelated_workspace negative role, whose sole member never joins #engineering."
+    },
+    {
+      "table": "users",
+      "op": "insert",
+      "values": {"user_id": "U_DEREK", "username": "derek.holt", "email": "derek@novatechrobotics.com", "real_name": "Derek Holt", "display_name": "Derek", "timezone": "America/Chicago", "is_bot": false},
+      "reason": "New user needed as bridging_user_match: sole workspace membership in NovaTech plus ordinary #engineering channel membership, completing the full route for that workspace."
+    },
+    {
+      "table": "users",
+      "op": "insert",
+      "values": {"user_id": "U_MARIA", "username": "maria.santos", "email": "maria@quantumlabs.io", "real_name": "Maria Santos", "display_name": "Maria", "timezone": "America/Sao_Paulo", "is_bot": false},
+      "reason": "New user needed as bridging_user_negative: sole workspace membership in Quantum Labs but only a #frontend channel member, so Quantum Labs must be excluded."
+    },
+    {
+      "table": "user_teams",
+      "op": "insert",
+      "values": {"user_id": "U_DEREK", "team_id": "T02NOVATECH", "role": "member"},
+      "reason": "Establishes Derek's sole workspace membership in NovaTech, required for the WORKSPACE_MEMBERSHIP hop of the route."
+    },
+    {
+      "table": "user_teams",
+      "op": "insert",
+      "values": {"user_id": "U_MARIA", "team_id": "T03QUANTUM", "role": "member"},
+      "reason": "Establishes Maria's sole workspace membership in Quantum Labs, needed to show that workspace's only representative never satisfies the conversation-membership leg."
+    },
+    {
+      "table": "channel_members",
+      "op": "insert",
+      "values": {"channel_id": "C03IJKL9012", "user_id": "U_DEREK"},
+      "reason": "Gives Derek ordinary membership in #engineering, the channel containing Lukas's circuit-tracer OOM message, completing the CONVERSATION_MEMBERSHIP hop for NovaTech."
+    },
+    {
+      "table": "channel_members",
+      "op": "insert",
+      "values": {"channel_id": "C_FRONTEND", "user_id": "U_MARIA"},
+      "reason": "Confirms Maria's real channel membership is in #frontend only, disjoint from #engineering, so Quantum Labs is correctly excluded."
+    }
+  ],
+  "bindings": {
+    "primary_workspace": ["T01WORKSPACE"],
+    "secondary_workspace": ["T02NOVATECH"],
+    "unrelated_workspace": ["T03QUANTUM"],
+    "bridging_user_match": ["U_DEREK"],
+    "bridging_user_negative": ["U_MARIA"],
+    "target_channel": ["C03IJKL9012"],
+    "target_message": ["1706110000.000100"],
+    "target_reaction": [{"message_id": "1706110000.000100", "user_id": "U01AGENBOT9", "reaction_type": "eyes"}],
+    "decoy_channel": ["C_FRONTEND"]
+  },
+  "selectors": [
+    {
+      "root_table": "teams",
+      "scope": [],
+      "focal": {
+        "path": ["teams", "user_teams", "users", "channel_members", "channels", "messages", "message_reactions"],
+        "joins": ["user_teams.team_id", "user_teams.user_id", "channel_members.user_id", "channel_members.channel_id", "messages.channel_id", "message_reactions.message_id"],
+        "filters": [
+          {"node": 5, "field": "message_text", "op": "contains_ci", "value": "circuit-tracer"},
+          {"node": 5, "field": "message_text", "op": "contains_ci", "value": "OOM"},
+          {"node": 6, "field": "reaction_type", "op": "eq", "value": "eyes"}
+        ]
+      },
+      "auxiliary": []
+    }
+  ],
+  "negative_referents": ["T03QUANTUM"],
+  "notes": "Actor (U01AGENBOT9) already holds channel membership in C03IJKL9012 (#engineering) in the base seed, sufficient to call conversations.history/replies to locate Lukas's circuit-tracer OOM message (1706110000.000100), confirm its 'eyes' reaction via reactions.get, and enumerate members via conversations.members followed by users.info per member. The main selector's focal query traverses teams->user_teams->users->channel_members->channels->messages->message_reactions in one connected query so that workspace, membership, channel, message-content, and reaction bindings are preserved together; it returns T01WORKSPACE (via Robert, Morgan, Hubert, John, Agent) and T02NOVATECH (via Derek) as matches, while T03QUANTUM is excluded because Maria's only channel membership is #frontend, not #engineering. No auxiliary query was needed since all constraints (content identification of the message and the eyes reaction) lie along the single required route."
+}
+```

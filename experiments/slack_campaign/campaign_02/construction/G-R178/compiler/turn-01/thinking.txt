@@ -1,0 +1,24 @@
+I need to add a missing reaction record for the check-reaction role on message 1706002098.000000 from U_LUKAS. The root cause message 1706001931.000000 already exists in the base seed without any reactions, which matches the expected negative case, so I just need to verify no reaction is attached there.
+
+Confirming that message 1706002098.000000 already exists in C_INFRA authored by U_LUKAS, and the reaction being added is also from U_LUKAS itself, which is fine per the design spec. The other channel and workspace bindings (T01WORKSPACE, C_INFRA) already exist in the seed, so the only real change needed is inserting that one reaction record.
+
+Now I'm working out the selector for the workspace_lookup obligation, which needs to trace the full path from teams through channels through messages to message_reactions, filtering on channel_name='core-infra' and identifying the root-cause message by its distinctive text about the CUDA memory limit, authored by Priya Sharma, with reaction_type='check'. Since this is an absent-mode check, the selector should return zero rows against the seed data, confirming the reaction doesn't exist yet.
+
+I realize the real constraint is that the message must be authored by Priya and separately have any reactor with type 'check' -- but a single linear join path can't branch to both users (author) and message_reactions independently from messages. I'm working out whether ordering teams, channels, messages, users, message_reactions with sequential joins still satisfies this, since message_reactions just needs to attach to the message regardless of author link.
+
+I could just filter on messages.user_id directly, but the guidance favors user-facing identifying predicates like users.real_name over hidden ID constants, so I should join to users and filter on the real name instead.
+
+Given the path constraints, it's simpler to identify the message by its distinctive text content rather than joining author explicitly—the message text alone uniquely identifies it, so I'll rely on that plus channel name and reaction type as the selectors.
+
+The join path would flow from teams to channels to messages to message_reactions, filtering on channel name equals 'core-infra', message text containing 'hard CUDA memory limit', and reaction type equals 'check'. Since only one team is visible in scope, I can leave the scope empty and treat the workspace as implicit given there's just one team row to consider.
+
+Since the target message about the CUDA memory limit issue has no attached check reaction (only a different message has that reaction), the query correctly returns zero rows, confirming the absent resolution mode is satisfied. No additional unrequested queries are needed here.
+
+I also verify actor access: the bot actor is already a member of the core-infra channel per channel_members, so there's no access issue, and since there's only one relevant channel in this workspace, the scope is confirmed correct.
+
+For the seed edit, I'm inserting a message_reactions row linking the reaction to the message from the specified user, with an explicit deterministic created_at timestamp per the runtime requirements.
+
+For negative referents, the excluded entity is the workspace itself, since it fails the resolution chain and there's no other workspace to consider.
+
+Since there's just one obligation in the task_spec, I only need a single selector, so I'll finalize the answer with these pieces in place.
+

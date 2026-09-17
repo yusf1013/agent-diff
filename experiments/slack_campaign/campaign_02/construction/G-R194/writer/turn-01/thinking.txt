@@ -1,0 +1,30 @@
+I'm working out a route starting from workspace membership, linking through the workspace to its conversations, then to messages within those conversations, and finally to reactions on those messages—treating workspace membership as the referent entity with an underspecified resolution mode.
+
+The chain lets me select workspace memberships based on whether the workspace contains a conversation with a message that got a specific reaction, like a particular emoji from a specific reactor. This creates ambiguity since there could be multiple people matching a partial name like "Robert" among the reactors.
+
+I'm considering seeding the data so two distinct users named Robert (Robert Walsh as admin, Robert Chen as member) exist in the same workspace, both plausible candidates for adding a rocket reaction to a specific message. Even though they share a workspace, their membership rows are still distinct since the referent pairs each user with their team.
+
+The natural task idea forming is a state-changing one: promote the workspace membership role to admin for whoever added the 🚀 reaction to a specific circuit-tracer message in the core-infra channel — binding through membership to workspace to conversation to message to reaction.
+
+The base seed only has one reaction, so I need to add fresh reactions to build ambiguity—two different users reacting with the same emoji to the same message would work since the primary key allows multiple users per message/reaction pair, creating genuine ambiguity about which workspace membership the query targets.
+
+This is exactly the underspecified case I want: the user asks for "the person who added 🚀" without realizing two people did so, giving two distinct candidate referent sets rather than a jointly-intended multiple selection.
+
+I'll construct the scenario using the existing circuit-tracer OOM message in C03IJKL9012, adding rocket reactions from two separate existing users, U_LUKAS and U_KENJI, alongside the current eyes reaction.
+
+The chain resolves as workspace membership → workspace → engineering channel (identified by name/topic) → the circuit-tracer OOM message → the rocket reaction → the reactor whose role gets updated. For negatives, I'll include the mismatched eyes reaction and rocket reactions on unrelated messages to test proper disambiguation.
+
+Wait, this admin promotion would require a workspace membership role update, but checking the available API list, there's no such endpoint - only auth, chat, conversations, reactions, search, and users APIs exist. So this state-changing action isn't actually supported and I should consider read-only alternatives or check if other membership-related actions like conversations.invite or conversations.kick apply instead.
+
+So the target table is user_teams, with mode underspecified since both U_LUKAS and U_KENJI added a rocket reaction to the same message, creating genuine ambiguity over which person is meant. The engineering channel and the specific OOM message about circuit-tracer are both uniquely identifiable, so the ambiguity centers solely on the reactor's identity.
+
+I need to seed two rocket reactions on that message — one from U_LUKAS and one from U_KENJI — alongside the existing eyes reaction from the bot, confirming rocket is a valid reaction type and that an author reacting to their own message isn't disallowed.
+
+For negatives, I'll keep the wrong-emoji eyes reaction as-is, then add a rocket reaction on an unrelated message in a different channel (Aisha's fix in C_FRONTEND) and another rocket reaction on a GPU utilization message in C_INFRA, so the test distinguishes correct message/channel identity from mismatched ones.
+
+I'm also including channel membership without reacting (Robert Walsh) and message authorship without reacting (John Doe's AWS supercomputer message) as additional negative cases. Now I'm structuring the final JSON with roles for the workspace, the engineering conversation, the circuit-tracer message, and the Lukas reactor entity.
+
+I realize the correct entity type for reactor roles should be user_teams (workspace membership), not the reaction record itself, so reactor_lukas and reactor_kenji represent U_LUKAS's and U_KENJI's membership in the workspace as alternative candidates. I'm adding negative membership roles for Priya (wrong reaction target), Mateo (wrong message), Robert (channel member, no reaction), John Doe (message author, no reaction), and the bot (wrong emoji), plus supporting facts for the message, channel, and workspace. The obligation is a single membership_role_lookup task with underspecified mode and candidate role sets pointing to the Lukas and Kenji alternatives.
+
+Now I'm drafting the access plan: the solver would use reactions.get on the message timestamp to see who reacted with rocket, or search.messages/conversations.history to locate the message first, then call users.info on each reactor to confirm workspace membership. I'm putting together the final JSON output now.
+

@@ -1,0 +1,37 @@
+```json
+{
+  "prompt": "I'm compiling a cross-workspace audit of who has acknowledged the circuit-tracer OOM report. Restricting to just the engineering, core-infra, model-research, product-growth, and frontend channels, which workspaces have a member of one of those channels who left an 👀 reaction on the message describing the circuit-tracer OOM issue?",
+  "binding_note": "Workspace is identified through a chain: it must contain at least one of the five named channels; that channel's membership supplies a candidate user; that same user must have left an eyes reaction, and the reaction's target must be the message describing the circuit-tracer OOM issue. The reacted-on message need not itself live in the channel that supplied the qualifying member.",
+  "roles": [
+    {"role":"target_workspace","entity":"teams","facts":"T01WORKSPACE is the only workspace in this replica and contains all five named channels.","selection":"match","reason":"Workspace satisfying the full route: contains a bounded-scope channel whose member left the qualifying reaction."},
+    {"role":"qualifying_channel","entity":"channels","facts":"C03IJKL9012 (engineering) is one of the five bounded-scope channels and is a member channel for U01AGENBOT9.","selection":"match","reason":"Conversation node supplying the identifying member."},
+    {"role":"qualifying_membership","entity":"channel_members","facts":"Row (C03IJKL9012, U01AGENBOT9) establishes U01AGENBOT9 as a member of a bounded-scope channel.","selection":"match","reason":"Membership node binding the user to the channel."},
+    {"role":"qualifying_user","entity":"users","facts":"U01AGENBOT9 is a member of engineering and left the eyes reaction on the OOM message.","selection":"match","reason":"User node whose reaction closes the route."},
+    {"role":"qualifying_reaction","entity":"message_reactions","facts":"Existing base-seed row: message_id 1706110000.000100, user_id U01AGENBOT9, reaction_type eyes.","selection":"match","reason":"The exact reaction the route requires."},
+    {"role":"target_message","entity":"messages","facts":"Message 1706110000.000100 in engineering: 'The circuit-tracer library is hitting OOM errors when loading large models layer-by-layer...'","selection":"match","reason":"The message the identifying reaction must be on."},
+    {"role":"wrong_emoji_reactor","entity":"message_reactions","facts":"New row: message_id 1706110000.000100, user_id U_AISHA, reaction_type thumbsup. Aisha is a member of frontend (bounded scope).","selection":"negative","reason":"Right message, right bounded-scope membership, but wrong emoji (not eyes)."},
+    {"role":"wrong_message_reactor","entity":"message_reactions","facts":"New row: message_id 1706115000.000001 (Kenji's vending-machine/food-rotation message), user_id U_MATEO, reaction_type eyes. Mateo is a member of product-growth (bounded scope).","selection":"negative","reason":"Right emoji, right bounded-scope membership, but reacted on an unrelated message, not the OOM report."},
+    {"role":"non_member_reactor","entity":"message_reactions","facts":"New row: message_id 1706110000.000100, user_id U09GABRIEL, reaction_type eyes. Gabriel is only a member of C04MNOP3456 ('growth'), which is not one of the five bounded-scope channels.","selection":"negative","reason":"Right message and emoji, but the reactor is not a member of any of the bounded-scope channels, breaking the membership-to-reactor link."},
+    {"role":"author_not_reactor","entity":"users","facts":"U_LUKAS authored the OOM message in engineering but left no reaction on it.","selection":"negative","reason":"Authoring the target message is not the same as being the member who reacted, so this must not be treated as satisfying the route."}
+  ],
+  "obligations": [
+    {
+      "name": "qualifying_workspaces",
+      "description": "Select workspaces that contain at least one of the five named bounded-scope channels (engineering, core-infra, model-research, product-growth, frontend) where a member of that channel left an eyes reaction on the message describing the circuit-tracer OOM issue.",
+      "table": "teams",
+      "mode": "multiple",
+      "task_type": "read-only",
+      "scope": "workspaces reachable via membership in the actor's bounded channel corpus, restricted to the five named channels",
+      "target_roles": ["target_workspace"],
+      "candidate_role_sets": null,
+      "selection": "set",
+      "answer_attributes": [["teams.team_id"], ["teams.team_name"]]
+    }
+  ],
+  "task_spec": [
+    {"line": 1, "text": "Identify which workspaces, among those containing the engineering, core-infra, model-research, product-growth, or frontend channels, have a member of one of those channels who left an 👀 reaction on the circuit-tracer OOM message.", "obligations": [1]}
+  ],
+  "scope_exception": "No general workspace-name lookup or team enumeration exists; the bounded channel corpus (engineering, core-infra, model-research, product-growth, frontend) is supplied explicitly as the discovery scope because there is no supported way to enumerate all workspaces independently.",
+  "access_plan": "Use conversations.info on each of the five named channel IDs to confirm they exist and read their team_id. Use conversations.members on each to enumerate the bounded-scope membership set. Locate the target message via conversations.history/search.messages on the engineering channel for the circuit-tracer OOM text, then use reactions.get on that message's timestamp to retrieve its reaction list. Intersect the eyes-reactor set with the bounded-scope membership set; map any qualifying user back to their channel's team_id to report the workspace(s)."
+}
+```

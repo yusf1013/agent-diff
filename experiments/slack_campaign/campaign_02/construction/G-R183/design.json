@@ -1,0 +1,107 @@
+{
+  "prompt": "The old-project-q3 channel belongs to our workspace, and we're doing a permissions review before we finish archiving related channels. Which of our workspace members currently hold admin-level roles in that same workspace?",
+  "binding_note": "r0 (user_teams, the membership) and r2 (channels, containing old-project-q3) both share team_id equal to r1.team_id (teams), so the membership's workspace is required to be the same workspace that contains the named channel; the admin-role condition is then applied to r0 within that bound workspace.",
+  "roles": [
+    {
+      "role": "channel_old_project",
+      "entity": "channels",
+      "facts": "channel_id C_OLD_PROJECT, channel_name 'old-project-q3', team_id=T01WORKSPACE, is_archived=true.",
+      "selection": "match",
+      "reason": "The exact-named conversation used to identify the relevant workspace via the CONVERSATION node."
+    },
+    {
+      "role": "workspace_main",
+      "entity": "teams",
+      "facts": "team_id T01WORKSPACE, team_name 'Test Workspace'; contains old-project-q3 and all its channels/members.",
+      "selection": "support",
+      "reason": "The WORKSPACE node joining membership to conversation."
+    },
+    {
+      "role": "membership_robert_admin",
+      "entity": "user_teams",
+      "facts": "user_id U03ROBERT23, team_id T01WORKSPACE, role=admin.",
+      "selection": "match",
+      "reason": "Workspace membership with admin role in the same workspace that contains old-project-q3."
+    },
+    {
+      "role": "membership_morgan_admin",
+      "entity": "user_teams",
+      "facts": "user_id U07MORGANFREE, team_id T01WORKSPACE, role=admin.",
+      "selection": "match",
+      "reason": "Second workspace membership with admin role in the same workspace as old-project-q3."
+    },
+    {
+      "role": "membership_john_member",
+      "entity": "user_teams",
+      "facts": "user_id U02JOHNDOE1, team_id T01WORKSPACE, role=member.",
+      "selection": "negative",
+      "reason": "Same workspace as old-project-q3, but role is member, not admin, so excluded by the role condition."
+    },
+    {
+      "role": "membership_hubert_member",
+      "entity": "user_teams",
+      "facts": "user_id U06HUBERT23, team_id T01WORKSPACE, role=member.",
+      "selection": "negative",
+      "reason": "Another same-workspace membership with non-admin role, excluded on the same basis."
+    },
+    {
+      "role": "team_beta",
+      "entity": "teams",
+      "facts": "New team_id T02BETA, team_name 'Beta Testers Guild', added as a distinct workspace unrelated to old-project-q3.",
+      "selection": "support",
+      "reason": "Provides a genuinely different workspace so the WORKSPACE join is not vacuously satisfied by only one team existing."
+    },
+    {
+      "role": "channel_beta_launch",
+      "entity": "channels",
+      "facts": "channel_id C_BETA, channel_name 'beta-launch', team_id=T02BETA.",
+      "selection": "support",
+      "reason": "A channel in the other workspace, contrasting with old-project-q3's workspace."
+    },
+    {
+      "role": "membership_zoe_admin_wrong_workspace",
+      "entity": "user_teams",
+      "facts": "New user U_ZOE ('Zoe Chen'), team_id=T02BETA, role=admin.",
+      "selection": "negative",
+      "reason": "Holds an admin role, but in the Beta Testers Guild workspace, not the workspace containing old-project-q3, so the CONVERSATION-bound WORKSPACE join excludes it."
+    }
+  ],
+  "obligations": [
+    {
+      "name": "workspace_admin_memberships",
+      "description": "The workspace-membership records with an admin role, restricted to the workspace that contains the old-project-q3 channel.",
+      "table": "user_teams",
+      "mode": "multiple",
+      "task_type": "read-only",
+      "scope": "workspace memberships in the workspace containing the named channel, filtered to admin role",
+      "target_roles": [
+        "membership_robert_admin",
+        "membership_morgan_admin"
+      ],
+      "candidate_role_sets": null,
+      "selection": "set",
+      "answer_attributes": [
+        [
+          "user_teams.role"
+        ],
+        [
+          "user_teams.user_id"
+        ],
+        [
+          "user_teams.team_id"
+        ]
+      ]
+    }
+  ],
+  "task_spec": [
+    {
+      "line": 1,
+      "text": "Identify the workspace that contains the old-project-q3 channel, then list the members of that workspace who hold an admin role.",
+      "obligations": [
+        1
+      ]
+    }
+  ],
+  "scope_exception": null,
+  "access_plan": "Use conversations.list (or conversations.info with the known channel name) to find old-project-q3 and read its team_id. Then use users.list scoped to that team_id and users.info per user to read each user's workspace role (owner/admin/member, derived from user_teams.role), filtering for admin-level roles."
+}

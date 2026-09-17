@@ -1,0 +1,34 @@
+I'm noticing a mismatch—the design document references a second workspace T02NOVA and channel C_NOVA_OPS, but base_seed only actually contains the single team T01WORKSPACE, so those referenced entities don't exist in the data.
+
+The note clarifies this is acceptable pre-compilation since roles may reference planned additions the compiler creates later. Checking the core semantics, the prompt's "underspecified" resolution mode correctly matches the scenario where two workspaces have channels with matching postmortem messages, creating genuine ambiguity, and the resolution routes through team_id matching look coherent, though I want to verify the access plan properly bounds the channel set via the user's own conversation memberships.
+
+That access approach aligns with the exposure qualifications since it avoids relying on workspace enumeration or name lookups. I'm also confirming the runtime qualifications allow the actor to span multiple workspaces when accessing known channel histories, which fits since the actor needs membership in both channels across different workspaces, and the team_id to workspace mapping via the teams table checks out.
+
+I'm now tracing through the negative background messages to verify which ones already exist in base_seed versus which are new additions — the Tokyo postmortem message is a planned new addition while the infra memory pressure alert matches existing base_seed content, both consistent with the design intent.
+
+I'm double-checking the ambiguity risk between the two postmortem-style messages across workspaces, confirming their topics (activation incident vs checkout latency) are distinct enough to avoid false matches, then moving to verify the "one" selection mode against the candidate role sets.
+
+The identifying condition is specific enough, and the channel mapping through "posts in core-infra"/"posts in ops-incidents" checks out correctly. I notice the acting user isn't explicitly named in the roles list, but that's typical since it's derived from auth context - though the access plan does require the actor to be a member of both channels for this to work correctly.
+
+Checking the base seed, U01AGENBOT9 is already listed as a member of C_INFRA, which matches the required fact. For C_NOVA_OPS, since it's a new channel being created, actor membership will need to be added at compile time, which is fine per the design notes. Overall the design looks coherent and satisfies the validity criteria - correct routes, justified mode, proper entity edges, plausible negatives, and no forbidden fields leaking through.
+
+Now I'm double-checking whether teams.team_name as an answer field conflicts with the exposure qualification stating workspace names aren't generally available via lookup. That restriction seems aimed at direct enumeration routes rather than the final answer output, but I need to verify whether any documented API (like conversations.info) actually surfaces a team_id or team name so the answer field is properly grounded rather than fabricated.
+
+I check auth.test but it only documents request parameters, not response fields, so it's unclear if it exposes the team name. Maybe answer_attributes reflects the ground-truth grading field rather than something guaranteed to appear literally in an API response, so the solver could still identify the workspace by some other accessible identifier.
+
+I'm now noting that the exposure qualification explicitly warns that workspace names and enumeration aren't assumed available, which suggests this design deliberately anticipates that team_name might not be directly retrievable and expects the answer to come through a different visible signal instead.
+
+I try to verify if team_name is retrievable through any documented API call, but the doc only specifies request formats, not responses, so I can't be certain either way. Still, the exposure_qualification explicitly states workspace names aren't assumed available as a deliberate design constraint, which directly conflicts with the obligation's requirement for team_name as an answer attribute—this looks like a genuine internal inconsistency in the design.
+
+I also consider whether the workspace ID itself might coincidentally encode a readable name (like "T01WORKSPACE" hinting at "Test Workspace"), but that would just be a naming convention artifact, not something the actor could reliably rely on as an actual API-derived value.
+
+Since the required answer attribute is "teams.team_name" and the documented access plan explicitly disclaims workspace-name lookups, this looks like a genuine validity flaw: the task demands an answer field that isn't actually obtainable through the described access plan.
+
+Though it occurs to me the answer_attributes label might just be a database-field convention used in the answer key, not a literal requirement that the API surface the name — perhaps knowing the workspace ID (which is visible via channel.team_id) suffices as the identifying answer, similar to conventions seen in other reviewed cases.
+
+This lookup restriction probably targets preventing enumeration of unrelated workspace names via API, not the acting user's own context—since they're a member, they likely already know their workspace's display name inherently, much like a real Slack user knows their own org name without an API call.
+
+That said, team_id visible via channel.team_id could serve as the identifying anchor, and the "workspace name" might just be a display layer over that ID, which benchmarks sometimes accept as sufficient. Given this ambiguity, I'll flag it as a moderate concern rather than a definitive blocker.
+
+Since everything else is consistent — route, mode, negatives, bindings, no reaction-write violations, no forbidden ops — I'll rate validity "pass" but note the team_name accessibility issue with kind "access," and rate quality "adequate" reflecting that lingering uncertainty.
+

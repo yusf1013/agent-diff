@@ -1,0 +1,50 @@
+The route contract only permits joining channels to teams, teams to user_teams, and user_teams to users—there's no message table available, so I need to identify the condition purely through channel-workspace-membership relationships rather than message authorship.
+
+But this route is inherently weak: since every channel belongs to the same workspace and every user is a member of that workspace, "channel in workspace with member X" would match all channels unless I can narrow it with a distinguishing attribute. The exposure qualification mentions participants could be channel members, but channel_members isn't part of this route's joins, so I need another way to pin down the specific channel.
+
+Actually re-checking the route_contract more carefully: it only lists channels, teams, user_teams, users with those specific joins—no channel_members join at all, just channel-to-team-to-membership-to-user. So the identifying path is purely workspace membership, which doesn't distinguish individual channels since there's likely a single shared team in the seed data.
+
+To make this route do genuine identifying work rather than being vacuously true, I'd need multiple teams in the scenario so the membership condition actually filters. Since the seed only has one team, I should consider adding a coherent second workspace/team to give this route real discriminating power.
+
+I'm thinking of underspecifying via a shared first name across two admins in two different workspaces — "the workspace where Robert is admin" would then have two candidate referents, each pointing to a distinct set of channels, making the collection-type request ambiguous in a principled way.
+
+I need to add a second team ("StarLabs Workspace") and a second user named Robert who's an admin there, so the seed data actually supports this two-workspace ambiguity.
+
+The existing workspace already has admin Robert Walsh and a rich set of channels — general, engineering, growth, project-alpha, core-infra, and more — plenty to serve as one candidate set. I'm making sure the ambiguity hinges on the shared attribute "Robert with admin role," since both Robert Walsh and the new Robert Kim would satisfy that condition in their respective workspaces.
+
+So the natural phrasing "list the channels in the workspace where Robert has an admin role" works cleanly without tipping off the ambiguity. Now I need to settle scope — whether to include DMs or archived channels in the answer, leaning toward treating "channels" as ordinary active channels, excluding DMs, though archived channels might still count.
+
+I'm also thinking through negative cases: someone named Robert who's a member but not admin in a workspace already covered by the admin condition doesn't add any new exclusion since that workspace is already selected. I still need to consider a case where a workspace has channels but lacks a matching member entirely.
+
+I want to add a wrong-relationship negative: someone who's a channel member in T03BetaCorp via channel_members but lacks a corresponding user_teams row there, showing channel membership alone doesn't grant workspace admin status. So I'll create "Robert Diaz" as that channel member without workspace membership in T03, plus new teams T02StarLabs and T03BetaCorp, and a legitimate user "Robert Kim" registered properly in T02StarLabs.
+
+I'll add U_ROBERTD as a channel_member of C_BETA_GENERAL without a corresponding user_teams membership in T03BETACORP, deliberately creating that missing relationship. I also need user_teams rows for U_ROBERTK as admin in T02STARLABS, U08NICK23 as admin in T03BETACORP alongside their existing T01WORKSPACE membership, and U_ROBERTD as member in T01WORKSPACE only, with no row for T03BETACORP.
+
+The ambiguity around "the workspace where Robert has an admin role" now resolves to both T01WORKSPACE (Robert Walsh) and T02STARLABS (Robert Kim), each mapping to distinct channel sets, while BetaCorp gets excluded since no Robert there holds admin—only Nick does, and Robert Diaz is merely a channel participant, not an admin workspace member, which nicely demonstrates the wrong-relationship-role negative case alongside the role-value distinction already shown with Robert Chen as a plain member.
+
+Now I'm working out the underspecified obligation structure for channels, defining two candidate role sets—one covering existing channels in T01WORKSPACE and another for new channels in T02STARLABS—and enumerating representative channel roles like general, random, engineering, and growth with their corresponding channel IDs.
+
+Rather than exhaustively listing every single channel role, I decide it's simpler to treat "channels in workspace T01" as a single grouped role representing the whole match set, since the compiler assembles roles from seed channels via team_id anyway.
+
+and workspace_T02_channels: one covering the existing T01 channel list (excluding the sophie DM), the other covering the new starlabs channels created in T02. Then I'll set candidate_role_sets as two alternatives, one per workspace, with target_roles being their union — this frames the obligation as a reasonable interpretation choice between the two workspaces.
+
+Now I'm working through the remaining roles: teams for T01, T02, and a negative case for T03 BetaCorp; team memberships showing Robert Walsh as admin in T01, Robert Kim as admin in T02, Robert Chen as a mere member (not admin) also in T01, and Nick as admin in T03 (not a Robert, so BetaCorp gets excluded); plus a negative channel-membership case where Robert Diaz belongs to a BetaCorp channel but lacks matching criteria.
+
+This confirms channel participation in BetaCorp doesn't equal workspace membership there. I'm also listing user records for Walsh, Kim, Chen, Diaz, and Nick, then a negative channel entry for BetaCorp's general channel showing it should be excluded since Diaz isn't an admin there. Now I'm drafting the prompt asking to list channels in the workspace where Robert holds admin privileges.
+
+The obligation here should be marked underspecified since two Roberts qualify as admins, so I need at least two distinct candidate referent sets. The selection type should be "set" since the answer involves multiple channels, even though which set applies remains ambiguous.
+
+For the access plan, I need to lay out conversations.list scoped by team_id, users.list, and users.info to verify admin roles and workspace association. Since users.info only exposes one selected workspace membership, and Nick has two (T01 and T03), this could undermine reproducibility of the profile predicate, so I need to account for that limitation in the design.
+
+This keeps things clean for reproducibility. Robert Diaz similarly should have just one workspace membership as a regular member of T01, which satisfies the requirement, though I need to double check whether he even needs that membership since his negative test case concerns channel_membership rather than user_teams.
+
+Nick Fury already has a T01 membership from the base seed, so I'll avoid duplicating it and instead create a fresh admin user, Sam Cole, with a single membership in T03 as admin to represent BetaCorp. Now I'm finalizing the entity list starting with the teams.
+
+Robert Diaz should also be added as a channel member there despite lacking workspace membership. I'll add U_ROBERTK to both starlabs channels as a regular member, and add U_SAMCOLE to C_BETA_GENERAL too, since admins are typically also members of their channels.
+
+For the agent's access plan, it needs conversations.list scoped by team_id per workspace and users.list/users.info to check roles -- role likely surfaces through is_admin/is_owner flags tied to the workspace membership being queried, which matches the membership role check I need.
+
+Membership isn't strictly required, though the task's step about adding necessary access memberships suggests I should still grant the actor membership to T02/T03 for consistent, realistic access if it needs to read channel history there.
+
+Now I'm assembling the final JSON: the obligation table is "channels", target roles are workspace_T01_channels and workspace_T02_channels, with candidate_role_sets as two separate lists, and answer_attributes covering channel_name and channel_id. I'm drafting the prompt asking which channels Robert holds an admin role in, and writing the binding_note to explain the join chain and the ambiguity from two Roberts holding admin roles in different workspaces, plus marking this as a read-only task.
+

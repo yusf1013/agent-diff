@@ -1,0 +1,48 @@
+Starting a fresh case with channel_members as the root table, I'm tracing the route through CONVERSATION_MEMBERSHIP, CONVERSATION, MESSAGE, REACTION, USER, and WORKSPACE_MEMBERSHIP/WORKSPACE—mapping the path from channel_members to users via user_id, then onward to message_reactions.
+
+Looking at the successful example spec, I notice users acts as a bridge node between reaction and channel_members rather than following a strict sequential entity order, which is the mechanism I need here too. So I'm reasoning that USER should come right after root since CONVERSATION_MEMBERSHIP's user_id naturally hops there, then USER connects to REACTION, then MESSAGE, then CONVERSATION for the channel name filter, and finally the same USER node bridges to WORKSPACE_MEMBERSHIP via user_teams and on to WORKSPACE—though I still need to reconcile this with the fixed route_nodes ordering.
+
+But if that literal order can't tie root.user_id to the reactor, maybe the validator's route check only cares about matching the multiset/sequence of entity types encountered, not strict FK-based adjacency at each step—so I'm reexamining the actual error trigger from my earlier failed path to see what mismatched.
+
+The real issue was ordering: USER appeared before MESSAGE and REACTION instead of after REACTION, so the fix is to walk channel_members, channels, messages, message_reactions, users, user_teams, teams in that exact sequence. I'm also reconsidering whether the ambiguity around binding root.user_id to the reactor even matters here, since the specific filter on the product-growth channel might naturally resolve any uniqueness concerns despite multiple channel members.
+
+Since node0's fields don't appear in the filters, the match set would effectively be a cross product: every channel_members row for C_GROWTH paired with the existence of the specific message+reaction+workspace chain, since those conditions don't tie back to which member row is picked.
+
+So this yields all 9 members as valid projections, contradicting the requirement for a single answer unless one member is uniquely selected. I'm wondering whether the real fix is reordering the join chain so the users node sits directly adjacent to root, tied through channel_members.user_id as the second hop -- but the validator seems to demand the route order match a specific assigned sequence, meaning conversation must immediately follow conversation_membership.
+
+Given that constraint, it seems structurally impossible to bind the reactor's identity to the root's user field while respecting the mandated node order -- unless the workspace_membership node at position 5, joined via user_teams.user_id, isn't meant to tie back to node4 (the reactor) as I assumed. Actually it would naturally tie to node4's user_id since that's the same reactor, which doesn't resolve the binding issue to root at all. So maybe the real interpretation is that conversation_membership's user_id must equal the user at node4 through some other join mechanism.
+
+I'm reconsidering whether the join syntax actually allows branching from the same node instead of being strictly linear -- since conversation_membership already carries user_id as a key field, perhaps both the channel_id and user_id matches need to happen simultaneously rather than sequentially. But re-reading the spec's description of one join per step suggests it's meant to be a strictly linear chain.
+
+Given that constraint, I'm wondering if there's a workaround: maybe I could append an extra trailing node beyond what the assigned route requires, since the error seemed to be about order mismatch rather than strictly forbidding additional nodes -- though this feels uncertain and risky to rely on. As an alternative, I'm considering building a separate auxiliary query starting from channel_members that independently verifies the root user matches the reactor through its own chain.
+
+If auxiliary queries are evaluated against the same candidate root instance -- meaning the first node in the auxiliary path is literally the same row being tested -- then joining through user_id to check the reaction and message conditions would properly bind the root's user to the reactor without needing branching in the main path.
+
+al handles the assigned route validation, while auxiliary independently binds user identity through the reaction chain from channel_members - that's a legitimate independent constraint through a different valid route from the same root. Now I'm building the focal query to exactly match the assigned route order starting from channel_members through channels.
+
+I'm chaining channel_members through channels, messages, message_reactions, users, user_teams, teams, joining each on the natural foreign key, then filtering for the product-growth channel, the message about raw Q3 salary bands, an eyes reaction, and confirming Test Workspace as the team. This gives the full chain: a channel with a message that got an eyes reaction from a genuine member of that workspace team.
+
+Now I'm building an auxiliary path to bind identity — channel_members joined to users then to message_reactions, since message_reactions.user_id doesn't connect directly to channel_members. I need to loop back through messages to confirm the reaction was on the specific salary bands message, filtering for the eyes reaction type and that message text, so this auxiliary path ties the root channel_member's user_id to the actual reactor of that message.
+
+Combined with the focal condition binding root.channel_id to product-growth, together these uniquely identify U_INCOGNITO: only they reacted eyes to that salary message, and they're a member of product-growth per the base seed. This resolves the ambiguity cleanly — each obligation likely needs both a focal and auxiliary condition working together.
+
+Now I need to construct the seed edits: a new target message from U_KENJI in C_GROWTH containing salary bands text, U_INCOGNITO's eyes reaction on it, a decoy thumbsup reaction from U_MATEO on the same message, and a decoy eyes reaction from U_INCOGNITO on an unrelated existing message in C_FRONTEND about the React 19 hydration bug.
+
+For decoy_reactor_not_member, U06HUBERT23 just needs a reaction row on the target message without a corresponding membership row in C_GROWTH. Checking the base seed, U_INCOGNITO already has a channel_members entry for C_GROWTH, confirming that's already set up correctly for the target.
+
+Now I'm planning the actual inserts: the target message from U_KENJI about salary bands in C_GROWTH, a reaction from U_INCOGNITO ('eyes') on it for the target reactor, a decoy reaction from U_MATEO ('thumbsup') on the same message for wrong emoji, and another decoy reaction from U_INCOGNITO ('eyes') but on a different channel's message for the wrong-channel case.
+
+I'm also confirming U06HUBERT23 already lacks a channel_members row for C_GROWTH, so their decoy reaction on the target message naturally satisfies the "not a member" trap without needing extra edits. I'll draft the target message text with specific salary figures by level to make it concrete and unambiguous.
+
+Now I need to check whether the actor U01AGENBOT9 has membership in C_GROWTH, since they'll need channel access to find the message and eventually kick someone. Looking at the seed channel_members, the actor is in several other channels but not C_GROWTH, so I'll add a membership row for them there.
+
+Timestamps for the new message and reactions probably don't affect correctness since there's no ordering-based logic needed, so I'll skip explicit created_at values for simplicity.
+
+Now I'm defining the bindings: target_channel as C_GROWTH, target_message with its timestamp id, target_reactor as U_INCOGNITO, and target_membership referencing the new channel membership row I'm adding for the actor.
+
+I'm setting up the decoys too — decoy_wrong_emoji_reactor points to U_MATEO, decoy_wrong_channel_reaction binds to the unrelated message U_INCOGNITO reacted on, decoy_member_no_reaction is Lukas's plain membership, and decoy_reactor_not_member is an external user without a membership row.
+
+For the selector, I'm rooting on channel_members with no extra scope filters, using the constructed focal and auxiliary bindings. I'm also listing negative referents — the memberships tied to the wrong emoji reactor, the no-reaction member, and the non-member reactor — as rows that could be mistakenly selected as "the membership to remove."
+
+I'm noting the reactor-without-membership case can't actually be a negative referent since there's no row to select, and that other channel members could theoretically be negatives too, but I'll stick with the two explicit decoys per the design intent. Finally I'm double-checking the message_reactions primary key against existing rows to avoid duplicates before writing the final JSON.
+

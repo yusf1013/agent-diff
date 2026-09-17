@@ -1,0 +1,74 @@
+```json
+{
+  "prompt": "Please remove the workspace admin's membership from the #core-infra channel.",
+  "binding_note": "r0 (channel_members) is joined to r1 (channels, #core-infra) which is joined to r2 (teams, Test Workspace); r2 is also joined to r3 (user_teams) filtered to role='admin', which joins to r4 (users). The request additionally requires r0.user_id = r4.user_id, i.e. the same person must both hold the admin workspace-membership role and be the #core-infra channel member being removed. No user_teams record with role='admin' on Test Workspace shares a user_id with any channel_members row for #core-infra, so no r0 satisfies the full chain.",
+  "roles": [
+    {
+      "role": "workspace",
+      "entity": "teams",
+      "facts": "Test Workspace (T01WORKSPACE), the sole workspace in scope.",
+      "selection": "support",
+      "reason": "Anchors channels.team_id and user_teams.team_id along the route."
+    },
+    {
+      "role": "target_channel",
+      "entity": "channels",
+      "facts": "#core-infra (C_INFRA), a public channel in Test Workspace.",
+      "selection": "support",
+      "reason": "The exact channel whose membership record (r0) is being checked/modified."
+    },
+    {
+      "role": "admin_not_in_channel_walsh",
+      "entity": "user_teams",
+      "facts": "Robert Walsh (U03ROBERT23) has a user_teams row with role='admin' on Test Workspace; his channel_members rows are for #general, #random, and #engineering, not #core-infra.",
+      "selection": "negative",
+      "reason": "Satisfies the workspace-admin condition but his channel_members user_id never matches #core-infra, so r0.user_id = r4.user_id fails for this channel."
+    },
+    {
+      "role": "admin_not_in_channel_freeman",
+      "entity": "user_teams",
+      "facts": "Morgan Freeman (U07MORGANFREE) has a user_teams row with role='admin' on Test Workspace but has no channel_members rows at all.",
+      "selection": "negative",
+      "reason": "Admin role present but no channel_members record exists for this user in any channel, so no r0 can be selected for him."
+    },
+    {
+      "role": "core_infra_member_priya",
+      "entity": "channel_members",
+      "facts": "Priya Sharma has a channel_members row for #core-infra; her user_teams row on Test Workspace has role='member'.",
+      "selection": "negative",
+      "reason": "Correct channel membership (r0) but her linked user_teams role is not 'admin', failing the r2/r3 role condition."
+    },
+    {
+      "role": "core_infra_member_lukas",
+      "entity": "channel_members",
+      "facts": "Łukasz Kowalski has a channel_members row for #core-infra; his user_teams row on Test Workspace has role='member'.",
+      "selection": "negative",
+      "reason": "Same negative pattern as Priya: correct channel row, ordinary (non-admin) workspace role."
+    }
+  ],
+  "obligations": [
+    {
+      "name": "core_infra_admin_membership",
+      "description": "The channel_members row for #core-infra belonging to a user who also has a user_teams row with role='admin' on Test Workspace; targeted for removal via conversations.kick. No such row exists because no admin-role user_teams user_id coincides with a #core-infra channel_members user_id.",
+      "table": "channel_members",
+      "mode": "absent",
+      "task_type": "state-changing",
+      "scope": "channel_members row in #core-infra whose user_id also holds a user_teams row with role='admin' on Test Workspace",
+      "target_roles": [],
+      "candidate_role_sets": null,
+      "selection": "one",
+      "change_attributes": [[]],
+      "written_attributes": []
+    }
+  ],
+  "task_spec": [
+    {
+      "line": 1,
+      "text": "Remove the workspace admin's channel_members entry from #core-infra.",
+      "obligations": [1]
+    }
+  ],
+  "scope_exception": null,
+  "access_plan": "Discover Test Workspace admins via user_teams rows with role='admin' joined to users (Robert Walsh, Morgan Freeman), then call conversations.members on #core-infra to get its channel_members roster (Priya, Łukasz, Sophie, Olena, Mateo, Kenji, Robert Chen, Aisha). Cross-referencing user_id shows no overlap between the admin set and the #core-infra roster, confirming the referent is absent before any kick action is attempted."
+}
+```

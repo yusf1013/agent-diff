@@ -1,0 +1,32 @@
+This is a variant scenario where I need to find who reacted with a thumbs up to Priya's message about the CUDA memory limit causing the pod OOM incident, then determine all the channels that person belongs to—this time without restricting to just the channels shared with the message.
+
+Checking the route: it chains from channel membership through users to reactions, messages, channels, and teams, which aligns with the design. But the resolution should be "absent" since the anchor message has zero reactions—only an "eyes" reaction exists elsewhere, and even that's the wrong emoji. So there's no reactor to trace, meaning no channel membership rows can satisfy the query.
+
+Looking at the compiled selector, there's no filter on the node's channel_id, which is correct given an empty scope. The response correctly binds to a single channel (core-infra) just to locate the anchor message, without restricting output further.
+
+I'm also verifying the near-miss and negative referent lists—U01AGENBOT9's ten channel memberships are correctly flagged as a near miss since that user reacted with the wrong emoji on an unrelated message, and Priya/Lukas/Olena's memberships are similarly flagged since they're plausible but incorrect candidates for the reactor role.
+
+Cross-checking against base_seed, Priya, Lukas, and Olena are each confirmed members of exactly four channels (C_INFRA, C_MODEL, C_GROWTH, C_FRONTEND), giving twelve rows total which matches the design's near_misses list. Similarly, U01AGENBOT9's ten channel memberships listed in negative_referents line up exactly with the base_seed data, and computed_matches is correctly empty.
+
+The mechanical computed_focal_negatives dumps the full channel_members table rather than the curated subset from the design's near_misses field, but this seems intentional — the mechanical check likely just outputs the raw candidate population before filtering, not a defect. I'm also checking that this variant doesn't restrict channel scope, since the prompt is open-ended about which channels the users belong to, which aligns with treating CONVERSATION_MEMBERSHIP as an unrestricted root rather than bounding it to a narrower corpus.
+
+Rereading the exposure_qualification note about using "visible workspace IDs on an explicitly bounded channel corpus," I think this refers to using the known channel ID to locate the anchor message, not to restricting the deliverable's channel output — so the design still seems consistent, though I want to check how the same route_id's exposure_qualification was interpreted previously to be sure.
+
+Given both versions share the same route_id but differ in prompt phrasing (one restricted to specific channels, this one open-ended), the unbound scope looks like a legitimate variance rather than a defect, and the binding_note explains this distinction explicitly. I'm also confirming the messages_channel role only needing C_INFRA is sufficient, the workspace_scope binding is fine as unused context, and checking that the filters list correctly omits a channel_id filter consistent with the unrestricted design.
+
+The answer_attributes correctly use bare channel_members.user_id and channel_members.channel_id, and the access plan using conversations.history, reactions.get, and users.conversations/conversations.members is well-supported by documented APIs without invoking unsupported capabilities. The acting user has valid membership and access to C_INFRA, so overall this looks like a valid, well-justified design.
+
+Checking for hidden issues, I notice the 👍 emoji appearing in Olena's message text is just a text character, not an actual reaction row in message_reactions, so it correctly shouldn't be treated as a false referent for the reaction requirement tied to Priya's specific message.
+
+This confirms the design correctly excludes any reaction row tied to that message ID despite the embedded emoji, reinforcing that it's handling the text-versus-reaction distinction properly.
+
+Verifying the join chain, I trace through channel_members to users to message_reactions to messages to channels to teams, checking each foreign key linkage maps correctly to the intended node composition.
+
+Filters land at message_reactions (thumbsup reaction), messages (specific message id), and teams (team id), while channels has no explicit filter since it's just a pass-through join — that seems fine given the downstream team_id constraint covers it.
+
+Actually, no explicit channel_id restriction is needed since pinning message_id already uniquely determines the channel, so it's not redundant to skip that filter.
+
+Overall the compiled case looks valid, with strong quality distractors around emoji-in-text vs actual reactions and mismatched message references, and the acting_user_id usage for reaction access checks out against the API documentation.
+
+The absent-mode answer correctly resolves to an empty deliverable, with answer attributes matching channel_members.user_id and channel_members.channel_id, and the absence claim is properly justified since the reactions table only contains an unrelated eyes reaction. The final checks object also lines up correctly with empty errors and matches, alongside the full focal-negative and candidate-population tables as expected.
+

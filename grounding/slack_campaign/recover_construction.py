@@ -25,7 +25,13 @@ def resume_recorded(folder):
         # Preserve provider-returned blocks including native refusal text; no
         # artificial assistant answer is supplied. A new user clarification follows.
         obj.body['messages'].append({'role':'assistant','content':copy.deepcopy(raw.get('content',[]))})
+    obj.body['max_tokens'] = max(obj.body.get('max_tokens', 0), 24000)
     return obj
+
+
+def finish(folder, result):
+    save(folder/'recovery-summary.json',result)
+    save(folder/'summary.json',result)
 
 
 def recover(cid):
@@ -40,21 +46,23 @@ def recover(cid):
     save(folder/'recovery-feedback.json',{'provenance':'General development corrections, no solver output or ground-truth labels','feedback':feedback})
     design=writer.ask(dump({'feedback':feedback,'current_writer_instructions':(PROMPTS/'writer.md').read_text(),
                             'assignment':a,'route_contract':build_route_contract(a['route_nodes']),'prior_construction_failure':old}))
-    save(folder/'design-before-recovery.json',read(folder/'design.json'))
+    if (folder/'design.json').exists():save(folder/'design-before-recovery.json',read(folder/'design.json'))
     save(folder/'design.json',design)
     if design.get('unrealized_reason'):
-        save(folder/'recovery-summary.json',{'status':'unrealized','reason':design['unrealized_reason']});return
+        finish(folder,{'status':'unrealized','reason':design['unrealized_reason']});return
     errors=check_design(design,a)
     if errors:
         design=writer.ask('Thanks. Mechanical validation failed: '+dump(errors)+'. Fix only required fields; keep selection semantics and assignment fixed. Return complete design JSON.')
         save(folder/'design.json',design);errors=check_design(design,a)
     if errors:
-        save(folder/'recovery-summary.json',{'status':'unrealized','errors':errors});return
+        finish(folder,{'status':'unrealized','errors':errors});return
     cf=folder/'compiler'
     compiler=resume_recorded(cf) if cf.exists() and list(cf.glob('turn-*/request.json')) else Conversation(cf,(PROMPTS/'compiler.md').read_text(),max_tokens=20000)
     compiled=compiler.ask(dump({'stage':'Explicit writer revision: the supplied current design supersedes earlier defective designs. Lock this current prompt during compilation.','instruction':(PROMPTS/'compiler.md').read_text(),'assignment':a,'design':design,
         'base_seed':read(ROOT/'examples/slack/seeds/slack_bench_v2.json'),'domain':source_context(),'selector_syntax':SELECTOR_GUIDE}))
     rf=folder/'reviewer'
+    if rf.exists() and not list(rf.glob('turn-*/request.json')):
+        rf.rename(folder/'reviewer-before-initial-recovery')
     reviewer=resume_recorded(rf) if rf.exists() and list(rf.glob('turn-*/request.json')) else Conversation(rf,(PROMPTS/'reviewer.md').read_text(),max_tokens=10000)
     for n in range(1,3):
         save(folder/f'recovery-compiled-{n}.json',compiled)
@@ -64,7 +72,7 @@ def recover(cid):
         if checked['errors']:
             if n==1:
                 compiled=compiler.ask('Thanks. Validation failed: '+dump(checked)+'. Make minimal compilation fixes without changing the design. Return full compilation JSON.');continue
-            save(folder/'recovery-summary.json',{'status':'unrealized','errors':checked['errors']});return
+            finish(folder,{'status':'unrealized','errors':checked['errors']});return
         review=reviewer.ask(dump({'current_review_instructions':(PROMPTS/'reviewer.md').read_text(),'assignment':a,'design':design,'case':case,'compiled':compiled,'checks':checked}))
         save(folder/f'recovery-review-{n}.json',review)
         if review['validity']=='pass' and not any(x['kind'] in ('validity','access','annotation') for x in review['issues']):
@@ -72,11 +80,13 @@ def recover(cid):
             status={'status':'review_pass','quality':review['quality'],'development_recovery':True}
             save(folder/'summary.json',status);save(folder/'recovery-summary.json',status);return
         if n==1:compiled=compiler.ask('Independent review found: '+dump(review)+'. Repair concrete compilation defects, keeping the design fixed. Return complete compilation JSON.')
-    save(folder/'recovery-summary.json',{'status':'unrealized','review':review})
+    finish(folder,{'status':'unrealized','review':review})
 
 if __name__=='__main__':
     p=argparse.ArgumentParser();p.add_argument('--ids',nargs='+',required=True);p.add_argument('--concurrency',type=int,default=1);args=p.parse_args()
     def safe(cid):
         try:recover(cid);print(cid,'recovery_finished',flush=True)
-        except Exception as exc:print(cid,type(exc).__name__,str(exc),flush=True)
+        except Exception as exc:
+            finish(ROOT/'experiments/slack_campaign/campaign_02/construction'/cid, {'status':'error','bounded_recovery_exhausted':True,'error':f'{type(exc).__name__}: {exc}'})
+            print(cid,type(exc).__name__,str(exc),flush=True)
     with ThreadPoolExecutor(max_workers=args.concurrency) as pool:list(pool.map(safe,args.ids))

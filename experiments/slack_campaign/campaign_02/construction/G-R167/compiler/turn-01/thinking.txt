@@ -1,0 +1,24 @@
+I need to figure out who the acting user is—since the design doesn't specify, U01AGENBOT9 seems like the natural actor since it's already a member of C_INFRA and can discover the channel through users.conversations.
+
+Actually, since the candidate channels are all public, conversations.list would return them regardless of membership, so the existing bot should work fine as the actor without needing extra access.
+
+Now thinking about the workspace piece: since there's only one workspace, T01WORKSPACE, that mapping is simple and requires no seed changes. The harder part is designing the selector path from teams to channels to channel_members to users, since I need to verify both Priya and Lukasz are members of the same channel but the path only naturally supports one user node — requiring some kind of auxiliary constraint to check the second member.
+
+Since auxiliary queries are meant for independent constraints rather than ones tied to the same specific channel, I'm reasoning that the uniqueness of the answer (only one channel, C_INFRA, satisfies all conditions) lets me build the focal query around the path teams->channels->channel_members->users, filtering on Priya's real_name and the channel's topic text, and trust that this narrows to the single correct row.
+
+I'll set up an auxiliary check for Łukasz's membership on a channel with the same topic, though because there's only one workspace overall, the team-level selection is unambiguous either way. Now I'm laying out the selectors for each obligation, starting with workspace_identification.
+
+For the main selector, I'm rooting at teams and building the focal path through channels, channel_members, and users, joining on team_id, channel_id, and user_id, then filtering for a channel topic containing "on-call" or "Infrastructure" and a user named "Priya Sharma." The auxiliary path mirrors this structure but filters for "Łukasz Kowalski" instead, and since only one channel actually carries that topic (the Infrastructure/on-call channel), both filters converge on the same channel anyway.
+
+For the second obligation, creating an incident channel, I'm treating this as a state-changing action rather than a pure selector—needing bindings for team T01WORKSPACE and a new channel insert (name 'incident-retro-planning', private false) since this represents an action the solver performs rather than something already present in the data.
+
+But the instructions call for one selector per obligation in design order, which means two selectors total even though obligation 2 has no target roles. Since it's purely a state-changing action using the resolved team_id from obligation 1, its selector is likely trivial — probably rooted at teams with a scope that just matches the already-bound team.
+
+Referencing the resolved team_id directly here is fine since it's not an artificial restriction but the actual answer determined by obligation 1, so using it to bind the write target is legitimate.
+
+Now I'm confirming no seed edits are needed since existing records already have correct membership sets for the negative channels, then assembling the bindings for workspace, channel, member, and membership roles to finalize the answer.
+
+For negative_referents, I'm reasoning that since there's only one workspace in this seed, all channels share the same team_id, so there's no distinct negative team to exclude at the root level - this creates a tension with the requirement to include at least one plausible negative referent.
+
+Since the seed only has one team, even a wrong channel selection would resolve to the same workspace ID, so there's no genuinely incorrect root to flag. I'll leave negative_referents empty for the root level and just note this reasoning rather than force an artificial negative.
+

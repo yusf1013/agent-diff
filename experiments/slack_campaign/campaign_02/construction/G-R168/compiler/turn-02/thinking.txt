@@ -1,0 +1,46 @@
+I'm checking the assigned route_nodes order against my selector path - my path through teams, user_teams, users, channel_members, channels maps to WORKSPACE, WORKSPACE_MEMBERSHIP, USER, CONVERSATION_MEMBERSHIP, CONVERSATION, but that doesn't match the given order, so I need to fix the sequencing.
+
+I'm now tracing whether joining channels then channel_members then users then user_teams naturally enforces the team_id equality back to the root, and realizing the final user_teams.team_id isn't guaranteed to match the root team since the join only connects on user_id, which is a problem since the filter system only supports literal comparisons rather than cross-node value equality.
+
+I think the fix is to allow the last join step to use both user_teams.user_id and user_teams.team_id simultaneously, since user_teams has a composite key of those two fields -- tying team_id back to the root teams node (node0) enforces the correct membership row without needing a separate cross-node filter.
+
+Actually, rereading the validator error, it's only complaining about the path node order not matching route_nodes — my actual query results (matches and negatives) are already correct. So the fix is simple: I just need to reorder the path to align with the assigned route sequence: WORKSPACE, CONVERSATION, CONVERSATION_MEMBERSHIP, USER, WORKSPACE_MEMBERSHIP.
+
+Let me verify this reordered path with joins and filters still produces the correct result for the Summit root case, tracing through the on-call channel filter, its members, the users, and their team memberships to confirm the admin role filter lands correctly.
+
+But wait — Farah's role in that membership row is "member," while Priyanka's admin role is tied to Northstar, not Summit. Since the filter only checks role=admin without also enforcing team_id equals the root team, Priyanka's row would incorrectly satisfy the filter, making Summit falsely match. That contradicts the expected negative result for Summit, so I need to check whether this is actually what happened in the earlier computation.
+
+Since selector filters only handle literal values not cross-node comparisons, maybe the solution is to add "team_id" as a second join condition alongside "user_id" at that final step, forming a composite join that ties user_teams back to the root teams node.
+
+I'm noticing this actually mirrors the message_reactions example, where each table had two join entries — one per adjacent node in the path (messages before, users after), rather than a single composite key for one edge.
+
+The problem is user_teams also has a composite key (user_id, team_id), so joining it back to teams requires connecting to node0, but node0 isn't adjacent in the path list — only users is adjacent via user_id. This means the path-step model may not cleanly capture the team_id side of that constraint.
+
+Maybe I could add a 5th join item even though there are only 4 steps, since joins are just FK field names not strictly one-per-step. The join user_teams.team_id directly connects to the teams table (node0), and the spec says a join is usable in either direction as long as it connects adjacent tables — so this might be a valid way to close the loop.
+
+Actually, maybe filters can reference the root node's own bound field per row, since the evaluator likely processes each candidate row individually rather than as one static query, letting node4.team_id compare against the current root's team_id dynamically.
+
+Since the only reported error concerns path order rather than filtering itself, maybe the real fix is about the order of tables in the identifying route rather than adding new filtering logic.
+
+I could try extending the join path with an extra hop back to teams, but then I'd need to equate that revisited team node to the original root node, which brings me back to the same equality problem. Scope might be the better lever here, since it applies directly to the root field rather than requiring another join.
+
+This suggests the query evaluates globally, with node0 ranging over actual rows and each subsequent node needing to match that specific node0's identity through the join chain. The tricky part is expressing an equi-join like node4.team_id equaling node0.team_id when the filter syntax only supports literal value comparisons, not cross-node field references.
+
+Since the path structure is a simple linear chain without cycles or branching, closing that kind of correlated loop back to node0 isn't directly expressible -- I'd need to add a second "teams" node later in the path and somehow tie it back to node0, but adjacency in a linear path only connects consecutive nodes, so node0 and a later revisit of the same table can't be joined this way unless they happen to be adjacent.
+
+I also realize reordering the path to put user_teams earlier (right after teams) conflicts with the required route order, which strictly mandates WORKSPACE, CONVERSATION, CONVERSATION_MEMBERSHIP, USER, WORKSPACE_MEMBERSHIP -- so user_teams must be the final segment, not the anchor. That rules out the approach I used previously, and I need to figure out if there's any way to enforce the same-team constraint within that fixed ordering.
+
+That would require a dynamic literal for each tuple, which isn't feasible in a static query. But maybe the evaluator's real behavior, when chaining join edges sequentially across nodes, handles this differently than I'm assuming.
+
+Following the chain naturally, node4 (user_teams) only joins on user_id, so it pulls in whatever team membership row that user actually has -- not necessarily tied back to node0. So for Priyanka, node4.team_id ends up being Northstar even though node0 was Summit, and the admin-role filter on node4 still passes since it's just checking her actual row.
+
+That's exactly the false-positive scenario the spec wants to avoid: an admin role from a different workspace incorrectly validating a match. This tells me the simple linear FK-chain design can't guarantee correctness on its own -- it needs some way to enforce that node4's team matches node0's team, which the filter format of {node, field, op, value} doesn't naturally support unless there's a mechanism to compare two nodes directly.
+
+Since node-to-node comparison isn't in the documented vocabulary and correlated auxiliary queries aren't the intended use, I'm second-guessing whether the validator actually checks deep semantic correctness or only structural path/route ordering, given my earlier reversed-order submission computed correct matches yet still got flagged only for ordering, not logic.
+
+I'm now considering whether a single step can carry two join entries — one binding to the immediately prior node and another implicitly referencing an even earlier node's already-bound column — as a way to express the composite key relationship while still respecting the required route order.
+
+That likely reflects support for multiple FK conditions per edge, especially for composite-key relationships. I'll settle on path teams→channels→channel_members→users→user_teams, with joins linking channels.team_id, channel_members.channel_id, channel_members.user_id, user_teams.user_id, and user_teams.team_id, filtering on channel_name "on-call" and role "admin" — even though this gives 5 joins for 5 nodes, which is redundant compared to the normal 4.
+
+Right, same pattern as message_reactions where both fields of a composite key served as separate join constraints — here user_id connects to the adjacent node while team_id loops back to close the cycle with node0. Given the analogy holds, I'll finalize this as the correct join structure.
+

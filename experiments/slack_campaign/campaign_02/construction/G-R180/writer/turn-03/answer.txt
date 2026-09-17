@@ -1,0 +1,48 @@
+```json
+{
+  "prompt": "List the workspaces that contain a channel with a message which received a 🚀 (rocket) reaction from a user who is an admin of a workspace.",
+  "binding_note": "Per the route contract, r5 (the reactor's workspace-membership row) is joined to r4 (the reactor) only — there is no equality requiring r5.team_id to equal r0.team_id. So a workspace r0 qualifies if it has a channel whose message got a rocket reaction from a user who holds an admin role in *some* workspace (their own, possibly different from r0), not necessarily an admin of r0 itself. Every reactor referenced below has exactly one workspace-membership row, so 'is this user an admin' is answerable from a single lookup with no cross-team ambiguity.",
+  "roles": [
+    {"role": "workspace_test", "entity": "teams", "facts": "Existing workspace 'Test Workspace' (T01WORKSPACE), containing #general (C01ABCD1234).", "selection": "match", "reason": "Its channel holds message 1699564800.000123, which received a rocket reaction from Robert Walsh, whose sole membership row gives him admin role (in T01WORKSPACE)."},
+    {"role": "workspace_neuro", "entity": "teams", "facts": "New workspace 'NeuroFlow Research' (T02NEURO), added for this scenario.", "selection": "match", "reason": "Its new channel holds a new message that received a rocket reaction from Morgan Freeman, whose sole membership row gives him admin role in T01WORKSPACE — sufficient under the route since r5's team need not equal r0's."},
+    {"role": "workspace_other", "entity": "teams", "facts": "New workspace 'Widgets Co' (T03OTHER), added for this scenario.", "selection": "negative", "reason": "Its channel's message was reacted to by an admin (Robert Walsh), but with 'eyes' rather than rocket, so the emoji condition fails."},
+    {"role": "workspace_third", "entity": "teams", "facts": "New workspace 'Thirdling Labs' (T04THIRD), added for this scenario.", "selection": "negative", "reason": "Its channel's message got a rocket reaction, but from Nick Fury, whose sole membership row gives him role member (not admin) anywhere, so the admin-role condition fails."},
+    {"role": "channel_general", "entity": "channels", "facts": "#general (C01ABCD1234), public channel in T01WORKSPACE.", "selection": "support", "reason": "Houses the qualifying message for workspace_test."},
+    {"role": "message_shipped", "entity": "messages", "facts": "Message 1699564800.000123 in C01ABCD1234: 'Hey team, we just shipped the new feature!'", "selection": "support", "reason": "The message receiving the qualifying rocket reaction for workspace_test."},
+    {"role": "user_robert_walsh", "entity": "users", "facts": "Robert Walsh (U03ROBERT23); his only workspace-membership row is admin of T01WORKSPACE.", "selection": "support", "reason": "The reactor whose sole admin role satisfies the route condition for workspace_test."},
+    {"role": "membership_robert_walsh", "entity": "user_teams", "facts": "user_id U03ROBERT23, team_id T01WORKSPACE, role admin (his only row).", "selection": "support", "reason": "The r5 record establishing his admin role, independent of which workspace's channel he reacted in."},
+    {"role": "reaction_robert_walsh_rocket", "entity": "message_reactions", "facts": "message_id 1699564800.000123, user_id U03ROBERT23, reaction_type rocket.", "selection": "support", "reason": "The qualifying reaction (r3) for workspace_test."},
+    {"role": "channel_neuro_launch", "entity": "channels", "facts": "New channel #product-launch (C_NEURO_LAUNCH) created in T02NEURO; member U07MORGANFREE.", "selection": "support", "reason": "Houses the qualifying message for workspace_neuro."},
+    {"role": "message_launch", "entity": "messages", "facts": "New message in C_NEURO_LAUNCH authored by Morgan Freeman: 'Just pushed the v2 launch build to production!'", "selection": "support", "reason": "The message receiving the qualifying rocket reaction for workspace_neuro."},
+    {"role": "user_morgan_freeman", "entity": "users", "facts": "Morgan Freeman (U07MORGANFREE); his only workspace-membership row is admin of T01WORKSPACE.", "selection": "support", "reason": "The reactor whose sole admin role (in a different workspace than T02NEURO) still satisfies the route condition for workspace_neuro, since r5's team is not required to equal r0's."},
+    {"role": "membership_morgan_freeman", "entity": "user_teams", "facts": "user_id U07MORGANFREE, team_id T01WORKSPACE, role admin (his only row).", "selection": "support", "reason": "The r5 record establishing his admin role for the workspace_neuro match."},
+    {"role": "reaction_morgan_rocket", "entity": "message_reactions", "facts": "message_id of message_launch, user_id U07MORGANFREE, reaction_type rocket.", "selection": "support", "reason": "The qualifying reaction (r3) for workspace_neuro."},
+    {"role": "channel_other", "entity": "channels", "facts": "New channel #general (C_OTHER_GEN) created in T03OTHER; member U03ROBERT23.", "selection": "support", "reason": "Houses the non-qualifying message for workspace_other."},
+    {"role": "message_other", "entity": "messages", "facts": "New message in C_OTHER_GEN authored by Robert Walsh: 'Widget redesign review is done, take a look.'", "selection": "support", "reason": "The message receiving the wrong-emoji reaction that keeps workspace_other from matching."},
+    {"role": "reaction_robert_walsh_eyes", "entity": "message_reactions", "facts": "message_id of message_other, user_id U03ROBERT23, reaction_type eyes.", "selection": "negative", "reason": "Same admin reactor as workspace_test's match, but the emoji is eyes, not rocket, so workspace_other fails the request."},
+    {"role": "channel_third", "entity": "channels", "facts": "New channel #general (C_THIRD_GEN) created in T04THIRD; member U08NICK23.", "selection": "support", "reason": "Houses the non-qualifying message for workspace_third."},
+    {"role": "message_third", "entity": "messages", "facts": "New message in C_THIRD_GEN authored by Nick Fury: 'Kicking off the new campaign this week!'", "selection": "support", "reason": "The message receiving the non-admin rocket reaction that keeps workspace_third from matching."},
+    {"role": "user_nick_fury", "entity": "users", "facts": "Nick Fury (U08NICK23); his only workspace-membership row is member (not admin) of T01WORKSPACE.", "selection": "support", "reason": "The reactor whose sole membership role is member, failing the admin-role condition."},
+    {"role": "reaction_nick_rocket", "entity": "message_reactions", "facts": "message_id of message_third, user_id U08NICK23, reaction_type rocket.", "selection": "negative", "reason": "Correct emoji, but the reactor holds no admin role anywhere, so workspace_third fails the request."}
+  ],
+  "obligations": [
+    {
+      "name": "qualifying_workspaces",
+      "description": "Workspaces that contain a channel holding a message which received a rocket-emoji reaction from a user who holds an admin role in some workspace (per their single workspace-membership record).",
+      "table": "teams",
+      "mode": "multiple",
+      "task_type": "read-only",
+      "scope": "workspaces reachable via channel->message->reaction->user->(any) workspace-membership matching the admin/rocket condition",
+      "target_roles": ["workspace_test", "workspace_neuro"],
+      "candidate_role_sets": null,
+      "selection": "set",
+      "answer_attributes": [["teams.team_id"], ["teams.team_name"]]
+    }
+  ],
+  "task_spec": [
+    {"line": 1, "text": "Identify and list every workspace that has a channel with a message reacted to by a rocket emoji from a user who is an admin of a workspace.", "obligations": [1]}
+  ],
+  "scope_exception": null,
+  "access_plan": "Enumerate workspaces via teams. For each, use conversations.list (team_id scoped) to get its channels, conversations.history to pull messages per channel, and reactions.get per message to see reactors and emoji names. For each rocket reactor, call users.info once to read their single exposed workspace-membership role; if that role is admin, the workspace containing the reacted-on message qualifies, regardless of which workspace the admin role itself belongs to (per the route's distinct-variable semantics). Since every reactor here has exactly one membership row, this is a single unambiguous lookup per reactor. Aggregate the qualifying team_ids into the final list."
+}
+```

@@ -1,0 +1,66 @@
+```json
+{
+  "seed_edits": [
+    {
+      "table": "message_reactions",
+      "op": "insert",
+      "key": {"message_id": "1706001931.000000", "user_id": "U_LUKAS", "reaction_type": "thumbsup"},
+      "values": {
+        "message_id": "1706001931.000000",
+        "user_id": "U_LUKAS",
+        "reaction_type": "thumbsup",
+        "created_at": "2024-01-23T10:15:00"
+      },
+      "reason": "Design's wrong_emoji_reaction negative: correct target message (hard CUDA memory limit post), wrong emoji (thumbsup, not a checkmark), so U_LUKAS is not the ✅ reactor."
+    },
+    {
+      "table": "message_reactions",
+      "op": "insert",
+      "key": {"message_id": "1706028746.000000", "user_id": "U_PRIYA", "reaction_type": "check"},
+      "values": {
+        "message_id": "1706028746.000000",
+        "user_id": "U_PRIYA",
+        "reaction_type": "check",
+        "created_at": "2024-01-23T18:45:00"
+      },
+      "reason": "Design's wrong_message_reaction negative: correct checkmark emoji but on the unrelated Tokyo latency-fix message in product-growth, not the CUDA-memory-limit message, so it does not identify a membership via the requested route."
+    }
+  ],
+  "bindings": {
+    "workspace_context": ["T01WORKSPACE"],
+    "target_channel": ["C_INFRA"],
+    "target_message": ["1706001931.000000"],
+    "wrong_emoji_reaction": [{"message_id": "1706001931.000000", "user_id": "U_LUKAS", "reaction_type": "thumbsup"}],
+    "wrong_message_reaction": [{"message_id": "1706028746.000000", "user_id": "U_PRIYA", "reaction_type": "check"}],
+    "unrelated_channel_member": [{"channel_id": "C_INFRA", "user_id": "U_OLENA"}]
+  },
+  "selectors": [
+    {
+      "root_table": "user_teams",
+      "scope": [{"field": "team_id", "op": "eq", "value": "T01WORKSPACE"}],
+      "focal": {
+        "path": ["user_teams", "teams", "channels", "messages", "message_reactions", "users"],
+        "joins": [
+          "user_teams.team_id",
+          "channels.team_id",
+          "messages.channel_id",
+          "message_reactions.message_id",
+          "message_reactions.user_id"
+        ],
+        "filters": [
+          {"node": 2, "field": "channel_name", "op": "eq", "value": "core-infra"},
+          {"node": 3, "field": "message_id", "op": "eq", "value": "1706001931.000000"},
+          {"node": 4, "field": "reaction_type", "op": "eq", "value": "check"}
+        ]
+      },
+      "auxiliary": []
+    }
+  ],
+  "negative_referents": [
+    {"user_id": "U_LUKAS", "team_id": "T01WORKSPACE"},
+    {"user_id": "U_PRIYA", "team_id": "T01WORKSPACE"},
+    {"user_id": "U_OLENA", "team_id": "T01WORKSPACE"}
+  ],
+  "notes": "The focal query follows the assigned route order exactly: user_teams(r0)->teams(r1) via user_teams.team_id, teams->channels(r2) via channels.team_id, channels->messages(r3) via messages.channel_id, messages->message_reactions(r4) via message_reactions.message_id, message_reactions->users(r5) via message_reactions.user_id, with filters channel_name='core-infra' (r2), message_id='1706001931.000000' (r3), reaction_type='check' (r4) all conjoined in this single path. The binding_note's additional equality r0.user_id = r5.user_id ('their own membership') is vacuously satisfied because no tuple reaches r5 at all: no message_reactions row on the target message carries reaction_type 'check' (only 'thumbsup' by U_LUKAS, per the inserted negative), and the sole 'check' reaction in the seed sits on the unrelated Tokyo-latency message (1706028746.000000) authored/reacted by U_PRIYA. The query therefore returns zero tuples for every user_teams row, correctly instantiating the 'absent' resolution for workspace_membership of the ✅ reactor. U_OLENA's core-infra membership required no edits, serving as a plausible-participant negative with no reaction anywhere. Only the two negative message_reactions rows were inserted; all referenced messages, channels, and memberships pre-existed in the base seed."
+}
+```

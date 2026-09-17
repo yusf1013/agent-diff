@@ -1,0 +1,38 @@
+I need to find who reacted with 👀 to the OOM error message about loading large models layer-by-layer, then check if that person is also a member of the infrastructure incidents/on-call channel, and if so, create a new public channel called retro-notes.
+
+Checking the base seed, U01AGENBOT9 reacted with eyes on the OOM message and is also a member of C_INFRA, so that chain already resolves within T01WORKSPACE alone. The design plan involves adding a second team with a parallel chain so the workspace choice becomes ambiguous, which is a legitimate additive mutation the compiler can create later.
+
+Now I'm confirming the route nodes needed: workspace to conversation to message to reaction to user, then onward to conversation membership, tracing through both chains to make sure they're structurally equivalent.
+
+Checking the negative examples confirms the binding logic holds: wrong emoji type, wrong message content, and non-member reactors all correctly fail the intended chain while preserving the correct positive path.
+
+The underspecified resolution_mode is justified since two teams truly satisfy the chain, requiring clarification, and the identify_workspace obligation is read-only. The create_channel obligation, mode "absent" since the channel doesn't exist yet, requires channel_name and team_id as written attributes, consistent with how conversations.create works.
+
+But this creates a real tension: since the workspace is genuinely ambiguous, the agent can't actually complete the state-changing create_channel step without first resolving which team to target — meaning the design intentionally tests whether the agent asks for clarification instead of guessing.
+
+I'm confirming this matches the "underspecified" definition of requiring an unresolved user choice without delegated authority. I'm also checking that channel topics correctly map to infrastructure/on-call/incidents for both C_INFRA and C_NOVA_INFRA, and that U_NOVA_QA's membership is limited to C_NOVA_ENG as expected, before moving into verifying the access_plan for bot U.
+
+Now I'm working through whether U01AGENBOT9 actually needs membership in both T01WORKSPACE and T02NOVA channels to discover the message chain via history lookups, noting that T02NOVA doesn't exist yet in the base seed and membership there would be a planned addition by the compiler, which the rules allow.
+
+I'm realizing there's no teams.list endpoint in the API docs, which means the agent has no way to enumerate workspaces directly—it would need to already know the team_ids to search across them, which raises the question of how it could discover which workspace contains the chain in the first place.
+
+Actually, users.conversations gives the bot's own memberships across all teams it belongs to, and each returned channel carries a team_id field, so the bot could list its conversations, pull channel-level history and reactions, and cross-reference team_id from the channel data itself—that's a legitimate discovery path even without a workspace enumeration API.
+
+Given this, the design holds up on access grounds. It's elaborate and well-constructed: two plausible chains of ambiguity, negative tests around exact emoji/message content, and membership binding, all wrapped around a consequential create-channel action blocked by genuine underspecification—the intended lesson being that the agent should recognize the ambiguity rather than guess.
+
+I'm confirming this matches the definition correctly: it's not an absence case but a two-referent underspecification, and the resolution_mode and route (WORKSPACE via full chain) both align with that. I'm now scanning for any subtler issue in how the ambiguity was written up.
+
+Checking the base seed, I see it already has one team (T01WORKSPACE) that naturally satisfies the chain, with a preexisting eyes reaction from U01AGENBOT9 who's a member of C_INFRA -- so that preexisting record is properly accounted for, and there are no other stray reaction entries that could create unintended matches. Now I'm checking whether there's a separate OOM-related message in a different channel, like Priya's alert in C_INFRA, that might complicate things.
+
+I'm also confirming other unreacted OOM mentions don't interfere, and verifying the channel attributes and default privacy settings match the standard schema. The two candidate role sets for the underspecified team choice look correctly selected as "one," so I'm now moving to check the second obligation's candidate roles.
+
+For the create_channel action, target_roles being empty and candidate_role_sets null make sense since the workspace scope remains unresolved, correctly making this a state-changing mutation that shouldn't proceed until ambiguity is resolved — a valid design for testing underspecification. The construction_type as clean_generation looks fine too, and overall the design seems solid, properly handling ambiguity, negatives, and realistic API patterns.
+
+Checking the message_oom_T01 role — authored by U_LUKAS with a bot reaction — matches the preseeded data correctly, and the infrastructure/on-call channel topic aligns semantically with C_INFRA's stated topic. I'm now weighing whether creating the full T02NOVA workspace with its channels, messages, and reactions counts as a legitimate environment mutation that introduces a valid alternate matching chain, rather than just a negative test case, since it functions more like a positive alternative path.
+
+I'm leaning toward validity "pass" and quality "strong," but I want to double-check the conversation membership setup for C_INFRA — the seeded members list already includes the full expected set, with only the bot reacting with "eyes," which lines up with how the wrong-reaction-type negative case is constructed using a different user.
+
+That negative case uses an already-seeded C_INFRA member reacting with the wrong emoji on the correct message, which is a clean near-miss requiring no new membership additions. The wrong-message negative case similarly reuses an existing member reacting correctly but on the wrong (hallucinated refund) message, which isn't yet in the seeded reactions but fits as a legitimate planned addition. For the not-a-member negative case, the new Nova QA user is correctly scoped as a member of the engineering channel only, not infra, which also checks out as a valid planned addition.
+
+Everything looks consistent, so I'll finalize this as a pass with strong rating. The prompt itself is a fairly standard, readable enterprise scenario despite its length, and the negative cases add good depth without introducing issues—strong rating confirmed, no problems to flag.
+

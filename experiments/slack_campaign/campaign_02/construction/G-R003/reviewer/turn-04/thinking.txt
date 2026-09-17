@@ -1,0 +1,58 @@
+This looks like a fresh case, distinct from the earlier one despite sharing an ID—the prompt asks to list channels in a workspace where Robert holds an admin role. I'm checking whether the route logic actually captures that: channels tied to a workspace where a user named Robert has an admin role there.
+
+This matches the assigned route through conversation, workspace, membership, and user, correctly using membership status rather than authorship since "holds an admin role" is a membership attribute. The tricky part is that "the workspace" is phrased as singular, but two workspaces actually satisfy the Robert-plus-admin condition, creating a genuine ambiguity that fits the underspecified resolution mode—there's no clear way to know which workspace was intended without more context.
+
+So I'm checking whether the candidate answer sets should be the two workspace channel-sets separately, or merged into one union list. Looking at the card's expected_matches, it seems to combine both workspaces' channels into a single 13-channel list, which only makes sense if the mechanical check treats this as a disjunctive selection across both admin memberships rather than picking one specific workspace.
+
+So the evaluation would score correct if the solver returns either T01's or T02's channel set, consistent with how computed_matches represents the union while candidate_sets holds the enumerated valid options—matching the pattern seen in the prior G-R003 review. Now I want to verify the T01 channel enumeration is accurate by counting the non-DM channels under that workspace.
+
+Robert Diaz being a channel member rather than a workspace member of BetaCorp confirms the query should rely on workspace membership, not channel participation, to determine matches -- correctly avoiding a false positive there.
+
+Now I'm checking whether the exposure_qualification wording actually fits this admin-membership design, since that text seems written for message/participant-style connections (channel member, author, reactor) rather than for workspace-membership-based admin roles. The route_nodes structurally align (CONVERSATION, WORKSPACE, WORKSPACE_MEMBERSHIP, USER), but I need to verify the qualification text itself matches this new case rather than being leftover from the earlier version.
+
+Actually the qualification is about joining the workspace association to a channel or its contained records/participants, which fits the route going channel->workspace->membership->user, so the structure holds even reversed from the typical narrative direction.
+
+Here the workspace association is Robert's admin membership, joined via workspace to the channel itself, without needing to trace further to a participant like a message author. The exposure_qualification's mention of "participants" is a broad statement covering multiple possible designs under R003, so identifying Robert directly through his admin membership satisfies it without requiring an additional relation.
+
+Now I'm checking the access plan against real API capabilities: it proposes using users.list and users.info to find Robert and his admin flag, then cross-referencing team_id to call conversations.list. I need to verify whether conversations.list's team_id parameter actually filters results per workspace, or whether it's only required when using an org token.
+
+The compiled notes suggest team_id-based workspace switching isn't actually supported in this replica since the actor's token isn't org-scoped, which is why the seed edits instead gave the actor real memberships across all three teams and channels — letting users.conversations enumerate through membership rather than relying on unsupported team_id switching. That's a valid workaround aligned with the documented capability constraint.
+
+I do want to check plausibility here though — the bot now belongs to every channel across all three companies' workspaces, which seems a bit unusual even if technically permitted.
+
+Actually this is consistent with the established pattern where this agent acts as a generic test account with broad access, so it's not a validity issue, just a minor quality nit. I also need to check whether users.info calls could leak admin status, since the domain model requires each queried person to have exactly one workspace membership listed for reproducibility, so I should verify Robert K, Robert D, and Sam Cole each hold only one.
+
+Confirming Robert Kim, Robert Diaz, and Sam Cole each satisfy this single-membership rule, and checking Robert Walsh too — all good. I also need to verify Robert Chen from the seed data doesn't accidentally qualify, since he's listed as 'member' not 'admin' in T01WORKSPACE, so he's correctly excluded from the admin filter. Now I want to scan for any other "Robert"-named users who might have admin roles elsewhere that could cause unintended matches.
+
+Checking each Robert entry against the join structure, everything lines up with exactly four expected matches and no accidental overmatches like "Roberta" or "Roberto." I'm now verifying that the role filter and the real_name filter both apply to the same underlying workspace membership record, ensuring the join correctly enforces that both conditions hold for the same team relationship rather than allowing a mismatched combination across different memberships.
+
+Checking T01WORKSPACE specifically: U03ROBERT23 has real_name 'Robert Walsh' with role='admin', so that satisfies both conditions on the same row. There's also another admin, U07MORGANFREE (Morgan Freeman), but that's irrelevant since only one matching row is needed for the workspace to qualify.
+
+For BetaCorp T03, the only admin is Sam Cole, whose name doesn't contain 'Robert', and there's no other Robert membership there, so it's correctly excluded. StarLabs T02 has Robert Kim as admin, satisfying the filter, so its 2 channels count. Combining T01's 11 channels with T02's 2 gives 13 total, correctly excluding BetaCorp as a near-miss.
+
+I'm also checking the DM scope filter properly excludes Sophie's DM (D01AGENTSOPHIE) even though it shares T01's team_id, since is_dm=true rules it out—consistent with it being absent from the 13-channel list. And the archived channel "old-project-q3" seems correctly included since nothing in the prompt excludes archived channels, matching the expected match list.
+
+Since exclude_archived defaults to false in conversations.list, archived channels would naturally appear in discovery unless explicitly filtered out, so that's consistent behavior. I'm now considering how the actor would actually discover T01's channels given the seed data shows the bot already belongs to nearly all of them.
+
+But I need to double-check membership in C_GROWTH specifically—checking the channel_members list, I see U_PRIYA, U_LUKAS, U_SOPHIE, U_OLENA, U_MATEO, U_KENJI, U_ROBERT, U_AISHA, U_INCOGNITO listed, but no U01AGENBOT9. This seems to contradict an earlier seed edit that added the bot to C_GROWTH, so I need to verify against this specific case's actual seed data rather than assuming carryover from before.
+
+Confirmed - no U01AGENBOT9 membership row exists for C_GROWTH in this seed data. Since this is a separate case with its own fresh compilation, I shouldn't carry over assumptions from the earlier repair.
+
+But this raises the question of whether the actor even needs channel membership to list channels at all. If the task is fulfilled via conversations.list, that endpoint enumerates all public channels in a workspace regardless of the caller's membership status, so membership rows may not be the limiting factor here.
+
+The doc's team_id requirement being conditional on org tokens suggests a normal token defaults to the actor's home team, with no built-in way to switch workspaces absent org-level access. That matches the earlier note that team_id-based workspace switching isn't supported here, meaning the actor's session stays tied to one home workspace unless genuine multi-team membership exists.
+
+Since users.conversations shares the same team_id constraint, actual multi-workspace channel visibility likely depends on the actor literally being a member of each team via user_teams rows -- and since the actor already has membership across T01, T02, and T03 from the seed data, that membership itself may be what lets conversations.list work per workspace context.
+
+But channel-level membership still matters for specific channels like C_GROWTH -- checking the seed data, the actor isn't a member of that channel, which mirrors the exact access gap that caused the failure in the previous version before it was fixed.
+
+I should confirm whether C_GROWTH is indeed required in the answer set — checking the workspace_T01_channels facts confirms "product-growth" is listed, so yes, it's a legitimate match. That means this is a genuine access defect: the actor can't discover C_GROWTH via users.conversations without membership.
+
+Wait, actually the restriction on conversations.list/team_id switching likely refers to switching to other teams (StarLabs, BetaCorp), not to actor's own home team T01WORKSPACE. So conversations.list without a team_id parameter could plausibly list all public channels in the actor's default team regardless of individual membership, similar to real Slack behavior.
+
+That means C_GROWTH being public should be discoverable via a default conversations.list call for T01. The real gap is only for other workspaces, where discovering channels requires org-level tokens the actor lacks, so an alternate path like users.conversations (which lists channels by membership, potentially across teams) would need the actor to already hold membership in those other-workspace channels for discovery to work.
+
+The distinct Robert-admins case also holds up, with BetaCorp's wrong-named admin correctly excluded as a near miss and the channel-membership vs workspace-membership distinction properly separated for Robert Diaz. I'm also confirming the filter matches the prompt's phrasing exactly - role=admin plus real_name Robert - without any secretly enforced extra conditions beyond what was requested.
+
+Now I'm checking that the answer-computation attributes reference legitimate bare column names from the channels table, and verifying the identifying paths only traverse the expected join chain between channels, teams, user_teams, and users.
+

@@ -1,0 +1,32 @@
+I'm mapping out the seed data edits needed: adding team T02VELOCITY with user Robert Kim and an on-call channel plus membership entries, then similarly building out the negative_workspace_gamma scenario with team T03GAMMA, user Robert Diaz, and a social channel, and starting on the negative_user_roberta scenario with team T04DELT.
+
+I also need a case where Robert Fields is a workspace member and message author in C_INFRA but has no channel_members row, to test authorship without membership. Then I'm thinking through actor access: since users.list/search only work within one workspace at a time and there's no workspace-switching interface, the actor will need memberships across the relevant workspaces to properly test discovery and absence across T01WORKSPACE, T02VELOCITY, T03GAMMA, and T04DELTA.
+
+So I need to add user_teams membership rows for the actor across T02VELOCITY, T03GAMMA, and T04DELTA so it can properly discover and rule out negative referents in those workspaces. Channel membership itself likely isn't required for discovery via users.conversations/conversations.list, but workspace membership via team_id filtering probably is, so I'll grant the actor membership in all four teams for full coverage.
+
+Now I'm working out the specific bindings: mapping target and negative workspaces to their team IDs, matching Robert Walsh/Chen/Kim to distinct user IDs, setting up the infra channel membership for Walsh, and creating negative users like Roberta Nguyen and Robert Fields with their own IDs to serve as decoys, before moving on to defining selectors for the single "identify_target_workspace" obligation.
+
+Since the mode is underspecified, I need the selector to return the union of all eligible teams matching the full criterion chain rather than arbitrarily picking one. I'm building the selector to traverse from teams through workspace membership to users to channel members to channels, filtering for users whose real name contains "Robert" and channels whose topic includes on-call/incident keywords—but I need to watch out since a plain substring match on "Robert" would also catch "Roberta," which is exactly the kind of false-positive the negative test case is designed to catch.
+
+Since users lack a first_name field, I should use the display_name field with an exact match on "Robert" rather than a substring filter, since Roberta Nguyen's display_name would be "Roberta" and thus correctly excluded. I'll design the new users, including Robert Fields as a negative case, with their display_name set accordingly to make sure exact matching works correctly across all test cases.
+
+For the topic filter, since both C_INFRA and C_ONCALL channels mention "on-call" in their topic text, I can use a single contains_ci filter on topic_text for "on-call" to capture both, since the selector only supports conjunctive filters and can't express OR across fields.
+
+C_DELTA_INCIDENT's topic also matches "on-call" but that's fine since Robert isn't a member there anyway; C_GAMMA_SOCIAL has no such text so it's naturally excluded.
+
+Now I'm laying out the join path from teams through user_teams to users to channel_members to channels, with filters requiring display_name equal 'Robert' on the users node and topic_text containing 'on-call' on the channels node as the root selector.
+
+This should correctly capture T01WORKSPACE (via Walsh/Chen in C_INFRA) and T02VELOCITY (via Kim/C_ONCALL), while excluding T03GAMMA (Robert Diaz's channel lacks the on-call text) and T04DELTA (Roberta Nguyen doesn't match the exact 'Robert' name).
+
+Now I'm drafting the seed edits: adding four new users (Robert Kim at Velocity Labs, Robert Diaz at Gamma, Roberta Nguyen at Delta, and Robert Fields at the existing workspace with no channel membership), three new teams for Velocity/Gamma/Delta, and a new on-call channel at Velocity Labs with appropriate topic text.
+
+I'm continuing to define the social and incident-response channels for Gamma and Delta, then setting up team memberships linking each new user to their respective team plus giving the actor bot access across all three, and starting the channel-membership entries connecting users to their on-call/incident channels.
+
+I'm also drafting a new message from Robert Fields posting in C_INFRA without being a member, asking about the AWS incident postmortem runbook, and reasoning through whether the actor needs channel membership to read topics via conversations.info versus needing membership for message history access.
+
+I think workspace-level membership should be sufficient here since the task is topic-based identification rather than requiring full history reads, so I'm checking the base seed's channel_members list to confirm whether Robert already has a membership entry for C_INFRA.
+
+Checking, I confirm C_INFRA's members don't include U03ROBERT23, so I'll need to add a channel_members row for that pairing to satisfy the "membership_walsh_infra" requirement. Robert Chen's membership for that channel is already present, so no edit needed there.
+
+I'm also verifying that T02VELOCITY, T03GAMMA, and T04DELTA are all new teams not already in the seed, and I need to insert a message for Robert Fields' authorship with a timestamp-like message id. For the selector bindings, since the design references two alternative target workspaces under an underspecified selection mode, I'll treat this as one main obligation selector that returns the union of both matching teams as the answer set.
+

@@ -1,0 +1,20 @@
+I'm mapping out the route from WORKSPACE through CONVERSATION, CONVERSATION_MEMBERSHIP, to USER, thinking about how to resolve the workspace based on conditions across those linked entities. Since this seed only has one workspace (T01WORKSPACE), I'm concluding the resolution mode should be "single".
+
+I'm realizing the workspace name itself isn't a guaranteed retrievable field, so the answer needs to hinge on the workspace ID as the visible identifier rather than a name lookup, since no stored workspace-name resolution is available through the API. So the prompt chain should identify the workspace via channel and membership traits, but resolve to its ID rather than assuming a name exists.
+
+Since only one team likely exists, the team_id requirement for conversations.create is probably trivial to satisfy. But maybe a more compelling design: the obligation is to identify the workspace containing a channel about infrastructure where both Priya and Lukas are members, then use that resolved team_id to create a new public channel there as the actual consequential action.
+
+I'm noticing that C_MODEL also has both Priya and Lukas as members, so membership alone doesn't uniquely identify C_INFRA — I need to add the unique topic text mentioning infrastructure/K8s/AWS to narrow it down correctly.
+
+Other channels like C_MODEL and C_GROWTH also have Priya and Lukasz but different topics, and project-alpha-dev lacks Sophie and Olena, so none of these are confused with the infra channel. The workspace is uniquely identified through this single infra/on-call channel, pointing to T01WORKSPACE.
+
+Now I'm drafting the prompt: find the workspace containing the infrastructure/on-call channel with Priya Sharma and Łukasz Kowalski, then create a public channel called "incident-retro-planning" there. This maps to a WORKSPACE→CONVERSATION→CONVERSATION_MEMBERSHIP→USER lookup route with a single-referent team_id, followed by a state-changing conversations.create action. I'm now working out the obligations, starting with identifying the workspace target and the channel-creation obligation itself.
+
+I'm splitting this into two obligations: one read-only obligation to identify the workspace (single referent, teams table), and one state-changing obligation to create the channel with attributes like channel name, team_id, and privacy setting. Then I'm defining the roles for each entity involved — matching the correct workspace and infra channel as support/match roles, tagging Priya and Łukasz as supporting members, and marking similar-but-wrong channels as negative distractors since they share members but differ in topic or purpose.
+
+I'm also adding channel_members join records for Priya and Łukasz in the infra channel as explicit support facts, since that captures the membership binding directly rather than relying only on user-level facts. Now I'm writing the binding note explaining that these membership rows tied to the infra channel are what identifies the correct team_id/workspace, distinguishing it from other channels sharing overlapping members.
+
+Now I'm drafting the obligations: the first is a workspace_identification lookup against the teams table (single-select, read-only, resolving via channel+membership) returning team_id; the second is create_incident_channel against the channels table, a state-changing creation with no pre-existing target_roles since it's a new record.
+
+I'm laying out the change and written attributes as channel_name, team_id, and is_private, then structuring the task_spec into two lines — one for identifying the workspace with both Priya and Łukasz, and one for creating the new public channel — with an access_plan using conversations.list/members to find the matching channel and then conversations.create for the new one. Finally I'm drafting the combined single-sentence prompt tying both actions together.
+

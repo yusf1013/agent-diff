@@ -1,0 +1,91 @@
+```json
+{
+  "seed_edits": [
+    {
+      "table": "channels",
+      "op": "insert",
+      "key": {"channel_id": "C_BETA_ARCHIVE"},
+      "values": {
+        "channel_id": "C_BETA_ARCHIVE",
+        "channel_name": "beta-legacy-archive",
+        "team_id": "T01WORKSPACE",
+        "is_private": false,
+        "is_dm": false,
+        "is_gc": false,
+        "is_archived": true,
+        "topic_text": "Beta program - ARCHIVED",
+        "purpose_text": "Legacy beta program channel, retained for records only."
+      },
+      "reason": "wrong_channel_archive role: a different archived channel that must not be confused with old-project-q3 when locating the bot member of the requested channel."
+    },
+    {
+      "table": "users",
+      "op": "insert",
+      "key": {"user_id": "U_BETABOT"},
+      "values": {
+        "user_id": "U_BETABOT",
+        "username": "betabot",
+        "email": "betabot@neuroflow.ai",
+        "real_name": "Beta Program Bot",
+        "display_name": "BetaBot",
+        "is_bot": true,
+        "is_active": true
+      },
+      "reason": "beta_bot negative role: a bot member of an archived channel other than old-project-q3, to test that the membership route correctly excludes wrong-channel bots."
+    },
+    {
+      "table": "user_teams",
+      "op": "insert",
+      "key": {"user_id": "U_BETABOT", "team_id": "T01WORKSPACE"},
+      "values": {"user_id": "U_BETABOT", "team_id": "T01WORKSPACE", "role": "member"},
+      "reason": "Workspace membership required for U_BETABOT to be a coherent, discoverable user in this workspace."
+    },
+    {
+      "table": "channel_members",
+      "op": "insert",
+      "key": {"channel_id": "C_BETA_ARCHIVE", "user_id": "U_BETABOT"},
+      "values": {"channel_id": "C_BETA_ARCHIVE", "user_id": "U_BETABOT"},
+      "reason": "Gives U_BETABOT a conversation_membership in beta-legacy-archive (not old-project-q3), realizing the wrong_channel_archive negative scenario."
+    },
+    {
+      "table": "messages",
+      "op": "insert",
+      "key": {"message_id": "1706200000.000001"},
+      "values": {
+        "message_id": "1706200000.000001",
+        "channel_id": "C_OLD_PROJECT",
+        "user_id": "U02JOHNDOE1",
+        "message_text": "Wrapping up my notes here before this channel goes fully inactive - thanks everyone for the Q3 push.",
+        "type": "message",
+        "ts": "1706200000.000001"
+      },
+      "reason": "human_poster_old_project negative role: John Doe authors a message in old-project-q3 without holding a channel_members row there, so authorship must not satisfy the USER->MEMBERSHIP->CONVERSATION route."
+    }
+  ],
+  "bindings": {
+    "target_channel": ["C_OLD_PROJECT"],
+    "wrong_channel_archive": ["C_BETA_ARCHIVE"],
+    "beta_bot": ["U_BETABOT"],
+    "agent_bot_elsewhere": ["U01AGENBOT9"],
+    "human_poster_old_project": ["U02JOHNDOE1"],
+    "old_project_bot_member": []
+  },
+  "selectors": [
+    {
+      "root_table": "users",
+      "scope": [],
+      "focal": {
+        "path": ["users", "channel_members", "channels"],
+        "joins": ["channel_members.user_id", "channel_members.channel_id"],
+        "filters": [
+          {"node": 0, "field": "is_bot", "op": "eq", "value": true},
+          {"node": 2, "field": "channel_name", "op": "eq", "value": "old-project-q3"}
+        ]
+      },
+      "auxiliary": []
+    }
+  ],
+  "negative_referents": ["U_BETABOT", "U01AGENBOT9", "U02JOHNDOE1"],
+  "notes": "The target channel old-project-q3 (C_OLD_PROJECT) already exists in the base seed as archived with zero channel_members rows, so no edit was needed there; this preserves the absent outcome. Added records instantiate the three negative alternatives: a bot (U_BETABOT) whose only membership is in a different archived channel (C_BETA_ARCHIVE), a bot (U01AGENBOT9, pre-existing) with many memberships but never in old-project-q3, and a human (U02JOHNDOE1) who merely authored a message in old-project-q3 without ever joining it. Solver access: the acting user must be a member of the workspace (already true for existing users) and can discover the archived channel via conversations.list with exclude_archived=false or users.conversations, then call conversations.members on C_OLD_PROJECT, which returns an empty member list, and cross-check other bots' memberships via users.conversations/users.info to confirm no bot is tied to old-project-q3 specifically. No new workspace or hidden field was invented; all bindings use existing user-facing identifying fields (channel_name, is_bot)."
+}
+```

@@ -1,0 +1,24 @@
+I'm verifying that T03GHOSTCORP is correctly excluded because it lacks a user_teams row linking U01AGENBOT9 to that team, even though the channel name filter matches—confirming the join logic requires both actor membership and channel match.
+
+One nuance worth checking: the auxiliary path enforces workspace-level membership rather than direct channel membership, which the design's binding note actually emphasizes (via users.conversations). This is a mechanical simplification that likely still yields correct results since the actor happens to be a member of the matching channels either way, but I want to trace through whether this could cause a discrepancy in edge cases.
+
+01WORKSPACE and T02NORTHSTAR but not T03GHOSTCORP, so the results happen to line up even though the mechanism differs. This looks like a subtle defect: the design intends discovery through actual conversation membership, but the compiled selector's auxiliary path is checking workspace membership instead, using the wrong table even though route_nodes specify workspace and conversation entities directly.
+
+The notes confirm the compiler explicitly chose workspace membership over channel membership, which contradicts the obligation's "reachable through actor's own conversation memberships" language—a clear semantic mismatch between intended channel-level scoping and the actual workspace-level auxiliary condition applied.
+
+Actually, the real gating factor should be channel membership itself, not workspace membership - since being a channel_member already implies the channel's workspace exists, checking user_teams is redundant and semantically mismatched. The correct selector should filter via channel_members directly; the workspace-membership check happens to yield the same result here, but it's not the intended route.
+
+The main path teams->channels is correct, but then it adds an extra teams->user_teams workspace-membership filter that wasn't part of the original obligation's design—only actor conversation membership was specified. That's exactly the violation the rules warn about: supplemental identifying conditions must be requested, not secretly enforced.
+
+The role facts confirm the actor's workspace membership is true, but explicitly filtering on it goes beyond what the design specified, which relied on conversation-level membership (channel_members) instead. This looks like a mechanical construction bug. I also confirm the negative channel case is properly excluded by the channel_name condition, so no spurious matches there.
+
+The auxiliary using user_teams rather than channel_members really is a query construction defect — it doesn't match the stated access route, even though the compiler's own notes flag this substitution. Checking whether it materially changes the answer: in the current seed, the actor happens to be a member of both channels and both containing workspaces, so results align regardless. But the identifying-paths field in the cards explicitly commits to teams->user_teams as the representational route, which matters for consistency even if the seed data masks the discrepancy.
+
+Given that identifying paths should only record edges matching the requested relationship, and the requested relationship here is conversation-based membership rather than workspace-based, this looks like a genuine mechanical issue worth flagging as a validity/annotation concern rather than dismissing it as harmless coincidence.
+
+Reconsidering the exact obligation wording confirms it — "reachable through the actor's own conversation memberships" maps precisely to the channel_members table, but the compiled selector substitutes user_teams (workspace membership) instead. That's a table-level substitution of the identifying route, exactly the kind of defect flagged as invalid.
+
+I'll mark this as a validity issue at compiled.selectors[0].auxiliary, with the repair being either to replace the join path with teams→channels→channel_members filtered by user_id, or to drop the auxiliary constraint and rely on channel_members directly.
+
+Given this is a substantive route substitution defect rather than a coincidental match, I'll call overall validity "fail" while rating quality as "adequate" since the underlying design is otherwise sound apart from this flaw.
+

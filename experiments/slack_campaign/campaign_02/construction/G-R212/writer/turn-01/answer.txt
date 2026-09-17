@@ -1,0 +1,94 @@
+```json
+{
+  "prompt": "Can you tell me the workspace role of whoever reacted with 🎉 (tada) to the message about deploying the redesigned onboarding flow to production, posted in a channel where Carlos Vega is also a member?",
+  "binding_note": "Route: WORKSPACE_MEMBERSHIP(user_teams) -> USER -> REACTION -> MESSAGE -> CONVERSATION -> CONVERSATION_MEMBERSHIP. The target workspace membership belongs to whichever user's own reaction (tada) sits on the onboarding-deployment message, and that message's channel must separately have a conversation_membership record for Carlos Vega. All three conditions (reactor identity, emoji, message content+channel, and that channel's membership by Carlos Vega) must bind to the same message/channel; a tada reaction on a different message, or a tada reaction on the right message but in a channel Carlos Vega does not belong to, does not qualify.",
+  "roles": [
+    {
+      "role": "onboarding_message",
+      "entity": "messages",
+      "facts": "New message posted by Aisha Okonkwo (U_AISHA) in #frontend (C_FRONTEND): 'Deploying the redesigned onboarding flow to production at 6pm — heads up if you see onboarding-related alerts.'",
+      "selection": "support",
+      "reason": "Anchor message the request identifies by content."
+    },
+    {
+      "role": "frontend_channel",
+      "entity": "channels",
+      "facts": "#frontend (C_FRONTEND); members are Priya, Lukas, Sophie, Olena, Mateo, Kenji, Robert, Aisha per seed. Carlos Vega (U_INCOGNITO) is not a member of this channel.",
+      "selection": "negative",
+      "reason": "This channel hosts the correct message but lacks the required Carlos Vega membership, so reactions here can't satisfy the full route."
+    },
+    {
+      "role": "growth_channel",
+      "entity": "channels",
+      "facts": "#product-growth (C_GROWTH); members include Kenji, Mateo, Priya, and Carlos Vega (U_INCOGNITO) per seed.",
+      "selection": "support",
+      "reason": "The only channel satisfying the Carlos Vega conversation-membership condition, but it does not contain the onboarding-deployment message."
+    },
+    {
+      "role": "carlos_membership",
+      "entity": "channel_members",
+      "facts": "Carlos Vega (U_INCOGNITO) holds a conversation_membership row for C_GROWTH.",
+      "selection": "support",
+      "reason": "Supplies the CONVERSATION_MEMBERSHIP node the route requires on the message's channel."
+    },
+    {
+      "role": "reactor_wrong_channel",
+      "entity": "users",
+      "facts": "Łukasz Kowalski (U_LUKAS) reacts 'tada' to the onboarding-deployment message in #frontend. His workspace membership role is 'member'.",
+      "selection": "negative",
+      "reason": "Correct emoji and correct message, but the message's channel (#frontend) has no Carlos Vega membership, so the conversation-membership condition fails."
+    },
+    {
+      "role": "reactor_wrong_emoji",
+      "entity": "users",
+      "facts": "Mateo Rivera (U_MATEO) reacts 'rocket' to the same onboarding-deployment message in #frontend.",
+      "selection": "negative",
+      "reason": "Correct message and channel-adjacent context, but wrong emoji excludes this reaction."
+    },
+    {
+      "role": "reactor_wrong_message",
+      "entity": "users",
+      "facts": "Priya Sharma (U_PRIYA) reacts 'tada' to the existing Tokyo-launch-stats message (1706027877.000000) authored by Kenji in #product-growth, a channel that does include Carlos Vega.",
+      "selection": "negative",
+      "reason": "Correct emoji and a channel that does satisfy the Carlos Vega membership condition, but the message itself is not the onboarding-deployment announcement."
+    },
+    {
+      "role": "priya_membership",
+      "entity": "user_teams",
+      "facts": "Priya Sharma's workspace membership row (role: member) in T01WORKSPACE.",
+      "selection": "negative",
+      "reason": "Would be the reported membership if the message condition were ignored; excluded because her tada reaction is on the wrong message."
+    },
+    {
+      "role": "lukas_membership",
+      "entity": "user_teams",
+      "facts": "Łukasz Kowalski's workspace membership row (role: member) in T01WORKSPACE.",
+      "selection": "negative",
+      "reason": "Would be the reported membership if the channel condition were ignored; excluded because #frontend lacks Carlos Vega's membership."
+    }
+  ],
+  "obligations": [
+    {
+      "name": "onboarding_reactor_membership",
+      "description": "Identify the workspace membership (user_teams row) of the user whose own 'tada' reaction is on the message announcing the onboarding-flow production deployment, where that message's channel also has a conversation_membership for Carlos Vega; report that membership's role. No user satisfies every condition simultaneously.",
+      "table": "user_teams",
+      "mode": "absent",
+      "task_type": "read-only",
+      "scope": "ordinary workspace-wide lookup across channels the acting user can see",
+      "target_roles": [],
+      "candidate_role_sets": null,
+      "selection": "one",
+      "answer_attributes": [["user_teams.role"], ["user_teams.user_id"]]
+    }
+  ],
+  "task_spec": [
+    {
+      "line": 1,
+      "text": "Find who reacted with tada to the onboarding-deployment announcement in a channel where Carlos Vega is also a member, and report that person's workspace role.",
+      "obligations": [1]
+    }
+  ],
+  "scope_exception": null,
+  "access_plan": "Search channel histories/search.messages for text mentioning the onboarding flow deployment to locate the anchor message and its channel (#frontend). Use reactions.get on that message to enumerate reactors and emoji names, isolating any 'tada' reactions. Use conversations.members on the message's channel to check whether Carlos Vega (real_name lookup via users.list/users.info) is a member there. Separately, search other channels' histories for 'tada' reactions to confirm whether any such reaction lands on a message in a channel where Carlos Vega is a member. Cross-referencing shows no user's tada reaction satisfies both the message-content and channel-membership conditions together, so the workspace-membership lookup returns no match."
+}
+```

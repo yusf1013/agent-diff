@@ -1,0 +1,20 @@
+I'm designing a task following the WORKSPACE → WORKSPACE_MEMBERSHIP route, aiming to identify a single workspace based on a member's attributes, like finding the workspace where a specific person holds a particular membership role.
+
+Robert Walsh does hold admin role on T01WORKSPACE, though Morgan Freeman also has that role there - still fine since there's only one team. So the task could be "list channels in the workspace where Robert Walsh has admin role," using the membership route to resolve the workspace and then listing conversations via team_id as the follow-up deliverable.
+
+Since only one workspace exists, resolution stays single regardless of which admin is used. I'll settle on identifying the workspace through a membership record where Robert Walsh holds an admin role, using the user_teams row as the anchor rather than trying to construct artificial negatives that don't exist in the base seed.
+
+Since workspaces have no write operations, I should focus on read-only questions about team fields like team_name or created_at. A reasonable grounded question would be asking for the name of the workspace where Robert Walsh holds admin membership—trivial to answer but tests the join properly, so I want to build toward something more open-ended, perhaps combining it with a message-related task.
+
+I'm settling on a natural scenario: someone consolidating admin permissions wants to know the name and creation date of the workspace where Robert Walsh has an admin role, using that identification as the trigger for the actual lookup.
+
+I'll set up the roles: the target workspace itself (holding the facts to return), Robert Walsh as the identifying admin, and negatives like John Doe (a mere member, not admin) and Morgan Freeman (an admin, but wrong name) to ensure the route requires matching both exact name and exact role.
+
+5. negative_morgan_membership - Morgan Freeman's admin role in the same workspace, negative since it's a different user. 6. negative_johndoe_membership - John Doe's member role, negative since the role isn't admin.
+
+I'm noting that the true identifying record is the single user_teams row linking Robert Walsh and the team with role='admin' together, not separate facts about the person and role. The prompt asks for the workspace's name and creation date given Robert Walsh's admin membership, so the obligation targets the teams table in single mode, read-only, with target_roles pointing to target_workspace.
+
+I'm also determining answer_attributes should be team_name and created_at from teams, and deciding only one main obligation is needed here since it's a straightforward single-step lookup, not requiring a separate support obligation.
+
+For the access plan, I'm working out that since there's no direct user_teams read API, the solver would need to use users.list to locate Robert Walsh, then rely on users.info to check workspace role association, since that seems to expose selected workspace membership details including role.
+

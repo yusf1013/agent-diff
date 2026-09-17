@@ -1,0 +1,146 @@
+{
+  "prompt": "List the workspaces that contain a channel with a message which received a 🚀 (rocket) reaction from an admin of that same workspace.",
+  "binding_note": "The reactor's workspace-membership role must be admin *within the same workspace* that owns the channel/message they reacted to; an admin of a different workspace reacting on this workspace's message does not satisfy the route, nor does a non-admin member reacting with rocket, nor does an admin reacting with a different emoji.",
+  "roles": [
+    {
+      "role": "workspace_test",
+      "entity": "teams",
+      "facts": "Existing workspace 'Test Workspace' (T01WORKSPACE) containing #general, #engineering, #growth etc.",
+      "selection": "match",
+      "reason": "Contains channel C01ABCD1234 whose message got a rocket reaction from its own admin."
+    },
+    {
+      "role": "workspace_neuro",
+      "entity": "teams",
+      "facts": "New workspace 'NeuroFlow Research' (T02NEURO) added for this scenario, containing #product-launch.",
+      "selection": "match",
+      "reason": "Contains channel C_NEURO_LAUNCH whose message got a rocket reaction from its own admin."
+    },
+    {
+      "role": "channel_general",
+      "entity": "channels",
+      "facts": "#general (C01ABCD1234), public channel in T01WORKSPACE.",
+      "selection": "support",
+      "reason": "Houses the message that received the qualifying reaction for workspace_test."
+    },
+    {
+      "role": "message_shipped",
+      "entity": "messages",
+      "facts": "Message 1699564800.000123 in C01ABCD1234: 'Hey team, we just shipped the new feature!'",
+      "selection": "support",
+      "reason": "The message that receives the admin's rocket reaction, binding workspace_test."
+    },
+    {
+      "role": "user_robert_walsh",
+      "entity": "users",
+      "facts": "Robert Walsh (U03ROBERT23), admin of T01WORKSPACE.",
+      "selection": "support",
+      "reason": "The reactor whose workspace-membership role is admin in T01WORKSPACE."
+    },
+    {
+      "role": "membership_robert_walsh",
+      "entity": "user_teams",
+      "facts": "user_id U03ROBERT23, team_id T01WORKSPACE, role admin.",
+      "selection": "support",
+      "reason": "Establishes the same-workspace admin binding for workspace_test."
+    },
+    {
+      "role": "reaction_robert_walsh",
+      "entity": "message_reactions",
+      "facts": "message_id 1699564800.000123, user_id U03ROBERT23, reaction_type rocket.",
+      "selection": "support",
+      "reason": "The qualifying reaction on the message in workspace_test's channel."
+    },
+    {
+      "role": "channel_neuro_launch",
+      "entity": "channels",
+      "facts": "#product-launch (C_NEURO_LAUNCH), public channel newly created in T02NEURO.",
+      "selection": "support",
+      "reason": "Houses the message that receives the qualifying reaction for workspace_neuro."
+    },
+    {
+      "role": "message_launch",
+      "entity": "messages",
+      "facts": "New message in C_NEURO_LAUNCH authored by Mateo Rivera: 'We just shipped the v2 launch to production!'",
+      "selection": "support",
+      "reason": "The message that receives the admin's rocket reaction, binding workspace_neuro."
+    },
+    {
+      "role": "user_robert_chen",
+      "entity": "users",
+      "facts": "Robert Chen (U_ROBERT), admin of T02NEURO (new membership) while only a plain member of T01WORKSPACE.",
+      "selection": "support",
+      "reason": "The reactor whose admin role applies specifically to T02NEURO, not T01WORKSPACE."
+    },
+    {
+      "role": "membership_robert_chen",
+      "entity": "user_teams",
+      "facts": "user_id U_ROBERT, team_id T02NEURO, role admin (new row, distinct from his existing member row in T01WORKSPACE).",
+      "selection": "support",
+      "reason": "Establishes the same-workspace admin binding for workspace_neuro."
+    },
+    {
+      "role": "reaction_robert_chen",
+      "entity": "message_reactions",
+      "facts": "message_id of message_launch, user_id U_ROBERT, reaction_type rocket.",
+      "selection": "support",
+      "reason": "The qualifying reaction on the message in workspace_neuro's channel."
+    },
+    {
+      "role": "negative_cross_workspace_reaction",
+      "entity": "message_reactions",
+      "facts": "Robert Chen (admin only of T02NEURO) also reacts with rocket on message 1699737600.000654 in #engineering (C03IJKL9012, T01WORKSPACE).",
+      "selection": "negative",
+      "reason": "Reactor is an admin, but not of the workspace owning this message; tests that admin role must match the same workspace as the reacted-on channel."
+    },
+    {
+      "role": "negative_nonadmin_rocket",
+      "entity": "message_reactions",
+      "facts": "Nick Fury (U08NICK23, plain member of T01WORKSPACE) reacts with rocket on a message in #growth (C04MNOP3456).",
+      "selection": "negative",
+      "reason": "Reactor holds no admin role anywhere, so the role condition fails even though the emoji matches."
+    },
+    {
+      "role": "negative_wrong_emoji",
+      "entity": "message_reactions",
+      "facts": "Agent bot (U01AGENBOT9) reacts with 'eyes' on message 1706110000.000100 in #engineering.",
+      "selection": "negative",
+      "reason": "Neither the emoji (eyes, not rocket) nor the reactor's role (non-admin) satisfy the request."
+    }
+  ],
+  "obligations": [
+    {
+      "name": "qualifying_workspaces",
+      "description": "Workspaces that contain a channel holding a message which received a rocket-emoji reaction from a user whose workspace-membership role is admin in that same workspace.",
+      "table": "teams",
+      "mode": "multiple",
+      "task_type": "read-only",
+      "scope": "workspaces reachable via channel->message->reaction->user->workspace-membership chain matching the admin/rocket condition",
+      "target_roles": [
+        "workspace_test",
+        "workspace_neuro"
+      ],
+      "candidate_role_sets": null,
+      "selection": "set",
+      "answer_attributes": [
+        [
+          "teams.team_id"
+        ],
+        [
+          "teams.team_name"
+        ]
+      ]
+    }
+  ],
+  "task_spec": [
+    {
+      "line": 1,
+      "text": "Identify and list every workspace that has a channel with a message reacted to by a rocket emoji from an admin of that same workspace.",
+      "obligations": [
+        1
+      ]
+    }
+  ],
+  "scope_exception": null,
+  "access_plan": "Discover workspaces via teams; for each, use conversations.list (team_id scoped) to enumerate its channels, conversations.history to pull messages in each channel, and reactions.get per message to see reactor and emoji name. For each rocket reactor, check their workspace-membership role (via users.info / team membership data) restricted to the same team_id as the channel being examined, and only count the workspace if that specific membership role is admin. Aggregate the team_ids that satisfy this into the final list."
+}

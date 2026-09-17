@@ -1,0 +1,78 @@
+I need to set up the teams T02NORTHSTAR, T03SUMMIT, T04VERTEX, T05LUMEN along with their channels, users, and memberships. I'm also considering who the actor should be, since cross-workspace visibility requires either a real anchor user or a documented scope exception under the "scoped witness" design.
+
+The likely actor is U01AGENBOT9, the bot already present in the base seed, but for multi-workspace access it would need user_teams entries across all five teams to call conversations.list per team_id, plus channel_members entries in the relevant on-call channels to support conversations.members.
+
+So I'll add U01AGENBOT9 as a member of T02-T05 and to each on-call channel (and the base C_ONCALL_T01 channel), including the incident channel as a useful distractor.
+
+Now I'm laying out the seed data: four new teams (Northstar Labs, Summit Robotics, Vertex Dynamics, Lumen Analytics), their on-call channels plus a base workspace on-call channel and an incident-response channel for Northstar, and a set of new users spread across those orgs like Priyanka Rao, Devon Clarke, Farah Haddad, Ian Foster, Renata Silva, Marcus Webb, and Talia Novak.
+
+I'm mapping each new user to their team with the right admin or member role, and making sure the actor bot U01AGENBOT9 also gets member access to all four new teams so it can list conversations across each. Then I'm working through channel_members for each on-call channel, adding the relevant admins, members, and the actor bot, including cross-workspace membership cases where an admin from one team sits as a plain member in another team's channel.
+
+Now I'm building the obligation selector for admins: rooting at teams and joining through channels, channel_members, users, and user_teams, filtering for on-call channels and admin role while making sure the join preserves matching team_id between channels and user_teams.
+
+The join declares user_teams.team_id linking back to teams, but that closes the loop as a foreign key equality between two non-adjacent nodes rather than adding a new node - which likely needs a special filter type since the path structure normally only supports linear adjacent joins.
+
+Looking at the example, joins list entries like the message-reactions FK reference the child table's field pointing to the parent's id, regardless of direction. So to add an edge from user_teams back to teams (node0), I'd need that same FK-naming convention but pointing back to an already-visited node rather than a new one.
+
+I'm not sure the framework's linear path structure supports jumping back to an earlier node -- but given the intent here (matching workspace membership to the same workspace), maybe the path just revisits "teams" as a new final node instead, joined via user_teams.team_id, treating it as a fresh entity of the same type. The tricky part is that filters seem to only support literal comparisons, not cross-node field equality, so I need another way to enforce that the final team matches the original one.
+
+Cross-node equality isn't directly expressible since values are literals, not references to other nodes' fields. A workaround might be joining through the composite key on user_teams (user_id, team_id), filtering user_teams.team_id via an actual comparison rather than trying to reference node0 directly.
+
+This suggests the language may actually expect separate obligations per team_id, with the selector's "multiple" mode taking the union of eligible alternatives across those focal queries, rather than a single cross-referencing query.
+
+I could try chaining through channels and channel_members to user_teams, but I keep hitting the same problem: appending a final teams node to check team_id equality only works with a literal value, and there's no clean way to express "must equal the root's own team_id" unless the engine specifically resolves that by matching identity back to the root row.
+
+Given that constraint, maybe the simpler design point is that for underspecified queries, the selector just computes the union across all eligible candidates rather than trying to enforce equality through a join path.
+
+I'm realizing the query engine likely treats node0 as the literal root row being tested, so looping back to a "teams" node deeper in the path wouldn't stay tied to root without explicit filtering support the syntax lacks. Given the complexity, I'm considering that root should iterate over all candidate team rows unrestricted, with a focal path like teams→channels→channel_members→users→user_teams joined through matching team_id and channel_id fields.
+
+That path alone would incorrectly match teams having an on-call channel with any admin, regardless of workspace—like wrongly including Summit since Priyanka is admin elsewhere but a member of Summit's channel. I need to enforce equality between the final user_teams team_id and the root team_id, which might require a non-linear join annotation connecting back to node0 rather than the standard one-join-per-step linear chain.
+
+I'm considering redefining the path to loop back to "teams" explicitly, but even then the engine wouldn't automatically constrain that final team node to equal the root—there's no built-in mechanism for a root-dependent equality filter, only literal value comparisons. Maybe restructuring which node serves as root would sidestep this problem.
+
+I'm realizing this join could point back to node0 without creating a new node, effectively forming a cycle in the join graph—so the "path" isn't strictly a chain of new tables but can loop back if an FK's target matches an existing node.
+
+The spec seems to imply joins are consecutive edges along the path, so a backward reference to an earlier node isn't cleanly supported. I'm wondering if the workaround is to use two focal queries, or a scope filter restricting the root via team_id, but the selector system doesn't seem to allow subqueries between root and auxiliary beyond independent constants.
+
+Since cross-node equality isn't supported with the given operations, I'm reconsidering whether the actual intended join path should just go from teams directly to user_teams using their shared team_id foreign key rather than routing through channel_members and users.
+
+But I also need node4's team_id to equal node0's team_id, so the channel actually belongs to the same team as the root — otherwise it's just some on-call channel the admin happens to be in on any team. That's the same cross-node equality problem, just mirrored on the other end now.
+
+Actually there's a way out: since channels has a team_id foreign key back to teams, I can add a join "channels.team_id" that closes the loop directly to node0, tying the last node back to the root without needing an auxiliary constraint.
+
+Looking at the spec's own example query though, it just does a simple linear chain with no loop-back join at all — matching messages reacted to by members of a named channel, with no requirement that anything match back to the root. That makes me reconsider whether our problem even needs the loop-back: maybe the root's team_id doesn't need to reappear in the filter chain at all, since nothing in the query semantics forces it.
+
+Actually — the join itself already handles this. Since the path enters through channels.team_id, which is a foreign key pointing to teams.team_id, this join constraint (channels.team_id = teams.team_id) is applied per root row, so channels are automatically restricted to the team being evaluated. So that part of the constraint is already satisfied through the standard FK join semantics without needing anything extra.
+
+But uniqueness alone doesn't guarantee that user's single team matches the root team - that record could point to an entirely different team altogether. This is exactly the negative case: someone could be a channel member under one team's channel while their actual team membership row belongs to another team entirely, so the join must still explicitly enforce that equality.
+
+Since the framework seems to allow only literal-valued filters, maybe I can add an extra join constraint tying node4's team_id back to node0 as an additional edge on the same instantiated path, rather than introducing a new node - checking whether "one per step" is a strict rule or just typical usage that still permits extra constraints.
+
+Given the ambiguity, I suspect this task follows a known pattern where an extra join beyond the standard count closes the cycle back to node0, but there's no clean way to filter against the root value directly. Let me reconsider starting the path from the team side instead.
+
+Actually, starting from teams -> user_teams naturally forces user_teams.team_id to equal the root team via the foreign key, so I don't need an explicit filter for that constraint. Then continuing user_teams -> users -> channel_members -> channels should let me filter on the channel name, though I still need to verify the team_id constraint carries through the final join.
+
+teams(root) → user_teams (checking admin role, tied to root team) → users → channel_members → channels (named 'on-call'). That confirms the path structure, but I still need to verify the channel itself belongs to the same root team, not just any workspace's on-call channel.
+
+Though it wouldn't cause false positives in our current data, for design completeness I should add the team_id filter on the channel too, matching it back to the root workspace, even though cross-node comparisons aren't directly supported.
+
+In practice, since each admin only belongs to one on-call channel per workspace in the seed data, this extra constraint isn't strictly needed for correctness—but the binding_note's emphasis suggests the real requirement is confirming the admin role itself, not the channel's workspace match.
+
+I realize node3/4 isn't scoped to a single team - it's all channels this admin belongs to, named 'on-call'. Testing against real data: Marcus Webb only belongs to one on-call channel so no ambiguity, but Priyanka Rao belongs to multiple on-call channels across different teams, which could break the intended team-scoping if root=Northstar.
+
+For root=Summit, since no admin exists there, node1 correctly finds nothing and excludes it regardless of Priyanka's memberships. For root=Northstar, Priyanka matches at node1, and since she belongs to at least one genuine Northstar on-call channel, the query correctly succeeds even though her extra Summit-named channel doesn't cause a false negative.
+
+Checking T01WORKSPACE: node1 matches Robert Walsh or Morgan Freeman as admin, but Robert isn't in any 'on-call'-named channel, so the exclusion holds correctly even with C_ONCALL_T03 existing elsewhere.
+
+So I'm finalizing the selector: a single query joining teams, user_teams, users, channel_members, and channels, filtering for admin role and channel_name equal to 'on-call'. Then I'm mapping out the native handles for each workspace and channel binding across Northstar, Lumen, Summit, Vertex, and the base workspace to confirm which ones satisfy the obligation and which don't.
+
+I'm identifying the negative referents—Summit, Vertex, and the base workspace—as teams that should be excluded from the result set, then listing out the seed data inserts for teams and channels to construct the test fixtures.
+
+I'm also noting the bot's team memberships across all four teams and mapping out which users belong to each on-call channel.
+
+For actor visibility, I'm reasoning that conversations.list requires a team_id param tied to team membership, while users.info seems generally accessible without that same membership constraint.
+
+No messages are needed for this task, so I can skip adding message content entirely. I'm finalizing that actor U01AGENBOT9 needs membership across all 5 teams and their on-call channels (plus the incident-response distractor) to enable full discovery via conversations.list, conversations.members, and users.info, double-checking against the base workspace channels already in place.
+
+Now I'll compile the final JSON.
+

@@ -1,0 +1,67 @@
+```json
+{
+  "prompt": "We only escalate infrastructure incident reports to their author when the report's workspace already has someone holding the owner-level membership. Please DM the person who posted the circuit-tracer OOM/streaming report in our engineering channel with a thank-you and next-steps note, since that workspace should have a confirmed owner on record.",
+  "binding_note": "The route requires: the target user authored the message in engineering (C03IJKL9012), that channel's workspace is T01WORKSPACE, and T01WORKSPACE must have a workspace_membership record with role 'owner'. All stored workspace_membership rows for T01WORKSPACE are only 'member' or 'admin' — no 'owner' role exists anywhere in the seed — so no user satisfies the full chain and the selection is absent, regardless of who wrote the report.",
+  "roles": [
+    {
+      "role": "incident_report_author",
+      "entity": "users",
+      "facts": "U_LUKAS posted the circuit-tracer OOM/streaming rewrite report (message 1706110000.000100) in channel C03IJKL9012 (engineering), which belongs to workspace T01WORKSPACE.",
+      "selection": "negative",
+      "reason": "Satisfies message+conversation+workspace steps but the workspace has no 'owner' role membership, so the final WORKSPACE_MEMBERSHIP condition fails."
+    },
+    {
+      "role": "dm_update_author",
+      "entity": "users",
+      "facts": "U_SOPHIE posted a related circuit-tracer status update, but in the private DM channel D01AGENTSOPHIE, not the engineering channel where the incident was reported.",
+      "selection": "negative",
+      "reason": "Wrong conversation node in the route (DM, not the engineering incident-report channel), even though the workspace is the same and still lacks an owner membership."
+    },
+    {
+      "role": "admin_role_member",
+      "entity": "users",
+      "facts": "U03ROBERT23 and U07MORGANFREE hold role 'admin' in workspace T01WORKSPACE's workspace_membership records.",
+      "selection": "negative",
+      "reason": "Provides a workspace_membership role, but 'admin' is not 'owner', so the identifying condition on the membership role still fails."
+    },
+    {
+      "role": "target_workspace",
+      "entity": "teams",
+      "facts": "T01WORKSPACE contains channel C03IJKL9012 and has 19 workspace_membership records, all with role 'member' or 'admin'.",
+      "selection": "support",
+      "reason": "Anchors the WORKSPACE node in the route; its membership roster is the population checked for an 'owner' role."
+    },
+    {
+      "role": "engineering_channel",
+      "entity": "channels",
+      "facts": "C03IJKL9012 ('engineering'), belongs to T01WORKSPACE, contains the circuit-tracer OOM report thread.",
+      "selection": "support",
+      "reason": "The CONVERSATION node connecting the authored message to its workspace."
+    }
+  ],
+  "obligations": [
+    {
+      "name": "escalation_dm_target",
+      "description": "Select the user who authored the circuit-tracer OOM/streaming incident report in the engineering channel, restricted to cases where that channel's workspace has a workspace_membership record with role owner, in order to DM them a thank-you/escalation note. No such membership exists, so no user qualifies.",
+      "table": "users",
+      "mode": "absent",
+      "task_type": "state-changing",
+      "scope": "engineering channel incident-report authors whose channel's workspace has an owner-role membership",
+      "target_roles": [],
+      "candidate_role_sets": null,
+      "selection": "one",
+      "change_attributes": [["messages.message_text"], ["messages.channel_id"]],
+      "written_attributes": []
+    }
+  ],
+  "task_spec": [
+    {
+      "line": 1,
+      "text": "Identify the author of the circuit-tracer OOM/streaming report in the engineering channel whose workspace has an owner-level membership, and send them a thank-you/escalation DM.",
+      "obligations": [1]
+    }
+  ],
+  "scope_exception": null,
+  "access_plan": "Use conversations.history on the engineering channel (C03IJKL9012) to find the circuit-tracer OOM report message and its author via users.info; confirm the channel's workspace via conversations.info; then check that workspace's membership roster (workspace_membership/user_teams roles surfaced through users.list/users.info owner/admin flags) for a role of 'owner' — none exists in T01WORKSPACE, so the DM target cannot be resolved and no message should be sent."
+}
+```

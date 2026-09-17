@@ -1,0 +1,12 @@
+I've confirmed the fix removed U01AGENBOT9's user_teams row for T02NORTHSTAR while keeping its channel_members entry, and verified only the three expected users remain tied to that team. Now I'm checking whether there's anything else related to this flagged issue that still needs review.
+
+Actually the actor doesn't need users.list at all—it can just call conversations.history directly on C_NORTHSTAR_ENG to see the messages and reactions.get to verify the reaction, since it already knows the channel ID. But this raises a deeper issue: there's no direct API to confirm U_NS_DEV is a genuine member of T02NORTHSTAR versus just having posted in a channel belonging to that team, since the actor can't query team membership directly.
+
+Checking users.info(user) — this returns the user's workspace association, which would confirm U_NS_DEV belongs to T02NORTHSTAR, and importantly this call doesn't appear to require the actor's own membership in that team, just a user ID. That matches how the access plan already relies on conversations.info plus users.info, so this isn't a new problem.
+
+Removing the actor's T02NORTHSTAR membership shouldn't break conversations.history, since that's gated on channel membership and the actor still belongs to C_NORTHSTAR_ENG. This confirms the fix eliminates the duplicate witness issue — without the actor's user_teams row for T02NORTHSTAR, the join no longer pulls in U01AGENBOT9, so its unrelated message can't leak into that team's context. The mechanical checks (computed_matches, focal_negatives, candidate_population) all line up correctly, and I'm now checking whether removing that user_teams row has any other side effects.
+
+Channel_members for U01AGENBOT9 in C_NORTHSTAR_ENG and C_GHOST remain consistent, and all the other previously validated positives and negatives (main_workspace, second_workspace, ghost_workspace, wrong_reaction_lukas, ns_member_no_reaction) are unaffected. The fix looks solid and self-contained, so I'm ready to mark this as passing validity, though I want to do one more pass on whether the actor still needs broader users.list access to fully verify deployment message context.
+
+Since the actor already knows channel_id C_NORTHSTAR_ENG through direct membership, it can call conversations.history on that channel directly rather than relying on cross-workspace search.messages, which matches the access plan's fallback strategy. This confirms the compiled repair is valid and consistent, and I'm confident this final version passes with strong quality.
+

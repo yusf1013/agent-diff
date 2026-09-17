@@ -1,0 +1,34 @@
+This is a new design about "Robert admin" spanning multiple workspaces T01, T02STARLABS, T03BETACORP, requiring new teams, users, channels, and memberships to be instantiated per the design. I'm thinking through the actor's workspace access constraint—since users.list/users.info only operate within one selected workspace at a time, I need to be careful not to assume visibility across workspaces unless the actor is confirmed to be a member of each.
+
+The design's access plan wants me to discover "Robert"-named users via users.list, then check users.info for workspace association, then use conversations.list scoped to each team_id including T03BETACORP for comparison. But I'm uncertain whether conversations.list actually supports switching workspace scope via a team_id parameter in this replica, since the runtime notes explicitly say team_id is ignored for users.list/search—I need to verify if the same restriction applies to conversations.list before building my access plan around it.
+
+So conversations.history can reach known channel IDs across workspaces if actor is a member, but conversations.list itself only surfaces the current workspace's public channels—meaning discovering T02STARLABS channels via list would fail without a documented scope exception. Since scope_exception is null and this is a locked design meant to be instantiated rather than redesigned, if this truly makes the task impossible I should return design_defect.
+
+That suggests conversations.list is scoped to the actor's primary workspace only, and cross-workspace listing needs an existing anchor or explicit exception. Since the design's access_plan calls for conversations.list with different team_ids to compare T02STARLABS and T03BETACORP, that could fail preflight unless I adjust the seed so the actor already has memberships spanning those channels, making the multiworkspace lookup actually resolvable.
+
+This actually points to a cleaner solution: users.conversations lists conversations by membership regardless of team, without requiring team scoping. That's the robust mechanism for cross-workspace discovery, since membership alone (not team_id) drives what shows up.
+
+So the fix is to give the actor channel membership across all relevant workspace channels beyond T01 where it already exists. And for establishing profile predicates like "Robert, admin" deterministically, each queried user should hold exactly one workspace membership, since users.info only exposes one selected workspace association per user.
+
+Now I'm sketching the seed data: Robert Walsh stays admin only in T01, Robert Kim becomes admin only in T02, Robert Diaz remains a plain member only in T01 (no T03 presence), and Sam Cole is admin only in T03. I'm drafting the new team records for StarLabs and BetaCorp workspaces, then starting on the new user records with their usernames, display names, real names, and emails.
+
+I'll also add user_teams entries for the actor bot in T02STARLABS and T03BETACORP, since it may need workspace-level access for discovery even though this alone won't enable full workspace switching—combined with channel memberships it should support the needed calls.
+
+No message content is required here, only admin-membership structure matters. For negative referents, C_BETA_GENERAL is a plausible false positive since Robert Diaz appears there as a regular member, not admin, so someone could mistakenly select it thinking channel membership equals workspace admin role. Now I'm building the selector with channels as the root table, following the path from conversation to workspace to workspace admin.
+
+The path traverses channels to teams to user_teams to users, filtering on user_teams role equal to 'admin' and users real_name containing 'Robert' case-insensitively, matching the rule to use real_name for name-based predicates. This single query should correctly return channels from both T01Workspace (admin Robert Walsh) and T02StarLabs (admin Robert Kim), while excluding T03BetaCorp since its admin is Sam Cole, not anyone named Robert.
+
+Since the join preserves row identity, Robert Diaz being only a 'member' in T01 won't accidentally match the admin filter — the role and real_name conditions apply to the same user_teams row, so his non-admin membership correctly fails the filter.
+
+But there's another admin in T01, Robert Walsh, whose row does satisfy both role='admin' and real_name containing 'Robert', so T01's channels correctly get included through his row. That means every channel in T01 will pass the filter since the team has at least one qualifying admin row, and Morgan Freeman's separate admin row (non-Robert) doesn't cause any incorrect exclusion.
+
+But now I need to check whether this also incorrectly pulls in the private DM channel dm-agent-sophie, since it also has team_id T01WORKSPACE and the join doesn't filter on is_dm - the design explicitly excludes that DM channel, so this could be a mismatch worth verifying.
+
+Given the underspecified resolution mode, the result should be the union of both workspaces' channels — the 11 T01 channels plus C_STAR_GENERAL and C_STAR_ENG from T02, totaling 13 channels, deliberately excluding BetaCorp's channel. Let me verify the T01 channel count matches.
+
+Counting through general, random, engineering, growth, project-alpha, project-alpha-dev, core-infra, model-research, product-growth, frontend, and old-project-q3 (archived but still counted), that's 11 channels, confirming 13 total with the two StarLabs additions. Archived status doesn't matter for inclusion since the design explicitly keeps old-project-q3, and the DM filter correctly excludes the private DM channel while leaving other public channels untouched — so I'm ready to construct the final selector.
+
+I'm building a single selector against the channels table, joining through teams and user_teams to users, filtering for admin role and real names containing "Robert," scoped to exclude DMs — this covers the "target_channels" obligation on its own. Now I'm working out the concrete bindings: mapping each team ID to its workspace, matching up membership records for Robert Walsh, Robert Kim, Robert Diaz, and Sam Cole to their respective teams, and listing out the channel IDs belonging to the T01 workspace.
+
+I'm adding the bot's own channel memberships in the Star Labs and Beta Corp channels for discovery access, plus team memberships in T02 and T03 so it has complete workspace visibility. I'm also confirming that each queried person keeps exactly one team membership so the profile predicates stay reproducible, and verifying the existing Robert Walsh record doesn't conflict — it doesn't, since it already has just the one entry. Now I'm putting together the full JSON with these seed edits.
+

@@ -1,0 +1,40 @@
+I need to figure out which reactions are missing from the base seed data - I see only one existing reaction entry, so I need to insert several new rows for Mateo's and Olena's tada reactions, Kenji's thumbsup, and Lukas's tada on the appropriate messages.
+
+All the users involved already belong to C_MODEL and the workspace, so no membership records need adjusting. I'm now working through the actor's access - likely U01AGENBOT9, which is already a channel member, so it has valid access to run conversations.history on C_MODEL. Now I'm mapping out the selector path for identifying celebrating reactors, tracing from users through message_reactions to messages, filtering on the tada reaction type and matching the target message timestamp, while also verifying workspace membership as part of the exposure qualification.
+
+Building query joins...
+
+I need message_reactions.user_id to tie back to the same root user (node0), since the reactor must match the workspace member we started with, not just any reactor on that message.
+
+Looking at the example path again: each join field belongs to the "current" node and connects forward to the next node via a shared key, chaining sequentially rather than looping back explicitly. So the join list is really a sequence of single-column keys linking each pair of adjacent tables in the path, one per step.
+
+For our case, if root_table is users, the selected rows are users filtered by their reaction to a specific message. I need node0=users, then build a path that also branches through teams/channels/messages to reach the target message, since a single linear path can't cover both the user's identity and their reaction to a specific message without revisiting users.
+
+I could construct: node0=users, node1=message_reactions joined on user_id, node2=messages joined via message_reactions.message_id, filtering node2 to the target message and node1's reaction_type to tada, then continue from node2 to channels, then teams, filtering the final node to the target workspace.
+
+But now I'm hitting a snag: I also need to verify the same user (node0) belongs to that workspace's team, which means looping back through user_teams to node0 -- except filters only compare a field to a fixed value, not one node's field to another node's field, so this loop-back approach might not actually work with the allowed operations.
+
+Instead, I'm reconsidering the path order: put users first, then user_teams, then teams, channels, messages, message_reactions, joining through user_teams.user_id, user_teams.team_id, channels.team_id, messages.channel_id, and message_reactions.message_id -- restructuring the join sequence so the identity constraint holds naturally through adjacency instead of a loop-back.
+
+Actually, thinking about the join semantics more carefully — if the join field at that step is message_reactions.user_id referencing users, that properly binds node1's user_id to node0's identity, which is exactly the constraint needed. So placing message_reactions right after users enforces reactor identity correctly, and I can continue the path forward through messages and separately establish the workspace connection.
+
+Each join step applies a single FK constraint between adjacent path nodes, so it's only circular back to node0 if the final FK target matches node0's PK. Mapping this out: users → user_teams (via user_id) → teams (via team_id) → channels (via team_id) → messages (via channel_id) → message_reactions (via message_id), and I need to check whether the reactor's user_id ties back to node0.
+
+Tracing through, the final join constrains message_reactions.message_id to messages(4).message_id but doesn't force message_reactions.user_id to equal node0.user_id — so this query would match any workspace member, not specifically the reactor, which is too broad and pulls in false positives. I need a different structure that actually ties the reactor's identity to the root node.
+
+Since the root is the users table, the fix is to make node1 be message_reactions joined directly via user_id back to node0, so message_reactions.user_id = node0.user_id is enforced. Then node2 is messages joined via message_reactions.message_id, with filters on reaction_type=tada and the specific message_id — though this alone would still pull in unwanted matches like a thumbsup reactor, so more filtering is needed.
+
+Even though the workspace hop is technically redundant since all reactors are already workspace members, I still need to include it as a literal route requirement — extending with node3=channels via messages.channel_id and node4=teams via channels.team_id, filtering on the workspace name or ID.
+
+I'm also weighing whether to instead anchor the workspace hop at node0 via user_teams to confirm the root user's membership, but since the path structure is linear, it can't branch off from node0 twice.
+
+Actually a path is a sequence where each node connects to the previous one, not necessarily to node0, so I could try node0=users, node1=user_teams, node2=teams filtering by team, then route onward to channels, messages, and reactions -- but that reintroduces the identity problem since the reaction's user needs to be node0 specifically. Given the tool's constraints, the right construction seems to be node0=users, node1=message_reactions joined on user_id to close identity, node2=messages, then continuing to channels.
+
+I'll extend it to teams to confirm workspace, joining channels.team_id, with filters for reaction_type='tada', message_id='1706012456.000000', and team_id='T01WORKSPACE'. This ties reactor, message, channel, and workspace together even though the direction is user←reaction←message→channel→team, which reasonably satisfies the intended design. I'll settle on this focal path with users, message_reactions, messages, channels, teams as nodes and the corresponding joins and filters.
+
+This is a single "set"-mode selector returning all qualifying users, with no additional scope restriction since none was requested. I still need to seed the missing reaction rows: tada from U_MATEO and U_OLENA on message 1706012456, thumbsup from U_KENJI, and tada from U_LUKAS on message 1706012683 -- while U_PRIYA needs no insertion since having no reaction already satisfies the design.
+
+Now I'm mapping role labels to concrete handles: workspace T01WORKSPACE, channel C_MODEL, the announcement message, and each reactor role tied to their user IDs, with U_KENJI, U_LUKAS, and U_PRIYA all serving as plausible negative roots for the wrong-emoji, wrong-message, and no-reaction cases respectively. I'm confirming there's just one obligation and one selector, and checking whether the acting user needs channel membership in C_MODEL to access the conversation history.
+
+Confirming U01AGENBOT9 already has membership in C_MODEL and access to T01WORKSPACE, so no new memberships are needed, and verifying C_MODEL is public as expected. I'm preparing to insert four message_reactions rows and checking there's no primary key conflict on the composite of message, user, and reaction type before finalizing the answer.
+

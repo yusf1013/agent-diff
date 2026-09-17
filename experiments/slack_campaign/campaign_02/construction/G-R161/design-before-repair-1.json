@@ -1,0 +1,183 @@
+{
+  "prompt": "List the public channels in the workspace where someone named Robert reacted to the team's shipping announcement with a rocket emoji.",
+  "binding_note": "The 'Robert' referred to must hold workspace membership in the target workspace AND be the same user who left the rocket reaction on a shipping-announcement message; the announcement's channel only needs to belong to that workspace, not to any particular one. Two different workspaces each have a distinct member first-named Robert who rocket-reacted to their own shipping announcement, so the workspace is not uniquely resolved by this route alone.",
+  "roles": [
+    {
+      "role": "workspace_alpha",
+      "entity": "teams",
+      "facts": "T01WORKSPACE ('Test Workspace'), the long-standing workspace with engineering/growth/infra/model channels.",
+      "selection": "alternative",
+      "reason": "One of two workspaces whose member named Robert rocket-reacted to a shipping announcement."
+    },
+    {
+      "role": "workspace_beta",
+      "entity": "teams",
+      "facts": "New team T02NIMBUS ('Nimbus Robotics'), a smaller robotics-focused workspace.",
+      "selection": "alternative",
+      "reason": "Second workspace whose member named Robert rocket-reacted to a shipping announcement."
+    },
+    {
+      "role": "member_robert_walsh",
+      "entity": "users",
+      "facts": "U03ROBERT23, real_name 'Robert Walsh', admin-role workspace membership in T01WORKSPACE.",
+      "selection": "support",
+      "reason": "Binds the Robert identity to workspace_alpha via workspace membership."
+    },
+    {
+      "role": "member_robert_kim",
+      "entity": "users",
+      "facts": "New user U_ROBERTK, real_name 'Robert Kim', member of T02NIMBUS.",
+      "selection": "support",
+      "reason": "Binds the Robert identity to workspace_beta via workspace membership."
+    },
+    {
+      "role": "message_shipping_alpha",
+      "entity": "messages",
+      "facts": "Message 1699564800.000123 in #general (C01ABCD1234, workspace_alpha): 'Hey team, we just shipped the new feature!'",
+      "selection": "support",
+      "reason": "The shipping-announcement message in workspace_alpha that receives the rocket reaction."
+    },
+    {
+      "role": "message_shipping_beta",
+      "entity": "messages",
+      "facts": "New message 1706200000.000001 in #launch-updates (C_NIMBUS_LAUNCH, workspace_beta), authored by Dana Cole: 'We just shipped the new firmware update to production fleet!'",
+      "selection": "support",
+      "reason": "The shipping-announcement message in workspace_beta that receives the rocket reaction."
+    },
+    {
+      "role": "reaction_walsh_rocket",
+      "entity": "message_reactions",
+      "facts": "New reaction row: message 1699564800.000123, user U03ROBERT23, reaction_type 'rocket'.",
+      "selection": "match",
+      "reason": "Robert Walsh's rocket reaction on the shipping announcement identifies workspace_alpha."
+    },
+    {
+      "role": "reaction_kim_rocket",
+      "entity": "message_reactions",
+      "facts": "New reaction row: message 1706200000.000001, user U_ROBERTK, reaction_type 'rocket'.",
+      "selection": "match",
+      "reason": "Robert Kim's rocket reaction on the shipping announcement identifies workspace_beta."
+    },
+    {
+      "role": "channel_alpha_general",
+      "entity": "channels",
+      "facts": "C01ABCD1234 #general, public, workspace_alpha.",
+      "selection": "alternative",
+      "reason": "Part of the answer set if workspace_alpha resolves."
+    },
+    {
+      "role": "channel_alpha_random",
+      "entity": "channels",
+      "facts": "C02EFGH5678 #random, public, workspace_alpha.",
+      "selection": "alternative",
+      "reason": "Part of the answer set if workspace_alpha resolves."
+    },
+    {
+      "role": "channel_beta_general",
+      "entity": "channels",
+      "facts": "New C_NIMBUS_GENERAL #general, public, workspace_beta.",
+      "selection": "alternative",
+      "reason": "Part of the answer set if workspace_beta resolves."
+    },
+    {
+      "role": "channel_beta_launch",
+      "entity": "channels",
+      "facts": "New C_NIMBUS_LAUNCH #launch-updates, public, workspace_beta.",
+      "selection": "alternative",
+      "reason": "Part of the answer set if workspace_beta resolves."
+    },
+    {
+      "role": "negative_robert_chen_wrong_reaction",
+      "entity": "users",
+      "facts": "U_ROBERT, real_name 'Robert Chen', member of workspace_alpha; new reaction row on message 1706076473.000000 with reaction_type 'eyes' (not rocket, not the shipping message).",
+      "selection": "negative",
+      "reason": "Same first name and same workspace, but wrong emoji and wrong message, so it does not satisfy the route."
+    },
+    {
+      "role": "negative_incognito_member",
+      "entity": "users",
+      "facts": "U_INCOGNITO, real_name 'Carlos Vega', display 'El Incognito', member of #product-growth in workspace_alpha; no reactions on record.",
+      "selection": "negative",
+      "reason": "Workspace member but wrong name and no qualifying reaction at all."
+    }
+  ],
+  "obligations": [
+    {
+      "name": "resolve_workspace",
+      "description": "Identify the workspace whose member named Robert left a rocket reaction on the workspace's shipping-announcement message; genuinely ambiguous between two workspaces.",
+      "table": "teams",
+      "mode": "underspecified",
+      "task_type": "read-only",
+      "scope": "single workspace satisfying the membership+reaction route",
+      "target_roles": [
+        "workspace_alpha",
+        "workspace_beta"
+      ],
+      "candidate_role_sets": [
+        [
+          "workspace_alpha"
+        ],
+        [
+          "workspace_beta"
+        ]
+      ],
+      "selection": "one",
+      "answer_attributes": [
+        [
+          "teams.team_id"
+        ],
+        [
+          "teams.team_name"
+        ]
+      ]
+    },
+    {
+      "name": "list_workspace_channels",
+      "description": "List the public (non-DM, non-private) channels belonging to whichever workspace is resolved above.",
+      "table": "channels",
+      "mode": "multiple",
+      "task_type": "read-only",
+      "scope": "public channels of the resolved workspace",
+      "target_roles": [
+        "channel_alpha_general",
+        "channel_alpha_random",
+        "channel_beta_general",
+        "channel_beta_launch"
+      ],
+      "candidate_role_sets": [
+        [
+          "channel_alpha_general",
+          "channel_alpha_random"
+        ],
+        [
+          "channel_beta_general",
+          "channel_beta_launch"
+        ]
+      ],
+      "selection": "set",
+      "answer_attributes": [
+        [
+          "channels.channel_name"
+        ],
+        [
+          "channels.is_private"
+        ],
+        [
+          "channels.is_archived"
+        ]
+      ]
+    }
+  ],
+  "task_spec": [
+    {
+      "line": 1,
+      "text": "List the public channels in the workspace where someone named Robert reacted to the team's shipping announcement with a rocket emoji.",
+      "obligations": [
+        1,
+        2
+      ]
+    }
+  ],
+  "scope_exception": null,
+  "access_plan": "Enumerate teams; for each, use users.list/users.info to find members named Robert, then use conversations.history/reactions.get on candidate shipping-announcement messages within that team's channels to check for a rocket reaction by that Robert. Two teams (T01WORKSPACE and the newly seeded T02NIMBUS) each satisfy this, producing an unresolved single-workspace pick; once resolved, use conversations.list with that team_id (types=public_channel) to enumerate its public channels."
+}

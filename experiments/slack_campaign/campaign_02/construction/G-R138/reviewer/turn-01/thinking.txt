@@ -1,0 +1,24 @@
+I'm tracing the chain from user to conversation membership to conversation to message to reaction for this invite request, and noting that since no rocket reaction exists anywhere in the data, the resolution chain never resolves to a valid target.
+
+I'm double-checking the seed data supports this: reactions table only has one 'eyes' reaction stored, and the many 🚀 emoji appearances in message text don't count as actual reactions. I'm also verifying the near-miss candidates - the bot member in #engineering, the human non-bot member, and the correct message - all check out against the channel_members and messages tables as intended distractors.
+
+So the absence is genuine and systemic: no rocket-emoji reaction exists anywhere in the dataset, meaning the full route (membership → conversation → message → reaction) legitimately fails regardless of how well individual legs like membership or bot-flag conditions are satisfied.
+
+The task type is state-changing (an invite action) despite the target being absent, which seems like a deliberate design choice to test whether the model correctly detects absence before attempting to execute an invite. This isn't a calibration case—it's the actual generation meant to validate that no matching user exists.
+
+Checking the access plan, it relies on conversations.history for #engineering and reactions.get on each message, which aligns with documented API endpoints, so that part checks out.
+
+Looking at written_attributes for the invite target, the listed columns reference channel_members.user_id and channel_members.channel_id generically, which makes sense since the actual write would target the destination channel rather than the engineering channel where the search occurred. The route_nodes also match up properly, tracing through user, conversation membership, conversation, message, and reaction nodes exactly as the task describes—so the full route is being used correctly. One thing to flag: the message that received a rocket reaction doesn't necessarily need to be authored by the target user themselves.
+
+I'm noting that the target message needs to reside in #engineering specifically, which lines up correctly. The overall quality looks solid, with good negative examples (near-miss reactions, near-miss channel memberships, near-miss non-reacting channels) providing decent coverage. One subtlety worth flagging: several messages in the seed data contain literal rocket emoji characters embedded directly in their text, which could trick a naive search-based approach into matching on text content rather than verifying an actual reaction row exists—this looks like an intentional trap to distinguish genuine reaction objects from emoji mentions in message bodies.
+
+I'm also confirming the reaction naming convention: the "rocket" reaction_type string should correctly correspond to the 🚀 emoji per Slack's standard naming, and there's only a single stored reaction row (eyes) with no rocket reaction anywhere, which checks out.
+
+Verifying the "target_roles" field is left empty by design, and confirming inviting to #project-alpha-dev via conversations.invite is a supported action. Since this is a clean_generation without calibration mutation, no environment change seems necessary at this stage.
+
+Overall the design looks valid, and I'm checking remaining fields: "scope_exception" is null as expected, and the binding_note properly ties the user to the channel_members record for C03IJKL9012, with the conversation itself bound singularly to that same channel.
+
+The message binding must belong to that same conversation, and since no message has a rocket reaction, the obligation correctly resolves to absent. I'm confirming the scope description matches—requiring the reacted message to be in the same channel as the membership—and this holds true. Overall the design seems solid with no major errors, though I note one minor conceptual redundancy in how the conversation node is referenced.
+
+The negative role "infra_channel_no_reactions" seems like a legitimate distractor meant to test whether a solver mistakenly generalizes across different channels, rather than a flaw. My overall verdict is that this passes validity and quality checks well.
+

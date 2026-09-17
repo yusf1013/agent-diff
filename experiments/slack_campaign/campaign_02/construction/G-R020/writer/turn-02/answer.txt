@@ -1,0 +1,38 @@
+```json
+{
+  "prompt": "Which channels have messages posted by Robert, who's a member of our workspace?",
+  "binding_note": "Two workspace members share the display/real name 'Robert' — Robert Walsh (user_teams.role=admin) and Robert Chen (user_teams.role=member) — both tied to team T01WORKSPACE via user_teams. The route channels→messages→users→user_teams→teams binds a channel through a message whose author is a Robert who holds a workspace membership; since both Roberts satisfy 'a member of our workspace,' the condition does not resolve to one person and yields two distinct candidate channel sets, one per author's actually-authored messages.",
+  "roles": [
+    {"role":"robert_walsh","entity":"users","facts":"user_id U03ROBERT23, display_name 'Robert', real_name 'Robert Walsh'","selection":"alternative","reason":"one of two same-first-name candidate message authors along the route"},
+    {"role":"robert_chen","entity":"users","facts":"user_id U_ROBERT, display_name 'Robert', real_name 'Robert Chen'","selection":"alternative","reason":"the other same-first-name candidate message author along the route"},
+    {"role":"walsh_membership","entity":"user_teams","facts":"user_id U03ROBERT23, team_id T01WORKSPACE, role=admin","selection":"support","reason":"binds robert_walsh to the workspace via the required user_teams hop"},
+    {"role":"chen_membership","entity":"user_teams","facts":"user_id U_ROBERT, team_id T01WORKSPACE, role=member","selection":"support","reason":"binds robert_chen to the workspace via the required user_teams hop"},
+    {"role":"workspace","entity":"teams","facts":"team_id T01WORKSPACE, team_name 'Test Workspace'","selection":"support","reason":"terminal workspace node shared by both candidate authors"},
+    {"role":"walsh_channel_engineering","entity":"channels","facts":"channel_id C03IJKL9012, channel_name 'engineering'; contains message_id 1699824000.000987 authored by U03ROBERT23 about a login rate-limit crash report","selection":"match","reason":"channel actually holding a message authored by robert_walsh"},
+    {"role":"walsh_channel_general","entity":"channels","facts":"channel_id C01ABCD1234, channel_name 'general'; contains message_id 1700173200.000456 authored by U03ROBERT23 asking about MCP deployment timing","selection":"match","reason":"second channel actually holding a message authored by robert_walsh"},
+    {"role":"chen_channel_infra","entity":"channels","facts":"channel_id C_INFRA, channel_name 'core-infra'; contains multiple messages authored by U_ROBERT, e.g. message_id 1706067472.000000 about the monthly cloud bill going $47K over budget, plus 1706068012.000000, 1706068546.000000, 1706068954.000000, 1706069328.000000","selection":"match","reason":"channel actually holding messages authored by robert_chen"},
+    {"role":"walsh_member_silent_channel","entity":"channels","facts":"channel_id C02EFGH5678, channel_name 'random'; U03ROBERT23 is a channel_members row here but authored no message in this channel","selection":"negative","reason":"membership without an authored message fails the messages hop for robert_walsh"},
+    {"role":"chen_member_silent_channel","entity":"channels","facts":"channel_id C06ALPHADEV, channel_name 'project-alpha-dev'; U_ROBERT is a channel_members row here but authored no message in this channel","selection":"negative","reason":"membership without an authored message fails the messages hop for robert_chen"},
+    {"role":"chen_member_silent_channel_model","entity":"channels","facts":"channel_id C_MODEL, channel_name 'model-research'; U_ROBERT is a channel_members row here but authored no message in this channel","selection":"negative","reason":"additional membership-only channel that must not be reported for robert_chen"}
+  ],
+  "obligations": [
+    {
+      "name":"robert_conversations",
+      "description":"Channels (channels.channel_id/channel_name) that contain at least one message (messages.message_id) authored by a user (messages.user_id -> users.user_id) whose name is Robert and who holds a workspace membership (user_teams) in the team (teams.team_id) T01WORKSPACE. The shared first name 'Robert' is genuinely ambiguous between two distinct workspace members (an admin and a plain member), each with their own actually-authored-message channel set; no delegated tie-breaker is given.",
+      "table":"channels",
+      "mode":"underspecified",
+      "task_type":"read-only",
+      "scope":"channels in team T01WORKSPACE containing a message authored by a user named Robert who has a user_teams row for that team",
+      "target_roles":["walsh_channel_engineering","walsh_channel_general","chen_channel_infra"],
+      "candidate_role_sets":[["walsh_channel_engineering","walsh_channel_general"],["chen_channel_infra"]],
+      "selection":"set",
+      "answer_attributes":[["channels.channel_name"],["messages.message_text"],["messages.ts"]]
+    }
+  ],
+  "task_spec":[
+    {"line":1,"text":"List the channels containing messages posted by Robert, a member of our workspace, and note what each message says.","obligations":[1]}
+  ],
+  "scope_exception": null,
+  "access_plan":"Use users.list to find workspace members whose display_name/real_name is 'Robert' (matches U03ROBERT23 'Robert Walsh' and U_ROBERT 'Robert Chen'); confirm each one's team via users.info or the seeded user_teams rows against team_id T01WORKSPACE. For each such user, use users.conversations to enumerate their channel memberships, then conversations.history on those channels to find messages actually authored (messages.user_id) by that user rather than merely present via channel_members, yielding the two independent candidate channel sets (robert_walsh: engineering/general; robert_chen: core-infra) while excluding membership-only channels where no such message exists."
+}
+```

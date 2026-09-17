@@ -1,0 +1,70 @@
+{
+  "prompt": "In our Northwind Labs workspace, can you check what membership role the person in the #field-ops channel holds there? I want to know before deciding whether to give them admin access for the field-deployment rollout.",
+  "binding_note": "The route requires the same user to (a) hold a conversation membership in #field-ops, a channel whose team_id is Northwind Labs, and (b) hold a workspace-membership (user_teams) row for that same Northwind Labs team. Carlos Vega (U_INCOGNITO) satisfies (a) but his only stored workspace membership is for Test Workspace, not Northwind Labs, so no user_teams record satisfies both legs of the route.",
+  "roles": [
+    {
+      "role": "northwind_workspace",
+      "entity": "teams",
+      "facts": "A second workspace, Northwind Labs (T02NORTHWIND), created for field-engineering coordination, separate from the existing Test Workspace.",
+      "selection": "support",
+      "reason": "Anchors the workspace end of the route that the membership must belong to."
+    },
+    {
+      "role": "field_ops_channel",
+      "entity": "channels",
+      "facts": "#field-ops is a public channel with team_id set to Northwind Labs, topic 'Coordination for on-site field deployments'.",
+      "selection": "support",
+      "reason": "Identifies the conversation whose membership names the target user."
+    },
+    {
+      "role": "carlos_field_ops_membership",
+      "entity": "channel_members",
+      "facts": "Carlos Vega (U_INCOGNITO, display name El Incognito) is the sole channel_members row for #field-ops, joined a week after the channel was created.",
+      "selection": "support",
+      "reason": "This is the conversation-membership join used to identify the candidate user via the route."
+    },
+    {
+      "role": "carlos_wrong_workspace_membership",
+      "entity": "user_teams",
+      "facts": "Carlos Vega's only user_teams row is for Test Workspace (T01WORKSPACE, role member); no row exists tying him to Northwind Labs.",
+      "selection": "negative",
+      "reason": "Shows a membership record exists for this user but for the wrong workspace, so it cannot satisfy the request scoped to Northwind Labs."
+    },
+    {
+      "role": "mateo_northwind_membership",
+      "entity": "user_teams",
+      "facts": "Mateo Rivera (U_MATEO) holds an ordinary user_teams row for Northwind Labs (role member), but he has no channel_members row in #field-ops.",
+      "selection": "negative",
+      "reason": "Shows a user with correct-workspace membership who fails the conversation-membership leg of the route, so naively matching on workspace alone would be wrong."
+    }
+  ],
+  "obligations": [
+    {
+      "name": "northwind_fieldops_membership_role",
+      "description": "The workspace-membership record, scoped to Northwind Labs, for whichever user holds a conversation membership in #field-ops (a channel belonging to Northwind Labs); report that role.",
+      "table": "user_teams",
+      "mode": "absent",
+      "task_type": "read-only",
+      "scope": "single workspace-membership lookup gated through one channel's membership",
+      "target_roles": [],
+      "candidate_role_sets": null,
+      "selection": "one",
+      "answer_attributes": [
+        [
+          "user_teams.role"
+        ]
+      ]
+    }
+  ],
+  "task_spec": [
+    {
+      "line": 1,
+      "text": "Determine the Northwind Labs workspace-membership role of the person who is a member of the #field-ops channel.",
+      "obligations": [
+        1
+      ]
+    }
+  ],
+  "scope_exception": null,
+  "access_plan": "Use conversations.members on #field-ops to obtain its sole member (Carlos Vega); then check his workspace association via users.info/users.list scoped to the Northwind Labs team_id (or equivalently the user_teams table) to find a membership role. No such row exists for Northwind Labs — his only workspace membership is for Test Workspace — so the lookup correctly yields no match, distinguishing the requirement from Mateo Rivera's Northwind membership, who lacks the #field-ops conversation membership."
+}

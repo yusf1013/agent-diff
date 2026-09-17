@@ -1,0 +1,73 @@
+```json
+{
+  "prompt": "Which channels have as a member the teammate based in Mexico City who mentioned that the Q1 budget had been approved?",
+  "binding_note": "Route binds a channel (r0) through its channel_members row (r1) to a user (r2, identified by timezone America/Mexico_City) who is also linked as the author (r3.user_id = r2.user_id) of a message reporting Q1 budget approval; the message's own channel_id is irrelevant to selecting r0 — only the author's memberships count.",
+  "roles": [
+    {
+      "role": "target_channels",
+      "entity": "channels",
+      "facts": "No channel has both (a) a channel_members row for the Mexico City-timezone user and (b) that same user as author of any Q1 budget-approval message, because that user authored no messages at all.",
+      "selection": "negative",
+      "reason": "The join across channel_members and messages via the shared user never succeeds, so no channel qualifies."
+    },
+    {
+      "role": "mexico_city_user",
+      "entity": "users",
+      "facts": "Carlos Vega (U_INCOGNITO), username shadow.lurker, timezone America/Mexico_City, has zero authored rows in messages.",
+      "selection": "negative",
+      "reason": "Matches the identifying USER attribute (timezone) but fails the MESSAGE-authorship leg entirely, so no channel can be reached through him."
+    },
+    {
+      "role": "growth_membership",
+      "entity": "channel_members",
+      "facts": "channel_members row: channel_id=C_GROWTH, user_id=U_INCOGNITO, giving Carlos Vega a real membership.",
+      "selection": "support",
+      "reason": "Supplies the membership edge (r1) needed by the route; without a matching message from the same user this membership alone cannot select #product-growth."
+    },
+    {
+      "role": "wrong_user_budget_author",
+      "entity": "users",
+      "facts": "Robert Chen (U_ROBERT), timezone America/New_York, member of core-infra, authored the cloud-bill message about being over budget.",
+      "selection": "negative",
+      "reason": "Authors a budget-related message and holds a real channel membership, but his timezone does not satisfy the Mexico City condition, excluding his channels from the route."
+    },
+    {
+      "role": "budget_overage_message",
+      "entity": "messages",
+      "facts": "Message 1706067472.000000 in channel_id=C_INFRA, user_id=U_ROBERT, text: 'Monthly cloud bill came in. We're $47K over budget, mostly spot instance fallbacks.'",
+      "selection": "negative",
+      "reason": "Different value on message content: reports a budget overage, not a budget approval, so it does not satisfy the topic condition even though authored by a channel member."
+    },
+    {
+      "role": "infra_membership_robert",
+      "entity": "channel_members",
+      "facts": "channel_members row: channel_id=C_INFRA, user_id=U_ROBERT.",
+      "selection": "support",
+      "reason": "Shows the membership edge that would let #core-infra qualify if Robert satisfied the identifying user/message conditions, which he does not."
+    }
+  ],
+  "obligations": [
+    {
+      "name": "target_channels",
+      "description": "Select channels reached via a channel_members row for a user with timezone America/Mexico_City who is also, through matching user_id, the author of a message reporting Q1 budget approval; the message's own channel is not required to be the selected channel.",
+      "table": "channels",
+      "mode": "absent",
+      "task_type": "read-only",
+      "scope": "channels discoverable in the workspace via listing and membership lookups",
+      "target_roles": [],
+      "candidate_role_sets": null,
+      "selection": "set",
+      "answer_attributes": [["channels.channel_name"]]
+    }
+  ],
+  "task_spec": [
+    {
+      "line": 1,
+      "text": "Find the channels where the Mexico City-based teammate who mentioned the Q1 budget approval is a member, and report which channels those are.",
+      "obligations": [1]
+    }
+  ],
+  "scope_exception": null,
+  "access_plan": "Use users.list to find the member with timezone America/Mexico_City (Carlos Vega); use users.conversations / conversations.members to enumerate his channel memberships (#product-growth); use conversations.history across workspace channels or search.messages to check whether he authored any message about a Q1 budget approval — none is found, so no channel satisfies both conditions, establishing the absent result."
+}
+```

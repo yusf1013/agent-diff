@@ -1,0 +1,22 @@
+{
+  "status": "unrealized",
+  "review": {
+    "validity": "fail",
+    "quality": "weak",
+    "issues": [
+      {
+        "kind": "validity",
+        "location": "compiled.seed_edits (channel_members insert for C05ALPHA/U_SOPHIE) and membership_target binding",
+        "problem": "The design explicitly states 'No channel_members row currently exists for (channel_id=C05ALPHA, user_id=U_SOPHIE); only the bot is presently a member of #project-alpha' — this absence is the entire premise for the state-changing invite obligation. However, the compiler inserted exactly this row into the seed_edits ({'channel_id':'C05ALPHA','user_id':'U_SOPHIE','joined_at':'2024-01-29T00:00:00'}), and it now appears in candidate_population and computed_matches. This means the membership already exists in the environment presented to the solver, contradicting the access_plan's claim that conversations.members on #project-alpha 'shows only the bot present' and defeating the purpose of the invite action (there is nothing left to create).",
+        "repair": "Remove the C05ALPHA/U_SOPHIE channel_members seed_edit entirely; the referent for a state-changing 'create membership' obligation must be the absent row that the solver's conversations.invite call is expected to produce, not a row pre-populated in the seed. The obligation/answer key should validate the row's existence only after the action executes, not via a seed-inserted row."
+      },
+      {
+        "kind": "validity",
+        "location": "compiled.notes",
+        "problem": "The notes attempt to justify the contradiction by claiming 'the harness is expected to present the pre-invite state to the solver and treat successful creation of this exact row as fulfilling the obligation' — but this is inconsistent with actually including the row in seed_edits, which makes it part of the starting database state visible to any query, including conversations.members before the solver acts.",
+        "repair": "If the intended design is a state-changing task validated by post-action row presence, the compiler must not add the target row to seed_edits/base state; it should exist only as the expected post-condition checked after the solver's write, consistent with the design's 'no such row exists yet' fact."
+      }
+    ],
+    "rationale": "The compiled case directly contradicts the design's stated pre-condition (no existing #project-alpha membership for the fire-reactor) by seeding that exact row before the task begins, which both falsifies the access_plan's described observation (only the bot present) and renders the state-changing invite obligation already satisfied/vacuous. This is a substantive referent-state contradiction between the design and the compiled seed, not a cosmetic issue, so the case must fail validity despite otherwise correct reaction bindings, negatives, and route usage."
+  }
+}

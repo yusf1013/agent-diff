@@ -1,0 +1,28 @@
+I need to rethink the routing here—CONVERSATION_MEMBERSHIP through CONVERSATION to MESSAGE with single resolution won't work since joined_at can't be the deliverable. I'm looking for another state-changing action, but channel_members doesn't seem to expose any other writable fields besides join time, so I need to figure out what the deliverable actually could be.
+
+Maybe the action involves inviting or removing a user identified through their membership—something like a kick or invite operation that touches the conversation and user rather than modifying the membership row itself. Alternatively, a read-only task could identify which member belongs to a channel containing a certain message, but that only confirms existence rather than needing joined_at. Since answer_attributes must be real columns of channel_members (channel_id, user_id, joined_at), and joined_at is excluded, I could frame the answer around identifying the user_id and channel_id of a membership matching some criteria.
+
+I'm leaning toward making this a state-changing kick action: find a membership by tracing conversation_membership through the channel to a message identifying core-infra, then remove that member via conversations.kick. This fits the single-target mode and the required route structure linking channel_members to channels to messages.
+
+But there's a real problem: the route contract only exposes those three tables, with no user entity, so I can't distinguish a specific member using user attributes. The join gives me every membership in the channel that contains the matching message, which is a set unless the channel happens to have just one member or I find another way to narrow it down uniquely.
+
+This actually points toward "multiple" mode rather than "single" — the correct request is one that returns the collection of memberships tied to that channel, since it naturally has several members. That aligns with the feedback about not forcing a single match when the seeded data actually supports a multi-row collection, and I still need to think through what consequential action to attach to that membership set.
+
+Actually, simpler to keep this read-only: identify core-infra as the channel where the debugging conversation happened, then list its members via the membership route joined through message location. The identity fields channel_id and user_id serve as the real answer attributes here, since listing members is inherently about listing user_ids tied to that channel.
+
+Actually, inviting members elsewhere creates new membership records in a different location, so that's really a separate obligation from just discovering the core-infra membership. Let me simplify to a clean read-only request instead: report the members of core-infra, the channel where the team concluded the batch-size increase hit a hard CUDA memory limit rather than fragmentation, so they can be looped into a live incident retro thread.
+
+Actually, creating a new channel adds an unnecessary intermediate step, so I should simplify to a pure read-only question: just list the members of the channel where the incident was diagnosed, which fits the pattern of an open-ended question whose answer depends on selected records.
+
+The target roles are the eight core-infra membership rows, with negatives being memberships that same users hold in other channels (growth, model, frontend) that get excluded since they're the wrong conversation. I'm noting the tension between the assignment's fixed "single" resolution mode and the fact that the natural query surface yields many matching memberships in core-infra, which pushes toward multiple — but since the assignment explicitly locks in single, I need to keep it as is rather than override that field.
+
+To satisfy single mode without touching allowed tables, I'm considering adding an explicit equality linking the membership's user_id to the message's author user_id (r0.user_id = r2.user_id), since the route contract permits extra equalities when explicitly represented — this way the membership picked out is tied to the specific person who posted the message.
+
+Then the deliverable could be a state-changing action: removing that author from the core-infra channel, framed as something like the person leaving the infra team and needing their channel access revoked, which naturally justifies a kick action on that one grounded membership.
+
+Now I'm working out the roles: the target membership is Priya's row in the core-infra channel to be removed, the channel itself supports as context, and Priya's message diagnosing the CUDA limit confirms her identity. I'm setting up decoys too—Lukas's message in the same channel with a different conclusion, and Olena's praise message—to make sure the model doesn't confuse authorship with the removal target.
+
+I'm now defining the obligation itself: removing the single channel_members row where the membership's user_id matches the author of the CUDA-limit-diagnosing message in core-infra, scoped as a single state-changing kick action targeting exactly that membership.
+
+My plan is to find the core-infra channel, locate the message where that conclusion was stated to identify the author's user ID, confirm they're currently a member, then remove them via a kick action. I should also make sure the bot's own membership stays intact and verify the acting user is already seeded as a member of that channel before proceeding.
+

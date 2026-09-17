@@ -1,0 +1,28 @@
+I need a route from WORKSPACE through membership, user, message, to reaction, with the referent entity being WORKSPACE and multiple resolution mode. Since the seed data only has one workspace, this route seems unusual, but "multiple" mode still asks for a jointly intended collection even if there's just one team in practice.
+
+I'll design the request so the identifying chain is workspace-member-user-authored message-received reaction, e.g. "which workspaces have a member who posted a message that got a rocket reaction?" Binding requires the same user being both member and message author, with the reaction tied directly to that message. Now I need to check what reactions actually exist in the seed data to make sure this query has a valid match.
+
+Since all users belong to the single seeded workspace, there's no natural way to create ambiguity across multiple workspaces. I could add a second team with its own users to make the multiple-match scenario genuinely meaningful, but given the case setup implies a single-team environment, I'll keep the rocket reaction as the sole matching answer and rely on negative reactions (different emoji, different messages) to test discoverability instead.
+
+Actually, let's settle on a checkmark ✅ reaction scenario: identifying which workspaces have a deployment announcement message that got sign-off approval from a member, useful for deciding rollout order. I'll add a second workspace, T02NORTHSTAR "Northstar Labs," with its own member, channel, and matching message+reaction, creating genuine plurality across two workspaces.
+
+For T01WORKSPACE, I'll reuse existing members and channels, adding a deployment completion message from one member with a check reaction from a different existing member, so both workspaces have parallel, comparable examples for the assistant to reason over.
+
+For negative cases, I can leverage an existing message that's deployment-related but reacted with "eyes" instead of "check" — this gives a useful contrast case within the same workspace without needing to fabricate new entities.
+
+I'm also considering an edge case around membership: someone could post a checkmark-reacted message in a workspace where they only hold conversation membership, not actual workspace membership. I'll set up a third team, "Ghost Org," where the poster's real workspace membership lies elsewhere, ensuring this case gets excluded from the path since it requires genuine workspace membership rather than just posting access.
+
+Since nobody's user_teams links to T03GHOSTORG, this creates a solid negative distinguishing channel-team association from actual membership. I also want T02NORTHSTAR to hold a genuine positive match, giving a "multiple" mode result with two matches (T01, T02), plus a negative within T02 where a member posts a deployment-related message without any reaction attached.
+
+Now I'm thinking through the exposure qualification requirement — workspace identification should rely on workspace ID and membership facts, which aligns with the route I've chosen. I'm turning to drafting the actual prompt text: an open-ended, consequential question about which workspaces had a member post a message that received a ✅ sign-off reaction.
+
+Settling on a natural phrasing framed as a status report request, then noting the binding requirement — the same message must be authored by a workspace member and carry the check reaction — and mapping which table roles are needed (workspaces as target, plus supporting workspace_memberships, users, messages, and message_reactions).
+
+Now assigning specific entities to each role: two target workspaces with genuine matching message/membership/reaction chains, plus a negative case workspace where a user posts in a channel without real membership ties, testing whether the query correctly excludes loosely-associated cases.
+
+I'm also handling the two negative reaction variations - one with the wrong reaction emoji and one missing a reaction entirely - to make sure the obligation logic filters strictly on the reaction requirement. Then I'm structuring the final answer table around the workspaces mode with multiple selection targeting just the two correct matches, outputting team_id and team_name fields.
+
+For the access plan, I'm mapping out how to actually discover this: search messages for deployment completion posts across channels, cross-reference reactions to check for the correct emoji, then verify workspace membership. I'm running into the issue that there's no direct API for listing workspace membership via user_teams, so I need to lean on users.list scoped by team_id instead.
+
+I'll use users.list with a team_id parameter to pull workspace members, cross-reference those against message authors surfaced through search.messages or conversations.history, and confirm reactions with reactions.get on each candidate message. That gives me a workable path, so now I'm ready to finalize the JSON.
+

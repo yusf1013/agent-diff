@@ -1,0 +1,104 @@
+{
+  "prompt": "We're rolling out the multi-GPU interpretability fix and want to loop in the right teams. Lukas's circuit-tracer message about the OOM errors already got acknowledged with an 👀 reaction — which workspaces have a member sitting in that same channel? I need the list of workspaces to notify.",
+  "binding_note": "The route requires one user who simultaneously (a) holds a workspace membership (user_teams) in the candidate workspace (teams) and (b) holds a conversation membership (channel_members) in the channel (channels) containing Lukas's circuit-tracer OOM message (messages). The 👀 reaction (message_reactions) just needs to exist on that message; it need not have been added by that same user. Each qualifying user carries exactly one workspace membership, so every match is reachable by a plain conversations.members lookup on the channel followed by a users.info call per member, with no reliance on hidden multi-workspace facts.",
+  "roles": [
+    {
+      "role": "primary_workspace",
+      "entity": "teams",
+      "facts": "T01WORKSPACE ('Test Workspace') owns channel C03IJKL9012 (#engineering) where the circuit-tracer OOM message lives; its members (Robert, Morgan, Hubert, John, Agent) each hold their sole workspace membership here.",
+      "selection": "match",
+      "reason": "Multiple #engineering channel members have T01WORKSPACE as their one workspace membership, completing the full route."
+    },
+    {
+      "role": "secondary_workspace",
+      "entity": "teams",
+      "facts": "New workspace T02NOVATECH ('NovaTech Robotics'); its only member, a new user, holds no other workspace membership.",
+      "selection": "match",
+      "reason": "That user is a genuine, single-workspace member of NovaTech and also a plain #engineering channel member, satisfying the full route through one straightforward users.info lookup."
+    },
+    {
+      "role": "unrelated_workspace",
+      "entity": "teams",
+      "facts": "New workspace T03QUANTUM ('Quantum Labs'); its only member, a different new user, holds no other workspace membership.",
+      "selection": "negative",
+      "reason": "That user is a #frontend channel member only, never a member of #engineering, so the conversation-membership leg of the route fails and Quantum Labs is excluded."
+    },
+    {
+      "role": "bridging_user_match",
+      "entity": "users",
+      "facts": "U_DEREK, sole workspace membership in T02NOVATECH, also an ordinary #engineering (C03IJKL9012) channel member.",
+      "selection": "support",
+      "reason": "Provides the genuine, singly-discoverable user binding that qualifies NovaTech."
+    },
+    {
+      "role": "bridging_user_negative",
+      "entity": "users",
+      "facts": "U_MARIA, sole workspace membership in T03QUANTUM, member only of #frontend (C_FRONTEND).",
+      "selection": "support",
+      "reason": "Shows Quantum Labs fails because its member never joins the qualifying channel."
+    },
+    {
+      "role": "target_channel",
+      "entity": "channels",
+      "facts": "C03IJKL9012, #engineering channel in T01WORKSPACE, holding the circuit-tracer OOM discussion thread.",
+      "selection": "support",
+      "reason": "The conversation node anchoring the route between user membership and the message."
+    },
+    {
+      "role": "target_message",
+      "entity": "messages",
+      "facts": "Message 1706110000.000100 by U_LUKAS in C03IJKL9012 describing circuit-tracer hitting OOM errors and needing a PyTorch rewrite.",
+      "selection": "support",
+      "reason": "The message identified by content that must carry the qualifying reaction."
+    },
+    {
+      "role": "target_reaction",
+      "entity": "message_reactions",
+      "facts": "Reaction on message 1706110000.000100 with reaction_type 'eyes' by U01AGENBOT9.",
+      "selection": "support",
+      "reason": "Establishes that the message received the described 👀 acknowledgement, satisfying the terminal REACTION hop regardless of reactor identity."
+    },
+    {
+      "role": "decoy_channel",
+      "entity": "channels",
+      "facts": "C_FRONTEND, the channel U_MARIA actually belongs to, unrelated to the circuit-tracer message.",
+      "selection": "negative",
+      "reason": "Confirms the negative user's real channel membership is disjoint from the qualifying conversation."
+    }
+  ],
+  "obligations": [
+    {
+      "name": "notify_workspaces",
+      "description": "Identify the workspaces (teams) that have a member who is also a member of the #engineering channel containing Lukas's circuit-tracer OOM message that received an eyes reaction, for rollout notification purposes.",
+      "table": "teams",
+      "mode": "multiple",
+      "task_type": "read-only",
+      "scope": "workspaces reachable from the identified channel-membership/reaction chain, not all workspaces in the deployment",
+      "target_roles": [
+        "primary_workspace",
+        "secondary_workspace"
+      ],
+      "candidate_role_sets": null,
+      "selection": "set",
+      "answer_attributes": [
+        [
+          "teams.team_name"
+        ],
+        [
+          "teams.team_id"
+        ]
+      ]
+    }
+  ],
+  "task_spec": [
+    {
+      "line": 1,
+      "text": "Find the workspaces that should be notified based on having a member in the channel where the circuit-tracer OOM message received its 👀 acknowledgement, and report them.",
+      "obligations": [
+        1
+      ]
+    }
+  ],
+  "scope_exception": null,
+  "access_plan": "Actor (agent) can call conversations.history/conversations.replies on #engineering (C03IJKL9012) to locate Lukas's circuit-tracer OOM message and confirm its 👀 reaction via reactions.get. Then call conversations.members on that channel to enumerate its members, and for each member call users.info to read their one exposed workspace membership. Collect the distinct workspaces surfaced this way (T01WORKSPACE from the original members, T02NOVATECH from U_DEREK); Quantum Labs (T03QUANTUM) never appears because its sole member, U_MARIA, is absent from this channel's member list."
+}

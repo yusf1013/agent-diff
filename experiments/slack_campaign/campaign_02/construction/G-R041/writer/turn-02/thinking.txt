@@ -1,0 +1,22 @@
+I need to reconsider since joined_at isn't exposed. Following the route contract more carefully: channel_members connects to channels via channel_id, messages connect to channels via channel_id (marking the message's location, not necessarily tied to the same user), and message_reactions connect to messages via message_id — importantly, the message doesn't need to be authored by the membership's user, since the path is Membership→Channel→Message→Reaction.
+
+The correct identifying condition is channel-level: select memberships in a channel that happens to contain a message with a particular reaction, regardless of who authored that message. My earlier design mistakenly tied membership to message authorship, which isn't part of the actual route and effectively created a redundant path through the user instead. So the target framing should be "members of the channel" where that channel has a message bearing a specific reaction, with multiple members forming the collection.
+
+Given the schema, channel_members only exposes user_id and channel_id (joined_at excluded), so the deliverable is thin but valid—likely used for a purpose like notifying members about follow-up work related to that flagged message.
+
+I could instead pick a scenario that stays purely read-only: asking who's in the channel that has the circuit-tracer OOM message with the eyes reaction, framed as deciding who to pull into a sync about the fix. That keeps the answer to just user identifiers via channel membership, avoiding any mutation or extra binding.
+
+Since only the engineering channel matches, the scope is a single channel, but the actual target set is the group of members within it — genuinely multiple, unforced. All current members of that channel would count as matches, while members of unrelated channels or unrelated eyes-reactors elsewhere are excluded as negatives.
+
+I also realize the eyes reaction on Lukas's message already sits in the engineering channel itself, so that data point works naturally without needing a new record — I just need to double check Lukas's own membership status there.
+
+Now I can see the channel identification is settled: engineering (C03IJKL9012) already has that reacted message and all five members qualify as the target selection.
+
+For negatives, I'm thinking through other channels with similar technical discussion but without eyes reactions, to keep the routing distinct.
+
+I'll add a negative record: a new 'eyes' reaction on a message in C_MODEL, to confirm wrong-channel exclusion despite matching emoji. I could also add a 'thumbsup' reaction on another engineering message in the same channel as a harmless distractor, since it won't affect the specific message+reaction lookup.
+
+Now finalizing the task: target table channel_members, multiple mode, read-only, five member roles as targets, with answer_attributes on user_id and channel_id. The prompt asks the user to find members of the channel containing a circuit-tracer OOM message with an eyes reaction, so they can pull people into a sync about the fix -- with the binding note specifying the channel is selected via that message's eyes reaction.
+
+Then I add negative examples for wrong channel and wrong emoji type, to sharpen the distinction. The final target_roles should include only the five matching membership roles.
+

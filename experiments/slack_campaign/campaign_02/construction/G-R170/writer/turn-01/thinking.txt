@@ -1,0 +1,28 @@
+I need to construct a WORKSPACE referent for absent resolution mode, routing through CONVERSATION → CONVERSATION_MEMBERSHIP → USER → MESSAGE → REACTION. Since the seed only has one workspace, T01WORKSPACE, I need to craft a request where the route conditions fail to match it, ensuring no workspace resolves.
+
+Checking the seed data, I notice there's only a single reaction in the entire dataset - an "eyes" reaction on one message. That means any other reaction type combined with a specific member/message condition will naturally be absent, which is perfect for the negative case.
+
+I'll craft the question around a specific channel member whose message about a technical finding received a particular reaction that isn't "eyes" - since that combination doesn't exist anywhere in the data.
+
+This existing eyes reaction works as a good negative since it's a different emoji on a different message entirely. So the diagnosis message is Priya's pprof delta message about the CUDA memory limit (1706001931), posted in core-infra by U_PRIYA who's a member there, and it has zero reactions. The only real reaction in the data sits on Lukas's unrelated OOM message in a different channel with a different emoji, making it a clean negative for the tada-reaction scenario.
+
+This means the workspace-level query combining "member posts diagnosis message with tada reaction" correctly yields zero results, since there's only one workspace and no route-instance satisfies the compound condition. I can frame the prompt as: "Which workspace has a channel where a team member's root-cause message about the GPU memory incident got a 🎉 reaction?"
+
+Now I'm building out the binding roles: workspace tied to channel (core-infra), membership tying Priya to that channel, Priya as the message author, and the specific diagnosis message itself -- all conditions must bind to the same records, but no tada reaction exists anywhere in the database on that message.
+
+I'm also identifying decoys: Lukas's message about the CUDA allocator in the same channel (wrong author/message), and the existing eyes reaction on Lukas's circuit-tracer message in the engineering channel -- both serve as negative examples that shouldn't satisfy the match.
+
+Now I'm drafting the final task prompt as a plain read-only question asking which workspace contains the channel where a diagnosis message got a 🎉 reaction, with the mode set to absent and no target roles since no valid match exists.
+
+I need to lay out the supporting facts: the workspace itself, the infra channel, Priya's membership and authorship, and the diagnosis message on the path — but there's no actual reaction record to point to, since the correct answer requires confirming no such reaction exists.
+
+For negatives, I'm identifying a distinct message in the engineering channel authored by Lukas that discusses something unrelated, plus an eyes-emoji reaction on it from the bot — both wrong matches since they belong to the wrong message and wrong context, even though it's technically the same workspace.
+
+I'm also flagging Lukas's earlier "allocation patterns" message as another negative — it touches on CUDA allocator limits but isn't the actual root-cause diagnosis, so it stays as a split-record distractor with no reaction attached.
+
+Now I'm finalizing the obligation itself: it's a workspace_answer against the teams table, read-only, no mode, tasked with identifying the workspace matching the described route — but since nothing actually matches, the target_roles come out empty and the candidate_role_sets stay null since this isn't an underspecified case.
+
+For selection I'll use "one" since the question asks for a single workspace, even though the absence of a match makes it moot, and I'll set answer_attributes to team_name and team_id fields since this is fundamentally a "which workspace" question.
+
+For the access plan, I'm outlining how a solver would actually verify this: pulling channels via conversations.list scoped to the known team_id (resolved through auth.test/users.info), scanning conversations.history on the core-infra channel for the candidate root-cause message, then checking reactions.get on that message's timestamp for the celebration emoji — finding none, confirming no workspace satisfies the criteria even though only one workspace is visible. Now I'm ready to write out the JSON.
+

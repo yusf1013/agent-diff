@@ -1,0 +1,24 @@
+I need to plan the additions: a workspace for Nova Robotics, an ops-incidents channel, and a message from Jordan Lee about a postmortem on checkout latency and Redis caching. I'm figuring out who the acting user should be, likely the agent bot per the seed conventions.
+
+I also need to add the actor's membership in the new channel and workspace, plus create Jordan Lee as a new user tied to that workspace. Then I need to check whether the Tokyo postmortem message about CDN misrouting already exists in the base seed — it seems it doesn't, so I'll need to insert that too, while the GPU memory pressure thread in core-infra already exists and needs no changes.
+
+Now I'm laying out the concrete inserts needed: the new team and channel, Jordan Lee as a user, team and channel memberships, and two new messages — one from Jordan Lee in the new ops channel, and a postmortem message from Priya in core-infra about checkout latency tied to connection pool exhaustion, since that doesn't exist in the base seed either.
+
+I'm reasoning that the acting user is agent U01AGENBOT9, already in C_INFRA, so I need to grant it membership in the new team and channel to enable discovery.
+
+Now I'm continuing the seed edits: adding jordan.lee as a new user, inserting user_teams and channel_members rows linking both the agent and Jordan to the new team and ops channel, then drafting sample messages — one postmortem note in C_INFRA and another starting in the new Nova channel.
+
+I'm noticing the underlying task is ambiguous: the obligation specifies "one" selection but the design actually yields two distinct candidate workspaces, so I need to treat this as an underspecified resolution mode where the selector takes the union of eligible alternatives. The main selector should scope to teams reachable through channels the actor belongs to that contain a message about the checkout latency postmortem.
+
+I'm laying out a focal path from teams through channels to messages, joining on team and channel IDs, with case-insensitive filters requiring the message text to contain both "postmortem posted" and "checkout latency." I still need to fold in the actor-membership constraint, likely via a channel_members join, since scope alone can't enforce that restriction on the root table.
+
+The workspace resolves through the channel where the message matches, so membership itself is an access-feasibility detail rather than a data selection criterion. Since the actor is actually a member of both matching channels, I don't need to add an explicit channel_members join to the selector—doing so would introduce an unnecessary constraint beyond what the route requires.
+
+I'll keep the selector simple: teams joined through channels joined through messages with the content filters applied, without a membership constraint, since content matching is the true criterion here. That gives me a single selector for the single obligation.
+
+This correctly matches both target messages while excluding the Tokyo postmortem and GPU memory negatives, since those lack the required "checkout latency" phrase. I'm also confirming the latency discussion messages and root team records stay excluded as intended.
+
+The instructions push me to include a plausible negative root, but since workspace_infra and workspace_nova are both legitimate matches rather than negatives, I'm wondering if there's a third workspace that superficially resembles a match but shouldn't qualify given stricter matching criteria.
+
+So negative_referents ends up empty since no separate team would be falsely selected, and I'll note that reasoning. Now I'm mapping the role labels to their actual native handles - workspace IDs, channel IDs, and message timestamps for both the infra and nova teams, plus the negative Tokyo postmortem example and the existing GPU memory thread reference.
+

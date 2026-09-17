@@ -1,0 +1,123 @@
+{
+  "prompt": "Find the workspace that contains our infrastructure/on-call channel where both Priya Sharma and Łukasz Kowalski are members, then create a new public channel there called 'incident-retro-planning'.",
+  "binding_note": "The channel_members rows binding U_PRIYA and U_LUKAS to the same channel record (topic covering infra/K8s/AWS/on-call/incidents) identify that channel's team_id as the workspace. Other channels where both users are also members (model-research, product-growth, project-alpha-dev) have different topics or membership sets and must not be substituted.",
+  "roles": [
+    {
+      "role": "workspace_match",
+      "entity": "teams",
+      "facts": "T01WORKSPACE, the single workspace whose team_id is reached through the qualifying channel",
+      "selection": "match",
+      "reason": "the workspace identified by the full route"
+    },
+    {
+      "role": "channel_infra",
+      "entity": "channels",
+      "facts": "C_INFRA 'core-infra', topic_text 'Infrastructure, K8s, AWS, on-call, incidents', belongs to T01WORKSPACE",
+      "selection": "match",
+      "reason": "the conversation whose membership and topic anchor the identifying route"
+    },
+    {
+      "role": "member_priya",
+      "entity": "users",
+      "facts": "U_PRIYA, Priya Sharma, member of C_INFRA",
+      "selection": "match",
+      "reason": "one of the two members required on the same channel"
+    },
+    {
+      "role": "member_lukas",
+      "entity": "users",
+      "facts": "U_LUKAS, Łukasz Kowalski, member of C_INFRA",
+      "selection": "match",
+      "reason": "the other required member on the same channel"
+    },
+    {
+      "role": "membership_priya_infra",
+      "entity": "channel_members",
+      "facts": "row (C_INFRA, U_PRIYA)",
+      "selection": "support",
+      "reason": "binds Priya to the qualifying channel"
+    },
+    {
+      "role": "membership_lukas_infra",
+      "entity": "channel_members",
+      "facts": "row (C_INFRA, U_LUKAS)",
+      "selection": "support",
+      "reason": "binds Łukasz to the qualifying channel"
+    },
+    {
+      "role": "channel_model_negative",
+      "entity": "channels",
+      "facts": "C_MODEL 'model-research', topic_text 'Model training, evals, papers, architectures'; also has both U_PRIYA and U_LUKAS as members",
+      "selection": "negative",
+      "reason": "same overlapping membership pair but wrong topic/subject, so it is not the infra channel the route requires"
+    },
+    {
+      "role": "channel_growth_negative",
+      "entity": "channels",
+      "facts": "C_GROWTH 'product-growth', topic_text 'User metrics, A/B tests, expansion, APAC'; has U_PRIYA and U_LUKAS plus extra members including U_INCOGNITO",
+      "selection": "negative",
+      "reason": "membership overlap exists but topic is unrelated to infrastructure/on-call"
+    },
+    {
+      "role": "channel_alphadev_negative",
+      "entity": "channels",
+      "facts": "C06ALPHADEV 'project-alpha-dev'; has U_PRIYA and U_LUKAS as members but no stored infra/on-call topic text",
+      "selection": "negative",
+      "reason": "membership condition alone is insufficient without the matching topic condition"
+    }
+  ],
+  "obligations": [
+    {
+      "name": "workspace_identification",
+      "description": "Identify the single workspace (teams row) reached via the channel that both Priya Sharma and Łukasz Kowalski belong to and whose topic covers infrastructure/on-call/incidents; used to scope the channel creation.",
+      "table": "teams",
+      "mode": "single",
+      "task_type": "read-only",
+      "scope": "ordinary workspace lookup via channel membership and topic route",
+      "target_roles": [
+        "workspace_match"
+      ],
+      "candidate_role_sets": null,
+      "selection": "one",
+      "answer_attributes": [
+        [
+          "teams.team_id"
+        ]
+      ]
+    },
+    {
+      "name": "create_incident_channel",
+      "description": "Create a new public channel named 'incident-retro-planning' scoped to the workspace identified in the first obligation.",
+      "table": "channels",
+      "mode": "single",
+      "task_type": "state-changing",
+      "scope": "create one new channel in the resolved workspace",
+      "target_roles": [],
+      "candidate_role_sets": null,
+      "selection": "one",
+      "written_attributes": [
+        "channels.channel_name",
+        "channels.team_id",
+        "channels.is_private"
+      ]
+    }
+  ],
+  "task_spec": [
+    {
+      "line": 1,
+      "text": "Determine the workspace that contains the infrastructure/on-call channel where both Priya Sharma and Łukasz Kowalski are members.",
+      "obligations": [
+        1
+      ]
+    },
+    {
+      "line": 2,
+      "text": "Create a new public channel called 'incident-retro-planning' within that identified workspace.",
+      "obligations": [
+        2
+      ]
+    }
+  ],
+  "scope_exception": null,
+  "access_plan": "Use users.conversations or conversations.list to enumerate channels, then conversations.members on candidate channels to confirm both Priya (U_PRIYA) and Łukasz (U_LUKAS) are members, cross-checking conversations.info topic_text for infrastructure/on-call/incidents wording to isolate the qualifying channel (C_INFRA) and read its team_id; then call conversations.create with that team_id and the new channel name."
+}

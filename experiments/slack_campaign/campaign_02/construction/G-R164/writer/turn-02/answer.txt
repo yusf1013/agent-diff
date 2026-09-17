@@ -1,0 +1,41 @@
+```json
+{
+  "prompt": "We're flagging workspaces for a quick access review: which workspaces have a member who left an 👀 reaction on a message posted in a channel that Sophie Dubois belongs to?",
+  "binding_note": "For each workspace, the reacting user must hold that workspace's membership; the reaction's emoji must be eyes; that reaction sits on a message whose channel has a separate conversation-membership record for Sophie Dubois. The reactor need not be Sophie herself, and workspace membership is distinct from the channel membership that qualifies Sophie's presence.",
+  "roles": [
+    {"role":"workspace_match_core","entity":"teams","facts":"Existing Test Workspace (T01WORKSPACE); Łukasz Kowalski is a workspace member here.","selection":"match","reason":"Workspace whose member Łukasz reacted eyes on a message in a channel Sophie belongs to (core-infra)."},
+    {"role":"workspace_match_nimbus","entity":"teams","facts":"New workspace 'Nimbus Analytics' (T02NIMBUS); Dana Reyes is a workspace member here, and Sophie also holds a membership row in this workspace.","selection":"match","reason":"Second workspace whose member Dana reacted eyes on a message in a channel (nim-research) Sophie belongs to."},
+    {"role":"workspace_negative_ghost","entity":"teams","facts":"New workspace 'Ghostline Ops' (T03GHOST); member Ivo Renn reacts eyes on a message in a channel with no Sophie membership at all.","selection":"negative","reason":"Eyes reaction exists but the reacted-in channel has no Sophie membership, so this workspace fails the conversation-membership condition."},
+    {"role":"reactor_core","entity":"users","facts":"Łukasz Kowalski (U_LUKAS), member of T01WORKSPACE and of channel core-infra.","selection":"match","reason":"The workspace member whose reaction satisfies the route for T01WORKSPACE."},
+    {"role":"reactor_nimbus","entity":"users","facts":"Dana Reyes (U_DANA), new user, member of T02NIMBUS and of channel nim-research.","selection":"match","reason":"The workspace member whose reaction satisfies the route for T02NIMBUS."},
+    {"role":"sophie_anchor","entity":"users","facts":"Sophie Dubois (U_SOPHIE), member of core-infra and nim-research channels (and other T01 channels including model-research and product-growth).","selection":"support","reason":"The identifying person whose channel membership the route must land on."},
+    {"role":"message_core","entity":"messages","facts":"New message in channel core-infra (T01WORKSPACE), authored by Priya Sharma, discussing a deploy checklist.","selection":"support","reason":"Carries the eyes reaction that identifies T01WORKSPACE."},
+    {"role":"message_nimbus","entity":"messages","facts":"New message in channel nim-research (T02NIMBUS), authored by Dana Reyes, discussing a dataset refresh.","selection":"support","reason":"Carries the eyes reaction that identifies T02NIMBUS."},
+    {"role":"conv_core","entity":"channels","facts":"core-infra channel in T01WORKSPACE; Sophie is a member.","selection":"support","reason":"Conversation node linking reaction to Sophie's membership for T01WORKSPACE."},
+    {"role":"conv_nimbus","entity":"channels","facts":"nim-research channel in T02NIMBUS; Sophie is a member.","selection":"support","reason":"Conversation node linking reaction to Sophie's membership for T02NIMBUS."},
+    {"role":"conv_ghost_no_sophie","entity":"channels","facts":"ghost-ops channel in T03GHOST; Sophie is not a member.","selection":"negative","reason":"Shows a channel lacking Sophie's membership despite having an eyes reaction, excluding that workspace."},
+    {"role":"negative_wrong_emoji","entity":"message_reactions","facts":"Mateo Rivera (member of T01WORKSPACE) reacts 'thumbsup' on a message in model-research (C_MODEL), a channel Sophie belongs to.","selection":"negative","reason":"Wrong emoji on an otherwise qualifying channel; doesn't satisfy the eyes condition, so this record does not itself produce a match (T01WORKSPACE already matches via a separate qualifying reaction)."},
+    {"role":"negative_wrong_channel","entity":"message_reactions","facts":"Nick Fury (member of T01WORKSPACE) reacts 'eyes' on a message in growth (C04MNOP3456), a channel Sophie does not belong to (channel_members for C04MNOP3456 lists only Nick, Gabriel, Hubert, and the agent).","selection":"negative","reason":"Right emoji, right workspace, but the channel has no Sophie membership row, so this record alone does not satisfy the route."},
+    {"role":"negative_authorship_only","entity":"messages","facts":"Kenji Sato authored a message in engineering (C03IJKL9012, T01WORKSPACE) with no reaction from anyone; Sophie is not a member of engineering either.","selection":"negative","reason":"Authorship without a reaction, and no Sophie membership link; guards against conflating authoring with reacting."}
+  ],
+  "obligations": [
+    {
+      "name": "flagged_workspaces",
+      "description": "Workspaces where a workspace member left an eyes reaction on a message posted in a channel that Sophie Dubois is a member of.",
+      "table": "teams",
+      "mode": "multiple",
+      "task_type": "read-only",
+      "scope": "ordinary workspace-level lookup across accessible workspaces",
+      "target_roles": ["workspace_match_core", "workspace_match_nimbus"],
+      "candidate_role_sets": null,
+      "selection": "set",
+      "answer_attributes": [["teams.team_id"], ["teams.team_name"]]
+    }
+  ],
+  "task_spec": [
+    {"line": 1, "text": "Identify the workspaces having a member whose 👀 reaction lands on a message in a channel where Sophie Dubois holds membership, and report those workspaces.", "obligations": [1]}
+  ],
+  "scope_exception": null,
+  "access_plan": "Agent (U01AGENBOT9) holds workspace membership in T01WORKSPACE, T02NIMBUS, and T03GHOST, and is a member of core-infra, nim-research, and ghost-ops channels, enabling discovery via users.conversations/conversations.list per workspace, conversations.history to find messages, and reactions.get to confirm eyes reactions, then conversations.members to confirm Sophie Dubois's presence in the reacted-in channel."
+}
+```

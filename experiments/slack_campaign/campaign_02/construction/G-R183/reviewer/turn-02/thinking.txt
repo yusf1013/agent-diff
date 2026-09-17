@@ -1,0 +1,16 @@
+This case follows the workspace membership to workspace to conversation route: finding the workspace containing a specific channel, then listing admin members within it. It matches the expected user_teams -> teams -> channels pattern for that admin-role query.
+
+The bindings look correct - John Doe and Hubert Marek get excluded since they're members not admins, while Zoe Chen gets excluded despite having admin role because she's in a different workspace entirely. That second workspace addition (with its own channel and membership) is a deliberate environment mutation that makes the route non-vacuous, forcing the join logic to actually filter by workspace rather than just role - a legitimate distractor.
+
+Now I'm checking the access plan's approach of using conversations.list or conversations.info to locate the channel and its team_id, weighing whether team_id scoping is required or optional for that call.
+
+Actor U01AGENBOT9 is only a member of T01WORKSPACE, and since old-project-q3 lives in that same workspace, listing channels or users there naturally scopes to the actor's own team without needing cross-workspace access to T02BETA - so the access plan holds up.
+
+I'm also checking whether users.info returns role information per workspace, since users.list itself might not surface role directly and the runtime qualifier notes users.info exposes only one selected workspace association per user.
+
+Verifying the compiled selectors trace correctly through user_teams to teams to channels with the admin role and channel name filters, confirming they match the intended route nodes for workspace membership, workspace, and conversation. The negative cases also check out—Zoe as a cross-workspace admin and John/Hubert as same-workspace non-admins satisfy the near-miss requirement.
+
+Overall this looks like a well-constructed case with genuine cross-workspace negative testing rather than a vacuous single-team seed, and the prompt is plausible without leaking the answer. The only ambiguity worth noting is "admin-level" possibly implying owner roles too, but since no owner exists in the seed data this doesn't cause a problem, so I don't see any actual errors here.
+
+The environment mutation is properly source-referent-preserving—it only adds new team/channel/user/membership data while leaving original referents intact, which satisfies the requirement for environment-only mutations to introduce a plausible path-derived negative. So my final assessment is validity pass, quality strong, no issues.
+

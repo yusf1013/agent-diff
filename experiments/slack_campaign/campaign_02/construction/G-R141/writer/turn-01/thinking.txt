@@ -1,0 +1,24 @@
+I'm mapping out the route from USER through MESSAGE to CONVERSATION to WORKSPACE, with underspecified resolution and USER as the referent entity — essentially identifying users who authored a message within a conversation belonging to a particular workspace, and now considering how exposure factors into that scoping.
+
+The scoping suggests a single workspace, since channel IDs are already bounded rather than looked up by name, so the ambiguity needs to come from elsewhere. I'm designing a scenario with two people both named "Robert" — Robert Walsh and Robert Chen — who each posted in different channels within that bounded set, so identifying "Robert" by first name alone creates a genuine two-candidate ambiguity that the resolution needs to disambiguate using message content, like a discussion about GPU or cluster costs in the core-infra channel.
+
+Actually that's not truly ambiguous since the message content pins down one person. I need genuine ambiguity: partial info like shared first name "Robert" plus a vaguer condition — "posted in an engineering-related channel" — that could plausibly point to either Robert Walsh (member of the engineering channel) or Robert Chen (in core-infra), without the request itself resolving which one.
+
+Actually, checking Robert Walsh's messages, most don't clearly report a numeric problem to follow up on — the crash report about repeated login attempts is the closest fit but weak. I need a cleaner two-candidate ambiguity where both Roberts have flagged an issue with specific numbers worth revisiting.
+
+This creates real ambiguity: Robert Walsh's latency report in engineering and Robert Chen's cloud bill in core-infra are both technical, numeric problems from this week, so the request doesn't clearly point to one. Both channels fall within the intended bounded corpus, and the DM action itself is underspecified enough that either target could plausibly be the right one.
+
+So the correct approach is to surface the ambiguity and ask which Robert rather than guessing, since resolution is genuinely underspecified — I'd trace this through user, message, conversation, and workspace context. My access plan is to search conversation history in core-infra and engineering, find authors named Robert, then cross-reference user profiles for their real names. I also need to filter out false positives, like other users posting numbers but not named Robert, or a Robert posting something non-numeric like a deployment question, while noting that Robert Walsh's messages outside the technical channels fall outside the relevant scope even though he's a member there.
+
+I want another negative case testing whether someone is merely a channel member without ever posting, to properly test the binding between user identity and actual message authorship. Since there's only one workspace, the workspace-routing requirement is trivially satisfied through the explicit channel IDs I'm using. Now I'm defining the main obligation to identify Robert with underspecified user resolution and multiple candidate role sets.
+
+The requested action is sending a DM, which requires opening a conversation and posting a message—since the target user is ambiguous, the system can't fully resolve which Robert to message without clarification, but that's fine since the task spec should just capture the requested work regardless of resolvability. I'm classifying this as a state-changing task since it mutates state via the messaging API.
+
+I'll include roles for both possible matches (robert_walsh and robert_chen) plus negative examples like a channel member who shouldn't receive a message and another named person with the wrong identity. I also want to add a fresh grounding fact for Robert Walsh's numeric question in the engineering channel, describing it as supporting context text rather than inserting it directly into the base seed.
+
+Now I'm assembling the final JSON structure. The main obligation is a DM task targeting either robert_walsh or robert_chen with underspecified selection, scoped to the workspace's core-infra and engineering channels, and I'm working through whether this counts as a state-changing task that writes a new message rather than modifying user attributes directly.
+
+I'm adding a second obligation, "send_dm_message", operating on the messages table as a single new record creation, with written_attributes covering the message text and channel_id fields to capture the actual act of sending the DM once the recipient is resolved.
+
+Since the recipient selection itself is ambiguous, the first obligation stays primary and the second one depends on resolving it — treating it as the necessary follow-up destination action. I'll settle on this structure.
+

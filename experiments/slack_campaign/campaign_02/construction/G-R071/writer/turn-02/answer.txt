@@ -1,0 +1,95 @@
+```json
+{
+  "prompt": "In the channel where Hubert Marek is a member and has reacted with a 👍 to a teammate's post, reply to the crash report about the login rate-limit issue and let them know it's already been patched.",
+  "binding_note": "The channel is identified because Hubert Marek (r3) holds a channel_members row (r2) in it (r1) and separately left a thumbsup reaction (r4) on some message — that reaction need not be on the reply target itself. Within that qualifying channel, the reply target message (r0) is picked by its own content: the crash report describing the login rate-limit lockout, distinct from other login-related messages in the same channel.",
+  "roles": [
+    {
+      "role": "target_message",
+      "entity": "messages",
+      "facts": "Message 1699824000.000987 in #engineering (C03IJKL9012) by U03ROBERT23: 'Crash report: retrying wrong password 3 times triggers 'login rate limit' not allowing users to login.'",
+      "selection": "match",
+      "reason": "Sits in the channel qualified by Hubert's membership+reaction, and its own content is the specific login rate-limit crash report."
+    },
+    {
+      "role": "engineering_channel",
+      "entity": "channels",
+      "facts": "C03IJKL9012, channel_name 'engineering', public, workspace T01WORKSPACE.",
+      "selection": "support",
+      "reason": "The conversation (r1) that both the target message and Hubert's membership are joined through."
+    },
+    {
+      "role": "hubert_membership",
+      "entity": "channel_members",
+      "facts": "Row for user_id U06HUBERT23, channel_id C03IJKL9012.",
+      "selection": "support",
+      "reason": "The channel_members join (r2) linking the channel to the qualifying user."
+    },
+    {
+      "role": "hubert_user",
+      "entity": "users",
+      "facts": "U06HUBERT23, username hubertmarek, real_name Hubert Marek.",
+      "selection": "support",
+      "reason": "The channel member (r3) whose separate reaction qualifies the channel."
+    },
+    {
+      "role": "hubert_reaction",
+      "entity": "message_reactions",
+      "facts": "Add reaction: message_id 1699564800.000123 (general channel C01ABCD1234, agent1's 'Hey team, we just shipped the new feature!'), user_id U06HUBERT23, reaction_type 'thumbsup'.",
+      "selection": "support",
+      "reason": "The reaction (r4) by Hubert used to qualify the engineering channel; it sits on an unrelated message elsewhere, showing the route does not require it to be on the reply target."
+    },
+    {
+      "role": "negative_wrong_login_issue",
+      "entity": "messages",
+      "facts": "Message 1699651200.000321 in #engineering by U01AGENBOT9: 'Login service returning 500 errors for several users since 08:00—investigating backend rollout.'",
+      "selection": "negative",
+      "reason": "Same qualifying channel, but describes a different login incident (500 errors), not the rate-limit lockout crash report."
+    },
+    {
+      "role": "negative_generic_auth",
+      "entity": "messages",
+      "facts": "Message 1700143200.000999 in #engineering by U01AGENBOT9: 'I've noticed a few auth issues and potential improvements:'",
+      "selection": "negative",
+      "reason": "Same channel, generic auth remark rather than the specific crash report being replied to."
+    },
+    {
+      "role": "negative_member_no_reaction",
+      "entity": "channel_members",
+      "facts": "Row for user_id U05MORGAN23, channel_id C03IJKL9012; Morgan has no message_reactions rows anywhere in the seed.",
+      "selection": "negative",
+      "reason": "A plain member of the same channel with no qualifying reaction, showing membership alone does not satisfy the route."
+    },
+    {
+      "role": "negative_reactor_not_member",
+      "entity": "message_reactions",
+      "facts": "Add reaction: message_id 1699572000.000789 (general channel C02EFGH5678, 'Anyone up for lunch?'), user_id U_KENJI, reaction_type 'thumbsup'. U_KENJI has no channel_members row for C03IJKL9012.",
+      "selection": "negative",
+      "reason": "A thumbsup reaction exists, but the reactor is not a member of the engineering channel, so it cannot qualify that channel via the assigned route."
+    }
+  ],
+  "obligations": [
+    {
+      "name": "crash_report_reply",
+      "description": "Select the single message in the channel qualified by Hubert Marek's membership and separate thumbsup reaction, whose own content is the login rate-limit crash report, then post a threaded reply confirming the patch.",
+      "table": "messages",
+      "mode": "single",
+      "task_type": "state-changing",
+      "scope": "reply in the thread of the identified crash-report message",
+      "target_roles": ["target_message"],
+      "candidate_role_sets": null,
+      "selection": "one",
+      "change_attributes": [[]],
+      "written_attributes": ["messages.message_text", "messages.channel_id", "messages.parent_id"]
+    }
+  ],
+  "task_spec": [
+    {
+      "line": 1,
+      "text": "Reply to the crash report about the login rate-limit issue in the channel where Hubert Marek is a member and has reacted 👍 to a teammate's post, letting them know it's already been patched.",
+      "obligations": [1]
+    }
+  ],
+  "scope_exception": null,
+  "access_plan": "Use conversations.list to enumerate channels and conversations.members to find channels where Hubert Marek (users.info/users.list) holds membership; for each such channel's message pool (via conversations.history across the workspace, since the qualifying reaction may sit in any channel) use reactions.get to locate his thumbsup reaction. Among the qualifying channel(s), scan conversations.history for the message whose text is the login rate-limit crash report, then call chat.postMessage with that message's channel and thread_ts set to its ts."
+}
+```

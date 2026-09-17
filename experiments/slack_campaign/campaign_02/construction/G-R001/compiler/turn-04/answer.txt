@@ -1,0 +1,100 @@
+```json
+{
+  "seed_edits": [
+    {
+      "table": "teams",
+      "op": "insert",
+      "key": {"team_id": "T09PARTNERBRIDGE"},
+      "values": {
+        "team_id": "T09PARTNERBRIDGE",
+        "team_name": "Partner Bridge Ops"
+      },
+      "reason": "The prompt names workspace T09PARTNERBRIDGE directly; the CONVERSATION\u2192WORKSPACE route requires this team to exist so channels.team_id can join to it and resolve the target channel."
+    },
+    {
+      "table": "channels",
+      "op": "insert",
+      "key": {"channel_id": "C_INFRA_PARTNER"},
+      "values": {
+        "channel_id": "C_INFRA_PARTNER",
+        "channel_name": "core-infra",
+        "team_id": "T09PARTNERBRIDGE",
+        "is_private": false,
+        "is_dm": false,
+        "is_gc": false,
+        "is_archived": false,
+        "topic_text": "Partner Bridge infrastructure, deployments, and on-call coordination",
+        "purpose_text": "Channel for the Partner Bridge Ops team's core infrastructure discussions."
+      },
+      "reason": "Instantiates target_conversation: a channel literally named 'core-infra' inside T09PARTNERBRIDGE, distinct from the identically named C_INFRA in T01WORKSPACE, so the workspace join is what disambiguates it per the design's binding_note."
+    },
+    {
+      "table": "channels",
+      "op": "insert",
+      "key": {"channel_id": "C_GROWTHOPS_PARTNER"},
+      "values": {
+        "channel_id": "C_GROWTHOPS_PARTNER",
+        "channel_name": "growth-ops",
+        "team_id": "T09PARTNERBRIDGE",
+        "is_private": false,
+        "is_dm": false,
+        "is_gc": false,
+        "is_archived": false,
+        "topic_text": "Partner Bridge growth experiments and ops coordination",
+        "purpose_text": "Channel for Partner Bridge growth-ops discussions."
+      },
+      "reason": "Instantiates wrongname_sameworkspace_negative: correct workspace (T09PARTNERBRIDGE) but a different channel_name, so it fails the exact-name identifying condition despite matching the workspace join."
+    },
+    {
+      "table": "channel_members",
+      "op": "insert",
+      "key": {"channel_id": "C_INFRA_PARTNER", "user_id": "U01AGENBOT9"},
+      "values": {
+        "channel_id": "C_INFRA_PARTNER",
+        "user_id": "U01AGENBOT9"
+      },
+      "reason": "Grants the actor membership in the target channel so its history is discoverable and conversations.archive can be applied, per actor_channel_access."
+    },
+    {
+      "table": "user_teams",
+      "op": "insert",
+      "key": {"user_id": "U01AGENBOT9", "team_id": "T09PARTNERBRIDGE"},
+      "values": {
+        "user_id": "U01AGENBOT9",
+        "team_id": "T09PARTNERBRIDGE",
+        "role": "member"
+      },
+      "reason": "Grants the actor workspace-level membership in T09PARTNERBRIDGE so conversations.list/users.conversations scoped to that team_id returns this channel, per actor_workspace_access."
+    }
+  ],
+  "bindings": {
+    "target_conversation": ["C_INFRA_PARTNER"],
+    "target_workspace": ["T09PARTNERBRIDGE"],
+    "actor_channel_access": [{"channel_id": "C_INFRA_PARTNER", "user_id": "U01AGENBOT9"}],
+    "actor_workspace_access": [{"user_id": "U01AGENBOT9", "team_id": "T09PARTNERBRIDGE"}],
+    "samename_otherworkspace_negative": ["C_INFRA"],
+    "samename_otherworkspace_team_negative": ["T01WORKSPACE"],
+    "wrongname_sameworkspace_negative": ["C_GROWTHOPS_PARTNER"]
+  },
+  "selectors": [
+    {
+      "root_table": "channels",
+      "scope": [],
+      "focal": {
+        "path": ["channels", "teams"],
+        "joins": ["channels.team_id"],
+        "filters": [
+          {"node": 0, "field": "channel_name", "op": "eq", "value": "core-infra"},
+          {"node": 1, "field": "team_id", "op": "eq", "value": "T09PARTNERBRIDGE"}
+        ]
+      },
+      "auxiliary": []
+    }
+  ],
+  "negative_referents": [
+    "C_INFRA",
+    "C_GROWTHOPS_PARTNER"
+  ],
+  "notes": "Five new rows were required: the previously nonexistent workspace T09PARTNERBRIDGE (named directly in the prompt, so no hidden lookup is needed), the target channel C_INFRA_PARTNER (channel_name='core-infra' inside that workspace), a same-workspace differently-named channel C_GROWTHOPS_PARTNER (wrongname_sameworkspace_negative), and channel_members/user_teams rows granting the actor U01AGENBOT9 membership in both the target channel and T09PARTNERBRIDGE so conversations.list/users.conversations scoped to team_id=T09PARTNERBRIDGE and conversations.history/info are usable through documented APIs. The base-seed C_INFRA (team_id=T01WORKSPACE) and T01WORKSPACE itself are preserved unchanged and serve as the same-name/other-workspace negatives \u2014 the actor's pre-existing membership there (already in base seed) lets the solver observe that a same-named channel exists but sits in the wrong workspace, reinforcing why the join condition (not channel_name alone) is decisive. The focal selector follows the assigned CONVERSATION\u2192WORKSPACE route as one joined query (channels\u2192teams via channels.team_id), combining the channel_name='core-infra' condition and the team_id='T09PARTNERBRIDGE' condition (a value taken directly from the prompt's visible workspace ID, not a hidden seed constant) in the same query, correctly returning only C_INFRA_PARTNER and excluding both C_INFRA (wrong workspace) and C_GROWTHOPS_PARTNER (wrong name)."
+}
+```

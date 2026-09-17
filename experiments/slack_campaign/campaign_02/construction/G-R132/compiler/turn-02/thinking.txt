@@ -1,0 +1,112 @@
+My path order doesn't match the assigned route sequence—I need users, workspace_membership, workspace, conversation, message, reaction, but I went message_reactions before channels and teams instead of following that structure.
+
+There's still the identity binding problem though: message_reactions needs its own user_id to trace back to the original node0 user, not just chain through the join to messages. I'm wondering if the engine actually validates FK relationships automatically between any two matching fields across nodes, rather than only checking the single declared join per step—since the instructions specify one join per step, this identity constraint might not be enforceable through the standard path mechanism at all.
+
+Actually, checking the validator output, my previous selector already produced the correct matches (U_OLENA, U_MATEO) despite being flagged for path order mismatch, not for wrong data. So the fix isn't about the join logic itself but about aligning the declared path order with the assigned route.
+
+Following the route as users → user_teams → teams → channels → messages → message_reactions, I need to build that exact join chain. But this means node5 (message_reactions) links to node4 (messages) via message_id rather than back to node0's user_id, so the reactor's user_id ends up unconstrained by this path structure.
+
+When I earlier tested the identity-preserving path with the "wrong" ordering, the resulting focal negatives correctly excluded non-matching workspace members, confirming that path did enforce message_reactions.user_id equality against the root user.
+
+So the error must just be about the path sequence not matching the expected node type order, not about correctness of filtering. It seems the checker demands the literal type sequence users→user_teams→teams→channels→messages→message_reactions, while still needing identity enforced back to root, so I'm working out which join field connects each consecutive step in that required order.
+
+Actually, maybe I'm overanalyzing this: the focal query just needs to select the root entity following the stated route literally, and since node0 has no known value in advance, correctness for identity likely has to emerge from the distinct set of node0 values satisfying all filters and joins together, not from an explicit equality constraint.
+
+I'm trying to figure out whether message_reactions can connect back to the same user through its user_id foreign key rather than message_id, but since message_reactions.user_id references users, not messages, it can't be used to link back into the messages node in this path. So the only valid connector after messages must be message_reactions.message_id.
+
+Maybe the actual intent is that the route starts and ends at USER: the query selects users whose id matches the user_id field on the final REACTION in the chain, meaning USER acts as both the root and the implicit correlated endpoint of the path.
+
+So the workspace membership check is redundant here since it's always true in this dataset, but still required for compliance—yet the core identity puzzle remains: linking the initial workspace-member USER to the final reaction-contributor USER. Since REACTION itself carries a user_id field for the contributor, that starting USER node in the route is actually the same person as the contributor.
+
+This looks like a chain-returns-to-start pattern, where the root entity gets validated through a traversal path, and the terminal reaction's foreign key must implicitly point back to that same starting user for the tuple to be valid. I'm wondering whether the join spec might allow the last step to reference the root node directly rather than the immediately preceding one, since it functions as a closing join.
+
+But re-reading it, the constraint really does say joins only occur between adjacent tables in the path -- so message_reactions can only join to messages, not directly back to the root user. Given that, I'm now thinking the actual filtering works because narrowing to the specific message and reaction_type already restricts the result to just two matching rows.
+
+The workspace/channel path is really just verifying access legitimacy, not filtering which users appear -- node0's team membership check doesn't tie back to being the reactor. Yet the actual query results still correctly single out Mateo and Olena, which suggests the execution engine is doing something beyond what the strict adjacency rule implies.
+
+So my originally submitted selector, though ordered differently than assigned, was semantically correct because it tied identity via message_reactions.user_id first. The real requirement is a structural check on table order matching the route (users, user_teams, teams, channels, messages, message_reactions), while still closing identity back to root by joining message_reactions.user_id to node0 at the final step.
+
+Since adjacency is defined by position in the path array, the join between messages and message_reactions must use message_reactions.message_id since that's the only real FK connecting those two tables directly. But message_reactions.user_id references the users table, so it could potentially match the users node anywhere in the path, including node0, if the engine treats joins as usable in either direction.
+
+This raises a real problem though: message_reactions actually needs two joins to properly connect to both users and messages, but the rule only allows one join per step.
+
+Actually there's a workaround — since the message's ID is already known as a literal filter value, I don't need a join for that connection at all. I can filter message_reactions.message_id directly against the literal value, and reserve the single join for connecting message_reactions.user_id back to node0, satisfying the one-join-per-step constraint while still achieving the needed closure.
+
+I should keep the messages node in the path to confirm the message belongs to the target channel, joined via channel_id, with a redundant but harmless filter on its message_id too — this keeps the structure valid without requiring an extra join between message_reactions and messages, since the necessary connection back to users is already covered.
+
+Given the join adjacency ambiguity, I'll rely on the literal filter value for message_id as the identity constraint rather than forcing an explicit join, since FK-based joins might just need to match table type rather than strict positional adjacency.
+
+Wait, maybe literal path binding isn't the requirement here - perhaps the DSL just needs the returned entity to trace back through the join chain rather than being algebraically identical to reaction.user_id.
+
+Reconsidering: maybe the route's terminal REACTION node conceptually stands in for its contributor by definition, so the USER referent is simply whoever performed that reaction — I shouldn't need to filter node5.user_id to a fixed value since the user is the variable we're solving for.
+
+Revisiting the selector spec text itself: "focal" is just legacy parser terminology, not a privileged predicate; the main selector follows the assigned full route; "root_table" and "scope" define root-field filters. So maybe the returned identifiers don't have to trace back through node0's forced join at all — perhaps they come directly from the reaction row's user_id at the end of the path.
+
+Actually maybe the identity doesn't require literal position zero — since 'users' occurs only once in the path, the root_table rows encountered there define the answer set. But that conflicts with needing users to appear twice, once as membership holder and once as reaction contributor, unless those collapse into a single occurrence structurally. Given the error was specifically about the identifying path mismatching the assigned route, I'm reconsidering my earlier path starting with users and message_reactions.
+
+My previous path order was wrong: it skipped the workspace-membership table entirely and put reaction before message/conversation, plus workspace after conversation instead of before. The fix is just reordering to something like users→user_teams→teams→channels→messages→message_reactions with proper joins, though I need to verify the computed matches stay correct with the corrected identity binding, since the validator seemed to re-execute my query and only flagged the structural path issue, not the correctness of the matches themselves.
+
+So message_reactions.user_id doesn't structurally satisfy the adjacency requirement between messages and message_reactions—only message_id does. I wonder if identity for the users node could instead come from elsewhere in the query entirely, letting filters reference message_reactions.user_id without needing it to serve as the connecting join.
+
+Filters can only compare fields against literal values, not against other nodes, so I can't express cross-node equality between the reaction's user and the root user directly. This makes me reconsider the whole structure—maybe the design intends auxiliary and focal paths to combine as a union rather than intersection when things are underspecified, or maybe root_table should just be identified through the first hop instead.
+
+Actually, maybe an explicit join isn't strictly required — nothing stops the last node's other foreign key from naturally referencing node0 even without declaring that as the join condition for that step, since the join field is just the connector used for adjacency.
+
+I could construct a path where "users" appears twice, closing the loop through message_reactions.user_id back to users as a redundant final node. But that raises ambiguity about which occurrence of "users" is treated as the root when both node0 and node6 share that type—I'll assume the first occurrence is the intended root.
+
+Actually maybe a simpler interpretation applies: since "users" appears only once in the path as root, any later node with a foreign key to users should automatically relate back to that single root occurrence, since there's no ambiguity to resolve.
+
+That's exactly what worked in my earlier wrong-order attempt — message_reactions joined directly to users, which was adjacent and structurally valid, giving the right answer despite not matching the assigned node sequence (it was missing the workspace_membership node and had reaction in the wrong position). So the real fix is to build the path with all six nodes in the correct order — users, user_teams, teams, channels, messages, message_reactions — and figure out identity closure through some other mechanism.
+
+I'm wondering if user_teams should just serve as a near-vacuous membership check since all users in a workspace are members, while identity closure for message_reactions to node0 comes through a different route — maybe by reconsidering how its composite key relates back to the user.
+
+Actually, maybe I'm overcomplicating this: perhaps identity doesn't need to be forced through join logic at all, and correctness is just checked by running the query against seed data and comparing results.
+
+But then the grader flagging path order specifically suggests they check structural conformance first, then correctness separately -- meaning I need a path that's both route-compliant AND identity-preserving. Let me reconsider whether the required order truly forces message_reactions before user_teams, or if there's flexibility there.
+
+Then CONVERSATION links to MESSAGE via channel_id, filtered down to the target message, and MESSAGE links to REACTION via message_id, filtered to reaction_type='tada' - this ties the whole chain to the specific reaction being verified.
+
+But this construction doesn't actually constrain node5's user_id to equal node0 - the reaction could belong to any workspace member, not necessarily root, which is the correctness gap I flagged earlier: any team member's tada reaction on that message would satisfy this path, making the negatives wrongly appear as matches. Since the checker's error only complains about the path structure and not correctness, the fix likely needs an additional join field explicitly linking node0's user_id to node5's reactor identity to close that loop.
+
+Maybe the endpoint isn't message_reactions adjacent to messages at all - perhaps the path should route through users again at the end, ending implicitly at the reaction's user via message_reactions.user_id, making the final join connect back to a user node rather than messages. I'm trying a path like users → user_teams → teams → channels → messages → message_reactions, checking whether the join chain actually holds together this way.
+
+Actually that reasoning fails since node4 is messages, not users - so message_reactions.user_id can't serve as the join there since it doesn't connect adjacent messages/message_reactions tables, only message_reactions/users. This means the join must specifically be message_id instead. I'm now reconsidering whether the path should loop back to include users again at the end, forming a longer chain that revisits that table.
+
+But route_nodes lists users only once at the start and reactions at the end, with no repeated user node, so that loop-back idea doesn't quite fit either. Given time constraints, I'll assume the validator only checks the set of table types visited matches the route_nodes sequence, trusting the compiler to bind identities correctly through matching keys.
+
+This actually clicks into place: since users is already anchored at node0, message_reactions.user_id would implicitly satisfy that same identity constraint too, meaning the explicit join list only needs to declare the connecting edge while the compiler picks up the extra FK relationship automatically because the referenced table's row identity is already fixed elsewhere in the path.
+
+But given the instructions explicitly say "joins (one per step)" with exactly 4 joins for 5 nodes, that really suggests each step contributes exactly one equality condition and nothing implicit beyond that -- so the interpretation stays genuinely ambiguous.
+
+Given time constraints, I'll just trust the natural route order and assume the compiler handles FK matching correctly, since the route presumably was designed by the original author to be valid and correct. Maybe since 'users' appears exactly once and message_reactions has a direct FK to it, the compiler automatically applies that constraint as part of forming complete matching tuples.
+
+Maybe the checker just compares the visited path against route_nodes literally in that textual order, meaning I need the join sequence to follow users, user_teams, teams, channels, messages exactly rather than jumping straight from users to reactions.
+
+So node5 has exactly 2 matching reaction rows regardless of which user is node0, and node0 isn't actually constrained by node5's filter—meaning every one of the 19 users pairs with each of the 2 reaction rows, producing 19×2 distinct tuples rather than just 2 users.
+
+This means strictly following the required path order could break correctness unless the compiler applies some implicit binding I'm missing. The grader's earlier feedback only flagged path structure, not correctness, so fixing the order might still need an automatic identity constraint from the repeated foreign key to hold correctness.
+
+Rereading the exposure_qualification text, it seems the identifying participant should come from the terminal node of the path -- the reaction contributor from the reaction table -- rather than node0's own identity, so the final answer entity is determined by wherever the route ends and whichever participant it identifies there.
+
+Since all users are workspace members anyway, this hop doesn't really change the filtering - the actual result narrows to 2 rows via reaction_type and message_id regardless. So I think the "root_table" answer is really just pointing to message_reactions.user_id.
+
+I'm leaning toward the resolution mode targeting the reactor USER node as the canonical output, since it represents the final identified participant in the chain. Though I'm unsure if the DSL permits repeated table names in a single path with distinct bindings, nothing in the instructions explicitly forbids it, so this dual 'users' occurrence design seems architecturally plausible.
+
+Given the complexity here, I think the simplest path is to just map route_nodes directly to actual table names in order: users, user_teams, teams, channels, messages, message_reactions — six nodes ending at message_reactions, matching route_nodes length exactly.
+
+So I can't add an extra closing node; I need identity to close back to the root user within these six steps, likely by using message_reactions.user_id directly as the terminal join back to the starting user, without inserting anything extra.
+
+So closing the loop while keeping the six-node route order seems impossible through a single join chain — unless the query is only meant to check for existence of any reaction rather than actual reactors, but that would violate the intended semantics. I wonder if I'm missing something about how a focal query or auxiliary construct might allow this.
+
+Rereading the guidance, auxiliary queries are meant for truly independent constraints, not for tying reaction identity back to the root — that connection is join-based and central, not a root-field filter, so it doesn't fit the auxiliary pattern either.
+
+So the auxiliary's path[0] is implicitly root_table itself, meaning it's essentially an existence check starting from the root's identity - so it could just apply root-field filters directly, or it could join outward from root to some other related table to require a matching tuple exists elsewhere.
+
+Combining the focal chain (which establishes the structural route through workspace/channel/message) with this auxiliary check (which requires a matching reaction tuple on the target message) via intersection would correctly narrow down to only the users who both satisfy the route and have the tada reaction - producing the correct final set of 2 users.
+
+Adding the reaction type filter confirms the message and reaction exist together in the right channel, satisfying the route order. Then I'm using the auxiliary query to tie the root user's identity to being the actual reactor via message_reactions.user_id, and combining both to get the intersection of distinct qualifying users.
+
+I don't think I need extra channel or team filters since the message_id already pins down the workspace and channel uniquely, so I'll keep the filters minimal rather than adding redundant ones for clarity's sake.
+
+Now I'm finalizing the query structure: the focal path traces users through teams and channels to messages and their reactions, with filters pinning the workspace, channel, specific message, and "tada" reaction type, plus an auxiliary path joining message_reactions back to users to pull in reactor details.
+

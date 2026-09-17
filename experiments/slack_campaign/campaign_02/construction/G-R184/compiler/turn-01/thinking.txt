@@ -1,0 +1,24 @@
+I'm checking whether the base seed already covers the engineering and model-research channel memberships, and whether the decoy user Robert Nguyen still needs to be inserted separately.
+
+I also need to figure out who the actor is here, since it's not explicitly given — likely an existing workspace member who discovers channels through conversations.list, since both target channels are public and should be discoverable without prior membership.
+
+Reviewing the role list, I still need seed edits to insert the Robert Nguyen decoy user, his decoy message, and his workspace membership.
+
+Then I'm mapping each role to its native handles: the engineering and model research channels, the channel and workspace memberships for both Robert Walsh and Robert Chen, and the decoy entries for Robert Nguyen with a newly generated message ID.
+
+For selectors, I'm noting that the "robert_workspace_role_lookup" obligation is underspecified with two candidate role sets (Walsh or Chen), requiring a single selection.
+
+Per the instructions, an underspecified selector must return the union of eligible alternatives rather than a chosen one, so I need to build a selector rooted at user_teams that joins through users and channel_members to channels, filtering for the engineering and model-research channels together with a real_name match on "Robert" to capture both candidates in one query.
+
+This means user_teams.user_id equals channel_members.user_id for the same person, so the join path would be user_teams to channels via team_id, then channels to channel_members via channel_id, with that shared user constraint applied across the chain.
+
+Right, the binding_note actually resolves this: the same-user constraint is achieved by routing through USER explicitly, connecting workspace membership to user, then user to conversation membership, then to conversation. That gives a valid join path rather than relying on unsupported cross-node equality filters.
+
+So the path becomes user_teams joined to channel_members via user_id, then to channels, filtering on channel names being engineering or model-research. But that would pull in every member of those channels, not just the two Roberts—engineering includes the bot, John Doe, Morgan, Hubert, and model-research includes a bunch of other neuroflow people too, so this filter is too broad on its own.
+
+I need to add a filter on users.real_name containing "Robert" to properly identify the participant, combining that with the channel filter. This gives the union of Robert Walsh's and Robert Chen's rows, matching the underspecified resolution requiring a union of eligible candidates, while correctly excluding Robert Nguyen since he isn't a member of either qualifying channel.
+
+Robert Nguyen becomes the key negative referent - he shares the name but lacks the required channel membership, making him the crafted decoy. Other non-Robert members are trivially excluded by the name filter, so they're not the "plausible" negative the design calls for.
+
+Now I'm planning the seed_edits: inserting the Robert Nguyen user record, his user_teams row without matching channel membership, and a decoy message to reinforce the trap.
+

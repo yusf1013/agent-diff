@@ -1,0 +1,48 @@
+I need to fix two errors, including making sure I identify at least one negative case that the focal selector might incorrectly match if not careful, and provide that as a negative referent.
+
+Since I don't have a third team to reuse, I'll construct one: a fully negative team where the OOM message and eyes reaction both exist, but the user isn't an infra member, so it should properly get excluded by the correct selector logic.
+
+I'm designing "Team Orion" with its own channel and message matching the OOM/loading/models pattern and eyes reaction, but the reacting user fails the infra-channel membership join, giving a genuine focal negative that the correct selector must exclude.
+
+Now I realize my path has an extra node - the assigned route only goes WORKSPACE→CONVERSATION→MESSAGE→REACTION→USER→CONVERSATION_MEMBERSHIP, six nodes ending at membership, not a second conversation node. I need to apply the "on-call" topic filter directly on the membership row's channel rather than appending another channel join.
+
+I mistakenly added an extra node. I could filter channel_members by channel_id constants for the infra channels, but that conflicts with the guidance to use user-facing names like channels.channel_name rather than hidden ID constants—yet the route doesn't allow rejoining to channels for topic text. That's a real tension I need to resolve.
+
+Since instructions favor auxiliary queries only for independent constraints, I could treat the channel-membership requirement as a separate auxiliary constraint linking the same focal user to a channel matching a topic like "on-call," keeping it decoupled from the hidden seed ID.
+
+Actually, since the CONVERSATION_MEMBERSHIP's user must match the REACTION's user within the focal path itself, the infra-channel qualification is really about which channel that membership references - I should constrain that directly at the channel_members node using the channel_id field rather than extending the path further.
+
+Actually, the route's single CONVERSATION node can't capture both the message's channel and the membership's channel since those are genuinely distinct conversations in the realistic case — the message lives in #engineering while the membership is in #core-infra. That mismatch means the route as defined structurally can't express the "channel is infra" condition without conflating two different conversation identities.
+
+So maybe the error isn't about a missing node but about ordering — the assigned route matches a 6-node path (WORKSPACE-CONVERSATION-MESSAGE-REACTION-USER-CONVERSATION_MEMBERSHIP), while my path added a 7th trailing CONVERSATION node. I should drop that extra node and instead filter directly on the membership's channel_id using literal channel IDs, keeping the path length at 6 to match the route exactly.
+
+That leaves the question of how to identify the two infra channels without a name field at that node — using their known channel_id values (real existing IDs, not fabricated) as a filter predicate seems like the acceptable approach since channel_id is a legitimate field there. Alternatively, I could root an auxiliary query at teams, join to channels, and filter where topic_text contains "on-call" with a count threshold to identify the matching team that way.
+
+But this still doesn't guarantee the specific membership record is tied to that exact on-call channel, since focal and auxiliary paths aren't correlated at the row level — I'd need the membership to join specifically to the channel with that topic, which the focal path alone doesn't support since it stops before reaching channel attributes.
+
+Without correlating the same user across both paths, the check is weaker, so I think the simplest fix is to keep the focal path matching the exact sequence and drop the redundant last node, then add a filter restricting channel_id to the two known real infrastructure channel IDs that the design explicitly identifies as having on-call topics. This grounds the query in legitimate, specific database records rather than an abstract pattern.
+
+Now I need a genuine negative team that fails this channel_id filter by belonging to a different, non-infra channel, so the focal path correctly excludes it—I'll create Team T03 for this purpose and add it to the negative referents list.
+
+I'll write the message text about OOM errors when loading large models, add an eyes reaction from U_SIGNAL_DEV, and set channel_members so only that user belongs to C_SIGNAL_ENG, keeping it separate from infra channels. I also need to give the actor bot channel membership in C_SIGNAL_ENG so it can discover this team's message and confirm completeness, plus corresponding user_teams entries.
+
+Now I'm double-checking that adding T03SIGNAL as a negative team won't break the validator's expected matches - it should still show T01WORKSPACE and T02NOVA as the only computed matches, with T03SIGNAL correctly excluded by the channel membership filter despite passing earlier filter stages.
+
+I'm using literal channel IDs in the "in" operator since that's the only way to identify infra channels given the fixed route, noting this as a limitation. But I'm wondering if there's an alternative using the topic_text field through the existing channels node, since there's only one channels node in the path - which raises the question of whether CONVERSATION and CONVERSATION_MEMBERSHIP were meant to reference the same conversation.
+
+Rechecking the route structure, though: workspace->conversation->message->reaction->user->conversation_membership doesn't require the membership to reference the same conversation as the message. Since CONVERSATION_MEMBERSHIP connects only through USER, not through CONVERSATION, the topology naturally permits different conversations, so my design of having the message in #engineering and membership in #core-infra is actually consistent with the route.
+
+The final filter on channel_members needs to identify the "infra channel" using channel_id since there's no name field, referencing the specific channels the design already established as used for infrastructure incidents and on-call — this seems acceptable rather than fabricated, though worth flagging. I should also note the third team as a negative case since it's only marginally related.
+
+This gives me my recomputed focal negative — a root candidate that satisfies part of the chain but fails the final channel_membership filter, matching what the validator wants: an explicitly identified negative that's excluded through the full query even though it partially qualifies. I'll set negative_referents to include this team handle at the root level, and consider whether the original message/user-level negatives should also stay listed separately since they represent distinct negative roles from the design rather than duplicating the root-level exclusion.
+
+Since negative_referents should only contain handles of main-referent records excluded by the complete request — and the main referent here is the workspace — only the team handle belongs in that list, so negative_referents becomes just the one team. I'll still keep the original negative message_reactions instantiated since they're locked into the design's role table (three distinct negative roles), even though they don't independently produce false teams anymore; they still test selector precision. I want to verify adding this team handle doesn't violate design fidelity, since the design's role table only specified those three negative roles and didn't call out a team-level negative explicitly.
+
+None of the design's listed negative roles match a "wrong workspace" root-level case, but since validation requires a focal negative at that level and the design left a gap, I'll treat this as a justified necessary addition per the instruction to preserve base records unless a documented change is needed — I have authority to add coherent new records (team/channel/user/message/reaction/membership) to satisfy the validator while keeping the locked design intent, and I'll note this in the addendum. I'm also checking whether the create_channel selector needs adjustment, but it looks fine as-is since the WORKSPACE routing likely only applies to the main obligation, not this one.
+
+Now I'll finalize the seed edits and bindings, adding the negative team and correcting selector 1's path and filters so it exactly matches the assigned route: six nodes, five joins, filtering messages for the OOM/loading/models terms, an "eyes" reaction, and restricting channel membership to the two infra channels. I'm confirming this correctly excludes T03SIGNAL's membership (which points to a different channel) as the intended focal negative, while still matching both T01 and T02's correct channel memberships — so the routing holds for all three cases.
+
+I'm now drafting the new seed data to support the T03SIGNAL negative case: a new team, its engineering channel, a developer user plus team/channel memberships (including the actor bot's access for consistency), and a message from that channel describing OOM errors, which should mirror the positive cases' content without matching the correct channel filter.
+
+I need to add "T03SIGNAL" to negative_referents, then reassemble the full corrected JSON with all prior fixes plus these updates, leaving selector 2 and the computed_matches for T01WORKSPACE/T02NOVA untouched.
+

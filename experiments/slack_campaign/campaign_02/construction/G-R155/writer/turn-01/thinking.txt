@@ -1,0 +1,50 @@
+I'm mapping out the query path from workspace membership through conversation membership to find a specific message, planning to identify the workspace via the single-member chain since there's only one workspace seeded in this data.
+
+I could route through workspace membership → user (Łukasz) → conversation membership → the engineering channel → the specific message about the circuit-tracer OOM fix, and then ask which workspace this all belongs to. Since there's only one workspace, though, I'm wondering if the identifying chain feels artificial - maybe I should instead pair it with a consequential action, like inviting someone to a conversation within that identified workspace, to make the task feel more purposeful.
+
+Following that chain through, Robert Chen's workspace membership, conversation membership, and message all point to T01WORKSPACE — and since there's only one workspace in the seed data, this resolves trivially. For negatives, I should consider users who didn't post that specific message or who posted something similar in a different channel, since conversation membership always implies workspace membership in this schema.
+
+I'm thinking a stronger negative test needs a second, distinct workspace with its own members and a conversation containing a similar OOM/GPU discussion, so the correct routing has to properly bind membership rather than conflating across workspaces. I'll construct this second workspace alongside the existing T01WORKSPACE.
+
+Actually, I can use that qualification directly: create a guest user who has conversation membership in the channel but no workspace membership at all, testing that channel membership doesn't imply workspace membership—so a solver shouldn't be able to attribute a workspace to this guest based on the channel message alone.
+
+For the concrete final task, I'll use Robert Chen (U_ROBERT), a real user in T01WORKSPACE and a member of C03IJKL9012, where he asks about the PyTorch multi-GPU rewrite timeline in reply to Lukas's OOM message. I can phrase the prompt as asking which workspace hosts the engineering channel where Robert Chen asked about this timeline.
+
+To make this non-trivial, I'll add a decoy: a different workspace T02OTHERORG with a similarly-named user "Robert Diaz" who posts a comparable multi-GPU support message in an "ml-infra" channel there, creating a plausible but wrong alternative answer.
+
+For a second negative, I'll add a guest-type user in T01WORKSPACE who's a member of the channel but lacks a workspace membership record, posting an unrelated message about cloud costs — showing that conversation membership alone doesn't imply workspace membership and that content mismatch should rule this out too.
+
+I should design negatives that break the binding in specific ways: different member posting a similar message in the same channel, the same user posting in a different channel/workspace, or a workspace member whose conversation membership doesn't match the channel where the message was actually posted. I need to check the seed data for U_ROBERT's workspace and channel membership to confirm the match holds for T01WORKSPACE.
+
+I need an actual conversation membership record though, so I'll add U_ROBERT as a member of C03IJKL9012 since he's already posting there—that's a reasonable access membership to add. Workspace membership already checks out since U_ROBERT is in user_teams for T01WORKSPACE, so the route builds from there.
+
+Now for negatives, I'm considering U_KENJI's post in the same channel about a JAX prototype rather than PyTorch timeline—same channel and workspace but a different message identity, so it shouldn't match the intended query.
+
+Actually, I realize this wouldn't be a useful test since it'd still resolve to the same workspace. I need a decoy scenario that leads to a genuinely different workspace, so I'll create a separate team "T02NIMBUSAI" with a similar decoy user and message setup, testing whether a solver correctly follows the actual membership chain rather than matching on message content alone.
+
+I also need to make sure the puzzle description doesn't leak the actual person's name directly, since that would let the solver pre-resolve the identity instead of tracing through the workspace/channel/message chain properly.
+
+Since Marco's message also references the 70B model, I need a sharper distinguishing detail so only one answer is unambiguously correct—making the other a decoy that breaks down under close inspection, like tying the correct message to the specific "circuit-tracer" library mentioned earlier in Lukas's thread.
+
+So I'll write the prompt to explicitly reference the circuit-tracer PyTorch rewrite blocking the 70B model, which uniquely matches Robert's reply in that thread, while Marco's generic decoy message about a PyTorch/multi-GPU rewrite won't mention circuit-tracer and gets correctly excluded. I'm also considering adding a second negative constraint tied to the same workspace to further narrow the match.
+
+I should also test that channel membership doesn't get conflated across different users posting in the same channel—Robert's own message already satisfies both conditions naturally. Another useful negative case would be a guest-like user who posted a similar question but lacks workspace membership, only conversation membership, to test that qualification requirement.
+
+I'll add "U_CONTRACTOR_ALEX," an external contractor with no user_teams entry at all, added only to a channel and posting a near-identical circuit-tracer message—this checks that the solver doesn't mistakenly infer workspace membership from conversation membership alone.
+
+For the actual solution, I'm settling on Test Workspace as the correct target, with Robert Chen as the routing user, the engineering channel as the conversation route, and his reply message as the target—while Nimbus AI and its developer Marco serve as the decoy workspace/user pair.
+
+This confirms the contractor is a red herring—the correct route is still T01WORKSPACE via Robert, since keyword matching alone isn't enough without the full membership chain. So I'll finalize the answer around identifying the single workspace record from the teams table, with attributes like team_name or team_id.
+
+For task_spec, I'll phrase it as a single-line ask: identify which workspace the engineering channel belongs to, based on the described route.
+
+For access_plan, I'm thinking through how a solver would trace this: search messages for the relevant keywords, find the message, pull the channel via conversations.info, get the team_id from there, then confirm workspace membership. The conversation table having team_id directly could shortcut the intended WORKSPACE_MEMBERSHIP → USER → CONVERSATION_MEMBERSHIP → CONVERSATION path, but I need to think about whether the task binding still requires walking that full chain conceptually.
+
+I'm avoiding pre-resolving the user by their exact name, since that would defeat the purpose of having the route do the identifying work -- I need to describe the user by role instead of naming them directly.
+
+My final phrasing describes an anonymous workspace member asking in an engineering channel about the circuit-tracer PyTorch rewrite blocking their multi-GPU work, so the workspace has to be found by tracing message, channel, and membership together rather than by name lookup. I'm noting that this binding requires matching the same user across message and channel membership, not just matching text separately, and I'm setting up the roles as workspace_match on teams and user_route on users.
+
+For the obligation, I'm mapping the workspace entity to the "teams" table with single mode, target role workspace_match, and answer attributes drawn from team_name or team_id.
+
+I still need to account for decoy workspace, users, channel, messages, and Robert's channel membership addition — these need to be noted in the roles' facts and access plan so the grounding stays coherent, even though actual insertion happens at compile time. Now I'll write up the final answer.
+

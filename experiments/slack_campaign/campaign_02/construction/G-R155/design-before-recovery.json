@@ -1,0 +1,89 @@
+{
+  "prompt": "One of our workspace members asked in an engineering channel when the circuit-tracer PyTorch rewrite (needed for multi-GPU support on the 70B interpretability model) would be ready, since they said they were blocked without it. Which workspace does that channel belong to?",
+  "binding_note": "The workspace is identified by finding the same user who both holds a workspace membership and a conversation membership in the channel containing the specific circuit-tracer/multi-GPU message; the workspace, user, conversation, and message must all bind to one consistent chain rather than being matched independently by topic keywords alone.",
+  "roles": [
+    {
+      "role": "workspace_match",
+      "entity": "teams",
+      "facts": "Existing 'Test Workspace' (T01WORKSPACE), the workspace that actually contains the engineering channel and the member who posted the circuit-tracer follow-up question.",
+      "selection": "match",
+      "reason": "This is the workspace reached by following WORKSPACE_MEMBERSHIP -> USER -> CONVERSATION_MEMBERSHIP -> CONVERSATION -> MESSAGE all the way through consistently."
+    },
+    {
+      "role": "user_route",
+      "entity": "users",
+      "facts": "Robert Chen (U_ROBERT), existing workspace member of T01WORKSPACE (user_teams role member); needs an added channel_members row for C03IJKL9012 since he already authored message 1706110000.000200 there ('When will the PyTorch rewrite be ready? We need multi-GPU support...blocked on this.') as a reply to Łukasz's circuit-tracer OOM message.",
+      "selection": "match",
+      "reason": "He is the workspace member whose conversation membership and authored message satisfy the full route."
+    },
+    {
+      "role": "conversation_route",
+      "entity": "channels",
+      "facts": "C03IJKL9012 ('engineering'), existing public channel in T01WORKSPACE, already containing Łukasz's circuit-tracer rewrite message and Robert's reply.",
+      "selection": "match",
+      "reason": "This is the conversation that both the target user and the target message belong to."
+    },
+    {
+      "role": "message_target",
+      "entity": "messages",
+      "facts": "Message 1706110000.000200 in C03IJKL9012, authored by U_ROBERT, asking when the PyTorch multi-GPU rewrite of circuit-tracer would be ready because he is blocked on 70B model interpretability work.",
+      "selection": "match",
+      "reason": "This is the exact message the request describes, anchoring the whole route."
+    },
+    {
+      "role": "decoy_workspace",
+      "entity": "teams",
+      "facts": "New workspace T02NIMBUSAI ('Nimbus AI'), a separate organization with its own users and channels, added for contrast.",
+      "selection": "negative",
+      "reason": "A different workspace that hosts a superficially similar GPU-rewrite discussion but is not reachable by the required route."
+    },
+    {
+      "role": "decoy_user",
+      "entity": "users",
+      "facts": "Marco Silva (U_DEV_MARCO), workspace member of T02NIMBUSAI, conversation member of channel C_NIMBUS_ENG ('ml-infra'), posts 'When will the PyTorch rewrite for multi-GPU sharding be ready? We're blocked on our 70B model too.' — similar topic, but never mentions circuit-tracer.",
+      "selection": "negative",
+      "reason": "Different value: topically similar message in a different workspace/channel that lacks the specific circuit-tracer detail naming the target thread, so it must not be selected by loose keyword matching."
+    },
+    {
+      "role": "decoy_contractor",
+      "entity": "users",
+      "facts": "Alex Vega (U_CONTRACTOR_ALEX), added only as a channel_members row for C_NIMBUS_ENG with no user_teams row at all (no workspace membership), posts a message explicitly mentioning 'circuit-tracer' and being blocked on multi-GPU rewrite for the 70B model.",
+      "selection": "negative",
+      "reason": "Missing relationship: matches the message content closely but has no WORKSPACE_MEMBERSHIP record, so the route cannot resolve any workspace through this user, illustrating that conversation membership alone (without workspace membership) must not be used to answer."
+    }
+  ],
+  "obligations": [
+    {
+      "name": "identify_workspace",
+      "description": "Select the single workspace reached by the route: a workspace member who is also a conversation member of the channel containing the circuit-tracer/multi-GPU-blocked follow-up message.",
+      "table": "teams",
+      "mode": "single",
+      "task_type": "read-only",
+      "scope": "ordinary workspace identification via membership and message content along the specified route",
+      "target_roles": [
+        "workspace_match"
+      ],
+      "candidate_role_sets": null,
+      "selection": "one",
+      "answer_attributes": [
+        [
+          "teams.team_name"
+        ],
+        [
+          "teams.team_id"
+        ]
+      ]
+    }
+  ],
+  "task_spec": [
+    {
+      "line": 1,
+      "text": "Determine which workspace contains the channel and member whose message matches the described circuit-tracer/multi-GPU rewrite follow-up, and report that workspace.",
+      "obligations": [
+        1
+      ]
+    }
+  ],
+  "scope_exception": null,
+  "access_plan": "Use search.messages / conversations.history to locate the message referencing the circuit-tracer PyTorch rewrite and multi-GPU blocking for the 70B model, identify its author and channel via the message record, confirm that author's conversation membership in that channel via conversations.members, then confirm that same user's workspace membership via users.info/user_teams to resolve and report the single containing workspace, distinguishing it from the superficially similar Nimbus AI thread and the workspace-less contractor's post."
+}

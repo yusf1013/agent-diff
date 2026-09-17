@@ -1,0 +1,26 @@
+I need to redesign this since joined_at isn't actually exposed as a deliverable field, and same issue applies to message_reactions.created_at. For the membership target, the only answerable attributes are really channel_id and user_id, so I need to find a read-only question that works with just those identity fields rather than timestamps.
+
+A state-changing option fits better here: kicking a user from the channel via conversations.kick, targeting an existing CONVERSATION_MEMBERSHIP record for removal. I'm thinking through a plausible scenario tying a reaction or behavior to justify the removal, keeping it to a single matching membership so the mutation stays clean without introducing extra unintended positives.
+
+I'll invent a fresh scenario rather than forcing it onto existing seed data: a message in a channel like #core-infra containing something sensitive (e.g., leaked credentials) gets flagged by a reaction, prompting a team lead to remove that reacting user from a private channel.
+
+Actually, thinking about it more, kicking a member directly maps to the conversations.kick operation on channel membership, which is a clean, supported action. I'll design the scenario around channel C_GROWTH, where user U_INCOGNITO (username "shadow.lurker", display name "El Incognito") is already a member per seed data, and build the task around removing them from that channel.
+
+For the identification path, I need this user to react to a message within that same channel, so I'll craft a message and reaction record connecting them, then trace outward from that reaction through the user's identity to their workspace membership.
+
+I also need to confirm workspace membership in T01WORKSPACE to validate the removal. For concrete data, I'm drafting a message in C_GROWTH where confidential comp figures get accidentally shared, with U_INCOGNITO reacting to it with "eyes" as the triggering reaction.
+
+Given Incognito's flagged suspicious status, this justifies a consequential kick action from the channel. I'm also outlining negative test cases: wrong emoji reaction, reaction in a different channel, or a different user reacting—all of which should not trigger removal.
+
+U_INCOGNITO's membership record confirms the workspace condition holds. Now I'm structuring the JSON action definition — this is a state-changing kick on channel_members, single mode, with written_attributes as an empty list to represent the removal, and I'm working out the role list next.
+
+For entities: target_channel is C_GROWTH in T01WORKSPACE, target_message is Kenji's salary bands message there, target_reactor_member is U_INCOGNITO who reacted "eyes" and holds both the channel and workspace memberships, and target_membership is the (U_INCOGNITO, C_GROWTH) row to remove. For a decoy I'm considering U_MATEO reacting "thumbsup" on the same message as a negative example with the wrong emoji but right message.
+
+I'm also adding U_INCOGNITO reacting "eyes" on an unrelated message in C_FRONTEND as a wrong-channel decoy, plus U_LUKAS as a C_GROWTH member who never reacted (missing link decoy), and a user who reacted "eyes" on the salary message but isn't a C_GROWTH member at all.
+
+Now I'm ready to assemble the final JSON, including obligations, the newly created support message, and the facts fields so the compiler can instantiate all these seed records correctly.
+
+The final obligation I'm settling on is removing the reactor's channel membership: identify the channel_members row for whoever reacted with 👀 on the compensation-bands message in product-growth, then remove that person from the channel, framed as a state-changing task scoped to that specific membership.
+
+The access plan needs to search message history for the salary-bands message, check reactions for who used 👀, verify membership via conversations.members, then kick with conversations.kick. Now I'll write out the full corrected JSON.
+

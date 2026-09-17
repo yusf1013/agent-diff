@@ -1,0 +1,88 @@
+```json
+{
+  "seed_edits": [
+    {
+      "table": "messages",
+      "op": "insert",
+      "key": {"message_id": "1706120000.000001"},
+      "values": {
+        "message_id": "1706120000.000001",
+        "channel_id": "C03IJKL9012",
+        "user_id": "U03ROBERT23",
+        "message_text": "Server latency spiked to 900ms during the release window; we lost about 12% of requests.",
+        "type": "message",
+        "ts": "1706120000.000001"
+      },
+      "reason": "Design requires Robert Walsh to have authored a message reporting a concrete numeric problem in #engineering this week; no such message existed in the base seed (his existing engineering message about login rate limiting lacks the specified concrete-number framing), so it must be added to instantiate the robert_walsh alternative role faithfully."
+    },
+    {
+      "table": "users",
+      "op": "insert",
+      "key": {"user_id": "U_ROBERTK"},
+      "values": {
+        "user_id": "U_ROBERTK",
+        "username": "robert.kim",
+        "email": "robert.kim@neuroflow.ai",
+        "real_name": "Robert Kim",
+        "display_name": "Robert",
+        "timezone": "America/Chicago",
+        "is_active": true,
+        "is_bot": false
+      },
+      "reason": "Design's robert_silent_member negative role requires a third user named Robert who is a documented channel member of #core-infra but has authored no messages, contrasting membership from authorship; this user does not exist in the base seed and must be added."
+    },
+    {
+      "table": "user_teams",
+      "op": "insert",
+      "key": {"user_id": "U_ROBERTK", "team_id": "T01WORKSPACE"},
+      "values": {"user_id": "U_ROBERTK", "team_id": "T01WORKSPACE", "role": "member"},
+      "reason": "New user Robert Kim needs workspace membership to be a coherent, discoverable seed record consistent with other channel members."
+    },
+    {
+      "table": "channel_members",
+      "op": "insert",
+      "key": {"channel_id": "C_INFRA", "user_id": "U_ROBERTK"},
+      "values": {"channel_id": "C_INFRA", "user_id": "U_ROBERTK"},
+      "reason": "Design specifies Robert Kim holds a channel_members row for #core-infra alongside the other listed members, establishing the membership-without-authorship contrast for the negative role."
+    }
+  ],
+  "bindings": {
+    "robert_walsh": ["U03ROBERT23"],
+    "robert_chen": ["U_ROBERT"],
+    "robert_silent_member": ["U_ROBERTK"],
+    "kenji_numeric_reporter": ["U_KENJI"],
+    "robert_walsh_offtopic": ["1700173200.000456"]
+  },
+  "selectors": [
+    {
+      "root_table": "users",
+      "scope": [
+        {"field": "real_name", "op": "contains_ci", "value": "Robert"}
+      ],
+      "focal": {
+        "path": ["users", "messages", "channels"],
+        "joins": ["messages.user_id", "messages.channel_id"],
+        "filters": [
+          {"node": 2, "field": "channel_name", "op": "in", "value": ["engineering", "core-infra"]}
+        ]
+      },
+      "auxiliary": []
+    },
+    {
+      "root_table": "messages",
+      "scope": [],
+      "focal": {
+        "path": ["messages", "channels", "channel_members", "users"],
+        "joins": ["messages.channel_id", "channel_members.channel_id", "channel_members.user_id"],
+        "filters": [
+          {"node": 1, "field": "is_dm", "op": "eq", "value": true},
+          {"node": 3, "field": "real_name", "op": "contains_ci", "value": "Robert"}
+        ]
+      },
+      "auxiliary": []
+    }
+  ],
+  "negative_referents": ["U_ROBERTK", "U_KENJI"],
+  "notes": "Obligation 1 is genuinely underspecified: both Robert Walsh (U03ROBERT23, via his new #engineering message about 900ms latency/12% request loss) and Robert Chen (U_ROBERT, via his existing #core-infra message about the $47K budget overage) satisfy 'named Robert + numeric-problem message + bounded technical channel corpus,' so the selector's union covers both and the solver must recognize the ambiguity rather than silently pick one. Robert Kim (U_ROBERTK) is a negative: added purely as a #core-infra channel_members row with no authored messages, testing that membership alone does not satisfy the MESSAGE-authorship leg of the route. Kenji Sato (U_KENJI) is a negative: he reports numbers in #product-growth, which lies outside the bounded corpus (engineering/core-infra) and he is not named Robert. Robert Walsh's #general message (1700173200.000456) is a same-author negative: non-numeric content and out-of-corpus channel, so it does not add or resolve anything beyond his real qualifying #engineering message. Obligation 2 (the follow-up DM) cannot be bound to a single existing referent because the request cannot be uniquely resolved between the two Roberts before conversations.open/chat.postMessage; its selector instead defines the generic acceptance shape (a message in a DM channel whose membership includes a user named Robert) for whichever channel the solver legitimately opens, consistent with the design's stated resolution mode. The acting user (U01AGENBOT9) already holds channel_members rows in both #engineering (C03IJKL9012) and #core-infra (C_INFRA), giving documented API access to both bounded channels' histories via conversations.history without relying on hidden seed knowledge."
+}
+```

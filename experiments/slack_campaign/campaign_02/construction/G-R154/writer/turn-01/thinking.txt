@@ -1,0 +1,20 @@
+I need a route from workspace through workspace membership to user, then to conversation membership and conversation, with no resolution mode matching so the referent stays the workspace. Since base_seed has only one workspace, I need to find plausible negatives to exclude while identifying the workspace by a member who's also in a specific conversation.
+
+A cleaner phrasing would be a read-only question: "In which workspace does the owner also belong to the #incident-response channel?" Since no such channel exists, the route yields nothing — I need to also verify negative cases where the channel exists but the membership role condition doesn't match, so the absence is genuine rather than accidental.
+
+Actually, maybe framing it as "invite the workspace owner to #model-research" works: I'd need to resolve WORKSPACE via an owner role in workspace membership, but since no membership row has role "owner" (only "admin" exists), that referent can't be resolved, making the whole action impossible to complete. This confirms the route WORKSPACE → WORKSPACE_MEMBERSHIP → USER → CONVERSATION_MEMBERSHIP → CONVERSATION breaks at the first step since the owner referent is absent.
+
+Actually, a cleaner scenario: "Archive the workspace whose admin belongs to our archived #old-project-q3 channel." Checking the admins against that channel's membership list, I notice old-project-q3 doesn't even appear in the channel_members data, meaning nobody is registered as belonging to it.
+
+More importantly, there's no team-level API for archiving a workspace at all - conversations.archive only works on channels, not teams. So this whole action can't be performed as a write operation and would need to become a read-only lookup on some workspace attribute instead.
+
+Since only one workspace exists in the seed, framing it as "which workspace" still works as a negative case—the single team fails the join condition, so there are zero valid matches even though it technically exists. I'll draft the prompt as: "Which workspace's admin also belongs to the old-project-q3 channel? I need to confirm before we finalize the archive migration list."
+
+This lookup should tie to a real purpose, so I'm reframing it around notifying someone before revoking access: something like asking which workspace has an admin-level member also in the old-project-q3 channel, so I know who to notify before shutting off legacy tooling access. The underlying binding checks whether the same person holds admin role in workspace_membership and membership in that channel.
+
+Checking candidates, admin users like Robert Walsh and Morgan Freeman show up as admins elsewhere but not tied to old-project-q3. The channel itself is archived and has no conversation_membership records at all, so there's no valid match — this needs to resolve as a negative case.
+
+Right, U07MORGANFREE never shows up in channel_members at all, confirming he's an admin with zero conversation memberships. And old-project-q3 itself has no members since it's archived, so the join fails on both fronts—no one is in that channel, and admins' real memberships lie elsewhere.
+
+I'll frame the obligation around the WORKSPACE (teams table): mode "absent," read-only task, scope covering workspace admins' membership in old-project-q3, empty target_roles, and answer_attributes pulling team_name and team_id. Just one main obligation is needed here rather than splitting out intermediate relations, and I'm sketching the access plan—using conversations.list/members to find channel membership and users.list/users.info for team role data.
+

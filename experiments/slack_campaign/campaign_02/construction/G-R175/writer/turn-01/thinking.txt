@@ -1,0 +1,32 @@
+I need a route linking workspace to conversation, message, user, and workspace membership, since the referent entity is the workspace itself. Given the seed data only has one workspace, I'm figuring out how the resolution should trace through that path to identify it.
+
+There's no direct workspace.info API, so I need a consequential action that requires the team_id, like conversations.list or search.messages with team_id param. That means the route should identify the workspace by finding a conversation with a message from a user holding a specific membership role, like an admin — so the task becomes something like listing channels in the workspace where an admin posted about a particular topic.
+
+Given the referent entity is WORKSPACE with single mode, I should honor that the primary obligation targets the teams table directly, reached via the route through the core-infra channel message, its admin poster, and their workspace membership. The task should then require some action performed on or using that identified workspace, like listing its channels or creating something within it.
+
+This suggests a stronger fit: create a new channel in the workspace where the admin posted about the bill overage, using the backward-traversal route through conversation, message, user, and workspace membership to resolve the team_id. Now I need to verify Robert Chen's actual role by checking the user_teams data.
+
+So U_ROBERT (Robert Chen) is actually just a member, not admin, so his cloud bill message doesn't fit an admin-authored requirement. I need to look instead at messages from actual admins like U03ROBERT23 (Robert Walsh) or U07MORGANFREE, checking things like the crash report about login rate limiting that U03ROBERT23 posted.
+
+I'll settle on his "Does anyone know when the MCP deployment will be done?" message in #general as the clean positive example. For negatives, I'm considering a non-admin member posting about login issues in the same channel, or an admin's message but pulled from a different channel context.
+
+I also want to note U07MORGANFREE as an admin who never authored any message at all, which works as a useful negative for "role match but no matching message." I could also consider a reaction-based negative where an admin reacts without authoring, though the seed data only has one reaction on record, so I'll treat that as a conceptual example rather than something literally present.
+
+Now I'm defining the obligations: the primary one is identifying the single workspace via an admin's message in a channel, which supplies the team_id for channel creation. The second obligation is the state-changing act of creating the new channel itself, which doesn't select an existing record but establishes a new one in the channels table.
+
+I'll settle on a single obligation for workspace selection, since that's the actual referent entity, and let the task_spec text describe the channel creation as the action referencing that obligation rather than treating it as its own facts-obligation.
+
+The obligation itself is read-only (identifying the workspace) even though the broader task is state-changing (creating a channel). The obligations list corresponds to referent role selections rather than the full request, so the channel doesn't need its own entry since it's a fresh creation with no existing entity to select.
+
+The workspace scopes the channel creation, making it the primary obligation while the channel creation is a secondary, additional obligation rather than a separate split. So I'm structuring this as: first obligation is the workspace target, a read-only lookup against the teams table (team_id, team_name) tied to the admin_reporter_workspace role, which then feeds into the channel creation action.
+
+Now I'm mapping out roles for the entities involved -- workspace as target, the general channel where the message lives, the message itself needing identification, and the admin user as author -- plus negative roles for non-admin users or admins without the relevant message, before writing the final JSON with fact descriptions and selection criteria for each role.
+
+I'm also checking whether Robert Walsh's other message in #engineering about rate limiting could be mistaken for the target one, but it's a distractor since it doesn't mention MCP deployment. With the workspace confirmed, I can now draft the prompt asking to create a new channel called budget-followup in the workspace where the admin asked about the MCP deployment timing.
+
+I need the binding to trace conversation→message→user→that same user's workspace-membership record, so the resolved workspace comes strictly from that chain and not from a different admin. Then I'm drafting the obligations: one for locating the target workspace (teams table, read-only, resolved via the admin's question in #general) and another for creating the new channel in that workspace as a state-changing action.
+
+For the state-changing obligation, I'm setting the written_attributes as nested lists mirroring the answer_attributes structure — channel_name and team_id. Then I outline the task_spec lines matching each obligation and start sketching the access_plan: using conversations.list/history on #general to locate the MCP deployment message, then users.info to confirm the author's admin role.
+
+I'll finalize the plan by confirming the author's role through workspace membership, then using conversations.create with the team_id and name budget-followup to complete the task, before assembling everything into the final JSON matching the schema.
+

@@ -1,0 +1,40 @@
+I need to identify the channel using two clues about Hubert Marek: he's a member of it, and he reacted with a thumbsup to a teammate's post there — so I'm treating both facts as pointing to the same specific channel.
+
+But looking closer, the design has the thumbsup reaction on a message in a completely different channel (#general), not the engineering channel, while membership is what actually qualifies "the channel." That feels like a real mismatch with the natural reading of the prompt, which implies the reaction should be within that same channel.
+
+So I'm checking which channels Hubert is actually a member of: #general, #engineering, and #growth, per the seed data. The design's selector doesn't filter the reaction by channel at all - it just needs the reaction to exist anywhere, then combines that with membership and content keywords like "crash report" and "rate limit" to try to produce a unique match.
+
+So effectively membership acts as a channel filter while the reaction just serves as a global true/false gate rather than tying to a specific channel, meaning the query resolves to the crash report / rate limit message since it's the only one matching both phrases within Hubert's channels. But this contradicts the natural reading of the prompt, which implies Hubert should have reacted specifically within the matching channel, not just anywhere.
+
+Checking the channel membership list for Hubert, I see he belongs to the random, engineering, and growth channels but not general. Yet the qualifying thumbsup reaction was placed on a message in the general channel—one Hubert isn't even a member of, which seems like an inconsistency in the seed data I need to reconcile.
+
+But naturally, the phrasing binds both facts to the same channel — Hubert's membership and his reaction both happen there. The design instead treats these as two independent facts about Hubert that merely intersect on the same person, decoupling the reaction's location from the identified channel, which is a real stretch of the natural-language relationship.
+
+Actually, rereading it again, maybe "has reacted to a teammate's post" is just a separate qualifying fact about Hubert used only to identify him, not necessarily tied to that same channel — the membership clause alone determines the channel. But that reading feels forced too, since the phrase "in the channel where X is a member and has reacted..." naturally binds both actions to the same channel.
+
+If the design deliberately puts the qualifying reaction in an unrelated channel like #general to test whether the reaction check is decoupled from the channel membership check, that seems like an artificial construction that doesn't match ordinary user intent — a real flaw, since it could produce wrong results if multiple channels had similar messages or a different reaction elsewhere entirely changed the outcome.
+
+Actually, since engineering itself doesn't contain the reaction (which is in #general, a channel Hubert isn't even in), the reaction fact does no real disambiguating work — it's just an existential check independent of channel, while the actual message-content filter (crash report + rate limit) is what uniquely picks the message, with the channel merely constrained to being one of Hubert's three memberships.
+
+This flags a genuine design defect: the query never actually enforces that the reaction happened *within* the qualifying channel, failing the requirement that the reaction-to-channel relationship be properly represented rather than merely coincidentally true somewhere.
+
+This mismatch between the query's selection logic and the plain-English request's intent looks like a genuine validity failure - the reaction should be bound to the specific channel, but the design treats it as unrelated to that context. Considering alternative readings, dropping that channel binding seems implausible given natural language conventions around reacting to posts within a workspace.
+
+I also notice the negative test case "negative_reactor_not_member" (Kenji reacting in #general but not being a member of engineering) is meant to test whether the reactor must belong to the qualifying channel, but since the query actually filters directly by Hubert's real name rather than checking membership among all reactors, this negative case ends up being vacuous - it never actually exercises the intended constraint.
+
+Similarly, the negative_member_no_reaction case (Morgan, a member with no reaction) doesn't functionally test anything either, since the selector logic doesn't check reactions on a per-member basis at all.
+
+This makes me realize most of the negative tests are actually inert against the real query, since the selector filters by the fixed name and content conditions that already uniquely determine the answer regardless of channel membership. Given this significant drift between the requested relationship (reaction within the qualified channel) and the constructed query (reaction anywhere, no channel membership required), I'm leaning toward calling this a validity failure since the route doesn't correctly represent the request's relationship.
+
+The access_plan explicitly states the reaction could sit in any channel via a workspace-wide search, confirming this was a deliberate choice by the writer that breaks the natural binding an ordinary reader would expect. This is significant enough to fail validity on its own.
+
+Checking the mechanical side, the computed_focal_negatives set is huge but seems correct since only one message across Hubert's channels actually matches both the reaction and text criteria. I still need to verify the query properly filters channels to those where Hubert is actually a member.
+
+Tracing the join path, the query does correctly enforce that the root message's channel has a channel_members row for Hubert, but the reaction check on message_reactions.user_id only confirms Hubert reacted with thumbsup somewhere, not necessarily on this specific message or channel. That confirms the relationship isn't correctly tied together, so I'll mark this as a fail with that issue noted, plus flag the access_plan's use of conversations.history as a secondary concern.
+
+Checking target_message uniqueness, the "crash report" + "rate limit" bigram matches only one message in the seed data, so there's no ambiguity there.
+
+The CONVERSATION node mechanically connects channel_id to channel_members, but that doesn't resolve the underlying semantic disconnect between the channel context and Hubert's reaction. The written_attributes (channel_id, parent_id, message_text) are all legitimate fields with no violation. My main concern remains the mismatch between the natural relationship implied and what the query actually captures.
+
+This is a fundamental defect under rule 1 since the qualifying reaction isn't required within the qualified channel, undermining the natural phrase intent. I'll mark validity as fail and quality as weak, given the design undermines negative tests' functional value and deviates from the natural request. Now I'll draft the issues list.
+

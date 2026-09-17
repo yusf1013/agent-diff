@@ -1,0 +1,157 @@
+{
+  "seed_edits": [
+    {
+      "table": "teams",
+      "op": "insert",
+      "values": {
+        "team_id": "T02BETA",
+        "team_name": "Beta Testers Guild"
+      },
+      "reason": "Design requires a genuinely distinct second workspace so the WORKSPACE join in the route is not vacuously satisfied by a single-team seed."
+    },
+    {
+      "table": "channels",
+      "op": "insert",
+      "values": {
+        "channel_id": "C_BETA",
+        "channel_name": "beta-launch",
+        "team_id": "T02BETA",
+        "is_private": false,
+        "is_dm": false,
+        "is_gc": false,
+        "is_archived": false,
+        "topic_text": "Beta program launch coordination",
+        "purpose_text": "Channel for coordinating the external beta testing program."
+      },
+      "reason": "Support role channel_beta_launch: a channel in the other workspace, contrasting with old-project-q3's workspace."
+    },
+    {
+      "table": "users",
+      "op": "insert",
+      "values": {
+        "user_id": "U_ZOE",
+        "username": "zoe.chen",
+        "email": "zoe@betatestersguild.io",
+        "real_name": "Zoe Chen",
+        "display_name": "Zoe",
+        "timezone": "America/Chicago",
+        "is_bot": false
+      },
+      "reason": "New user needed to hold the negative admin membership in the unrelated Beta Testers Guild workspace."
+    },
+    {
+      "table": "user_teams",
+      "op": "insert",
+      "values": {
+        "user_id": "U_ZOE",
+        "team_id": "T02BETA",
+        "role": "admin"
+      },
+      "reason": "Negative role membership_zoe_admin_wrong_workspace: admin role but in a workspace that does not contain old-project-q3, so it must be excluded by the WORKSPACE-bound join."
+    },
+    {
+      "table": "channel_members",
+      "op": "insert",
+      "key": {
+        "channel_id": "C_BETA",
+        "user_id": "U_ZOE"
+      },
+      "values": {
+        "channel_id": "C_BETA",
+        "user_id": "U_ZOE"
+      },
+      "reason": "Coherence: Zoe is a member of the beta-launch channel in her own workspace, matching the ordinary pattern of other seeded users belonging to channels in their workspace."
+    }
+  ],
+  "bindings": {
+    "channel_old_project": [
+      "C_OLD_PROJECT"
+    ],
+    "workspace_main": [
+      "T01WORKSPACE"
+    ],
+    "membership_robert_admin": [
+      {
+        "user_id": "U03ROBERT23",
+        "team_id": "T01WORKSPACE"
+      }
+    ],
+    "membership_morgan_admin": [
+      {
+        "user_id": "U07MORGANFREE",
+        "team_id": "T01WORKSPACE"
+      }
+    ],
+    "membership_john_member": [
+      {
+        "user_id": "U02JOHNDOE1",
+        "team_id": "T01WORKSPACE"
+      }
+    ],
+    "membership_hubert_member": [
+      {
+        "user_id": "U06HUBERT23",
+        "team_id": "T01WORKSPACE"
+      }
+    ],
+    "team_beta": [
+      "T02BETA"
+    ],
+    "channel_beta_launch": [
+      "C_BETA"
+    ],
+    "membership_zoe_admin_wrong_workspace": [
+      {
+        "user_id": "U_ZOE",
+        "team_id": "T02BETA"
+      }
+    ]
+  },
+  "selectors": [
+    {
+      "root_table": "user_teams",
+      "scope": [],
+      "focal": {
+        "path": [
+          "user_teams",
+          "teams",
+          "channels"
+        ],
+        "joins": [
+          "user_teams.team_id",
+          "channels.team_id"
+        ],
+        "filters": [
+          {
+            "node": 0,
+            "field": "role",
+            "op": "eq",
+            "value": "admin"
+          },
+          {
+            "node": 2,
+            "field": "channel_name",
+            "op": "eq",
+            "value": "old-project-q3"
+          }
+        ]
+      },
+      "auxiliary": []
+    }
+  ],
+  "negative_referents": [
+    {
+      "user_id": "U02JOHNDOE1",
+      "team_id": "T01WORKSPACE"
+    },
+    {
+      "user_id": "U06HUBERT23",
+      "team_id": "T01WORKSPACE"
+    },
+    {
+      "user_id": "U_ZOE",
+      "team_id": "T02BETA"
+    }
+  ],
+  "notes": "Main selector follows the assigned route exactly: root_table user_teams (WORKSPACE_MEMBERSHIP) joins via user_teams.team_id to teams (WORKSPACE) and via channels.team_id to channels (CONVERSATION), with the admin-role condition applied at the root node (user_teams.role = 'admin') and the channel identified by its user-facing name ('old-project-q3'), per the binding_note. This yields exactly the two admin memberships (U03ROBERT23, U07MORGANFREE) in T01WORKSPACE, matching target_roles. Excluded: the two same-workspace member-role users (John Doe, Hubert Marek) fail the admin-role filter; Zoe Chen's admin membership is correctly excluded because it belongs to T02BETA (Beta Testers Guild), a workspace that does not join to the old-project-q3 channel via the required teams->channels FK path. old-project-q3 is a public, non-DM channel, so conversations.list/conversations.info discovery does not require channel membership; no additional actor memberships were added. Solver access to the second workspace (T02BETA) is not needed and not assumed, consistent with the single-workspace scope of users.list/users.info; Zoe's membership is excluded structurally by the route rather than by any access limitation."
+}

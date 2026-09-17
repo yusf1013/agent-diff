@@ -1,0 +1,158 @@
+{
+  "prompt": "I'm drafting a cross-team incident retro and need to know which workspace it belongs to. Find the workspace where Lukas left an 👀 reaction on a teammate's outage alert and also posted his own message investigating a similar issue, then give me that workspace's ID and name.",
+  "binding_note": "r0(teams)-r1(channels via channels.team_id)-r2(messages via messages.channel_id, message location in that channel)-r3(users via messages.user_id, message author)-r4(message_reactions via message_reactions.user_id, same user as reactor elsewhere, not necessarily on r2). Two different users first-named Lukas in two different workspaces each satisfy this chain, leaving r0 unresolved.",
+  "roles": [
+    {
+      "role": "workspace_A",
+      "entity": "teams",
+      "facts": "T01WORKSPACE ('Test Workspace'); contains #engineering (C03IJKL9012) among other channels.",
+      "selection": "alternative",
+      "reason": "Contains Lukasz Kowalski's investigation message and his eyes reaction, satisfying the full r0-r4 chain."
+    },
+    {
+      "role": "workspace_B",
+      "entity": "teams",
+      "facts": "T02RIVERBEND ('Riverbend Labs'); contains #incident-response (C_RB_INCIDENT).",
+      "selection": "alternative",
+      "reason": "Contains Lukas Berg's investigation message and his eyes reaction, equally satisfying the chain."
+    },
+    {
+      "role": "channel_engineering_A",
+      "entity": "channels",
+      "facts": "#engineering, C03IJKL9012, team_id T01WORKSPACE.",
+      "selection": "support",
+      "reason": "r1 for workspace_A: hosts the authored investigation message."
+    },
+    {
+      "role": "channel_incident_B",
+      "entity": "channels",
+      "facts": "#incident-response, C_RB_INCIDENT, team_id T02RIVERBEND.",
+      "selection": "support",
+      "reason": "r1 for workspace_B: hosts the authored investigation message."
+    },
+    {
+      "role": "channel_infra_A",
+      "entity": "channels",
+      "facts": "#core-infra, C_INFRA, team_id T01WORKSPACE.",
+      "selection": "support",
+      "reason": "Hosts the alert message that Lukasz Kowalski reacted to with eyes (separate r2 occurrence from his own authored message)."
+    },
+    {
+      "role": "lukas_kowalski",
+      "entity": "users",
+      "facts": "Łukasz Kowalski (U_LUKAS), member of workspace_A, posts in #engineering about the circuit-tracer OOM investigation.",
+      "selection": "match",
+      "reason": "r3 author of the investigation message in workspace_A, matching first name 'Lukas'."
+    },
+    {
+      "role": "lukas_berg",
+      "entity": "users",
+      "facts": "Lukas Berg (U_LUKASB), member of workspace_B, posts in #incident-response about the payment-gateway outage investigation.",
+      "selection": "match",
+      "reason": "r3 author of the investigation message in workspace_B, matching first name 'Lukas'."
+    },
+    {
+      "role": "investigation_msg_A",
+      "entity": "messages",
+      "facts": "Message in #engineering by Łukasz Kowalski: 'The circuit-tracer library is hitting OOM errors when loading large models layer-by-layer... Need to rewrite this in PyTorch from scratch with proper streaming.'",
+      "selection": "match",
+      "reason": "r2 authored message satisfying the message-author binding for workspace_A."
+    },
+    {
+      "role": "investigation_msg_B",
+      "entity": "messages",
+      "facts": "Message in #incident-response by Lukas Berg: 'Started the outage investigation — checking load balancer health checks and recent deploys for the payment gateway incident.'",
+      "selection": "match",
+      "reason": "r2 authored message satisfying the message-author binding for workspace_B."
+    },
+    {
+      "role": "alert_msg_A",
+      "entity": "messages",
+      "facts": "Message in #core-infra by Priya Sharma: 'Alert: High memory pressure on cluster-b inference pods. OOM kills detected.'",
+      "selection": "support",
+      "reason": "Separate message that Łukasz Kowalski's r4 reaction (eyes) is attached to; distinct record from investigation_msg_A per route semantics."
+    },
+    {
+      "role": "alert_msg_B",
+      "entity": "messages",
+      "facts": "Message in #incident-response by Nova Reyes: 'Payment gateway is down for EU customers, investigating now — outage started 09:14 UTC.'",
+      "selection": "support",
+      "reason": "Separate message that Lukas Berg's r4 reaction (eyes) is attached to; distinct record from investigation_msg_B."
+    },
+    {
+      "role": "reaction_kowalski",
+      "entity": "message_reactions",
+      "facts": "eyes reaction by U_LUKAS on alert_msg_A.",
+      "selection": "match",
+      "reason": "r4 binding the reactor to lukas_kowalski, completing the chain for workspace_A."
+    },
+    {
+      "role": "reaction_berg",
+      "entity": "message_reactions",
+      "facts": "eyes reaction by U_LUKASB on alert_msg_B.",
+      "selection": "match",
+      "reason": "r4 binding the reactor to lukas_berg, completing the chain for workspace_B."
+    },
+    {
+      "role": "lukas_bianchi",
+      "entity": "users",
+      "facts": "Lukas Bianchi (U_LUKASBI), member of workspace_A, posts casually in #random ('Anyone want to grab boba later?') and reacted thumbsup to a lunch-poll message.",
+      "selection": "negative",
+      "reason": "Shares the first name 'Lukas' but his authored message is unrelated banter and his reaction emoji is thumbsup, not eyes — fails both the message-topic and reaction-value conditions."
+    },
+    {
+      "role": "kenji_sato",
+      "entity": "users",
+      "facts": "Kenji Sato (U_KENJI), member of workspace_A, posts extensively about the Tokyo launch outage and infra topics in #product-growth and #core-infra, no stored reaction.",
+      "selection": "negative",
+      "reason": "Authors outage-adjacent content but is not named Lukas, and has no reaction record at all — fails the author-name condition and the reaction-existence condition."
+    },
+    {
+      "role": "lukas_ferreira",
+      "entity": "users",
+      "facts": "Lukas Ferreira (U_LUKASF), a conversation member of #general in workspace_B via channel_members only, with no workspace_B entry in user_teams; he posts a generic greeting but never reacts to anything.",
+      "selection": "negative",
+      "reason": "Illustrates the qualification that conversation membership does not guarantee workspace membership; also lacks any reaction, failing r4."
+    }
+  ],
+  "obligations": [
+    {
+      "name": "identify_workspace",
+      "description": "Select the workspace (teams record) reached via: a channel of that workspace contains a message authored by a user first-named Lukas, and that same user has left an eyes reaction on some message (not necessarily the one they authored). Two workspaces (workspace_A via Łukasz Kowalski, workspace_B via Lukas Berg) each satisfy this pattern, so the intended workspace is not resolved by the given description alone.",
+      "table": "teams",
+      "mode": "underspecified",
+      "task_type": "read-only",
+      "scope": "workspaces reachable through the actor's channel memberships and message/reaction history",
+      "target_roles": [
+        "workspace_A",
+        "workspace_B"
+      ],
+      "candidate_role_sets": [
+        [
+          "workspace_A"
+        ],
+        [
+          "workspace_B"
+        ]
+      ],
+      "selection": "one",
+      "answer_attributes": [
+        [
+          "teams.team_id",
+          "teams.team_name"
+        ]
+      ]
+    }
+  ],
+  "task_spec": [
+    {
+      "line": 1,
+      "text": "Determine which workspace contains the Lukas-authored investigation message paired with that same Lukas's eyes reaction on a teammate's alert, and report that workspace's ID and name.",
+      "obligations": [
+        1
+      ]
+    }
+  ],
+  "scope_exception": null,
+  "access_plan": "The acting user (U01AGENBOT9) is a member in both candidate workspaces (added to user_teams for T02RIVERBEND and to channel_members of #incident-response) so conversations.list/users.conversations with each team_id, plus conversations.history and reactions.get on #engineering, #core-infra, and #incident-response, surface both authored investigation messages and both eyes reactions without needing workspace-name search or global enumeration."
+}

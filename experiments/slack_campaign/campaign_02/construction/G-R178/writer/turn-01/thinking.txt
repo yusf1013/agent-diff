@@ -1,0 +1,28 @@
+I need to design a route that goes workspace to conversation to message to reaction, where the resolution mode is absent — essentially finding a case where no reaction matches all the conditions together within that workspace-scoped path.
+
+Looking at the existing data, there's only one message_reactions record, with an "eyes" reaction on a message in the engineering channel, not core-infra. So I could construct a scenario asking about a rocket emoji reaction on messages in the core-infra channel — since the only real reaction is a different emoji in a different channel, this would correctly return absent.
+
+I'm building out negative cases: the eyes reaction in the wrong channel, a rocket reaction I'd add on a message in the wrong channel, a thumbsup reaction on a core-infra message with the wrong emoji, and a core-infra message with no reactions at all. I want the scenario framed naturally, like someone asking who gave a rocket reaction to celebrate a fix in core-infra.
+
+The prompt itself asks who reacted with a rocket in core-infra, and since no one did, the expected answer should be empty—this is a read-only, absent-mode obligation with no target roles. I'm now working out whether the referent entity being "WORKSPACE" means the question should actually be phrased around identifying the workspace itself, since the resolution route traces from workspace through conversation, message, to reaction, even though there's only one workspace in this seed.
+
+Actually the route direction goes forward from WORKSPACE to REACTION, meaning I'm selecting reactions belonging to messages in channels of the workspace. But the referent entity is WORKSPACE itself, so the workspace is the fixed root being identified while the route narrows down what's inside it.
+
+Since there's only one workspace in this seed anyway, an "absent" case works fine here: the workspace exists with channels and messages, but no message carries the specified reaction, so zero workspaces satisfy the full path condition.
+
+This makes a good read-only task: ask the assistant to verify or report whether such a reaction chain exists in the workspace, and the correct answer is that it doesn't -- effectively confirming absence rather than surfacing a real match.
+
+I need real identifying work: the channel is core-infra, the message identified by its content is Priya's report of hitting the CUDA memory limit (the root-cause message), and the reaction type is the check emoji. So the chain is conversation→message content→reaction type, which does genuine narrowing even though the check reaction doesn't actually exist there — it only appears elsewhere or not at all, making the workspace absent from results.
+
+Checking the seed data: message 1706001931.000000 has zero reactions, and the only reaction in the entire seed is "eyes" on Lukas's message in a different channel entirely. This means the target workspace correctly fails the reaction condition.
+
+For negatives, I want one where the eyes reaction is present but attached to the wrong message/channel entirely, and another where the correct message and channel are present but simply lacking any reaction — showing the chain breaks at different points. A "wrong workspace" negative isn't needed since there's only one workspace in this seed.
+
+I'm also adding a fabricated split-record negative: a check reaction placed on message 1706002098.000000 (Lukas's confirmation) in the same infra channel — same channel, same emoji, but wrong message, which tests the identity-matching path specifically. I'll fold this into the roles description as an additive fact, then move on to assembling the final JSON structure.
+
+The workspace itself (T01WORKSPACE, sole workspace, containing core-infra) exists but doesn't satisfy the full chain, so I'm marking its selection as negative for this absent-referent case. I'm now adding the core_infra_channel role — channel C_INFRA "core-infra" within T01WORKSPACE.
+
+The root_cause_message role points to Priya's message about the CUDA hard limit in C_INFRA, marked negative since it lacks the matching reaction. The check_reaction_wrong_message role is a "check" reaction on the wrong message (Lukas's), also negative, and eyes_reaction_wrong_channel is an "eyes" reaction on the wrong message in the wrong channel entirely — both split conditions meant to fail. I'm building a single obligation on the teams table with mode "absent," read-only task type, and a scope describing the workspace whose core-infra channel message about the CUDA memory root cause got a check-mark reaction, with no target roles and answer attributes referencing team_name and team_id.
+
+For the access plan, I'll describe using conversations.list/history to locate the core-infra channel, pull its message history, and check reactions.get on the candidate message. Now I'm putting together the final JSON structure with the task_spec as a single line.
+

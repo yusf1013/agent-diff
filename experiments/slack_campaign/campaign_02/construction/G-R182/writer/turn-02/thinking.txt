@@ -1,0 +1,20 @@
+I need to fix the access plan since there's no team-name resolution API available. Instead I'll anchor via a known channel the actor can access through conversations.list/info to get the team_id, then use conversations.members and users.info to resolve role. I should also confirm target_roles stays limited to referent-entity roles and that negative referents are represented in the role table and supporting records, which is already handled.
+
+Now I'm redesigning by adding a channel within ClientOps Workspace with the actor as a member, so they can discover it via conversations.list or a direct channel ID, get the team_id via conversations.info, then pull channel members via conversations.members. The catch is channel membership isn't the same as workspace membership (user_teams), but I can use the member list from conversations.members as a starting point and then call users.info on each user to check their actual role.
+
+However, the runtime qualifications require each queried person to have exactly one workspace membership for deterministic results from users.info -- and I realize some users like Mateo would now have two team memberships (original T01WORKSPACE plus T02CLIENTOPS), which breaks that determinism requirement. I need to check the base seed data to confirm which neuroflow users already have T01WORKSPACE membership so I can resolve this conflict.
+
+So I decide to create entirely fresh users dedicated solely to ClientOps Workspace and DataOps Guild rather than reusing existing ones, assigning distinct roles across owner/admin/member for each. I also need to make sure the actor has channel access within ClientOps and that a channel exists with a name distinctive enough for the user's request to resolve correctly to the right team_id via conversations.info.
+
+But I realize there's no API endpoint that returns a team's name string directly, so grounding "ClientOps Workspace" purely by name isn't feasible through the available tools. This means the real fix is to anchor identification by ID rather than name.
+
+There's no direct API listing workspace members with roles either—only users.info gives single-user role association, and conversations.members gives channel membership without roles. So the actor would need to first pull candidate user_ids from a channel's membership list, then query users.info per user to check role, assuming each user belongs to only one workspace so the returned role is unambiguous.
+
+That means I should design brand-new distinct users for ClientOps and DataOps workspaces, each with exactly one workspace membership, rather than reusing multi-membership users. I'll add a channel in the ClientOps workspace with actor as a member so they can enumerate candidates via conversations.members, then set up new teams like T02CLIENTOPS "ClientOps Workspace" and T03OPS "DataOps Guild" to house these single-membership users.
+
+For the access plan, actor would look up the clientops-main channel, pull its members, then call users.info on each to check role flags like is_owner/is_admin — since each user only has the one ClientOps membership, the role returned is unambiguous, and Nora comes back as owner.
+
+I should update the access_plan text and binding_note to reflect that the route resolves through a known member channel rather than a team-name lookup, matching role='owner'. I also need to make sure the qualifications and role table already account for negative referents, then renumber roles for the new users and adjust base_seed accordingly.
+
+This is a design-level task -- I'm just producing the sketch JSON, not actually inserting seed data, so the facts just need to describe the scenario coherently. Now I'll rewrite the full JSON with these fixes.
+

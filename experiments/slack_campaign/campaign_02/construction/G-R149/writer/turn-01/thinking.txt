@@ -1,0 +1,66 @@
+I'm mapping out a route starting from USER, moving through REACTION, MESSAGE, CONVERSATION, WORKSPACE, and ending at WORKSPACE_MEMBERSHIP, and considering how the resolution mode being underspecified affects this path.
+
+The identifying logic seems to trace a participant through their reaction on a message, that message's conversation, and the workspace it belongs to, then to a membership record. I'm trying to figure out whether the final participant tied to that membership is the same user or a different one, and how the exposure qualification about joining workspace associations to channel participants factors into this.
+
+Actually this makes more sense as a chain: the user reacted with a specific emoji to a message in a specific channel, and separately holds an admin-level workspace membership in that channel's workspace — that combination identifies them. So I need a resolution scenario with genuine ambiguity, meaning two candidate users could satisfy partial identifying info before the membership role narrows it down; I'm looking at the reaction seed data to pin down the exact message and emoji to use.
+
+Wait, there are actually two Roberts in the seed data — Robert Walsh (U03ROBERT23, admin) and Robert Chen (U_ROBERT, regular member) — so "admin" alone disambiguates cleanly to Walsh. I should look for a different angle to construct genuine name ambiguity, perhaps based on partial-name matching where the request underspecifies which Robert is meant.
+
+Rather than force this onto existing seed data exactly, I can add a fresh coherent scenario with its own records and memberships. Actually the seed already has two Morgans — Morgan Stanley (U05MORGAN23) and Morgan Freeman (U07MORGANFREE) — sharing the same first name, which gives me a clean built-in ambiguity to exploit.
+
+I'm mapping the route from user through reaction, message, conversation, and workspace to workspace membership: one Morgan reacts with 👀 to a message about the circuit-tracer PyTorch rewrite in core-infra, and I want that same user's admin role in the workspace to matter. Both Morgans belong to workspace T01WORKSPACE, but Stanley is a "member" while Freeman is "admin" — so if both react to the same message, resolving "the Morgan who reacted" is ambiguous by first name alone, though adding the "admin" qualifier could disambiguate it. But since the resolution mode is meant to be underspecified, I need the request to leave that ambiguity intact rather than resolve it.
+
+So the WORKSPACE_MEMBERSHIP node may just be an extra reported fact rather than a disambiguating condition, since both Morgans reacting to the same message is itself the intended ambiguity for this scenario.
+
+I need a concrete scenario for the binding_note chain. I'll use the existing seed message from Lukas in the engineering channel about circuit-tracer OOM errors as the target, then have two different Morgans react to it — checking which one is actually a member of that channel to create the disambiguating condition.
+
+Morgan Stanley is already a member of C03IJKL9012, but Morgan Freeman isn't, so I'll add him as a member too for coherence before having both react with the same emoji, alongside their existing workspace memberships.
+
+The task now is to DM "the Morgan" who reacted with 👀 to the OOM message - but since both Morgans satisfy that condition, this is genuinely ambiguous by design, so I shouldn't resolve it by adding a distinguishing detail like admin status that would give away which one is meant.
+
+The workspace membership node simply confirms both candidates are workspace members, which doesn't resolve which Morgan is meant but is still a necessary binding step establishing the actor's scope within that route.
+
+But then I notice the task is state-changing since a DM requires opening chat.postMessage with a specific user, and that requires singular resolution—yet two Morgans remain ambiguous. I need to check whether underspecified mode applies here versus other calibration examples, like the deployment channel scenario, to see how the system typically handles this kind of unresolved selection.
+
+Given the risk of resolving to the wrong person, I think read-only is the safer path: asking who reacted with 👀 to the circuit-tracer OOM message and what their workspace role is, treating workspace membership as the answer attribute rather than a filter condition.
+
+The full route flows from user to reaction to message to conversation to workspace to workspace membership, ending in the role lookup. Since "Morgan" maps to two different users with different roles, the honest answer reports both possibilities rather than guessing — matching the calibration pattern where ambiguous shared names warrant surfacing multiple candidates.
+
+The referent table is users, with candidate role sets being morgan_stanley and morgan_freeman. I need to decide whether answer_attributes should strictly stay within the users table fields, or whether it's reasonable to also surface the workspace membership role from user_teams as a related fact — possibly treating that as a second, separate obligation tied to the user_teams table.
+
+So I'll add corresponding membership role entries for user_teams entity type, "morgan_stanley_membership" and "morgan_freeman_membership", both marked as alternatives. Then I'm building out the roles list itself: Morgan Stanley as a user who reacted with 👀 to Lukas's message and holds a member-level role, marked as one of two alternative candidates, alongside Morgan Freeman as a user with admin rights who added the membership.
+
+Continuing this, I'm listing supporting entities like Lukas as message author, the OOM message itself, the engineering channel, and the workspace, plus negative examples such as Robert reacting with a different emoji, another Morgan-related mismatch, and someone reacting with eyes to an unrelated message to test wrong-message binding.
+
+I'm also adding a negative case where Hubert reacts with thumbsup on the same OOM message, and noting that the existing eyes reaction by the acting bot itself is excluded simply by name, not as a genuine negative condition.
+
+Now I'm working out coherent positives: eyes reactions from both Morgan users on the target message, confirming channel membership for U07MORGANFREE while U05MORGAN23 is already covered. I'm deciding the wrong-emoji and wrong-message negatives already in place are sufficient, so no extra negative row is needed for Robert.
+
+For negatives, I want plausible near-misses that test the join conditions: a different emoji, a missing reaction, a reaction from the message author themselves, or someone who's only a channel member without reacting. I'm settling on a small set to keep it clean rather than overcomplicating with extra Morgan-related edge cases.
+
+Actually since the query names Morgan specifically, that's not a great negative test. I should design negatives that test other parts of the match — like Morgan Stanley reacting 👀 to a different message (wrong message test), or Morgan Freeman being in the workspace but not the right channel.
+
+I'll simplify: two positive alternatives — Morgan Stanley reacting eyes on the target engineering message as a member, and Morgan Freeman doing the same as an admin needing channel membership added. Then a negative where Hubert Marek reacts with a different emoji on the same message to test the wrong-value case.
+
+I could also add Robert Walsh reacting with eyes as noise since he's not named Morgan, plus Kenji authoring a reply in the thread without reacting, which tests author-versus-reactor distinctions but isn't strictly necessary given the name filter. I'm settling on keeping the negatives minimal rather than piling on extra distractors.
+
+I'll phrase the question as: "In #engineering, Lukas posted about the circuit-tracer library hitting OOM errors. Which Morgan reacted to that message with the eyes emoji, and what's their role in our workspace?"
+
+For the obligations, I need one to identify the reacting Morgan(s) via the eyes-reaction on that specific message, treating it as read-only against the users table with the target roles including morgan_stanley as a candidate.
+
+Then I need a second obligation to report their workspace role from the user_teams table, since role membership lives there, not on the users table. Since there's ambiguity about which Morgan is meant, I'll set the mode to report for whichever candidate(s) match rather than assuming a single answer.
+
+I'll structure the task_spec with two steps: first identifying which Morgan added the eyes reaction to Lukas's OOM message about circuit-tracer, then reporting that person's workspace role. For the access plan, I'll use conversation history to locate the message, reactions.get to pull reactor info, and users.list/users.info to resolve identities and check their membership role.
+
+For roles, I'll include support and negative entries too—wrong emoji reactions, distractor reactions on unrelated messages—labeling them appropriately across the message_reactions table, since the roles list can span any of the seven tables even though target_roles inside obligations are restricted to matching entities. Now I'm assembling the full JSON structure.
+
+I'm adding two more distractor roles: Lukas as message author (not reactor, so excluded from consideration), and Hubert Marek who reacted with thumbsup instead of eyes, disqualifying him by emoji mismatch. I'm also considering whether to model another reaction from Morgan Stanley as a separate distractor entity within message_reactions.
+
+Then I'm setting up the supporting roles: the OOM message itself from Lukas in #engineering, the channel entity, and the workspace entity tying everything together. I'm also weighing whether membership roles for the two Morgans need separate entries, since they overlap with the person roles already defined.
+
+Now I'm defining the actual obligations - the first task is to identify which workspace member named Morgan reacted with eyes on Lukas's OOM message, framed as a read-only lookup with the two Morgan candidates as alternative role sets, expecting either the real name or username as the answer.
+
+Then the second obligation depends on resolving the first: it looks up that same person's role in user_teams, mirroring the ambiguity since it's tied to whichever Morgan gets identified.
+
+I'm drafting the combined final prompt asking which Morgan reacted with eyes to Lukas's circuit-tracer OOM message and what their workspace role is, and starting to sketch the access plan around fetching conversation history from the #engineering channel.
+

@@ -1,0 +1,34 @@
+I'm thinking through an "absent" case for the WORKSPACE_MEMBERSHIP route, tracing the path from a workspace membership through the user, their conversation membership, the conversation, and finally the workspace it belongs to.
+
+I want the query to break somewhere in that chain — maybe the user belongs to a channel tied to a different workspace than the one being asked about, or the conversation has no linked workspace at all. I'm sketching a concrete scenario, like asking for the workspace membership role of whoever is in an "old-project" channel supposedly belonging to the interpretability research workspace, while keeping the identifying path built from relationships rather than pre-resolving the user by name.
+
+Since conversation membership doesn't guarantee workspace membership, I can build the absent case that way. I'll introduce a second workspace, "Northwind Labs" (T02NORTHWIND), with its own channel, and populate it with a user who joins that channel but never gets a corresponding workspace membership row—making the WORKSPACE_MEMBERSHIP lookup for that route legitimately return nothing.
+
+I should also add negative controls: other users who genuinely hold workspace memberships in Northwind Labs, so the absence of one for Carlos Vega is meaningful rather than incidental. I'll set up the channel membership for Carlos in #field-ops without any corresponding workspace membership row for him under T02NORTHWIND.
+
+I want to craft the prompt so it identifies the user purely through the conversation-membership route, without pre-resolving via name — something like asking what role the #field-ops member holds in the Northwind Labs workspace membership records, so it follows channel membership to user to workspace role, and if that member has zero workspace-membership records, the answer resolves to absent.
+
+I also want to add distractor negatives so the path conditions matter: a different user with Northwind Labs workspace membership but who isn't in #field-ops, showing that just finding "anyone with Northwind workspace membership" would give a wrong answer.
+
+Then there's U_INCOGNITO already sitting in the base seed with a workspace membership record — but for the original workspace, not Northwind Labs. That's a nice trap: he has *a* membership, just not the one tied to the right workspace, so if I make him the sole conversation member in #field-ops under Northwind Labs, the join across workspace membership fails correctly, yielding an absent result.
+
+Now I need the mirror negative case: someone with real workspace membership in Northwind Labs (like U_MATEO) who isn't a member of #field-ops at all, so the conversation-membership side is what's missing this time.
+
+The final prompt should frame this as deciding whether the field-ops channel member needs admin access for managing on-site deployments, which makes it consequential enough to warrant getting the answer right.
+
+Since U_INCOGNITO's only workspace membership is tied to Test Workspace rather than Northwind Labs, the required chain from channel membership to workspace role never resolves — there's no matching row to satisfy the lookup, so the correct answer is that no membership exists for that workspace.
+
+I'm also cataloguing the decoys here: U_INCOGNITO stands as the target user whose selection is ultimately negative since no genuine membership match exists, while the answer attribute I need is the role field from user_teams.
+
+I'm now mapping out the supporting roles: the Northwind Labs workspace and its #field-ops channel serve as context, while the channel membership record identifies Carlos Vega as the sole member used to trace the user through the route.
+
+For contrast, I'm marking Carlos's actual workspace membership (Test Workspace, not Northwind Labs) as a negative near-miss showing why the target link is absent, and Mateo Rivera's Northwind Labs membership as another negative case since he lacks the channel-level connection to #field-ops.
+
+Now I'm finalizing the roles list, drawing from the allowed table types (teams, users, channels, user_teams, channel_members, messages, message_reactions): the Northwind workspace and #field-ops channel as supporting context, plus Carlos's channel membership row as the key join establishing his presence in that conversation.
+
+I add two negative roles: Carlos's actual workspace membership sits in Test Workspace, not Northwind, showing why no matching record exists there; and Mateo has Northwind membership but never joined #field-ops, showing right-workspace membership alone isn't enough.
+
+Then I draft the obligation itself, scoping it to a single workspace membership lookup on the user_teams table, marked absent with no target roles, and I'm working through the selection criteria next.
+
+My access plan: use conversations.members on #field-ops to find its sole member, Carlos Vega, then check his Northwind Labs membership via user_teams, confirming it's absent since his only recorded membership is Test Workspace. Now I'm phrasing this as a natural question like asking about the membership role of whoever's in the #field-ops channel within Northwind Labs, while double-checking that workspace IDs and membership facts wouldn't leak the answer.
+

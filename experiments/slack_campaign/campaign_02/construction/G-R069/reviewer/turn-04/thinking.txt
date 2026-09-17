@@ -1,0 +1,42 @@
+This is a mutation to the design where the writer added a "not a guest" filter and a Robert Kim negative case. Checking validity: the prompt explicitly says "a member named Robert is a full workspace member, not a guest," so this non-guest condition is stated directly in the request rather than secretly enforced, which makes it valid.
+
+The routing now filters both by channel membership and workspace role via the same path from MESSAGE through CONVERSATION_MEMBERSHIP to WORKSPACE_MEMBERSHIP, which lines up correctly. Robert Kim is a new guest-role user, sole member of a devops-sandbox channel, whose message is about a genuine infra incident—matching name, channel membership, and topic but failing only on the guest condition, which makes for a solid near-miss. I also need to verify the actor bot actually has read access to that channel's history, since it may lack membership there, which would be a genuine access limitation worth flagging against reviewer guidance.
+
+More importantly, I realize the actor might also lack membership in C_GROWTH, which matters because messages_infra_incident pulls from a Tokyo launch thread in that same channel—checking the channel_members list, U01AGENBOT9 isn't listed among C_GROWTH's members at all.
+
+This is a genuine access problem: without membership, the actor can't legitimately call conversations.history on C_GROWTH through the documented API, so part of the intended message set is actually unreachable. This is a real defect worth flagging, not a fabricated limitation.
+
+If the solver picks Robert Chen, they might use users.conversations with the "user" parameter to browse his channel memberships and discover C_GROWTH that way. But that still leaves the question of whether conversations.history itself requires the actor's own membership to fetch the actual message content from that channel.
+
+The construction note directly flags this: the presumed actor lacks membership in both C_GROWTH and the new devops-sandbox channel, so reading either channel's history isn't clearly supported under documented APIs -- this is a genuine access limitation rather than something fabricated. That matters because it potentially undermines the messages_infra_incident answer set, which relies on C_GROWTH messages.
+
+Since resolution is underspecified with two alternatives and one alternative's own component depends on inaccessible history, I need to weigh whether this counts as a design defect (per the guidance that unsupported capabilities are defects, not valid hard tests) or whether it's consistent with how prior turns already handled this same access gap without flagging it as blocking.
+
+Checking, the actor does belong to C_INFRA but not C_GROWTH, so half of Robert Chen's candidate message set spans an inaccessible channel — this looks like a genuine access defect the compiler noted but never resolved, meaning the task may ask the solver to retrieve messages it can't actually fetch. I need to verify what the documented conversations.history API actually requires regarding channel membership before deciding whether this invalidates the alternative.
+
+Since C_GROWTH is public, real Slack behavior might allow reading it with the right scopes even without membership, and the domain's runtime qualifications only flag membership as a concern for cross-workspace cases, not same-workspace public channels — so the access restriction here is ambiguous rather than definitive.
+
+I'll flag this as an access concern for reviewer resolution rather than a fatal validity failure, since public channels are typically browsable even without explicit membership. Checking the rest of the compiler's logic: the guest-role filter correctly excludes Robert Kim at the workspace_membership node, his message is properly listed among negative referents and near-misses, and the mechanical checks confirm computed_matches equals expected_matches and candidate_population with an empty error list — everything internally consistent.
+
+The new seed insertion for Robert Kim in devops-sandbox genuinely qualifies as an environment mutation since it adds real new rows across user, membership, channel, and message tables rather than just re-listing old negatives, while leaving the original intended referents unchanged. Now I'm turning to review the prompt wording itself, checking how it frames the requirement that Robert be a full workspace member rather than a guest.
+
+The phrasing is a bit awkward but still understandable, so quality is adequate. Given the unresolved access ambiguity around C_GROWTH, I should flag it as an access issue and recommend resolution, and since the case's own construction notes admit uncertainty about whether that channel portion is actually fetchable, I lean toward marking this "unresolved" rather than an outright fail.
+
+The devops-sandbox inaccessibility doesn't matter for correctness since Robert Kim's message is meant to be excluded anyway via the guest-role filter — the solver not being able to access it is actually consistent with it correctly being left out of the answer set.
+
+But C_GROWTH is different: it's part of the intended match set for one alternative answer (Robert Chen), so if the solver truly lacks access to that channel's history, they can't complete that branch, which is a genuine defect undermining completability. Given the compiler itself flagged this as unresolved, I'll mark validity as "unresolved" with this specific access issue, recommending either confirming the read-access model, restricting the C_GROWTH matches, or adding a scope exception allowing cross-channel reads for public channels — especially since real Slack API semantics typically require the bot to have joined a channel to call conversations.history on it.
+
+Actually, wait - since the obligation only requires "whichever Robert," the solver might just pick the Robert Walsh alternative and sidestep the C_GROWTH access problem entirely, since candidate_role_sets appear to be alternatives rather than a requirement to satisfy both.
+
+But if a solver picks the Robert Chen path, they might get stuck partway since they can't fully retrieve the C_GROWTH messages, producing an incomplete answer that would be marked wrong if the grader expects full access to both channels. That's a genuine defect since the C_GROWTH portion of the incident messages isn't actually retrievable.
+
+Given how explicit this gap is, I'll flag it as an access-related validity issue and recommend either excluding this alternative or fixing the permission grant.
+
+The fix belongs at the compiler level—reverting scope to only core-infra channel messages, which are accessible since the actor is a member of C_INFRA. So I'll report validity as "fail" since the compiled match set includes inaccessible C_GROWTH content, a genuine defect requiring compiler correction rather than a writer revision.
+
+Now checking the negative referents: the unrelated-growth negative sits in C04MNOP3456, and the actor is confirmed a member there, so that's fine. The devops-sandbox negative is in a channel the actor can't access, but since it's excluded structurally via the guest-role filter rather than needing content verification, that seems acceptable.
+
+Similarly, Robert Kim's guest role could be determined through user_teams without needing channel access, so excluding him doesn't require reading his messages either. That confirms this isn't a defect — the real issue remains the C_GROWTH access problem for the messages_infra_incident set.
+
+I'll mark this "fail" due to that genuine access defect, but it's a compiler-level scoping error rather than a design flaw, since the role facts never called for including the product-growth channel in messages_infra_incident. The fix would be to revert the scope to core-infra channel matches only, restoring the original intended design.
+

@@ -1,0 +1,34 @@
+The data I need already exists in the base seed - the actor just needs C_INFRA membership to read the history, likely U01AGENBOT9 who already has it. Checking the messages, U_PRIYA, U_OLENA, and U_LUKAS all posted about the OOM incident in C_INFRA, which matches, and U_ROBERT posted something related too.
+
+The other posts - budget in C_INFRA, cost increase in C_MODEL, and various growth-channel messages - are unrelated to the query or in the wrong channel entirely, so no edits are needed there. I'm confirming C_INFRA's membership list includes all the right users plus the actor, and now I'm working out how to build a selector that filters channel messages for OOM/memory pressure content given the limited contains_ci matching support.
+
+I'm checking each candidate message's exact text to see whether "OOM" or "memory pressure" appears, since the budget message clearly doesn't contain either term and can be excluded, but I need a substring that reliably matches all the real target messages without over- or under-matching.
+
+Priya's message continues confirming memory mentions, and Olena's message about a possible tensor reference issue where the model gets reloaded per-request instead of cached also references memory usage, so that one counts too.
+
+Lukas's message doesn't explicitly say "memory" though—he's suggesting checking for unbounded growth in request context objects, running pprof with the --base flag against the previous 24h snapshot, and checking model cache hit rate to rule out reload issues, so I need to verify whether "memory" appears anywhere in his actual wording before including it.
+
+Since Lukas already qualifies via another message that literally contains "OOMing," I just need to confirm the other authors each have at least one message matching either "OOM" or "memory" — but since filters within a single query conjoin rather than OR, I need to find a common substring across the qualifying messages that still excludes the negative examples.
+
+Robert's and Sophie's messages don't contain "memory" or "OOM," and messages in other channels are already excluded by the channel filter. Given selectors likely can't express OR directly, I might need one selector per obligation and rely on channel plus a single keyword match per author.
+
+So root_table should be users, with the focal path going from users to messages to channels, filtering on channel_id and an OOM-related text term — since the query matches on existence of a joining tuple, a user qualifies if any single message satisfies both filters simultaneously.
+
+I'm checking whether "memory" appears in messages from all three target users while excluding it from the negative users' channel-infra messages. Priya's message mentions "memory pressure," Olena's mentions "memory limits" and "tanks memory fast," and I need to verify Lukas's OOM-related message also contains "memory."
+
+Confirming: Lukas's message about the CUDA memory allocator qualifies since it contains "memory." Now I'm scanning Robert's messages about the cloud budget and GPU utilization to make sure none of them contain "memory," since he needs to be excluded.
+
+I'm also cross-checking channel membership against actual message authorship for Aisha, Kenji, Mateo, and Sophie in C_INFRA — they're listed as members but their actual messages live in other channels, so they don't produce any matches here.
+
+Confirming Lukas, Priya, and Olena still qualify cleanly through their existing matches, and concluding that a single filter combining "memory" containment with the C_INFRA channel condition is sufficient to satisfy the selector requirement without needing extra clauses for standalone "OOM" mentions.
+
+Double-checking Robert's full message history in C_INFRA confirms none of his messages contain "memory," so he's correctly excluded. Now moving on to verify the remaining C_INFRA members haven't been overlooked.
+
+I'm confirming that U_KENJI and U_MATEO have no messages in this channel at all, so no further filtering is needed for them. This leaves me with a selector using the users root table, joining messages by user_id and channel_id, and filtering for channel_id equal to 'C_INFRA' with message_text containing "memory" case-insensitively.
+
+Since the prompt referenced the channel by name rather than a hidden ID, I decide it's better to join through the channels table using channel_name instead, so my path becomes users → messages → channels with the channel_name filter set to 'core-infra' at that node. Now I'm working out which users should count as negative referents -- ones like U_ROBERT who posted in the right channel but on the wrong topic, plus users like U_KENJI, U_SOPHIE, and U_MATEO who are in the wrong channel entirely.
+
+I'm mapping each role label to its actual user handle: witnesses map to U_PRIYA, U_OLENA, and U_LUKAS, while the various wrong-channel and off-topic distractors map to U_ROBERT, U_KENJI, U_SOPHIE, and U_MATEO, plus a set of unrelated login users. I still need to figure out which actor identity should be used to run the API calls, and since U01AGENBOT9 is already a member of the infra channel, I'm leaning toward using that bot account as the access actor.
+
+Since that actor is already part of C_INFRA and all the needed roles and users already exist in the base seed, no seed edits are necessary. I can move on to writing the final JSON.
+

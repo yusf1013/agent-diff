@@ -1,0 +1,28 @@
+I'm mapping out a route from workspace to conversation to membership to user to reaction, but since there's only one workspace in this seed, I need to think through how the scoped witness constraint applies here.
+
+Since only one workspace exists in this seed, the route still legitimately exercises the conversation/membership/user/reaction chain even if the answer is trivially unique - that seems acceptable per the calibration guidance. I need to make sure the answer references the workspace as an entity discovered through the path rather than assuming stored names or enumeration are available, so I should rely on IDs surfaced through the traversal itself.
+
+Following the binding rule, the workspace-containing-channel-whose-member-reacted pattern doesn't require the reaction to be on that channel's messages. Looking at the seed data, there's only one reaction recorded: the acting user's 👀 on the circuit-tracer OOM message in C03IJKL9012, so I can frame the task around identifying which workspace holds a channel where a member (the reacting user) left that reaction, even though technically the reaction happens to be in the same channel here.
+
+Since only one workspace exists, the route mostly serves as confirmation of that workspace's identity, which I can use to determine team_id when creating a new channel. A solid task design: ask to create a private channel in the workspace containing a channel where a member added an :eyes: reaction to the GPU memory streaming rewrite message, naming it "circuit-tracer-followup" as a state-changing action tied to that identification chain.
+
+I should add a binding note explaining that the user who's a member of the channel is the same user who added the reaction, plus include some plausible negative examples (different emoji, non-matching memberships) even though the actual workspace is singular, just to add richness to the intermediate reasoning steps.
+
+I need something concrete to make the negative distinguishing, so I'm considering adding another reaction, like a thumbsup from a different user, on the same message but with a membership condition that differs enough to serve as a real test case.
+
+So I'll add a reaction by U08NICK23, who's on the growth team and belongs to a different channel (C04MNOP3456, not C03IJKL9012), reacting with thumbsup on an unrelated message -- that gives a clear negative where the reactor isn't a member of the target channel. I should also consider a negative based on emoji mismatch, since the existing reaction is "eyes" rather than "thumbsup".
+
+I want the prompt to specify the distinguishing emoji rather than naming the user directly, so identification happens through the actual relationship rather than a shortcut. The current stored reaction has the acting bot itself reacting with eyes, which is a bit self-referential and odd, so it's cleaner to swap in a different person while keeping the base seed reaction intact.
+
+With that settled, I draft the request: create a private channel named circuit-tracer-followup in the workspace containing the channel where a member reacted with eyes to the OOM message, so the interpretability team can continue discussion. This routes through the channel, membership, and reaction to pin down the workspace, targeting a single team (T01WORKSPACE) for channel creation, so the obligation is to identify the workspace via that single-table lookup on teams.
+
+Obligation 1 targets the workspace: single team read-only lookup scoped to where the reacting member belongs to the engineering channel, returning team_id. Obligation 2 is the state-changing creation of the new channel record, writing channel_name, team_id, and is_private with no target roles since it's a fresh entity.
+
+So change_attributes becomes a nested list with the channel name, team_id, and is_private fields, and written_attributes lists those same fields flat, while skipping answer_attributes since this is state-changing. Now I'm working through the roles: the workspace team as the matched target, the channel as a supporting path node, the channel membership entity binding the agent as a member, and the user agent as the reacting entity.
+
+The eyes reaction becomes the differentiating match condition, while I'm setting up two negative cases: one user who reacted thumbsup but isn't a member of the target channel (wrong relationship), and another member who reacted with the wrong emoji (wrong value). There's also a new channel record for the follow-up obligation. Since the base seed only has one reaction, I'll need to add these negative records fresh so the compiler can assemble the grounding cards properly, then write up the binding note explaining how membership and reaction records connect before finalizing the JSON.
+
+For the access plan, I need conversations.list or users.conversations to discover the engineering channel, conversations.members to confirm membership, and conversations.history or replies plus reactions.get to verify the eyes reaction on the OOM message -- all scoped to visible workspace IDs rather than assuming workspace name lookup is available.
+
+Then I'll compose the task_spec with two obligations: identify the workspace containing that channel, and create a private channel named circuit-tracer-followup there. The final prompt combines both into a single natural request without test labels, framing it as continuing a rewrite discussion about the circuit-tracer OOM issue.
+

@@ -1,0 +1,62 @@
+Checking the base seed data, message_reactions only has one existing entry with an "eyes" reaction, so I need to insert the required reactions for the two matches involving Priya's and Olena's messages, along with the negative cases like Lukas's.
+
+The OOM message already has its eyes reaction correctly in place. I still need to add a white_check_mark from Lukas on Mateo's pizza message, and a thumbsup from Kenji on Robert's cloud-bill message. Cross-checking channel IDs and message content against the facts, everything lines up so far, though I want to double-check the exact wording of Robert's cloud bill message before finalizing.
+
+Now I'm sorting out user IDs - there appear to be two different Roberts (U03ROBERT23 and another), so I need to pin down which one matches the "Robert" referenced in the facts before inserting the reaction.
+
+I'll add explicit created_at timestamps for determinism as noted. Planning the reaction inserts: two supporting matches with white_check_mark from U_ROBERT on the priya and olena messages, plus two negative examples—one wrong channel from U_LUKAS and one wrong emoji from U_KENJI—while noting there's already an existing reaction to account for.
+
+That existing reaction from U01AGENBOT9 is already present and doesn't need insertion since it's a negative wrong-emoji case in the engineering channel.
+
+For scope, the actor only needs membership in C_INFRA and C_MODEL since the design explicitly names those two channels rather than requiring workspace-wide access. The actor is presumably the existing agent bot U01AGENBOT9, which is already a member of both channels per the channel_members list, so no membership changes are needed—I can move on to building the selectors.
+
+For the changelog_authors obligation, I'm tracing the path from users through messages, message_reactions, and channels, filtering for channel_name in core-infra/model-research with reaction_type white_check_mark. The tricky part is that channels connects via messages.channel_id rather than through message_reactions directly, so I need to get the join order right in the path definition.
+
+Reordering to users, messages, message_reactions doesn't work either since message_reactions has no direct link to channels, so the path can't chain all four tables linearly. It seems like the path can only include three tables at once, meaning channels and message_reactions can't both appear alongside messages in a single valid join chain.
+
+Actually, filters can apply to any node already in the path, not just the last one, which changes things. Since channel_name belongs to channels but message_reactions can't extend after channels, maybe the order should be users -> messages -> channels, then I need to reconsider whether message_reactions can attach elsewhere, since it only links to messages, not channels.
+
+Actually, since root must be users (target entity USER), and channels has no direct link to message_reactions, maybe the channel constraint should just be expressed by filtering messages.channel_id directly rather than needing channels as its own node in the chain.
+
+Since the join must connect adjacent tables via an actual FK, and none links channels to message_reactions directly, the only valid chain seems to be users -> messages -> message_reactions, with channel constraints handled separately, or users -> messages -> channels with reaction type filtered through an auxiliary query instead of a direct join.
+
+Actually, filtering by channel_id directly might be legitimate scope-setting rather than a hidden constant, but the guidance favors joining to channels and filtering on channel_name for clarity. I'm sketching a path through users, messages, and channels with a filter on channel_name, but I still need to fold in the reaction condition on that same message via message_reactions.
+
+The trouble is message_reactions only connects to messages, not to channels directly, so I can't build one linear path that includes both channels and message_reactions branching off messages simultaneously -- a single path can only extend in one direction from a shared node. I'm considering whether reordering the path (message_reactions -> messages -> channels) could work, but that still forces a choice between attaching users or channels as the endpoint, not both.
+
+Given this constraint, the cleanest solution seems to be path=["users","messages","message_reactions"] with a filter on reaction_type, since trying to also constrain by channel would require an auxiliary query, but that seems to violate the rule against using auxiliary for constraints tied to the same focal record.
+
+So the join must connect adjacent path entries, meaning position i to i+1 strictly, which breaks the star-shaped attempt since channels would need to be adjacent to messages in sequence, not messages appearing twice non-consecutively.
+
+Actually, that constraint may just be about avoiding unnecessary name predicates, not banning channel_id outright when it's the only path. Let me reconsider the path structure—maybe I can extend from messages to message_reactions as a third node joined via message_reactions.message_id, but that would connect to node1 (messages), not node2, which violates the required strict adjacency between consecutive path positions.
+
+But maybe adjacency doesn't require the FK to literally link consecutive nodes—maybe joins just need to reference some earlier node in the path, not necessarily the immediately preceding one, since the path could represent a flattened tree structure.
+
+Looking at the ledger example though, with the sequence of messages, message_reactions, users, channel_members, channels joined through message_id, user_id, and channel_id fields, each new node connects strictly to the immediately previous one—so it really is a linear chain where every step joins to its direct predecessor, not any arbitrary earlier node.
+
+Actually, I realize messages likely has its own channel_id column directly, so I could filter on messages.channel_id with an "in" operator against the target channel IDs rather than joining the channels table at all—that would satisfy the same-query constraint using just node1's field.
+
+But I'm second-guessing whether raw channel_id constants count as "hidden seed-ID" values the guidance warns against, versus using the human-readable channel_name via a join to channels. Since the task references channel names like "core-infra" and "model-research" as domain-meaningful identifiers, it seems safer to join channels for name-based filtering and rethink how to still reach message_reactions in the same chain.
+
+I'm also weighing whether the design intends a longer FK chain from users through messages to message_reactions, with channel scoping applied separately, since the notes emphasize that selectors can span multiple hops and that the root entity's route shouldn't be merged with inverse or association routes.
+
+That connection doesn't exist either, so that ordering fails too. I wonder if the join field naming might not strictly require the FK to reside in one of the two adjacent tables—maybe it just needs to logically connect them through any valid relationship, which would open up more possible orderings.
+
+Since messages can only have one successor in a simple linear path, and it already has users as predecessor, only one of channels or message_reactions can directly follow it — so both can't be one-hop neighbors simultaneously. I'm considering whether ordering as users, messages, message_reactions could still satisfy the channel constraint some other way, perhaps not through direct adjacency.
+
+Given the linear path restriction blocks joining channels and message_reactions together, the pragmatic solution is to just filter messages.channel_id directly against the two known IDs rather than going through a channel_name join.
+
+So the final query joins users to messages to message_reactions, filtering on channel membership and a checkmark reaction type, selecting authors whose message in those channels got that specific reaction — which matches the obligation cleanly and keeps the same-record join constraint intact.
+
+Now checking negative referents: which users should be excluded as false matches. I need to verify whether U_ROBERT, who authored the cloud-bill message that got the checkmark-like reaction, might overlap with other messages he authored in C_INFRA, since he's a prolific poster there and I want to make sure he's correctly excluded rather than accidentally matching.
+
+So the exclusion set is U_LUKAS, U_MATEO, and U_ROBERT, none of whom should have any white_check_mark reactions on their messages. Now I'm mapping each role label from the design to its actual handle: author_priya to U_PRIYA, author_olena to U_OLENA, the negative authors to their respective IDs, and the channel labels to C_INFRA and the model channel.
+
+Since there's only a single obligation, changelog_authors, I only need one selector rather than separate ones per role. Now I'm finalizing the seed edits by inserting the necessary message_reactions rows while confirming the existing negative case stays untouched.
+
+That reaction is already excludable on channel grounds anyway, so no edit is needed there. I should double check the message ids and authorized users match the base seed correctly.
+
+For the ambiguous "Robert" mention in the role facts tied to Priya and Olena's messages, since only U_ROBERT is a member of both C_INFRA and C_MODEL, it must refer to Robert Chen consistently as the reactor in both cases. I'm now verifying that each message's channel and user ids match what's expected: the Priya message maps to C_INFRA/U_PRIYA, and the Olena message maps to C_MODEL/U_OLENA, both checking out correctly.
+
+Continuing the verification, the Mateo message matches C02EFGH5678/U_MATEO, and the remaining message matches C_INFRA/U_ROBERT — everything checks out, so no new messages need to be created. I'll now assemble the seed_edits with reasons and values, including an optional created_at field for determinism, before finalizing the JSON output.
+

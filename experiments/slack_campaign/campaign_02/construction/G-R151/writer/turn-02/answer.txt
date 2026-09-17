@@ -1,0 +1,80 @@
+```json
+{
+  "prompt": "For the quarterly access review, I need to confirm which workspace Robert Walsh currently holds an admin-level membership in — can you identify that workspace?",
+  "binding_note": "The identifying route runs Workspace -> Workspace Membership: the same user_teams row must have user_id = Robert Walsh's user and role = admin. Robert Walsh also holds a non-admin membership in a second workspace, and another user holds admin role in the target workspace, so naming Robert Walsh alone (ignoring role) or admin role alone (ignoring the specific person) would not correctly bind to the one qualifying record.",
+  "roles": [
+    {
+      "role": "target_workspace",
+      "entity": "teams",
+      "facts": "T01WORKSPACE ('Test Workspace'), containing the user_teams row that pairs Robert Walsh with an admin role.",
+      "selection": "match",
+      "reason": "This is the workspace the user wants identified, determined through the admin membership held there by Robert Walsh."
+    },
+    {
+      "role": "robert_walsh_membership",
+      "entity": "user_teams",
+      "facts": "Row (user_id=U03ROBERT23, team_id=T01WORKSPACE, role=admin) — the exact record binding user and role together.",
+      "selection": "match",
+      "reason": "This single membership record is what the route must find; it jointly satisfies both the person and role conditions."
+    },
+    {
+      "role": "robert_walsh_user",
+      "entity": "users",
+      "facts": "U03ROBERT23, username robertwalsh, real_name 'Robert Walsh'.",
+      "selection": "support",
+      "reason": "Provides the identifying person referenced by the membership row; needed to resolve which user_teams record applies."
+    },
+    {
+      "role": "second_workspace",
+      "entity": "teams",
+      "facts": "T02BETA ('Beta Workspace'), a second workspace added to the environment, distinct from the target workspace.",
+      "selection": "negative",
+      "reason": "A plausible wrong-workspace outcome if the person/role binding is applied loosely instead of to the single correct membership record."
+    },
+    {
+      "role": "robert_walsh_second_membership",
+      "entity": "user_teams",
+      "facts": "Row (user_id=U03ROBERT23, team_id=T02BETA, role=member) — Robert Walsh's membership in the second workspace, but with a non-admin role.",
+      "selection": "negative",
+      "reason": "Same person as the target but wrong role and wrong workspace, showing the route must match role and workspace together, not just the person."
+    },
+    {
+      "role": "morgan_freeman_membership",
+      "entity": "user_teams",
+      "facts": "Row (user_id=U07MORGANFREE, team_id=T01WORKSPACE, role=admin) — another admin in the target workspace but a different person.",
+      "selection": "negative",
+      "reason": "Shares the admin role and workspace but fails the person condition (Robert Walsh), showing the route needs both bindings on one record, not role alone."
+    },
+    {
+      "role": "johndoe_membership",
+      "entity": "user_teams",
+      "facts": "Row (user_id=U02JOHNDOE1, team_id=T01WORKSPACE, role=member) — an ordinary member, not admin.",
+      "selection": "negative",
+      "reason": "Fails the role condition even though it is a genuine membership record in the target workspace, showing role must actually be checked."
+    }
+  ],
+  "obligations": [
+    {
+      "name": "identify_admin_workspace",
+      "description": "Select the single workspace whose user_teams record shows Robert Walsh holding an admin role, distinguishing it from a second workspace where he holds only a member role, and report that workspace's identifier.",
+      "table": "teams",
+      "mode": "single",
+      "task_type": "read-only",
+      "scope": "Identify the one workspace via a membership record binding a specific user (Robert Walsh) to the admin role, using the workspace association exposed on that user's profile.",
+      "target_roles": ["target_workspace", "second_workspace"],
+      "candidate_role_sets": null,
+      "selection": "one",
+      "answer_attributes": [["teams.team_id"]]
+    }
+  ],
+  "task_spec": [
+    {
+      "line": 1,
+      "text": "Find the workspace where Robert Walsh holds an admin membership role and report which workspace it is.",
+      "obligations": [1]
+    }
+  ],
+  "scope_exception": null,
+  "access_plan": "Use users.list to locate the user matching real_name 'Robert Walsh' (U03ROBERT23), then use users.info on that user to inspect their exposed workspace association (team_id and role) and confirm the role is admin. This resolves to T01WORKSPACE's team_id, distinguishing it from T02BETA where Robert Walsh holds only a member role, from Morgan Freeman's admin membership in T01WORKSPACE (same role, wrong person), and from John Doe's member-role membership in T01WORKSPACE (same workspace, wrong role). No team_name or created_at lookup is used, since no such API is documented."
+}
+```

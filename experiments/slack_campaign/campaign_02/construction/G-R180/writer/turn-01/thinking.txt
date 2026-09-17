@@ -1,0 +1,34 @@
+I'm mapping out the route from workspace through conversation, message, and reaction to the reacting user, then tying back to their workspace membership — since the referent entity is the workspace itself, this chain should let me identify which workspaces satisfy the condition.
+
+I'll bind the reactor's admin role to that same workspace, since only one workspace exists in the environment anyway—this makes "multiple" mode technically valid even with a single matching result. So the phrasing becomes something like "Which workspaces contain a channel where a message was reacted to by an admin of that workspace?" framed as a read-only query.
+
+Checking existing data, the current reaction record comes from U01AGENBOT9 whose role is "member," not admin, so it doesn't satisfy the condition—I need to inject a fresh reaction from an actual admin like U03ROBERT23 onto a message in the workspace to create the match.
+
+Since the resolution mode is "multiple" but there's only one team, T01WORKSPACE, seeded, genuinely producing multiple matching workspaces would require introducing a second team into the scenario, which I should consider since the domain model theoretically supports multiple teams even though only one exists currently.
+
+I'll add a second workspace, "NeuroFlow Research" (T02NEURO), with its own conversations and admin reactions, so there are multiple workspaces to compare. The scenario I'll build around is: which workspaces have a channel where a message received a 🚀 reaction from one of that workspace's admins—a natural, thematic condition using an allowed emoji.
+
+I notice all the neuroflow.ai users are currently seeded under the same team_id, so everyone's in one workspace. I need a second workspace, "NeuroFlow Research" (T02NEURO), with its own channel, membership, and an admin who adds the matching reaction to create real multi-workspace variation.
+
+I'll simplify: create team T02NEURO, add Robert Chen as admin of it via a new user_teams row, create a channel "product-launch" in that team, add a message from another user, and have Robert react with a rocket emoji, satisfying the workspace-admin-reaction condition.
+
+For T01WORKSPACE, I need an admin of that workspace reacting with rocket to a message there. Robert Walsh and Morgan Freeman are admins per user_teams. I'll have Robert Walsh add a rocket reaction to an existing "shipped the new feature" message in channel C01ABCD1234, which fits thematically and belongs to T01WORKSPACE. That gives me two valid workspace matches, so I also want to think about negative cases, like a non-admin reacting with a different emoji, to keep the resolution genuinely ambiguous rather than trivial.
+
+I'll add this negative case: U_ROBERT reacts with rocket on a message in C03IJKL9012, which belongs to T01WORKSPACE — but U_ROBERT is only admin of T02NEURO, not T01WORKSPACE, so this shouldn't satisfy the binding condition.
+
+Another negative could involve U08NICK23, a plain member, reacting with rocket on a message in C04MNOP3456 (T01WORKSPACE) since they aren't admin there either.
+
+So I'm finalizing the new records: a T02NEURO team, a user_teams row making U_ROBERT admin there, a new channel C_NEURO_LAUNCH with U_ROBERT and U_MATEO as members, a message from U_MATEO in that channel, and the reaction itself.
+
+Now I need to phrase the actual question naturally — something like "Which workspaces have a channel message that received a rocket emoji reaction from one of that workspace's own admins?"
+
+I should keep the binding constraint clear: the reactor must be an admin specifically within the same workspace as the channel and message, not just any admin elsewhere.
+
+The main obligation is retrieving the matching workspaces from the teams table, with roles matched against the two target workspaces (T01WORKSPACE, T02NEURO), treated as a read-only, multi-workspace lookup returning a set of team names — no extra obligation needed since we only need the workspace identity itself.
+
+Beyond that, I'm mapping out supporting roles that ground the answer: the channels, messages, reactions, users, and memberships tied to both the "workspace_test" and "neuro" workspaces, each marked as support evidence rather than target roles.
+
+I'm also flagging the negative cases explicitly - Robert Chen's reaction bound to the wrong workspace, Nick's non-admin reaction, and the existing eyes-emoji reaction that fails both emoji and admin requirements - since these need to be excluded correctly. Now I'm structuring the obligations JSON, restricting role entity types strictly to the seven allowed tables: teams, users, channels, user_teams, channel_members, messages, and message_reactions.
+
+I'm drafting the access plan around using conversations.list scoped by team_id, conversations.history and reactions.get to find reactors and emojis, and users.info to verify each reactor's admin role within the matching workspace, then comparing team_ids to confirm same-workspace binding. Then I'm finalizing the JSON with obligation table "teams", mode "multiple", read-only task type, target roles for workspace_test and workspace_neuro, set selection, and answer attributes for team_id and team_name, with candidate_role_sets left null since the mode isn't underspecified.
+

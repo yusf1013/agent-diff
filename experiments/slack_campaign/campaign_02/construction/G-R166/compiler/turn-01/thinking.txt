@@ -1,0 +1,20 @@
+Checking the base seed, core-infra already covers the "correct members, wrong name" negative with Kenji and Priya as members. I still need to add circuit-tracer-gpu with mismatched members like Sophie, Olena, and Robert to cover the "correct name, wrong members" negative, plus an actor who has visibility into both.
+
+Since both channels are public, conversations.list should surface them without requiring membership, but conversations.members likely needs viewer permissions tied to team access, so I need to make sure the actor's team membership supports that.
+
+Now I'm figuring out the seed edits: inserting the new C_TRACER channel with its metadata, then adding channel_members rows for the relevant users to establish proper membership records.
+
+For the "identify_workspace" obligation, I'm working through how the selector needs to traverse from teams through channels to channel_members and users, filtering by channel name and checking that both Kenji and Priya are members. Since the selector syntax doesn't easily support joining the same table twice to check two distinct users in one query, I'm considering whether auxiliary constraints can verify each user's membership separately within the same channel scope.
+
+Actually Kenji's real_name is stored as "佐藤健二 (Kenji Sato)", not exactly "Kenji Sato" — so I should use a contains_ci match on real_name against 'Kenji Sato' rather than an exact equality, since display_name wouldn't contain that substring.
+
+For Priya, real_name is exactly "Priya Sharma", so an exact match works there.
+
+Since I can't join both people's membership in a single query without a self-join, I'll split this into a focal query plus auxiliary queries — one for the channel itself filtered by name, and separate ones joining through channel_members and users to check each person's membership, all scoped to the same channel.
+
+Tracing through this, the channel matching that name only has Sophie, Olena, and Robert as members — neither Kenji nor Priya — so both auxiliary queries return no tuples, and even though the focal query succeeds (the channel exists), the unsatisfied auxiliary makes the overall obligation absent. That's the correct outcome, so now I'm setting up the scope binding to the workspace.
+
+For negative referents, since it's the only team in the workspace, T01WORKSPACE is the sole candidate that could be incorrectly selected through pattern matching, so I'm including it as the negative referent. Now I'm working on the seed edits, inserting the tracer channel and its member records.
+
+I need a plausible channel ID that doesn't reveal its construction role, so I'm settling on something neutral rather than anything that hints at the "tracer" label, finalizing IDs for both the seed edits and the bindings before writing the answer.
+

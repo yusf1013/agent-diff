@@ -1,0 +1,90 @@
+```json
+{
+  "seed_edits": [
+    {
+      "table": "channel_members",
+      "op": "insert",
+      "key": {"channel_id": "C03IJKL9012", "user_id": "U_LUKAS"},
+      "values": {"channel_id": "C03IJKL9012", "user_id": "U_LUKAS", "joined_at": "2024-01-10T09:00:00"},
+      "reason": "The design requires Łukasz Kowalski (author of the OOM message) to hold membership in #engineering so conversations.kick has an actual row to remove; base seed lacked this."
+    },
+    {
+      "table": "channel_members",
+      "op": "insert",
+      "key": {"channel_id": "C03IJKL9012", "user_id": "U_KENJI"},
+      "values": {"channel_id": "C03IJKL9012", "user_id": "U_KENJI", "joined_at": "2024-01-11T09:00:00"},
+      "reason": "kenji_engineering_membership negative role: Kenji authored a reply in #engineering but has no fire reaction anywhere, so his membership must exist to be a genuine but excludable alternative."
+    },
+    {
+      "table": "channel_members",
+      "op": "insert",
+      "key": {"channel_id": "C03IJKL9012", "user_id": "U_ROBERT"},
+      "values": {"channel_id": "C03IJKL9012", "user_id": "U_ROBERT", "joined_at": "2024-01-12T09:00:00"},
+      "reason": "robert_engineering_membership negative role: Robert Chen authored a reply in #engineering; his membership must exist so the wrong-emoji reaction case is a genuine excludable alternative."
+    },
+    {
+      "table": "message_reactions",
+      "op": "insert",
+      "key": {"message_id": "1706012456.000000", "user_id": "U_LUKAS", "reaction_type": "fire"},
+      "values": {"message_id": "1706012456.000000", "user_id": "U_LUKAS", "reaction_type": "fire"},
+      "reason": "lukas_fire_reaction: the design requires Lukas to have left a fire reaction somewhere (not necessarily on the OOM message) to confirm his identity as removal target."
+    },
+    {
+      "table": "message_reactions",
+      "op": "insert",
+      "key": {"message_id": "1706067472.000000", "user_id": "U_ROBERT", "reaction_type": "thumbsup"},
+      "values": {"message_id": "1706067472.000000", "user_id": "U_ROBERT", "reaction_type": "thumbsup"},
+      "reason": "robert_wrong_emoji_reaction negative: Robert Chen (author of an #engineering reply) has only a thumbsup reaction, not fire, so his membership fails the emoji condition."
+    }
+  ],
+  "bindings": {
+    "target_channel": ["C03IJKL9012"],
+    "oom_message": ["1706110000.000100"],
+    "author_lukas": ["U_LUKAS"],
+    "lukas_fire_reaction": [{"message_id": "1706012456.000000", "user_id": "U_LUKAS", "reaction_type": "fire"}],
+    "lukas_engineering_membership": [{"channel_id": "C03IJKL9012", "user_id": "U_LUKAS"}],
+    "kenji_no_reaction_case": ["1706110000.000300"],
+    "robert_wrong_emoji_reaction": [{"message_id": "1706067472.000000", "user_id": "U_ROBERT", "reaction_type": "thumbsup"}],
+    "lukas_wrong_channel_message": ["1706067892.000000"],
+    "kenji_engineering_membership": [{"channel_id": "C03IJKL9012", "user_id": "U_KENJI"}],
+    "robert_engineering_membership": [{"channel_id": "C03IJKL9012", "user_id": "U_ROBERT"}]
+  },
+  "selectors": [
+    {
+      "root_table": "channel_members",
+      "scope": [],
+      "focal": {
+        "path": ["channel_members", "channels", "messages", "users", "message_reactions"],
+        "joins": ["channel_members.channel_id", "messages.channel_id", "messages.user_id", "message_reactions.user_id"],
+        "filters": [
+          {"node": 1, "field": "channel_name", "op": "eq", "value": "engineering"},
+          {"node": 2, "field": "message_text", "op": "contains_ci", "value": "circuit-tracer"},
+          {"node": 2, "field": "message_text", "op": "contains_ci", "value": "OOM"},
+          {"node": 4, "field": "reaction_type", "op": "eq", "value": "fire"}
+        ]
+      },
+      "auxiliary": [
+        {
+          "path": ["channel_members", "users", "messages", "channels"],
+          "joins": ["channel_members.user_id", "messages.user_id", "messages.channel_id"],
+          "filters": [
+            {"node": 2, "field": "message_text", "op": "contains_ci", "value": "circuit-tracer"},
+            {"node": 2, "field": "message_text", "op": "contains_ci", "value": "OOM"},
+            {"node": 3, "field": "channel_name", "op": "eq", "value": "engineering"}
+          ]
+        }
+      ]
+    }
+  ],
+  "negative_referents": [
+    {"channel_id": "C03IJKL9012", "user_id": "U_KENJI"},
+    {"channel_id": "C03IJKL9012", "user_id": "U_ROBERT"},
+    {"channel_id": "C03IJKL9012", "user_id": "U02JOHNDOE1"},
+    {"channel_id": "C03IJKL9012", "user_id": "U03ROBERT23"},
+    {"channel_id": "C03IJKL9012", "user_id": "U05MORGAN23"},
+    {"channel_id": "C03IJKL9012", "user_id": "U06HUBERT23"},
+    {"channel_id": "C03IJKL9012", "user_id": "U01AGENBOT9"}
+  ],
+  "notes": "The focal query follows the full assigned route (CONVERSATION_MEMBERSHIP -> CONVERSATION -> MESSAGE -> USER -> REACTION) exactly, using channels as the hub tying the membership's channel to the message's channel, and treating the fire reaction as belonging to that message's author without requiring it to be on the same message (per the design's own binding note). Because that chain by itself is channel-dependent rather than membership-row-dependent, it alone would match every #engineering membership; the auxiliary query (reusing channel_members, users, messages, channels — all within the same route's entity set) independently pins the root's user_id to the unique author of the OOM/circuit-tracer message, so only the intersection (channel=#engineering AND user=Łukasz) survives, giving the single correct membership. The actor (U01AGENBOT9) already holds memberships in #engineering, #model-research, and #core-infra, so all messages and reactions needed (the OOM message, Sophie's checkpoint message with Lukas's fire reaction, and Robert's cloud-bill message with his thumbsup reaction) are readable via documented conversations.history / reactions.get."
+}
+```

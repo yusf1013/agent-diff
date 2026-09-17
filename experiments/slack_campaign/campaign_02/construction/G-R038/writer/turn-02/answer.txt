@@ -1,0 +1,53 @@
+```json
+{
+  "prompt": "A Robert recently posted in one of our engineering-related channels flagging that something went over what was expected — a budget or a deadline. Can you confirm he's still a member of that same channel, and tell me whether he's set up as an admin or just a regular member in the workspace?",
+  "binding_note": "Route: channel_members(r0) is bound to channels(r1) which is the same conversation containing messages(r2); messages(r2) is authored by users(r3); user_teams(r4) is r3's workspace membership. The prompt explicitly ties r0 to the same person as the message author via 'he's still a member of that same channel,' representing the r0-r3 user equality explicitly rather than silently. Two users named Robert each posted a distinct 'over expectations' remark in a different engineering-related channel: Robert Walsh (admin) in #engineering re: an SLA overrun, and Robert Chen (member) in #core-infra re: a cost overrun. The prompt does not disambiguate, leaving two distinct candidate memberships (r0) unresolved.",
+  "roles": [
+    {"role":"robert_walsh_user","entity":"users","facts":"U03ROBERT23, username robertwalsh, real_name Robert Walsh","selection":"support","reason":"message-author identity (r3) for candidate set A"},
+    {"role":"robert_walsh_message","entity":"messages","facts":"Message in channel C03IJKL9012 (#engineering): 'The login latency fix took way longer than planned — we blew past our SLA target this sprint.'","selection":"support","reason":"r2: identifying content tying r3 to the engineering-named channel via an over-target remark"},
+    {"role":"engineering_channel","entity":"channels","facts":"C03IJKL9012, channel_name 'engineering', topic 'Engineering Team'","selection":"support","reason":"r1 for candidate set A"},
+    {"role":"robert_walsh_membership","entity":"channel_members","facts":"channel_id C03IJKL9012, user_id U03ROBERT23 (existing base-seed membership)","selection":"alternative","reason":"r0 candidate A: Robert Walsh's own membership in the channel where he posted the SLA-overrun message"},
+    {"role":"robert_walsh_workspace_membership","entity":"user_teams","facts":"user_id U03ROBERT23, team_id T01WORKSPACE, role=admin","selection":"alternative","reason":"r4 for candidate A, reports admin status"},
+    {"role":"robert_chen_user","entity":"users","facts":"U_ROBERT, username robert.chen, real_name Robert Chen","selection":"support","reason":"message-author identity (r3) for candidate set B"},
+    {"role":"robert_chen_message","entity":"messages","facts":"Existing seed message in channel C_INFRA (#core-infra): 'Monthly cloud bill came in. We're $47K over budget, mostly spot instance fallbacks.'","selection":"support","reason":"r2: identifying content tying r3 to an engineering-adjacent channel via an over-budget remark"},
+    {"role":"core_infra_channel","entity":"channels","facts":"C_INFRA, channel_name 'core-infra', topic 'Infrastructure, K8s, AWS, on-call, incidents'","selection":"support","reason":"r1 for candidate set B, reachable via vague 'engineering-related' wording though not literally named engineering"},
+    {"role":"robert_chen_membership","entity":"channel_members","facts":"channel_id C_INFRA, user_id U_ROBERT (existing base-seed membership)","selection":"alternative","reason":"r0 candidate B: Robert Chen's own membership in the channel where he posted the budget-overrun message"},
+    {"role":"robert_chen_workspace_membership","entity":"user_teams","facts":"user_id U_ROBERT, team_id T01WORKSPACE, role=member","selection":"alternative","reason":"r4 for candidate B, reports non-admin status"},
+    {"role":"negative_robert_walsh_general_message","entity":"messages","facts":"Robert Walsh's message in channel C01ABCD1234 (#general): 'Does anyone know when the MCP deployment will be done?'","selection":"negative","reason":"same author but wrong channel (not engineering-related) and no over-target/over-budget content; excluded by the route's message condition"},
+    {"role":"negative_morgan_admin","entity":"users","facts":"U07MORGANFREE, real_name Morgan Freeman, admin role in T01WORKSPACE","selection":"negative","reason":"an admin exists but is not named Robert, excluded by the name condition on r3"},
+    {"role":"negative_robert_chen_other_channel_membership","entity":"channel_members","facts":"channel_id C_MODEL, user_id U_ROBERT (Robert Chen is also a member of #model-research, base seed)","selection":"negative","reason":"same user as candidate B but a different channel where he never posted the over-budget remark; split-record negative that fails the same-channel condition binding r0 to r1/r2"}
+  ],
+  "obligations": [
+    {
+      "name":"robert_channel_membership",
+      "description":"The channel_members row (channel_id+user_id pair) for the Robert whose message in an engineering-related channel reported something going over an expected budget or deadline; unresolved between Robert Walsh's #engineering membership and Robert Chen's #core-infra membership, each bound to the same person as the message author in that channel.",
+      "table":"channel_members",
+      "mode":"underspecified",
+      "task_type":"read-only",
+      "scope":"the message author's own membership in the same engineering-related channel where the over-target/over-budget remark was posted",
+      "target_roles":["robert_walsh_membership","robert_chen_membership"],
+      "candidate_role_sets":[["robert_walsh_membership"],["robert_chen_membership"]],
+      "selection":"one",
+      "answer_attributes":[["channel_members.channel_id"],["channel_members.user_id"]]
+    },
+    {
+      "name":"robert_workspace_role",
+      "description":"The workspace membership role (admin/member) for whichever Robert is selected above, reported alongside confirmation of channel membership.",
+      "table":"user_teams",
+      "mode":"underspecified",
+      "task_type":"read-only",
+      "scope":"workspace role of the same candidate Robert identified via the channel membership above",
+      "target_roles":["robert_walsh_workspace_membership","robert_chen_workspace_membership"],
+      "candidate_role_sets":[["robert_walsh_workspace_membership"],["robert_chen_workspace_membership"]],
+      "selection":"one",
+      "answer_attributes":[["user_teams.role"]]
+    }
+  ],
+  "task_spec":[
+    {"line":1,"text":"Identify the Robert whose message in an engineering-related channel flagged an over-target/over-budget issue, and confirm his own membership (channel_id+user_id) in that same channel.","obligations":[1]},
+    {"line":2,"text":"Report whether that same person holds an admin or member role in the workspace.","obligations":[2]}
+  ],
+  "scope_exception": null,
+  "access_plan": "Discover candidates by scanning conversations.history for engineering-related channels (#engineering C03IJKL9012 and #core-infra C_INFRA) for messages naming an over-budget/over-target issue; for each candidate author, use conversations.members on the same channel to confirm the channel_members pair, and users.info to read the author's user_teams role. Both Roberts remain valid candidates until reported."
+}
+```

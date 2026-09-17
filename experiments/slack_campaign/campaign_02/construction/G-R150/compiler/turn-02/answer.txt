@@ -1,0 +1,59 @@
+```json
+{
+  "seed_edits": [
+    {
+      "table": "channel_members",
+      "op": "insert",
+      "key": {"channel_id": "C_GROWTH", "user_id": "U01AGENBOT9"},
+      "values": {"channel_id": "C_GROWTH", "user_id": "U01AGENBOT9", "joined_at": "2024-01-01T00:00:00"},
+      "reason": "Actor needs conversation membership in product-growth to read its history/members and resolve Carlos Vega's channel via documented APIs."
+    },
+    {
+      "table": "message_reactions",
+      "op": "insert",
+      "key": {"message_id": "1706028229.000000", "user_id": "U_KENJI", "reaction_type": "eyes"},
+      "values": {"message_id": "1706028229.000000", "user_id": "U_KENJI", "reaction_type": "eyes", "created_at": "2024-01-24T09:15:00"},
+      "reason": "Instantiates wrong_emoji_reactor: Kenji reacts with 'eyes' (not fire) on a product-growth message about the Tokyo latency fix, a plausible-but-excluded negative."
+    },
+    {
+      "table": "message_reactions",
+      "op": "insert",
+      "key": {"message_id": "1706043921.000000", "user_id": "U_MATEO", "reaction_type": "fire"},
+      "values": {"message_id": "1706043921.000000", "user_id": "U_MATEO", "reaction_type": "fire", "created_at": "2024-01-24T10:05:00"},
+      "reason": "Instantiates wrong_channel_reactor: Mateo leaves a fire reaction, but on a frontend-channel message, not the Carlos-Vega-identified product-growth channel."
+    },
+    {
+      "table": "message_reactions",
+      "op": "insert",
+      "key": {"message_id": "1706012456.000000", "user_id": "U_PRIYA", "reaction_type": "fire"},
+      "values": {"message_id": "1706012456.000000", "user_id": "U_PRIYA", "reaction_type": "fire", "created_at": "2024-01-24T10:10:00"},
+      "reason": "Instantiates membership_mismatch_reactor: Priya (a product-growth member) fires on a model-research message, testing that the reaction must sit in Carlos's channel, not merely come from one of its members."
+    }
+  ],
+  "bindings": {
+    "target_channel": ["C_GROWTH"],
+    "carlos_membership": [{"channel_id": "C_GROWTH", "user_id": "U_INCOGNITO"}],
+    "wrong_emoji_reactor": ["U_KENJI"],
+    "wrong_channel_reactor": ["U_MATEO"],
+    "membership_mismatch_reactor": ["U_PRIYA"],
+    "reactor_identification": []
+  },
+  "selectors": [
+    {
+      "root_table": "users",
+      "scope": [],
+      "focal": {
+        "path": ["users", "message_reactions", "messages", "channels", "channel_members", "users"],
+        "joins": ["message_reactions.user_id", "message_reactions.message_id", "messages.channel_id", "channel_members.channel_id", "channel_members.user_id"],
+        "filters": [
+          {"node": 1, "field": "reaction_type", "op": "eq", "value": "fire"},
+          {"node": 5, "field": "real_name", "op": "eq", "value": "Carlos Vega"}
+        ]
+      },
+      "auxiliary": []
+    }
+  ],
+  "negative_referents": ["U_KENJI", "U_MATEO", "U_PRIYA"],
+  "notes": "Target channel (product-growth, C_GROWTH) is uniquely identified via Carlos Vega's sole channel_members row. No message_reactions row of type 'fire' exists on any message whose channel_id is C_GROWTH, so the focal selector correctly returns an empty result (absent). The join between messages and channel_members is routed through the channels node (messages.channel_id -> channels.channel_id <- channel_members.channel_id) since these tables share a common referenced entity rather than a direct FK. Three negatives were added to test near-misses: wrong emoji in the right channel (Kenji/eyes), right emoji in a wrong channel (Mateo/fire on frontend), and right emoji from a product-growth member but on a message in a different channel (Priya/fire on model-research) — none satisfy the full path back through channels to a channel that also holds Carlos Vega's membership. Actor (U01AGENBOT9) was given channel_members access to C_GROWTH so that conversations.members, conversations.history, and reactions.get calls against that channel are documented-API-reachable; this is the only new membership needed since the query scope is the single channel identified by Carlos's membership, not a workspace-wide absence claim."
+}
+```

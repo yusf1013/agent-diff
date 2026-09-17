@@ -1,0 +1,94 @@
+```json
+{
+  "seed_edits": [
+    {
+      "table": "channel_members",
+      "op": "insert",
+      "key": {"channel_id": "C03IJKL9012", "user_id": "U_ROBERT"},
+      "values": {"channel_id": "C03IJKL9012", "user_id": "U_ROBERT"},
+      "reason": "Design requires Robert Chen to hold a conversation membership in the engineering channel (C03IJKL9012) in addition to already authoring the target message there, so the user is provably both a workspace member and a conversation member of the channel containing the message, per binding_note."
+    },
+    {
+      "table": "teams",
+      "op": "insert",
+      "values": {"team_id": "T02NIMBUSAI", "team_name": "Nimbus AI"},
+      "reason": "Decoy workspace needed to host a topically-similar but route-unreachable GPU-rewrite discussion."
+    },
+    {
+      "table": "users",
+      "op": "insert",
+      "values": {"user_id": "U_DEV_MARCO", "username": "marco.silva", "email": "marco@nimbusai.io", "real_name": "Marco Silva", "display_name": "Marco", "timezone": "America/Sao_Paulo", "is_bot": false},
+      "reason": "Decoy user (topically similar message, wrong workspace, lacks circuit-tracer specificity)."
+    },
+    {
+      "table": "users",
+      "op": "insert",
+      "values": {"user_id": "U_CONTRACTOR_ALEX", "username": "alex.vega", "email": "alex@nimbusai.io", "real_name": "Alex Vega", "display_name": "Alex", "timezone": "America/Denver", "is_bot": false},
+      "reason": "Decoy contractor user with a conversation membership but deliberately no workspace membership, illustrating the route cannot resolve a workspace through conversation membership alone."
+    },
+    {
+      "table": "user_teams",
+      "op": "insert",
+      "values": {"user_id": "U_DEV_MARCO", "team_id": "T02NIMBUSAI", "role": "member"},
+      "reason": "Gives Marco a workspace membership in Nimbus AI so the decoy workspace is reachable via WORKSPACE_MEMBERSHIP for a topically similar (but content-distinct) message."
+    },
+    {
+      "table": "channels",
+      "op": "insert",
+      "values": {"channel_id": "C_NIMBUS_ENG", "channel_name": "ml-infra", "team_id": "T02NIMBUSAI", "is_private": false, "is_dm": false, "is_gc": false, "topic_text": "ML infrastructure and training pipeline", "purpose_text": "Channel for ML infra engineering discussion.", "is_archived": false},
+      "reason": "Decoy engineering channel in the decoy workspace, hosting both decoy users' messages."
+    },
+    {
+      "table": "channel_members",
+      "op": "insert",
+      "values": {"channel_id": "C_NIMBUS_ENG", "user_id": "U_DEV_MARCO"},
+      "reason": "Marco's conversation membership in the decoy channel."
+    },
+    {
+      "table": "channel_members",
+      "op": "insert",
+      "values": {"channel_id": "C_NIMBUS_ENG", "user_id": "U_CONTRACTOR_ALEX"},
+      "reason": "Alex's conversation membership in the decoy channel, with no corresponding workspace membership row anywhere."
+    },
+    {
+      "table": "messages",
+      "op": "insert",
+      "values": {"message_id": "1706200000.000001", "channel_id": "C_NIMBUS_ENG", "user_id": "U_DEV_MARCO", "message_text": "When will the PyTorch rewrite for multi-GPU sharding be ready? We're blocked on our 70B model too.", "type": "message", "ts": "1706200000.000001"},
+      "reason": "Decoy message: topically similar GPU-rewrite/blocked/70B language, but standalone (no parent referencing circuit-tracer), authored by a user whose workspace IS reachable but whose message never mentions circuit-tracer nor descends from a circuit-tracer OOM report."
+    },
+    {
+      "table": "messages",
+      "op": "insert",
+      "values": {"message_id": "1706200100.000001", "channel_id": "C_NIMBUS_ENG", "user_id": "U_CONTRACTOR_ALEX", "message_text": "Our circuit-tracer fork is also stuck - need the multi-GPU rewrite before we can unblock 70B model interpretability work over here too.", "type": "message", "ts": "1706200100.000001"},
+      "reason": "Decoy message closely matching the requested content (mentions circuit-tracer, multi-GPU rewrite, blocked, 70B) but authored by a user with no workspace membership anywhere, so no workspace can be resolved through this user."
+    }
+  ],
+  "bindings": {
+    "workspace_match": ["T01WORKSPACE"],
+    "user_route": ["U_ROBERT"],
+    "conversation_route": ["C03IJKL9012"],
+    "message_target": ["1706110000.000200"],
+    "decoy_workspace": ["T02NIMBUSAI"],
+    "decoy_user": ["U_DEV_MARCO"],
+    "decoy_contractor": ["U_CONTRACTOR_ALEX"]
+  },
+  "selectors": [
+    {
+      "root_table": "teams",
+      "scope": [],
+      "focal": {
+        "path": ["teams", "user_teams", "users", "messages", "messages"],
+        "joins": ["user_teams.team_id", "user_teams.user_id", "messages.user_id", "messages.parent_id"],
+        "filters": [
+          {"node": 3, "field": "message_text", "op": "contains_ci", "value": "PyTorch rewrite"},
+          {"node": 3, "field": "message_text", "op": "contains_ci", "value": "multi-GPU"},
+          {"node": 3, "field": "message_text", "op": "contains_ci", "value": "blocked"},
+          {"node": 4, "field": "message_text", "op": "contains_ci", "value": "circuit-tracer"},
+          {"node": 4, "field": "message_text", "op": "contains_ci", "value": "OOM"}
+        ]
+      },
+      "auxiliary": []
+    }
+  ],
+  "negative_referents": ["T02NIMBUSAI"],
+  "notes": "The main selector anchors on the message's actual author (messages.user_id, an 'authors' FK edge from USER) rather than a bare conversation-membership hop into CONVERSATION->MES

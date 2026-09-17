@@ -1,0 +1,50 @@
+I'm mapping out a route from Workspace through Conversation, then Conversation Membership, then User, then Workspace Membership, with Workspace as the referent entity and multiple resolution mode—tracing how a workspace's channels lead to their members' own workspace roles.
+
+But I realize there's ambiguity here: the workspace membership found at the end of the chain might belong to a different workspace entirely than the one we started with, since nothing enforces that the membership's team matches the original workspace. Since the referent entity is workspace, I need to be careful about which workspace ID actually gets returned at the end of this path.
+
+But I also notice the seed data only has a single team, T01WORKSPACE, so this whole question of workspace multiplicity is somewhat moot in practice.
+
+Still, the task's "multiple" resolution mode suggests I should design this to gracefully support additional workspaces if they existed, even though the base seed only supplies one match - I'll need to consider whether new teams should be added to properly exercise this route.
+
+Let me think through a concrete scenario: multiple workspaces each with their own channels, and I want to find workspaces containing a channel (like "incident-response") whose member holds an admin role in that workspace - this tests admin escalation coverage across teams.
+
+I'll add two more workspaces, Northstar Labs and Summit Robotics, each with their own "on-call" channel, and populate their memberships so some members hold admin roles within their own workspace.
+
+I need to clarify the join path: the user must be a conversation member of the on-call channel, but their workspace_membership role could belong to that same workspace or a different one entirely, since workspace membership just tracks a team_id independently of the conversation's workspace.
+
+This raises a tricky edge case: a user could be an admin in a different workspace than the one whose channel they belong to, so I need to be careful not to conflate workspace membership across two occurrences unless the model genuinely allows cross-workspace linkage. Given the note that workspace links are nullable and membership doesn't require matching the conversation's workspace, I should treat the admin role check as tied to the user's general workspace membership rather than forcing it back to the origin workspace.
+
+Now I'm surveying existing workspace channels to check which ones already have an "on-call" channel — reviewing T01WORKSPACE's channel list (general, random, engineering, growth, core-infra, model-research, product-growth, frontend, archived project, etc.) and confirming none currently match that exact name.
+
+I'll add a new "on-call" channel to T01WORKSPACE and decide who should be a member, considering whether including only a non-admin user creates a useful negative test case versus adding an admin to make it a positive match. Then I'm working through the other workspaces (T02NORTHSTAR, T03SUMMIT) checking whether their "on-call" channels include admin members from that same workspace to establish clear positive matches.
+
+I'm also weighing whether the query's intended reading requires the admin role to be in the same workspace as the conversation, or whether cross-workspace admin status still counts. Drawing an analogy to the earlier channel-membership-message example where the message didn't need to be in that member's channel, I lean toward the design intent being that workspace membership doesn't need to match the conversation's workspace, so I'll build a test case with a cross-workspace admin to validate that generality.
+
+That parallel example confirms it: like Message's channel being unconstrained in the Channel→Membership→User→Message route, the WorkspaceMembership's workspace attribute here similarly isn't tied back to the original workspace by default.
+
+So the correct design keeps that WorkspaceMembership genuinely unconstrained — it captures whether the user is an admin anywhere on the platform, not necessarily in that specific workspace, which makes the route do real filtering work. I want to frame the scenario around finding workspaces whose on-call channel includes someone who holds admin status somewhere in the platform, mirroring the calibration example's structure.
+
+Let me reconsider the rules I noted — the default binding isn't same-workspace unless stated explicitly. So to make the admin's workspace match the on-call channel's workspace, I need to phrase it as "an admin of that workspace," which ties the conversation's team_id to the membership's team_id and still meaningfully exercises the full route.
+
+This confirms the route usage works: Workspace to channel to member to user, then checking workspace_membership for admin role within the same workspace. Now I'm sketching seed data additions — new teams like Northstar Labs, Summit Robotics, and Vertex Dynamics (the latter as a negative case with an on-call channel but no admin member).
+
+I'm adding specific users per team (admins and regular members for Northstar and Summit, plus members-only for Vertex), and reusing an existing user across teams as a member-only role to add negative complexity. Then I'm defining on-call channels for each team with appropriate memberships to qualify or disqualify them under the route constraint.
+
+For T03Summit's on-call channel, I'm including only a non-admin member, plus possibly a Northstar admin as a cross-team member — since that user is admin elsewhere but not admin of Summit, this channel should correctly fail the "admin of that workspace" check, creating a useful negative case. For T04VertexAI's on-call channel, neither member is an admin, so it's a clean negative. I'm also adding a distractor channel in Northstar with a different name (not "on-call") but with an admin member, to test that the channel-name filter works correctly.
+
+I'm also adding an on-call channel to T01Workspace whose only member is a regular user, not any of the admins who exist elsewhere in that workspace — testing the case where admins exist but aren't part of the specific channel. So far Northstar is the clear positive match; I'm considering whether to add more matching workspaces since the mode expects multiple results, though a single match could still be valid depending on how the seed is structured.
+
+Now I'm adding Lumen Analytics as a second genuine match, with an on-call channel containing a user who holds admin role in that same workspace. I'm sketching out the remaining teams and new user records needed to round out the dataset — admins, plain members, and a mix of workspace affiliations across Northstar, Summit, Vertex, and Lumen.
+
+I'm mapping user-team relationships now, including a deliberate negative case where an admin from one team joins another team's on-call channel without holding workspace membership there, to test cross-team distinction logic. I'm also laying out the on-call channels per team with their respective member lists.
+
+Working through matches: T02NORTHSTAR and T05LUMEN both qualify since their admins are members of their own workspace's on-call channel. T03SUMMIT and T04VERTEX get excluded—T03 because the only admin present belongs to a different workspace, and T04 because no admin exists among its members at all.
+
+T01WORKSPACE also gets excluded since its on-call channel only has a plain member, while its actual admins sit in unrelated channels like general and engineering. I'm noting the incident-response channel in T02 as a useful distractor to test exact-name matching, then drafting the final request as a single natural sentence asking which workspaces have an on-call channel containing one of that workspace's own admins.
+
+I'm listing out the negative teams that don't satisfy the condition, plus the supporting entities—channels and users—needed to construct concrete positive and negative examples for the query.
+
+The task is read-only, so the answer only needs teams.team_id and teams.team_name. Now I'm finalizing the JSON structure with roles for teams, channels, users, channel_members, and user_teams, setting up the single obligation table "workspaces_with_oncall_admin" with mode multiple selection targeting the NorthStar and Lumen workspace matches.
+
+For the access plan, I'm outlining discovery: use conversations.list per workspace to locate the "on-call" channel, then conversations.members to fetch its members, then users.info to verify each member's team association.
+

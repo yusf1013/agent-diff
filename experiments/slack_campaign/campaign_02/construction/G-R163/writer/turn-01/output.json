@@ -1,0 +1,128 @@
+{
+  "prompt": "Create a new channel called 'gpu-scheduling-followup' in the workspace where a member left a 👀 reaction on the message about the circuit-tracer OOM errors, in the engineering channel.",
+  "binding_note": "The workspace is identified by chaining WORKSPACE_MEMBERSHIP (the reactor must actually belong to the target workspace) to that same user's REACTION (emoji 'eyes') on a MESSAGE whose text concerns the circuit-tracer OOM issue, and that message's CONVERSATION must be named 'engineering' within that same workspace. A reactor lacking workspace membership, a reaction of a different emoji, or an 'engineering'-named channel in a different workspace does not satisfy the chain even though individual pieces match.",
+  "roles": [
+    {
+      "role": "workspace_match",
+      "entity": "teams",
+      "facts": "T01WORKSPACE ('Test Workspace'); contains channel C03IJKL9012 named 'engineering' where U01AGENBOT9 (a workspace member) reacted with 'eyes' on the circuit-tracer OOM message.",
+      "selection": "match",
+      "reason": "Satisfies the full route: member, reaction=eyes, message about circuit-tracer OOM, channel named engineering, same workspace throughout."
+    },
+    {
+      "role": "reactor_match",
+      "entity": "users",
+      "facts": "U01AGENBOT9 is a member of T01WORKSPACE (via user_teams) and left an 'eyes' reaction on message 1706110000.000100.",
+      "selection": "support",
+      "reason": "Binds WORKSPACE_MEMBERSHIP to the REACTION for the matching workspace."
+    },
+    {
+      "role": "message_match",
+      "entity": "messages",
+      "facts": "Message 1706110000.000100 in channel C03IJKL9012: 'The circuit-tracer library is hitting OOM errors when loading large models layer-by-layer...'",
+      "selection": "support",
+      "reason": "The reacted-on message whose topic (circuit-tracer OOM) is the identifying content condition."
+    },
+    {
+      "role": "conversation_match",
+      "entity": "channels",
+      "facts": "C03IJKL9012, channel_name 'engineering', team_id T01WORKSPACE.",
+      "selection": "support",
+      "reason": "Provides the conversation-name condition tying the message back into the same workspace."
+    },
+    {
+      "role": "workspace_decoy",
+      "entity": "teams",
+      "facts": "New workspace 'Nova Works' (T02NOVAWORKS) with its own 'engineering' channel and members, but its reactions never combine the 'eyes' emoji with an OOM-topic message.",
+      "selection": "negative",
+      "reason": "Different workspace with a same-named channel; must not be confused with the true match."
+    },
+    {
+      "role": "decoy_channel_wrong_workspace",
+      "entity": "channels",
+      "facts": "C_NOVA_ENG, channel_name 'engineering', team_id T02NOVAWORKS.",
+      "selection": "negative",
+      "reason": "Channel name matches but belongs to the wrong workspace."
+    },
+    {
+      "role": "decoy_message_wrong_emoji",
+      "entity": "messages",
+      "facts": "Message in C_NOVA_ENG by U_NOVA1: 'Fixed the load-balancer config drift, ready for review.' reacted to with 'thumbsup' by U_NOVA2.",
+      "selection": "negative",
+      "reason": "Right channel name and workspace membership, but wrong emoji (not eyes) and unrelated topic."
+    },
+    {
+      "role": "decoy_message_wrong_channel",
+      "entity": "messages",
+      "facts": "Message in channel 'random-nova' (T02NOVAWORKS) by U_NOVA2, reacted to with 'eyes' by U_NOVA1.",
+      "selection": "negative",
+      "reason": "Right emoji and right workspace membership, but wrong channel name (not 'engineering')."
+    },
+    {
+      "role": "decoy_reactor_nonmember",
+      "entity": "users",
+      "facts": "U_GUEST_DRIFTER, not present in user_teams for any workspace, reacts with 'eyes' on the load-balancer message inside C_NOVA_ENG ('engineering' in Nova Works).",
+      "selection": "negative",
+      "reason": "Right emoji and right channel name, but the reactor holds no WORKSPACE_MEMBERSHIP at all, breaking the required membership binding."
+    }
+  ],
+  "obligations": [
+    {
+      "name": "identify_target_workspace",
+      "description": "Resolve the single workspace whose member reacted with 'eyes' on the circuit-tracer OOM message inside its 'engineering' channel.",
+      "table": "teams",
+      "mode": "single",
+      "task_type": "read-only",
+      "scope": "ordinary workspace identification via membership+reaction+message+conversation chain",
+      "target_roles": [
+        "workspace_match"
+      ],
+      "candidate_role_sets": null,
+      "selection": "one",
+      "answer_attributes": [
+        [
+          "teams.team_id"
+        ],
+        [
+          "teams.team_name"
+        ]
+      ]
+    },
+    {
+      "name": "create_followup_channel",
+      "description": "Create a new channel named 'gpu-scheduling-followup' scoped to the identified workspace's team_id.",
+      "table": "channels",
+      "mode": "single",
+      "task_type": "state-changing",
+      "scope": "channel creation within the resolved workspace",
+      "target_roles": [],
+      "candidate_role_sets": null,
+      "selection": "one",
+      "change_attributes": [
+        []
+      ],
+      "written_attributes": [
+        "channels.channel_name",
+        "channels.team_id"
+      ]
+    }
+  ],
+  "task_spec": [
+    {
+      "line": 1,
+      "text": "Identify the workspace where a member left a 👀 reaction on the message about the circuit-tracer OOM errors, in the engineering channel.",
+      "obligations": [
+        1
+      ]
+    },
+    {
+      "line": 2,
+      "text": "Create a new channel called 'gpu-scheduling-followup' in that workspace.",
+      "obligations": [
+        2
+      ]
+    }
+  ],
+  "scope_exception": null,
+  "access_plan": "Discover the engineering-named channels via conversations.list (or users.conversations) across accessible workspaces, pull each channel's history with conversations.history to find a message discussing circuit-tracer OOM errors, check its reactions with reactions.get to find an 'eyes' reactor, confirm that reactor's workspace membership (visible through users.info/team association), and use the resulting team_id in conversations.create to make the new channel."
+}
