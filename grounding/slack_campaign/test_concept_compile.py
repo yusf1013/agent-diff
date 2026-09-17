@@ -38,6 +38,21 @@ class CompilationTests(unittest.TestCase):
         self.assertEqual(case['prompt'],packet['sketch']['request'])
         self.assertEqual(case['cards'][0]['Referent set'],['1712345678.000001'])
 
+    def test_full_assigned_route_can_extend_for_another_stated_condition(self):
+        packet,compiled=fixture()
+        packet['native_route']=build(['MESSAGE','REACTION','USER'])
+        case,checks=check_compilation(packet,compiled)
+        self.assertEqual(checks['errors'],[])
+        self.assertEqual(case['cards'][0]['Identifying paths'][0]['entities'],
+                         ['messages','message_reactions','users','channel_members','channels'])
+
+    def test_assigned_route_cannot_be_shortened(self):
+        packet,compiled=fixture()
+        compiled['selector']['focal']['path']=compiled['selector']['focal']['path'][:3]
+        compiled['selector']['focal']['joins']=compiled['selector']['focal']['joins'][:2]
+        _,checks=check_compilation(packet,compiled)
+        self.assertTrue(any('assigned full route' in e for e in checks['errors']))
+
     def test_absence_retains_negatives_but_has_empty_referent_set(self):
         packet,compiled=fixture()
         packet['assignment'].update(resolution_mode='absent',match_count=0)

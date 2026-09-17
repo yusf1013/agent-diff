@@ -1,0 +1,32 @@
+Row 5 stands out - Elena's message is posted in #product-launch, but her membership is only in #marketing-updates, so I need to test whether posting location gets conflated with actual channel membership.
+
+Now looking at row 4: Priya's message is posted in #general, but her memberships are #general and #design-crew, not #product-launch. The negative reasoning here hinges on her not having membership in a channel whose topic mentions "launch" - the message's actual posting location doesn't matter for the selector logic.
+
+I'm now verifying the focal join chain: message_reactions to messages to users to channel_members to channels, checking that the join keys line up correctly between the selector and the route definition. Node 4's filter requires the channel topic to contain "launch readiness" case-insensitively, which only C_LAUNCH satisfies with its "Launch readiness plan" topic, and the scope is restricted to the bot user U01AGENBOT9.
+
+With reaction_type fire required, I confirm only Kevin's message reacted by Nina in C_LAUNCH satisfies every condition, since Kevin's other message was reacted by himself with rocket, not Nina with fire, so the match stays unique. The near-miss rows (wrong emoji, wrong reactor, wrong author, wrong location) all line up correctly with the negative rows in the sketch.
+
+These conditions belong as scope filters regardless of location, since they encode fixed request facts (mine, fire) rather than restricting to the intended answer. Now I'm tracing the join chain nodes to confirm the path structure, checking that node 4 aligns with channels within the message_reactions → messages → users → channel_members sequence.
+
+Verifying that the filter on node4's topic_text field is correct, and that the four joins properly bind each consecutive pair of nodes across the five-node chain — message_reactions to messages, messages to users, users to channel_members, and channel_members to channels. This all checks out consistently.
+
+I'm also confirming the route nodes (REACTION, MESSAGE, USER, CONVERSATION_MEMBERSHIP, CONVERSATION) align with the sketch's membership requirement, then moving on to evaluate whether the near-miss rows feel natural and useful, starting with the wrong-author's-conversation-membership row involving Priya's message in C_GEN.
+
+Priya being a member of C_DESIGN but not the launch channel correctly tests that scope filters on channel membership tied to the topic, not the message's own channel, which checks out. I confirm the unused Priya message in C_DESIGN is harmless filler, then look at Kevin's message in C_LAUNCH reacted with "rocket" by himself — this isn't fire, isn't from Nina, so it's fine as a non-match filler, though I want to double-check it doesn't accidentally create a hidden alternative match.
+
+Scanning again, no other launch-readiness channel message got a fire reaction from Nina besides the intended row, so the single match is preserved. I also confirm C_GEN's topic doesn't accidentally match the "launch readiness" filter, and that all channels being public with actor memberships satisfies the readable-scenario design guidance. Now I'm considering the reaction-removal write task and how the contract handles state-changing writes to another person's reactions.
+
+Since this deletes a composite-primary-key row in message_reactions, no fields should be written, matching the "pure deletion assigns no fields" rule. The computation attributes needed are just the identifying fields for that row plus the channel_id from messages, which is what's required for the removal API call.
+
+No hidden-ID issues or invented conditions found. The scope filters for user_id/reaction_type aren't artificial restriction—the request explicitly specifies "my fire reaction" as ownership and type criteria, so this is legitimate scope from the request itself, not backward-derived from the answer.
+
+Checking the mechanics: computed_matches align with expectations, focal negatives correctly capture the wrong-membership cases, and candidate_population properly includes the three fire reactions by Nina while excluding the eyes reaction and Sam's fire reaction due to scope. Now examining whether Sam's fire reaction serves as an effective near-miss distractor.
+
+Row3 tests reactor ownership as a distinguishing property well, row2 tests emoji type well, and rows 4-5 test membership-versus-authorship and membership-versus-location respectively—good coverage. No design conflicts apply here since there's no clash between access requirements and fixed facts.
+
+This all looks solid, so I'm doing a final validity sweep. Timestamps and message IDs are unique and properly formatted, all users have a single displayed workspace association, and now I'm scrutinizing message text quality to make sure wording stays natural without accidentally hinting at the answer.
+
+Kevin's message containing "launch" feels like a natural coincidence tied to his actual role rather than an unintended hint toward the membership-based selection mechanism, so that's fine. I'm also checking row4's message text - it's authored in C_GEN rather than C_DESIGN, which matches the sketch's description of Priya posting in #general, so that's consistent.
+
+Row5's message sits directly in C_LAUNCH matching Nina's reaction on Elena's product-launch post, and rows 2-3 both correctly reference the same underlying message across different reactors. Everything lines up, and the join logic through messages.user_id and channel_members.user_id correctly captures authorship and membership relationships, so I'm leaning toward this passing with strong quality.
+

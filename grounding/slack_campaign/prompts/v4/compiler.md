@@ -8,7 +8,9 @@ Work in this order:
 
 1. Translate the stated selection conditions to the supplied restricted selector
    syntax, using the assigned native route and real fields. Keep conditions on a
-   shared record bound together. Use visible identifying values, not target IDs
+   shared record bound together. Preserve the entire assigned route; append a
+   relationship when needed to express another condition already in the sketch.
+   Use visible identifying values, not target IDs
    or a scope limited to the desired answers. Do not add restrictions missing from
    the condition text. If it conflicts with the request or table, report the
    specific design conflict; do not silently reconcile them. For semantic text

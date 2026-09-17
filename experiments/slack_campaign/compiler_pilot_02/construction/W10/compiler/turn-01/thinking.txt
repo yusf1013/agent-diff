@@ -1,0 +1,24 @@
+I'm sketching out a seed scenario with a team, several users, a couple of channels like launch-prep and marketing plus a filler one, and some sample messages about a launch checklist to set up the test data.
+
+I need to add rocket, thumbsup, and eyes reactions from different users on these messages, along with channel memberships and team roles, making sure the acting user is set up correctly for auth purposes.
+
+Not required to be admin, just member works fine.
+
+Now I'm defining the selector query with user_teams as the root table, joining through users, message_reactions, messages, and channels via their respective foreign keys, then filtering on the reaction_type field equal to 'rocket' at the message_reactions node.
+
+I also need an auxiliary check that Priya is a member of that same channel, using a separate path through channel_members and users filtered on username, but I need to figure out how this auxiliary query actually binds back to the focal query's channel node since they seem to be independent queries connected only implicitly.
+
+In this case root_table is user_teams, so focal path runs from user_teams through message_reactions/messages/channels, and the auxiliary condition about Priya being a channel member needs to reach that same channel node through the shared chain from user_teams. Looking at the given native_route, it already includes r5=channel_members joining on channel_id to the membership channel, meaning this path is already built into the provided route.
+
+The channel_members node has its own user_id field distinct from the reactor's user_id, so I need to filter r5 by Priya specifically. That means the focal path should encompass all six nodes, and I likely need to add another users node joined off channel_members.user_id to filter by username "priya".
+
+With that seven-node path now defined, I'm laying out the full join chain connecting user_teams to the reactor's user, then message_reactions to messages, messages to channels, channels to channel_members, and finally channel_members to a second users node representing Priya, with filters applied for the rocket reaction type.
+
+I settle on an empty scope since there's no root-level restriction, then draft the annotation naming this as checking admin/owner status of rocket reactors on the launch checklist message in Priya's channel, marking it read-only with the relevant user_teams.role attribute. Now I'm starting to build the row bindings for each matching user.
+
+For Alice, I bind to her user_teams record with supporting rows for her user entry, her rocket reaction on the message, the message itself, the channel, and Priya's channel membership. Ben follows the same pattern, plus an unrelated eyes reaction on a different message that doesn't affect the match. Chloe is a negative case since she reacted with the wrong emoji, so her referent stays null while her support chain still traces through the same message and channel. Diego is another wrong case, this time involving a different message entirely, and I'm working out his supporting rows now.
+
+Elena fails because her reaction is on a message in a channel where Priya isn't a member, and Farid fails simply because he's in the right channel but never added the reaction. I'm now assigning concrete IDs: the actor bot, named users for each person in the scenario plus two filler users, three channels (launch prep, marketing, random), a single team, and timestamped message IDs tied to specific channels and authors.
+
+Now I'm mapping out the reactions, channel memberships, and team roles for every user, then preparing to write the complete JSON with proper ISO timestamps.
+

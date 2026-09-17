@@ -100,7 +100,9 @@ def check_compilation(packet, compiled, locked_selector=None):
             raise ValueError('Selector changed after it was locked; report a conflict instead')
         expected_path = [r['table'] for r in packet['native_route']['records']]
         expected_joins = [r['foreign_key'] for r in packet['native_route']['joins']]
-        if selector['root_table'] != expected_path[0] or selector['focal']['path'] != expected_path or selector['focal']['joins'] != expected_joins:
+        if (selector['root_table'] != expected_path[0]
+            or selector['focal']['path'][:len(expected_path)] != expected_path
+            or selector['focal']['joins'][:len(expected_joins)] != expected_joins):
             raise ValueError('Selector must preserve the assigned full route and relationships')
         table = selector['root_table']
         all_handles = {t: {handle_key(t,canonical_handle(t,r)) for r in rows} for t,rows in seed.items()}

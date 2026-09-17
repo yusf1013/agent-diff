@@ -1,0 +1,10 @@
+I realize I added an extra channels node that violates the requirement to preserve the exact route. I need to keep the focal path strictly matching users → message_reactions → messages with only the specified joins, and find another place to apply the channel filter.
+
+Since auxiliary queries start independently from root_table (users) with their own path, they can't naturally tie the channel constraint to the specific message in the focal path - they'd only connect through the user, not the actual reacted message.
+
+So I'm stuck: the route must stay exactly the fixed 3-node path, meaning I can't extend it with a channels join even though that's the natural way to encode the channel filter. I need another way to express the channel constraint without adding nodes, maybe through a filter on an existing node's field.
+
+Since the fixed route excludes the channels table, filtering by channel name isn't possible, but channel_id is still a legitimate real field on messages -- its value isn't the target answer itself (that's Dana's user_id), just not a human-readable identifier. Given the route constraint, using messages.channel_id as the filter seems like the only viable option that stays consistent with the schema.
+
+So the fix is to strip the channels node from the focal path entirely, keeping the exact three-node route users → message_reactions → messages, with filters on message_text, channel_id, and reaction_type, and joins ordered to match message_reactions.user_id and message_reactions.message_id. I'll drop the auxiliary node and finalize the JSON with this corrected focal structure.
+

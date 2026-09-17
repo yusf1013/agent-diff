@@ -27,6 +27,16 @@ delete ownership must be arranged consistently with the story. Reaction write na
 include thumbsup, thumbsdown, eyes, raised_hands, tada, rocket, heart, fire, check, x.
 Do not pre-perform the requested operation in the initial state.
 
+The assigned resolution mode determines what the selector must return. For single,
+instantiate one match; for multiple, the assigned jointly intended matches. For
+absent, instantiate the negatives and preserve zero matches. For underspecified,
+instantiate the competing alternatives and return their eligible union; do not
+choose between them. A singular request with several eligible alternatives is
+intentional in underspecified mode, not a design conflict. Likewise, a request
+whose described target does not exist is intentional in absent mode. Compile the
+specified world; do not try to make the requested mutation executable by resolving
+an intended absence or ambiguity.
+
 For card annotations, computation attributes supply the answer or new field values
 AFTER selection; fields used only to select the referents do not belong there.
 Each inner list is an alternative sufficient set, not one step in a pipeline.

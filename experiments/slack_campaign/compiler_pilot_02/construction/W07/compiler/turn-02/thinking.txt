@@ -1,0 +1,32 @@
+I need to compile with underspecified mode, treating both name candidates as an eligible union alongside the four negatives, so the selector returns the whole set rather than narrowing to one. I'm now setting up the seed data with a single team and a roster of users including the acting admin bot and several similarly-named Jordan candidates.
+
+I'm laying out channels for general, announcements, security-team, and random, plus the key messages -- a security audit reminder in announcements, a separate budget message, and a parallel security audit note in the security-team channel. Then I'm assigning reactions across these messages so most Jordans react to the audit message while one reacts to budget instead, and mapping channel memberships so all but one Jordan belong to #general while that one is only in #random -- deliberately excluding them from the shared channel.
+
+Now I'm setting up the workspace team and populating it with all users, making sure the actor bot itself is added to #general and #announcements so it has read access as required for public channels. I'm also assigning IDs to the team and starting to build out user records like the actor bot and the various Jordans.
+
+Then I'm laying out the four channels—general, announcements, security-team, and random—and beginning to draft filler and topical messages: an announcement about the security audit, a budget planning reminder, a cross-posted security note in the security channel, and casual welcome/filler chatter in general and random to round out realistic background activity.
+
+Now I'm adding reactions to these messages (mostly thumbsup and eyes emoji from various filler users on the security audit and budget posts), then working out plausible channel memberships—deciding which reactors should actually belong to the announcements channel versus the security-team channel based on where they reacted.
+
+Then I move to mapping row bindings: each row's membership fact needs to point to a specific channel_id/user_id pair, and I'm working through the tricky case where Jordan Patel's reaction used the wrong emoji—checking whether that means the referent should be null since it doesn't match, even though the underlying membership fact still exists.
+
+I settle on referent being the actual handle, not null, since the row's root record does exist—it just fails the selection criteria. Null only applies when the root itself is absent entirely, so I fill in referents for the remaining rows and start thinking about which supporting entities (users, messages, reactions, channels) each row needs to reference.
+
+For the selector itself, since channel_name lives on the channels table rather than channel_members, I can't put that filter in the root scope—scope only covers root-table fields like channel_id, user_id, joined_at. I need to push that filter into the focal path instead, which must start at the root_table per the schema rules.
+
+Following the given native_route order (channel_members → users → message_reactions → messages → channels), I can build a single focal path that chains all these joins together, since each step connects via a single join even though the logic branches from user reactions through to the final channel filter.
+
+But I still need the membership's own channel ("general") separately from the message's channel ("announcements"), and since both need the channels table, I need to figure out whether the path structure allows revisiting that table with a different join condition or requires some other workaround.
+
+For the first name condition, I'll match real_name with contains_ci "Jordan" at the users node in the focal path, alongside the other filters on reactions, messages, and channels.
+
+Then I add an auxiliary path through channel_members to channels for the own-channel condition, filtering channel_name equal to "general" — this covers everything in the given route without needing extra root-level scope.
+
+Checking message texts, M1 mentions "security audit kicks off next week" and M3 mentions "Security audit starts Monday" — both satisfy the contains condition for message_text.
+
+But M3 lives in C_SEC not C_ANN, so that correctly excludes Jordan Ahmed via the channel_name=announcements filter, while Nguyen is excluded because M2 doesn't match the security audit text, Patel is excluded due to reacting with "eyes" not thumbsup, and Diaz is excluded since their membership is in C_RANDOM not C_GENERAL. That leaves Lee and Kim, both in general, reacting thumbsup on M1, matching everything including the "Jordan" name condition — so both should be included in the result.
+
+Now I'm assembling the full seed dataset: users with fields like user_id, email, real_name, timezone, is_bot; the acting user as an admin bot; team_id T01; user_teams roles; the four channels; channel_members with join dates; and messages M1 through M5, keeping the structure simple and compliant.
+
+I'm also mapping out the message_reactions entries and drafting row_bindings that link each test case to its supporting users, messages, channels, and reactions, then finalizing everything into the complete JSON output.
+

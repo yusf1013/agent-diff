@@ -1,0 +1,1 @@
+Identified that Dana Kim (U02DANA) reacted with 🔥 to the budget-freeze announcement in #finance, opened a DM with her, and sent the message: "Heads up — the follow-up meeting on this is Thursday at 2pm." The message was successfully delivered (ts: 1789680443.361966).
