@@ -36,6 +36,12 @@ The native load/read check uses no LLM. A subsequent
 [W01 solver/evaluator run](../../experiments/slack_campaign/compiler_pilot_01/execution_review.md)
 completed correctly and exposed no grounding failure; the evaluator agreed.
 
+The subsequent [W02–W10 pilot](../../experiments/slack_campaign/compiler_pilot_02/README.md)
+uses [concept_batch.py](concept_batch.py) to retain the writer sketches, compile and
+review each, and send accepted cases through the unchanged solver/evaluator.
+Construction failures stop their case and are preserved. Manual run judgments are
+kept outside model inputs and reviewed one case at a time.
+
 The [methods document](../../experiments/slack_campaign/campaign_02/methods.md)
 records manual versus automated work, coverage accounting, repair passes and
 provenance limits. The superseded one-author pilot is documented separately in

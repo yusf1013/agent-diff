@@ -38,6 +38,31 @@ class CompilationTests(unittest.TestCase):
         self.assertEqual(case['prompt'],packet['sketch']['request'])
         self.assertEqual(case['cards'][0]['Referent set'],['1712345678.000001'])
 
+    def test_absence_retains_negatives_but_has_empty_referent_set(self):
+        packet,compiled=fixture()
+        packet['assignment'].update(resolution_mode='absent',match_count=0)
+        for row in packet['sketch']['rows']: row['role']='negative'
+        for row in compiled['seed']['messages']: row['message_text']='Office lunch'
+        case,checks=check_compilation(packet,compiled)
+        self.assertEqual(checks['errors'],[])
+        self.assertEqual(case['cards'][0]['Resolution'],'absent')
+        self.assertEqual(case['cards'][0]['Referent set'],[])
+
+    def test_underspecified_preserves_two_competing_singleton_sets(self):
+        packet,compiled=fixture()
+        packet['assignment'].update(resolution_mode='underspecified',match_count=None)
+        for row in packet['sketch']['rows']: row['role']='alternative'
+        compiled['seed']['channel_members'].append({'channel_id':'CS','user_id':'U2'})
+        packet['sketch']['rows'].append({'row':3,'role':'negative'})
+        compiled['row_bindings'].append({'row':3,'referent':'1712345678.000003','support':[]})
+        case,checks=check_compilation(packet,compiled)
+        self.assertEqual(checks['errors'],[])
+        card=case['cards'][0]
+        self.assertEqual(card['Resolution'],'underspecified')
+        self.assertIsNone(card['Alternative sufficient identifying sets'])
+        self.assertEqual(card['Referent set']['candidate_sets'],
+                         [['1712345678.000001'],['1712345678.000002']])
+
     def test_filler_introducing_extra_match_fails(self):
         packet,compiled=fixture()
         compiled['seed']['messages'][2]['message_text']='Another rollout checklist'
