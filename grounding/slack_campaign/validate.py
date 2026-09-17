@@ -76,6 +76,17 @@ def _validate_inventory(case: dict, errors: list[str]) -> None:
         if task_type not in {"read-only", "state-changing"}:
             errors.append(f"{label}: invalid Task type")
         expected_fields = COMMON_CARD_FIELDS | (READ_FIELDS if task_type == "read-only" else WRITE_FIELDS)
+        if "Identifying paths" in card:
+            expected_fields = expected_fields | {"Identifying paths"}
+            paths = card["Identifying paths"]
+            if not isinstance(paths, list) or not paths:
+                errors.append(f"{label}: Identifying paths must be a nonempty array")
+            else:
+                for path in paths:
+                    if not isinstance(path, dict) or set(path) != {"entities", "relationships"}:
+                        errors.append(f"{label}: path requires entities and relationships")
+                    elif not path["entities"] or len(path["relationships"]) != len(path["entities"])-1:
+                        errors.append(f"{label}: path must have one relationship per adjacent entity pair")
         if set(card) != expected_fields:
             errors.append(f"{label}: fixed card fields differ; missing={sorted(expected_fields - set(card))}, extra={sorted(set(card) - expected_fields)}")
         if card.get("Test ID") != case.get("case_id"):
@@ -226,7 +237,13 @@ def validate_case(case: Any) -> dict[str, Any]:
     if expected is not None and expected != match_keys:
         errors.append(f"private.expected_matches differs from recomputed matches: {computed['matches']!r}")
     near_misses = _handle_set(table, private.get("near_misses", []), "private.near_misses", errors)
-    if near_misses is not None and not near_misses <= negative_keys:
+    if private.get("workflow_version") == 2:
+        # Path-derived negatives may challenge any requested condition, including
+        # a scope or independent condition. Keep legacy focal-only checks intact.
+        all_root_keys = {handle_key(table, canonical_handle(table, row)) for row in seed[table]}
+        if near_misses is not None and (not near_misses <= all_root_keys or near_misses & match_keys):
+            errors.append("private.near_misses must be existing root records outside the complete matching set")
+    elif near_misses is not None and not near_misses <= negative_keys:
         errors.append("private.near_misses includes a handle outside scoped focal negatives (must fail focal and pass every auxiliary)")
     require_near_miss = private.get("require_near_miss", True)
     if type(require_near_miss) is not bool:

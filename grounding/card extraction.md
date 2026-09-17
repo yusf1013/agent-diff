@@ -23,7 +23,7 @@ Task specifications describe the requested operations, deliverables, and workflo
 
 The required completeness is coverage of all requested tests and their grounding obligations. It is **not** exhaustive discovery of every possible identifying attribute set or enumeration of every unresolved candidate. Use the locked schema below. The obligation description explains the reference and any unresolved distinction; detailed evidence, source references, and validation information belong outside the cards.
 
-Agent-Diff and AppWorld are benchmarks used for examples below. Their implementation details are not part of this protocol. Any separate experiment called `systematic modeling/`, or any conceptual/behavioral modeling process that takes implementation code as authoritative, is **out of scope and irrelevant to this work**.
+Agent-Diff and AppWorld are benchmarks used for examples below. Their implementation details are not part of this protocol. 
 
 ## 2. Authoritative evidence and its limits
 
@@ -183,7 +183,7 @@ Associate every card with its table row by parent test and obligation position/n
 
 ### 4.2 Locked card schema
 
-Every card has these exact common fields, with no additions:
+Every card has these exact common fields. The authorized identifying-path extension below is the only additional field:
 
 ```yaml
 Test ID: <stable test identifier>
@@ -197,6 +197,16 @@ Referent set: <list of handles, [], or the underspecified-selection object below
 Alternative sufficient identifying sets:
   - [<source attributes for one sufficient selector>]
 ```
+
+**Identifying-path extension (generation and coverage).** Add `Identifying paths` when annotating domain routes. Existing cards without this field remain readable until their annotation pass. It is a list of ordered paths using native entity-table names and the real foreign-key field joining each adjacent pair:
+
+```yaml
+Identifying paths:
+  - entities: [messages, message_reactions, users]
+    relationships: [message_reactions.message_id, message_reactions.user_id]
+```
+
+The ordered endpoints determine traversal direction; `relationships` names the relationship through its concrete source field, not a newly invented attribute on the referent. One join is required for each adjacent pair. A direct user-name reference has `entities: [users]` and `relationships: []`. Multiple conditions can belong to one path; list additional paths only when the reference actually uses them. Existing identifying-attribute fields and the description retain the predicates and same-record binding requirements. This field describes how a reference identifies its subject, not an API-call sequence or a downstream computation. Do not credit a route merely because its entities appear elsewhere in the task. Paths do not change referent sets, resolution, or obligation counts.
 
 Read-only cards add **only**:
 
