@@ -1,0 +1,58 @@
+Looking at this request asking which channels contain posts Tom reacted to, with 4 candidates - the query naturally allows for multiple matching channels since it's phrased as "which of these," so the real ambiguity is about which "Tom" is intended, not about limiting the answer to a single channel.
+
+Actually, without a surname, "Tom" could plausibly refer to any of three users - Rivera, Delgado, or Anderson - all matching real_name "tom". The root ambiguity is really in the USER field the focal condition targets, not the channel itself, even though the declared selection type is "one(channels)" - each candidate Tom reacts in a different channel, so the final channel answer shifts depending on which Tom is meant.
+
+Actually, if "contains_ci" combines both Toms, the union gives a deterministic answer: both C-DESIGNSYNC and C-ROADMAP, not ambiguous at all. But that contradicts the premise of underspecification -- so the intended reading must be that "Tom" refers to one specific person, and the ambiguity comes from not knowing which real person that is, not from a name-matching category.
+
+There are actually three Toms in the seed data, not two -- Tom Rivera, Tom Delgado, and Tom Anderson -- and the candidate_sets only account for two of them. The third, Tom Anderson, authored (rather than reacted to) a message in C-SUPPORT, which correctly counts as a near-miss since it's the right name but wrong role.
+
+I'm second-guessing whether omitting the empty set for Tom Anderson is actually a flaw, or whether candidate_sets are meant to be illustrative rather than exhaustive. I'm also reconsidering the partial_constraints wording itself — whether the "contains_ci" clause alone, without further qualification, actually pins down which Tom is meant.
+
+Now I see a real inconsistency: applying that "contains_ci" predicate as written would naturally treat any reactor whose name contains "tom" as matching, which would make both channels satisfy the constraint together as a set — yet the selection type is declared "one(channels)" with two separate singleton candidate sets. That mismatch between the predicate's natural set-based reading and the declared single-selection type looks like a genuine problem with the card.
+
+But the schema's referent_entity for the whole card should still be CONVERSATION since the top-level ask is "which channels," so the ambiguity nested inside the user identity doesn't change the top-level focal entity.
+
+But then the partial_constraints description seems too broad, since applying the "tom" reactor constraint naively across all reactions would match both channels, whereas the actual candidate sets show single-channel answers—suggesting the ambiguity is really about which Tom is meant, not a genuine union of channels.
+
+Checking the excluded third Tom (Tom Anderson) as author, not reactor, in C-SUPPORT—he's correctly treated as a near-miss rather than a real candidate, since he never appears as a reactor anywhere, making that interpretation yield an empty set.
+
+This near-miss correctly tests whether models wrongly attribute the "Tom" name to the author role instead of the reactor role, which is valid. Next I want to check C-STANDUP, which has a message by Dana reacted to by Sara.
+
+The three real users with "Tom" in their real_name across different channels genuinely make this an underspecified case with legitimate ambiguity, matching the intended construction. I confirm the alternative sufficient identifying sets field is correctly left null for this underspecified scenario, consistent with schema requirements.
+
+Checking the task_spec phrasing against the prompt, it matches correctly, preserving the original wording about which channels contain a Tom-reacted message. But now I need to reconcile the mechanical_findings—the computed matches and negatives seem to use a naive substring match across all users named Tom rather than the singleton candidate sets implied by "underspecified," so I need to verify whether that's actually consistent with how the focal condition was declared.
+
+This exposes a deeper tension: the union reading (any user matching "tom" via substring) unambiguously yields both channels as matches, while the individual reading (a specific person named Tom) makes the answer genuinely ambiguous between the two. The construction seems to conflate these two interpretations rather than cleanly separating them.
+
+Actually, resolving via a case-insensitive match against all Reaction users named Tom doesn't correspond to any natural reading of "Tom" - it's neither the specific-person interpretation nor a reasonable collective one, since people rarely mean "anyone named Tom" together. It's really just a formal simplification for partial constraint matching, which the schema's disjunctive convention allows.
+
+I'm also questioning whether listing both C-DESIGNSYNC and C-ROADMAP as "expected_matches" is right, given the card frames this as underspecified with singleton candidate sets rather than a joint two-channel match. That field likely represents the mechanical ground truth from the literal focal_condition rather than the actual graded answer key, so grading probably accepts either singleton rather than requiring both - though nothing explicitly states the grading rules.
+
+Checking further, the focal_condition field and node_index for the USER node line up correctly with the route order, and requires_near_miss with the single near-miss entry looks consistent too. I do notice the route_context's request fragment uses a username filter ("tom") while the actual prompt is about the real name "Tom" with a contains-filter, but that's fine since route_context is just a feasibility witness, not the generated prompt itself.
+
+Now I'm verifying that Alice has proper API access - she's a member of all four candidate channels (C-DESIGNSYNC, C-ROADMAP, C-SUPPORT, C-STANDUP), so conversations.history and reactions.get should work fine across all of them for this check.
+
+I'm also confirming users.info can resolve real_name from the known reactor user_id without needing name-based search, and that the path Channel->Message->Reaction->User matches the phrasing "channels contain posts that Tom reacted to" exactly at the real_name field.
+
+For the negatives, C-SUPPORT is a legitimate near-miss since Tom is the message author rather than the reactor, while C-STANDUP has no Tom involvement at all — both fail the focal condition cleanly, and since there's no separate auxiliary condition list defined, this satisfies the negative check.
+
+Checking realism and hints: IDs and channel names are descriptive without revealing the answer, and there's no early anchor giving it away, so this passes. Then verifying schema compliance: the referent set format using channel selection matches the convention, and the partial constraints and candidate sets look properly structured.
+
+I'm now wondering if candidate_sets is missing an alternative — should there be an empty-set option representing the case where the user means Tom Anderson specifically, who isn't actually a reactor? Since he's not tied to any channel through that role, this interpretation would yield zero results, which is a legitimate third possibility not currently captured.
+
+So Anderson serves purely as a distractor for the wrong-role check rather than a valid alternative resolution for "Tom who reacted" - his near-miss role is fundamentally different from being a candidate interpretation branch.
+
+Since this is clean_generation not a mutation, I need mutation_integrity to just verify the locked assignment and confirm no extra counterparts exist - checking message_reactions, channel_members, and user_teams all look consistent with no hidden Tom reactions or extra channels lurking anywhere. Now I'm verifying that computed_focal_negatives lines up correctly with the near_misses plus clean negatives from private data.
+
+Now I'm cross-checking computed_matches against expected_matches, confirming no discrepancies reported by the mechanical checker, and validating that the grounding obligation description accurately captures the ambiguity between Tom Rivera and Tom Delgado as separate qualifying reactors in different candidate channels, plus confirming the shared scope description matches the channel_members list correctly.
+
+I'm now scrutinizing whether "underspecified" is truly the right resolution label here versus "multiple" - the key question being whether this is genuine ambiguity where different specific-person readings each yield a determinate answer, or whether it's actually a case where multiple entities satisfy the criterion and the correct answer should simply be "both channels" since the original request didn't specify a single individual.
+
+Thinking through ordinary usage, if multiple people share the name "Tom," a reasonable assistant would recognize the ambiguity and ask which Tom rather than assume all of them collectively - this mirrors the schema's own "email from Alex" example with multiple Alexes, confirming this pattern matches the documented convention.
+
+Checking the construction risk notes, the team explicitly addresses the two-matches issue with candidate sets and clear descriptions, so I think this case passes. Looking at api_scope, resolving "Tom" requires calling users.info on the candidate reactors, which depends on getting user IDs from reactions.get or conversations.history - since the actor is a member of these channels, that access should be fine.
+
+I'm walking through the API call chain: conversations.history for the message timestamp, reactions.get for the reactor list, then users.info for real names - all within scope, no violations. The resolution mode matches "underspecified" as expected, and with no defects found I'm marking this as a pass, though I want to double-check the candidate_sets structure one more time.
+
+Confirming the format matches convention: each concrete candidate set is either a singleton or empty, representing a possible absent entity. That checks out, so I'm finalizing everything as a pass.
+

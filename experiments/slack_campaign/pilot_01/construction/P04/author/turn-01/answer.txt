@@ -1,0 +1,29 @@
+```json
+{
+  "status": "designed",
+  "request": "Look through our review channels — #eng-updates, #product-launch, and #incident-response — and list every message in their history that got a reaction from someone who is a member of #security. I want the full set of matching messages, not just one example.",
+  "selection_plan": {
+    "root_entities": "MESSAGE rows located in three named review channels (#eng-updates, #product-launch, #incident-response).",
+    "candidate_scope": "All messages authored in those three channels' histories, each carrying zero or more reactions from various users.",
+    "identifying_criteria": {
+      "auxiliary_1": "Message.channel_id is one of the three review channels (delimits the candidate pool, per route_context.scope).",
+      "auxiliary_2": "Message has at least one REACTION row (join MESSAGE->REACTION->USER).",
+      "focal": "The reacting USER holds a CONVERSATION_MEMBERSHIP row whose CONVERSATION.channel_name == 'security' (route node_index 4)."
+    },
+    "root_count_note": "Distinct qualifying MESSAGE identities are counted; a message with several qualifying reactors is still one member of the answer set."
+  },
+  "resolution_plan": {
+    "mode": "multiple",
+    "description": "The three review channels contain several messages; some have reactions from #security members and some do not. The intended referent is the determined collection of those that do — a jointly intended set, not a single pick.",
+    "expected_shape": "A small set (2-4) of qualifying messages spread across the three channels, established as resolvable (not absent, not underspecified) once membership and reaction rows are checked."
+  },
+  "negative_plan": {
+    "focal_field_near_miss": "One message (in #product-launch) receives a reaction from a user who is a member of a similarly named but distinct channel, e.g. '#security-eng', not '#security' itself — satisfies both auxiliaries (right channel pool, has a reaction) but fails the focal channel_name equality.",
+    "relationship_role_near_miss": "One message (in #eng-updates) is authored by a user who *is* a #security member, but its reactions come only from users who are not #security members — tests that the qualifying membership must bind to the reactor, not the author.",
+    "shared_property": "Both negatives are plausible under ordinary language ('a security-adjacent post got reacted to...') and only fail once the focal channel_name/role binding is checked precisely."
+  },
+  "environment_plan": "Seed four channels: #eng-updates, #product-launch, #incident-response (review pool) plus #security and one decoy #security-eng. Populate each review channel with 2-3 ordinary messages (deploy notes, launch checklist, incident retro) with realistic text and timestamps. Populate #security and #security-eng with distinct, non-overlapping membership rosters (a few users each, some users appear in neither). Assign reactions: at least two review-channel messages get a reaction from a genuine #security member (targets); one review-channel message gets a reaction from a #security-eng member only (focal near miss); one review-channel message is authored by a #security member but reacted to only by non-members of either security channel (role near miss). Include a handful of filler messages/reactions from unrelated users to avoid trivial cardinality. All users get a single home workspace via user_teams as required by users.info scope; actor is a member of all relevant channels for conversations.history/members access.",
+  "action_plan": "1. Call conversations.list/users.conversations or use supplied channel names to resolve #eng-updates, #product-launch, #incident-response, and #security to channel IDs.\n2. Call conversations.history on each of the three review channels to enumerate candidate messages (paginate as needed).\n3. Call reactions.get (or conversations.history's embedded reactions) for each candidate message to obtain reacting user IDs.\n4. Call conversations.members on #security to get the qualifying membership roster.\n5. For each candidate message, keep it only if at least one reacting user ID appears in the #security roster (not just any reactor, and not the author).\n6. Report the resulting determined set of matching messages (channel + ts/message_id + short text) as the multiple-resolution answer; no state change is requested.",
+  "reason": null
+}
+```

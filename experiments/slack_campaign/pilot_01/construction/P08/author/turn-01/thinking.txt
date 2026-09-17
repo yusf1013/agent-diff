@@ -1,0 +1,40 @@
+I'm mapping out the join path from conversation membership through conversation, workspace, and workspace membership to users, focusing on the real_name field with an absent resolution mode—meaning the query should target a real_name value that doesn't actually exist in the data.
+
+I want the ROOT to be conversation membership entries where the conversation's workspace has a workspace-membership tied to a user with a specific real name — and that name shouldn't actually exist for any member in that workspace, keeping the chain empty. A natural framing would be a state-changing request, like removing the membership entry for a user named "Priya Raman" in a given channel, where no such named user actually belongs to that workspace.
+
+So the chain resolves to conversation membership entries within whatever workspace contains a user named X — meaning the focal user's name determines which workspace's channels we're looking at, then we pull membership rows from conversations there. This still needs an anchor conversation to scope things properly, since a workspace can have multiple channels.
+
+CONVERSATION_MEMBERSHIP up to CONVERSATION, then WORKSPACE, then WORKSPACE_MEMBERSHIP linking to a USER filtered by real_name — essentially membership entries of channels in the workspace where a named person holds workspace membership. This mirrors the earlier route_context structure but for the absent case: the named person wouldn't actually hold any workspace membership in the scoped workspace (or wouldn't exist at all), so no conversation could be identified and no membership entries would result.
+
+For a concrete absent scenario, I could design a request asking to list conversation membership entries for the audit channel(s) in the workspace shown on the profile of a named person like "Jordan Vance." If that person either doesn't exist in the users table, or exists but has no workspace_membership row recorded, the WORKSPACE_MEMBERSHIP linking step fails — so no CONVERSATION can be identified, breaking the chain at that point.
+
+Since near-miss is required, I should also include a plausible negative that satisfies auxiliary conditions (like belonging to an audit channel with valid workspace membership) but fails the focal real_name match — either a similarly-named person or someone with the exact matching name but who's actually a different entity lacking workspace membership. This demonstrates the environment isn't trivially empty overall, even though the specific focal target still yields nothing.
+
+I'll finalize with a concrete workspace "Meridian Labs" and a private audit channel to build out the roster around this.
+
+The actor is an admin, and the request asks to list the current member entries of the audit channel in the workspace shown on the profile of the roster person named Priya Raman. I need to supply candidate roster IDs to check against, per the route context's guidance.
+
+Actually, I need to reconsider - the route requires tracing from the conversation to its workspace, then to a workspace membership matching the user's real name, so simply supplying the channel ID directly would skip the actual identification step the route depends on. I should instead have the request depend on finding Priya Raman's workspace membership first, then deriving the audit channel from that workspace rather than stating the channel ID outright.
+
+If the channel is fixed by ID, the workspace is actually determined by the channel's own team_id regardless of the named person's membership - so I need to reconsider whether that person's workspace link is even a valid filter here, or if it's just a validation check that could fail the whole query if unmet.
+
+I think the cleaner approach is not to supply the channel ID directly but instead resolve the workspace from the named person's profile first, then look at audit channels within that workspace - if the person has no workspace membership, there's nothing to resolve and the result is cleanly absent rather than a fabricated failure.
+
+I'm sketching a concrete setup: two workspaces (Meridian Labs and Solstice Corp) each with their own audit channel, so I can test whether resolution correctly narrows down to only the channels tied to the named person's actual workspace.
+
+Named person Priya Raman exists as a user, but her recorded workspace membership points to a third workspace (Cascade Systems) that has no audit channel among the candidates -- or she may lack any workspace membership row entirely. I want to make sure the missing focal person is genuinely part of the stated roster, even though her workspace association doesn't line up with any candidate channel.
+
+To create a proper near miss, I'll add another roster member with a similar-sounding name, "Priya Malhotra," whose workspace membership does match one of the audit channels, ensuring the exclusion isn't trivially obvious.
+
+I also need to seed nonempty membership lists at both audit channels with unrelated users, since Priya Raman herself won't appear in that workspace. Now I'll draft the actual request text listing the roster members by ID and name.
+
+For the task type, this is a read-only listing of channel membership entries, so a report structure works well. I'll build a single grounding card for the conversation-membership concept, with absent resolution and empty referent set since Priya Raman doesn't belong to either audit channel's workspace.
+
+I'm identifying the sufficient source attributes to establish this: the user's real name matched against the roster, the team/workspace association for that user, and the audit channels' team membership rows -- keeping the identifying criteria limited to at most three fields per the constraint.
+
+I still need to lay out the selection, resolution, negative, environment, and action plans before finalizing the JSON with status "designed." The selection plan covers the root conversation-membership rows and candidate scope, while the resolution plan needs to explain why the chain resolves to an empty result — Priya Raman's workspace association doesn't overlap with either audit channel's workspace, so no matching conversation exists among the candidates.
+
+For the negative plan, I'm including Priya Malhotra (U203) as a near-miss: she shares the first name and has workspace membership matching one audit channel's workspace, satisfying auxiliary criteria but failing the focal real_name match, which keeps the chain nontrivial while other unrelated channel_members rows populate the candidate channels. The environment plan needs three workspaces, two audit channels (each tied to one of two workspaces, leaving the third workspace without an audit channel), and a roster of four users with distinct real names.
+
+For the action plan, I'm laying out numbered steps: locate Priya Raman via users.info, determine her workspace, find which candidate audit channel belongs to that workspace, then list its members via conversations.members — reporting that no match exists since her workspace has no corresponding audit channel. Now I'll write the final answer as JSON.
+

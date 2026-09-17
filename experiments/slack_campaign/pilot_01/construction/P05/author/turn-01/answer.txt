@@ -1,0 +1,26 @@
+```json
+{"status":"designed",
+"request":"An actor is given a short list of existing non-DM channel links (IDs) in the workspace and asked: \"Which of these channels have exactly three members?\"",
+"selection_plan":{
+  "root_entities":"CONVERSATION rows (channels) from a supplied candidate list of non-DM channel IDs",
+  "candidate_scope":"A finite pool of channel IDs shared in the prompt, all real, non-DM, non-archived channels in the actor's workspace, readable via conversations.info/conversations.members",
+  "identifying_criteria":["focal: COUNT(CONVERSATION_MEMBERSHIP rows grouped by channel_id) == 3, evaluated per candidate channel","aux: channel must be from the supplied candidate ID list","aux: channel is a real, non-DM conversation (exclude DM/group DM/archived by construction, not as an extra ask)"]
+},
+"resolution_plan":{
+  "mode":"multiple",
+  "jointly_intended_matches":"At least two channels in the candidate pool must have exactly 3 members, so the collection is jointly intended (not a single-match coincidence).",
+  "note":"Resolution is decidable directly from complete channel_members rows per candidate channel_id; no ambiguity in count once membership rows are fixed."
+},
+"negative_plan":{
+  "near_miss_type":"focal near miss (membership count) satisfying auxiliaries",
+  "negatives":[
+    "A candidate channel with 2 members (undershoot near miss)",
+    "A candidate channel with 4 members (overshoot near miss)",
+    "Optionally a candidate channel with 3 *workspace* members but only 2 *channel* members, to test that the count binds to CONVERSATION_MEMBERSHIP not WORKSPACE_MEMBERSHIP"
+  ],
+  "risk_addressed":"Ensure the count is over distinct (channel_id,user_id) rows in channel_members, including the acting user if they happen to be a member of a candidate channel; do not undercount by excluding the actor."
+},
+"environment_plan":"One workspace (team) with ~6-7 users and one team_id. Candidate pool of 5 non-DM public channels (mix of names like #onboarding, #design-review, #infra-alerts, #social, #roadmap), each with distinct channel_ids and deterministic joined_at timestamps in channel_members. Exactly two candidate channels have precisely 3 member rows each (the matches); one has 2, one has 4, one has 3 workspace-level members but only 2 channel members (to guard against workspace-membership confusion — this table isn't in the seven exposed tables list so this trap is dropped in favor of a plain 2-member and 4-member negative plus a filler with 5 members). All channels belong to the same team_id as the actor's own workspace membership so users.info/actor access is consistent. Actor is a member of one of the matching channels, verifying the count includes the actor. No archived or DM/group-DM channels included in the candidate list.",
+"action_plan":"Single read-only task: for each candidate channel_id in the supplied list, retrieve conversations.members (or equivalent member listing) and count distinct user_id rows; report the subset of candidate channel_ids whose count equals exactly 3, referencing the channel cards for the two qualifying channels and the negative cards for the non-qualifying ones.",
+"reason":null}
+```

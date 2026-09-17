@@ -1,0 +1,34 @@
+Looking at this request for reactions on messages from engineering members, I need to trace the join path: reactions to messages, messages to their author, then author membership to the engineering channel, filtering on channel_name at the appropriate node.
+
+Verifying against the data: M1 and M2 are authored by U1 and U2, both members of C1 (engineering), so their reactions all qualify — rocket, tada, clap, thumbsup — totaling 4 matches, consistent with expectations. M3's reaction from U3 is a correct near-miss since U3 is themselves an engineering member, but the message author U4 isn't in C1, so it shouldn't count.
+
+Now I'm checking the alternative identifying sets against the reaction referent - since the entity is the reaction itself, the identifying attribution needs to pin down which reaction rows qualify, not just the message/author chain, so I need to verify that set actually suffices on its own.
+
+But comparing against the full computation attribute list which explicitly includes the message_reactions fields, the alternative set really does seem to be missing them, so calling it "sufficient" for enumeration purposes still feels shaky to me.
+
+That seems acceptable since the join back through message_id handles row enumeration naturally, not a real defect. Checking the shared scope against candidate_population, the six reactions across C1 and C2 messages match up correctly, and the task_spec about reactions on messages authored by #engineering members lines up with what I found too.
+
+Now verifying API accessibility: since U1 is a member of both C1 and C2, they can pull channel membership, message history, and reaction data through standard endpoints, and author membership can be resolved via the channel_members table — all within supported API surface. The "multiple" resolution mode fits since the request asks for "every reaction." I'm now checking whether the constructed near-miss with M3/U3 holds up as a valid negative case.
+
+The M3/U3 negative correctly fails because its author isn't a member of #engineering, even though the reactor and other conditions check out — this matches the intended focal condition and makes it a solid, non-obvious negative. I confirm there's no ambiguity: the original request clearly ties membership to the message's author, not the reactor, so the construction follows the correct referent. Finally, I check other channels and confirm only #engineering matches, while #random doesn't apply.
+
+Now I'm verifying the identifying keys against the schema — reactions are keyed by message_id, user_id, and reaction_type, matching the referent set format. But I notice the card's alternative identifying attribute set only includes fields to determine which messages qualify (author membership), without message_reactions.user_id or reaction_type — so it can't actually enumerate the individual reactions needed, which looks like a real gap in the card's alternative set.
+
+But the identifying set as given seems to be missing message_reactions.user_id and reaction_type, which are actually needed to distinguish multiple reactions on the same message — otherwise you can't tell apart separate reaction rows tied to that message.
+
+Actually this makes sense: since there's no reactor-level filter, the referent set is defined purely by which messages qualify, and once identified, all their reactions are automatically included—so listing message-level attributes as the sufficient identifying set is defensible after all.
+
+Right, the selector only needs to identify qualifying message_ids via the channel_members join, then pull all reactions on those messages unrestricted by user_id or reaction_type — that's a valid FK-based selector, not a gap in information.
+
+Now checking mutation_integrity for this clean generation: the locked assignment (route R108, focal condition on channels.channel_name at node 4, multiple resolution mode) matches the private selector, and mechanical_findings confirm the four expected matches with two negatives, correctly excluding messages M3 and M4 with no extra unintended matches. Now I'm verifying the node indexing for the route sequence.
+
+Node index 4 corresponds to CONVERSATION, so channels.channel_name aligns correctly with that node. I'm confirming actor U1's access scope: they're a member of C1's channel_members, so calling conversations.members(C1) is in-scope, and since C1 and C2 are public channels, message and reaction retrieval through history is also accessible.
+
+Checking the resolution mode: multiple distinct reactions across different messages and authors are correctly represented, not conflated into a single answer. Reviewing for realism issues, the message texts and usernames look plausible with no ID leakage or obvious sequential ordering that would give away the answer, so the case seems appropriately difficult, requiring proper joins to distinguish reactor from author.
+
+Confirming path fidelity: the route through membership and conversation nodes correctly matches the "member of #engineering" phrasing, and the author binding traces back correctly through the message's user_id rather than the reactor, preserving the right relational role. The negative case where a reactor is a member but not the author gives a strong, non-trivial near miss.
+
+Everything checks out — the referent set in the card aligns with expected matches and the computed matches, all four reactions agreeing consistently. No major defects found.
+
+I also confirm the report requirements—emoji, reactor, and message—are fully covered by the task spec matching the prompt. Overall this passes without issue.
+

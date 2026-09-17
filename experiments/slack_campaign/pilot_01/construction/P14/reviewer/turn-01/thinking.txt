@@ -1,0 +1,38 @@
+I need to find review-roster members alongside their profile-shown workspaces, but only for those who actually posted about the launch in the audit channels C_LAUNCH1 and C_LAUNCH2. So the focal entity is workspace membership pairs, filtered against who authored launch-related messages in those channels.
+
+The correct matches are U_ROSTER1 and U_ROSTER2 under T_ACME. Checking the negatives: Marcus (U_ROSTER3) posted a non-launch message in C_LAUNCH1 while someone else there discussed the launch — a genuine near-miss since he satisfies the roster and audit-channel conditions but not authorship of the launch content. Elena (U_ROSTER4) is a simpler negative, posting in C_GENERAL entirely outside the audit channels. All four candidates are given upfront as roster members in the prompt.
+
+I also want to check whether U_HELPER5, a non-roster user, authored a launch-related message in C_LAUNCH1, since that could create a distractor around relational conditions.
+
+Elena, having no message at all in the audit channels, is a trivial focal negative rather than a sophisticated near-miss, but that's still acceptable since not every negative needs to be elaborate.
+
+Now I'm tracing the join path from workspace membership through user to message.
+
+Let me verify each message against the "launch" filter: M1 and M4 both contain "launch" (case-insensitive) and are authored by ROSTER1 and ROSTER2 respectively, confirming the matches. M3 has no launch mention, and M5 mentions "lunch" not "launch" so it correctly stays excluded.
+
+I also spot U_HELPER5's message with "launch" scheduled for Friday - but this user is non-roster, so it's excluded regardless, serving as a near-miss test case alongside U_ROSTER3 in the same channel.
+
+Checking the card's referent set against the expected and computed matches confirms they align. I'm also weighing whether the alternative identifying sets are sufficient - specifically whether they need to explicitly include the roster ID list itself given the prompt-supplied scope.
+
+I confirm the roster is a constant given in the prompt, so the identifying attributes don't need to duplicate it. The answer-computation attributes look correct for filtering messages by text/channel and joining with team data. I also verify the profile-shown workspace association is consistent, since all roster users have a single T_ACME membership. Now I'm checking the actor's API scope - U_ACTOR is an admin of T_ACME and needs read access to the relevant channel histories, confirming membership in both.
+
+Actor's users.info access for roster candidates is unrestricted since it just needs a user ID, so that's fine. The computed focal negatives include both U_ROSTER3 and U_ROSTER4, which is consistent even though only U_ROSTER3 is explicitly marked as the required near miss - the mechanical findings capture all focal negatives among candidates while the near-miss field highlights the specific requirement. I confirm requires_near_miss is satisfied via U_ROSTER3, and the "multiple" resolution mode matches the request for a list with two entries.
+
+The phrasing "roster members who themselves posted about launch" aligns exactly with the focal condition on message authorship. For the "profile-shown workspace" scope, since each user has a single team membership in the seed data, users.info's exposed association matches user_teams, so both matched users correctly resolve to T_ACME as their referent workspace.
+
+The exclusion logic properly requires the message author to match the candidate, restricted to the two audit channels, matching the task spec's explicit language about excluding candidates whose channel merely contains someone else's message. The selector on message_text and the mutation_integrity check (not applicable here since this is clean generation) both look consistent.
+
+Thread replies aren't a concern since parent_id is null throughout. I want to make sure "profile-shown workspaces" isn't misread as literal profile display rather than workspace membership - the domain notes confirm there's no independent profile entity, so it maps to a projection of workspace membership through users.info, aligning with the focal route through workspace membership, user, and message.
+
+Rechecking the route: it starts at WORKSPACE_MEMBERSHIP as the answer entity, traverses to USER, then to MESSAGE, with the focal condition on the message text field, joined via user_teams to users to messages - that's correctly bound. The count of 2 members with team checks out since the request just asks for a list, not a count, so there's no count-language issue. Overall the case looks well constructed and consistent with the prompt and cards, so now I'm checking for any hint leakage in the referent set field.
+
+No leakage found - the roster IDs are explicitly supplied per instructions, and the focal condition meaningfully differentiates the 4 roster members with a real near-miss and a genuine absence, giving good difficulty. The API scope also checks out, since conversations.history and users.info cover everything the actor needs without requiring a full workspace listing.
+
+I'm confirming the workspace ID output uses team_id rather than a stored name, consistent with the rule that outputs must be IDs. The path from membership to user to message matches the "posted about launch" phrasing naturally, the resolution mode is correctly multiple/filtering, and both negative candidates satisfy the auxiliary condition while failing the focal one for different reasons - everything checks out so I'll mark all sections as passing.
+
+One thing worth flagging: the roster IDs (1-4) split cleanly into first-half-positive, second-half-negative, which is a mild positional pattern that could act as an unintended shortcut, though it's likely just an artifact of the synthetic setup rather than a real signal.
+
+But practically, the solver still has to check message content rather than relying on ID order, so this doesn't actually shortcut verification—it's more a construction-hygiene concern than an exploitable flaw for a single case.
+
+Overall I'll settle on pass, noting this as a minor flagged observation.
+

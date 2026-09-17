@@ -1,0 +1,40 @@
+Looking at this request, I need to find each roster member's profile workspace, then filter to only those whose workspace has a message in the audit-log channels that Alex reacted to. I'll trace the path from workspace membership through the conversation, message, and reaction data tied to those specific users.
+
+Checking the runtime rule, each of U100/U101/U102 has exactly one team membership, so the "profile-shown workspace" is well-defined. The tricky part is the reactor's name matching "Alex" - there are two candidates, U200 "Alex Rivera" and U201 "Alexandra Cho", creating two possible answer sets depending on which one counts.
+
+Now I'm cross-referencing this against the actual seed data - checking C1's messages and reactions to confirm U200 reacted to a message there, which would support the Alex Rivera interpretation.
+
+Continuing through the audit-log channels: C2 qualifies since Alexandra Cho's reaction on M3 matches "alex" via substring, but C3 fails - the only reaction there is from Jordan Lee, not anyone named Alex, even though message M5 is authored by "Alex Turner." This is the key near-miss: authorship by an Alex doesn't satisfy the focal condition, which specifically requires a reaction by someone named Alex.
+
+Verifying the graph path from WORKSPACE_MEMBERSHIP through WORKSPACE, CONVERSATION, MESSAGE, REACTION, to USER - the final USER node's real_name field is what's being matched at index 5, which checks out correctly.
+
+Now I'm scrutinizing whether treating both Alex Rivera and Alexandra Cho as valid "Alex" matches via case-insensitive substring is actually reasonable, or whether it introduces unwarranted ambiguity - since "Alexandra" containing "alex" as a substring is a much looser match than an exact or near-exact name match, and I should check if Alexandra Cho has a distinct display name that would clarify this.
+
+This creates artificial ambiguity through substring matching that feels like a stretch compared to the schema's own example, which uses two people who are both literally, actually named "Alex" as their first name -- not someone whose full first name "Alexandra" merely contains those letters.
+
+Actually, there's also Alex Turner (U202), but he's only the author of M5, never a reactor - so he can't serve as a genuine second candidate under a reaction-based ambiguity, since only actual reactors named Alex would qualify.
+
+The remaining reactors matching "Alex" are U200 (Alex Rivera, exact name) and U201 (Alexandra Cho, substring match only), which makes the second-candidate construction rely on a stretched substring match rather than a natural reading of "named Alex." That feels like a real weakness worth flagging - treating "Alexandra" as satisfying "named Alex" pushes past normal language use, so I need to decide whether this counts as a failure or just an unresolved semantic tension per the review criteria.
+
+"Alex" is sometimes a genuine nickname for Alexandra, so the ambiguity claim isn't inherently absurd - except U201's display_name is explicitly set to "Ali," not "Alex," which directly contradicts the idea that she'd be referred to that way. That detail seems to actively undercut the scenario's own premise of ambiguity.
+
+Given that, I think the resolution check should fail or at least be flagged unresolved, since the second candidate rests on a coincidental substring match rather than a plausible naming convention. I should also check the near-miss case U102/T3, which satisfies the auxiliary condition but fails the focal reaction condition.
+
+This near miss holds up: M5 was authored by Alex Turner but the only reaction came from Jordan Lee, so it's a legitimate role mismatch. Now I want to trace the prompt_path_fidelity check — verifying the route through workspace membership, conversation, message, and reaction to user matches the focal field on real_name, and confirming the filter scope correctly requires any audit-channel message in the workspace reacted to by someone named Alex.
+
+reactions.get needs channel+timestamp, so the actor first needs conversations.history to find messages. Actor U900 is admin across all three teams and a member of C1, C2, C3, so channel access checks out. Checking real_name resolution: candidate user IDs need to come from known channel-member or message records since users.info alone doesn't resolve a real name directly.
+
+So candidate discovery works fine since reactions.get returns user IDs directly, without needing to enumerate all users first—that satisfies the api_scope check. Now I'm checking the cards and spec against the locked schema: the referent set selects one user_team, with partial constraints restricting user_id to a set of three candidates, and candidate sets pairing each user with their team.
+
+The referent set shape and null sufficient identifying sets align with the convention for underspecified cards. The answer-computation attributes and task spec text also match the review-roster request about reactions from Alex, so I'm moving to verify mutation integrity next, checking the locked assignment and route R195 for extra counterparts.
+
+Checking the "Alex" substring matches across users - Alex Rivera, Alexandra Cho, and Alex Turner all qualify, but only two of them actually reacted to anything (U200 on M1, U201 on M3), since U202 never reacts. This confirms the computed matches are correct with no unintended extras, so now I need to focus on the resolution check issue involving the Alexandra Cho/"Ali" display name conflict.
+
+Given the guidance about reporting uncertain semantic conflicts as unresolved, this case fits well - "Alexandra" plausibly shortens to "Alex" as a nickname, but the display_name field showing "Ali" instead creates ambiguity about whether she'd actually be called Alex by anyone, which weakens but doesn't fully invalidate the match.
+
+So I'll mark this check as unresolved, which means the overall decision should also be unresolved since not all seven checks pass cleanly, though it's not a definite fail either.
+
+Now I want to sweep through the remaining checks for anything I might have missed. For realism_and_hints, the IDs U100-U102 map straightforwardly to T1-T3 in order, which isn't especially revealing, and the channel names are uniformly "audit-log" so nothing stands out there. Looking at the real names involved - Alex Rivera, Alexandra Cho, Alex Turner, Jordan Lee - nothing else seems suspicious.
+
+I think realism passes overall, so I'll move on to writing up the final answer now.
+

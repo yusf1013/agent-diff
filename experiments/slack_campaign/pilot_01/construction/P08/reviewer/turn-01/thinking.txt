@@ -1,0 +1,46 @@
+I need to trace channel membership by first finding Priya Raman's workspace via her user record, then following that workspace to its associated audit channels, and finally pulling the current member list for the correct one.
+
+Since two people share the first name "Priya," I want to make sure the exact match is on the full "Priya Raman" string, which correctly excludes Priya Malhotra from the focal filter even though she shares a workspace and appears in the same audit channel—making her the key near-miss case to watch for.
+
+So this condition doesn't actually depend on the specific channel_member's user_id at all - it only checks whether the channel's team has any member named Priya Raman, meaning all rows for the same channel pass or fail together. Since Priya Raman is only in T_CAS, and both C_AUD1 (T_MER) and C_AUD2 (T_SOL) belong to different teams, this check fails for all rows regardless of user_id.
+
+So the "near miss" label on (C_AUD1, U203) is puzzling, since every C_AUD1 row would equally qualify as a near miss - the workspace T_MER just happens to have a Priya Malhotra rather than a Priya Raman.
+
+Checking the wording "the workspace shown on Priya Raman's profile" - this should map to real_name as the selector and route through user_teams for the single exposed workspace association. If Priya Raman's workspace is T_CAS and no audit channel belongs to that workspace, then the correct resolution is that the membership set is genuinely empty, which matches the task's instruction to list members of whichever audit channel belongs to that workspace.
+
+This looks like a valid "absent" test case - the requester's premise assumes a channel belongs to that workspace, but if none does, the agent should recognize the absence rather than force a match. Checking the negatives: channel_members rows for C_AUD1 and C_AUD2 satisfy the auxiliary condition (being in the candidate channel set) but fail the focal condition (team membership), and the near-miss for U203 fits the same pattern.
+
+But I want to double-check the semantics here: the focal condition is really about which channel belongs to the workspace, not about individual member rows. Once the correct channel is identified, all its members should be listed without further filtering by name - so the focal test operates at the channel level even though the query starts from conversation_membership rows.
+
+Tracing the route: CONVERSATION_MEMBERSHIP to CONVERSATION to WORKSPACE to WORKSPACE_MEMBERSHIP to USER, with the focal field users.real_name matching node index 4 (USER), which checks out correctly.
+
+Checking the users.info API scope, actor can call it for Priya Raman using her known ID (U202) to get her workspace association, plus conversations.info for team_id and conversations.members for channel membership, all consistent with the evidence. I'm now considering whether actor U201 (Alex Tanaka) has scope to call users.info on another user like U202.
+
+The dual-Priya setup is a deliberate near-miss rather than contrived staging. And if neither channel actually belongs to that workspace, the correct behavior is to recognize that no membership listing exists rather than force a match — which is a valid absent-resolution outcome.
+
+I'm cross-checking the P08 roster against the seed data — Alex Tanaka, Priya Raman, Priya Malhotra, Sam Okafor all line up correctly, and the workspace_scope constraint blocking direct workspace enumeration also holds since the actor can only work from the profile.
+
+For mutation integrity, this is a clean_generation type so I need to verify the locked assignment matches exactly, including the route_id and referent_entity with no extra counterparts — the field "users.real_name" at node_index 4 looks right.
+
+The prompt itself presupposes exactly one audit channel belongs to the workspace, but the actual answer is that none do — so this is really testing whether the model catches the false assumption baked into the question rather than blindly answering it.
+
+This fits the standard pattern for absent-resolution constructions where the resolution should follow the request's intended selection rather than raw match count, so treating this as an intentional trap rather than a flaw seems right. Checking whether a reasonable reading could still pull in the Priya Raman entry from that channel — but since the requester named her specifically rather than generically, that inclusion wouldn't be justified.
+
+Checking the remaining candidate rows and auxiliary conditions confirms everything is in scope, matches are empty, and all six rows land as focal negatives — consistent with an absent resolution. The card's singular obligation about identifying the correct channel then listing its members still needs verifying against this outcome.
+
+The referent set being empty aligns with the CONVERSATION_MEMBERSHIP focal entity, since neither audit channel belongs to Priya Raman's actual workspace team. The seed data confirms this: U202 is tied to T_CAS, while C_AUD1 and C_AUD2 belong to T_MER and T_SOL respectively, so the absent resolution checks out. I'm now looking at the near-miss requirement, which lists a single entry pairing C_AUD1 with U203.
+
+Among the C_AUD1 rows, U203 stands out as the ideal near miss because of the coincidental partial name match to "Priya," while the other members (Alex Tanaka, Jamey Fox) don't create that same confusion, so designating U203 as the near miss is well justified. Overall the construction looks solid, correctly grounded, and properly labeled as absent with a compelling near miss.
+
+Now I'm verifying the answer-computation attributes and identifying sets — checking that real_name, team_id, and channel team fields align with the schema, that the resolution mode and focal condition match the card exactly, and confirming whether the actor U201 actually has API access to conversations.info for these private channels.
+
+Checking the seed data, U201 is indeed a member of both C_AUD1 and C_AUD2, so the actor has legitimate access to read those channels, satisfying the api_scope requirement.
+
+Running through the seven validation checks now: prompt path fidelity passes, resolution mode passes, negatives look legitimate, realism and hints seem fine with no ID leakage and a reasonable candidate pool size, and api_scope passes since access is confirmed.
+
+For cards_and_spec, the fields are schema-compliant and the alternative sets align with the task lines. For mutation_integrity, the locked assignment fields match the clean_generation case, so overall this looks like a pass.
+
+One thing worth double-checking: the route_context selector references "Alex" while the actual generated prompt targets "Priya Raman." Since route_context is explicitly marked as a catalog feasibility witness only, not the actual generated prompt or its answer, this naming mismatch appears intentional rather than an error.
+
+The witness likely just confirms the route can exist with a nonempty population using a generic query, so the name difference from the actual instance seems acceptable. I also confirm the focal_condition field "users.real_name" is consistent with the card's selector value "Priya Raman," so I don't see any defects here—marking this overall as a pass, and now checking whether "channel_members.joined_at" being included in the answer makes sense given the request for current member entries.
+

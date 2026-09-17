@@ -1,0 +1,35 @@
+```json
+{
+  "status": "designed",
+  "request": "In the #compliance-review channel (ID C0MPL1AUDIT), please remove the member named Alex from the channel — they rolled off the compliance team last week and shouldn't retain access for the upcoming SOC2 review.",
+  "selection_plan": {
+    "root_entity": "CONVERSATION_MEMBERSHIP (channel_members row keyed by channel_id + user_id)",
+    "route": "CONVERSATION_MEMBERSHIP -> USER (channel_members.user_id -> users.user_id)",
+    "candidate_scope": "All channel_members rows for channel C0MPL1AUDIT (#compliance-review), a private channel the actor already belongs to and can read via conversations.members.",
+    "identifying_criteria": {
+      "focal": "users.real_name denotes a person named 'Alex' (matches on the given/informal first name as it appears in the stored real_name field)",
+      "auxiliary_1": "channel_members.channel_id = C0MPL1AUDIT (the #compliance-review channel named in the request)"
+    },
+    "criteria_count": 2
+  },
+  "resolution_plan": {
+    "mode": "single",
+    "target_pair": "(channel_id=C0MPL1AUDIT, user_id of the single member whose users.real_name is 'Alex Donovan')",
+    "justification": "Exactly one channel_members row for C0MPL1AUDIT joins to a users row whose real_name starts with/contains 'Alex' as a first-name token; all other members of that channel have unrelated real_names, so the focal+auxiliary combination resolves to one membership pair without delegated ambiguity."
+  },
+  "negative_plan": {
+    "relationship_near_miss": {
+      "description": "A member of the same #compliance-review channel whose username is 'alex_cross' (surface token 'alex' in an unrelated field) but whose users.real_name is 'Alina Cross' — satisfies the auxiliary channel-membership condition but fails the focal real_name condition, so it must not be selected as 'the member named Alex'.",
+      "role": "focal near-miss, same auxiliary"
+    },
+    "separate_focal_negative": {
+      "description": "A different user, 'Alex Rivera' (users.real_name = 'Alex Rivera'), who satisfies the focal real_name condition but is only a member of #general (channel C0GENERAL1), not #compliance-review — fails the auxiliary channel-scope condition.",
+      "role": "focal match, wrong auxiliary (relationship/scope near-miss)"
+    },
+    "filler": "Two additional #compliance-review members with unrelated real_names ('Priya Shah', 'Marcus Webb') to populate a realistic roster without introducing further accidental matches."
+  },
+  "environment_plan": "One workspace (team). Channel C0MPL1AUDIT '#compliance-review' (private, active) and channel C0GENERAL1 '#general' (public, active), both in the same team. Users table includes: actor 'diana.park' (workspace admin, member of both channels, real_name 'Diana Park'), target 'Alex Donovan' (member of #compliance-review only), near-miss 'Alina Cross' (username 'alex_cross', member of #compliance-review only), focal-negative 'Alex Rivera' (member of #general only, not #compliance-review), and two filler members 'Priya Shah' and 'Marcus Webb' (members of #compliance-review). channel_members rows encode each membership with deterministic joined_at timestamps. No message history is needed since the task concerns membership state only; actor's read access is established via existing membership in both channels.",
+  "action_plan": "1. Using card 1 (the CONVERSATION_MEMBERSHIP referent for #compliance-review / Alex Donovan), call conversations.kick with channel=C0MPL1AUDIT and user=the resolved target user_id to remove that membership. No other channels or members are in scope for this single action.",
+  "reason": null
+}
+```
