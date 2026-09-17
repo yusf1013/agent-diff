@@ -103,7 +103,7 @@ def assemble(assignment, design, compiled):
               'Grounding obligation description':ob['description'],
               'Resolution':'resolved' if mode in ('single','multiple') else mode,
               'Shared scope':ob['scope'], 'Referent set':refs,
-              'Identifying paths':[{'entities':q['path'],'relationships':q['joins']} for q in [query]+selector.get('auxiliary',[])],
+              'Identifying paths':list({dump({'entities':q['path'],'relationships':q['joins']}): {'entities':q['path'],'relationships':q['joins']} for q in [query]+selector.get('auxiliary',[])}.values()),
               'Alternative sufficient identifying sets':None if mode=='underspecified' else [list(dict.fromkeys(id_fields))]}
         if mode=='underspecified':
             card['Referent set']={'selection':ob['selection']+'('+ob['table']+')',
@@ -121,11 +121,19 @@ def assemble(assignment, design, compiled):
     case.update(cards=cards,task_spec=design['task_spec'],private={
         'mode':primary['mode'],'focal_obligation':1,'selector':main,
         'expected_matches':role_handles(design,compiled['bindings'],primary['target_roles']),
-        'near_misses':compiled.get('negative_referents',role_handles(design,compiled['bindings'],negatives)),
+        'near_misses':compiled['negative_referents'] if 'negative_referents' in compiled else role_handles(design,compiled['bindings'],negatives),
         'require_near_miss':True,'candidate_sets':cards[0]['Referent set'].get('candidate_sets') if isinstance(cards[0]['Referent set'],dict) else None,
         'construction_explanation':design['binding_note'],
         'mutation_summary':'Base seed plus declared patches; separate writer and compiler',
         'scope_exception':design.get('scope_exception'),'workflow_version':2})
+    if assignment.get('preserve_source_cards'):
+        source = assignment['source_context']
+        case['cards'] = copy.deepcopy(source['cards'])
+        for card in case['cards']:
+            card['Test ID'] = case['case_id']
+        case['task_spec'] = copy.deepcopy(source['task_spec'])
+        case['private']['focal_obligation'] = assignment.get('source_obligation', 1)
+        case['private']['card_provenance'] = 'Original mutation source cards/spec copied mechanically; only Test ID changes.'
     return case
 
 

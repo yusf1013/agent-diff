@@ -10,13 +10,13 @@ def report(folder):
     calls=[]
     for path in sorted(folder.rglob('summary.json')):
         obj=read(path)
-        if 'usage' not in obj:continue
+        if 'usage' not in obj and not ('model' in obj and (path.parent/'request.json').exists()):continue
         rel=str(path.relative_to(folder))
         parts=path.parts
         stage=next((s for s in ('writer','compiler','reviewer','direct_judge','access_review') if s in parts),'evaluator')
         calls.append({'source':rel,'stage':stage,'status':obj.get('status'),'usage':obj.get('usage'),
                       'native_cost_usd':obj.get('cost_usd'),'elapsed_seconds':obj.get('elapsed_seconds')})
-    for path in sorted((folder/'execution').glob('*/solver/*.json')):
+    for path in sorted([*(folder/'execution').glob('*/solver/*.json'), *(folder/'execution_attempts').glob('*/solver/*.json')]):
         obj=read(path)
         if not isinstance(obj,dict) or 'steps' not in obj or 'test_id' not in obj:continue
         for step in obj['steps']:

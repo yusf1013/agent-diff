@@ -636,6 +636,10 @@ def certify_visibility(case, state, report):
         if SCHEMA[table].columns[field].kind == "datetime" and actual is not None:
             # API integer timestamps lose subsecond information; exact preservation is required.
             actual = datetime.fromisoformat(actual.replace("Z", "+00:00")).replace(tzinfo=None).isoformat()
+        if predicate and _compare(actual, predicate["op"], predicate["value"]) == _compare(got[field], predicate["op"], predicate["value"]):
+            # A selection predicate needs the same truth value, not identical
+            # presentation (e.g. a default timezone on a null stored profile).
+            return
         if actual != got[field]:
             errors.append(f"API projection differs for {table} {canonical_handle(table, row)!r} field {field}: seed={actual!r}, API={got[field]!r}")
 
@@ -662,9 +666,20 @@ def certify_visibility(case, state, report):
                 required[table].add(key(table, row))
                 if key(table, row) not in visible[table]:
                     errors.append(f"Required {table} referent {canonical_handle(table, row)!r} is not discoverable through recorded APIs")
+                predicate_errors, predicate_limits = len(errors), len(limitations)
+                proven_false = False
                 for predicate in predicates:
+                    before_e, before_l = len(errors), len(limitations)
                     field_check(table, row, predicate["field"], predicate)
-                if all(_compare(_field_value(table, row, f["field"]), f["op"], f["value"]) for f in predicates):
+                    if len(errors) == before_e and len(limitations) == before_l and not _compare(
+                            _field_value(table, row, predicate["field"]), predicate["op"], predicate["value"]):
+                        proven_false = True
+                if proven_false:
+                    # One observed false conjunct excludes this row. Other
+                    # unknown fields on that same row need not be retrieved.
+                    del errors[predicate_errors:]
+                    del limitations[predicate_limits:]
+                elif all(_compare(_field_value(table, row, f["field"]), f["op"], f["value"]) for f in predicates):
                     accepted.append(row)
                 if table == "user_teams":
                     memberships = [r for r in state.get(table, []) if r["user_id"] == row["user_id"]]
