@@ -24,6 +24,7 @@ COMMON = {
     "Test ID", "Task type", "Grounding obligations", "Grounding obligation name",
     "Grounding obligation description", "Resolution", "Shared scope",
     "Referent set", "Alternative sufficient identifying sets",
+    "Identifying paths",
 }
 EXTRA = {
     "read-only": {"Answer-computation attributes"},
@@ -32,6 +33,18 @@ EXTRA = {
 COVERAGE = ("yes", "partial", "no")
 RESOLUTIONS = ("resolved", "absent", "underspecified")
 KEYS = {"channels": "channel_id", "users": "user_id", "messages": "message_id"}
+PATH_RELATIONSHIPS = {
+    "channels.team_id": {"channels", "teams"},
+    "user_teams.user_id": {"user_teams", "users"},
+    "user_teams.team_id": {"user_teams", "teams"},
+    "channel_members.channel_id": {"channel_members", "channels"},
+    "channel_members.user_id": {"channel_members", "users"},
+    "messages.channel_id": {"messages", "channels"},
+    "messages.user_id": {"messages", "users"},
+    "messages.parent_id": {"messages"},
+    "message_reactions.message_id": {"message_reactions", "messages"},
+    "message_reactions.user_id": {"message_reactions", "users"},
+}
 
 
 def validate(analysis, entries, seed):
@@ -73,6 +86,19 @@ def validate(analysis, entries, seed):
             assert card["Grounding obligation name"] not in names
             names.add(card["Grounding obligation name"])
             assert card["Resolution"] in RESOLUTIONS
+            paths = card["Identifying paths"]
+            assert isinstance(paths, list) and paths, entry["test_id"]
+            assert len({json.dumps(p, sort_keys=True) for p in paths}) == len(paths)
+            for path in paths:
+                assert set(path) == {"entities", "relationships"}
+                entities, relationships = path["entities"], path["relationships"]
+                assert isinstance(entities, list) and entities
+                assert entities[0] == row["referent_entity"]
+                assert set(entities) <= set(seed)
+                assert isinstance(relationships, list) and len(relationships) == len(entities) - 1
+                for left, right, relationship in zip(entities, entities[1:], relationships):
+                    assert relationship in fields
+                    assert PATH_RELATIONSHIPS.get(relationship) == {left, right}, (entry["test_id"], path)
             assert row["assertion_coverage"] in COVERAGE
             assert row["coverage_explanation"] and row["semantic_justification"]
             assert all(1 <= i <= len(assertions) for i in row["assertion_indices"])

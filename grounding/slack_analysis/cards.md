@@ -27,6 +27,14 @@ Only agreed card fields appear inside each JSON block. Test/obligation headings 
       "channels.channel_name"
     ]
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "channels"
+      ],
+      "relationships": []
+    }
+  ],
   "Change-computation attributes": [
     [
       "channels.channel_id"
@@ -63,6 +71,14 @@ Only agreed card fields appear inside each JSON block. Test/obligation headings 
     [
       "users.real_name"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "users"
+      ],
+      "relationships": []
+    }
   ],
   "Change-computation attributes": [
     [
@@ -103,6 +119,14 @@ Only agreed card fields appear inside each JSON block. Test/obligation headings 
       "users.real_name"
     ]
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "users"
+      ],
+      "relationships": []
+    }
+  ],
   "Change-computation attributes": [
     [
       "users.user_id"
@@ -136,6 +160,14 @@ Only agreed card fields appear inside each JSON block. Test/obligation headings 
     [
       "users.real_name"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "users"
+      ],
+      "relationships": []
+    }
   ],
   "Change-computation attributes": [
     [
@@ -183,6 +215,14 @@ No grounding-obligation cards: this task creates a new channel without describin
       "users.real_name"
     ]
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "users"
+      ],
+      "relationships": []
+    }
+  ],
   "Change-computation attributes": [
     [
       "users.user_id"
@@ -214,6 +254,14 @@ No grounding-obligation cards: this task creates a new channel without describin
     [
       "channels.channel_name"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "channels"
+      ],
+      "relationships": []
+    }
   ],
   "Change-computation attributes": [
     [
@@ -252,6 +300,14 @@ No grounding-obligation cards: this task creates a new channel without describin
       "users.real_name"
     ]
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "users"
+      ],
+      "relationships": []
+    }
+  ],
   "Change-computation attributes": [
     [
       "users.user_id"
@@ -289,6 +345,14 @@ No grounding-obligation cards: this task creates a new channel without describin
       "users.real_name"
     ]
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "users"
+      ],
+      "relationships": []
+    }
+  ],
   "Change-computation attributes": [
     [
       "users.user_id"
@@ -317,6 +381,14 @@ No grounding-obligation cards: this task creates a new channel without describin
     [
       "channels.channel_name"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "channels"
+      ],
+      "relationships": []
+    }
   ],
   "Change-computation attributes": [
     [
@@ -351,6 +423,14 @@ No grounding-obligation cards: this task creates a new channel without describin
     [
       "channels.channel_name"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "channels"
+      ],
+      "relationships": []
+    }
   ],
   "Change-computation attributes": [
     []
@@ -388,6 +468,23 @@ No grounding-obligation cards: this task creates a new channel without describin
       "messages.channel_id",
       "messages.message_id"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "messages"
+      ],
+      "relationships": []
+    },
+    {
+      "entities": [
+        "messages",
+        "channels"
+      ],
+      "relationships": [
+        "messages.channel_id"
+      ]
+    }
   ],
   "Change-computation attributes": [
     [
@@ -430,6 +527,23 @@ No grounding-obligation cards: this task creates a new channel without describin
       "messages.channel_id",
       "messages.message_text"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "messages"
+      ],
+      "relationships": []
+    },
+    {
+      "entities": [
+        "messages",
+        "channels"
+      ],
+      "relationships": [
+        "messages.channel_id"
+      ]
+    }
   ],
   "Change-computation attributes": [
     [
@@ -478,6 +592,23 @@ Card protocol: v1.0.1 (focused obligation review).
       "messages.message_text"
     ]
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "messages"
+      ],
+      "relationships": []
+    },
+    {
+      "entities": [
+        "messages",
+        "channels"
+      ],
+      "relationships": [
+        "messages.channel_id"
+      ]
+    }
+  ],
   "Change-computation attributes": [
     [
       "messages.channel_id",
@@ -513,6 +644,23 @@ Card protocol: v1.0.1 (focused obligation review).
       "messages.channel_id",
       "messages.message_text"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "messages"
+      ],
+      "relationships": []
+    },
+    {
+      "entities": [
+        "messages",
+        "channels"
+      ],
+      "relationships": [
+        "messages.channel_id"
+      ]
+    }
   ],
   "Change-computation attributes": [
     [
@@ -555,6 +703,23 @@ Card protocol: v1.0.1 (focused obligation review).
       "messages.message_id"
     ]
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "messages"
+      ],
+      "relationships": []
+    },
+    {
+      "entities": [
+        "messages",
+        "channels"
+      ],
+      "relationships": [
+        "messages.channel_id"
+      ]
+    }
+  ],
   "Change-computation attributes": [
     [
       "messages.channel_id",
@@ -593,6 +758,14 @@ Card protocol: v1.0.1 (focused obligation review).
       "channels.channel_name"
     ]
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "channels"
+      ],
+      "relationships": []
+    }
+  ],
   "Change-computation attributes": [
     []
   ],
@@ -626,6 +799,14 @@ Card protocol: v1.0.1 (focused obligation review).
     [
       "messages.message_text"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "messages"
+      ],
+      "relationships": []
+    }
   ],
   "Change-computation attributes": [
     [
@@ -664,6 +845,14 @@ Card protocol: v1.0.1 (focused obligation review).
       "channels.channel_name"
     ]
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "channels"
+      ],
+      "relationships": []
+    }
+  ],
   "Change-computation attributes": [
     [
       "channels.channel_id"
@@ -695,6 +884,14 @@ Card protocol: v1.0.1 (focused obligation review).
     [
       "users.real_name"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "users"
+      ],
+      "relationships": []
+    }
   ],
   "Change-computation attributes": [
     [
@@ -732,6 +929,14 @@ Card protocol: v1.0.1 (focused obligation review).
       "channels.channel_name"
     ]
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "channels"
+      ],
+      "relationships": []
+    }
+  ],
   "Change-computation attributes": [
     [
       "channels.channel_id"
@@ -763,6 +968,14 @@ Card protocol: v1.0.1 (focused obligation review).
     [
       "channels.channel_name"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "channels"
+      ],
+      "relationships": []
+    }
   ],
   "Change-computation attributes": [
     [
@@ -804,6 +1017,23 @@ Card protocol: v1.0.1 (focused obligation review).
       "messages.user_id",
       "messages.message_text"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "messages"
+      ],
+      "relationships": []
+    },
+    {
+      "entities": [
+        "messages",
+        "channels"
+      ],
+      "relationships": [
+        "messages.channel_id"
+      ]
+    }
   ],
   "Change-computation attributes": [
     [
@@ -852,6 +1082,23 @@ Card protocol: v1.0.1 (focused obligation review).
       "messages.message_text"
     ]
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "messages"
+      ],
+      "relationships": []
+    },
+    {
+      "entities": [
+        "messages",
+        "channels"
+      ],
+      "relationships": [
+        "messages.channel_id"
+      ]
+    }
+  ],
   "Change-computation attributes": [
     [
       "messages.message_text"
@@ -883,6 +1130,14 @@ Card protocol: v1.0.1 (focused obligation review).
     [
       "channels.channel_name"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "channels"
+      ],
+      "relationships": []
+    }
   ],
   "Change-computation attributes": [
     [
@@ -927,6 +1182,23 @@ Card protocol: v1.0.1 (focused obligation review).
       "messages.message_text"
     ]
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "messages"
+      ],
+      "relationships": []
+    },
+    {
+      "entities": [
+        "messages",
+        "channels"
+      ],
+      "relationships": [
+        "messages.channel_id"
+      ]
+    }
+  ],
   "Change-computation attributes": [
     [
       "messages.message_text"
@@ -958,6 +1230,14 @@ Card protocol: v1.0.1 (focused obligation review).
     [
       "users.real_name"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "users"
+      ],
+      "relationships": []
+    }
   ],
   "Change-computation attributes": [
     [
@@ -1003,6 +1283,14 @@ Card protocol: v1.0.1 (focused obligation review).
       "messages.message_text"
     ]
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "messages"
+      ],
+      "relationships": []
+    }
+  ],
   "Change-computation attributes": [
     [
       "messages.message_text"
@@ -1034,6 +1322,14 @@ Card protocol: v1.0.1 (focused obligation review).
     [
       "users.real_name"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "users"
+      ],
+      "relationships": []
+    }
   ],
   "Change-computation attributes": [
     [
@@ -1079,6 +1375,14 @@ Card protocol: v1.0.1 (focused obligation review).
       "messages.message_text"
     ]
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "messages"
+      ],
+      "relationships": []
+    }
+  ],
   "Change-computation attributes": [
     [
       "messages.message_text"
@@ -1114,6 +1418,23 @@ Card protocol: v1.0.1 (focused obligation review).
       "messages.message_text",
       "messages.user_id"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "messages"
+      ],
+      "relationships": []
+    },
+    {
+      "entities": [
+        "messages",
+        "channels"
+      ],
+      "relationships": [
+        "messages.channel_id"
+      ]
+    }
   ],
   "Change-computation attributes": [
     [
@@ -1154,6 +1475,14 @@ Card protocol: v1.0.1 (focused obligation review).
       "messages.parent_id"
     ]
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "messages"
+      ],
+      "relationships": []
+    }
+  ],
   "Change-computation attributes": [
     [
       "messages.channel_id",
@@ -1190,6 +1519,14 @@ Card protocol: v1.0.1 (focused obligation review).
     [
       "channels.channel_name"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "channels"
+      ],
+      "relationships": []
+    }
   ],
   "Change-computation attributes": [
     [
@@ -1228,6 +1565,14 @@ Card protocol: v1.0.1 (focused obligation review).
       "channels.channel_name"
     ]
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "channels"
+      ],
+      "relationships": []
+    }
+  ],
   "Change-computation attributes": [
     [
       "channels.channel_id"
@@ -1265,6 +1610,14 @@ Card protocol: v1.0.1 (focused obligation review).
       "channels.channel_name"
     ]
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "channels"
+      ],
+      "relationships": []
+    }
+  ],
   "Change-computation attributes": [
     [
       "channels.channel_id"
@@ -1296,6 +1649,14 @@ Card protocol: v1.0.1 (focused obligation review).
     [
       "channels.channel_name"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "channels"
+      ],
+      "relationships": []
+    }
   ],
   "Change-computation attributes": [
     [
@@ -1334,6 +1695,14 @@ Card protocol: v1.0.1 (focused obligation review).
       "channels.channel_name"
     ]
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "channels"
+      ],
+      "relationships": []
+    }
+  ],
   "Change-computation attributes": [
     [
       "channels.channel_id"
@@ -1370,6 +1739,14 @@ Card protocol: v1.0.1 (focused obligation review).
     [
       "channels.channel_name"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "channels"
+      ],
+      "relationships": []
+    }
   ],
   "Change-computation attributes": [
     [
@@ -1408,6 +1785,14 @@ Card protocol: v1.0.1 (focused obligation review).
       "channels.channel_name"
     ]
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "channels"
+      ],
+      "relationships": []
+    }
+  ],
   "Change-computation attributes": [
     [
       "channels.channel_id"
@@ -1445,6 +1830,14 @@ Card protocol: v1.0.1 (focused obligation review).
       "channels.channel_name"
     ]
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "channels"
+      ],
+      "relationships": []
+    }
+  ],
   "Change-computation attributes": [
     [
       "channels.channel_id"
@@ -1476,6 +1869,14 @@ Card protocol: v1.0.1 (focused obligation review).
     [
       "users.real_name"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "users"
+      ],
+      "relationships": []
+    }
   ],
   "Change-computation attributes": [
     [
@@ -1516,6 +1917,19 @@ Card protocol: v1.0.1 (focused obligation review).
       "messages.message_text",
       "messages.user_id"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "users",
+        "messages",
+        "channels"
+      ],
+      "relationships": [
+        "messages.user_id",
+        "messages.channel_id"
+      ]
+    }
   ],
   "Change-computation attributes": [
     [
@@ -1562,6 +1976,17 @@ Card protocol: v1.0.1 (focused obligation review).
       "messages.user_id"
     ]
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "users",
+        "messages"
+      ],
+      "relationships": [
+        "messages.user_id"
+      ]
+    }
+  ],
   "Change-computation attributes": [
     [
       "users.user_id"
@@ -1601,6 +2026,14 @@ Card protocol: v1.0.1.
       "users.real_name"
     ]
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "users"
+      ],
+      "relationships": []
+    }
+  ],
   "Change-computation attributes": [
     []
   ],
@@ -1629,6 +2062,14 @@ Card protocol: v1.0.1.
     [
       "users.real_name"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "users"
+      ],
+      "relationships": []
+    }
   ],
   "Change-computation attributes": [
     [
@@ -1671,6 +2112,19 @@ Card protocol: v1.0.1.
       "user_teams.user_id"
     ]
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "users",
+        "user_teams",
+        "teams"
+      ],
+      "relationships": [
+        "user_teams.user_id",
+        "user_teams.team_id"
+      ]
+    }
+  ],
   "Change-computation attributes": [
     [
       "users.real_name"
@@ -1702,6 +2156,14 @@ Card protocol: v1.0.1.
     [
       "channels.channel_name"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "channels"
+      ],
+      "relationships": []
+    }
   ],
   "Change-computation attributes": [
     [
@@ -1743,6 +2205,23 @@ Card protocol: v1.0.1.
       "user_teams.role"
     ]
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "users"
+      ],
+      "relationships": []
+    },
+    {
+      "entities": [
+        "users",
+        "user_teams"
+      ],
+      "relationships": [
+        "user_teams.user_id"
+      ]
+    }
+  ],
   "Change-computation attributes": [
     [
       "users.user_id"
@@ -1774,6 +2253,14 @@ Card protocol: v1.0.1.
     [
       "channels.channel_name"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "channels"
+      ],
+      "relationships": []
+    }
   ],
   "Change-computation attributes": [
     [
@@ -1811,6 +2298,14 @@ Card protocol: v1.0.1.
     [
       "channels.channel_name"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "channels"
+      ],
+      "relationships": []
+    }
   ],
   "Change-computation attributes": [
     [
@@ -1866,6 +2361,17 @@ Card protocol: v1.0.1.
       "messages.channel_id"
     ]
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "messages",
+        "channels"
+      ],
+      "relationships": [
+        "messages.channel_id"
+      ]
+    }
+  ],
   "Change-computation attributes": [
     [
       "messages.message_text"
@@ -1897,6 +2403,14 @@ Card protocol: v1.0.1.
     [
       "channels.channel_name"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "channels"
+      ],
+      "relationships": []
+    }
   ],
   "Change-computation attributes": [
     [
@@ -1938,6 +2452,23 @@ Card protocol: v1.0.1.
       "messages.message_text"
     ]
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "messages"
+      ],
+      "relationships": []
+    },
+    {
+      "entities": [
+        "messages",
+        "channels"
+      ],
+      "relationships": [
+        "messages.channel_id"
+      ]
+    }
+  ],
   "Change-computation attributes": [
     [
       "messages.channel_id",
@@ -1976,6 +2507,14 @@ Card protocol: v1.0.1 (focused obligation review).
     "candidate_sets": null
   },
   "Alternative sufficient identifying sets": null,
+  "Identifying paths": [
+    {
+      "entities": [
+        "channels"
+      ],
+      "relationships": []
+    }
+  ],
   "Answer-computation attributes": null
 }
 ```
@@ -1999,6 +2538,14 @@ Card protocol: v1.0.1 (focused obligation review).
     [
       "channels.channel_name"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "channels"
+      ],
+      "relationships": []
+    }
   ],
   "Change-computation attributes": [
     [
@@ -2033,6 +2580,14 @@ Card protocol: v1.0.1 (focused obligation review).
       "users.real_name"
     ]
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "users"
+      ],
+      "relationships": []
+    }
+  ],
   "Answer-computation attributes": [
     [
       "users.real_name",
@@ -2061,6 +2616,14 @@ Card protocol: v1.0.1 (focused obligation review).
     [
       "users.real_name"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "users"
+      ],
+      "relationships": []
+    }
   ],
   "Answer-computation attributes": [
     [
@@ -2099,6 +2662,14 @@ Card protocol: v1.0.1 (focused obligation review).
     ]
   },
   "Alternative sufficient identifying sets": null,
+  "Identifying paths": [
+    {
+      "entities": [
+        "messages"
+      ],
+      "relationships": []
+    }
+  ],
   "Change-computation attributes": null,
   "Written attributes": []
 }
@@ -2123,6 +2694,14 @@ Card protocol: v1.0.1 (focused obligation review).
     [
       "channels.channel_name"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "channels"
+      ],
+      "relationships": []
+    }
   ],
   "Answer-computation attributes": [
     [
@@ -2165,6 +2744,19 @@ Card protocol: v1.0.1 (focused obligation review).
       "channel_members.user_id"
     ]
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "users",
+        "channel_members",
+        "channels"
+      ],
+      "relationships": [
+        "channel_members.user_id",
+        "channel_members.channel_id"
+      ]
+    }
+  ],
   "Answer-computation attributes": [
     [
       "users.real_name"
@@ -2192,6 +2784,14 @@ Card protocol: v1.0.1 (focused obligation review).
     [
       "messages.message_text"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "messages"
+      ],
+      "relationships": []
+    }
   ],
   "Change-computation attributes": [
     []
@@ -2228,6 +2828,14 @@ Card protocol: v1.0.1 (focused obligation review).
     "candidate_sets": null
   },
   "Alternative sufficient identifying sets": null,
+  "Identifying paths": [
+    {
+      "entities": [
+        "channels"
+      ],
+      "relationships": []
+    }
+  ],
   "Answer-computation attributes": null
 }
 ```
@@ -2251,6 +2859,14 @@ Card protocol: v1.0.1 (focused obligation review).
     [
       "channels.channel_name"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "channels"
+      ],
+      "relationships": []
+    }
   ],
   "Change-computation attributes": [
     []
@@ -2297,6 +2913,14 @@ Card protocol: v1.0.1 (focused obligation review).
   "Alternative sufficient identifying sets": [
     []
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "users"
+      ],
+      "relationships": []
+    }
+  ],
   "Answer-computation attributes": [
     [
       "users.real_name"
@@ -2324,6 +2948,14 @@ Card protocol: v1.0.1 (focused obligation review).
     [
       "channels.channel_name"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "channels"
+      ],
+      "relationships": []
+    }
   ],
   "Change-computation attributes": [
     [
@@ -2357,6 +2989,14 @@ Card protocol: v1.0.1 (focused obligation review).
     [
       "channels.channel_name"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "channels"
+      ],
+      "relationships": []
+    }
   ],
   "Change-computation attributes": [
     []
@@ -2393,6 +3033,19 @@ Card protocol: v1.0.1 (focused obligation review).
       "channel_members.user_id"
     ]
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "users",
+        "channel_members",
+        "channels"
+      ],
+      "relationships": [
+        "channel_members.user_id",
+        "channel_members.channel_id"
+      ]
+    }
+  ],
   "Answer-computation attributes": [
     [
       "users.real_name"
@@ -2420,6 +3073,14 @@ Card protocol: v1.0.1 (focused obligation review).
     [
       "users.real_name"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "users"
+      ],
+      "relationships": []
+    }
   ],
   "Change-computation attributes": [
     [
@@ -2456,6 +3117,14 @@ Card protocol: v1.0.1 (focused obligation review).
       "messages.message_text"
     ]
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "messages"
+      ],
+      "relationships": []
+    }
+  ],
   "Change-computation attributes": [
     []
   ],
@@ -2485,6 +3154,14 @@ Card protocol: v1.0.1 (focused obligation review).
     "candidate_sets": null
   },
   "Alternative sufficient identifying sets": null,
+  "Identifying paths": [
+    {
+      "entities": [
+        "messages"
+      ],
+      "relationships": []
+    }
+  ],
   "Change-computation attributes": null,
   "Written attributes": []
 }
@@ -2510,6 +3187,23 @@ Card protocol: v1.0.1 (focused obligation review).
       "users.real_name",
       "users.user_id"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "messages"
+      ],
+      "relationships": []
+    },
+    {
+      "entities": [
+        "messages",
+        "users"
+      ],
+      "relationships": [
+        "messages.user_id"
+      ]
+    }
   ],
   "Change-computation attributes": [
     []
@@ -2562,6 +3256,14 @@ Card protocol: v1.0.1 (focused obligation review).
   "Alternative sufficient identifying sets": [
     []
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "users"
+      ],
+      "relationships": []
+    }
+  ],
   "Answer-computation attributes": [
     [
       "users.real_name"
@@ -2590,6 +3292,14 @@ Card protocol: v1.0.1 (focused obligation review).
     "candidate_sets": null
   },
   "Alternative sufficient identifying sets": null,
+  "Identifying paths": [
+    {
+      "entities": [
+        "users"
+      ],
+      "relationships": []
+    }
+  ],
   "Change-computation attributes": null,
   "Written attributes": [
     "channel_members.channel_id",
@@ -2620,6 +3330,14 @@ Card protocol: v1.0.1 (focused obligation review).
     "candidate_sets": null
   },
   "Alternative sufficient identifying sets": null,
+  "Identifying paths": [
+    {
+      "entities": [
+        "users"
+      ],
+      "relationships": []
+    }
+  ],
   "Change-computation attributes": null,
   "Written attributes": [
     "channel_members.channel_id",
@@ -2659,6 +3377,19 @@ Card protocol: v1.0.1 (focused obligation review).
       "channel_members.user_id"
     ]
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "users",
+        "channel_members",
+        "channels"
+      ],
+      "relationships": [
+        "channel_members.user_id",
+        "channel_members.channel_id"
+      ]
+    }
+  ],
   "Answer-computation attributes": [
     [
       "users.real_name"
@@ -2697,6 +3428,19 @@ Card protocol: v1.0.1 (focused obligation review).
       "channel_members.channel_id",
       "channel_members.user_id"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "users",
+        "channel_members",
+        "channels"
+      ],
+      "relationships": [
+        "channel_members.user_id",
+        "channel_members.channel_id"
+      ]
+    }
   ],
   "Answer-computation attributes": [
     [
@@ -2742,6 +3486,14 @@ Card protocol: v1.0.1 (focused obligation review).
   "Alternative sufficient identifying sets": [
     []
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "users"
+      ],
+      "relationships": []
+    }
+  ],
   "Answer-computation attributes": [
     [
       "users.real_name"
@@ -2769,6 +3521,14 @@ Card protocol: v1.0.1 (focused obligation review).
     [
       "users.real_name"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "users"
+      ],
+      "relationships": []
+    }
   ],
   "Answer-computation attributes": [
     [
@@ -2800,6 +3560,17 @@ Card protocol: v1.0.1 (focused obligation review).
       "messages.channel_id"
     ]
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "channels",
+        "messages"
+      ],
+      "relationships": [
+        "messages.channel_id"
+      ]
+    }
+  ],
   "Answer-computation attributes": [
     [
       "messages.message_text"
@@ -2827,6 +3598,14 @@ Card protocol: v1.0.1 (focused obligation review).
     [
       "channels.channel_name"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "channels"
+      ],
+      "relationships": []
+    }
   ],
   "Answer-computation attributes": [
     [
@@ -2858,6 +3637,14 @@ Card protocol: v1.0.1 (focused obligation review).
       "users.real_name"
     ]
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "users"
+      ],
+      "relationships": []
+    }
+  ],
   "Change-computation attributes": [
     [
       "users.user_id"
@@ -2886,6 +3673,14 @@ Card protocol: v1.0.1 (focused obligation review).
     [
       "channels.channel_name"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "channels"
+      ],
+      "relationships": []
+    }
   ],
   "Change-computation attributes": [
     [
@@ -2916,6 +3711,14 @@ Card protocol: v1.0.1 (focused obligation review).
       "users.real_name"
     ]
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "users"
+      ],
+      "relationships": []
+    }
+  ],
   "Change-computation attributes": [
     [
       "users.user_id"
@@ -2944,6 +3747,14 @@ Card protocol: v1.0.1 (focused obligation review).
     [
       "channels.channel_name"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "channels"
+      ],
+      "relationships": []
+    }
   ],
   "Change-computation attributes": [
     [
@@ -2999,6 +3810,14 @@ Card protocol: v1.0.1 (focused obligation review).
     ]
   },
   "Alternative sufficient identifying sets": null,
+  "Identifying paths": [
+    {
+      "entities": [
+        "messages"
+      ],
+      "relationships": []
+    }
+  ],
   "Change-computation attributes": null,
   "Written attributes": []
 }
@@ -3042,6 +3861,14 @@ Card protocol: v1.0.1 (focused obligation review).
     ]
   },
   "Alternative sufficient identifying sets": null,
+  "Identifying paths": [
+    {
+      "entities": [
+        "messages"
+      ],
+      "relationships": []
+    }
+  ],
   "Change-computation attributes": null,
   "Written attributes": [
     "messages.message_text"
@@ -3076,6 +3903,14 @@ Card protocol: v1.0.1.
       "users.real_name"
     ]
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "users"
+      ],
+      "relationships": []
+    }
+  ],
   "Answer-computation attributes": [
     [
       "users.real_name",
@@ -3105,6 +3940,14 @@ Card protocol: v1.0.1.
       "users.real_name"
     ]
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "users"
+      ],
+      "relationships": []
+    }
+  ],
   "Answer-computation attributes": [
     [
       "users.real_name",
@@ -3133,6 +3976,14 @@ Card protocol: v1.0.1.
     [
       "channels.channel_name"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "channels"
+      ],
+      "relationships": []
+    }
   ],
   "Answer-computation attributes": [
     [
@@ -3170,6 +4021,17 @@ Card protocol: v1.0.1.
     ]
   },
   "Alternative sufficient identifying sets": null,
+  "Identifying paths": [
+    {
+      "entities": [
+        "channels",
+        "messages"
+      ],
+      "relationships": [
+        "messages.channel_id"
+      ]
+    }
+  ],
   "Answer-computation attributes": null
 }
 ```
@@ -3193,6 +4055,14 @@ Card protocol: v1.0.1.
     [
       "channels.channel_name"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "channels"
+      ],
+      "relationships": []
+    }
   ],
   "Change-computation attributes": [
     [
@@ -3245,6 +4115,17 @@ Card protocol: v1.0.1.
     ]
   },
   "Alternative sufficient identifying sets": null,
+  "Identifying paths": [
+    {
+      "entities": [
+        "messages",
+        "users"
+      ],
+      "relationships": [
+        "messages.user_id"
+      ]
+    }
+  ],
   "Change-computation attributes": null,
   "Written attributes": [
     "message_reactions.message_id",
@@ -3271,6 +4152,14 @@ Card protocol: v1.0.1.
     "candidate_sets": null
   },
   "Alternative sufficient identifying sets": null,
+  "Identifying paths": [
+    {
+      "entities": [
+        "users"
+      ],
+      "relationships": []
+    }
+  ],
   "Change-computation attributes": null,
   "Written attributes": []
 }
@@ -3294,6 +4183,14 @@ Card protocol: v1.0.1.
     "candidate_sets": null
   },
   "Alternative sufficient identifying sets": null,
+  "Identifying paths": [
+    {
+      "entities": [
+        "channels"
+      ],
+      "relationships": []
+    }
+  ],
   "Change-computation attributes": null,
   "Written attributes": []
 }
@@ -3323,6 +4220,14 @@ Card protocol: v1.0.1.
     [
       "channels.channel_name"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "channels"
+      ],
+      "relationships": []
+    }
   ],
   "Answer-computation attributes": [
     [
@@ -3354,6 +4259,14 @@ Card protocol: v1.0.1.
       "channels.channel_name"
     ]
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "channels"
+      ],
+      "relationships": []
+    }
+  ],
   "Answer-computation attributes": [
     [
       "channels.channel_id",
@@ -3384,6 +4297,14 @@ Card protocol: v1.0.1 (focused obligation review).
       "messages.user_id",
       "messages.message_text"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "messages"
+      ],
+      "relationships": []
+    }
   ],
   "Change-computation attributes": [
     []
@@ -3436,6 +4357,14 @@ Card protocol: v1.0.1 (focused obligation review).
     ]
   },
   "Alternative sufficient identifying sets": null,
+  "Identifying paths": [
+    {
+      "entities": [
+        "messages"
+      ],
+      "relationships": []
+    }
+  ],
   "Change-computation attributes": null,
   "Written attributes": []
 }
@@ -3461,6 +4390,23 @@ Card protocol: v1.0.1 (focused obligation review).
       "messages.user_id",
       "messages.message_text"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "messages"
+      ],
+      "relationships": []
+    },
+    {
+      "entities": [
+        "messages",
+        "users"
+      ],
+      "relationships": [
+        "messages.user_id"
+      ]
+    }
   ],
   "Change-computation attributes": [
     []
@@ -3497,6 +4443,14 @@ Card protocol: v1.0.1 (focused obligation review).
       "channels.channel_name"
     ]
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "channels"
+      ],
+      "relationships": []
+    }
+  ],
   "Change-computation attributes": [
     [
       "channels.channel_id",
@@ -3530,6 +4484,14 @@ Card protocol: v1.0.1 (focused obligation review).
     [
       "channels.channel_name"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "channels"
+      ],
+      "relationships": []
+    }
   ],
   "Change-computation attributes": [
     [
@@ -3565,6 +4527,14 @@ Card protocol: v1.0.1 (focused obligation review).
       "users.real_name"
     ]
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "users"
+      ],
+      "relationships": []
+    }
+  ],
   "Answer-computation attributes": [
     [
       "users.real_name",
@@ -3594,6 +4564,14 @@ Card protocol: v1.0.1 (focused obligation review).
       "users.real_name"
     ]
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "users"
+      ],
+      "relationships": []
+    }
+  ],
   "Answer-computation attributes": [
     [
       "users.real_name",
@@ -3622,6 +4600,14 @@ Card protocol: v1.0.1 (focused obligation review).
     [
       "channels.channel_name"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "channels"
+      ],
+      "relationships": []
+    }
   ],
   "Change-computation attributes": [
     [
@@ -3655,6 +4641,14 @@ Card protocol: v1.0.1 (focused obligation review).
       "messages.user_id",
       "messages.message_text"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "messages"
+      ],
+      "relationships": []
+    }
   ],
   "Change-computation attributes": [
     []
@@ -3739,6 +4733,17 @@ Card protocol: v1.0.1 (focused obligation review).
       "messages.channel_id"
     ]
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "messages",
+        "channels"
+      ],
+      "relationships": [
+        "messages.channel_id"
+      ]
+    }
+  ],
   "Change-computation attributes": [
     [
       "messages.message_id",
@@ -3777,6 +4782,14 @@ Card protocol: v1.0.1 (focused obligation review).
       "channels.channel_name"
     ]
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "channels"
+      ],
+      "relationships": []
+    }
+  ],
   "Change-computation attributes": [
     [
       "channels.channel_id"
@@ -3811,6 +4824,17 @@ Card protocol: v1.0.1 (focused obligation review).
       "messages.channel_id"
     ]
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "channels",
+        "messages"
+      ],
+      "relationships": [
+        "messages.channel_id"
+      ]
+    }
+  ],
   "Answer-computation attributes": [
     [
       "messages.message_text"
@@ -3838,6 +4862,14 @@ Card protocol: v1.0.1 (focused obligation review).
     [
       "users.real_name"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "users"
+      ],
+      "relationships": []
+    }
   ],
   "Answer-computation attributes": [
     [
@@ -3867,6 +4899,14 @@ Card protocol: v1.0.1 (focused obligation review).
     [
       "users.real_name"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "users"
+      ],
+      "relationships": []
+    }
   ],
   "Change-computation attributes": [
     [
@@ -3900,6 +4940,14 @@ Card protocol: v1.0.1 (focused obligation review).
     "candidate_sets": null
   },
   "Alternative sufficient identifying sets": null,
+  "Identifying paths": [
+    {
+      "entities": [
+        "channels"
+      ],
+      "relationships": []
+    }
+  ],
   "Change-computation attributes": null,
   "Written attributes": [
     "channel_members.channel_id",
@@ -3927,6 +4975,14 @@ Card protocol: v1.0.1 (focused obligation review).
     [
       "channels.channel_name"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "channels"
+      ],
+      "relationships": []
+    }
   ],
   "Change-computation attributes": [
     [
@@ -3960,6 +5016,14 @@ Card protocol: v1.0.1 (focused obligation review).
       "channels.channel_name"
     ]
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "channels"
+      ],
+      "relationships": []
+    }
+  ],
   "Change-computation attributes": [
     [
       "channels.channel_id"
@@ -3992,6 +5056,14 @@ Card protocol: v1.0.1 (focused obligation review).
     "candidate_sets": null
   },
   "Alternative sufficient identifying sets": null,
+  "Identifying paths": [
+    {
+      "entities": [
+        "channels"
+      ],
+      "relationships": []
+    }
+  ],
   "Answer-computation attributes": null
 }
 ```
@@ -4023,6 +5095,14 @@ Card protocol: v1.0.1.
       "channels.channel_name"
     ]
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "channels"
+      ],
+      "relationships": []
+    }
+  ],
   "Change-computation attributes": [
     []
   ],
@@ -4052,6 +5132,14 @@ Card protocol: v1.0.1.
       "channels.channel_name"
     ]
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "channels"
+      ],
+      "relationships": []
+    }
+  ],
   "Answer-computation attributes": [
     [
       "channels.channel_id",
@@ -4080,6 +5168,14 @@ Card protocol: v1.0.1.
       "messages.message_text"
     ]
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "messages"
+      ],
+      "relationships": []
+    }
+  ],
   "Answer-computation attributes": [
     []
   ]
@@ -4103,6 +5199,14 @@ Card protocol: v1.0.1.
     [
       "messages.message_text"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "messages"
+      ],
+      "relationships": []
+    }
   ],
   "Change-computation attributes": [
     []
@@ -4130,6 +5234,14 @@ Card protocol: v1.0.1.
     [
       "users.real_name"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "users"
+      ],
+      "relationships": []
+    }
   ],
   "Change-computation attributes": [
     [
@@ -4161,6 +5273,14 @@ Card protocol: v1.0.1.
     "candidate_sets": null
   },
   "Alternative sufficient identifying sets": null,
+  "Identifying paths": [
+    {
+      "entities": [
+        "channels"
+      ],
+      "relationships": []
+    }
+  ],
   "Change-computation attributes": null,
   "Written attributes": [
     "channel_members.channel_id",
@@ -4188,6 +5308,14 @@ Card protocol: v1.0.1.
     [
       "users.real_name"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "users"
+      ],
+      "relationships": []
+    }
   ],
   "Change-computation attributes": [
     [
@@ -4223,6 +5351,14 @@ Card protocol: v1.0.1.
       "users.real_name"
     ]
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "users"
+      ],
+      "relationships": []
+    }
+  ],
   "Change-computation attributes": [
     [
       "users.user_id"
@@ -4257,6 +5393,14 @@ Card protocol: v1.0.1.
       "channels.channel_name"
     ]
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "channels"
+      ],
+      "relationships": []
+    }
+  ],
   "Change-computation attributes": [
     []
   ],
@@ -4285,6 +5429,14 @@ Card protocol: v1.0.1.
       "messages.message_text"
     ]
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "messages"
+      ],
+      "relationships": []
+    }
+  ],
   "Change-computation attributes": [
     []
   ],
@@ -4311,6 +5463,14 @@ Card protocol: v1.0.1.
     [
       "messages.message_text"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "messages"
+      ],
+      "relationships": []
+    }
   ],
   "Change-computation attributes": [
     []
@@ -4347,6 +5507,14 @@ Card protocol: v1.0.1 (focused obligation review).
     "candidate_sets": null
   },
   "Alternative sufficient identifying sets": null,
+  "Identifying paths": [
+    {
+      "entities": [
+        "channels"
+      ],
+      "relationships": []
+    }
+  ],
   "Answer-computation attributes": null
 }
 ```
@@ -4370,6 +5538,14 @@ Card protocol: v1.0.1 (focused obligation review).
     [
       "users.real_name"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "users"
+      ],
+      "relationships": []
+    }
   ],
   "Change-computation attributes": [
     [
@@ -4421,6 +5597,14 @@ Card protocol: v1.0.1 (focused obligation review).
   "Alternative sufficient identifying sets": [
     []
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "users"
+      ],
+      "relationships": []
+    }
+  ],
   "Answer-computation attributes": [
     [
       "users.real_name"
@@ -4452,6 +5636,23 @@ Card protocol: v1.0.1 (focused obligation review).
       "messages.message_text",
       "messages.user_id"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "messages"
+      ],
+      "relationships": []
+    },
+    {
+      "entities": [
+        "messages",
+        "channels"
+      ],
+      "relationships": [
+        "messages.channel_id"
+      ]
+    }
   ],
   "Change-computation attributes": [
     [
@@ -4485,6 +5686,14 @@ Card protocol: v1.0.1 (focused obligation review).
       "messages.message_text",
       "messages.user_id"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "messages"
+      ],
+      "relationships": []
+    }
   ],
   "Change-computation attributes": [
     [
@@ -4520,6 +5729,14 @@ Card protocol: v1.0.1 (focused obligation review).
     [
       "channels.channel_name"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "channels"
+      ],
+      "relationships": []
+    }
   ],
   "Change-computation attributes": [
     []
@@ -4557,6 +5774,19 @@ Card protocol: v1.0.1 (focused obligation review).
       "channel_members.user_id"
     ]
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "users",
+        "channel_members",
+        "channels"
+      ],
+      "relationships": [
+        "channel_members.user_id",
+        "channel_members.channel_id"
+      ]
+    }
+  ],
   "Change-computation attributes": [
     [
       "users.real_name"
@@ -4588,6 +5818,14 @@ Card protocol: v1.0.1 (focused obligation review).
     [
       "channels.channel_name"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "channels"
+      ],
+      "relationships": []
+    }
   ],
   "Change-computation attributes": [
     [
@@ -4628,6 +5866,32 @@ Card protocol: v1.0.1 (focused obligation review).
       "messages.channel_id",
       "messages.message_text"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "messages"
+      ],
+      "relationships": []
+    },
+    {
+      "entities": [
+        "messages",
+        "channels"
+      ],
+      "relationships": [
+        "messages.channel_id"
+      ]
+    },
+    {
+      "entities": [
+        "messages",
+        "users"
+      ],
+      "relationships": [
+        "messages.user_id"
+      ]
+    }
   ],
   "Change-computation attributes": [
     [
@@ -4671,6 +5935,36 @@ Card protocol: v1.0.1 (focused obligation review).
       "messages.message_text"
     ]
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "messages"
+      ],
+      "relationships": []
+    },
+    {
+      "entities": [
+        "messages",
+        "channels",
+        "channel_members",
+        "users"
+      ],
+      "relationships": [
+        "messages.channel_id",
+        "channel_members.channel_id",
+        "channel_members.user_id"
+      ]
+    },
+    {
+      "entities": [
+        "messages",
+        "users"
+      ],
+      "relationships": [
+        "messages.user_id"
+      ]
+    }
+  ],
   "Change-computation attributes": [
     [
       "messages.message_text"
@@ -4705,6 +5999,23 @@ Card protocol: v1.0.1 (focused obligation review).
       "messages.channel_id",
       "messages.message_text"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "messages"
+      ],
+      "relationships": []
+    },
+    {
+      "entities": [
+        "messages",
+        "channels"
+      ],
+      "relationships": [
+        "messages.channel_id"
+      ]
+    }
   ],
   "Change-computation attributes": [
     [
@@ -4755,6 +6066,23 @@ Card protocol: v1.0.1 (focused obligation review).
       "channels.is_dm"
     ]
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "channels"
+      ],
+      "relationships": []
+    },
+    {
+      "entities": [
+        "channels",
+        "channel_members"
+      ],
+      "relationships": [
+        "channel_members.channel_id"
+      ]
+    }
+  ],
   "Change-computation attributes": [
     [
       "channels.channel_id",
@@ -4790,6 +6118,14 @@ Card protocol: v1.0.1 (focused obligation review).
       "channels.channel_name"
     ]
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "channels"
+      ],
+      "relationships": []
+    }
+  ],
   "Change-computation attributes": [
     []
   ],
@@ -4820,6 +6156,14 @@ Card protocol: v1.0.1 (focused obligation review).
     [
       "channels.channel_name"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "channels"
+      ],
+      "relationships": []
+    }
   ],
   "Change-computation attributes": [
     [
@@ -4857,6 +6201,25 @@ Card protocol: v1.0.1 (focused obligation review).
       "users.user_id",
       "users.timezone"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "users"
+      ],
+      "relationships": []
+    },
+    {
+      "entities": [
+        "users",
+        "channel_members",
+        "channels"
+      ],
+      "relationships": [
+        "channel_members.user_id",
+        "channel_members.channel_id"
+      ]
+    }
   ],
   "Change-computation attributes": [
     [
@@ -4898,6 +6261,25 @@ Card protocol: v1.0.1 (focused obligation review).
       "message_reactions.reaction_type"
     ]
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "message_reactions"
+      ],
+      "relationships": []
+    },
+    {
+      "entities": [
+        "message_reactions",
+        "messages",
+        "channels"
+      ],
+      "relationships": [
+        "message_reactions.message_id",
+        "messages.channel_id"
+      ]
+    }
+  ],
   "Change-computation attributes": [
     [
       "messages.channel_id",
@@ -4928,6 +6310,14 @@ Card protocol: v1.0.1 (focused obligation review).
     [
       "channels.channel_name"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "channels"
+      ],
+      "relationships": []
+    }
   ],
   "Change-computation attributes": [
     [
@@ -4967,6 +6357,25 @@ Card protocol: v1.0.1 (focused obligation review).
       "users.timezone"
     ]
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "users"
+      ],
+      "relationships": []
+    },
+    {
+      "entities": [
+        "users",
+        "channel_members",
+        "channels"
+      ],
+      "relationships": [
+        "channel_members.user_id",
+        "channel_members.channel_id"
+      ]
+    }
+  ],
   "Change-computation attributes": [
     [
       "users.real_name",
@@ -5005,6 +6414,14 @@ Card protocol: v1.0.1 (focused obligation review).
       "users.real_name"
     ]
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "users"
+      ],
+      "relationships": []
+    }
+  ],
   "Change-computation attributes": [
     [
       "users.user_id"
@@ -5037,6 +6454,14 @@ Card protocol: v1.0.1 (focused obligation review).
       "users.real_name"
     ]
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "users"
+      ],
+      "relationships": []
+    }
+  ],
   "Change-computation attributes": [
     [
       "users.user_id"
@@ -5068,6 +6493,14 @@ Card protocol: v1.0.1 (focused obligation review).
     [
       "users.real_name"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "users"
+      ],
+      "relationships": []
+    }
   ],
   "Change-computation attributes": [
     [
@@ -5117,6 +6550,23 @@ Card protocol: v1.0.1 (focused obligation review).
       "messages.message_text"
     ]
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "messages"
+      ],
+      "relationships": []
+    },
+    {
+      "entities": [
+        "messages",
+        "users"
+      ],
+      "relationships": [
+        "messages.user_id"
+      ]
+    }
+  ],
   "Change-computation attributes": [
     [
       "messages.message_text"
@@ -5157,6 +6607,34 @@ Card protocol: v1.0.1 (focused obligation review).
       "channels.channel_id"
     ]
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "messages"
+      ],
+      "relationships": []
+    },
+    {
+      "entities": [
+        "messages",
+        "users"
+      ],
+      "relationships": [
+        "messages.user_id"
+      ]
+    },
+    {
+      "entities": [
+        "messages",
+        "messages",
+        "channels"
+      ],
+      "relationships": [
+        "messages.parent_id",
+        "messages.channel_id"
+      ]
+    }
+  ],
   "Change-computation attributes": [
     [
       "messages.message_text"
@@ -5192,6 +6670,23 @@ Card protocol: v1.0.1 (focused obligation review).
       "messages.message_text",
       "messages.message_id"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "messages"
+      ],
+      "relationships": []
+    },
+    {
+      "entities": [
+        "messages",
+        "channels"
+      ],
+      "relationships": [
+        "messages.channel_id"
+      ]
+    }
   ],
   "Change-computation attributes": [
     [
@@ -5235,6 +6730,14 @@ Card protocol: v1.0.1 (focused obligation review).
       "messages.message_text"
     ]
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "messages"
+      ],
+      "relationships": []
+    }
+  ],
   "Answer-computation attributes": [
     [
       "messages.message_text"
@@ -5266,6 +6769,17 @@ Card protocol: v1.0.1 (focused obligation review).
       "messages.user_id"
     ]
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "users",
+        "messages"
+      ],
+      "relationships": [
+        "messages.user_id"
+      ]
+    }
+  ],
   "Answer-computation attributes": [
     [
       "users.real_name"
@@ -5293,6 +6807,14 @@ Card protocol: v1.0.1 (focused obligation review).
     [
       "channels.is_archived"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "channels"
+      ],
+      "relationships": []
+    }
   ],
   "Change-computation attributes": [
     [
@@ -5328,6 +6850,14 @@ Card protocol: v1.0.1 (focused obligation review).
       "users.real_name"
     ]
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "users"
+      ],
+      "relationships": []
+    }
+  ],
   "Change-computation attributes": [
     [
       "users.user_id"
@@ -5356,6 +6886,14 @@ Card protocol: v1.0.1 (focused obligation review).
     [
       "channels.channel_name"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "channels"
+      ],
+      "relationships": []
+    }
   ],
   "Change-computation attributes": [
     [
@@ -5402,6 +6940,23 @@ Card protocol: v1.0.1 (focused obligation review).
     ]
   },
   "Alternative sufficient identifying sets": null,
+  "Identifying paths": [
+    {
+      "entities": [
+        "messages"
+      ],
+      "relationships": []
+    },
+    {
+      "entities": [
+        "messages",
+        "channels"
+      ],
+      "relationships": [
+        "messages.channel_id"
+      ]
+    }
+  ],
   "Change-computation attributes": null,
   "Written attributes": [
     "messages.message_text"
@@ -5431,6 +6986,23 @@ Card protocol: v1.0.1 (focused obligation review).
       "messages.channel_id",
       "messages.message_text"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "messages"
+      ],
+      "relationships": []
+    },
+    {
+      "entities": [
+        "messages",
+        "channels"
+      ],
+      "relationships": [
+        "messages.channel_id"
+      ]
+    }
   ],
   "Change-computation attributes": [
     [
@@ -5479,6 +7051,14 @@ Card protocol: v1.0.1 (focused obligation review).
       "messages.message_text"
     ]
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "messages"
+      ],
+      "relationships": []
+    }
+  ],
   "Change-computation attributes": [
     [
       "messages.message_text"
@@ -5516,6 +7096,14 @@ Card protocol: v1.0.1 (focused obligation review).
       "users.real_name"
     ]
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "users"
+      ],
+      "relationships": []
+    }
+  ],
   "Change-computation attributes": [
     [
       "users.user_id"
@@ -5550,6 +7138,14 @@ Card protocol: v1.0.1 (focused obligation review).
       "users.real_name"
     ]
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "users"
+      ],
+      "relationships": []
+    }
+  ],
   "Change-computation attributes": [
     [
       "users.user_id"
@@ -5581,6 +7177,14 @@ Card protocol: v1.0.1 (focused obligation review).
     [
       "users.real_name"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "users"
+      ],
+      "relationships": []
+    }
   ],
   "Change-computation attributes": [
     [
@@ -5614,6 +7218,14 @@ Card protocol: v1.0.1 (focused obligation review).
       "users.real_name"
     ]
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "users"
+      ],
+      "relationships": []
+    }
+  ],
   "Change-computation attributes": [
     [
       "users.user_id"
@@ -5645,6 +7257,14 @@ Card protocol: v1.0.1 (focused obligation review).
     [
       "users.real_name"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "users"
+      ],
+      "relationships": []
+    }
   ],
   "Change-computation attributes": [
     [
@@ -5682,6 +7302,17 @@ Card protocol: v1.0.1 (focused obligation review).
       "messages.message_text",
       "messages.channel_id"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "channels",
+        "messages"
+      ],
+      "relationships": [
+        "messages.channel_id"
+      ]
+    }
   ],
   "Change-computation attributes": [
     [
@@ -5727,6 +7358,25 @@ Card protocol: v1.0.1 (focused obligation review).
       "message_reactions.reaction_type"
     ]
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "message_reactions"
+      ],
+      "relationships": []
+    },
+    {
+      "entities": [
+        "message_reactions",
+        "messages",
+        "channels"
+      ],
+      "relationships": [
+        "message_reactions.message_id",
+        "messages.channel_id"
+      ]
+    }
+  ],
   "Change-computation attributes": [
     [
       "messages.channel_id",
@@ -5757,6 +7407,14 @@ Card protocol: v1.0.1 (focused obligation review).
     [
       "channels.channel_name"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "channels"
+      ],
+      "relationships": []
+    }
   ],
   "Change-computation attributes": [
     [
@@ -5795,6 +7453,25 @@ Card protocol: v1.0.1 (focused obligation review).
       "users.display_name"
     ]
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "users"
+      ],
+      "relationships": []
+    },
+    {
+      "entities": [
+        "users",
+        "channel_members",
+        "channels"
+      ],
+      "relationships": [
+        "channel_members.user_id",
+        "channel_members.channel_id"
+      ]
+    }
+  ],
   "Change-computation attributes": [
     [
       "users.user_id"
@@ -5825,6 +7502,14 @@ Card protocol: v1.0.1 (focused obligation review).
     [
       "channels.channel_name"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "channels"
+      ],
+      "relationships": []
+    }
   ],
   "Change-computation attributes": [
     []
@@ -5860,6 +7545,14 @@ Card protocol: v1.0.1 (focused obligation review).
       "users.real_name"
     ]
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "users"
+      ],
+      "relationships": []
+    }
+  ],
   "Change-computation attributes": [
     [
       "users.user_id"
@@ -5892,6 +7585,14 @@ Card protocol: v1.0.1 (focused obligation review).
       "users.real_name"
     ]
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "users"
+      ],
+      "relationships": []
+    }
+  ],
   "Change-computation attributes": [
     [
       "users.user_id"
@@ -5923,6 +7624,14 @@ Card protocol: v1.0.1 (focused obligation review).
     [
       "users.real_name"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "users"
+      ],
+      "relationships": []
+    }
   ],
   "Change-computation attributes": [
     [
@@ -5961,6 +7670,25 @@ Card protocol: v1.0.1 (focused obligation review).
       "channels.channel_name"
     ]
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "users"
+      ],
+      "relationships": []
+    },
+    {
+      "entities": [
+        "users",
+        "messages",
+        "channels"
+      ],
+      "relationships": [
+        "messages.user_id",
+        "messages.channel_id"
+      ]
+    }
+  ],
   "Change-computation attributes": [
     [
       "users.user_id"
@@ -5995,6 +7723,14 @@ Card protocol: v1.0.1 (focused obligation review).
       "channels.channel_name"
     ]
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "channels"
+      ],
+      "relationships": []
+    }
+  ],
   "Answer-computation attributes": [
     [
       "channels.channel_id",
@@ -6025,6 +7761,14 @@ Card protocol: v1.0.1 (focused obligation review).
     [
       "messages.message_text"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "messages"
+      ],
+      "relationships": []
+    }
   ],
   "Change-computation attributes": [
     [
@@ -6089,6 +7833,23 @@ Card protocol: v1.0.1 (focused obligation review).
     ]
   },
   "Alternative sufficient identifying sets": null,
+  "Identifying paths": [
+    {
+      "entities": [
+        "messages"
+      ],
+      "relationships": []
+    },
+    {
+      "entities": [
+        "messages",
+        "channels"
+      ],
+      "relationships": [
+        "messages.channel_id"
+      ]
+    }
+  ],
   "Change-computation attributes": null,
   "Written attributes": [
     "messages.message_text"
@@ -6122,6 +7883,14 @@ Card protocol: v1.0.1.
     [
       "users.real_name"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "users"
+      ],
+      "relationships": []
+    }
   ],
   "Change-computation attributes": [
     [
@@ -6160,6 +7929,14 @@ Card protocol: v1.0.1.
       "users.real_name"
     ]
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "users"
+      ],
+      "relationships": []
+    }
+  ],
   "Change-computation attributes": [
     [
       "users.user_id",
@@ -6196,6 +7973,14 @@ Card protocol: v1.0.1.
     [
       "users.real_name"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "users"
+      ],
+      "relationships": []
+    }
   ],
   "Change-computation attributes": [
     [
@@ -6234,6 +8019,14 @@ Card protocol: v1.0.1.
       "users.real_name"
     ]
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "users"
+      ],
+      "relationships": []
+    }
+  ],
   "Change-computation attributes": [
     [
       "users.user_id",
@@ -6270,6 +8063,14 @@ Card protocol: v1.0.1.
     [
       "users.real_name"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "users"
+      ],
+      "relationships": []
+    }
   ],
   "Change-computation attributes": [
     [
@@ -6308,6 +8109,14 @@ Card protocol: v1.0.1.
       "users.real_name"
     ]
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "users"
+      ],
+      "relationships": []
+    }
+  ],
   "Change-computation attributes": [
     [
       "users.user_id",
@@ -6345,6 +8154,14 @@ Card protocol: v1.0.1.
       "channels.channel_name"
     ]
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "channels"
+      ],
+      "relationships": []
+    }
+  ],
   "Answer-computation attributes": [
     [
       "channels.channel_id",
@@ -6374,6 +8191,14 @@ Card protocol: v1.0.1.
     [
       "channels.channel_name"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "channels"
+      ],
+      "relationships": []
+    }
   ],
   "Change-computation attributes": [
     [
@@ -6422,6 +8247,14 @@ Card protocol: v1.0.1.
       "channels.is_private"
     ]
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "channels"
+      ],
+      "relationships": []
+    }
+  ],
   "Answer-computation attributes": [
     [
       "channels.is_archived"
@@ -6449,6 +8282,14 @@ Card protocol: v1.0.1.
     [
       "channels.channel_name"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "channels"
+      ],
+      "relationships": []
+    }
   ],
   "Change-computation attributes": [
     [
@@ -6491,6 +8332,17 @@ Card protocol: v1.0.1.
       "messages.channel_id"
     ]
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "messages",
+        "channels"
+      ],
+      "relationships": [
+        "messages.channel_id"
+      ]
+    }
+  ],
   "Change-computation attributes": [
     [
       "messages.channel_id",
@@ -6524,6 +8376,14 @@ Card protocol: v1.0.1.
       "channels.channel_name"
     ]
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "channels"
+      ],
+      "relationships": []
+    }
+  ],
   "Change-computation attributes": [
     [
       "channels.channel_id"
@@ -6555,6 +8415,14 @@ Card protocol: v1.0.1.
     [
       "channels.channel_name"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "channels"
+      ],
+      "relationships": []
+    }
   ],
   "Change-computation attributes": [
     []
@@ -6600,6 +8468,14 @@ Card protocol: v1.0.1.
       "channels.is_dm",
       "channels.is_private"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "channels"
+      ],
+      "relationships": []
+    }
   ],
   "Change-computation attributes": [
     [
@@ -6650,6 +8526,14 @@ Card protocol: v1.0.1.
   "Alternative sufficient identifying sets": [
     []
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "users"
+      ],
+      "relationships": []
+    }
+  ],
   "Change-computation attributes": [
     [
       "users.real_name",
@@ -6686,6 +8570,14 @@ Card protocol: v1.0.1.
     [
       "users.real_name"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "users"
+      ],
+      "relationships": []
+    }
   ],
   "Change-computation attributes": [
     [
@@ -6726,6 +8618,25 @@ Card protocol: v1.0.1.
       "messages.message_id",
       "messages.parent_id"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "messages"
+      ],
+      "relationships": []
+    },
+    {
+      "entities": [
+        "messages",
+        "messages",
+        "channels"
+      ],
+      "relationships": [
+        "messages.parent_id",
+        "messages.channel_id"
+      ]
+    }
   ],
   "Change-computation attributes": [
     [
@@ -6795,6 +8706,23 @@ Card protocol: v1.0.1 (focused obligation review).
     ]
   },
   "Alternative sufficient identifying sets": null,
+  "Identifying paths": [
+    {
+      "entities": [
+        "messages"
+      ],
+      "relationships": []
+    },
+    {
+      "entities": [
+        "messages",
+        "channels"
+      ],
+      "relationships": [
+        "messages.channel_id"
+      ]
+    }
+  ],
   "Change-computation attributes": null,
   "Written attributes": []
 }
@@ -6824,6 +8752,19 @@ Card protocol: v1.0.1 (focused obligation review).
       "messages.parent_id",
       "messages.user_id"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "users",
+        "messages",
+        "channels"
+      ],
+      "relationships": [
+        "messages.user_id",
+        "messages.channel_id"
+      ]
+    }
   ],
   "Change-computation attributes": [
     [
@@ -6866,6 +8807,19 @@ Card protocol: v1.0.1 (focused obligation review).
       "channel_members.user_id",
       "channel_members.channel_id"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "channels",
+        "channel_members",
+        "users"
+      ],
+      "relationships": [
+        "channel_members.channel_id",
+        "channel_members.user_id"
+      ]
+    }
   ],
   "Change-computation attributes": [
     [
@@ -6910,6 +8864,25 @@ Card protocol: v1.0.1 (focused obligation review).
       "message_reactions.reaction_type"
     ]
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "message_reactions"
+      ],
+      "relationships": []
+    },
+    {
+      "entities": [
+        "message_reactions",
+        "messages",
+        "channels"
+      ],
+      "relationships": [
+        "message_reactions.message_id",
+        "messages.channel_id"
+      ]
+    }
+  ],
   "Change-computation attributes": [
     [
       "messages.channel_id",
@@ -6941,6 +8914,14 @@ Card protocol: v1.0.1 (focused obligation review).
       "channels.channel_name"
     ]
   ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "channels"
+      ],
+      "relationships": []
+    }
+  ],
   "Change-computation attributes": [
     []
   ],
@@ -6969,6 +8950,14 @@ Card protocol: v1.0.1 (focused obligation review).
     [
       "channels.channel_name"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "channels"
+      ],
+      "relationships": []
+    }
   ],
   "Change-computation attributes": [
     [
@@ -7009,6 +8998,23 @@ Card protocol: v1.0.1 (focused obligation review).
       "channel_members.channel_id",
       "channel_members.user_id"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "channels"
+      ],
+      "relationships": []
+    },
+    {
+      "entities": [
+        "channels",
+        "channel_members"
+      ],
+      "relationships": [
+        "channel_members.channel_id"
+      ]
+    }
   ],
   "Change-computation attributes": [
     [
@@ -7051,6 +9057,25 @@ Card protocol: v1.0.1 (focused obligation review).
       "channels.channel_id",
       "channels.is_dm"
     ]
+  ],
+  "Identifying paths": [
+    {
+      "entities": [
+        "users"
+      ],
+      "relationships": []
+    },
+    {
+      "entities": [
+        "users",
+        "channel_members",
+        "channels"
+      ],
+      "relationships": [
+        "channel_members.user_id",
+        "channel_members.channel_id"
+      ]
+    }
   ],
   "Change-computation attributes": [
     [
