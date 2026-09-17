@@ -32,7 +32,9 @@ It preserves the saved writer sketch, translates its selector, instantiates ever
 row plus filler, and assembles the card and task line. Fixed checks recompute the
 entire seed; an independent model reviews semantic fidelity. The W01 pilot needed
 one automatic binding repair and one explicitly manual annotation correction.
-The native load/read check uses no LLM. No new solver exposure is measured here.
+The native load/read check uses no LLM. A subsequent
+[W01 solver/evaluator run](../../experiments/slack_campaign/compiler_pilot_01/execution_review.md)
+completed correctly and exposed no grounding failure; the evaluator agreed.
 
 The [methods document](../../experiments/slack_campaign/campaign_02/methods.md)
 records manual versus automated work, coverage accounting, repair passes and

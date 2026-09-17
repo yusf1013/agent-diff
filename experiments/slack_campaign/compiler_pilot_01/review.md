@@ -3,7 +3,9 @@
 W01 compiled successfully after one automatic binding repair and one manually
 identified card-annotation repair. Its seed, request and selector were unchanged
 across those repairs. This is one development example, not an autonomous success
-rate or evidence of solver failure. No solver or evaluator was run.
+rate. The subsequent [solver and evaluator run](execution_review.md) succeeded:
+exactly two requested reactions, grounding demonstrated correct, no failure exposed.
+The construction-stage findings and costs below remain as originally recorded.
 
 ## Input and resulting world
 

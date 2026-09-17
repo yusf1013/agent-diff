@@ -1,0 +1,8 @@
+I identified Priya's user ID (U_PRIYA) and reviewed all messages in the #general channel along with their reactions. I found two messages where Priya reacted with 🙌 (raised_hands):
+
+1. "Budget review for Q3 initiatives" (by U_SARA)
+2. "Rocket specs draft - initial thoughts on payload design" (by U_ALEX)
+
+(Note: two other messages had raised_hands reactions, but those were from U_DIEGO, not Priya, so they were excluded.)
+
+I successfully added the 🚀 (rocket) reaction to both qualifying messages, confirmed via reactions.get that the rocket emoji now appears alongside Priya's raised_hands reaction on each.
