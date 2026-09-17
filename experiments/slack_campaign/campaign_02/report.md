@@ -2,7 +2,7 @@
 
 Updated 2026-09-17T06:30:58.712027+00:00.
 
-The bounded campaign is complete. Unresolved and unrealized attempts are retained as outcomes, not successful tests.
+This development run has ended; the requested evaluation is not complete. G2 mutation remains a six-source pilot, and G3 authoring and quality checks are under review before further generation. Preserve all attempts, costs and original denominators. Unresolved and unrealized attempts remain outcomes, not successful tests. See the [current work status](../../../grounding/slack_campaign/README.md).
 
 The domain model, baseline cards, baseline ground truth and manual audits are human/Codex work. Writer, compiler, reviewer, solver and evaluator calls use Sonnet 5 on Bedrock. Baseline run labels enter only G4. The earlier `pilot_01` is preserved separately and excluded from these yields. See [methods](methods.md) and [all cases](campaign_results.md).
 
@@ -150,6 +150,6 @@ Input/context repetition is substantial: authoring/review conversations repeated
 
 The main limitations are incomplete route realization, secondary-workspace discovery limits, semantic annotation errors, and uneven negative-example strength. Some long absent queries can be settled at an early empty join and therefore provide a weaker depth challenge. The shared seed leads to repeated names/topics. Role-report tasks can expose only the distinctions supported by API flags; identity-grounding findings do not certify every reported role attribute. [Runtime qualifications](runtime_qualifications.md).
 
-[Final mechanical/provenance checks](final_validation.json) verify the accepted artifacts, version-matched manual audits and evidence links. The experiment provides results for all four goals; it does not claim complete coverage, perfect generation, a mutation-induced failure increase, or held-out oracle generalization. Source cards and oracle policies were developed with some of these baseline cases.
+[Final mechanical/provenance checks](final_validation.json) verify the recorded accepted artifacts, version-matched manual audits and evidence links; they do not certify generation quality or completion of the requested goals. G2 mutation remains incomplete, and G3 requires renewed authoring calibration. The recorded measurements do not establish complete coverage, a mutation-induced failure increase, or held-out oracle generalization. Source cards and oracle policies were developed with some of these baseline cases.
 
 To rebuild this report without model calls, run `python -m grounding.slack_campaign.build_report --final` with the configured project Python environment. [Methods](methods.md) explain the authoring, validation, runtime and provenance boundaries. All native requests/responses and available summarized thinking blocks remain beside their stage artifacts.

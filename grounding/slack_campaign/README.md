@@ -1,12 +1,23 @@
 # Slack G1–G4 campaign
 
-Current results: [campaign report](../../experiments/slack_campaign/campaign_02/report.md).
+Recorded development results: [campaign report](../../experiments/slack_campaign/campaign_02/report.md).
+The run has ended, but the requested evaluation is not complete: G2 mutation
+remains a six-source pilot, and G3 authoring and quality checks are being revisited
+with the user. Preserve all attempts, costs and original denominators. The
+recorded cases and quality labels are evidence for that review, not an approved
+generation method to scale again.
+
+The next step is discussion and calibration of a conceptual writer that returns
+a natural-language request and an environment table. Its replacement instructions
+and input contract have not yet been finalized. Keep future experiments separate
+from `campaign_02`; do not resume the paid commands below as part of housekeeping.
+
 The [methods document](../../experiments/slack_campaign/campaign_02/methods.md)
 records manual versus automated work, coverage accounting, repair passes and
 provenance limits. The superseded one-author pilot is documented separately in
 [HISTORICAL_PILOT.md](HISTORICAL_PILOT.md); its constraints are not the current policy.
 
-## Current workflow
+## Recorded campaign_02 workflow
 
 1. Code assigns a retained complete route and resolution mode. The writer receives
    the existing Slack seed, real model/schema and API context.
@@ -37,7 +48,7 @@ assistant/thinking blocks intact. Historical outputs and costs are never replace
 | File | Purpose |
 |---|---|
 | [workflow.py](workflow.py) | Fixed route/mode plan; writer, compiler, reviewer; source-preserving mutation assembly |
-| [prompts/v2/](prompts/v2/) | Current general step-by-step role instructions |
+| [prompts/v2/](prompts/v2/) | Recorded development instructions; redesign pending |
 | [route_contract.py](route_contract.py) | Mechanical route variables and real foreign-key relationships |
 | [selection.py](selection.py), [validate.py](validate.py) | Finite seed query, field/key/card/link checks |
 | [bedrock.py](bedrock.py) | Native recorded conversation and token usage |
