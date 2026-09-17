@@ -36,13 +36,28 @@ def parse_json(text):
 
 class Conversation:
     def __init__(self, folder, system, *, model='us.anthropic.claude-sonnet-5',
-                 region='us-west-1', effort='medium', max_tokens=24000):
+                 region='us-west-1', effort='medium', max_tokens=24000,
+                 output_format='json', cache_system=False):
+        """Record one conversation, optionally returning plain Markdown/text.
+
+        With cache_system=True, ``system`` must be the shared static prefix;
+        put case-specific information in ask(). Native usage records show
+        whether that prefix actually meets the model's caching minimum.
+        """
+        if output_format not in ('json', 'text', 'markdown'):
+            raise ValueError('output_format must be json, text, or markdown')
         self.folder = Path(folder)
         self.folder.mkdir(parents=True, exist_ok=False)
         self.model, self.region = model, region
+        self.output_format = output_format
+        # Native InvokeModel explicit caching, default five-minute TTL:
+        # https://docs.aws.amazon.com/bedrock/latest/userguide/prompt-caching.html
+        system_blocks = ([{'type': 'text', 'text': system,
+                           'cache_control': {'type': 'ephemeral'}}]
+                         if cache_system else system)
         self.body = {'anthropic_version': 'bedrock-2023-05-31', 'max_tokens': max_tokens,
                      'thinking': {'type': 'adaptive', 'display': 'summarized'},
-                     'output_config': {'effort': effort}, 'system': system, 'messages': []}
+                     'output_config': {'effort': effort}, 'system': system_blocks, 'messages': []}
         self.turn = 0
         (self.folder / 'instructions.md').write_text(system)
 
@@ -63,6 +78,8 @@ class Conversation:
         obj.body['messages'].append({'role': 'assistant', 'content': response['content']})
         obj.model, obj.region = info['model'], info['region']
         obj.turn = info['turn']
+        # Historical conversations predate explicit output-format provenance.
+        obj.output_format = info.get('output_format', 'json')
         return obj
 
     def ask(self, message):
@@ -74,6 +91,7 @@ class Conversation:
         save(out / 'request.json', body)
         summary = {'started_utc': datetime.now(timezone.utc).isoformat(), 'model': self.model,
                    'region': self.region, 'turn': self.turn, 'status': 'running',
+                   'output_format': self.output_format,
                    'request_sha256': hashlib.sha256(json.dumps(body).encode()).hexdigest(),
                    'usage': None, 'cost_usd': None,
                    'cost_note': 'Native token usage; Bedrock supplies no dollar figure.',
@@ -102,11 +120,15 @@ class Conversation:
             save(out / 'conversation.json', self.body['messages'])
             if summary['status'] != 'returned':
                 raise RuntimeError('Incomplete model response: ' + str(raw.get('stop_reason')))
-            try:
-                parsed = parse_json(text)
-                save(out / 'output.json', parsed)
-            except ValueError as exc:
-                summary['parse_error'] = str(exc)
+            if self.output_format == 'json':
+                try:
+                    parsed = parse_json(text)
+                    save(out / 'output.json', parsed)
+                except ValueError as exc:
+                    summary['parse_error'] = str(exc)
+            else:
+                parsed = text
+                (out / 'output.md').write_text(text)
         except Exception as exc:
             summary['status'] = 'error' if summary['status'] == 'running' else summary['status']
             summary['error'] = f'{type(exc).__name__}: {exc}'
@@ -116,5 +138,6 @@ class Conversation:
             summary['elapsed_seconds'] = round(time.monotonic() - started, 3)
             save(out / 'summary.json', summary)
         if parsed is None:
-            raise RuntimeError(f'No complete JSON at {out}: ' + str(summary.get('error', summary.get('parse_error'))))
+            kind = 'JSON' if self.output_format == 'json' else 'text'
+            raise RuntimeError(f'No complete {kind} at {out}: ' + str(summary.get('error', summary.get('parse_error'))))
         return parsed

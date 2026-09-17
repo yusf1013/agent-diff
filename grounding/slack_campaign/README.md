@@ -7,10 +7,14 @@ with the user. Preserve all attempts, costs and original denominators. The
 recorded cases and quality labels are evidence for that review, not an approved
 generation method to scale again.
 
-The next step is discussion and calibration of a conceptual writer that returns
-a natural-language request and an environment table. Its replacement instructions
-and input contract have not yet been finalized. Keep future experiments separate
-from `campaign_02`; do not resume the paid commands below as part of housekeeping.
+A replacement conceptual writer now returns a natural-language request and an
+environment table, with only the assigned resolution-mode instructions injected.
+Its [ten first outputs](../../experiments/slack_campaign/writer_pilot_03/outputs.md)
+and [manual review](../../experiments/slack_campaign/writer_pilot_03/review.md) are
+ready for discussion. This is a writer-only development pilot: several sketches
+need repair before compilation, and no generation-quality or exposure-rate claim
+is established. Keep experiments separate from `campaign_02`; do not resume the
+paid commands below as part of housekeeping.
 
 The [methods document](../../experiments/slack_campaign/campaign_02/methods.md)
 records manual versus automated work, coverage accounting, repair passes and
@@ -47,6 +51,7 @@ assistant/thinking blocks intact. Historical outputs and costs are never replace
 
 | File | Purpose |
 |---|---|
+| [concept_writer.py](concept_writer.py), [prompts/v3/](prompts/v3/) | Seed-free conceptual Markdown writer pilot; deterministic mode injection and shared-prefix caching |
 | [workflow.py](workflow.py) | Fixed route/mode plan; writer, compiler, reviewer; source-preserving mutation assembly |
 | [prompts/v2/](prompts/v2/) | Recorded development instructions; redesign pending |
 | [route_contract.py](route_contract.py) | Mechanical route variables and real foreign-key relationships |
@@ -84,7 +89,28 @@ they are research orchestration, not a portable multi-domain scheduler. Exact
 requests/settings are saved beside every invocation; the latest prompt files do
 not retroactively describe earlier calls.
 
-## Paid execution
+## Conceptual writer pilot
+
+The writer receives the adopted conceptual model, a short capability brief,
+directional route relationships and the assigned mode/counts. It receives no seed,
+physical schema, solver result or evaluation label. Markdown is its deliverable;
+JSON files in the experiment directory record assignments, requests and usage.
+The first two substantive calls verify native cache reuse before the remaining
+eight run in parallel. All ten first outputs are preserved, without semantic
+retries. This entrypoint does not invoke a compiler, reviewer or solver.
+
+```sh
+# Prepare inspectable inputs locally, without calling a model.
+python -m grounding.slack_campaign.concept_writer
+# Explicit paid execution; choose a new folder when changing inputs.
+python -m grounding.slack_campaign.concept_writer --run --concurrency 8
+```
+
+The default folder is `experiments/slack_campaign/writer_pilot_03`. Existing
+returned outputs are reused; differing input files are rejected. Changing an
+instruction requires a new experiment folder to preserve provenance.
+
+## Historical campaign paid execution
 
 Construction and execution require configured AWS credentials for Sonnet 5 in
 `us-west-1`. Execution additionally requires the repository backend and PostgreSQL,
@@ -107,7 +133,7 @@ clones after checking ownership.
 ## Validation
 
 ```sh
-python -m unittest grounding.slack_campaign.test_workflow grounding.slack_campaign.test_validation grounding.slack_campaign.test_generate grounding.slack_campaign.test_verify_access
+python -m unittest grounding.slack_campaign.test_bedrock grounding.slack_campaign.test_concept_writer grounding.slack_campaign.test_workflow grounding.slack_campaign.test_validation grounding.slack_campaign.test_generate grounding.slack_campaign.test_verify_access
 ```
 
 `test_runtime` additionally uses `CAMPAIGN_TEST_DATABASE_URL` for actual local API
@@ -117,5 +143,6 @@ boundaries, complete API observability, or a reviewer’s semantic judgment.
 Bedrock provides native input/output/cache token usage here, not billed dollars.
 The report labels its historical-rate cost conversion as our estimate and lists
 calls whose usage was not returned. Solver caching is recorded; authoring calls
-in this campaign did not use prompt caching. Both repeated context and repair
-costs remain in the ledger.
+in historical `campaign_02` did not use prompt caching. The conceptual writer
+pilot does use caching, with native hits recorded for calls 2–10. Both repeated
+context and repair costs remain in the respective ledgers.
