@@ -52,6 +52,7 @@ assistant/thinking blocks intact. Historical outputs and costs are never replace
 | File | Purpose |
 |---|---|
 | [concept_writer.py](concept_writer.py), [prompts/v3/](prompts/v3/) | Seed-free conceptual Markdown writer pilot; deterministic mode injection and shared-prefix caching |
+| [concept_reflect.py](concept_reflect.py) | One common self-review follow-up in each original writer conversation; no case-specific diagnoses supplied |
 | [workflow.py](workflow.py) | Fixed route/mode plan; writer, compiler, reviewer; source-preserving mutation assembly |
 | [prompts/v2/](prompts/v2/) | Recorded development instructions; redesign pending |
 | [route_contract.py](route_contract.py) | Mechanical route variables and real foreign-key relationships |
@@ -110,6 +111,25 @@ The default folder is `experiments/slack_campaign/writer_pilot_03`. Existing
 returned outputs are reused; differing input files are rejected. Changing an
 instruction requires a new experiment folder to preserve provenance.
 
+The reflection experiment continues those conversations once, retaining the native
+assistant/thinking blocks and original settings. It reviews all ten cases to expose
+both repairs and regressions. Original artifacts are hashed before execution and
+checked afterward; incomplete follow-ups are preserved rather than retried.
+
+```sh
+# Freeze the generic follow-up and original hashes; no paid calls.
+python -m grounding.slack_campaign.concept_reflect
+# One paid native continuation per original case; reuses returned second turns.
+python -m grounding.slack_campaign.concept_reflect --run --concurrency 8
+```
+
+Second responses are under each writer's `turn-02/`. The `reflection/` directory
+contains the exact follow-up, provenance, incremental usage and manual comparison.
+Read the [reflection comparison](../../experiments/slack_campaign/writer_pilot_03/reflection/review.md)
+and [all second-turn outputs](../../experiments/slack_campaign/writer_pilot_03/reflection/outputs.md).
+The experiment's root usage ledger includes both first and second turns. This is
+an author review experiment, not evidence of runnable-test validity or solver failure.
+
 ## Historical campaign paid execution
 
 Construction and execution require configured AWS credentials for Sonnet 5 in
@@ -133,7 +153,7 @@ clones after checking ownership.
 ## Validation
 
 ```sh
-python -m unittest grounding.slack_campaign.test_bedrock grounding.slack_campaign.test_concept_writer grounding.slack_campaign.test_workflow grounding.slack_campaign.test_validation grounding.slack_campaign.test_generate grounding.slack_campaign.test_verify_access
+python -m unittest grounding.slack_campaign.test_bedrock grounding.slack_campaign.test_concept_writer grounding.slack_campaign.test_concept_reflect grounding.slack_campaign.test_workflow grounding.slack_campaign.test_validation grounding.slack_campaign.test_generate grounding.slack_campaign.test_verify_access
 ```
 
 `test_runtime` additionally uses `CAMPAIGN_TEST_DATABASE_URL` for actual local API

@@ -119,7 +119,8 @@ the actor's own reaction. This is a story-design choice, not an unavoidable limi
 | Unit checks | 47 passed |
 
 Cost is our rate conversion of native Bedrock usage, not an invoice amount. See
-[usage summary](usage_summary.json), [all-call ledger](usage_ledger.json),
+[first-pass usage summary](reflection/initial_usage_summary.json),
+[first-pass ledger](reflection/initial_usage_ledger.json),
 [cache check](cache_check.json) and [run status](run_status.json). Every call retains
 its request, native response, metadata and exposed thinking beside the Markdown.
 The test suite covers adapter caching/text output, conversation preservation,
@@ -140,3 +141,8 @@ and re-evaluate those roots against only the conditions actually written in the
 request. Capability checking should also happen before committing to the downstream
 answer. These are development recommendations, not changes already applied or
 additional paid runs. Preserve this first-pass result as the comparison point.
+
+A subsequent, separately authorized self-reflection experiment appends `turn-02`
+to these conversations. Its results are recorded under `reflection/`; the root
+usage ledger now accounts for both rounds. This document remains the first-pass
+assessment.
