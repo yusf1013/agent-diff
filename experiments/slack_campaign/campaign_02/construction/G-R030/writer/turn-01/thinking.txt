@@ -1,0 +1,30 @@
+I'm mapping out the task through the CONVERSATION_MEMBERSHIP → CONVERSATION → WORKSPACE → WORKSPACE_MEMBERSHIP route, treating CONVERSATION_MEMBERSHIP as the referent entity with an underspecified resolution mode since it involves workspace affiliation tied to a channel or its participants, who could be a member, message author, or reaction contributor.
+
+I'm thinking of using name ambiguity as the underspecifier: two people named "Robert" in the same workspace T01WORKSPACE — Robert Walsh (admin, member of general/random/engineering channels) and Robert Chen (member, part of several dev-related channels) — which creates a natural two-referent-set ambiguity without stating it outright. I considered "Morgan" as an alternative but Robert fits the workspace-membership route more cleanly.
+
+The exposure requirement points to identifying the conversation membership records themselves, reached via workspace membership as the qualifying evidence rather than identifying the person directly. So a natural phrasing like "Robert's part of our workspace—can you pull the channels he currently belongs to?" works well, since it resolves to two distinct answer sets depending on which Robert is meant: Walsh's {general, random, engineering} versus Chen's {project-alpha-dev, core-infra, model-research...}.
+
+Now I'm defining each obligation as a set of channel_members roles tied to Robert's respective memberships, one role per channel per candidate Robert, since the referent table is conversation membership and roles must stay scoped to that table.
+
+I'm compiling candidate_role_sets grouping Robert Walsh's memberships separately from Robert Chen's, then taking the union of all these into target_roles. I should also consider adding negative roles for people who share the first name "Robert" but aren't real matches, to stress-test the disambiguation.
+
+There's no "Bob" nickname to worry about, so I'll skip that confusion. A more useful negative to note is that channel membership requires an actual join record rather than just message authorship, and I could mention Carlos Vega (display name "El Incognito") as an unrelated distractor.
+
+Since the seed doesn't actually contain a third person like "Robert" with zero conversation memberships, I shouldn't fabricate one — better to work with what's already in the seed rather than introduce new coherent records that might not fit.
+
+Since only one workspace exists in the seed, the workspace binding doesn't add differentiating power on its own; it just confirms which "Robert" is part of "our workspace," satisfying the binding requirement without needing a multi-workspace setup. Now I need to think through plausible false candidates to build negatives against.
+
+I'll settle on just the two existing Roberts as the ambiguous set rather than introducing a third, keeping the underspecification clean and matching the original setup.
+
+I don't think we need more negatives since the ambiguity itself resolves the answer clearly - one negative noting bots like "Agent" aren't relevant is sufficient. Now I'll draft the final JSON, using a binding note explaining that workspace membership identifies the person named Robert, and that two people sharing that first name create two distinct candidate sets of channel memberships.
+
+For roles, I'll list the workspace as supporting context, then each Robert (Walsh and Chen) as supporting user entities needed to bind names to their respective conversation membership rows, followed by the actual channel_members matches for each candidate.
+
+Since the query is underspecified between the two possible channel memberships, I'm marking each candidate membership row (Robert Walsh in general, Robert Walsh in random) as "alternative" selections in channel_members rather than a single definitive match.
+
+I'm also identifying the two candidate people themselves, then flagging negatives: the bot agent isn't named Robert, and I'm considering whether another differently-named user might also serve as a negative example.
+
+That's just absence of membership, not a stored negative, so I'll skip it. I think the roles I've defined are sufficient, so I'll finalize the structure: one obligation targeting the channel_members table, read-only, scoped to channels a person first-named Robert belongs to, with target roles covering all eight alternative role variants across both Robert Walsh and Robert Chen candidates, selected as a set.
+
+The access plan involves using conversations.list/users.list/users.info to find users named Robert, then checking their channel memberships via conversations.members or users.conversations. I'll finalize the prompt as: "Robert is part of our workspace — could you pull together the list of channels he currently belongs to?"
+

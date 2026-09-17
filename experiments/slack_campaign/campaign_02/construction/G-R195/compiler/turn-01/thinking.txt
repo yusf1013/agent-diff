@@ -1,0 +1,18 @@
+This is an "absent" obligation case - no reaction should satisfy both the message and emoji condition, so I need negative records inserted alongside the existing eyes reaction in the base seed. The target message matches the CUDA pprof delta message already present, so I need to insert the wrong_emoji_reaction and wrong_message_reaction records accordingly.
+
+For U_OLENA, she's already a channel member of C_INFRA with no reaction, so her negative role just confirms existing state without needing a new insert. Now I'm working out the selector logic for the reactor_membership obligation, tracing the path from workspace to channel to the CUDA limit message and its reaction condition.
+
+Since no reaction actually matches both criteria, the result correctly comes back empty. I'm designing the query path from user_teams through teams, channels, messages, and message_reactions to users, defining the join conditions that connect each table via their foreign keys.
+
+Actually I need to reconsider the path direction: starting from user_teams, joining to users on user_id, then reversing into message_reactions via user_id, then messages via message_id, then channels via channel_id — filtering for channel 'core-infra', the CUDA message text, and the checkmark reaction type. That gives a cleaner path: user_teams → users → message_reactions → messages → channels.
+
+Since this scenario tests for absence, running this selector should correctly return no results, since no white_check_mark reaction actually exists on that message.
+
+I'll also add a scope filter for team_id at the root level since user_teams is the root table. For the message filter, I should switch from a text-contains match to an exact eq on message_id using the target message's precise timestamp, since that's more precise than matching on message text.
+
+I'm assembling the final selector object now, joining user_teams through users and message_reactions to messages and channels, with filters for the channel name, exact message_id, and the checkmark reaction type. Then I'm planning the seed edits: inserting two message_reactions rows, one with a wrong emoji and one referencing an incorrect but existing message from the base seed data.
+
+Now I'm defining the specific values for these seeded rows and mapping role labels to their concrete native identifiers—workspace, channel, target message, the two wrong reactions, and an unrelated channel member—before turning to negative referents rooted in the user_teams membership entity.
+
+The negative referents are the plausible-but-wrong user_teams rows: those for U_LUKAS, U_PRIYA, and U_OLENA, each expressed as composite keys with team_id T01WORKSPACE, since these users are involved in the wrong-reaction and unrelated-membership scenarios but shouldn't be the correct answer.
+

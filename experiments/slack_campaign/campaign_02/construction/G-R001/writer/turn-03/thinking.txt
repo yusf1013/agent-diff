@@ -1,0 +1,26 @@
+I'm noticing the seed only has a single workspace, T01WORKSPACE, which is a problem since the CONVERSATION→WORKSPACE route needs multiple workspaces to meaningfully distinguish which one a channel belongs to.
+
+The domain model confirms there's no way to look up or enumerate workspaces by name via the API, so ambiguity has to be resolved structurally rather than through search. Since the guidance allows adding coherent ordinary records where necessary, I'm planning to add a second workspace with a channel that shares a name with an existing one, creating genuine ambiguity that only the workspace context can resolve.
+
+That clarifies the design: the same channel name existing across two workspaces means only a workspace ID qualifier can disambiguate, satisfying the discoverability rule since the actor's own visible workspace ID substitutes for name-based lookup. I'll add a second team with an identically-named channel to force this disambiguation naturally.
+
+Actually the workspace really needs to be the true discriminator, so the two channels should share nearly identical name and topic wording, differing only by which workspace they belong to — otherwise topic alone would resolve the ambiguity and workspace would just be incidental.
+
+AR labeled "Northstar Client Workspace," with a matching channel "core-infra-eu" that has similar topic wording about Kubernetes/AWS/on-call but for the EU region. I need to decide whether the actor bot should have membership in this channel too, since discoverability depends on whether conversations.list requires an explicit team_id to distinguish between the two workspaces.
+
+The request should reference the target workspace explicitly, either by team_id or by an identifying phrase like "our primary workspace" versus "the Northstar workspace," since there's no name-lookup API but users naturally know their own workspace's name.
+
+A cleaner solution occurs to me: make the actor a member of only one of the two similarly-themed channels across workspaces, so "our workspace" resolves implicitly through the bot's own channel memberships rather than needing a name lookup. That way discovering the right channel to archive naturally scopes to what's accessible, sidestepping the missing team-lookup problem entirely.
+
+I'll add a negative example: a similarly-named channel C_INFRA_EU in a different workspace that the actor isn't a member of, so it won't surface in the actor's own conversation listing even though its topic partially overlaps. This confirms the workspace-scoping matters — without it, the topic alone could match two channels, but only one sits within the actor's accessible workspace. The access plan then relies on the actor's own conversations list to discover candidates scoped to their team.
+
+This aligns with preferring open-ended discovery through the bot's own conversation list rather than a supplied candidate set. For roles, I'll keep the target as C_INFRA and add C_INFRA_EU in the Northstar workspace as a "wrong workspace" negative that's topically similar but distinguishable by team membership, alongside the existing topic-based negatives, and introduce workspace_scope and other_workspace roles to capture this distinction.
+
+Since candidate_role_sets doesn't apply here (single mode, not underspecified), I'll set it null and add a second team role, "team_northstar," representing the new Northstar Partner Workspace team that needs to be introduced as a fresh seed addition.
+
+I'm deliberately excluding any channel_members addition tying the actor to Northstar, since keeping that restriction is essential to the scenario. The binding_note needs to clarify that resolving the channel depends on workspace membership boundaries, since a similarly-topic channel exists in a workspace the actor doesn't belong to — this justifies slightly adjusting the prompt to include "in our workspace" to fix what was otherwise a defective route.
+
+For the obligations, target_roles should stay limited to the referent entity (target_conversation), with negative candidate channels treated as non-referent entries of the same table type. The access_plan should use a conversations-listing call scoped to the workspace to enumerate channels, then filter by topic.
+
+The look-alike Northstar channel isn't discoverable since the actor lacks team membership there, which confirms the workspace boundary naturally handles disambiguation without needing a scope exception -- since the standard listing call defaults to the actor's own team memberships, no team_id override is necessary. I'll finalize the full JSON now with the added roles and facts describing the new team.
+

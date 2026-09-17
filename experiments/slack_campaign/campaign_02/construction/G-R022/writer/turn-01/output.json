@@ -1,0 +1,96 @@
+{
+  "prompt": "Someone reacted with a 🎉 to Priya's message in core-infra where she confirmed the CUDA memory limit was the root cause of the inference OOM issue. Which channel has that person's own messages posted in?",
+  "binding_note": "The conversation is selected by: contains a message (in #core-infra) whose reaction (🎉) identifies a specific user, and that same user's authored messages determine the target conversation — a different channel from the one where the reaction happened.",
+  "roles": [
+    {
+      "role": "target_message",
+      "entity": "messages",
+      "facts": "message_id 1706001931.000000 in C_INFRA, authored by U_PRIYA: 'Got the pprof delta—it's definitely the batch size increase hitting a hard CUDA memory limit...'",
+      "selection": "support",
+      "reason": "anchor message the reaction is attached to"
+    },
+    {
+      "role": "reaction_match",
+      "entity": "message_reactions",
+      "facts": "message_id=1706001931.000000, user_id=U_AISHA, reaction_type='tada' (added for this scenario)",
+      "selection": "match",
+      "reason": "the qualifying reaction identifying the reactor"
+    },
+    {
+      "role": "reactor_user",
+      "entity": "users",
+      "facts": "U_AISHA (Aisha Okonkwo), member of C_INFRA and C_FRONTEND",
+      "selection": "match",
+      "reason": "user identified via the reaction; her authored messages determine the answer"
+    },
+    {
+      "role": "author_channel",
+      "entity": "channels",
+      "facts": "C_FRONTEND (#frontend) contains message 1706043661.000000 authored by U_AISHA: 'Anyone else seeing the analytics dashboard load slowly...'",
+      "selection": "match",
+      "reason": "the only channel containing a message authored by the reactor — the correct referent"
+    },
+    {
+      "role": "reaction_wrong_emoji",
+      "entity": "message_reactions",
+      "facts": "message_id=1706001931.000000, user_id=U_LUKAS, reaction_type='thumbsup' (added)",
+      "selection": "negative",
+      "reason": "same target message but wrong emoji, so Lukas is not the qualifying reactor"
+    },
+    {
+      "role": "reaction_wrong_message",
+      "entity": "message_reactions",
+      "facts": "message_id=1706002397.000000, user_id=U_OLENA, reaction_type='tada' (added) — Olena's own scaling-plan message in C_INFRA",
+      "selection": "negative",
+      "reason": "correct emoji but wrong message, so Olena is not the qualifying reactor"
+    },
+    {
+      "role": "reaction_wrong_user_own_channel",
+      "entity": "message_reactions",
+      "facts": "message_id=1706043754.000000, user_id=U_AISHA, reaction_type='thumbsup' (added) — Aisha reacting elsewhere in C_FRONTEND",
+      "selection": "negative",
+      "reason": "same user but wrong emoji/message pairing; not the identifying reaction for this request"
+    },
+    {
+      "role": "reaction_location_channel",
+      "entity": "channels",
+      "facts": "C_INFRA (#core-infra), where the qualifying reaction occurred",
+      "selection": "negative",
+      "reason": "plausible decoy: the channel where the reaction happened is not the channel containing the reactor's own authored messages"
+    }
+  ],
+  "obligations": [
+    {
+      "name": "reactor_authored_channel",
+      "description": "The conversation containing a message authored by the user who reacted with 🎉 to Priya's CUDA-root-cause message in #core-infra; selection must follow conversation→message→user→reaction bindings on the same message/user/emoji.",
+      "table": "channels",
+      "mode": "single",
+      "task_type": "read-only",
+      "scope": "workspace-visible channels reachable via membership/history",
+      "target_roles": [
+        "author_channel"
+      ],
+      "candidate_role_sets": null,
+      "selection": "one",
+      "answer_attributes": [
+        [
+          "channels.channel_name"
+        ],
+        [
+          "channels.channel_id"
+        ]
+      ]
+    }
+  ],
+  "task_spec": [
+    {
+      "line": 1,
+      "text": "Identify which channel contains messages authored by the person who reacted with 🎉 to Priya's message confirming the CUDA memory limit as the OOM root cause, and report that channel.",
+      "obligations": [
+        1
+      ]
+    }
+  ],
+  "scope_exception": null,
+  "access_plan": "Locate Priya's message via conversations.history/search.messages on #core-infra (content: 'hard CUDA memory limit'), then reactions.get on that message to find the 🎉 reactor among the seeded reactions (Aisha=tada match; Lukas=thumbsup and Olena's tada-on-different-message are excluded). Then browse channels the reactor belongs to (users.conversations with user=Aisha, or iterate conversations.list + conversations.history) to find the channel containing her authored message, landing on #frontend."
+}

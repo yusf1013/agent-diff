@@ -1,0 +1,32 @@
+I'm mapping out a route through CONVERSATION, MESSAGE, USER, and REACTION nodes in single resolution mode—tracing how a channel's messages link to their author, and then to reactions that user gave or received.
+
+The only existing reaction in my seed data is U01AGENBOT9's "eyes" reaction on U_LUKAS's OOM message in C03IJKL9012, so I need to build out additional reaction data to support this new query path.
+
+I'm designing the scenario: find the channel containing a message from a user who reacted with a particular emoji to a specific message elsewhere - similar in spirit to the calibration example but with a different emoji and target message so it stays distinct.
+
+I want to add a reaction record: someone reacting with "raised_hands" to Priya's root-cause message (1706001931), where that reactor's authored messages point to a channel different from where the reaction itself occurred, so the query genuinely tests traversing conversation-message-user-reaction rather than just matching the reaction location.
+
+I need the reactor to be someone whose authored messages appear in exactly one channel to avoid ambiguity — Olena doesn't work since she posts in multiple channels, but U_AISHA fits since her messages only appear in C_FRONTEND.
+
+But identifying the user directly by name would bypass the REACTION requirement in the route. I need the identification to happen through the reaction condition itself, not by naming Aisha outright.
+
+So I'll frame it as "the user who reacted with 🎉 to Priya's diagnosis message" — that reactor should be Aisha, and I need her to author messages in exactly one channel to keep the answer unambiguous. I'll add a reaction record for her on Priya's message (timestamp 1706001931) using the tada emoji.
+
+Checking membership, Aisha belongs to C_INFRA so she's eligible to react there, but her actual authored messages only appear in C_FRONTEND (the analytics dashboard message), making that the unique answer channel.
+
+Now I'm building negatives: Lukas reacting with the wrong emoji (thumbsup) to the same message, and Olena reacting with a similar-but-different emoji, to create plausible distractors without breaking the unique resolution.
+
+Match: Aisha reacting with "tada" to Priya's CUDA message (1706001931.000000) in C_INFRA, keeping Aisha's authored messages in a different channel for uniqueness. Negatives: Lukas reacting with the wrong emoji "thumbsup" on the same message, and Olena reacting with "tada" but on a different message (1706002397.000000).
+
+For extra robustness I'm considering another negative where Aisha herself reacts with "thumbsup" on an unrelated message (Mateo's, in C_FRONTEND) -- testing that both message and emoji must match, not just the user. I'm also weighing whether to swap in a user with messages spanning multiple channels reacting correctly, to stress-test channel-uniqueness logic separately from reaction-matching.
+
+Now I'm drafting the actual question phrasing: something like "Someone reacted with a 🎉 to Priya's message confirming the CUDA memory limit was the root cause of the inference OOM issue -- which channel contains that person's messages?" trying to describe the target message by content rather than naming Aisha directly, so the solver has to trace the reaction and emoji to find her.
+
+The main obligation is identifying the channel (single selection, answer via channel name or ID), with the message, user, and reaction serving as supporting roles rather than separate obligations. I'm noting the target message role as Priya's CUDA-related finding, tagged with its timestamp for reference.
+
+I'm setting up the reactor match (Aisha's "tada" reaction on the target message) and the actual answer role, which is the C_FRONTEND conversation where Aisha's own message was posted. For negatives, I'm listing mismatched reactions -- wrong emoji, wrong message, wrong user context -- plus flagging C_INFRA as a plausible but incorrect distractor since that's where the reaction itself occurred, even though it's not where Aisha's messages are authored.
+
+Now I'm working out the access plan: start with a discovery search in C_INFRA for the target text, pull reactions on that message to identify the reactor, then figure out how to trace that user's authored messages across channels -- since there's no direct author-search API, this likely requires scanning conversation histories or using search.messages with query text instead.
+
+I'm ready to write the final JSON output.
+

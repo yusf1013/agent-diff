@@ -1,0 +1,20 @@
+I'm thinking through a CONVERSATION_MEMBERSHIP → CONVERSATION route with a single resolution mode, where the membership is the referent entity and gets identified via conditions on its parent conversation plus another binding attribute.
+
+Since the route only has two nodes, the identifying conditions live on the conversation side—things like channel name, topic, purpose, or archived/private flags—combined with a fixed field that pins down which user's membership record this is, since that user identity isn't a separate route node but an intrinsic part of the membership itself.
+
+I'm designing a concrete query: something like "when did [user] join the channel whose topic mentions on-call incidents," where the topic condition picks out a unique conversation and the fixed user identifies the specific membership row, so we return its joined_at timestamp as a read-only lookup.
+
+The task itself needs the conversation identified by topic text and the joined_at timestamp of Priya's membership record - so the referent is really the membership row, with user and channel both resolved within that same composite key. That matches the pattern where identity binding happens through the shared record rather than a separate join.
+
+For negative cases, I need to exclude Priya's memberships in other channels with different topics, and exclude other users' memberships in the correct channel that aren't Priya's.
+
+The unique match is (Priya, C_INFRA) since no other channel's topic matches "on-call incidents" and Priya has only one such membership. The question about which day Priya joined maps naturally to the joined_at attribute, so I'll use answer_attributes ["channel_members.joined_at"].
+
+Now for the access plan, I need to check whether the API actually exposes joined_at. Conversations.members only returns member IDs, not join dates, so there may be no direct API call that surfaces this field even though the schema supports it.
+
+Given that, it seems better to steer toward a supported state-changing operation instead, like conversations.kick which removes a user from a channel using channel and user IDs -- that's clearly exposed and actionable, unlike the joined_at field.
+
+I'm designing a task around removing Priya Sharma from the channel focused on infrastructure and on-call topics, selecting the right membership by matching both user and channel topic. Then I'm sketching negative examples: her membership in other channels, other users' membership in the same infra channel, and similar near-misses to make the target unambiguous.
+
+Now specifying the metadata: target_membership as the single scoped target, state-changing task type since it's a removal, with target_roles set to target_membership and empty written_attributes since we're removing rather than changing data.
+

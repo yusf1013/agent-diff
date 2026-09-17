@@ -1,0 +1,26 @@
+I'm checking that all the referenced records already exist in the base seed—the users, channels, and specific message timestamps mentioned in the design—so I can confirm which ones are genuine versus negative test cases.
+
+The reaction record confirms everything already exists in base seed - no seed edits needed at all, since the whole design maps onto existing records. I confirm actor U01AGENBOT9 is a member of both relevant channels, satisfying access requirements, then start mapping role labels to their native handles like workspace ID and user/membership pairs for Robert Walsh and Robert Chen.
+
+Continuing the bindings, I map the two conversation channels and identify the negative test cases pointing to specific message and reaction records. For the underspecified "target_channel" selector, since resolution mode is ambiguous and there are two eligible channels, I reason that per the rules the selector should compute the union of both channels rather than arbitrarily picking one - the condition being a channel containing a message from someone named Robert asking a ready/done question.
+
+Since the two matching messages use different words ("done" vs "ready"), and a single selector filter can't OR across two text conditions, I consider whether filtering just on user.display_name = 'Robert' already sufficiently narrows to the two correct channels without needing the text match at all.
+
+I'm considering whether the two channels need separate auxiliary queries, since the "one selector per obligation" rule seems to allow independent constraints but not OR-ing content matches. It looks like the intended solution requires a selector that identifies all qualifying rows across both channels at once.
+
+Since a conjunction-only filter can't OR different keywords, I'm checking if there's common wording between the two messages themselves, like both referencing when something will be "done," that could serve as a single shared filter term for user "Robert" across channels.
+
+Checking the rest of Robert's messages, none of the others mention "when" - so filtering by Robert's display name with message text containing "when" should isolate exactly those two target messages.
+
+I'm scanning the rest of U_ROBERT's messages for the word "when" - checking the cloud bill note, the parallel tracks message, and the explicit "When will the PyTorch rewrite be ready?" one, which clearly contains it.
+
+I want to be careful about the batching policy so we don't block the hot path, and let's sync offline once we have the data to weigh tradeoffs—my instinct says we can capture most of that $47K without risking reliability, but I need to see it first. Everyone seems aligned: Lukasz's top-10 list with queue times and latency sensitivity plus Priya's instance-type efficiency analysis will set the policy, and shifting load to cheaper hardware where possible compounds the savings nicely. One thing I want to flag is what happens after we implement batching—we should keep monitoring for new bottlenecks it might create.
+
+Another version explores a different scenario: examining actual failure logs before adding any confidence gate, and pressing on the real question of blast radius—whether a gate would block 5% or 30% of queries—since hallucinations can't just be traded for a broken demo. I'd want Sophie to review those logs too, to determine if this is a retrieval ranking issue or something more fundamental, which tells us whether the reranker is a real fix or just a patch.
+
+Confirming this message contains "when" while the others don't, so the filter logic checks out. Now I'm working out the query selector: I need to scope to channels in the workspace, join through messages and users, and filter for messages from a specific display name that also contain the word "when" in the text, tracking node indices carefully as I build the join path.
+
+I'm also thinking through negative referents—since the target entity is channels, I need to construct plausible-but-wrong channel candidates, like a message that mentions "ready" but comes from a different author, which could mislead a solver who ignores the author filter.
+
+The reaction-based negative doesn't actually add a new wrong channel, since it points back to C03IJKL9012, which is already a legitimate answer. So the negative referent set ends up being just C04MNOP3456.
+

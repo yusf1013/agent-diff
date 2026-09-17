@@ -1,0 +1,96 @@
+{
+  "prompt": "For an admin-activity audit, I need to know which channels contain messages posted by someone holding the owner or admin role on our workspace membership. For each such channel, tell me who the admin/owner is and summarize what they posted.",
+  "binding_note": "Selects conversations by following CONVERSATION → MESSAGE → USER → WORKSPACE_MEMBERSHIP: a channel counts only if one of its messages was authored by a user whose workspace_membership.role is 'admin' or 'owner' (Robert Walsh's role in team T01WORKSPACE). Channels whose only posters hold the plain 'member' role are excluded even though they have plenty of message traffic.",
+  "roles": [
+    {
+      "role": "match_engineering_channel",
+      "entity": "channels",
+      "facts": "C03IJKL9012 'engineering' contains message 1699824000.000987 authored by Robert Walsh ('Crash report: retrying wrong password 3 times triggers login rate limit...')",
+      "selection": "match",
+      "reason": "Author Robert Walsh has workspace_membership role=admin on T01WORKSPACE"
+    },
+    {
+      "role": "match_general_channel",
+      "entity": "channels",
+      "facts": "C01ABCD1234 'general' contains message 1700173200.000456 authored by Robert Walsh ('Does anyone know when the MCP deployment will be done?')",
+      "selection": "match",
+      "reason": "Same admin author posting in a second channel, giving a jointly intended multi-channel result"
+    },
+    {
+      "role": "admin_author",
+      "entity": "users",
+      "facts": "Robert Walsh (U03ROBERT23), workspace_membership role='admin' on T01WORKSPACE",
+      "selection": "support",
+      "reason": "The qualifying author whose membership role satisfies the path condition"
+    },
+    {
+      "role": "admin_without_messages",
+      "entity": "users",
+      "facts": "Morgan Freeman (U07MORGANFREE), workspace_membership role='admin' on T01WORKSPACE, but authored no messages in any channel",
+      "selection": "negative",
+      "reason": "Holds the qualifying role but breaks the route because no MESSAGE record links him to any conversation"
+    },
+    {
+      "role": "negative_random_channel",
+      "entity": "channels",
+      "facts": "C02EFGH5678 'random' has messages only from John Doe, Artem Bogdanov, Morgan Stanley and Hubert Marek, all workspace_membership role='member'",
+      "selection": "negative",
+      "reason": "Active channel but every poster's membership role is 'member', not admin/owner"
+    },
+    {
+      "role": "negative_growth_channel",
+      "entity": "channels",
+      "facts": "C04MNOP3456 'growth' has messages only from Nick Fury, Gabriel Horn and Hubert Marek, all role='member'",
+      "selection": "negative",
+      "reason": "Same failure mode as the random channel: no admin/owner author"
+    },
+    {
+      "role": "negative_member_author",
+      "entity": "users",
+      "facts": "John Doe (U02JOHNDOE1), workspace_membership role='member', posts in both general and engineering channels",
+      "selection": "negative",
+      "reason": "Splits the path: message and channel exist but the author's membership role fails the condition, even in channels that separately qualify via Robert Walsh"
+    }
+  ],
+  "obligations": [
+    {
+      "name": "admin_posted_channels",
+      "description": "Conversations that contain at least one message authored by a user whose workspace membership role is admin or owner; report each such channel with the qualifying admin's identity and message content.",
+      "table": "channels",
+      "mode": "multiple",
+      "task_type": "read-only",
+      "scope": "all channels in workspace T01WORKSPACE reachable via conversations.list plus conversations.history",
+      "target_roles": [
+        "match_engineering_channel",
+        "match_general_channel"
+      ],
+      "candidate_role_sets": null,
+      "selection": "set",
+      "answer_attributes": [
+        [
+          "channels.channel_name"
+        ],
+        [
+          "messages.message_text"
+        ],
+        [
+          "users.real_name"
+        ],
+        [
+          "user_teams.role"
+        ]
+      ]
+    }
+  ],
+  "task_spec": [
+    {
+      "line": 1,
+      "text": "List the channels where a message was posted by a user holding the admin or owner workspace membership role, naming the admin/owner and summarizing their message.",
+      "obligations": [
+        1
+      ]
+    }
+  ],
+  "scope_exception": null,
+  "access_plan": "Use conversations.list to enumerate all channels in T01WORKSPACE, conversations.history on each to retrieve messages and their authoring user_id, then users.info (or the seeded user_teams role) on each distinct author to check workspace_membership.role. Channels whose posting authors are exclusively 'member' are dropped; channels with at least one 'admin'/'owner' author (here, Robert Walsh in engineering and general) are retained and reported with the relevant message text."
+}

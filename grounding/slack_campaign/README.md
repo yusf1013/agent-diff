@@ -1,3 +1,10 @@
+> Current work: the seed-reusing writer/compiler/reviewer workflow is in
+> [campaign_plan.md](campaign_plan.md), [workflow.py](workflow.py), and
+> [prompts/v2/](prompts/v2/). Results are tracked in
+> [campaign_02/report.md](../../experiments/slack_campaign/campaign_02/report.md).
+> The remainder of this file documents the historical pilot, whose authoring
+> constraints and seed policy were superseded after user review.
+
 # Slack G2/G3 construction pilot
 
 This package implements a bounded Sonnet construction/execution pilot for the

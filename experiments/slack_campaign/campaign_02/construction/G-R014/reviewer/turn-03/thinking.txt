@@ -1,0 +1,42 @@
+I'm tracing the join path from channels through channel_members, users, messages, to message_reactions, checking the filter conditions on message text and reactions.
+
+I realize the focal query doesn't constrain messages.channel_id to match channels.channel_id—it only reaches the channel through channel_members, so it would incorrectly match any channel where a member happens to have authored a matching message anywhere. That matches the bug described in the notes, which the auxiliary query fixes by joining messages.channel_id directly to enforce the message actually belongs to that channel. Now I need to check whether combining both queries as a conjunction properly requires the channel to have both a matching member-authored message and a matching in-channel message.
+
+Since the "circuit-tracer OOM" text appears to be unique across all messages (message 1706110000.000100 in C03IJKL9012), both conditions collapse onto the same message in this specific seed, so the conjunction works out correctly even though it isn't logically guaranteed in general. I'm double-checking other channels for false positives—looking at the DM with AGENTSOPHIE, which has a message mentioning "circuit-tracer" and "without OOM issues" that could accidentally satisfy a looser text match.
+
+Confirming that DM message has no eyes reaction (only three reactions exist total, none on this message), so it correctly fails the auxiliary filter and doesn't produce a spurious match. This confirms C03IJKL9012 is the sole valid answer.
+
+Now I'm checking whether the focal query improperly matches other channels where Lukas is also a member, since the query doesn't constrain the message's channel to match the candidate channel—that's the bug I'm tracking down. For candidate channel C_INFRA, Lukas is indeed a member per the seed data, so this channel could also incorrectly satisfy the focal filter through the same message.
+
+Then I verify against the auxiliary condition, which does require the message's actual channel to match the candidate. For C_INFRA, its own message about GPU cluster capacity doesn't contain "circuit-tracer" or "OOM" text, so it fails the auxiliary requirement and correctly gets excluded.
+
+That leaves only C03IJKL9012 satisfying both focal and auxiliary conditions, matching the expected computed_matches exactly, with no mechanical errors or focal negatives. This confirms C_INFRA is properly serving as a near_miss case in the private field, since it passes the naive focal check but fails once the auxiliary channel-specific verification is applied.
+
+Since message_reactions.message_id joins to message.message_id, the eyes-reacted message and the text-matching message must be identical. For C_INFRA, that message is authored by a non-member, so I need to check whether any actual C_INFRA member (like U_LUKAS or U_PRIYA) authored a different message matching the circuit-tracer/OOM text with an eyes reaction instead.
+
+Yes — U_LUKAS is a member of C_INFRA, and the OOM message he authored (1706110000.000100) does have an eyes reaction from the bot, even though it physically lives in a different channel. So the focal query would still pull C_INFRA in through that membership path, making it a genuine near-miss distinct from the original "author not a member" rationale.
+
+There are really two separate paths generating C_INFRA as a false positive: one through the intended negative (U02JOHNDOE1 lacking a membership row), and one through the unintended bug path via U_LUKAS's actual membership combined with cross-channel message counting. Either way, the auxiliary fix requiring the message to literally reside in C_INFRA eliminates both, so the behavior stays consistent regardless of which mechanism produces the false positive.
+
+Testing this: even if U02JOHNDOE1 became a member, his authored message about GPU capacity doesn't contain "circuit-tracer" or "OOM" keywords, so it still wouldn't pass the text filter — confirming the membership fact truly is redundant for the exclusion.
+
+So the near-miss is broken - it's supposed to fail purely on the membership leg, but it's actually failing on content mismatch too, which means it doesn't validate what the design claims it validates.
+
+So the topic mismatch alone dooms this negative regardless of membership, making it a weak near-miss that fails to isolate the membership leg specifically. That contradicts the design's own claim that C_INFRA requires genuine near-collision, since it also passes focal via U_LUKAS in a way that needs checking against the "near miss" label.
+
+The claimed exclusion mechanism (membership) doesn't match the actual mechanism (channel binding), meaning this particular negative role isn't functionally tested as intended even though the overall query still produces a correct unique match. This feels more like a quality concern about the negative's meaningfulness than an outright validity failure, so I want to check the other negative role too.
+
+Confirming the message text has neither "circuit-tracer" nor "OOM", so it fails the filter node entirely before reaction type is ever considered — meaning this "wrong emoji" negative is mislabeled again, since exclusion actually comes from topic mismatch rather than the emoji condition. This looks like a recurring pattern across several test cases.
+
+This seems inconsistent with my earlier analysis, where the focal query should also match C_INFRA and other channels Lukas belongs to, yet computed_focal_negatives is empty. I need to reconsider what this field actually represents — possibly candidates that pass the focal condition but fail overall — and reconcile why my expected near-misses aren't showing up there.
+
+Given the uncertainty around this field's exact definition, I'll treat the mechanical data as authoritative: computed_matches is a single correct entry, which satisfies the requirement of unique resolution, even if the negative-design semantics remain unclear.
+
+Actually, I do spot a real defect: several negatives claim to isolate a specific relational leg (like membership or emoji type) but actually get filtered out via unrelated topic mismatches instead, so they don't truly test what they claim. This weakens the diagnostic quality of the negative set but doesn't break overall validity, since the final compiled query still resolves to the correct singleton via the real auxiliary constraint. I'll mark this a validity pass with a quality flag—the negatives function as generic distractors rather than actually isolating the membership/emoji conditions they claim to test.
+
+Actually, the real generating factor is separable: the exclusion is about the channel not containing the OOM message, not about missing membership. That's still testing conversation binding, which is central to the query's underlying fix, so the negative isn't entirely inaccurate — just mislabeled in what it claims to test.
+
+Checking negative_channel_wrong_emoji next: the message excluded here lacks the circuit-tracer/OOM keyword entirely, so it's excluded by content mismatch rather than by the emoji condition the design intends to test. Since the message was never topically about the OOM discussion, labeling it as testing emoji-type discrimination is misleading — it's actually failing on content relevance first, which undermines its intended purpose as an emoji-discrimination test.
+
+Overall I'll mark validity as pass since matching and route usage are correct, but flag quality as adequate rather than strong due to these annotation mismatches in the two negative examples, and now I'll write up the final JSON with these findings.
+

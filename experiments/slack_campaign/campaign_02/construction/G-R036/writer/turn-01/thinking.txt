@@ -1,0 +1,22 @@
+I'm mapping out the route from a conversation membership to its conversation and then to the messages within it, treating the membership as the single referent entity identified by the specific user-channel pairing.
+
+I want to identify a person by their membership in the core-infra channel where a specific incident—like the CUDA OOM/batch-size revert discussion—was mentioned, so I can then report an ordinary attribute like their joined_at time, without pre-resolving their identity by name directly.
+
+The route flows from conversation membership to conversation to message: I pick out the conversation via a message with the right content, then filter memberships in that conversation by a legitimate attribute to land on one specific person's membership record.
+
+So the target is C_INFRA (core-infra channel, topic "Infrastructure, K8s, AWS, on-call, incidents"), identified through the message discussing the CUDA memory hard-limit incident. Within that channel's memberships, I need to select the one belonging to the message's author (Priya) without directly using her name — I'll need another attribute to pin down which membership is hers.
+
+So the pattern is: identify the conversation via a qualifying message, then find the membership belonging to that message's author in that conversation. This maps naturally to a question like "when did the person who diagnosed the CUDA memory limit as the root cause join the channel where they posted that diagnosis" - using the message as the anchor to pin down both the user and conversation.
+
+Distractors could include other members who posted related but different content (like hypotheses rather than the diagnosis) in the same channel, or the correct user's memberships in unrelated channels.
+
+Found the target message: Priya's post in core-infra with the specific conclusion about hitting a hard CUDA memory limit, distinct from Lukas's earlier hypothesis suggestions. Now I'm drafting the final prompt asking about the join date of whoever posted that diagnosis message in core-infra.
+
+For negatives, I'm setting up distractors: Lukas's messages in the same channel discuss allocator concepts but never conclude the diagnosis, Priya's own messages in a different channel (C_GROWTH about CDN/Tokyo latency) sound diagnostic but are off-topic, and Olena's nearby message discusses next steps without stating the actual conclusion.
+
+Now I'm defining the roles clearly: the target membership is Priya's row in C_INFRA, the channel serves as a supporting identifier, the specific message about the CUDA memory limit is the key evidence, and Lukas's message about allocator theory in the same channel becomes the closest negative decoy.
+
+I'm rounding out the negatives with Olena's C_INFRA message, Priya's wrong-channel membership in C_GROWTH, and her unrelated CDN diagnosis message there. I confirm the acting bot has access to C_INFRA via seed data, then sketch the obligation: read-only task against the channel_members table, targeting Priya's membership with the joined_at attribute as the answer.
+
+Now I'm outlining the access plan: use conversations.list/history to locate #core-infra, pull the message text, then check conversations.members for join timestamps before finalizing the JSON.
+

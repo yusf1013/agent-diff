@@ -1,0 +1,100 @@
+I'm suspecting the empty result stems from a mismatch in how the join field is referenced—possibly the join expects the exact FK path through user_teams.user_id rather than team_id, which could explain why the filter isn't matching correctly.
+
+Actually, since computed_matches is entirely empty even for focal alone, the real problem is likely that the assigned complete route requires CONVERSATION -> WORKSPACE -> WORKSPACE_MEMBERSHIP directly, but my focal path routes through CONVERSATION_MEMBERSHIP and USER instead, which doesn't match the required route_nodes sequence at all.
+
+Maybe the route direction runs the other way: from conversation through workspace to workspace_membership just captures workspace admins, but that would match every channel in the workspace, not just three specific ones. That contradicts the expected narrow result, so the real join likely needs to trace from workspace_membership back through the user to their channel memberships, messages, or reactions to land on the actual conversation.
+
+Wait, that route through team_id would pull in all workspace members regardless of participation, which contradicts the qualification requiring a direct participant link. So the route must actually join through the channel's participants to reach workspace membership, not just via team_id.
+
+This means the real path likely needs USER as an implicit bridging node between WORKSPACE_MEMBERSHIP and CONVERSATION-related tables, even though route_nodes only names three macro entities. I should check why the computed matches came back empty despite this.
+
+Rechecking the actual query: the path traverses channels to channel_members to users to user_teams, joining on channel_id, then user_id, then user_id again, filtering on role=admin and team_id=T01WORKSPACE. Each join looks structurally valid since it follows the foreign key ownership direction correctly, so the emptiness must stem from something else, maybe how the validator processes it.
+
+Perhaps it only evaluates matches for the focal field alone rather than unioning in auxiliary constraints. Given the error about the main path differing from the assigned route R002, which mandates going through CONVERSATION to WORKSPACE to WORKSPACE_MEMBERSHIP, my path skipping the workspace/teams node is likely being flagged as a route mismatch and zeroed out entirely — meaning the fix is to make the focal query literally follow channels to teams to user_teams as its main route, with the "same person" filters layered in separately.
+
+I'm now trying to figure out how to connect back to the same channel after reaching user_teams, since the requirement is that the person be a member on that same channel. This might mean extending the path further through users to channel_members, then constraining that channel_members row's channel to match the root channel node.
+
+I'm considering whether the path could actually cycle back through channels itself, ending again at channels after passing through teams, user_teams, users, and channel_members. But then the final node's channel_id wouldn't automatically equal the root's channel_id unless something explicitly forces that equality, so the identity constraint isn't guaranteed just by the join chain alone.
+
+Maybe the convention is simpler: when a table name reappears later in the chain, it's treated as a self-join back-reference to the earlier node with that same name, enforcing the FK equality implicitly rather than needing an explicit filter.
+
+This suggests the intended path is CONVERSATION to WORKSPACE to WORKSPACE_MEMBERSHIP, then closing the loop back to checking if that admin's user is a participant of the same original channel. The ambiguity is whether the final "channels" reference in the path implicitly re-links to the root node or spawns a fresh join, since the path syntax only lists one table per step without explicit indication of reusing an earlier node.
+
+Actually, looking at the example selector again, it's just a straightforward forward chain from messages to channels with a filter on channel name, not a cycle-closing pattern. So maybe my worry about needing to loop back to the root's identity is misplaced, and the actual fix might be simpler - perhaps the intended route is just CONVERSATION -> WORKSPACE -> WORKSPACE_MEMBERSHIP.
+
+But testing that route mentally, filtering channels by whether their workspace has an admin would match all 12 channels in this seed data, since the single workspace has admins - which isn't the 3 designated matches I need. So the route probably needs to continue further, from user_teams to users and into participant tables, to properly capture the exposure qualification where the same person must be part of both the connection and the conversation.
+
+If the path stays on the same channel through team_members but then branches to users and channel_members independently, that's a separate lookup unless the path explicitly loops back through "channels" again, forcing the engine to enforce identity equality with node0 since revisiting the same table name closes the loop and requires matching channel_id. The given example avoids cycles, but nothing technically prevents reusing a table to enforce that constraint.
+
+Testing the path channels-teams-user_teams-users-channel_members: each step's join connects adjacent nodes via specific foreign keys, ending with channel_members joined on user_id -- but this leaves node4's channel_id unconstrained against node0's, meaning the result set would incorrectly include all channels tied to that user's other memberships rather than just the root channel.
+
+So without a loop-closing constraint that ties node4's channel_id back to node0, every channel would spuriously match since Robert Walsh is admin and belongs to at least one channel_members row -- making all 12 channels satisfy the criteria, which is clearly wrong.
+
+Looking back at the example given, though, the path doesn't seem to require the final channel to equal the message's own channel at all -- it just checks whether a reactor is also a member of the "security" channel, an entirely separate filter unconnected to the original message's channel. That's an odd but perhaps intentional interpretation: the last node is just an independent filter criterion, not a loop back to node0.
+
+This confirms paths don't need to loop back to the root; they're simply forward chains, with the root always being node0. So for the route problem, my original approach (channels→channel_members→users→user_teams) should have correctly correlated to root since channel_members joins directly to node0. That was structurally right, so I need to reconsider why computed_matches came back empty.
+
+Checking the FK join names — channel_members.channel_id, channel_members.user_id, and user_teams.user_id all correspond to valid FK columns, so those joins were correct. That means the emptiness must stem from something else, maybe a scope condition filtering on a field like team_id in channels.
+
+Filters on user_teams like role and team_id also look valid, so the query should work — yet the recomputed matches came back empty, which points to something more fundamental like a node numbering mismatch rather than a filter logic error. I want to double-check whether node indices start at 0 or 1 and whether that's throwing off the join path.
+
+Actually, the error itself flags that the main identifying path diverges from the assigned route — the path likely needs to follow workspace membership literally instead of routing through channel_members, which would explain why the validator zeroed out the matches. The tricky part now is figuring out how to preserve the participant condition while sticking to that required route.
+
+Rechecking the messages/channels example: root is messages, with a path through message_reactions, users, channel_members, channels, filtering on channel_name. That computes messages having a reaction where the reacting user is also a channel member of a channel named "security" — revisiting whether reappearance of a table enforces equality across occurrences.
+
+This means the syntax doesn't correlate revisited tables to the root automatically; it's a forward chain where the final filter applies arbitrarily, not necessarily tying back to the original entity. So for my case, connecting participant tables directly to root as the first hop (channels -> channel_members -> ...) may have given correct semantics but conflicted with how the validator expects the route to be structured.
+
+Actually, I realize my path skips WORKSPACE entirely -- channels to channel_members to users to user_teams goes straight from CONVERSATION to USER without passing through the required WORKSPACE node. The assigned route likely mandates going through teams (WORKSPACE) between channels and user_teams, which my path completely omitted.
+
+So the required backbone is channels->teams->user_teams, and the query needs to extend further from user_teams along real foreign keys to bring in the participant/witness conditions, keeping everything in one query so bindings stay preserved rather than splitting into separate auxiliary selectors.
+
+But then I'm worried: if the path continues to users->channel_members without explicitly forcing the final channel_id to match back to the root channel, the join could match any channel in the workspace rather than the specific one, since there's no automatic mechanism tying the last node back to node0 without an explicit filter.
+
+Actually, maybe the correlation can happen structurally: if channel_members is placed as the node directly adjacent to node0 in the join chain rather than at the end, its FK to channels naturally ties back to the same root row, avoiding the need for an explicit cross-node filter.
+
+But then I need to reconsider the required node ordering — maybe workspace should sit as an intermediate step between conversation and workspace_membership rather than strictly first, since the route order places workspace before membership but not necessarily adjacent to the root.
+
+I think joining channels to teams and then to user_teams via the shared team_id is the standard way to link a channel's workspace to its admin members, since both tables carry team_id as a foreign key into teams. But I still need to separately verify that same admin is a participant in this specific channel, which doesn't fit cleanly into that single forward join chain.
+
+I wonder if the engine treats "channels" as a fixed identity once established at the root, so any later FK reference to channel_id automatically binds back to that same node, even across a longer path through teams and users. But that seems inconsistent with the earlier messages/channel example, where I need to check whether that path ever revisited the same table type at all.
+
+Given how the mechanism is documented — a path of table names with FK joins defined only between adjacent nodes — there's no stated rule about implicit binding to earlier same-type nodes elsewhere in the path. So the correlation likely requires channel_members to sit immediately adjacent to the channels node for the FK to bind; otherwise it's treated as an unbound, existential reference to any channel.
+
+This creates a tension: satisfying both the required route order (channels->teams->user_teams) and correlating the participant to a specific channel seems impossible within one linear path, since participant tables need direct adjacency to channels while the route demands teams/user_teams come first. Maybe the real architecture reorders things so channel_members sits right after channels, then flows through users into user_teams and teams — reversing the expected route_nodes sequence — which makes me wonder whether that list actually dictates strict traversal order at all.
+
+Rereading it, route_nodes might just declare which entities R002 must touch, not their exact adjacency order — and since WORKSPACE_MEMBERSHIP already implies WORKSPACE via team_id, maybe I don't need a separate teams join at all; I could just filter user_teams.team_id directly against the workspace ID, which is a much cleaner solution.
+
+But that's likely why the validator rejected it: the error says the main identifying path differs from the assigned route, suggesting it wants teams included as an explicit node in the path rather than just referenced through a filter value — so the backbone probably needs to be channels, teams, user_teams in sequence.
+
+I'm also wary of using an auxiliary query to restrict IDs since the rule says auxiliary queries are only for truly independent constraints, not for ID restriction, so the correlation for "same channel" needs to happen through the join path itself — perhaps channels through teams through user_teams through users to channel_members.
+
+But wait, actually since this doesn't depend on which particular channel node0 represents, since Robert Walsh being an admin of just one channel would let every channel in the workspace pass the test through the shared team_id link—that gives all 12 channels matching instead of the intended 3. That seems like a real conflict in how the query structure is designed.
+
+I'm considering whether "scope" could restrict this, but scope only lets me filter on root-table columns directly, not correlate back to node0's specific channel_id from deeper in the path. Maybe the fix is to loop the path back—make the terminal node "channels" again, representing the participant's actual channel, so the correlation happens naturally through the path structure rather than through a filter.
+
+Actually, revisiting the root table's type later in the path might implicitly mean the engine treats that occurrence as constrained to equal the original root row, since the root's identity is what gets selected—this self-referential closure would let me express "same channel as root" without needing an explicit filter reference.
+
+Testing this against the messages/channels example: since channels isn't the root there, no forced equality applies, consistent with the unrestricted case. I want to try designing a fix around this hypothesis, walking through a path where channels is root and reappears later, forcing that later node to equal node0.
+
+With the filter requiring admin role on the user_teams node, this exactly captures the semantics I'm after: an admin who is also a member of the channel. This resolves the ambiguity cleanly.
+
+Now I'm working out the auxiliary paths for authors and reactors—tracing channels through teams and user_teams to users, then to messages (for authors) or message_reactions/messages (for reactors), still requiring the admin role filter on user_teams.
+
+I'm double-checking whether an explicit team_id scope is needed, but it seems implied since node0's own workspace naturally flows through the channels-to-teams join.
+
+I'll add the scope filter for clarity anyway, and now I'm tracing through channel C01ABCD1234 step by step to confirm the join path lands on U03ROBERT23 as admin—it checks out. Moving on to verify the next channel case.
+
+None of the members are admin users, so it's correctly excluded too. Now I'm scanning through the remaining channels—C_INFRA, C_MODEL, C_GROWTH, C_FRONTEND, C05ALPHA, D01AGENTSOPHIE, C_OLD_PROJECT—checking their channel_members, messages, and reactions for either admin user showing up anywhere.
+
+The remaining channels are minor: C05ALPHA is just the bot, the DM channel is between the bot and Sophie only, and C_OLD_PROJECT has no listed members or messages. None of these show any admin presence either.
+
+So confirming just three channels match the criteria: C01ABCD1234, C02EFGH5678, and C03IJKL9012, consistent with the intended design. Now I need to finalize the selectors and verify the join fields for message_reactions, which link on message_id and user_id back to messages and users respectively.
+
+With that verified, I'll write the final JSON with the bindings and negative referents unchanged, just updating the notes.
+
+I'm now working through the auxiliary reactor path node count, mapping out the join chain from channels through teams, user_teams, users, message_reactions, and back to messages and channels—confirming six edges match the seven nodes. Same pattern holds for the auxiliary1 author path and the focal member path, each needing five edges across their six nodes, all checking out correctly.
+
+Now I'm setting the scope filter to restrict by team_id equal to the workspace value, applied against the root channels table, and adding an admin role filter on the user_teams node.
+
+With all paths and filters verified, I'm ready to assemble the final JSON output.
+

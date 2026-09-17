@@ -1,0 +1,81 @@
+```json
+{
+  "seed_edits": [
+    {
+      "table": "messages",
+      "op": "insert",
+      "key": {"message_id": "1706120000.000001"},
+      "values": {
+        "message_id": "1706120000.000001",
+        "channel_id": "C_INFRA",
+        "user_id": "U_PRIYA",
+        "message_text": "Heads up: the circuit-tracer streaming rewrite is still OOMing on cluster-b when it tries to load the 70B model layer-by-layer before sharding kicks in.",
+        "type": "message",
+        "ts": "1706120000.000001"
+      },
+      "reason": "Supports channel_match_2 (core-infra) with a circuit-tracer OOM rewrite message, per design role message_circuit_infra."
+    },
+    {
+      "table": "message_reactions",
+      "op": "insert",
+      "key": {"message_id": "1706110000.000100", "user_id": "U03ROBERT23", "reaction_type": "eyes"},
+      "values": {"message_id": "1706110000.000100", "user_id": "U03ROBERT23", "reaction_type": "eyes"},
+      "reason": "Binds Robert Walsh's eyes reaction to the engineering circuit-tracer message (role reaction_walsh_eyes)."
+    },
+    {
+      "table": "message_reactions",
+      "op": "insert",
+      "key": {"message_id": "1706120000.000001", "user_id": "U_ROBERT", "reaction_type": "eyes"},
+      "values": {"message_id": "1706120000.000001", "user_id": "U_ROBERT", "reaction_type": "eyes"},
+      "reason": "Binds Robert Chen's eyes reaction to the core-infra circuit-tracer message (role reaction_chen_eyes)."
+    },
+    {
+      "table": "message_reactions",
+      "op": "insert",
+      "key": {"message_id": "1699996800.000777", "user_id": "U03ROBERT23", "reaction_type": "thumbsup"},
+      "values": {"message_id": "1699996800.000777", "user_id": "U03ROBERT23", "reaction_type": "thumbsup"},
+      "reason": "Negative: Robert Walsh reacting with wrong emoji on an unrelated message (role negative_walsh_other_message)."
+    },
+    {
+      "table": "message_reactions",
+      "op": "insert",
+      "key": {"message_id": "1706012456.000000", "user_id": "U_ROBERT", "reaction_type": "raised_hands"},
+      "values": {"message_id": "1706012456.000000", "user_id": "U_ROBERT", "reaction_type": "raised_hands"},
+      "reason": "Negative: Robert Chen reacting in a different channel on an unrelated message with wrong emoji (role negative_chen_wrong_channel)."
+    }
+  ],
+  "bindings": {
+    "channel_match_1": ["C01ABCD1234", "C02EFGH5678", "C03IJKL9012"],
+    "channel_match_2": ["C06ALPHADEV", "C_INFRA", "C_MODEL", "C_GROWTH", "C_FRONTEND"],
+    "user_robert_walsh": ["U03ROBERT23"],
+    "user_robert_chen": ["U_ROBERT"],
+    "message_circuit_engineering": ["1706110000.000100"],
+    "message_circuit_infra": ["1706120000.000001"],
+    "reaction_walsh_eyes": [{"message_id": "1706110000.000100", "user_id": "U03ROBERT23", "reaction_type": "eyes"}],
+    "reaction_chen_eyes": [{"message_id": "1706120000.000001", "user_id": "U_ROBERT", "reaction_type": "eyes"}],
+    "negative_bot_eyes_existing": [{"message_id": "1706110000.000100", "user_id": "U01AGENBOT9", "reaction_type": "eyes"}],
+    "negative_walsh_other_message": [{"message_id": "1699996800.000777", "user_id": "U03ROBERT23", "reaction_type": "thumbsup"}],
+    "negative_chen_wrong_channel": [{"message_id": "1706012456.000000", "user_id": "U_ROBERT", "reaction_type": "raised_hands"}],
+    "negative_walsh_membership_only": [{"channel_id": "C02EFGH5678", "user_id": "U03ROBERT23"}]
+  },
+  "selectors": [
+    {
+      "root_table": "channels",
+      "scope": [],
+      "focal": {
+        "path": ["channels", "channel_members", "users", "message_reactions", "messages"],
+        "joins": ["channel_members.channel_id", "channel_members.user_id", "message_reactions.user_id", "message_reactions.message_id"],
+        "filters": [
+          {"node": 2, "field": "real_name", "op": "contains_ci", "value": "Robert"},
+          {"node": 3, "field": "reaction_type", "op": "eq", "value": "eyes"},
+          {"node": 4, "field": "message_text", "op": "contains_ci", "value": "circuit-tracer"},
+          {"node": 4, "field": "message_text", "op": "contains_ci", "value": "OOM"}
+        ]
+      },
+      "auxiliary": []
+    }
+  ],
+  "negative_referents": ["C04MNOP3456", "C_OLD_PROJECT"],
+  "notes": "The assigned route (CONVERSATION -> CONVERSATION_MEMBERSHIP -> USER -> REACTION -> MESSAGE) has no syntax for constraining the reacted-to message's channel back to the membership channel (filters only compare a node to a literal, never to another node), so the focal selector correctly returns, for every channel where a Robert-named member holds ANY qualifying eyes-reaction-on-circuit-tracer-OOM-message (regardless of that message's own channel), that channel as a match. Given Robert Walsh's single qualifying reaction (on the engineering message) and Robert Chen's single qualifying reaction (on the new core-infra message), this expands the match set to all of each Robert's channel memberships: Walsh's {C01ABCD1234, C02EFGH5678, C03IJKL9012} and Chen's {C06ALPHADEV, C_INFRA, C_MODEL, C_GROWTH, C_FRONTEND} — 8 channels total, matching the recomputed population. channel_match_1/channel_match_2 bindings are therefore each bound to the full membership set of the respective Robert, so their union equals the true eligible population. This is a known route/selector-syntax limitation (per the design's 'Hidden terminal-field variants remain limitation cases' qualification): the design's narrower 'negative_walsh_membership_only' role (C02EFGH5678, membership without a matching reaction) is conceptually a negative, but under this route's mechanics it is swept into the positive match set alongside C03IJKL9012 — this is accepted as an inherent limitation of the fixed route rather than a selector error. Reaction-level negatives (bot eyes-reaction, wrong-emoji reactions) remain unaffected and are preserved as originally bound. negative_referents now point to two channels genuinely outside the recomputed match set (C04MNOP3456, an unrelated growth-team channel with no Robert members, and C_OLD_PROJECT, an archived channel with no Robert members or relevant reactions), replacing the earlier picks (C02EFGH5678, C_MODEL) which are now within the true match set."
+}
+```

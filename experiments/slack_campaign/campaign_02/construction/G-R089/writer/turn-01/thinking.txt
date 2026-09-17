@@ -1,0 +1,36 @@
+I need to design a task following the chain from message to reaction to user to conversation membership to conversation, with the message as the root entity. The idea is to phrase it as finding messages that a particular user reacted to within a specific conversation.
+
+Since the mode is "absent," I need the scenario to sound plausible but have no message actually satisfy every condition simultaneously - I'm checking existing reaction data to find a user and channel combination that produces this negative result, rather than reusing the exact calibration example.
+
+I want the route to explicitly hinge on conversation membership as a separate hop: find who reacted with a given emoji, then use their membership to point to a distinct channel from the message's own channel, testing whether the retrieval correctly distinguishes those two channel relationships.
+
+I'm considering a concrete scenario — deleting a message in #core-infra reacted to by a member of #product-growth — but noticing the seed data only has one reaction record at all, so I'll need to add coherent reaction rows to ground this properly.
+
+I'm thinking of having Priya react with ✅ to Robert's message about the cloud bill in #core-infra, since Priya's channel memberships (core-infra, model-research, product-growth, frontend) make her a valid qualifying reactor for the scenario I'm constructing.
+
+Now I want to build an absent-match case too: I'll design conditions—channel, specific emoji, and reactor membership—where each near-match message fails exactly one condition, so no message satisfies all three simultaneously.
+
+I'm plotting specific reactions to add: someone reacting with a certain emoji on a core-infra message, but their channel membership doesn't line up with growth, creating a deliberate mismatch.
+
+I need to double-check the growth channel's member list to make sure I'm not accidentally creating a match when I meant a negative case.
+
+Checking the actual membership lists confirms it: C_INFRA, C_MODEL, and C_FRONTEND all have the same 8 people with no incognito, while C_GROWTH has those 8 plus incognito. That makes incognito's membership in C_GROWTH the distinctive fact I need.
+
+Looking at another angle, C06ALPHADEV membership (PRIYA, LUKAS, MATEO, KENJI, ROBERT, AISHA) notably excludes Sophie and Olena, which gives me a useful distinguishing relation for scoping.
+
+So I'm designing the target question: does a member of #project-alpha-dev react with 🎯 to a core-infra message? I want the answer to be no, while building in near-misses — Sophie reacting 🎯 but not being in project-alpha-dev, and Priya being in the group but reacting with 👍 instead of 🎯.
+
+I add Priya reacting 🎯 to a message in the wrong channel (#model-research) as another near-miss, and I deliberately avoid pairing Mateo (who is in alpha-dev) with a 🎯 reaction on core-infra, since that would create an actual match and break the "absent" condition. Now I just need to phrase the user request naturally without exposing this underlying test structure.
+
+I settle on asking a simple identification question: which message in #core-infra has a 🙌 reaction from someone also in #project-alpha-dev. Since the answer is that no such message exists, this fits the read-only, open-question style suited to an absent-answer scenario, so I don't need to layer on a follow-up action.
+
+Now I plan the grounding reactions to add: one on Robert's cloud bill message from Sophie (wrong person, since she's not in alpha-dev), one on Priya's message using thumbsup instead of the target emoji (right person, wrong reaction), and I'm working out a third reaction to round out the negative examples.
+
+Also noting the existing base reaction on the engineering channel is irrelevant since it fails on both emoji and channel.
+
+Now I'm drafting the actual query prompt asking whether someone from #project-alpha-dev reacted with 🙌 to a message in #core-infra.
+
+I'll rephrase to avoid the "if so" pattern and just ask directly which message in #core-infra has that reaction from a #project-alpha-dev member, then start laying out the JSON structure with roles for the absent target message, the negative reaction attempts, the users Sophie and Priya, and the channels involved.
+
+The access plan should describe checking conversations.history for #core-infra, using reactions.get on each message to find the 🙌 reaction, and cross-referencing against conversations.members for #project-alpha-dev to confirm membership -- then I'll assemble it all into the final JSON.
+

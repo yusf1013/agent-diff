@@ -1,0 +1,50 @@
+This design requires an absent resolution where no channel satisfies both the Mexico City timezone membership and Q1 budget authorship criteria simultaneously. Carlos Vega already fits this in the base seed with zero authored messages, so no edits are needed there.
+
+Checking the negative roles, Robert Chen's existing message about the cloud bill overage in C_INFRA already covers the wrong_timezone_author and budget_message_infra roles, and the growth channel messages from Kenji, Mateo, and Priya already satisfy growth_topic_message. It seems all the necessary roles are already present in the base seed, so I need to verify the actor has proper channel membership to discover this history.
+
+The actor, agent1, is a member of several channels but not C_GROWTH. I need to figure out how the agent would discover Carlos Vega's membership there and search its history—likely through conversations.list enumerating public channels, since C_GROWTH is public and might be readable without joining.
+
+Given the instructions note "normal current-workspace public-channel discovery works," it seems public channels like C_GROWTH should be discoverable and their history readable without granting extra membership, so no seed edit is needed there. The remaining question is whether the actor also needs to verify absence of information across all other channels, not just C_GROWTH.
+
+Checking private channels, only D01AGENTSOPHIE exists and the agent's already a member there, so no gap. This means the target_conversation role should resolve as a negative selection—no channel actually satisfies the condition, so the selector needs to return an empty match rather than binding to any specific conversation.
+
+I need to write the selector following the full route from conversation through membership to user to message, filtering by user timezone matching America/Mexico_City and message text containing budget approval terms for Q1, with the author matching the membership's user in the same channel. Since the resolution is meant to be absent, the selector naturally returns nothing because no message authored by that particular user actually exists in the seed data.
+
+I realize the join path only connects messages via user_id, so it won't automatically enforce that the message's channel_id matches the same conversation node — meaning "authored in that same conversation" isn't guaranteed unless I find another way to tie the message's channel back to node0.
+
+The syntax doesn't directly support joining non-adjacent nodes, but the route CONVERSATION, CONVERSATION_MEMBERSHIP, USER, MESSAGE matches exactly what's needed, so I don't necessarily need to enforce message.channel_id equals the conversation node explicitly since it's implied by the join chain through membership.
+
+Actually, thinking more carefully, the FK between users and messages is just user_id, which doesn't guarantee the message belongs to the same channel - I'd need a way to revisit the conversation node in the path, since standard selector syntax doesn't support cross-node equality outside of joins.
+
+A cleaner approach: build the query starting from messages, joining to channels then channel_members then users, and constrain equality between the message author and the member's user_id directly.
+
+I could try starting from messages, joining to channels for the message's own channel, then reaching channel_members and users -- but that only guarantees some member of the channel, not necessarily the actual author, since there's no mechanism to force channel_members.user_id to equal messages.user_id across nodes without knowing a concrete ID.
+
+Actually, I realize identity might be enforceable through join direction: if the path goes messages→users (via messages.user_id, landing on the author) then users→channel_members (via channel_members.user_id), that join preserves the same user identity from node1, since joins connect adjacent tables while preserving identity along the path. So this construction does correctly tie the channel_member row's user back to the message's actual author.
+
+Actually, I already know Carlos Vega's user ID is U_INCOGNITO from the design, so instead of needing a cross-node reference, I can just use literal filters: node0.user_id = 'U_INCOGNITO' for the message author and node3.user_id = 'U_INCOGNITO' for the channel member, avoiding the cross-node comparison problem entirely.
+
+Messages don't carry a timezone field directly, so I'd need to join messages to users as a separate node to check the author's timezone. Following the intended path—channels to channel_members to users to messages—means joining channel_members.channel_id to channels, channel_members.user_id to users, and messages.user_id to that same user, which identifies this user's authored messages without requiring them to be in the same channel.
+
+But the binding note actually says the message must be "in that same conversation," meaning message.channel_id should match the channel from node0. The route as given doesn't loop back to constrain that, and since we're solving for the channel variable across the root scope, checking messages.channel_id against it directly is really a self-join situation.
+
+Since the given selector syntax doesn't support field-to-field comparisons across nodes, only field-to-literal, this "same conversation" constraint can't be expressed via the join path itself unless the route structure implicitly encodes it - which would require rethinking what the four-node path actually represents.
+
+I'm realizing this creates a five-node structure since messages needs to connect back to channels directly, which doesn't fit the intended path cleanly. So the query likely needs path=["channels","channel_members","users","messages"] with joins linking channel_id and user_id, filters for timezone and message text, plus an extra condition tying the message's channel_id back to the original channel node to enforce same-conversation matching.
+
+So the only valid connector between users and messages is messages.user_id, meaning the query just gets any message by a channel member, not necessarily posted in that channel. That matches what seems like a known limitation mentioned in the exposure qualification text about hidden terminal-field variants remaining edge cases.
+
+Since Carlos Vega has never authored any message at all, this join returns zero rows regardless of the channel-matching ambiguity, so the query still correctly evaluates as empty. I'm now sketching the join spec: root table channels, path through channel_members, users, messages, joining on channel_members.channel_id.
+
+Now I'm thinking about negative referents - which channels might be wrongly matched by a looser interpretation of the query, like C_GROWTH, which is Carlos's actual membership channel.
+
+Since target_conversation has no valid match, the bindings for that role should just be an empty list.
+
+For the other roles, I'm mapping mexico_city_member to U_INCOGNITO, growth_membership to their channel membership record in C_GROWTH, wrong_timezone_author to U_ROBERT, and budget_message_infra to the specific message timestamp. For growth_topic_message I'm pulling a representative set of messages from C_GROWTH authored by Kenji, Mateo, and Priya covering the Tokyo launch and CDN latency topics, since Carlos didn't write any of them.
+
+Since target_conversation is expected to be absent, I'm binding it to an empty list to reflect no matching rows. I'm also confirming no seed edits are needed since everything already exists in base_seed, and noting that public channel history access shouldn't require explicit membership for the actor per the stated discovery rules.
+
+Given the reviewer note explicitly calling for needed memberships for channel histories, I'll add a channel_members row for the agent into C_GROWTH to be safe, since the domain model doesn't clearly rule on whether public-channel history access requires membership.
+
+Now finalizing the selectors list - since there's only one obligation (target_conversation), I only need one selector per the design order rule. The bindings, however, should still cover each role from the role table, so I'm mapping labels like target_conversation, mexico_city_member, growth_membership, and the wrong-role entries accordingly.
+

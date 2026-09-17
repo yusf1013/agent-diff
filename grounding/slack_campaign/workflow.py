@@ -58,6 +58,9 @@ def write_design(folder, assignment):
     packet = {'assignment':assignment, 'domain':source_context(), 'base_seed':read(BASE),
               'acting_user_id':'U01AGENBOT9',
               'instruction':'Write a fresh scenario; do not copy the calibration names or prompts.'}
+    if assignment.get('source_context'):
+        packet['source_case']=assignment['source_context']
+        packet['instruction']='Mutate this existing case by adding plausible path-derived negative examples. Keep the original prompt byte-for-byte, its downstream actions, original intended referents and resolution mode. Use existing cards to preserve source interpretation, including exceptions. Reuse the full base seed; do not add a replacement positive, alter the requested target identity, or reinterpret a condition. Write the same short design contract for the complete mutated case. The primary obligation is the assigned source obligation; preserve other needed references and direct task links.'
     save(folder/'writer_input.json', packet)
     design = agent.ask(dump(packet))
     save(folder/'design.json', design)
@@ -104,7 +107,7 @@ def assemble(assignment, design, compiled):
               'Alternative sufficient identifying sets':None if mode=='underspecified' else [list(dict.fromkeys(id_fields))]}
         if mode=='underspecified':
             card['Referent set']={'selection':ob['selection']+'('+ob['table']+')',
-                                 'partial_constraints':ob.get('partial_constraints',[]),
+                                 'partial_constraints':[q['path'][f['node']]+'.'+f['field']+' '+f['op']+' '+dump(f['value']) for q in [query]+selector.get('auxiliary',[]) for f in q.get('filters',[])],
                                  'candidate_sets':[role_handles(design,compiled['bindings'],s) for s in ob['candidate_role_sets']]}
         if ob['task_type']=='read-only':
             card['Answer-computation attributes']=ob['answer_attributes']
@@ -114,7 +117,7 @@ def assemble(assignment, design, compiled):
         cards.append(card)
     primary=design['obligations'][0]
     main=selectors[0]
-    negatives=[r['role'] for r in design['roles'] if r['selection']=='negative' and r['entity']==primary['table']]
+    negatives=[r['role'] for r in design['roles'] if r['selection']=='negative' and MAPPING.get(r['entity'],r['entity'])==primary['table']]
     case.update(cards=cards,task_spec=design['task_spec'],private={
         'mode':primary['mode'],'focal_obligation':1,'selector':main,
         'expected_matches':role_handles(design,compiled['bindings'],primary['target_roles']),
@@ -129,6 +132,13 @@ def assemble(assignment, design, compiled):
 def check(case, assignment, design, compiled):
     result=validate_case(case)
     errors=result['errors']
+    if assignment.get('source_context'):
+        source=assignment['source_context']
+        if case['prompt'] != source['prompt']:
+            errors.append('Environment-only mutation must preserve source prompt byte-for-byte')
+        old=source['cards'][assignment.get('source_obligation',1)-1]['Referent set']
+        if {dump(x) for x in case['private']['expected_matches']} != {dump(x) for x in old}:
+            errors.append('Environment-only mutation must preserve source intended referent set')
     path=[MAPPING[n] for n in assignment['route_nodes']]
     if case['private']['selector']['focal']['path']!=path:
         errors.append('Main identifying path differs from assigned complete route')
@@ -155,7 +165,7 @@ def check_design(design, assignment):
     roles={r['role']:r for r in design['roles']}
     for i,ob in enumerate(design['obligations'],1):
         for role in ob['target_roles'] + [r for group in (ob.get('candidate_role_sets') or []) for r in group]:
-            if role not in roles or roles[role]['entity'] != ob['table']:
+            if role not in roles or MAPPING.get(roles[role]['entity'],roles[role]['entity']) != ob['table']:
                 errors.append(f'O{i}: target/candidate role {role} must name only the referent table {ob["table"]}; intermediate records belong in support roles.')
         for field in ob.get('written_attributes',[]):
             parts=field.split('.')

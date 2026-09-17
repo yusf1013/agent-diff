@@ -1,0 +1,168 @@
+{
+  "prompt": "Who are the admins of the 'Test Workspace'? Reply with their names in #random.",
+  "binding_note": "The admins are identified by the same-record binding user_teams.user_id + user_teams.team_id -> teams.team_name = 'Test Workspace' AND user_teams.role = 'admin'; the answer set is fixed (U03ROBERT23, U07MORGANFREE). Added negatives challenge that exact route: an admin of a different, similarly-generic workspace, an 'owner' (not 'admin') role holder inside Test Workspace, a 'guest' role holder inside Test Workspace, and a member whose title/informal mention suggests 'admin' status without the matching role value.",
+  "roles": [
+    {
+      "role": "admin_match_1",
+      "entity": "USER",
+      "facts": "U03ROBERT23, username='robertwalsh', real_name='Robert Walsh', email='robert@gmail.com', is_bot=false.",
+      "selection": "match",
+      "reason": "A users-table record that ends up being one of the two admins once joined to its workspace membership."
+    },
+    {
+      "role": "admin_match_1_membership",
+      "entity": "WORKSPACE_MEMBERSHIP",
+      "facts": "user_teams row: user_id=U03ROBERT23, team_id=T01WORKSPACE, role='admin'.",
+      "selection": "support",
+      "reason": "The intermediate membership record that binds admin_match_1 to Test Workspace with role='admin'; supplies the join fact rather than embedding it in the users role."
+    },
+    {
+      "role": "admin_match_2",
+      "entity": "USER",
+      "facts": "U07MORGANFREE, username='mfreeman', real_name='Morgan Freeman', email='mfreeman@gmail.com', is_bot=false.",
+      "selection": "match",
+      "reason": "A users-table record that ends up being the second admin once joined to its workspace membership."
+    },
+    {
+      "role": "admin_match_2_membership",
+      "entity": "WORKSPACE_MEMBERSHIP",
+      "facts": "user_teams row: user_id=U07MORGANFREE, team_id=T01WORKSPACE, role='admin'.",
+      "selection": "support",
+      "reason": "The intermediate membership record binding admin_match_2 to Test Workspace with role='admin'."
+    },
+    {
+      "role": "wrong_workspace_admin",
+      "entity": "USER",
+      "facts": "New user U10OSCAR23, username='oscardelgado', real_name='Oscar Delgado', email='oscar@gmail.com', is_bot=false.",
+      "selection": "negative",
+      "reason": "A users-table record holding an admin role, but only within a different workspace, so it fails the Test Workspace binding."
+    },
+    {
+      "role": "wrong_workspace_admin_membership",
+      "entity": "WORKSPACE_MEMBERSHIP",
+      "facts": "New team T02OTHERWORKSPACE ('Other Workspace'); user_teams row: user_id=U10OSCAR23, team_id=T02OTHERWORKSPACE, role='admin'.",
+      "selection": "support",
+      "reason": "Shows the membership joins to a different team than Test Workspace even though the role value is 'admin', which is what the route must exclude."
+    },
+    {
+      "role": "owner_not_admin",
+      "entity": "USER",
+      "facts": "New user U11OLIVIA23, username='olivianowak', real_name='Olivia Nowak', email='olivia@gmail.com', is_bot=false.",
+      "selection": "negative",
+      "reason": "A users-table record in the correct workspace but with a different stored role value (owner, not admin)."
+    },
+    {
+      "role": "owner_not_admin_membership",
+      "entity": "WORKSPACE_MEMBERSHIP",
+      "facts": "user_teams row: user_id=U11OLIVIA23, team_id=T01WORKSPACE, role='owner'.",
+      "selection": "support",
+      "reason": "Correct workspace binding but role='owner', a distinct enum value from 'admin', so the request's admin condition fails."
+    },
+    {
+      "role": "guest_in_workspace",
+      "entity": "USER",
+      "facts": "New user U12PABLO23, username='pabloreyes', real_name='Pablo Reyes', email='pablo@gmail.com', is_bot=false.",
+      "selection": "negative",
+      "reason": "A users-table record in the correct workspace but with role='guest'."
+    },
+    {
+      "role": "guest_in_workspace_membership",
+      "entity": "WORKSPACE_MEMBERSHIP",
+      "facts": "user_teams row: user_id=U12PABLO23, team_id=T01WORKSPACE, role='guest'.",
+      "selection": "support",
+      "reason": "Correct workspace binding but role='guest', which fails the admin condition."
+    },
+    {
+      "role": "title_mismatch_member",
+      "entity": "USER",
+      "facts": "U06HUBERT23, username='hubertmarek', real_name='Hubert Marek', email='hubert@gmail.com', is_bot=false.",
+      "selection": "negative",
+      "reason": "A users-table record whose actual stored membership role is 'member', despite an informal channel mention suggesting admin-like duties."
+    },
+    {
+      "role": "title_mismatch_member_membership",
+      "entity": "WORKSPACE_MEMBERSHIP",
+      "facts": "Existing user_teams row: user_id=U06HUBERT23, team_id=T01WORKSPACE, role='member'; a new message in #general (C01ABCD1234) informally states 'Hubert's been handling admin duties for the sprint rollout, thanks for covering.'",
+      "selection": "support",
+      "reason": "Confirms the stored role remains 'member' despite loose text calling him an admin informally; the route must rely on the role field, not message wording."
+    },
+    {
+      "role": "destination_channel",
+      "entity": "CONVERSATION",
+      "facts": "Channel C02EFGH5678, channel_name='random', team_id=T01WORKSPACE, is_private=false, is_dm=false, is_gc=false, is_archived=false.",
+      "selection": "support",
+      "reason": "Named channel #random is the required posting destination for the reply; facts limited to the channels table's own columns."
+    },
+    {
+      "role": "destination_channel_actor_membership",
+      "entity": "CONVERSATION_MEMBERSHIP",
+      "facts": "channel_members row: channel_id=C02EFGH5678, user_id=U01AGENBOT9 (acting user already joined).",
+      "selection": "support",
+      "reason": "Separate intermediate fact establishing the acting user's access to post in #random, kept apart from the pure channel identity role."
+    }
+  ],
+  "obligations": [
+    {
+      "name": "Resolve the admins of Test Workspace",
+      "description": "Select the users whose workspace_membership record (user_teams) for team_id resolving to teams.team_name='Test Workspace' has role='admin'. Job titles, informal mentions, and other role values (owner, guest, admin-of-a-different-workspace) do not satisfy this condition.",
+      "table": "users",
+      "mode": "multiple",
+      "task_type": "state-changing",
+      "scope": "users holding workspace membership in the seeded Test Workspace (T01WORKSPACE)",
+      "target_roles": [
+        "admin_match_1",
+        "admin_match_2",
+        "wrong_workspace_admin",
+        "owner_not_admin",
+        "guest_in_workspace",
+        "title_mismatch_member"
+      ],
+      "candidate_role_sets": null,
+      "selection": "set",
+      "answer_attributes": [
+        [
+          "users.real_name"
+        ]
+      ]
+    },
+    {
+      "name": "Resolve #random",
+      "description": "Resolve the exact-name channel #random within the acting user's workspace as the posting destination; repeated references to #random share this obligation.",
+      "table": "channels",
+      "mode": "single",
+      "task_type": "state-changing",
+      "scope": "channels in Test Workspace (T01WORKSPACE) accessible to the acting user",
+      "target_roles": [
+        "destination_channel"
+      ],
+      "candidate_role_sets": null,
+      "selection": "one",
+      "answer_attributes": [
+        [
+          "channels.channel_id"
+        ]
+      ],
+      "change_attributes": [
+        [
+          "messages.channel_id"
+        ]
+      ],
+      "written_attributes": [
+        "messages.channel_id",
+        "messages.message_text"
+      ]
+    }
+  ],
+  "task_spec": [
+    {
+      "line": 1,
+      "text": "Post the names of the admins of 'Test Workspace' in #random.",
+      "obligations": [
+        1,
+        2
+      ]
+    }
+  ],
+  "scope_exception": null,
+  "access_plan": "Discover workspace admins via users.list/users.info scoped to team_id=T01WORKSPACE, reading each user's workspace membership role from user_teams; discover the destination via conversations.list filtered to the acting user's workspace to resolve the exact channel name 'random', confirmed by the acting user's existing channel_members row. The added negative records (a second workspace with its own admin, an owner-role user, a guest-role user, and an informal 'admin duties' mention in #general) are all discoverable through the same users.list/user_teams membership and conversations.history routes, but each fails the exact role+workspace binding required by the request."
+}

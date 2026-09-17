@@ -1,0 +1,18 @@
+Checking validity: this prompt asks for admins of "Test Workspace" to be posted in #random, which fits multiple resolution mode since it's plural. The route goes from user through workspace membership to workspace, matching admin roles joined to the team name, and I'm identifying the matching users as the referent set.
+
+Now I'm reviewing the negative examples—wrong workspace admin, owner not admin, guest in workspace, and a title mismatch where the message text informally mentions "admin duties." These negatives are designed to test exact role-field matching rather than text-based inference, which seems like a solid negative design.
+
+I'm also looking at the mechanical design errors flagged for the target and candidate roles, which seem to be compiler notes indicating that role entities should only name the referent table (users) rather than intermediate join records like workspace memberships.
+
+Looking at obligation 1's target_roles list against the "table":"users" field, the admin_match roles fit fine as USER entities, so this error message might be a false flag from the compiler rather than an actual design problem. It seems the complaint may actually concern the "table" field on the obligation rather than the "entity" field on the role itself, so I need to check that distinction more carefully.
+
+Looking at the identifying path listing users, user_teams, teams — that route through workspace membership actually looks correct, so the flagged errors don't seem to match a real violation. This may be a tooling artifact rather than a genuine design defect, but given the ambiguity I lean toward flagging it as an unresolved concern worth surfacing for compiler review.
+
+Actually, the deeper issue might be that candidate_role_sets is null for both obligations while target_roles for obligation 1 lists six roles under a "set" selection — that seems wrong, since negative roles like title_mismatch_member, owner_not_admin, guest_in_workspace, and wrong_workspace_admin are all bundled into target_roles for obligation 1, which shouldn't belong there together.
+
+Looking at concrete examples, the role fact mixing identity with the join attribute (user_teams.role, team_id) confirms this - it should be split so the user role holds identity only, while a separate support role carries the workspace membership attribute, matching the same-record binding check called out in the instructions.
+
+This looks like a genuine mechanical_design_error rather than a writer mistake — the join-table role attribute got conflated with the referent entity, which needs correction before compilation, so I'll flag it as a validity/annotation issue at this review stage. I still need to check whether it affects the underlying request's overall validity.
+
+These are known compiler-fixable errors, not semantic issues with the design itself, so overall validity should pass since the design correctly reflects the request, mode, route, referent set, and negatives. Quality looks strong too - the negatives are meaningful and plausible, and the action is consequential enough to matter. I'll write the final JSON with validity "pass", quality "strong", and list the mechanical issues found.
+

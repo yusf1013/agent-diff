@@ -1,0 +1,36 @@
+I'm mapping out a route through CONVERSATION → MESSAGE → USER → WORKSPACE_MEMBERSHIP → WORKSPACE, where the user is identified only by a partial name like "Morgan" that could ambiguously refer to two different people sharing that first name, creating an intentionally underspecified resolution path.
+
+I'm checking workspace membership roles for both Morgans as a way to discriminate between them—Morgan Stanley is a "member" while Morgan Freeman is "admin"—but when I trace actual messages in the seed data, only Morgan Stanley has authored any, so Morgan Freeman produces no matching path. This breaks the two-referent-set requirement I need.
+
+Looking for another shared-first-name pair that actually works, I land on Robert Walsh (admin) versus Robert Chen (member). Robert Walsh has clear authored messages I can trace, so now I'm checking whether Robert Chen has authored any messages as well to confirm both referent sets are populated.
+
+I confirm U_ROBERT (Robert Chen) authored multiple messages in C_INFRA, including one about the monthly cloud bill coming in $47K over budget. This gives me two distinct possible referent sets depending on which Robert is meant, so the traversal path becomes CONVERSATION → MESSAGE → USER → WORKSPACE_MEMBERSHIP → WORKSPACE.
+
+Since the workspace is singular across all users, the differentiator has to be the role field on the membership (admin vs member), which qualifies as an identifying condition along that route. I'm now thinking through a scenario where a user asks which conversation contains the message from an admin named Robert discussing the budget overspend — though I realize that framing risks pre-resolving which Robert is meant through the content itself.
+
+Testing this out: there are two Roberts, Walsh (admin) and Chen (member), so specifying "admin" actually resolves uniquely to Walsh, not an ambiguous case. But the budget-overspend message is actually from Chen, the member — so filtering by "admin" wouldn't even surface the right message, which breaks the scenario I was trying to build.
+
+I need underspecification that leaves the identity genuinely ambiguous — using just the first name "Robert" without role, so the request could plausibly point to either person depending on which channel or topic is meant.
+
+Wait, mentioning "budget" specifically would pin the query to Robert Chen alone, since Robert Walsh's messages are about unrelated technical issues. To keep genuine ambiguity between the two Roberts, I need a query topic broad enough that it doesn't uniquely identify either one's actual content.
+
+I could add a role condition like "leadership role" but that would resolve the ambiguity too cleanly, pointing uniquely to Robert Walsh as admin — which defeats the underspecified mode I'm aiming for. So the route through WORKSPACE_MEMBERSHIP and WORKSPACE needs to do real identifying work while the shared first name remains the actual source of ambiguity.
+
+I think it works: the identifying conditions are "author's first name is Robert" plus "author is a member of our workspace" — the membership condition scopes the search to the workspace even though it's trivially satisfied by everyone, since workspace membership facts are allowed to identify the workspace root per the exposure rules.
+
+Now I want to phrase the prompt naturally, referring to "Robert" without a surname, implying "our workspace" as the scope, and framing it as an open-ended question like "which channels have messages from Robert" or "what topics does Robert discuss" — something consequential rather than a simple lookup. I'm leaning toward ambiguity here, with multiple possible matches for "Robert" rather than a single clean one.
+
+Two candidates emerge clearly: Robert Walsh (with channels C03IJKL9012 and C01ABCD1234) and Robert Chen (with C_INFRA) — distinct enough sets to create real ambiguity within the same workspace. So the final prompt reads "Which channels have messages posted by Robert, a member of our workspace?" — a natural question that doesn't tip off its own ambiguity, since both Roberts are legitimate workspace members.
+
+I'm now mapping out the roles: the referent entity is the conversation/channel itself with multiple candidate sets, supported by the messages each Robert authored, the two Robert user records as candidate authors, their workspace membership records, and the shared workspace itself.
+
+I should also check negatives — Robert Chen is a channel member in several other channels (C06ALPHADEV, C_MODEL, C_GROWTH, C_FRONTEND) but never actually posted messages there, so those make good negative examples distinguishing membership from authorship.
+
+For Robert Walsh, C02EFGH5678 works similarly: he's a listed member but his actual authored messages fall in C03IJKL9012 and C01ABCD1234 instead, reinforcing that membership alone shouldn't satisfy the authorship requirement.
+
+Now I'm turning to the main obligation of selecting conversations from the CONVERSATION table.
+
+I should pick just one or two negative channel examples for Chen rather than all of them, then add supporting roles for both users plus workspace membership roles for admin/member status and the workspace itself. I might also consider a distinct unrelated third person as a negative example, though it's not strictly necessary.
+
+Both Robert Walsh and Robert Chen share the display name "Robert," which creates a nice ambiguity case, so I don't need to invent extra negative examples for the deployment message since it's already a valid match. Now I'm ready to write out the obligations JSON and describe the access plan for discovery.
+

@@ -1,0 +1,24 @@
+The assigned route is CONVERSATION -> WORKSPACE -> WORKSPACE_MEMBERSHIP -> USER, but my focal path went through channels->messages->users instead, skipping the workspace nodes entirely. I need to rework it to follow channels -> teams -> user_teams -> users while still finding a way to join in the message content filter, since the route nodes strictly require those workspace-related tables.
+
+Filtering on display_name='Robert' happens on the users node, but the message text condition and figuring out whether the participant is a channel member, message author, or reaction contributor still needs separate handling since messages isn't part of the assigned route.
+
+The base route only has CONVERSATION, WORKSPACE, WORKSPACE_MEMBERSHIP, USER, ending at USER, which doesn't reach the channel with the specific message content directly—I need to figure out if the target entity is actually the channel, requiring a different route structure.
+
+I'm realizing the message-author link isn't captured in this fixed 4-node path, since connecting user to channel through authored messages requires an extra table not present in the route. So maybe the route is really validating workspace membership only, while the message authorship connection happens through a separate join back to node 0 - but the fixed path structure doesn't obviously support that kind of cycle, which likely explains the validator's mismatch error about the path differing from the assigned route.
+
+Actually extending the path to include messages creates a self-join problem since messages needs to connect back to the same root channel and to the last user node simultaneously, which the joins list structure doesn't cleanly support without an implicit extra binding.
+
+So the validator's route means going channels->teams->user_teams->users, filtering by display_name='Robert' on users. But workspace membership alone can't distinguish specific channels since all channels share the same workspace and Robert is a member of the whole workspace, not a particular channel - which explains why the negatives include basically every other channel in that workspace.
+
+Since only two channels actually matched, this workspace-only filter can't be the complete story - there must be a separate constraint tied to message content, so I'm reconsidering whether an auxiliary query on messages handles the author/content requirement independently, while the focal path enforces the channel-team-user route.
+
+Now I see it clearly: node0 of the auxiliary matches the root table's identity, so it just adds an extra filter directly on root rows, independent of the focal join chain. Applying that to my task, root_table should be channels, and the focal path needs to trace channels -> teams -> user_teams -> users to establish workspace membership.
+
+This matches the example pattern where the auxiliary carries its own path and join. Since the error indicates the main path must follow the assigned route exactly, I'll restructure so the focal path strictly follows channels->teams->user_teams->users for workspace membership, while the auxiliary handles the message-author-content filter separately.
+
+I'm adding an auxiliary constraint that ties channels to messages to users, joining on channel_id and user_id, filtering for Robert's display name and message text containing "when," which intersects back with the root via the shared channels node. I'm considering whether to add a team scope filter, but since the focal path already restricts to the correct workspace via membership, I'll likely leave scope empty to avoid over-constraining.
+
+The focal query alone would match every channel in that workspace since all listed channels belong to T01WORKSPACE and Robert is a workspace member regardless of channel, so it returns true for every candidate channel—matching the expected candidate population, with the auxiliary constraint narrowing that down further to the actual answer.
+
+Combined via AND, focal ∩ auxiliary gives exactly the two expected matches, which resolves the path mismatch while keeping the correct final answer. I'll update the JSON now.
+

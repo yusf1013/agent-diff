@@ -1,0 +1,128 @@
+{
+  "prompt": "In workspace T01WORKSPACE, I'm putting together an on-call rotation announcement. Can you pull together, for each non-archived, non-DM channel there whose topic is about infrastructure operations or model training work, the list of members along with when each of them joined?",
+  "binding_note": "Selection is bound by CONVERSATION_MEMBERSHIP → CONVERSATION → WORKSPACE: the workspace is fixed to the visible team ID T01WORKSPACE, and within that bounded channel corpus only channels that are non-archived, non-DM, and whose stored topic text covers infrastructure operations or model-training work qualify; their membership rows (user + join time) are the requested collection.",
+  "roles": [
+    {
+      "role": "workspace_scope",
+      "entity": "teams",
+      "facts": "team_id T01WORKSPACE, the only visible workspace ID for the actor; no stored workspace name lookup is used to reach it",
+      "selection": "support",
+      "reason": "anchors the WORKSPACE end of the route so conversations.list can be scoped by team_id"
+    },
+    {
+      "role": "infra_channel",
+      "entity": "channels",
+      "facts": "C_INFRA 'core-infra', team_id T01WORKSPACE, topic_text 'Infrastructure, K8s, AWS, on-call, incidents', is_archived false, is_dm false",
+      "selection": "match",
+      "reason": "non-archived, non-DM channel in-scope whose topic explicitly covers infrastructure operations"
+    },
+    {
+      "role": "model_channel",
+      "entity": "channels",
+      "facts": "C_MODEL 'model-research', team_id T01WORKSPACE, topic_text 'Model training, evals, papers, architectures', is_archived false, is_dm false",
+      "selection": "match",
+      "reason": "non-archived, non-DM channel in-scope whose topic explicitly covers model training work"
+    },
+    {
+      "role": "infra_memberships",
+      "entity": "channel_members",
+      "facts": "channel_members rows for channel_id C_INFRA: U01AGENBOT9, U_PRIYA, U_LUKAS, U_SOPHIE, U_OLENA, U_MATEO, U_KENJI, U_ROBERT, U_AISHA, each with a joined_at",
+      "selection": "match",
+      "reason": "conversation membership rows on the qualifying infra channel, the requested referent entities"
+    },
+    {
+      "role": "model_memberships",
+      "entity": "channel_members",
+      "facts": "channel_members rows for channel_id C_MODEL: U01AGENBOT9, U_PRIYA, U_LUKAS, U_SOPHIE, U_OLENA, U_MATEO, U_KENJI, U_ROBERT, U_AISHA, each with a joined_at",
+      "selection": "match",
+      "reason": "conversation membership rows on the qualifying model-research channel, the requested referent entities"
+    },
+    {
+      "role": "growth_channel_memberships",
+      "entity": "channel_members",
+      "facts": "C_GROWTH 'product-growth', topic_text 'User metrics, A/B tests, expansion, APAC', non-archived, non-DM, with its own member rows",
+      "selection": "negative",
+      "reason": "same workspace and non-archived/non-DM like the target, but topic is about growth metrics, not infra or model training"
+    },
+    {
+      "role": "frontend_channel_memberships",
+      "entity": "channel_members",
+      "facts": "C_FRONTEND 'frontend', topic_text 'React, TypeScript, UI/UX, design system', non-archived, non-DM, with its own member rows",
+      "selection": "negative",
+      "reason": "qualifies on workspace/archive/DM conditions but topic is UI engineering, not infra or model training"
+    },
+    {
+      "role": "general_engineering_memberships",
+      "entity": "channel_members",
+      "facts": "C03IJKL9012 'engineering', topic_text 'Engineering Team' (generic, no infra/model-training wording), non-archived, non-DM",
+      "selection": "negative",
+      "reason": "generic engineering topic lacks the specific infra-operations or model-training wording the request keys on"
+    },
+    {
+      "role": "archived_project_memberships",
+      "entity": "channel_members",
+      "facts": "C_OLD_PROJECT 'old-project-q3', topic_text 'Q3 2025 Project - ARCHIVED', is_archived true",
+      "selection": "negative",
+      "reason": "excluded purely on the archived flag even though it is an ordinary project channel in the same workspace"
+    },
+    {
+      "role": "dm_memberships",
+      "entity": "channel_members",
+      "facts": "D01AGENTSOPHIE, is_dm true, members U01AGENBOT9 and U_SOPHIE",
+      "selection": "negative",
+      "reason": "excluded by conversation kind: it is a DM, not a channel, regardless of any topical relevance"
+    },
+    {
+      "role": "alpha_dev_memberships",
+      "entity": "channel_members",
+      "facts": "C06ALPHADEV 'project-alpha-dev', topic_text 'Alpha Project Development', non-archived, non-DM, members include U_PRIYA, U_LUKAS, U_MATEO, U_KENJI, U_ROBERT, U_AISHA",
+      "selection": "negative",
+      "reason": "qualifies on workspace/archive/DM conditions but its topic concerns a specific project's development, not infrastructure operations or model training generally"
+    }
+  ],
+  "obligations": [
+    {
+      "name": "onboard_scope_memberships",
+      "description": "The conversation memberships (member + join time) belonging to the non-archived, non-DM channels of workspace T01WORKSPACE whose topic text covers infrastructure operations or model-training work — i.e. the membership rows on core-infra and model-research.",
+      "table": "channel_members",
+      "mode": "multiple",
+      "task_type": "read-only",
+      "scope": "conversation memberships on qualifying channels within one visible workspace",
+      "target_roles": [
+        "infra_memberships",
+        "model_memberships"
+      ],
+      "candidate_role_sets": null,
+      "selection": "set",
+      "answer_attributes": [
+        [
+          "channel_members.user_id"
+        ],
+        [
+          "channel_members.channel_id"
+        ],
+        [
+          "channel_members.joined_at"
+        ]
+      ]
+    }
+  ],
+  "task_spec": [
+    {
+      "line": 1,
+      "text": "Within workspace T01WORKSPACE, find the non-archived, non-DM channels whose topic describes infrastructure operations or model-training work.",
+      "obligations": [
+        1
+      ]
+    },
+    {
+      "line": 2,
+      "text": "For those channels, list each member and their join time so the on-call rotation announcement can be drafted.",
+      "obligations": [
+        1
+      ]
+    }
+  ],
+  "scope_exception": null,
+  "access_plan": "Actor already knows the workspace ID T01WORKSPACE (no stored workspace-name lookup needed). Call conversations.list with team_id=T01WORKSPACE and types=public_channel,private_channel to enumerate the bounded channel corpus, read each channel's topic_text and is_archived/is_dm flags via conversations.info to find the qualifying infra/model-training channels (excluding archived, DM, and off-topic channels like growth/frontend/generic-engineering/alpha-dev), then call conversations.members (and joined_at from channel_members) for each qualifying channel to produce the membership+join-time list."
+}

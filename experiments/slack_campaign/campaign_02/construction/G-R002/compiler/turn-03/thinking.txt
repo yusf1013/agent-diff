@@ -1,0 +1,54 @@
+Same errors persisting tells me my self-join closure hypothesis was wrong—the validator seems to strictly require the focal path to match route_nodes as an exact literal table sequence tied to the CONVERSATION, WORKSPACE, WORKSPACE_MEMBERSHIP entity types.
+
+So the focal query needs to be exactly channels->teams->user_teams, no extending further, with participant identification (member/author/reactor) handled entirely through auxiliary queries instead. But if the focal path alone matches all channels in the workspace, that contradicts the empty computed_matches result from my prior submission, suggesting the issue was a structural or syntax error in my path rather than a semantic mismatch.
+
+Given the same "Main identifying path differs from assigned complete route" error appears across two different query attempts, the grading harness is likely comparing my focal.path against a fixed canonical route with an expected exact table sequence and join conditions -- any deviation from that fixed structure triggers the error and likely produces the empty computed_matches result too.
+
+This means the fix isn't about the query's semantics but about matching the exact expected node sequence: channels to teams to user_teams, with two joins. That raises the question of how participant correlation (channel member, message author, or reaction contributor) fits into this rigid path, since the design notes suggest that identification of the participant belongs within the focal query itself rather than through additional relations.
+
+Maybe I should reconsider the route as starting at CONVERSATION, pulling all workspace members as candidates, then applying the participant qualification as a filter or scope condition rather than an extra path node - comparing the member's user_id against identifiers in channel_members, messages, or reactions instead of treating those as separate join hops.
+
+But selector filters don't support cross-table subqueries, so maybe the actual intended path is channels -> teams -> user_teams -> users -> channel_members without closing back to channels, letting the query executor implicitly correlate channel_members's channel_id to the root node. Yet that raises the question of what represents the answer entity, since the root_table (channels, node0) should always be what's returned.
+
+Actually maybe correlation isn't enforced at all here — the FK "channel_members.channel_id" isn't the join used between users and channel_members, so no link back to node0 exists. This suggests the intended matches might just be every channel in the workspace, since any channel's workspace inherently has an admin.
+
+But that contradicts the exclusion of negative_channel_growth and negative_channel_alpha_dev, which sit in the same workspace and would also satisfy a workspace-only reading. So participant correlation must actually be enforced somehow, meaning I need to reconsider the join semantics.
+
+My second attempt already had the path starting with channels, teams, user_teams, users, channel_members, channels — matching the first three route nodes exactly — yet it still produced the same "main identifying path differs" error as before. That suggests the strictness isn't about the first-N prefix matching but something else entirely about how the full path or join structure is being compared.
+
+Maybe revisiting "channels" at the end is actually disallowed and causes execution to fail silently, and the "differs" check is unrelated, perhaps demanding exactly three nodes with zero extension permitted. If so, the real fix might require reaching the participant through a different join path from user_teams rather than extending the focal path at all.
+
+But there's no direct FK from user_teams to channel_members, so maybe the intended structure skips an explicit "teams" node entirely — since channels and user_teams both share a team_id field, perhaps the path is meant to be just channels joined directly to user_teams via that shared field, treating "workspace" as an implicit attribute rather than a separate joined table.
+
+So maybe I can try a two-node path of channels and user_teams joined directly on team_id, treating the workspace/teams table as an implicit intermediate concept rather than an explicit node in the route.
+
+Actually, teams is likely a genuine required node, so the three-node backbone (channels-teams-user_teams) might need to stand as the entire focal query, with participant matches handled through separate auxiliary queries rooted at channels, then combined via intersection.
+
+But intersection logic seems wrong here—if "complete selector matches" means focal AND every auxiliary must hold simultaneously, that breaks down since a channel only needs member OR author OR reactor to satisfy participation, not all three at once.
+
+Looking at the guidance more carefully, auxiliary queries seem meant only for truly independent ANDed constraints, not OR alternatives. So for a disjunctive request like member/author/reactor, the design seems to intend picking one primary connecting relation as focal rather than ORing across three relations through auxiliary, though another note suggests the selector should compute the union of eligible alternatives for underspecified cases rather than letting me arbitrarily choose one.
+
+But I'm second-guessing whether one selector object per obligation is truly fixed at exactly one — rereading it, that phrasing does seem to lock it to a single selector per obligation, meaning the full disjunction needs to be represented within one focal query and path together, with all conditions bound in the same query. Since the engine only supports a strict linear path, I need to figure out how to represent that disjunction within a single chain.
+
+OR semantics aren't natively supported here unless there's a trick like "in"/"not_in," but that doesn't help since the union spans different relation types rather than field values. Given the repeated failures, maybe the safest approach is to stick to the assigned route exactly as three nodes with no extension, letting the auxiliary carry the participation condition, and accept that any additional filter must be embedded elsewhere rather than extending the path.
+
+But the real issue is these three tables don't contain channel_members/messages/reactions data at all, so no filter within them can encode participation -- meaning a focal query checking "does the channel's workspace have an admin" would trivially match all twelve channels and still fail to distinguish negatives. So it must be that the harness computes matches as the intersection of focal and auxiliary results, with the auxiliary independently enforcing the "has direct participant" constraint from the same root.
+
+Maybe the intended route just skips the workspace node entirely, filtering team_id directly on user_teams like my very first attempt did—but that also got flagged with the identical error, so that theory doesn't hold either.
+
+Both wrong attempts share one thing: computed_matches came back empty, which points to an actual execution-level failure rather than route mismatch. I need to check the joins and filters in attempt one carefully for a real bug—checking the channel_members and user_teams join conditions plus the role and team_id filters.
+
+Digging into the seed data, U03ROBERT23 does have a channel_members row for C01ABCD1234, and the admin role matches the enum properly. So attempt 1's focal path should logically return C01ABCD1234, C02EFGH5678, and C03IJKL9012 as matches—but the actual computed result from that first validation was empty, which is the discrepancy I need to explain.
+
+That empty result also came with errors about the focal card's referent set differing from recomputed matches, and the identifying path not matching the assigned route—suggesting the validator rejects the query structurally before execution, defaulting to empty matches rather than actually evaluating semantic correctness. That means the real fix has to nail the literal route requirement, with any OR/union logic handled entirely through auxiliary queries instead.
+
+Point 5 clarifies that the selector computes the union of eligible alternatives—exactly matching my "member OR author OR reactor" case—confirming auxiliary queries do get unioned with the focal query in multiple/underspecified contexts. But each individual query, including auxiliaries, still needs the exact literal route starting from channels to teams to user_teams.
+
+However, my second attempt already followed that exact three-node structure before extending toward participant, and it still failed the same way. This suggests the constraint may be even stricter: perhaps the "main identifying path" the error references refers specifically to the focal query alone, meaning the focal must be exactly those three nodes with nothing appended, while auxiliaries have more freedom to extend further to reach participant.
+
+But that focal alone matches all twelve channels in the workspace regardless of admin status per channel, which would wrongly include channels I need to exclude — so the matching logic must not simply be a union of focal and auxiliary results, since that would still capture everything. It's likely instead an intersection where each auxiliary constraint narrows down the eligible set independently, which fits better with treating auxiliary queries as additional AND-ed conditions rather than alternatives to union together.
+
+So maybe only the focal query needs to be the pure three-node route, while auxiliary queries can use simpler direct correlations without the extra teams roundtrip. I'll set focal to just channels-teams-user_teams with an admin role filter on the join, which matches all twelve channels since the workspace has admins - that's fine since restriction happens through the auxiliary intersections or unions.
+
+For the auxiliaries I define three paths: one for members (channels-channel_members-users-user_teams), one for authors (channels-messages-users-user_teams), and one for reactors (channels-messages-message_reactions-users-user_teams), each filtering for admin role on the relevant user_teams node. This mirrors my very first submission's structure, just with focal reassigned to the pure canonical route instead of the participant path - this seems like the most plausible fix, so I'll submit this.
+

@@ -708,14 +708,36 @@ def certify_visibility(case, state, report):
         # An API-established false conjunct already excludes this root. We still
         # prove auxiliary conditions for claimed focal negatives, since their
         # required resemblance is a separate construction claim.
-        if focal is False and key(root_table, root) not in claimed_negatives:
+        if focal is False and (case.get("private", {}).get("workflow_version") == 2 or key(root_table, root) not in claimed_negatives):
             continue
         for query in selector["auxiliary"]:
             if inspect_query(root, query) is False:
                 break
+    proven_negatives = []
+    if case.get("private", {}).get("workflow_version") == 2:
+        for row in state.get(root_table, []):
+            if key(root_table, row) not in claimed_negatives:
+                continue
+            start_errors, start_limits = len(errors), len(limitations)
+            scope_false = False
+            for predicate in selector["scope"]:
+                field_check(root_table, row, predicate["field"], predicate)
+                scope_false |= not _compare(_field_value(root_table, row, predicate["field"]), predicate["op"], predicate["value"])
+            excluded = scope_false and len(errors) == start_errors and len(limitations) == start_limits
+            if not excluded:
+                # Any independently API-established false conjunct suffices.
+                for query in [selector["focal"], *selector["auxiliary"]]:
+                    if inspect_query(row, query) is False:
+                        excluded = True
+                        break
+            if excluded:
+                proven_negatives.append(canonical_handle(root_table, row))
+            # These optional additional proofs do not alter the original access verdict.
+            del errors[start_errors:]
+            del limitations[start_limits:]
     errors = sorted(set(errors))
     limitations = sorted(set(limitations))
-    result = {"certified": not errors and not limitations, "errors": errors, "limitations": limitations,
+    result = {"proven_negatives": proven_negatives, "certified": not errors and not limitations, "errors": errors, "limitations": limitations,
             "required_rows": {table: len(keys) for table, keys in required.items() if keys},
             "checked_fields": len(checked_fields), "checked_adjacencies": len(checked_edges),
             "discoverable_probe_indices": used,
@@ -724,6 +746,7 @@ def certify_visibility(case, state, report):
         reverse = reverse_channel_anchor(case, state, report, used, observed, complete_history)
         if reverse:
             reverse["prior_forward_check"] = result
+            reverse["proven_negatives"] = proven_negatives
             return reverse
     return result
 

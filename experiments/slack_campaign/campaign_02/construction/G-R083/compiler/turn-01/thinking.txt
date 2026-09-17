@@ -1,0 +1,16 @@
+I'm cross-checking the design's referenced message IDs against the base seed to confirm they actually exist, verifying each one like Priya's pprof delta message and Łukasz's utilization message.
+
+Now I'm planning the reactions to insert for each scenario: which users need thumbsup or eyes reactions on which messages, keeping negative-test messages (wrong channel, no reaction) intentionally minimal. I'm also confirming channel membership so the actor bot has visibility into both C_INFRA and C_MODEL, though noting the negative-scope message doesn't strictly require this.
+
+For the selector expressing "reacted by both Priya and Lukas with thumbsup," I'm working through whether the selector syntax supports a self-join on message_reactions twice (once per user) via a path structure, since the obligation needs both conditions satisfied jointly rather than independently.
+
+Actually two adjacent message_reactions nodes can't join since there's no foreign key linking reactions to each other—the path structure seems inherently linear, so branching to the same parent twice isn't supported. I'm reconsidering: maybe I should scope on messages and filter with a count of distinct matching users at the reactions node instead of trying to chain two reaction hops.
+
+So actually this resolves per root row: for each candidate message, count distinct reactors among Priya and Lukas with thumbsup, and check equality to 2. Now I'm drafting the selector JSON with root_table messages, scope filtering by channel_id, and focal path/joins/filters matching that logic.
+
+Checking against the negative examples confirms only the two target messages satisfy count=2, while the wrong-channel, wrong-emoji, single-reactor, and no-reaction cases are all excluded correctly. Then I'm mapping role labels to native handles: channel_scope, reactor_priya, reactor_lukas, and match_message_pprof to their respective IDs/values.
+
+Now I'm building the seed_edits insert statements, adding thumbsup reaction rows for Priya and Lukas on the pprof and util messages, plus reaction rows for the negative-case messages (only_priya, diff_emoji, wrong_channel) so the filters get properly exercised.
+
+The negative_no_reaction message needs no insert since it should remain reaction-free. That covers all nine edits, and now I'm putting together the final JSON response.
+

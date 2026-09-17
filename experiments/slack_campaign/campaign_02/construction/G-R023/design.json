@@ -1,0 +1,90 @@
+{
+  "prompt": "Which channels contain messages that I reacted to with an eyes emoji?",
+  "binding_note": "Match requires the same reaction record to have message_id pointing at a message in the conversation, user_id equal to the acting user (agent1), and reaction_type 'eyes'; authoring a message or reacting with a different emoji/different user does not satisfy all three at once.",
+  "roles": [
+    {
+      "role": "match_engineering_channel",
+      "entity": "channels",
+      "facts": "C03IJKL9012 'engineering' contains message 1706110000.000100, which already has a message_reactions row: user_id=U01AGENBOT9, reaction_type='eyes'.",
+      "selection": "match",
+      "reason": "Existing seeded reaction by the acting user with the eyes emoji on a message in this channel."
+    },
+    {
+      "role": "match_frontend_channel",
+      "entity": "channels",
+      "facts": "C_FRONTEND contains message 1706043661.000000 (Aisha's dashboard-latency message); add message_reactions row: user_id=U01AGENBOT9, reaction_type='eyes'.",
+      "selection": "match",
+      "reason": "Second channel where the acting user left an eyes reaction, forming the multiple-selection set."
+    },
+    {
+      "role": "support_reaction_engineering",
+      "entity": "message_reactions",
+      "facts": "message_id=1706110000.000100, user_id=U01AGENBOT9, reaction_type=eyes",
+      "selection": "support",
+      "reason": "Reaction record binding agent1 to the engineering channel message."
+    },
+    {
+      "role": "support_reaction_frontend",
+      "entity": "message_reactions",
+      "facts": "message_id=1706043661.000000, user_id=U01AGENBOT9, reaction_type=eyes",
+      "selection": "support",
+      "reason": "Reaction record binding agent1 to the frontend channel message."
+    },
+    {
+      "role": "negative_infra_wrong_emoji",
+      "entity": "channels",
+      "facts": "C_INFRA contains message 1706000208.000000 ('High memory pressure on cluster-b'); add message_reactions row: user_id=U01AGENBOT9, reaction_type='thumbsup'.",
+      "selection": "negative",
+      "reason": "Agent1 did react in this channel, but with thumbsup, not eyes, so it must be excluded despite same user and channel path."
+    },
+    {
+      "role": "negative_model_wrong_user",
+      "entity": "channels",
+      "facts": "C_MODEL contains message 1706012456.000000 (Sophie's checkpoint update); add message_reactions row: user_id=U_SOPHIE, reaction_type='eyes'.",
+      "selection": "negative",
+      "reason": "An eyes reaction exists in this channel, but by Sophie, not the acting user, so it fails the reactor condition."
+    },
+    {
+      "role": "negative_random_authoring_split",
+      "entity": "channels",
+      "facts": "C02EFGH5678 contains message 1699564800.000123 authored by U01AGENBOT9; add message_reactions row: user_id=U02JOHNDOE1, reaction_type='eyes'.",
+      "selection": "negative",
+      "reason": "Agent1 authored the message here, but the eyes reaction was left by John Doe, not agent1, testing that authorship cannot substitute for the reaction relationship."
+    }
+  ],
+  "obligations": [
+    {
+      "name": "reacted_channels",
+      "description": "Conversations that contain at least one message on which the acting user (agent1) left a reaction with emoji name 'eyes'; selection must follow conversation→message→reaction bindings on the same records.",
+      "table": "channels",
+      "mode": "multiple",
+      "task_type": "read-only",
+      "scope": "channels the acting user is a member of, discoverable via users.conversations/conversations.history and reactions.get",
+      "target_roles": [
+        "match_engineering_channel",
+        "match_frontend_channel"
+      ],
+      "candidate_role_sets": null,
+      "selection": "set",
+      "answer_attributes": [
+        [
+          "channels.channel_name"
+        ],
+        [
+          "channels.channel_id"
+        ]
+      ]
+    }
+  ],
+  "task_spec": [
+    {
+      "line": 1,
+      "text": "List the channels that contain a message I reacted to with an eyes emoji.",
+      "obligations": [
+        1
+      ]
+    }
+  ],
+  "scope_exception": null,
+  "access_plan": "Discover the acting user's conversations via users.conversations (or conversations.list filtered to memberships), pull each channel's messages with conversations.history, and check reactions per message via reactions.get to find those where the reactor is the acting user and the emoji name is 'eyes'; the matching messages' channel_id fields identify the answer conversations."
+}

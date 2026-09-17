@@ -1,0 +1,34 @@
+I'm designing a User→Reaction route within the readable channel scope, needing underspecified identifying conditions that could resolve to multiple distinct users—thinking about using a shared first name like "Robert" across different user accounts to create ambiguity.
+
+I found two candidate users, Robert Walsh and Robert Chen, which gives me the ambiguity I need. Now I'm planning to have someone react with a specific emoji to a specific message in a specific channel, so a request to thank "the Robert who reacted" becomes genuinely ambiguous between the two, and I'm working out which channel and message would make this scenario coherent.
+
+I need concrete scenario grounding: two Roberts reacting with the same emoji to different messages that both plausibly match a vague description, creating genuine ambiguity. I'll set up Robert Walsh reacting thumbsup to a message about circuit-tracer PyTorch OOM errors in C03IJKL9012, since he's a member there, while checking whether Robert Chen's channel memberships could produce a similarly matching message elsewhere.
+
+With route_nodes limited to USER and REACTION, the identifying conditions need to live on those two tables' attributes and relations rather than pulling in message content — though a reaction still inherently points to a specific message, so some minimal reference is unavoidable, just not a content-based one.
+
+The message_id field within Reaction serves as the natural anchor, so it doesn't need to be a separate route node. Since exposure_qualification calls for message, user, channel, reaction and membership facts in a readable scope, I'll design an underspecified case with two Roberts: adding a reaction from Robert Walsh (eyes emoji) to the existing bot message about auth issues in that channel.
+
+For the second ambiguous entry, I'm considering Robert Chen reacting to a different message, but he isn't a member of C03IJKL9012 like Robert Walsh is. To create genuine ambiguity I should place his reaction in a different channel the actor can still discover -- checking which channels agent1 belongs to, and noticing it's not a member of C_GROWTH, so I need to verify that channel's membership list.
+
+Since C_GROWTH doesn't include the actor, that path is closed. Instead I'll use a channel both Robert Chen and the actor share, like C_INFRA, C_MODEL, or C_FRONTEND, where there's already message content authored by Robert Chen himself that he could plausibly react to.
+
+I'm thinking Robert Chen reacts with 👀 to Lukas's message about the OOM investigation and reverting to find the root cause, while Robert Walsh reacts with 👀 to the agent's own message about noticing auth issues in another channel — but the actual request needs one description that ambiguously matches both Roberts, so I need to reconcile this carefully.
+
+The trick per instructions is to keep the ambiguity centered on the shared first name "Robert" rather than crafting a message description that fits both scenarios exactly. So the deliberate ambiguity comes from having two people named Robert who each reacted with the same emoji, and the identifying detail I supply should lean on that shared name plus the 👀 reaction rather than forcing a single message description to cover both cases.
+
+This gives clean ambiguity: identical reaction to the identical message, but two people share the first name Robert, so a request to DM "Robert who reacted with 👀" is genuinely unresolvable without clarification — mirroring the calibration example's structure.
+
+I'll phrase the final prompt naturally, without hinting at the ambiguity: something like asking to DM Robert about the circuit-tracer OOM thread in engineering, thanking him for flagging it, and asking if the PyTorch rewrite fix is ready.
+
+Now I need to set up the underlying data so two different Roberts both satisfy the criteria — adding reaction records for both Robert Walsh and Robert Chen on Łukasz's message, and making sure Robert Chen is added as a member of the engineering channel since he isn't currently.
+
+I also want to plant negatives to make selection non-trivial: another user reacting with a different emoji, and Robert reacting with the wrong emoji on an unrelated message, so the correct match still requires filtering carefully.
+
+I'm now sketching the actual reaction records to insert - matching the correct user/emoji/message combination alongside a couple of near-miss decoys with mismatched users or emojis.
+
+Adding one more negative case with a mismatched user and emoji to strengthen the distractor set, confirming that combined message+emoji conditions uniquely identify the two Roberts. Now I'm framing the obligations: the target is underspecified across USER, with candidate role sets splitting into robert_walsh and robert_chen separately, and the answer attributes needed are user_id, real_name, and username for DM target identification.
+
+This is a state-changing task since sending the DM requires opening a conversation and posting a message, so I'm treating the reacted-to message as a supporting role rather than a separate obligation, and defining the primary obligation as selecting the correct Robert who reacted with the specified emoji.
+
+The ambiguity is genuine since both Robert Walsh and Robert Chen match "real_name starts with Robert" against the reaction data, so I'm marking this underspecified with two candidate role sets, one per user, and selection mode "one." Now I'm assembling the roles list with both Roberts as matches, the reacted message and decoys as supporting context, and the agent, then writing out the final JSON structure.
+

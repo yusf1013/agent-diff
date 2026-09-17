@@ -1,0 +1,30 @@
+I'm rethinking why the filters matched too broadly - the condition requires both substrings to appear together in a message, so I should search specifically for other messages containing "OOM" to see what's actually matching.
+
+The C_INFRA message about "OOM kills detected" doesn't contain "circuit-tracer", so it shouldn't satisfy the combined filter, yet other channels seem to be matching anyway. That means I need to reconsider how the join works - since each channel_member row pairs with potentially different messages, the same tuple might not require all conditions on a single message, which could explain the unexpected matches.
+
+Actually, I realize the real bug: messages are joined by user_id, not tied to the specific channel node - so any message authored by a shared member (like U_LUKAS, who belongs to many channels) can satisfy the filter regardless of which channel is being evaluated, causing false matches across all channels that share that member. I need to explicitly constrain messages.channel_id to equal the channel node's id to fix this.
+
+The problem is that channel_members.channel_id needs to match the root channel's id, but filters can't do cross-node comparisons like that -- it would need to be enforced implicitly through the join direction itself, which isn't how this schema works.
+
+Given this complexity, I think the cleaner approach is to structure the path starting at channels then joining to channel_members directly through that foreign key.
+
+I need to reconsider whether the message truly must be posted in the target channel itself, not just that the author is a member. Since the anchor message is confirmed in C03IJKL9012, and the validator shows too many matches without a channel tie, the design must intend the message's channel to equal the membership's channel to narrow it to a single result.
+
+This creates a diamond join problem: I need messages linked to channels by channel_id, and separately channel_members linked to both the same user and the same channel, which a simple linear path can't express cleanly. I'm testing different path orderings—like chaining channels through messages through channel_members through users—to see if any sequence naturally enforces both constraints simultaneously.
+
+I wonder if repeating a table name in the path could represent a self-join back to the root node, so maybe the path could end with "channels" again to validate against channel_members.channel_id — trying that sequence to see if it fits the pattern.
+
+That approach won't force the cycle back to the same channel without an explicit dynamic equality, which the tool can't express as a literal filter. I'm reconsidering whether hardcoding the channel would violate the "no ID restrictions" guidance, and leaning toward tying the message to the channel directly through the message's channel_id and reaction join instead of chaining through membership.
+
+I'm still unsure whether auxiliary constraints intersect with the focal candidate set or apply as independent existence checks rooted separately at "channels" -- each auxiliary query seems to restart from the root table and apply its own filters, which complicates how they combine with the focal selection.
+
+Since the message text is specific enough that likely only one message globally matches it, both the focal membership chain and the auxiliary direct channel-message chain should converge on the same underlying message, satisfying the conjunction without needing explicit identity linking between them.
+
+The focal condition alone would match any channel containing Lukas as a member, but combined with the auxiliary constraint that the exact message physically exists in that channel, only C03IJKL9012 satisfies both simultaneously, giving exactly one match as required.
+
+Even though Lukas is a member of several other channels too, the auxiliary constraint about the specific message and reaction narrows things down to just C03IJKL9012. I want to make sure other non-matching channels, like C_INFRA where John Doe isn't even a member, don't accidentally satisfy the auxiliary condition either.
+
+Checking C_INFRA specifically - its message content is about GPU cluster capacity, which doesn't match the required text, so auxiliary is false there and it's correctly excluded regardless of focal status. I'm assuming the validator checks the full intersection of scope, focal, and auxiliary conditions rather than just focal alone.
+
+The wrong-emoji negative example in the same channel also gets excluded since the reaction type filter requires 'eyes' specifically, not thumbsup, so it doesn't introduce any new matching channels. I'm ready to write the final corrected selector logic.
+

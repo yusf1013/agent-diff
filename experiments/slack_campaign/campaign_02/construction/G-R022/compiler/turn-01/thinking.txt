@@ -1,0 +1,20 @@
+I need to figure out which reaction rows to add — the tada reaction on the first message, the wrong-emoji thumbsup case, and the wrong-message tada case — while checking against the existing base seed reactions to avoid duplicating what's already there.
+
+I've confirmed all three target messages (Priya's CUDA message, Olena's message, and Robert's cloud bill message) already exist in the base seed. Now I'm checking channel membership: U04OMER23 isn't currently a member of C_INFRA in the base seed data, so I'll need to insert that membership row, and I'm also confirming the actor can read C_INFRA since it's a public, discoverable channel.
+
+I've verified U04OMER23's other channel activity is limited to a single message in C02EFGH5678, so no additional inserts are needed there. Now I'm assembling the message_reactions inserts, matching correct reactors against the target messages and marking mismatched entries (wrong emoji or wrong user) as negative cases.
+
+For the channel_members insert I'm adding U04OMER23 to C_INFRA. Then I'm working out the main selector chain: it needs to trace channels through messages, reactions, and users in a single route to find the channel authored by whoever tapped tada on Priya's message in C_INFRA, keeping all conditions within that one query per the routing rule.
+
+Actually let me simplify: path from channels to messages identifies the channel's message, then to users gives the author. Since joins preserve identity per tuple, I can add message_reactions on that same user node to check they reacted tada on the target message, keeping the path as channels, messages, users, message_reactions.
+
+So node1 (message in candidate channel) links to node2 (author/user), and node3 (message_reactions) filters on message_id equal to the target and reaction_type equal to tada -- without restricting node1's channel or content, since the channel itself is what we're solving for.
+
+Since the message_id in the filter uniquely pins down Priya's specific message already in C_INFRA, I don't think I need to separately constrain that reaction's channel.
+
+This is the sole selector for the reactor_authored_channel obligation. Now I'm mapping role labels to their native handles: the target message, the reaction match with user U04OMER23 and reaction type tada, the reactor user, the author's channel C02EFGH5678, and a wrong-emoji variant for contrast.
+
+I'm also assembling additional decoy bindings — a wrong message with tada from a different user, a right-emoji-wrong-message case where Robert tags his own message in C_INFRA with tada, and the reaction location channel itself. I'm considering including C_INFRA as a negative referent since it's the plausible-but-wrong channel a solver might pick if they only matched on emoji rather than the correct message-reactor chain, which would lead them to Robert's authored channel by mistake.
+
+Now I'm starting to list out the seed edits for the reaction inserts one by one.
+

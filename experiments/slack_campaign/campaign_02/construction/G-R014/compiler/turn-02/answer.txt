@@ -1,0 +1,80 @@
+```json
+{
+  "seed_edits": [
+    {
+      "table": "channel_members",
+      "op": "insert",
+      "key": {"channel_id": "C03IJKL9012", "user_id": "U_LUKAS"},
+      "values": {"channel_id": "C03IJKL9012", "user_id": "U_LUKAS"},
+      "reason": "Design requires Łukasz Kowalski, author of the circuit-tracer OOM message in C03IJKL9012, to hold a conversation-membership record in that same channel; base seed lacked this membership row even though he authored a message there."
+    },
+    {
+      "table": "messages",
+      "op": "insert",
+      "values": {
+        "message_id": "1706200000.000001",
+        "channel_id": "C_INFRA",
+        "user_id": "U02JOHNDOE1",
+        "message_text": "Anyone know if we can get more GPU cluster capacity for the July batch jobs? Seeing queue backlog again.",
+        "type": "message",
+        "ts": "1706200000.000001"
+      },
+      "reason": "Needed as the negative_conversation_infra anchor message: a message in C_INFRA whose author lacks conversation-membership there, to test that the membership leg of the route correctly excludes this channel."
+    },
+    {
+      "table": "message_reactions",
+      "op": "insert",
+      "key": {"message_id": "1706200000.000001", "user_id": "U01AGENBOT9", "reaction_type": "eyes"},
+      "values": {"message_id": "1706200000.000001", "user_id": "U01AGENBOT9", "reaction_type": "eyes"},
+      "reason": "Gives the negative C_INFRA message a genuine 'eyes' reaction from the acting bot, so the only distinguishing failure is the missing conversation-membership of its author."
+    },
+    {
+      "table": "message_reactions",
+      "op": "insert",
+      "key": {"message_id": "1699651200.000321", "user_id": "U01AGENBOT9", "reaction_type": "thumbsup"},
+      "values": {"message_id": "1699651200.000321", "user_id": "U01AGENBOT9", "reaction_type": "thumbsup"},
+      "reason": "Supplies the wrong-emoji negative: an existing member-authored message in the same channel as the match, reacted by the bot but with 'thumbsup' instead of 'eyes'."
+    }
+  ],
+  "bindings": {
+    "target_conversation": ["C03IJKL9012"],
+    "member_author": ["U_LUKAS"],
+    "reactor": ["U01AGENBOT9"],
+    "anchor_message": ["1706110000.000100"],
+    "negative_conversation_infra": ["C_INFRA"],
+    "negative_author_nonmember": ["U02JOHNDOE1"],
+    "negative_channel_wrong_emoji": ["C03IJKL9012"],
+    "negative_message_wrong_emoji": ["1699651200.000321"]
+  },
+  "selectors": [
+    {
+      "root_table": "channels",
+      "scope": [],
+      "focal": {
+        "path": ["channels", "channel_members", "users", "messages", "message_reactions"],
+        "joins": ["channel_members.channel_id", "channel_members.user_id", "messages.user_id", "message_reactions.message_id"],
+        "filters": [
+          {"node": 3, "field": "message_text", "op": "contains_ci", "value": "circuit-tracer"},
+          {"node": 3, "field": "message_text", "op": "contains_ci", "value": "OOM"},
+          {"node": 4, "field": "reaction_type", "op": "eq", "value": "eyes"},
+          {"node": 4, "field": "user_id", "op": "eq", "value": "U01AGENBOT9"}
+        ]
+      },
+      "auxiliary": [
+        {
+          "path": ["channels", "messages", "message_reactions"],
+          "joins": ["messages.channel_id", "message_reactions.message_id"],
+          "filters": [
+            {"node": 1, "field": "message_text", "op": "contains_ci", "value": "circuit-tracer"},
+            {"node": 1, "field": "message_text", "op": "contains_ci", "value": "OOM"},
+            {"node": 2, "field": "reaction_type", "op": "eq", "value": "eyes"},
+            {"node": 2, "field": "user_id", "op": "eq", "value": "U01AGENBOT9"}
+          ]
+        }
+      ]
+    }
+  ],
+  "negative_referents": ["C_INFRA"],
+  "notes": "Fix: the original focal query tied the qualifying message to the target channel only through the shared author (channel_members.user_id -> messages.user_id), which does not constrain the message's own channel_id, so any channel where Łukasz happens to be a member (C06ALPHADEV, C_INFRA, C_MODEL, C_GROWTH, C_FRONTEND) also matched. Added an auxiliary query that requires the same circuit-tracer/OOM message with the bot's 'eyes' reaction to be posted directly in the candidate channel (messages.channel_id join), which only C03IJKL9012 satisfies, since the anchor message physically resides there. The focal query is retained to encode the membership+authorship leg of the route; the auxiliary encodes the independent 'message is actually in this conversation' fact, and their conjunction over the same root row yields the single required match. Seed edits, bindings, and negatives are otherwise unchanged."
+}
+```

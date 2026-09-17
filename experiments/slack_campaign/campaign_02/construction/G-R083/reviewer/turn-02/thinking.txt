@@ -1,0 +1,34 @@
+I'm noticing the compiled notes flag a deviation from the design: the channel restriction got moved from the root scope into the focal query's node-0 filter, so the wrong-channel negative stays in the workspace-wide candidate pool but still fails on channel_id. I need to double check whether the design's root scope was actually meant to be channel-restricted in the first place, since the access_plan description suggests otherwise.
+
+Looking closer, the compiled selector has an empty scope array at the root/messages level, meaning the candidate population isn't restricted to core-infra at all—it pulls messages from every channel in the seed data, not just C_INFRA and C_MODEL. That's a real problem since the task explicitly scopes to "the core-infra channel," but the query only enforces that via a node-level filter rather than restricting the actual candidate population.
+
+This confirms it's a deliberate design choice: moving the channel restriction into the focal query's node-0 filter lets the wrong-channel negative stay in the broader candidate population while still failing on channel_id, satisfying the near-miss requirement. That seems consistent with the prompt's intent, as long as other non-core-infra messages are still correctly treated as negatives rather than accidental matches.
+
+Checking the computed matches confirms only the two intended messages align, with the count-based emoji/reactor condition correctly filtering out near-misses like the mismatched reaction combo. No other channels have seeded reactions that could accidentally satisfy the criteria, so despite the workspace-wide scope, no unintended matches slip through -- mechanically sound and semantically aligned with the "core-infra channel" requirement since the channel_id filter still governs correctness.
+
+Still, there's a nuance around the access plan expecting the actor to invoke conversations.history specifically for the core-infra channel rather than treating this as a workspace-wide scan; the broader candidate population may just be an internal grader artifact rather than something the solving agent needs to replicate step-for-step.
+
+If scope had been narrowed to core-infra at the root, the wrong-channel message wouldn't even appear as a candidate, defeating the purpose of the near-miss test. So this deviation from the naive design is actually a sensible compiler adaptation that preserves the intended negative's meaningfulness.
+
+Now I'm verifying the message-reaction-user route is actually traversed correctly, which it is. But checking the candidate population, I notice something concerning: the actor doesn't appear to be a member of the growth channel based on the channel_members list, yet the computed focal negatives include messages from that channel — I need to dig into whether this is actually valid.
+
+I'm checking whether public channels allow read access via history without membership, since the growth channel appears to be public rather than private, which could justify including those messages in the candidate population.
+
+But C_GROWTH isn't in the actor's membership list at all, yet negative candidates like 1706027877.000000 and 1706028105.000000 are drawn from that channel—so the candidate population is pulling messages from a channel the actor shouldn't have access to. This suggests the grounding treats those as reachable via the actor's discovery route even though membership records say otherwise, which could be a real access violation worth flagging.
+
+Since it's a public channel, the underlying model might allow reading via conversations.history without explicit membership, though many Slack implementations actually require it—this ambiguity matters less since the target_roles only cover the two matches, and negatives exist purely for verification rather than requiring the agent to actually traverse them.
+
+The candidate_population used to check for unintended matches elsewhere is an internal grading artifact, not something the solver needs actual access to—it's standard for validation harnesses to check across the full seed independent of actor access scope. So this isn't a validity problem; it's just confirming the query design excludes disallowed matches correctly.
+
+Looking further, computed_matches correctly finds two messages, computed_focal_negatives lists everything else that fails the query (normal for a global check), and near_misses lists four items consistent with role definitions. The alternative identifying attribute set looks fine, and mechanical_checks reports no errors. Now I'm checking for compiler drift—whether the compiled query stays faithful to the original design intent.
+
+The design intended focal filtering with channel scope, with actor access via core-infra membership; the compiled notes explain moving the channel filter to node 0 of the focal path rather than pre-filtering scope, which reads as a legitimate technical compilation detail rather than a semantic change. I also want to check the scope mismatch—the design never explicitly defined a "selectors" field, so the compiler introduced this scope restriction itself, justified in the notes as necessary for the near-miss to work correctly, which seems like a valid technical decision that preserves the prompt's exact semantics.
+
+Overall I don't see fundamental validity issues; the quality still looks strong, negatives cover multiple axes, and the prompt is simple and clear with the multiple-match mode correctly used given the actual two matches. I'm now double-checking the binding for the wrong-channel negative, tracing Sophie's checkpoint message in C_MODEL and its reactions to confirm consistency.
+
+The channel exclusion correctly rejects a pattern match despite lookalike similarity, which is a good near miss test. The compiled result seems to implement the design faithfully, pass mechanical checks, and preserve semantic fidelity, with the answer_attributes table used consistently throughout.
+
+I want to verify that moving channel scope into the focal filter didn't break the "which messages... in core-infra channel" restriction — checking that the focal path's channel_id filter on the messages node still correctly constrains messages to core-infra. That checks out, so I'm calling this a pass on validity with strong quality, and confirming the seed edits align precisely with the intended design roles.
+
+I'll rate this strong on quality and pass on validity, noting the scope change is a deliberate, documented decision rather than a defect. Checking that answer_attributes and mode target correctly match the two-answer obligation rather than partial constraints — that's fine too, so I'm ready to finalize.
+

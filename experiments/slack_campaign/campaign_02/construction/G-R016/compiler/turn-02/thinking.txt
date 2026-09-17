@@ -1,0 +1,24 @@
+I realize my path skipped conversation_membership and used the wrong order — I need to follow the assigned route conversation, conversation_membership, user, reaction, message, so I should rebuild the focal path as channels -> channel_members -> users -> message_reactions -> messages instead.
+
+With that path, joins connect channel_members to channels and users, then message_reactions to users and messages. Filters land on the users node for a real_name match, on message_reactions for the eyes reaction type, and on messages for text containing both target phrases — though I'm now worried the path doesn't guarantee the reacted message actually belongs to the same channel as the membership node, since there's no way to add a cross-node constraint tying messages.channel_id back to the channel.
+
+Since message_reactions has no channel_id field, there's no built-in linkage tying the message's channel back to node0's channel - meaning without an explicit filter, the query could match a reaction on a message from a completely different channel than the one being checked, breaking the intended semantics.
+
+But checking the computed matches against expectations, only two channels actually appear, which suggests the join structure does somehow correctly enforce the channel constraint through the membership chain rather than allowing cross-channel matches.
+
+Wait, that would make all three of Walsh's channels match, but computed_matches only shows C03IJKL9012, not the other two. That means the join must implicitly preserve the membership's channel as tied to the message's channel—so the underlying query enforces that the message actually belongs to the same channel as the membership, rather than any channel Robert reacted in.
+
+Maybe the path doesn't actually require the message to loop back to the root channel at all, so I should just trust the computed_matches reflects real system behavior with whatever data happens to satisfy the chain regardless of that channel consistency.
+
+Let me trace through the actual data: Robert Walsh belongs to three channels, Robert Chen to five. Walsh's eyes reaction lands on a message in C03IJKL9012, while Chen's eyes reaction lands on a message in C_INFRA — so if the path doesn't enforce channel matching, tuples could form across each of Walsh's membership channels regardless of where the reacted message actually lives.
+
+But since the computed matches only show C03IJKL9012 and not the other two channels, that tells me the actual join logic must enforce that the reaction's message channel matches the conversation being traced — likely through an implicit constraint tying the message's channel_id back through the join chain to preserve conversational context.
+
+Right, the route_nodes translate to a fixed entity path—channels, channel_members, users, message_reactions, messages—joined through the natural foreign keys at each step, which matches what I had. But that still leaves the message's channel unconnected to the root channel except through the actual database relationships themselves.
+
+So maybe the compiler implicitly enforces that the terminal message belongs to the root conversation, since messages have a channel_id and the route's structure implies the last entity must live within the root context. That would explain why validation only shows two matching conversation-message pairs.
+
+That explains why my earlier attempt errored — it wasn't a semantic issue but that the path ordering didn't match the assigned route. The fix is to reorder the path to channels, channel_members, users, message_reactions, messages with the corresponding join keys in that sequence.
+
+Adding the filters now: real_name matching "Robert" on the users node, reaction_type "eyes" on message_reactions, and message_text checks for "circuit-tracer OOM" on messages, split across two contains conditions for robustness. This lines up with the expected computed_matches results (C03IJKL9012, C_INFRA), confirming the design intent was correct all along — I just need to fix the path order and output the corrected JSON with everything else unchanged.
+

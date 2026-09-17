@@ -1,0 +1,30 @@
+I'm mapping out a route from reactions to messages to their authoring users to conversation memberships to conversations, treating reaction as the multi-resolution referent. The idea is to trace reactions on messages authored by users who belong to specific conversations, using channel membership as the scoping condition to identify the right conversations.
+
+So the route goes reaction to message to author, then from the author's user record through their conversation memberships to identify a specific conversation—meaning I need the message's author (not necessarily the reactor) to be a member of some target channel. That's a different framing than checking the reactor's membership; it's checking whose message got reacted to based on that person's channel membership.
+
+Since the path explicitly goes through MESSAGE to USER, it must mean the message's author, not the reactor. That chain leads to the author's channel memberships, letting me identify reactions where the message's author belongs to a specific channel like "model-research" — a useful cross-referencing task.
+
+But checking the actual seed data, model-research's members overlap heavily with core-infra, growth, and frontend, which all share nearly identical member sets. That makes it a weak distinguishing condition, so I need a narrower selection to produce meaningful negatives in the query.
+
+I found project-alpha-dev, which has a distinctly different roster missing Sophie and Olena, giving me a real basis to differentiate scope. So I'll define the scope as project-alpha-dev's members and check existing reactions against messages authored by them.
+
+The one existing reaction record already fits, since it's agent1 reacting to a message from Lukas, who is a member. I'm now planning to add richer positive and negative examples: a match where Kenji reacts to Priya's message, and a negative case involving Sophie, who isn't part of this project.
+
+I also want a negative for Olena's message being reacted to, since she's outside the group too, plus a note that reactions from members onto non-member messages should be excluded by the join path. I'll finalize these with specific message IDs and timestamps so the seed data is reproducible, confirming channel membership for the alpha-dev channel is already set up.
+
+4. Another negative case: message authored by U_OLENA in C_MODEL, not an alpha-dev member, so Robert's reaction is excluded despite Robert himself being a member.
+
+I also want a case proving the check is on author identity, not reactor identity - so a non-alpha-dev reactor on a message from an alpha-dev author should still count as a match. I'll use U_MATEO's message in C_GROWTH ("Ooof, 23%...") since Mateo is alpha-dev, and pair it with a reaction from someone outside the group.
+
+For the negative case, I want a message authored by someone who isn't in alpha-dev at all, like U02JOHNDOE1's supercomputer question in C03IJKL9012, and attach a reaction from an alpha-dev member (Priya) to confirm that reactor membership alone doesn't trigger a match.
+
+Finalizing the answer set: three matches (eyes on Lukas's message, raised_hands on Priya's message, thumbsup on Mateo's message) versus three negatives where the message author isn't an alpha-dev channel member. The question is a straightforward, read-only lookup of reactions, and the correct binding path requires checking the message author's channel membership rather than the reactor's.
+
+I'm marking the remaining reactions as negative since their authors aren't alpha-dev members, then moving on to define supporting roles for the referenced messages, users, and conversation memberships.
+
+Olena and John Doe are confirmed as not members of alpha-dev, reinforcing the negative cases. The C06ALPHADEV conversation with channel name "project-alpha-dev" identifies the target channel, and I'm checking that membership records already exist for Lukas, Priya, and Mateo while being absent for Sophie and the others.
+
+Now I'm defining the obligation: selecting reactions using a multiple-mode, read-only route scoped to reactions on messages authored by members of the project-alpha-dev channel, targeting the three matching roles while excluding the negative ones from target_roles. The selection is a "set" with answer attributes covering reaction type, message ID, and user ID, and candidate_role_sets stays null since the mode is multiple rather than underspecified.
+
+I'm drafting the task_spec text asking to list emoji reactions on messages from project-alpha-dev members, tied to obligation 1, with an access plan that first pulls channel membership, then searches for messages from those members, then retrieves reactions per message -- now I'm assembling this into the final JSON output.
+

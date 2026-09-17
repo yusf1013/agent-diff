@@ -1,0 +1,51 @@
+{
+  "prompt": "A couple of people named Robert have asked in channels whether a deployment is finished yet. For each of them, tell me what workspace role their membership shows and quote the message where they asked about the deployment status.",
+  "binding_note": "Two users share the first name 'Robert' (Robert Walsh, Robert Chen), and each authored a message in a different channel asking whether a deployment/rewrite is finished. The request asks for both jointly ('for each of them'), so both membership+message pairs form the intended multiple selection.",
+  "roles": [
+    {"role":"user_robert_walsh","entity":"users","facts":"U03ROBERT23, real_name 'Robert Walsh', username robertwalsh, member of T01WORKSPACE","selection":"match","reason":"Shares first name 'Robert' and authored a deployment-status question"},
+    {"role":"user_robert_chen","entity":"users","facts":"U_ROBERT, real_name 'Robert Chen', username robert.chen, member of T01WORKSPACE, timezone America/New_York","selection":"match","reason":"Shares first name 'Robert' and authored a deployment/rewrite-status question in #engineering"},
+    {"role":"membership_robert_walsh","entity":"user_teams","facts":"U03ROBERT23 + T01WORKSPACE, role=admin","selection":"match","reason":"The workspace membership record for the first matching Robert, displaying admin role"},
+    {"role":"membership_robert_chen","entity":"user_teams","facts":"U_ROBERT + T01WORKSPACE, role=member","selection":"match","reason":"The workspace membership record for the second matching Robert, displaying member role"},
+    {"role":"message_deploy_walsh","entity":"messages","facts":"message_id 1700173200.000456 in #general (C01ABCD1234) by U03ROBERT23: 'Does anyone know when the MCP deployment will be done?'","selection":"match","reason":"Robert Walsh's authored deployment-status question, identifying his membership via the route"},
+    {"role":"message_deploy_chen","entity":"messages","facts":"message_id 1706110000.000200 in #engineering (C03IJKL9012), reply to the circuit-tracer OOM report, by U_ROBERT: 'When will the PyTorch rewrite be ready? We need multi-GPU support for the 70B model interpretability work - currently blocked on this.'","selection":"match","reason":"Robert Chen's authored deployment/readiness-status question, identifying his membership via the route; content and channel anchor are consistent with the existing circuit-tracer thread"},
+    {"role":"message_walsh_login_negative","entity":"messages","facts":"message_id 1699824000.000987 in #engineering (C03IJKL9012) by U03ROBERT23: 'Crash report: retrying wrong password 3 times triggers login rate limit...'","selection":"negative","reason":"Same qualifying person but wrong topic (login bug, not a deployment/readiness-status question) — split condition failure"},
+    {"role":"user_mateo_negative","entity":"users","facts":"U_MATEO, real_name 'Mateo Rivera', member of T01WORKSPACE","selection":"negative","reason":"Not named Robert, though he discusses deployment/roadmap timing"},
+    {"role":"message_mateo_deploy_negative","entity":"messages","facts":"message from U_MATEO in #model-research discussing roadmap/timeline implications of deployment decisions, e.g. 'How does this affect the roadmap? If we need constrained decoding that's a bigger lift...'","selection":"negative","reason":"Right topic (deployment/roadmap) but wrong person — not named Robert"},
+    {"role":"user_incognito_negative","entity":"users","facts":"U_INCOGNITO, real_name 'Carlos Vega', username shadow.lurker, member of T01WORKSPACE","selection":"negative","reason":"Workspace member but not named Robert and never asks about deployment status"},
+    {"role":"membership_incognito_negative","entity":"user_teams","facts":"U_INCOGNITO + T01WORKSPACE, role=member","selection":"negative","reason":"Workspace membership exists but the person fails both the name and message-topic conditions"}
+  ],
+  "obligations": [
+    {
+      "name":"robert_memberships",
+      "description":"Workspace membership records for both people named Robert who each authored a message asking whether a deployment/rewrite is finished; report each one's membership role (owner/admin/member/guest) as displayed on the pair.",
+      "table":"user_teams",
+      "mode":"multiple",
+      "task_type":"read-only",
+      "scope":"workspace membership of the Roberts identified via their deployment-status messages",
+      "target_roles":["membership_robert_walsh","membership_robert_chen"],
+      "candidate_role_sets":null,
+      "selection":"set",
+      "partial_constraints":["user.real_name starts with 'Robert'"],
+      "answer_attributes":[["user_teams.role"],["user_teams.user_id"],["user_teams.team_id"]]
+    },
+    {
+      "name":"robert_deploy_messages",
+      "description":"The specific messages, one per matched Robert, that ask whether a deployment/rewrite has finished; quoted alongside the membership role.",
+      "table":"messages",
+      "mode":"multiple",
+      "task_type":"read-only",
+      "scope":"messages authored by the matched Robert users that ask about deployment/readiness completion status",
+      "target_roles":["message_deploy_walsh","message_deploy_chen"],
+      "candidate_role_sets":null,
+      "selection":"set",
+      "partial_constraints":[],
+      "answer_attributes":[["messages.message_text"],["messages.channel_id"],["messages.user_id"]]
+    }
+  ],
+  "task_spec":[
+    {"line":1,"text":"Identify each person named Robert who asked, in some channel, whether a deployment or rewrite was finished yet.","obligations":[2]},
+    {"line":2,"text":"For each such Robert, report the workspace membership role shown on their membership pair and quote their deployment-status message.","obligations":[1,2]}
+  ],
+  "scope_exception": null,
+  "access_plan":"Use users.list (or users.info) to find users whose real_name begins with 'Robert', then use conversations.history/search.messages across their member channels (#general and #engineering) to find messages phrased as asking whether a deployment/rewrite is done; for each matched user, resolve their workspace role via their user_teams membership record surfaced through users.info/team association."
+}

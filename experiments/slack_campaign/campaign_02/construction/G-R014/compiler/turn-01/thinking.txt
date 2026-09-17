@@ -1,0 +1,38 @@
+I'm checking the channel membership list for C03IJKL9012 to verify whether U_LUKAS is actually included among the members.
+
+Confirmed - U_LUKAS is missing from that channel's membership even though he authored a message there, so I need to add a channel_members row for him. The eyes reaction on that message from U01AGENBOT9 already exists, so nothing needed there.
+
+Now I'm looking at the negative_conversation_infra scenario, which requires a message in C_INFRA from U02JOHNDOE1 about GPU cluster capacity with an eyes reaction from U01AGENBOT9.
+
+I confirm U02JOHNDOE1 isn't currently a channel member of C_INFRA, matching the required non-membership state, so I just need to insert the new message and reaction.
+
+For the emoji-related scenarios, I need to add a new thumbsup reaction from U01AGENBOT9 on an existing message that already qualifies, since the message itself doesn't need changes.
+
+I'm drafting the seed edits: adding U_LUKAS to channel_members for that channel, and constructing a new message with a timestamp-style ID for the GPU cluster capacity message in C_INFRA.
+
+Now I'm mapping out the bindings for the scenario roles—target conversation, member author, reactor, anchor message, and the negative-case identifiers for the non-member author and the wrong-emoji message—then thinking through the selector query that joins conversation, membership, user, message, and reaction tables together, filtering on message author matching a channel member and text about circuit tracing.
+
+Still working through the join path...
+
+I realize channel_id equality isn't automatically enforced through a linear join chain, so the path needs to explicitly include both channel_members.channel_id and messages.channel_id as connection points to guarantee they reference the same channel, which means restructuring the path accordingly.
+
+Without an explicit join tying messages.channel_id back to channels, a user's message from any channel would satisfy the filter, so the path really needs two separate edges into messages—one from users on user_id, and another linking channel_id back to the channels node to keep the constraint accurate.
+
+Filters can only compare to literal values, not other nodes, so I can't directly enforce that a message's channel equals a channel_members' channel through filters alone. I recall the syntax example uses a similar chained pattern without needing that cross-node equality check either, so maybe the join chain itself implicitly handles this constraint rather than requiring an explicit filter.
+
+Actually rereading the binding note more carefully, it seems the requirement is just membership plus authorship plus the reaction condition, without strictly requiring the message to be posted in that same channel. That changes how I should structure the join logic.
+
+The negative case is excluded because the membership is missing, not because the message's channel differs, so the route logic only needs membership plus the message-author link and it naturally holds here since the real message is in the same channel as the membership I'm adding. I'm now drafting the focal query structure, setting the root table to channels and building the join path through channel members, users, messages, and message reactions.
+
+Adding the filters...
+
+This should correctly select C03IJKL9012, since U_LUKAS is a member there and the message plus bot reaction match. For the infra channel check, U02JOHNDOE1 isn't a member there so that join fails and excludes it correctly. But I need to double check whether U_LUKAS is also a member of C_INFRA, which could complicate the exclusion.
+
+Checking negative_channel_wrong_emoji: the message has a thumbsup reaction instead of eyes, so it fails the reaction filter automatically, and its text about login errors also doesn't match the content filter — doubly excluded, correctly.
+
+Since a single selector covers everything, no auxiliary logic is needed. For scope, since no restriction was stated, I'll keep it as an empty conjunction rather than adding constraints.
+
+Now I'm drafting realistic seed data: a new message in C_INFRA from U02JOHNDOE1 asking about GPU cluster capacity for July batch jobs, paired with an eyes reaction from U01AGENBOT9, plus another reaction entry on an existing message.
+
+I'm also adding a channel membership row linking U_LUKAS to C03IJKL9012, and thinking through negative referents for the CONVERSATION root type — considering C_INFRA as a distractor channel, while reasoning that C03IJKL9012 itself shouldn't count as a separate negative since it's the actual matching conversation, just being reconsidered under a different anchor rather than being a truly excluded root.
+

@@ -1,0 +1,18 @@
+Evaluating this design: the task asks to list #core-infra members outside US time zones, so routing to CONVERSATION_MEMBERSHIP -> USER with multiple resolution mode seems right, since it's naturally a membership listing filtered by a condition. I'm checking that the referent entity correctly maps to the channel_members table and verifying the matched membership rows.
+
+I'm cross-checking the seed data: U_PRIYA, U_LUKAS, U_SOPHIE, U_OLENA, U_KENJI, and U_AISHA all belong to C_INFRA and have non-US time zones, so they're correctly included. The negatives also check out - U_MATEO and U_ROBERT are excluded for being in US time zones, agentbot is excluded for lacking a timezone, and U_INCOGNITO is excluded since it's not even a member of C_INFRA. I'm verifying each user's timezone individually against the users table to confirm every inclusion and exclusion is justified.
+
+Now I'm looking at the flagged mechanical design error about target/candidate roles needing to reference only the CONVERSATION_MEMBERSHIP entity - I need to examine whether the *_membership role names actually violate this naming rule or if they're already correctly labeled.
+
+This looks like a genuine design flaw: the facts field should only contain the referent CONVERSATION_MEMBERSHIP row's own columns (user_id, channel_id, joined_at), not the user's timezone which belongs to a separate USER entity in the route. The binding_note explicitly ties the membership record to that same user's timezone, conflating two distinct entities into one role's facts.
+
+The fix is to keep USER and CONVERSATION_MEMBERSHIP as separate support roles bound by matching user_id, rather than mixing timezone data directly into the membership target role.
+
+This looks like a compiler-level construction defect rather than a design flaw — the route, resolution mode, and node selection are legitimate and match the prompt's requirements. So I'll flag the mechanical error for repair without invalidating the overall design at this review stage.
+
+These mechanical errors are compiler-level bugs that should be fixed before compilation, not design flaws — the fix can happen without touching the prompt, so it counts as a repair rather than a required writer revision. I'll flag it as an issue in the review while keeping overall design validity as pass.
+
+Checking the access plan next: it relies on conversations.list, conversations.members, and users.info, all documented APIs, so that's fine. The test quality looks strong overall, with plausible content and good negative cases like mismatched timezones and wrong channel membership testing distinct failure modes — I'd rate this design as solid with strong quality, noting the mechanical role-definition issue as a fixable structural point rather than a validity failure.
+
+Since the mechanical design errors are already known and documented with a clear fix (moving user facts into support roles), this counts as resolved evidence rather than speculation, so it's a repairable issue rather than one that invalidates the design. I'll mark validity as pass and quality as strong, documenting this issue for correction during compilation.
+

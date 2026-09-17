@@ -1,0 +1,50 @@
+I'm sketching a scenario tracing conversation membership through to message reactions, starting with the circuit-tracer OOM discussion in the engineering channel authored by U_LUKA.
+
+There's a real "eyes" reaction from U01AGENBOT9 on that message, which fits the intended route: conversation -> member -> user -> message -> reaction, where the member authored a message that got that reaction.
+
+But checking channel_members for C03IJKL9012, U_LUKAS isn't actually listed as a member of that channel, even though he posted there -- so there's a mismatch between authoring a message and formal membership that I need to account for.
+
+For a natural request, I'd want the message and reaction to actually live in the same channel as the membership, so the member authored the eyes-reacted message right there. Checking C_INFRA's roster against who posted the eyes-reacted message shows a mismatch—Lukas is a member of C_INFRA but the reacted message came from him in the engineering channel instead, so I need to verify whether he's actually a member there.
+
+Since Lukas isn't listed among engineering channel members, I'll justify adding him as a legitimate access membership there given his active technical posting on circuit-tracer, which lets the route resolve naturally to the engineering channel.
+
+Now I need to phrase the actual question without leaking the exact channel name — using the message content and the 👀 reaction as the identifying clues rather than naming "engineering" directly, so the retrieval route genuinely does the identification work.
+
+I like framing it as a consequential follow-up action: the bot should post a message in the channel where a teammate's update about the circuit-tracer rewrite hitting OOM errors got the 👀 reaction, asking for a timeline. This still traces through the full membership-user-message-reaction chain while feeling like a natural request.
+
+I need the membership check to do real identifying work, not just serve as background context — since only one channel has this exact message+reaction combination once Lukas is added as a member, that membership condition is what actually distinguishes it from a scenario where the reacted message belongs to a non-member.
+
+So I'm planning negatives: one where the message with the eyes reaction is posted by a non-member of the channel, one where a member posts but gets a different reaction type, and one where a member posts with the eyes reaction but in a different channel. I'm setting up the engineering channel with Lukas added as a member, authoring a message there that gets the reaction.
+
+Now I'm checking a candidate negative in that same channel — the bot's own message with no reaction, which works as a "missing relationship" case, and another candidate where a member posts a message but the reaction situation differs.
+
+For a clearer negative, I need to find a message authored by someone who isn't actually a channel member, since everyone currently listed in C03IJKL9012 does belong there. I'm checking whether U_ROBERT, who posted a reply in that channel, is actually a member — it doesn't look like it, which could give a valid mismatch case.
+
+Now I'm checking whether U_KENJI, another poster in that channel, is a member either — also no, giving another mismatch candidate. I'm also thinking about adding a differing reaction elsewhere in the seed data to test value-mismatch conditions for reactions.
+
+I should also add a negative testing cross-record binding: the bot reacts with 👀 to a message, but that message's author is a member elsewhere, not tied to the target channel — like Sophie's 7B checkpoint message in C_MODEL.
+
+But checking channel_members, all authors in C_MODEL and C_GROWTH are already members there, so that path doesn't create a valid negative case. I need a different approach to construct a clean single-match scenario.
+
+Actually, I found a good one: adding a bot eyes reaction on U_ROBERT's reply in the pytorch channel works since he's not a member there, giving a strong negative that shares the same channel and emoji as the true match but fails on the author-membership condition.
+
+But then I realize both messages sit in the same target conversation anyway, so the membership distinction doesn't actually create ambiguity about which conversation is correct — it only distinguishes messages within that conversation, since the request is asking about identifying the conversation itself.
+
+I need a different design: instead of varying membership within the target conversation, I should create a competing conversation like C_INFRA where a non-member posts a message with a bot eyes-reaction, so a solver ignoring the membership rule might wrongly pick that conversation too. Checking C_INFRA's members against who authored messages there to find a good candidate for this contrast.
+
+I'll add a message in C_INFRA authored by someone outside its membership list, paired with a bot eyes reaction, so this conversation looks like a match on message+reaction but fails the "author is a member" test — a solid negative case to test the membership route. Now I'm setting up the exact records for the true match in the engineering conversation.
+
+Then I'm building two negative cases: one where the message author isn't a conversation member despite matching reaction, and another where the reaction emoji is wrong (thumbsup instead of eyes) even though the author is a legitimate member — testing exact emoji specificity.
+
+Now I'm considering the actual prompt to write, weighing whether phrasing like "the update about circuit-tracer marked with 👀" reveals too much of the answer directly.
+
+I need to make sure the query still exercises the full relationship chain from conversation to membership to user to message to reaction, rather than shortcutting it with overly specific content hints.
+
+I'll draft a natural prompt: post a follow-up message asking Lukas for a timeline update on the circuit-tracer PR, referencing the update flagged earlier with the eyes emoji reaction. This uses the message content, the reaction, and requires a state-changing action of posting the message.
+
+The main obligation is identifying the target conversation (C03IJKL9012, the engineering channel where Lukas is a member) and using it as the destination for chat.postMessage — a single-mode selection feeding into a state-changing task rather than a read-only one.
+
+I'm laying out supporting roles: Lukas as the member who authored the OOM message, the acting bot as the one who added the 👀 reaction, and the anchor message itself. I'm also including negative examples — a channel where the eyes-reacted message's author isn't actually a member, and a message with the wrong emoji (thumbsup instead of eyes) — to clarify what disqualifies a match, plus noting the need for Lukas's membership record and the new message.
+
+Now I'm defining the single obligation: a "target_channel" targeting the conversation, single mode, state-changing task type, with target_roles pointing to the conversation and selecting one, with change attributes reflecting the posted message.
+

@@ -1,0 +1,46 @@
+This is a mutation task at the "path_negative_environment_only" stage, meaning I need to instantiate the design while focusing on the negative environment path rather than altering the core positive resolution. Since the base_seed already matches source_context.seed, I likely don't need seed edits, so I'm checking that all roles from the design already exist within the seed.
+
+Verifying each role, most already exist in the seed - the qualifying message, author, and various negative messages/authors all check out. The main thing missing is the DM channel between the bot and the user, plus a DM message, both of which I'll need to insert.
+
+These roles describe what the solver creates, so the mutation type should only affect the negative environment path, leaving the seed's positive answer computation intact. Checking instruction 3 about membership, U01AGENBOT9 is already in C01ABCD1234 (#general), which is sufficient for discovery, so now I need to write the selectors for each obligation.
+
+For obligation 1, I'm resolving the author of the captcha complaint in #general using the users table with a single-mode USER-MESSAGE-CONVERSATION route. I'm constructing a selector rooted at users, joining through messages and channels, filtering for messages in C01ABCD1234 that contain "captcha" in the text.
+
+Actually, rather than hardcoding the channel_id, I can filter on the channels node's channel_name field equal to "general" instead, since channels is already included in the path. So the filters become: message_text contains "captcha" at the messages node, and channel_name equals "general" at the channels node.
+
+Checking the message content confirms only one #general message contains "captcha," so this correctly isolates U06HUBERT23 as the resolved user.
+
+For the second obligation - sending a DM to the resolved user - this is a write operation on the messages table involving channel_id and message_text, which is a state-changing action I need to think through carefully given the locked design constraints.
+
+Since the DM message doesn't yet exist in the seed data, I need the selector to describe how to identify the correct new record once created: the channel should be the DM between the actor and the resolved user, with matching text. The tricky part is reconciling this with the seed-edits framework, which is meant for pre-populating base records rather than describing yet-to-be-created rows - so I'm working through how write obligations should be represented in this static-selector system.
+
+Checking whether a DM channel already exists between U01AGENBOT9 and U06HUBERT23 - I don't see one in the seed, only D01AGENTSOPHIE as an existing DM between different users, so conversations.open would need to create a new channel here.
+
+That means the agent should call conversations.open at runtime with U06HUBERT23, which will dynamically create the channel and membership rows, so I don't need to pre-seed anything for this. So this suggests no seed_edits are needed - the base_seed stays unchanged from source_context.seed.
+
+Now I need to build one selector per obligation in design order: first resolving the complaint author from #general (table users, single mode), then the DM message sent to that user (table messages, single mode, dm_message target) - since this message doesn't exist in seed yet, the selector should describe the completion pattern graders will check post-execution rather than match pre-existing data.
+
+I'm second-guessing whether selectors are meant to bind against seed data at construction time versus verify post-execution state, since grading is likely separate. This raises the question of whether the DM channel needs to be pre-created in seed for binding purposes, but that would make the "open DM channel" obligation trivially already satisfied, which seems wrong since it's the agent's job to create it.
+
+Given this is a "path_negative_environment_only" mutation focused on negative referents rather than positive matching structure, I'm concluding that obligation 1 (read-only resolve) is the main priority, while obligations 2 and 3 mainly need role bindings and selectors defined per the design doc rather than fully resolved seed state. For the write obligations, the selector should still define a real query that would correctly match the expected written outcome once the action is completed.
+
+For obligation 3, opening the DM channel with the resolved user, I'm working through how to construct a selector on channel_members that identifies the DM channel row for the resolved user, using the composite key and joining to channels to check the is_dm flag, filtering on the resolved user ID.
+
+Since he isn't currently part of any DM channel in the seed data, this selector matches nothing before execution but should correctly match the new membership row once conversations.open creates the channel and adds him, which fits the post-execution evaluation intent.
+
+Graders likely evaluate the selector against the mutated database after the agent's action, not the static seed—that matches the design's expected write behavior. I'm now sketching the second obligation's selector for dm_message, targeting the messages table with written attributes on channel_id and message_text, defining the root table and focal path through messages to channels.
+
+But I realize I also need to ensure the DM channel is specifically with U06HUBERT23, since other DMs also involve U01AGENBOT9 and are flagged is_dm=true—so relying solely on message_text uniqueness isn't strictly rigorous. I should add a join through channel_members to confirm the channel includes U06HUBERT23 as a member, refining the filter conditions accordingly.
+
+Now I'm working out the negative referents: user rows that could be wrongly picked as the answer if someone applied looser matching criteria, like matching only on "login" without "captcha" mentions, or matching the wrong channel author. This includes U01AGENBOT9, U02ARTEM23, U03ROBERT23, U02JOHNDOE1, and U05MORGAN23 as the incorrect candidates to exclude.
+
+I'm setting the bindings for target_channel, qualifying_message, and author, but I'm running into a snag with dm_channel_open since it's a composite key that doesn't exist until the DM channel is actually created during agent execution—I don't know the channel_id ahead of time, so I need to figure out whether the seed data should pre-create this DM channel or leave it for the agent to open via the conversations API.
+
+The write obligation specifically calls out channel_members.channel_id/user_id as attributes being written, which suggests those membership rows don't exist yet and get created by the action itself. So maybe I should seed just a new DM channel record without pre-inserting the membership rows, letting the action itself establish them.
+
+So it's fine to leave it out of the seed entirely, letting the agent create the channel fresh via conversations.open. This means no seed_edits are needed at all -- everything can be built from the base_seed, with the state-changing obligations satisfied through the write actions during task execution and verified afterward via selectors.
+
+For roles like dm_channel_open and dm_message that don't have pre-existing native handles since they're created during execution, I'm thinking bindings should only cover roles with concrete existing handles like target_channel, qualifying_message, and author, while roles created fresh get omitted or left as empty lists since the format expects handle lists.
+
+I'm now filling in the remaining bindings with their native handles for the negative-example messages and authors across the wrong-channel, no-captcha, and other-channel scenarios. Then I'm finalizing the three selectors in obligation order, confirming the FK join path from users through messages to channels with the captcha filter and general channel filter, before writing out the final JSON.
+

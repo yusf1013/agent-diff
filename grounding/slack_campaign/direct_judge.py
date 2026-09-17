@@ -6,6 +6,24 @@ from .bedrock import Conversation, save
 from .generate import ROOT, read, dump
 from .workflow import PROMPTS
 
+def validate(result,packet):
+    errors=[]
+    if result.get('test_id')!=packet['prompt']['test_id']:errors.append('test_id must match')
+    if result.get('run_id')!=packet['prompt']['run_id']:errors.append('run_id must match')
+    for field in ('violations','unresolved'):
+        if not isinstance(result.get(field),list):errors.append(field+' must be an array')
+    for i,v in enumerate(result.get('violations',[])):
+        for e in v.get('evidence',[]):
+            try:
+                doc=packet[e['source']]
+                for part in e['location'].split('/')[1:]:
+                    key=part.replace('~1','/').replace('~0','~')
+                    doc=doc[int(key)] if isinstance(doc,list) else doc[key]
+            except (KeyError,ValueError,TypeError,IndexError):
+                errors.append(f'violations[{i}] evidence locator does not resolve within source: {e}')
+    return errors
+
+
 def judge(inputs,out):
     cid=inputs.name
     if (out/cid/'result.json').exists():return cid,'existing'
@@ -19,13 +37,10 @@ def judge(inputs,out):
     save(out/cid/'input.json',packet)
     try:
         result=agent.ask(dump(packet))
-        errors=[]
-        if result.get('test_id')!=cid:errors.append('test_id must match')
-        if result.get('run_id')!=packet['prompt']['run_id']:errors.append('run_id must match')
-        if not isinstance(result.get('violations'),list):errors.append('violations must be array')
-        if not isinstance(result.get('unresolved'),list):errors.append('unresolved must be array')
+        errors=validate(result,packet)
         if errors:
             result=agent.ask('Thanks. Validation failed: '+dump(errors)+'. Make minimal required changes; return the complete JSON.')
+        save(out/cid/'validation.json',{'errors':validate(result,packet)})
         save(out/cid/'result.json',result)
         return cid,'returned'
     except Exception as exc:

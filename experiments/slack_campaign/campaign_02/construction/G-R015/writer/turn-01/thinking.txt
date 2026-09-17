@@ -1,0 +1,30 @@
+I'm mapping out a route from conversations through membership to users and then to reactions, trying to identify conversations whose members reacted with a specific emoji to a certain kind of message—treating this as a multi-conversation selection task.
+
+I'll use the "eyes" reaction from the seed data as a test case, but need to be careful the actor isn't just the agent itself. I'm designing a fresh scenario where the target conversations are those containing a member who reacted with a particular emoji elsewhere.
+
+A cleaner version: identify a user by their emoji reaction to a specific message, then find all conversations that user belongs to, excluding the original one where the reaction occurred - making the reaction genuinely serve as an identifying clue rather than a trivial filter.
+
+I need a new reaction record to construct the scenario, maybe a dart emoji reaction on Olena's CUDA profiling message in core-infra. But I shouldn't identify the user by name directly like "Priya Sharma" since that pre-resolves the entity — I should identify them only through the reaction itself, letting the route discover who they are.
+
+So the phrasing becomes something like "which conversations do members who reacted with 🎯 to the message about CUDA memory profiling belong to?" This uses the reaction to find the reactor, then traces their conversation memberships across the workspace, requiring me to add that missing reaction fact to the seed data.
+
+Checking Lukas's channel memberships, it looks like he's actually in quite a few: C06ALPHADEV, C_INFRA, C_MODEL, C_GROWTH, and C_FRONTEND all list him as a member, which makes him a poor choice for uniquely identifying a small set of conversations.
+
+So I need to add a distinctive reaction from Lukas to a specific message to make this identification work cleanly. I'm thinking of picking a message in C_INFRA about CUDA memory debugging and having Lukas react with a specific emoji.
+
+For negatives, I want other people reacting differently to rule out ambiguity: someone reacts with a different emoji to the same message, someone else reacts with the same emoji but to a different message, and someone who's a plain member without any matching reaction at all.
+
+So the selection logic hinges on: conversations where a member has a reaction matching this specific emoji-message pair, not just any reaction or membership alone.
+
+I can phrase the question naturally: "Which channels include the person who reacted with 💯 to Priya's message about hitting the CUDA memory limit in core-infra?" This avoids naming the user directly while still uniquely identifying them through the reaction, then lists their channel memberships as the answer.
+
+Now I'm defining the roles for this query: the target is the conversation/channel entities, support roles include the message, the reaction record, and the reacting user's membership records, while negative roles cover other reactions on the same message with different emoji, the same emoji on unrelated messages, and memberships without the qualifying reaction.
+
+I confirm Lukas isn't in C03IJKL9012's member list, leaving his channel set as C06ALPHADEV plus the four project channels — five channels total, satisfying the multiple-match requirement. Now I need to flesh out the negative facts more concretely.
+
+I'll add specific reaction records: Lukas reacting "100" on Priya's CUDA limit message as the true match, then negatives to test wrong conditions — Sophie reacting with a different emoji on that same message, Olena reacting with the matching emoji but on an unrelated message, and Kenji simply being a plain member of C_GROWTH with no reaction at all.
+
+Now I'm finalizing the JSON structure. The main obligation is reading conversation channel names/IDs since this is read-only, with target roles referencing the real channel_id and no candidate role sets since the mode isn't underspecified. I'm drafting the prompt asking which channels have as a member the person who reacted with 💯 to Priya's CUDA memory limit message in core-infra, and confirming that message lives in C_INFRA from U_PRIYA.
+
+The message text about the pprof delta and hard CUDA memory limit at timestamp 1706001931 is unique enough for context. Now I need the binding note tying the reaction row to the message via message_id and user_id, and linking that reactor's user_id to the conversation_membership records for the target channels.
+

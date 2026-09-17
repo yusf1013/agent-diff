@@ -1,0 +1,93 @@
+The selector syntax only defines these operations: eq, ne, in, not_in, contains_ci, lt, le, gt, ge — there is no "startswith_ci" operator available. Since I cannot invent an unsupported operator, the smallest faithful fix is to align the wording instead of the mechanics, per the reviewer's alternative repair option.
+
+```json
+{
+  "seed_edits": [
+    {
+      "table": "channel_members",
+      "op": "insert",
+      "key": {"channel_id": "C03IJKL9012", "user_id": "U_ROBERT"},
+      "values": {"channel_id": "C03IJKL9012", "user_id": "U_ROBERT", "joined_at": "2024-01-24T00:00:00"},
+      "reason": "Design requires Robert Chen to be a discoverable member of #engineering so his eyes-reaction on the anchor message is visible through conversations.members/history to the acting agent."
+    },
+    {
+      "table": "messages",
+      "op": "insert",
+      "values": {
+        "message_id": "1706110000.000201",
+        "channel_id": "C03IJKL9012",
+        "user_id": "U03ROBERT23",
+        "parent_id": "1706110000.000100",
+        "message_text": "Any update on this? Curious how the fix is progressing.",
+        "type": "message",
+        "ts": "1706110000.000201",
+        "created_at": "2024-01-24T09:05:00"
+      },
+      "reason": "robert_walsh_reply_context: symmetric thread reply so neither candidate Robert carries extra unacknowledged narrative weight, per design note."
+    },
+    {
+      "table": "message_reactions",
+      "op": "insert",
+      "key": {"message_id": "1706110000.000100", "user_id": "U03ROBERT23", "reaction_type": "eyes"},
+      "values": {"message_id": "1706110000.000100", "user_id": "U03ROBERT23", "reaction_type": "eyes", "created_at": "2024-01-24T09:02:00"},
+      "reason": "robert_walsh alternative: matching eyes reaction on the fixed anchor message."
+    },
+    {
+      "table": "message_reactions",
+      "op": "insert",
+      "key": {"message_id": "1706110000.000100", "user_id": "U_ROBERT", "reaction_type": "eyes"},
+      "values": {"message_id": "1706110000.000100", "user_id": "U_ROBERT", "reaction_type": "eyes", "created_at": "2024-01-24T09:03:00"},
+      "reason": "robert_chen alternative: matching eyes reaction on the fixed anchor message."
+    },
+    {
+      "table": "message_reactions",
+      "op": "insert",
+      "key": {"message_id": "1699824000.000987", "user_id": "U03ROBERT23", "reaction_type": "thumbsup"},
+      "values": {"message_id": "1699824000.000987", "user_id": "U03ROBERT23", "reaction_type": "thumbsup", "created_at": "2023-11-12T10:00:00"},
+      "reason": "decoy_reaction_wrong_emoji_same_user: wrong emoji and wrong message, must not satisfy the binding."
+    },
+    {
+      "table": "message_reactions",
+      "op": "insert",
+      "key": {"message_id": "1706067472.000000", "user_id": "U_ROBERT", "reaction_type": "eyes"},
+      "values": {"message_id": "1706067472.000000", "user_id": "U_ROBERT", "reaction_type": "eyes", "created_at": "2024-01-24T08:00:00"},
+      "reason": "decoy_reaction_wrong_message_same_user: correct emoji but wrong message/channel, fails anchor-message binding."
+    },
+    {
+      "table": "message_reactions",
+      "op": "insert",
+      "key": {"message_id": "1706110000.000100", "user_id": "U08NICK23", "reaction_type": "thumbsup"},
+      "values": {"message_id": "1706110000.000100", "user_id": "U08NICK23", "reaction_type": "thumbsup", "created_at": "2024-01-24T09:04:00"},
+      "reason": "decoy_reaction_other_person: same message but wrong emoji and wrong person (not named Robert)."
+    }
+  ],
+  "bindings": {
+    "robert_walsh": ["U03ROBERT23"],
+    "robert_chen": ["U_ROBERT"],
+    "anchor_message": ["1706110000.000100"],
+    "robert_chen_reply_context": ["1706110000.000200"],
+    "robert_walsh_reply_context": ["1706110000.000201"],
+    "decoy_reaction_wrong_emoji_same_user": [{"message_id": "1699824000.000987", "user_id": "U03ROBERT23", "reaction_type": "thumbsup"}],
+    "decoy_reaction_wrong_message_same_user": [{"message_id": "1706067472.000000", "user_id": "U_ROBERT", "reaction_type": "eyes"}],
+    "decoy_reaction_other_person": [{"message_id": "1706110000.000100", "user_id": "U08NICK23", "reaction_type": "thumbsup"}],
+    "acting_agent": ["U01AGENBOT9"]
+  },
+  "selectors": [
+    {
+      "root_table": "users",
+      "scope": [{"field": "real_name", "op": "contains_ci", "value": "Robert"}],
+      "focal": {
+        "path": ["users", "message_reactions"],
+        "joins": ["message_reactions.user_id"],
+        "filters": [
+          {"node": 1, "field": "message_id", "op": "eq", "value": "1706110000.000100"},
+          {"node": 1, "field": "reaction_type", "op": "eq", "value": "eyes"}
+        ]
+      },
+      "auxiliary": []
+    }
+  ],
+  "negative_referents": ["U01AGENBOT9", "U08NICK23"],
+  "notes": "The selector syntax only supports eq/ne/in/not_in/contains_ci/lt/le/gt/ge; there is no startswith operator to mechanically implement 'starts with'. Since every real_name in this seed containing 'Robert' as a substring also has it at the start (Robert Walsh, Robert Chen), contains_ci is semantically equivalent here and is the only expressible approximation. Per the reviewer's offered alternative, the obligation's partial_constraints wording is treated as descriptive shorthand for this substring match rather than requiring an unsupported operator; no seed or selector-scope semantics change. All other bindings, seed_edits, and negative_referents are unchanged from the prior compilation: Robert Chen (U_ROBERT) gained #engineering membership and a matching eyes-reaction on the anchor message; Robert Walsh (U03ROBERT23) gained the same eyes-reaction; the symmetric thread reply (1706110000.000201) neutralizes narrative asymmetry with the pre-existing Robert Chen reply (1706110000.000200), both excluded from the selector; the three decoy reactions are inserted with the exact specified keys and excluded by the message_id+reaction_type filter. The focal query follows the assigned USER->REACTION route directly. Actor U01AGENBOT9's existing #engineering membership supports full discovery via conversations.history/reactions.get with no workspace-scope exception needed."
+}
+```

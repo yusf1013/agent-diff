@@ -1,0 +1,69 @@
+```json
+{
+  "seed_edits": [
+    {
+      "table": "channel_members",
+      "op": "insert",
+      "key": {"channel_id": "C03IJKL9012", "user_id": "U_LUKAS"},
+      "values": {"channel_id": "C03IJKL9012", "user_id": "U_LUKAS"},
+      "reason": "Design requires Łukasz Kowalski, author of the circuit-tracer OOM message in C03IJKL9012, to hold a conversation-membership record in that same channel; base seed lacked this membership row even though he authored a message there."
+    },
+    {
+      "table": "messages",
+      "op": "insert",
+      "values": {
+        "message_id": "1706200000.000001",
+        "channel_id": "C_INFRA",
+        "user_id": "U02JOHNDOE1",
+        "message_text": "Anyone know if we can get more GPU cluster capacity for the July batch jobs? Seeing queue backlog again.",
+        "type": "message",
+        "ts": "1706200000.000001"
+      },
+      "reason": "Needed as the negative_conversation_infra anchor message: a message in C_INFRA whose author lacks conversation-membership there, to test that the membership leg of the route correctly excludes this channel."
+    },
+    {
+      "table": "message_reactions",
+      "op": "insert",
+      "key": {"message_id": "1706200000.000001", "user_id": "U01AGENBOT9", "reaction_type": "eyes"},
+      "values": {"message_id": "1706200000.000001", "user_id": "U01AGENBOT9", "reaction_type": "eyes"},
+      "reason": "Gives the negative C_INFRA message a genuine 'eyes' reaction from the acting bot, so the only distinguishing failure is the missing conversation-membership of its author."
+    },
+    {
+      "table": "message_reactions",
+      "op": "insert",
+      "key": {"message_id": "1699651200.000321", "user_id": "U01AGENBOT9", "reaction_type": "thumbsup"},
+      "values": {"message_id": "1699651200.000321", "user_id": "U01AGENBOT9", "reaction_type": "thumbsup"},
+      "reason": "Supplies the wrong-emoji negative: an existing member-authored message in the same channel as the match, reacted by the bot but with 'thumbsup' instead of 'eyes'."
+    }
+  ],
+  "bindings": {
+    "target_conversation": ["C03IJKL9012"],
+    "member_author": ["U_LUKAS"],
+    "reactor": ["U01AGENBOT9"],
+    "anchor_message": ["1706110000.000100"],
+    "negative_conversation_infra": ["C_INFRA"],
+    "negative_author_nonmember": ["U02JOHNDOE1"],
+    "negative_channel_wrong_emoji": ["C03IJKL9012"],
+    "negative_message_wrong_emoji": ["1699651200.000321"]
+  },
+  "selectors": [
+    {
+      "root_table": "channels",
+      "scope": [],
+      "focal": {
+        "path": ["channels", "channel_members", "users", "messages", "message_reactions"],
+        "joins": ["channel_members.channel_id", "channel_members.user_id", "messages.user_id", "message_reactions.message_id"],
+        "filters": [
+          {"node": 3, "field": "message_text", "op": "contains_ci", "value": "circuit-tracer"},
+          {"node": 3, "field": "message_text", "op": "contains_ci", "value": "OOM"},
+          {"node": 4, "field": "reaction_type", "op": "eq", "value": "eyes"},
+          {"node": 4, "field": "user_id", "op": "eq", "value": "U01AGENBOT9"}
+        ]
+      },
+      "auxiliary": []
+    }
+  ],
+  "negative_referents": ["C_INFRA"],
+  "notes": "The acting bot (U01AGENBOT9) is already a member of C03IJKL9012, C_INFRA, and other candidate channels, giving discovery access via users.conversations/conversations.history/conversations.members/reactions.get. The base seed already contained the eyes reaction on 1706110000.000100 and the anchor message text/authorship; the only missing fact was U_LUKAS's conversation-membership in C03IJKL9012, now added. Negative infra message and its eyes reaction, plus the alternate thumbsup reaction on the existing login-errors message in the same channel, were added as new rows to instantiate the specified negatives without altering any preserved base record. The focal selector does not separately re-assert that the qualifying message's channel_id equals the membership's channel_id beyond the natural join path (per design's stated four-fact binding, not an explicit route edge), but in the resulting population only C03IJKL9012 satisfies all four conjoined conditions; C_INFRA is excluded on both the membership join and (redundantly) the message-text filter, and the wrong-emoji message is excluded on the reaction_type filter."
+}
+```

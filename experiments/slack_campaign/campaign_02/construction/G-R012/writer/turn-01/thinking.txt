@@ -1,0 +1,42 @@
+I need to design an underspecified referent for CONVERSATION, selected through the path from conversation to conversation membership to user to workspace membership to workspace. I'm thinking about picking the conversation by identifying a condition where it contains a member holding a particular workspace-related attribute.
+
+Since all users belong to a single workspace, that's not very discriminating on its own -- I need something that creates real ambiguity between two possible referent sets. Checking the seed data, the only admin with actual channel memberships is Robert Walsh, since Morgan Freeman (also an admin) isn't listed in any channel_members entries, so that route doesn't create the ambiguity I want. I'll need to try a different attribute since "member" role is too broad to narrow things down.
+
+Better to use workspace membership role (like "admin") as the real distinguishing attribute rather than the single workspace itself. I'm noticing that "Morgan" is shared as a first name between two distinct users, Morgan Stanley and Morgan Freeman — this fits the ambiguity pattern I want, where identifying by first name alone doesn't uniquely resolve to one person.
+
+Checking their workspace roles: Morgan Stanley is a regular member, while Morgan Freeman is an admin. If I specify "admin" in the query, that resolves the ambiguity to just Morgan Freeman, so instead I should leave the role unstated in the underspecified version so both Morgans remain valid candidates, creating genuine ambiguity over which channel is meant.
+
+Actually the real identifying attribute is workspace admin role membership, so I should select conversations by members who hold admin roles. To make the referent ambiguous, I can introduce two different users both named "Morgan" - like Morgan Stanley and another Morgan - so a partial name reference resolves to multiple candidate conversations.
+
+I'll add a coherent channel membership record placing Morgan Freeman (admin) into the growth channel, which creates a valid ambiguity: if Morgan Freeman is the only admin named Morgan, the query "which channel has a member named Morgan who is a workspace admin" resolves uniquely rather than ambiguously, so I need to reconsider how to construct real ambiguity between the two Morgans.
+
+I'm thinking the identifying condition needs to hinge on workspace role rather than just first name alone, otherwise the routing wouldn't actually depend on workspace membership data at all -- so I want to find two admin users sharing a first name to force that discrimination.
+
+Actually, "Robert" fits better since there are two distinct Roberts: Robert Walsh, a workspace admin, and Robert Chen, a regular member. So a query about "the channel with member Robert who is admin" resolves to Robert Walsh, while a broader "Robert" query alone would be genuinely ambiguous between the two.
+
+Actually that's not truly underspecified since it resolves uniquely. I want genuine ambiguity: use only the name "Robert" without role, where two different Roberts exist as members but the workspace fact itself doesn't add disambiguating power since there's only one workspace shared by both — so the identifying condition still leaves multiple valid referents.
+
+Since all users trivially belong to the single workspace, I need a genuine negative case — someone who isn't part of it. I'm thinking of introducing a second workspace entirely, with its own team membership, so a same-named "Robert" in that other workspace can serve as the excluded candidate.
+
+The real ambiguity should instead come from two Roberts both genuinely in T01WORKSPACE: Robert Walsh (admin, in C01/C02/C03) versus Robert Chen (member, in several dev-related channels). The distinguishing path runs through conversation membership tracing back to which Robert actually belongs there.
+
+I'm now drafting the natural user request phrasing, something asking to post a reminder in "the channel that has Robert as a member" without specifying which Robert.
+
+But that's state-changing and needs a single channel picked, so instead I think a read-only discovery question fits better: "Which channels have Robert as a member of our workspace?" This keeps the ambiguity open naturally, since it just lists channels rather than forcing a choice between the two Roberts.
+
+The real filtering task is distinguishing Robert-as-member-of-T01WORKSPACE from other Roberts who might exist in different workspaces or channels. I should add a negative case: Robert Diaz as a member of a T02 channel, not actually in T01WORKSPACE, to test that the wrong workspace gets excluded. I also want a negative for pure workspace membership without conversation membership, so someone who's technically in T01WORKSPACE but isn't part of any channel doesn't wrongly show up.
+
+Let me also add a "Roberta" case — a name that looks similar but isn't an exact match — as another near-miss negative.
+
+So compiling the reference sets: Robert Walsh's conversations, Robert Chen's alternate conversation set, the Beta workspace Robert Diaz negative, and the Roberta near-miss negative.
+
+I need scope defined as channels containing a member named Robert, so I'm setting up two candidate role sets: one built around Robert Walsh (admin) and his channels, another around Robert Chen (member) and his channels, mapping out which channels each belongs to like general, random, engineering, and alpha-dev.
+
+I also need to add negative examples—Robert Diaz in a different workspace and Roberta Lin, since these shouldn't match. But I realize the candidate role sets need to be structured as conversation-role labels rather than user roles, so I should define roles like "matchA1" with facts describing which Robert is the member, capturing both interpretations.
+
+For the CONVERSATION table with "underspecified" mode, the candidate role sets should be the two channel groupings (general/random/engineering vs alpha_dev/infra/model/growth/frontend), with target_roles as their union, and answer attributes being channel_name and channel_id. For the access plan, I need to describe discovering the two "Robert" users first, then checking channel membership for each via their conversation lists, plus a binding note explaining the ambiguity.
+
+I should also add grounding data: a new workspace with a beta channel and a "Robert Diaz" user restricted to that workspace only, plus a "Roberta Lin" user as a negative case whose name differs and who belongs to an existing growth channel, keeping that distinct from the product-growth channel already used elsewhere.
+
+Now I'm ready to assemble the task_spec line asking to identify which channels include Robert as a member, tied to the appropriate obligation, and write out the complete JSON.
+

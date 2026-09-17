@@ -1,0 +1,26 @@
+I'm designing a task with route CONVERSATION → MESSAGE → REACTION, aiming for a multiple-selection query like finding channels containing messages reacted to with a specific emoji, checking the seed data for matching reactions.
+
+I notice that message 1706110000.000100 in C03IJKL9012 already has an eyes reaction from agent1, which gives me one valid match, so I'll need to seed a few more similar reactions across other channels agent1 is a member of to build out a proper multiple-answer set.
+
+I'm leaning toward the simplest framing: which channels have messages that agent1 reacted to with 👀, which maps cleanly onto joining conversation, message, and reaction tables together.
+
+Currently there's only one such reaction, in one channel, so I need to add a second one—maybe agent1 reacting with eyes to the memory-pressure alert message in another channel—to make the answer span multiple channels. The theme doesn't need to match since the query is purely about reaction type, and I'm noting that the scoping instructions seem to call for using the full context rather than a narrow slice.
+
+For negatives I'm planning to include: agent1 reacting with a different emoji, a different user reacting with eyes, and messages with no reactions at all—these naturally fall outside the match. I'm also weighing whether a DM channel should count as a valid "channel" for this purpose, and leaning toward keeping any DM instance as a negative example rather than a true match, since the term is ambiguous.
+
+So my final structure: matches will be the engineering channel reaction and a newly added eyes reaction in the frontend channel; negatives will include wrong-emoji reactions in the infra channel and wrong-user eyes reactions in the model channel.
+
+I'll also add a case where agent1 authored a message in C02EFGH5678 but someone else added the eyes reaction, testing that authorship alone shouldn't cause a match.
+
+For the prompt, I'll phrase it naturally from the actor's perspective: "Which channels contain messages I reacted to with 👀?" This fits an open-ended, multi-answer question about the set of matching channels.
+
+Checking membership, agent1 is already in all the relevant channels needed for grounding, so no membership changes are required. Now I need to add reaction records tying specific messages to that eyes emoji from the actor.
+
+I'm working through each candidate: matching eyes reactions on the C_FRONTEND and C03IJKL9012 messages, but rejecting the thumbsup on the C_INFRA message as wrong emoji, rejecting Sophie's checkpoint message since the reactor is the wrong user, and rejecting the C02EFGH5678 message since the reactor there is a different user than intended even though agent1 authored it.
+
+Now I'm organizing the answer around the CONVERSATION table, setting up multiple target roles for the two matching channels (engineering and frontend), plus building out support roles for the messages and reactions backing them, and negative roles for the infra (wrong emoji) and model (wrong user) cases.
+
+For the access plan, I'll use users.conversations to discover which channels agent1 belongs to, conversations.history to pull messages per channel, and reactions.get to verify who reacted and with what emoji on each message.
+
+The task spec is simple: "List the channels containing messages I reacted to with an eyes emoji." Now I'll finalize the JSON structure.
+

@@ -1,0 +1,86 @@
+{
+  "prompt": "Someone who's also part of our Product Beta workspace left a 🚀 reaction on one of the messages in the general workspace. Please archive the channel that message was posted in.",
+  "binding_note": "The identifying chain requires: the same user who reacted with 🚀 on a message must also hold a workspace-membership record in the Product Beta workspace (team_name='Product Beta'); the channel containing that reacted-to message is the conversation to archive.",
+  "roles": [
+    {
+      "role": "target_conversation",
+      "entity": "channels",
+      "facts": "C_GROWTH ('product-growth'), public channel, not archived, contains the message that received the qualifying reaction",
+      "selection": "match",
+      "reason": "This channel contains the message bearing the 🚀 reaction from the Product Beta member, so it is the conversation the route resolves to and the target of the archive action."
+    },
+    {
+      "role": "reaction_message",
+      "entity": "messages",
+      "facts": "message_id 1706028105.000000 in C_GROWTH, authored by U_MATEO ('Ooof, 23% is rough...'), receives reaction_type 'rocket' from U_KENJI",
+      "selection": "support",
+      "reason": "This message is the one carrying the qualifying reaction, anchoring the conversation to select."
+    },
+    {
+      "role": "reactor_user",
+      "entity": "users",
+      "facts": "U_KENJI (Kenji Sato), reacted with 'rocket' on the C_GROWTH message and holds workspace membership in Product Beta (T02BETA) in addition to the main workspace",
+      "selection": "support",
+      "reason": "The reactor whose workspace membership matches the stated condition, making the reaction-to-workspace link valid."
+    },
+    {
+      "role": "target_workspace",
+      "entity": "teams",
+      "facts": "T02BETA, team_name 'Product Beta', a secondary workspace some users additionally belong to",
+      "selection": "support",
+      "reason": "The named workspace used as the identifying condition on the reactor's membership."
+    },
+    {
+      "role": "negative_wrong_workspace_reactor",
+      "entity": "channels",
+      "facts": "C_FRONTEND ('frontend'), contains message 1706043754.000000 which received a 'rocket' reaction from U_LUKAS; U_LUKAS has no membership in Product Beta, only in the main Test Workspace",
+      "selection": "negative",
+      "reason": "Same emoji as the match, but the reactor lacks the required Product Beta membership, so this channel must not be selected."
+    },
+    {
+      "role": "negative_wrong_workspace_reaction_record",
+      "entity": "message_reactions",
+      "facts": "message_id 1706043754.000000, user_id U_LUKAS, reaction_type 'rocket'",
+      "selection": "negative",
+      "reason": "Supporting record for the excluded wrong-workspace reactor; shows the same emoji applied by someone outside Product Beta."
+    },
+    {
+      "role": "negative_wrong_emoji_same_reactor",
+      "entity": "message_reactions",
+      "facts": "U_KENJI reacts with 'thumbsup' (not 'rocket') on message 1706028356.000000, also in C_GROWTH",
+      "selection": "negative",
+      "reason": "Same qualifying reactor and even the same channel, but wrong emoji, so this reaction does not satisfy the stated condition on its own and must not be used to justify a different channel choice."
+    },
+    {
+      "role": "acting_bot_access",
+      "entity": "channel_members",
+      "facts": "U01AGENBOT9 added as a member of C_GROWTH to permit the archive action",
+      "selection": "support",
+      "reason": "Actor needs conversation membership to perform the archive operation."
+    }
+  ],
+  "obligations": [
+    {
+      "name": "conversation_to_archive",
+      "description": "The single conversation identified by containing a message that received a 'rocket' reaction from a user who also holds workspace membership in the workspace named 'Product Beta'.",
+      "table": "channels",
+      "mode": "single",
+      "task_type": "state-changing",
+      "scope": "conversation identified via message-reaction-user-membership-workspace chain",
+      "target_roles": ["target_conversation"],
+      "candidate_role_sets": null,
+      "selection": "one",
+      "change_attributes": [["channels.is_archived"]],
+      "written_attributes": ["marked as archived (true)"]
+    }
+  ],
+  "task_spec": [
+    {
+      "line": 1,
+      "text": "Archive the channel that contains the message reacted to with 🚀 by the teammate who is also a member of the Product Beta workspace.",
+      "obligations": [1]
+    }
+  ],
+  "scope_exception": "users.info exposes only one selected workspace association per user, which is insufficient to confirm a reactor's secondary membership in Product Beta. Discovery therefore does not rely on per-user users.info profile lookups for this check. Instead, membership in Product Beta is confirmed via users.list scoped with team_id=T02BETA, which returns the full roster of that workspace's members directly from workspace-membership records; candidate reactors are cross-referenced against that roster rather than against a single-selected-workspace profile field.",
+  "access_plan": "Enumerate accessible channels via conversations.list/users.conversations, then use conversations.history plus reactions.get to find messages bearing a 'rocket' reaction. Collect the reacting user IDs, then call users.list with team_id=T02BETA to obtain the roster of Product Beta workspace members, and check which reactor IDs appear in that roster. This isolates the single message (and its channel) whose 'rocket' reactor is a confirmed Product Beta member, excluding reactors who used a different emoji or who reacted but are not on the Product Beta roster. Then call conversations.archive on that channel."
+}

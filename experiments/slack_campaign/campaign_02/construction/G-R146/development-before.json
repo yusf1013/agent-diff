@@ -1,0 +1,116 @@
+{
+  "design": {
+    "prompt": "DM the person who reacted with a 🚀 to Lukas's message in engineering about rewriting circuit-tracer in PyTorch, and ask them for a timeline update on that rewrite.",
+    "binding_note": "The reaction row (message_id, user_id, reaction_type='rocket') must point at the same message where Lukas describes the circuit-tracer OOM/rewrite problem in #engineering (C03IJKL9012); the reacting user on that exact row is the DM target.",
+    "roles": [
+      {
+        "role": "referent_user",
+        "entity": "users",
+        "facts": "Kenji Sato (U_KENJI), member of C03IJKL9012, reacts with reaction_type='rocket' on message_id 1706110000.000100 (Lukas's 'need to rewrite this in PyTorch from scratch with proper streaming' message).",
+        "selection": "match",
+        "reason": "Sole user whose reaction row is (message=1706110000.000100, emoji=rocket); this is the single intended referent."
+      },
+      {
+        "role": "source_message",
+        "entity": "messages",
+        "facts": "Message 1706110000.000100 in C03IJKL9012, authored by U_LUKAS: 'The circuit-tracer library is hitting OOM errors ... Need to rewrite this in PyTorch from scratch with proper streaming.'",
+        "selection": "support",
+        "reason": "The message the reaction route is anchored on; needed to bind the reaction correctly."
+      },
+      {
+        "role": "different_emoji_negative",
+        "entity": "users",
+        "facts": "U_ROBERT, member of C03IJKL9012, reacts with reaction_type='thumbsup' on the same message 1706110000.000100.",
+        "selection": "negative",
+        "reason": "Same message but wrong emoji, so Robert is excluded by the emoji condition."
+      },
+      {
+        "role": "wrong_message_negative",
+        "entity": "message_reactions",
+        "facts": "U_KENJI (the same referent user) also reacts with reaction_type='rocket', but on message 1706112500.000001 (John Doe's unrelated 'supercomputer time for circuit-tracer' question) in the same channel.",
+        "selection": "negative",
+        "reason": "Same reactor and same emoji, but on a different message; only the reaction tied to the rewrite message qualifies, so this alternate row must not be conflated with the match."
+      },
+      {
+        "role": "cross_channel_negative",
+        "entity": "users",
+        "facts": "U_PRIYA, member of C_INFRA (not C03IJKL9012), reacts with reaction_type='rocket' on message 1706067472.000000 (Robert's cloud-bill message) in #core-infra.",
+        "selection": "negative",
+        "reason": "Correct emoji but wrong message and wrong channel entirely; not the circuit-tracer rewrite message."
+      },
+      {
+        "role": "author_negative",
+        "entity": "users",
+        "facts": "U_LUKAS authored the source message but has no reaction record on it himself.",
+        "selection": "negative",
+        "reason": "Authoring the message is not reacting to it; excluded by the reaction requirement."
+      }
+    ],
+    "obligations": [
+      {
+        "name": "dm_reactor_about_rewrite_timeline",
+        "description": "Identify the single user whose reaction (emoji=rocket) is attached to Lukas's circuit-tracer PyTorch-rewrite message in #engineering, then send that user a direct message asking for a timeline update on the rewrite.",
+        "table": "users",
+        "mode": "single",
+        "task_type": "state-changing",
+        "scope": "Reaction-qualified user on one specific message within #engineering (C03IJKL9012)",
+        "target_roles": [
+          "referent_user"
+        ],
+        "candidate_role_sets": null,
+        "selection": "one",
+        "partial_constraints": [
+          "message_reactions.reaction_type = 'rocket'",
+          "message_reactions.message_id = 1706110000.000100",
+          "messages.channel_id = 'C03IJKL9012'"
+        ],
+        "change_attributes": [
+          [
+            "messages.message_text",
+            "messages.channel_id",
+            "messages.user_id"
+          ]
+        ],
+        "written_attributes": [
+          "messages.message_text: literal DM text asking Kenji for a timeline update on the circuit-tracer PyTorch rewrite, e.g. 'Hey Kenji, saw your reaction on the circuit-tracer PyTorch rewrite thread — do you have a timeline update on when it'll be ready?'",
+          "messages.channel_id: the DM conversation id opened between U01AGENBOT9 and the resolved reactor U_KENJI via conversations.open",
+          "messages.user_id: 'U01AGENBOT9', the acting user sending the DM"
+        ]
+      }
+    ],
+    "task_spec": [
+      {
+        "line": 1,
+        "text": "Find who reacted with 🚀 to Lukas's circuit-tracer PyTorch-rewrite message in #engineering, then DM that person asking for a timeline update on the rewrite.",
+        "obligations": [
+          1
+        ]
+      }
+    ],
+    "scope_exception": null,
+    "access_plan": "Use conversations.history/replies on C03IJKL9012 to locate Lukas's circuit-tracer rewrite message (1706110000.000100), then reactions.get on that message to read its reaction list and find the 'rocket' entry naming U_KENJI (distinguishing it from Robert's 'thumbsup' on the same message and from Kenji's/Priya's 'rocket' reactions on other messages/channels). Confirm identity via users.info, then use conversations.open with that user followed by chat.postMessage to send the DM."
+  },
+  "summary": {
+    "status": "unrealized",
+    "reason": {
+      "design_review": {
+        "validity": "pass",
+        "quality": "strong",
+        "issues": [
+          {
+            "kind": "annotation",
+            "location": "obligations[0].written_attributes",
+            "problem": "All three written_attributes are still expressed as 'column: description' prose (with an illustrative 'e.g.' example for message_text, a description instead of a value for channel_id, and a description appended to the literal for user_id) rather than as clean table.column = literal_value or explicit computed-value assignments. This is the same O1 defect the mechanical check has now correctly identified against the current content.",
+            "repair": "Rewrite as strict assignments: messages.message_text = 'Hey Kenji, saw your rocket reaction on the circuit-tracer PyTorch rewrite thread — do you have a timeline update on when it'll be ready?' ; messages.channel_id = <DM channel id returned by conversations.open with U_KENJI> (marked as a discovery-resolved value, not prose); messages.user_id = 'U01AGENBOT9'. Remove all narrative description text from the value slots."
+          }
+        ],
+        "rationale": "The semantic design remains sound and unchanged from prior revisions: the route USER→REACTION→MESSAGE with single mode matches the prompt's singular referent, the anchor message (1706110000.000100) is uniquely identifiable by channel (#engineering) plus topic (circuit-tracer PyTorch rewrite) against other circuit-tracer mentions in the base seed, and the three negative dimensions (wrong emoji same message, right emoji wrong message/same reactor, right emoji wrong message/wrong channel) plus the author-negative are well-formed, non-hinting, and correctly keyed to existing or planned rows. Actor U01AGENBOT9 is a real member of C03IJKL9012 and the access_plan's use of conversations.history/replies, reactions.get, users.info, conversations.open, and chat.postMessage matches the documented API surface, so discovery and the DM action are realistic. The only defect is a persistent, self-flagged mechanical formatting problem in written_attributes (prose descriptions instead of clean table.column = value assignments), which is a compiler-facing annotation issue rather than a flaw in the requested selection or operation, so it does not sink validity but must be repaired before compilation."
+      },
+      "errors": [
+        "O1: written attribute \"messages.message_text: literal DM text asking Kenji for a timeline update on the circuit-tracer PyTorch rewrite, e.g. 'Hey Kenji, saw your reaction on the circuit-tracer PyTorch rewrite thread — do you have a timeline update on when it'll be ready?'\" must be a real table.column, with values in prose instead.",
+        "O1: written attribute 'messages.channel_id: the DM conversation id opened between U01AGENBOT9 and the resolved reactor U_KENJI via conversations.open' must be a real table.column, with values in prose instead.",
+        "O1: written attribute \"messages.user_id: 'U01AGENBOT9', the acting user sending the DM\" must be a real table.column, with values in prose instead."
+      ]
+    }
+  }
+}

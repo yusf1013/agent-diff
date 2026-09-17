@@ -1,0 +1,19 @@
+{
+  "validity": "pass",
+  "quality": "adequate",
+  "issues": [
+    {
+      "kind": "annotation",
+      "location": "design.obligations[1] (Send DM to resolved user) — target_roles: [\"dm_message\"]",
+      "problem": "Obligation 2 references target_roles ['dm_message'], but no role named 'dm_message' is defined anywhere in design.roles. The roles array only defines target_channel, qualifying_message, author, and the negative message/author pairs — there is no role entry with entity 'messages' describing the new DM message record (facts, selection, reason) that the write actually targets. The role reference is dangling.",
+      "repair": "Add a role entry (e.g. name 'dm_message', entity 'messages', selection 'match', facts describing the new message record authored by U01AGENBOT9 in the opened DM channel with U06HUBERT23, text 'I am looking into this.') so obligation 2's target_roles points to a defined role."
+    },
+    {
+      "kind": "annotation",
+      "location": "design.obligations[1].written_attributes and mechanical_design_errors entry",
+      "problem": "The design's own mechanical_design_errors still flags this obligation: 'O2: target/candidate role dm_message must name only the referent table messages; intermediate records belong in support roles.' written_attributes mixes channel_members.* (an intermediate DM-open side effect) together with messages.* under a single obligation/role pair scoped to table 'messages'. This defect from the prior review round was only partially addressed (target_roles renamed from 'author' to 'dm_message') but the underlying table-mixing problem the pipeline flagged remains unresolved.",
+      "repair": "Split the channel_members.channel_id/channel_members.user_id writes into a separate support role/obligation step (e.g. 'dm_channel_open', table channel_members) distinct from the 'dm_message' role's written_attributes (messages.channel_id, messages.message_text only), so each role's written_attributes stay within its own referent table."
+    }
+  ],
+  "rationale": "The core semantics are sound and improved from the prior round: the referent (U06HUBERT23) remains the unique #general message containing 'captcha', the route USER→MESSAGE→CONVERSATION is genuinely exercised via conversations.history/open/chat.postMessage, and the negative set is richer (now including negative authors alongside negative messages) without hinting the answer. However, the fix applied to the previously flagged mechanical error is incomplete: the design still carries the same self-reported mechanical_design_error about table-mixing in obligation 2, and the newly introduced 'dm_message' target role is never defined in the roles list, leaving a dangling reference. These are compiler-level annotation defects that should be repaired before compilation without altering the locked prompt or referent."
+}

@@ -1,0 +1,88 @@
+```json
+{
+  "seed_edits": [
+    {
+      "table": "message_reactions",
+      "op": "insert",
+      "values": {
+        "message_id": "1706067472.000000",
+        "user_id": "U_SOPHIE",
+        "reaction_type": "raised_hands",
+        "created_at": "2024-01-24T10:15:00"
+      },
+      "reason": "wrong_member_reaction negative: correct channel (#core-infra) and correct emoji, but Sophie is not a member of #project-alpha-dev."
+    },
+    {
+      "table": "message_reactions",
+      "op": "insert",
+      "values": {
+        "message_id": "1706067650.000000",
+        "user_id": "U_PRIYA",
+        "reaction_type": "thumbsup",
+        "created_at": "2024-01-24T10:20:00"
+      },
+      "reason": "wrong_emoji_reaction negative: correct channel and Priya is a #project-alpha-dev member, but emoji is thumbsup not raised_hands."
+    },
+    {
+      "table": "message_reactions",
+      "op": "insert",
+      "values": {
+        "message_id": "1706012456.000000",
+        "user_id": "U_PRIYA",
+        "reaction_type": "raised_hands",
+        "created_at": "2024-01-23T09:05:00"
+      },
+      "reason": "wrong_channel_reaction negative: correct emoji and Priya's membership qualifies, but the reacted message is in #model-research, not #core-infra."
+    }
+  ],
+  "bindings": {
+    "core_infra_channel": ["C_INFRA"],
+    "alpha_dev_channel": ["C06ALPHADEV"],
+    "wrong_member_reaction": [{"message_id":"1706067472.000000","user_id":"U_SOPHIE","reaction_type":"raised_hands"}],
+    "wrong_emoji_reaction": [{"message_id":"1706067650.000000","user_id":"U_PRIYA","reaction_type":"thumbsup"}],
+    "wrong_channel_reaction": [{"message_id":"1706012456.000000","user_id":"U_PRIYA","reaction_type":"raised_hands"}],
+    "unrelated_existing_reaction": [{"message_id":"1706110000.000100","user_id":"U01AGENBOT9","reaction_type":"eyes"}],
+    "target_message": [],
+    "focal_negative": ["1706067472.000000"]
+  },
+  "selectors": [
+    {
+      "root_table": "messages",
+      "scope": [
+        {"field": "channel_id", "op": "eq", "value": "C_INFRA"}
+      ],
+      "focal": {
+        "path": ["messages", "message_reactions", "users", "channel_members", "channels"],
+        "joins": [
+          "message_reactions.message_id",
+          "message_reactions.user_id",
+          "channel_members.user_id",
+          "channel_members.channel_id"
+        ],
+        "filters": [
+          {"node": 1, "field": "reaction_type", "op": "eq", "value": "raised_hands"},
+          {"node": 4, "field": "channel_name", "op": "eq", "value": "project-alpha-dev"}
+        ]
+      },
+      "auxiliary": [
+        {
+          "path": ["messages", "message_reactions", "users"],
+          "joins": ["message_reactions.message_id", "message_reactions.user_id"],
+          "filters": [
+            {"node": 0, "field": "channel_id", "op": "eq", "value": "C_INFRA"},
+            {"node": 1, "field": "reaction_type", "op": "eq", "value": "raised_hands"},
+            {"node": 2, "field": "user_id", "op": "not_in", "value": ["U_PRIYA","U_LUKAS","U_MATEO","U_KENJI","U_ROBERT","U_AISHA"]}
+          ]
+        }
+      ]
+    }
+  ],
+  "negative_referents": [
+    "1706067472.000000",
+    "1706067650.000000",
+    "1706012456.000000",
+    "1706110000.000100"
+  ],
+  "notes": "Actor U01AGENBOT9 is already a member of both #core-infra (C_INFRA) and #project-alpha-dev (C06ALPHADEV) in the base seed, satisfying discovery via conversations.history/conversations.members/reactions.get without new memberships. The three new reaction rows are clean negatives, each satisfying exactly two of the three route conditions (channel, emoji, reactor-membership) and failing the third. The auxiliary query explicitly recomputes the sole focal negative: #core-infra messages with a raised_hands reaction whose reactor is not among the #project-alpha-dev membership list, resolving to exactly one message, 1706067472.000000 (Sophie's raised_hands reaction on Robert's cloud-bill message), bound under focal_negative. negative_referents lists the plausible-but-wrong main-referent (message) handles a solver might mistakenly pick: 1706067472.000000 (right channel+emoji, wrong reactor membership), 1706067650.000000 (right channel+membership, wrong emoji), 1706012456.000000 (right emoji+membership, wrong channel — #model-research not #core-infra), and 1706110000.000100 (the pre-existing base-seed reaction, wrong channel #engineering and wrong emoji 'eyes', despite the reactor being an alpha-dev member). None of these satisfy all three route conditions simultaneously, consistent with the absent target_message resolution."
+}
+```

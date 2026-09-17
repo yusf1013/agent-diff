@@ -1,0 +1,103 @@
+{
+  "prompt": "Someone reacted with a 🎉 to Priya's message in core-infra where she confirmed the CUDA memory limit was the root cause of the inference OOM issue. Which channel has that person's own messages posted in?",
+  "binding_note": "The conversation is selected by: contains a message whose reaction (🎉) on Priya's specific CUDA-root-cause message in #core-infra identifies a unique reacting user, and that same user's own authored messages (found in exactly one other channel) determine the target conversation.",
+  "roles": [
+    {
+      "role": "target_message",
+      "entity": "messages",
+      "facts": "message_id 1706001931.000000 in C_INFRA, authored by U_PRIYA: 'Got the pprof delta—it's definitely the batch size increase hitting a hard CUDA memory limit...'",
+      "selection": "support",
+      "reason": "anchor message the qualifying reaction is attached to"
+    },
+    {
+      "role": "reaction_match",
+      "entity": "message_reactions",
+      "facts": "message_id=1706001931.000000, user_id=U04OMER23, reaction_type='tada' (added for this scenario); membership record channel_id=C_INFRA, user_id=U04OMER23 added so the reaction is grounded by an ordinary access fact",
+      "selection": "match",
+      "reason": "the qualifying reaction identifying the reactor"
+    },
+    {
+      "role": "reactor_user",
+      "entity": "users",
+      "facts": "U04OMER23 (Omer Narwhal); the base seed shows exactly one authored message for this user, in C02EFGH5678",
+      "selection": "match",
+      "reason": "user identified via the reaction; his authored messages determine the answer"
+    },
+    {
+      "role": "author_channel",
+      "entity": "channels",
+      "facts": "C02EFGH5678 (#random) contains message 1700210180.000004 authored by U04OMER23: 'Is it out in preview? I want to test it against our current benchmarks.' — this is the only channel with a message authored by U04OMER23 in the seed",
+      "selection": "match",
+      "reason": "the unique channel containing a message authored by the reactor — the correct referent"
+    },
+    {
+      "role": "reaction_wrong_emoji",
+      "entity": "message_reactions",
+      "facts": "message_id=1706001931.000000, user_id=U_LUKAS, reaction_type='thumbsup' (added)",
+      "selection": "negative",
+      "reason": "same target message but wrong emoji, so Lukas is not the qualifying reactor"
+    },
+    {
+      "role": "reaction_wrong_message",
+      "entity": "message_reactions",
+      "facts": "message_id=1706002397.000000, user_id=U_OLENA, reaction_type='tada' (added) — Olena's own scaling-plan message in C_INFRA",
+      "selection": "negative",
+      "reason": "correct emoji but wrong message, so Olena is not the qualifying reactor"
+    },
+    {
+      "role": "reaction_right_emoji_wrong_message_same_channel_author",
+      "entity": "message_reactions",
+      "facts": "message_id=1706067472.000000 (U_ROBERT's own cloud-bill message in C_INFRA), user_id=U_ROBERT, reaction_type='tada' (added)",
+      "selection": "negative",
+      "reason": "matches the emoji and even has a single-channel-authoring reactor (C_INFRA), but on the wrong message, so it is excluded by the message condition"
+    },
+    {
+      "role": "reaction_location_channel",
+      "entity": "channels",
+      "facts": "C_INFRA (#core-infra), where the qualifying reaction occurred",
+      "selection": "negative",
+      "reason": "plausible decoy: the channel where the reaction happened is not the channel containing the reactor's own authored messages"
+    },
+    {
+      "role": "reactor_other_seed_authors_checked",
+      "entity": "messages",
+      "facts": "Verified base seed contains no other message authored by U04OMER23 outside C02EFGH5678, so no second qualifying author_channel exists for this reactor",
+      "selection": "negative",
+      "reason": "documents that the uniqueness of the answer channel was checked against the full base seed, addressing the prior multi-channel authorship defect"
+    }
+  ],
+  "obligations": [
+    {
+      "name": "reactor_authored_channel",
+      "description": "The conversation containing a message authored by the user who reacted with 🎉 to Priya's CUDA-root-cause message in #core-infra; selection must follow conversation→message→user→reaction bindings on the same message/user/emoji, and must be the sole channel where that user authored a message.",
+      "table": "channels",
+      "mode": "single",
+      "task_type": "read-only",
+      "scope": "workspace-visible channels reachable via membership/history",
+      "target_roles": [
+        "author_channel"
+      ],
+      "candidate_role_sets": null,
+      "selection": "one",
+      "answer_attributes": [
+        [
+          "channels.channel_name"
+        ],
+        [
+          "channels.channel_id"
+        ]
+      ]
+    }
+  ],
+  "task_spec": [
+    {
+      "line": 1,
+      "text": "Identify which channel contains messages authored by the person who reacted with 🎉 to Priya's message confirming the CUDA memory limit as the OOM root cause, and report that channel.",
+      "obligations": [
+        1
+      ]
+    }
+  ],
+  "scope_exception": null,
+  "access_plan": "Locate Priya's message via conversations.history/search.messages on #core-infra (content: 'hard CUDA memory limit'), then reactions.get on that message to find the 🎉 reactor among the seeded reactions (U04OMER23=tada matches; U_LUKAS=thumbsup and U_OLENA's tada-on-a-different-message, and U_ROBERT's tada-on-his-own-message, are excluded). Then browse channels the reactor is associated with (users.conversations with user=U04OMER23, or iterate conversations.list + conversations.history) to find the sole channel containing his authored message, landing on #random (C02EFGH5678)."
+}

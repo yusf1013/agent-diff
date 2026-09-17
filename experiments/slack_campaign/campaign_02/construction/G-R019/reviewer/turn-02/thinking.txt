@@ -1,0 +1,28 @@
+I'm checking whether the actor already had membership in the other candidate channels before the edit, confirming the compiled version only needed to add C_GROWTH access to satisfy the conversations.history requirement.
+
+One gap remains: C_OLD_PROJECT, where the actor isn't a member. Since it's archived with no messages, membership there likely doesn't matter for traversal, though I need to confirm whether the domain model actually requires channel membership for conversations.history at all, since the compiled edit's addition of C_GROWTH membership implies that assumption.
+
+Actually this same membership gap applies to C_OLD_PROJECT since it wasn't given membership like C_GROWTH was. But the compiled notes explicitly state C_OLD_PROJECT has zero messages and is "neither match nor plausible negative," which seems to conflict with the mechanical checks listing it as a negative candidate - though since it's empty, it trivially can't be an admin-positive match anyway.
+
+I'm checking whether conversations.history actually requires membership according to the API docs, and it's ambiguous there—but the compiler's own reasoning for adding access to C_GROWTH implies such a restriction exists in this behavior model. That precedent suggests C_OLD_PROJECT should have received the same fix if it were similarly situated.
+
+Since C_OLD_PROJECT has zero messages in the seed, even if the actor lacks access, this wouldn't cause a false positive—but it does create an unsolvable gap, since the solver can't distinguish "no messages" from "denied access" without actually calling the API. If conversations.list surfaces this archived channel, the solver is forced to attempt a history check that may just error out rather than confirm anything.
+
+Actually, since conversations.list here lists all team channels regardless of membership, and history is likely channel-scoped rather than membership-scoped, actor probably didn't need that channel_members row for C_GROWTH to access it at all — so I'm questioning why the compiler added it in the first place.
+
+But if there's an implicit access rule requiring membership for history that isn't stated in the docs, C_OLD_PROJECT would have the exact same unaddressed problem, which seems like a real access gap per the review criteria about validating supplied-scope exceptions against documented limitations.
+
+But since C_OLD_PROJECT has no messages at all, this doesn't affect the match regardless of access - if history calls error out rather than returning empty for channels the actor isn't a member of, the solver could hit an exception trying to check "all channels," which risks either a false halt or an incomplete answer even though the correct result is simply to exclude this channel.
+
+Since membership was deliberately fixed for C_GROWTH but not C_OLD_PROJECT, this is an inconsistent access remediation - I'll flag it explicitly as an access defect in the review. I also need to check whether the candidate population and computed matches (C01ABCD1234, C03IJKL9012) align with the intended design.
+
+The seed_edits only touch channel_members for C_GROWTH, leaving C_OLD_PROJECT unaddressed despite both appearing in the negatives list. But the design notes suggest C_OLD_PROJECT and C05ALPHA are meant to be out-of-scope since they have no messages at all - yet both still show up in the computed_focal_negatives list alongside the others, which seems like it needs closer scrutiny.
+
+The key distinction is that the actor already has membership in C05ALPHA per the base seed, so access isn't the blocker there - but for C_OLD_PROJECT the actor has no channel_members row at all, which is the real asymmetric gap I need to check against the private near_misses list.
+
+This access question only matters if membership actually restricts channel history visibility. Since the compiler explicitly added a membership fix for C_GROWTH to ensure reachability but skipped the same fix for C_OLD_PROJECT, that looks like a genuine but minor inconsistency—especially minor given C_OLD_PROJECT is archived and has zero messages, so it's unlikely to affect anything in practice.
+
+I'd flag it as a real but low-severity access defect rather than something that invalidates the answer set—it's a completeness gap in the declared full scope rather than something that changes the correct answer. I should also check whether the actor's bot status and member role introduce any related complications.
+
+Since it's just an empty archived channel with no relevance to the actual results, this doesn't undermine the ground truth. I'll finalize: validity passes given correct core matches, negatives, and mechanics, while quality rates adequate due to that minor unresolved access gap.
+
