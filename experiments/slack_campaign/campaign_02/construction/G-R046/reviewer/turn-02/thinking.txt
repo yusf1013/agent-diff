@@ -1,0 +1,24 @@
+I'm verifying the compiled results against the design intent, confirming the acting agent bot has proper workspace access to discover both Roberts, and checking that Robert Walsh's channel memberships match the expected design.
+
+Robert Chen's memberships also line up correctly with the seed data, and the workspace roles (Walsh as admin, Chen as member) match user_teams. The negative examples also check out - Hubert Marek, Morgan Stanley, and Morgan Freeman are all correctly included or excluded per the design notes.
+
+Now I'm looking at whether computed_matches correctly merges the two candidate sets into a single flat list of eight matched rows, since this represents two alternative sets rather than one combined selection.
+
+This is a critical issue - since the roles are marked as alternatives (Walsh's set OR Chen's set), the expected_matches list combining all 8 rows contradicts the exposure_qualification rule that alternatives shouldn't be merged into one answer. I need to reread how the private section actually defines correctness for this underspecified "set" selection case.
+
+No mechanical errors were flagged, but I'm questioning whether that's actually right. If underspecified cases are normally graded by accepting either valid candidate set rather than their union, then merging into a flat "expected_matches" of all 8 rows could bake in wrong semantics—implying the solver should return everything unless it disambiguates, when really that union might just represent the naive filter pool before differentiation happens.
+
+This is likely a reference pool for negative computation rather than the actual answer key, since candidate_sets already correctly captures the two valid alternatives separately. I don't see this as a genuine validity issue given that explicit structure.
+
+Checking obligation 1's identifying path, it correctly traces channel_members through users to user_teams, matching the intended conversation membership to user to workspace membership route.
+
+For obligation 2, the selector only reports the terminal user-to-workspace_membership segment rather than the full route, but the design notes clarify this is intentional -- it's meant to reflect the "displayed membership pair" exposure qualification rather than requiring the complete traversal for every obligation. This partial route appears consistent with how the two obligations are meant to differ in scope.
+
+Now I'm verifying the bindings: robert_walsh_user maps to U03ROBERT23 matching robertwalsh/Robert Walsh in the seed, and robert_chen_user maps to U_ROBERT matching robert.chen/Robert Chen -- both correct. The channel membership bindings for hubert (three rows across random, engineering, growth) and morgan_stanley (engineering only) also check out against the seed, as does morgan_freeman_admin's user_teams binding.
+
+I'm also confirming that negative_referents only draws from channel_members rows under the CONVERSATION_MEMBERSHIP root, deliberately excluding Morgan Freeman's user_teams row, which matches the construction rule that negatives should come from the same table as the root entity.
+
+Thinking further, Morgan Freeman as a negative for the workspace role obligation isn't mechanically enforced since the selector filters by real_name containing "Robert" via a join on users, so Morgan Freeman would never pass that filter anyway -- his role match is just a conceptual distractor rather than something selectors need to guard against, which is fine for quality purposes even if not mechanically necessary. Overall the compiled artifact looks consistent with the design with no clear mechanical errors.
+
+Checking the answer-computation attributes, channel_id and joined_at on channel_members and role on user_teams are all fine bare columns. Everything holds together well, so I'll finalize this as a pass with strong quality given the correct negatives, alternative sets, and route usage.
+

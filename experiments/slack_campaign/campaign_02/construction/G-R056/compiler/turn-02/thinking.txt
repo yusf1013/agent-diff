@@ -1,0 +1,14 @@
+The expected route seems to be just CONVERSATION_MEMBERSHIP -> USER -> REACTION, only three nodes, but my path added extra joins through messages and channels that aren't part of the core route—maybe those need to be treated as auxiliary rather than part of the main route sequence.
+
+The bigger clue is that computed_focal_negatives includes all core-infra members except Olena, meaning my filters on message text or channel name aren't actually being applied—the query is just matching everyone who reacted at all, so something broke in how the join order propagates the filter conditions.
+
+Actually, the output itself looks right: Olena is the only match, everyone else is correctly a negative. So the "differs from assigned complete route" error is purely structural—the assigned route is only 3 nodes (channel_members -> users -> message_reactions), but my path has 5 nodes since I added messages and channels. I should restructure so the main selector strictly follows the 3-node route and push the message/channel filtering into auxiliary conditions instead.
+
+I can still filter directly on message_reactions using its message_id field to pin down the specific dart reaction on the anchor message, since message_id is a native field there, keeping the path within the assigned 3-node route while still constraining to the right message.
+
+This message_id is really a natural key (a timestamp) already tied to the anchor message identified elsewhere via text, so using it directly satisfies the field-value requirement without needing extra path nodes. I'll consider adding an auxiliary query to double-check this before finalizing.
+
+Writing the selector...
+
+I add auxiliary checks confirming the channel ID and name match model-research independently, which verifies assumptions without restricting the focal candidate population. This keeps the focal route as a clean 3-node path matching CONVERSATION_MEMBERSHIP->USER->REACTION, which should resolve the route mismatch error.
+

@@ -1,0 +1,24 @@
+I need a route from reactions to messages to users to workspace membership, using the reaction as the referent entity, then work backward through message authorship to identify the user and their membership role. I'm thinking about designing the query around reactions on messages from admin-role members with a specific emoji, deliberately leaving info underspecified so it creates ambiguity between two distinct sets of matching referents.
+
+Since there are two admins in the workspace, Robert and Morgan Freeman, I want to phrase the request around "eyes" reactions on admin-authored messages without revealing which admin, so both could plausibly match and create ambiguity. I'll add fresh eyes reactions on messages authored by these admin users to support that scenario.
+
+I also need reactions by the admins themselves as reactors (not authors) to test the role distinction properly.
+
+I'm mapping out the full entity set: two candidate reactions (Robert's and Morgan's eyes reactions) as the ambiguous match roles, plus supporting messages, user records, and team memberships for each admin, along with negative cases like a thumbsup reaction on an admin message and an eyes reaction on a non-admin's message.
+
+Now I'm trying to settle on a concrete task. Since two admins qualify, asking "what emoji reaction did our workspace admin get on their deployment announcement" is ambiguous unless I can disambiguate by phrasing or content. I'm leaning toward a read-only question about which emoji is on the admin's deployment-related message, though I still need to work out how to avoid the two-admin ambiguity.
+
+That works well - two admins sharing the role attribute creates natural ambiguity without needing content matching. I'll keep the request read-only: "What emoji reaction did our admin's message get?" and build out the scenario with two concrete admin users, Robert Walsh and Morgan Freeman, both holding admin role, then give each of them authored messages to establish the ambiguous referent sets.
+
+I'm checking channel memberships to make sure Morgan Freeman has access to actually post a message somewhere, since she's not currently listed in any channel's members, so I need to add that membership before creating her message.
+
+I'll place her in the engineering channel (C03IJKL9012) as a plausible admin fit, then draft her message about the pricing tiers launch. I'm also planning some eyes reactions on both Robert's and Morgan's messages from other channel members to make the activity feel more natural.
+
+For negative cases, I'm considering a mismatched emoji reaction on an admin's message and an eyes reaction placed on a non-admin's casual message, both meant to test whether the system correctly distinguishes valid patterns from invalid ones.
+
+These negatives are good since they test different failure conditions: wrong emoji, wrong role for author, and wrong role placement where an admin reacts but doesn't author. Now I need to phrase a natural request, but something like "What emoji reaction is on the message our workspace admin posted?" feels too vague since there are two admins, creating ambiguity I need to resolve.
+
+I'll settle on: "Our workspace admin posted a message that got a reaction — what emoji was used?" This works as an open-ended question resolving to two candidates, Robert Walsh and Morgan Freeman, both admins who each authored a message with a reaction, giving two distinct possible answers. I'm now setting up a single obligation on the message_reactions table, marked underspecified and read-only, with target roles covering both candidate reactions and separate candidate role sets for each admin.
+
+Selection mode is "one" given the underspecified candidates. Answer attributes pull reaction_type, message_id, and user_id from message_reactions, and I'll include supporting roles for messages, users, and memberships before finalizing the JSON.
+

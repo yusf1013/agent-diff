@@ -1,0 +1,28 @@
+I'm working out a route from a conversation membership through the user to their workspace membership, needing to identify the entity by a partial name match and a workspace role condition.
+
+Since "Robert" is shared by two distinct users - Robert Walsh (U03ROBERT23, admin role) and Robert Chen (U_ROBERT) - I need to check whether U_ROBERT has an explicit role in user_teams to distinguish which one satisfies the admin condition, since the default role for members without an explicit entry appears to be "member."
+
+The user's request seems underspecified since there are two people named Robert with different roles, so I need to figure out how to handle this ambiguity - possibly by using the shared first name as partial identifying information while treating the workspace admin role as the actual disambiguating filter for which Robert to select.
+
+Wait, specifying "the engineering channel" resolves the ambiguity too directly since that's unique to Robert Walsh. I'm realizing that if I identify Robert by his workspace admin role, that also uniquely picks out Robert Walsh, which would defeat the ambiguity I'm trying to build in — I need to find a different way to distinguish the two Roberts that doesn't accidentally resolve which one is meant.
+
+So really the route works through user-to-workspace-membership as the connecting condition, tying the partial name match to workspace scope without distinguishing role. I need a channel condition that doesn't split the two Roberts apart — one both belong to or neither belongs to, so the ambiguity stays intact.
+
+I'm leaning toward the calibration pattern where two same-first-name users appear in different channels, leaving the reference genuinely unresolved rather than trying to force a shared channel.
+
+For this case, I want to phrase the question about "Robert" joining "our channels" without naming one specifically, so the ambiguity stays intact — since the two Roberts belong to entirely separate channel sets, naming any channel would immediately disambiguate which one is meant.
+
+I'll draft the prompt as something natural, like Robert asking during standup for a rundown of which channels he's in, how long he's been in each, and whether he holds admin or member status — phrased casually enough that it never hints at which Robert it is.
+
+I need to distinguish between Robert Walsh and Robert Chen as separate matching candidate sets, while also planting negatives: other channel members with unrelated names, similar-sounding names like Roberta or Roberto that could confuse a naive match, and maybe a decoy record for a different user sharing a last initial. I'm also considering adding a clearly irrelevant user like a "Morgan Freeman"-style name as a further distractor to strengthen the negative set.
+
+For the obligation table, I'm settling on channel_members as the native table since the referent entity is conversation membership, with answer attributes limited to joined_at and channel_id -- the workspace role from user_teams is a supporting fact shown alongside but shouldn't count as its own separate obligation.
+
+I think it's cleaner to treat the workspace role distinction as its own obligation tied to the user_teams table, rather than force it into the primary obligation's answer_attributes which should stay scoped to its own table's fields. Since the owner/admin distinction is explicitly required by the exposure qualification, I'll add a separate "workspace_role_check" obligation referencing user_teams.role, read-only, keyed to the selected user.
+
+So obligation 1 covers channel_members (mode underspecified, target_roles spanning both candidate memberships, answer_attributes on joined_at and channel_id), and obligation 2 covers user_teams role checks similarly with mode underspecified and target_roles matching the same candidates, answer_attributes on role. I need to make sure the candidate_role_sets union properly maps to both obligations' target_roles.
+
+I'm distinguishing the roles: robert_walsh_user with admin status, robert_chen_user as member, their respective channel_members and user_teams memberships, and excluding negative roles like Morgan Freeman's workspace admin entry and any non-Robert channel members, since they don't match the name criterion.
+
+Given the ambiguity, I'll note in the binding_note that two Roberts exist with distinct memberships and roles, and the request doesn't specify which one. My access plan is to look up users by real_name containing "Robert", then pull their channel memberships and workspace role via user_teams.
+

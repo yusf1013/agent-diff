@@ -1,0 +1,68 @@
+I mistakenly routed through channel_members->users->messages->message_reactions, but the correct path should follow conversation_membership->conversation->message->reaction, going through channels rather than users.
+
+The problem is that going through channels loses the connection between the member's user_id and the message author's user_id. Filters only compare a node's field to a literal value, not across nodes, so I need to figure out how the join itself preserves that identity constraint rather than relying on an explicit filter.
+
+The message_reactions.message_id join doesn't tie channel_members.user_id to messages.user_id as author, and filters can't compare fields across nodes directly - there's no cross-node equality operator in this syntax. But maybe the phrase "each joined tuple preserves the identities along the path" implies that identity constraints are automatically enforced through the join structure itself, without needing explicit filters.
+
+Given the required path is strictly CONVERSATION_MEMBERSHIP → CONVERSATION → MESSAGE → REACTION with no users node allowed, I need another way to enforce "message author equals membership holder" - possibly by treating messages.user_id as the join key back to channel_members.user_id directly, bypassing a separate users node.
+
+Right, channels sits between them in the path, so they aren't directly adjacent - meaning I need separate join steps: channel_members.channel_id to channels, then channels to messages.channel_id, then messages.message_id to message_reactions. The tricky part is enforcing the user_id match across non-adjacent nodes, since the schema seems to only support one join per adjacent step without an explicit cross-node filter construct.
+
+Actually the CONVERSATION filter might just be captured through channel_id on the membership record directly, without needing an explicit channels join, since the route nodes describe conceptual entities rather than mandatory physical joins. But the assigned route literally lists CONVERSATION_MEMBERSHIP, CONVERSATION, MESSAGE, REACTION in sequence, suggesting the path should traverse channel_members to channels to messages to message_reactions following the actual FK edges.
+
+The error about the path differing from the assigned route came from including 'users' instead of 'channels', so I need to correct that. The remaining puzzle is how to preserve the author identity constraint under this literal route—possibly by allowing multiple join conditions within a single hop to combine on different FK columns for the same adjacent table pair.
+
+The given route_nodes only cover conversation membership through reaction, with no user node — so the "same author" constraint can't be enforced through an explicit users join along this path. I'm reconsidering whether I mismapped the nodes, since the join edge might actually connect channel_members to channels via channel_id instead.
+
+Maybe I could use an auxiliary query to enforce the author=member constraint separately, since it's a genuinely needed constraint rather than an extraneous restriction. But the auxiliary query must also start at channel_members per the root_table rule, so I'd structure the focal path for the channel/message join and let the auxiliary path handle the membership check independently.
+
+I'm second-guessing whether connecting channel_members and messages directly via matching user_id values counts as a valid join, since there's no direct foreign key between the two tables even though both happen to have a user_id column.
+
+Given the ambiguity, I decide the safer path is a three-node auxiliary through channel_members, users, messages, joined on user_id and filtered by channel_id, though this means the auxiliary handles the "same author, same channel" check independently while the main focal path covers conversation to message to reaction.
+
+But this splits the requirement across two queries, losing the guarantee that the eyes reaction and the authored message are the exact same tuple. The instructions are explicit that all conditions along the assigned route must stay in one query to preserve bindings, so I need to reconsider the structure entirely.
+
+With only three joins available across four nodes, I only have room for the channel_members-to-channels edge and the channels-to-messages edge, leaving no additional join slot to also constrain the message author back to the membership holder.
+
+But since node 0's user_id and node2's user_id are both fields within the same result tuple, maybe a filter can compare them directly across the tuple without needing an extra join edge at all.
+
+Actually, maybe the join could instead run between messages and channels using the user_id field, but that would break the channel-scoping requirement. Reconsidering further, perhaps the design doesn't need an explicit author-equality filter at all, since the "match" role for channel_members already pins down the specific target users, and the existing path filtered by reaction type and channel might already isolate the correct members without a separate author check—though it's unclear how that distinguishes membership from authorship without node1 involved.
+
+Looking at the validator output, the focal negatives and matches it computed (Robert and Lukas being correct) confirm my original answer set was right all along—the issue was purely that the path used a USERS node when the route expected a CONVERSATION node. So the real fix is restructuring the path to start from 'channels' rather than 'users' while still preserving the author-matching logic, which means I need to work out the correct foreign-key join sequence.
+
+Wait, maybe the route nodes are conceptual mappings rather than literal FK joins—CONVERSATION might just represent the channel_id scope filter rather than requiring an actual join through the channels table. That would mean I don't need to include 'channels' as a literal step at all.
+
+I'm second-guessing whether messages.user_id can serve as a valid join column directly against channel_members, since the FK rule seems to require the join to literally connect adjacent tables in the path, and messages.user_id only references users, not channel_members - so this shortcut may not actually be permitted.
+
+Given the route_nodes list excludes an explicit users entity, maybe the puzzle intends conversation membership and conversation nodes to jointly enforce the "same channel" constraint instead.
+
+Following that route, membership connects to channel, channel connects to messages, and messages connect to reactions — but this chain only enforces channel membership and message existence, not the exact author match required by the binding note. Since the route deliberately excludes a user node, I wonder if the filter mechanism instead allows comparing a field on one node against a field from node 0 directly, letting channel_members.user_id serve as the implicit author reference without a separate join.
+
+Right, U01AGENBOT9 is also a member of that same channel, so if the selector didn't tie author to member, the bot would wrongly match too—but the negatives list correctly excludes it, confirming the users-node path is semantically necessary even though it seems to conflict with the strict route requirement. So the fix has to preserve that author-check while still satisfying the route's path structure.
+
+I'm now wondering if the route validation checks the exact table sequence (channel_members, channels, messages, message_reactions) but allows extra joins beyond the minimal four, meaning I could add the author-matching join as an additional step without breaking the required node order.
+
+I wonder if the value field could reference another node's join key implicitly, but the spec seems to only allow literal values, not cross-references. Trying to chain a second join or reuse a different FK name doesn't work either since the tables lack the right foreign keys, so I keep running into the same constraint that paths must follow real FK relationships.
+
+So there's genuinely no direct FK path connecting channel_members to messages without going through channels/conversation - the join can only follow existing foreign key columns, and none links those two tables directly.
+
+Maybe I'm overcomplicating this: perhaps the mapping intends the join between hops to use user_id instead of channel_id at the first step, tying membership directly to authorship rather than channel scope. I should reconsider whether the CONVERSATION node in the route actually corresponds to the channels table at all.
+
+Channels doesn't have a user_id field, so that composite join idea fails too. I'm wondering if the join array could support multiple fields per hop, but that seems inconsistent with a single joins list sized to the hop count. Maybe author matching could be handled outside the main path filter entirely, through a separate auxiliary constraint rather than forcing it into the node chain.
+
+I'm reconsidering whether the join field must literally connect the adjacent tables in the path, or if shared FK columns like user_id can implicitly bridge non-adjacent tables. Given that ambiguity, I'm leaning toward retrying the earlier path that produced correct answers but was flagged for its path structure, since it may actually satisfy the intended rule.
+
+I need to include channels in the join chain for route compliance, but I'm unsure how the author-matching constraint gets enforced without an explicit filter—maybe it's satisfied naturally through the join structure itself rather than a separate condition.
+
+Right, so the assigned route doesn't include a USER node, which means author identity is exactly the kind of independent constraint the instructions call for handling via an auxiliary query. So the focal query stays as the four-node route filtered by channel_id, and the author-match gets enforced separately as an auxiliary constraint.
+
+This means the join through channel_id doesn't tie back to the specific member, so it would wrongly mark all 6 members as matching. That makes focal too broad on its own, so I need an auxiliary constraint that ties the reaction/author back to a specific member, with focal and auxiliary presumably combined by AND semantics on the same root row.
+
+Since only one join is allowed per hop, I can't directly enforce both user_id and channel_id equality between channel_members and messages in a single step—so the auxiliary might need its own multi-hop path (channel_members→users→messages→message_reactions) that mirrors the original path I'd rejected as focal, but now serves as a supporting constraint instead.
+
+The focal path can stay broader—confirming channel scope and reaction existence via channel_members→conversation→message→reaction—while the auxiliary handles the independent constraint of verifying that this specific member authored the reacted message.
+
+Combining these: root_table channel_members, scoped to the given channel_id, with focal confirming any qualifying reacted message exists in-channel and auxiliary tying authorship back to the member in question—matching my original submitted query structure exactly.
+
+The remaining joins connect messages to channels via channel_id and reactions to messages via message_id, with the reaction_type filter set to 'eyes' on the last node. The channel scope is already enforced upstream through the channel_members filter, so no redundant filter is needed on the messages node.
+

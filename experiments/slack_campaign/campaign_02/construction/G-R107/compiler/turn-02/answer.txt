@@ -1,0 +1,151 @@
+```json
+{
+  "seed_edits": [
+    {
+      "table": "messages",
+      "op": "insert",
+      "values": {
+        "message_id": "1706200000.000001",
+        "channel_id": "C_INFRA",
+        "user_id": "U_ROBERT",
+        "message_text": "We're moving the primary database to Postgres 16 this weekend — expect brief downtime, please pause any long-running migration jobs.",
+        "type": "message",
+        "ts": "1706200000.000001"
+      },
+      "reason": "Anchor migration announcement message required by the design's migration_message role and as the reaction target."
+    },
+    {
+      "table": "messages",
+      "op": "insert",
+      "values": {
+        "message_id": "1706200100.000001",
+        "channel_id": "C02EFGH5678",
+        "user_id": "U_MATEO",
+        "message_text": "Lunch order confirmed for noon - burrito bowls all around, thanks for the headcount everyone!",
+        "type": "message",
+        "ts": "1706200100.000001"
+      },
+      "reason": "Off-topic lunch message required to host the wrong-message negative reaction (negative_reaction_wrong_message)."
+    },
+    {
+      "table": "message_reactions",
+      "op": "insert",
+      "values": {
+        "message_id": "1706200000.000001",
+        "user_id": "U_LUKAS",
+        "reaction_type": "thumbsup"
+      },
+      "reason": "Target reaction: U_LUKAS (member of #project-alpha-dev) reacts to the migration announcement."
+    },
+    {
+      "table": "message_reactions",
+      "op": "insert",
+      "values": {
+        "message_id": "1706200000.000001",
+        "user_id": "U_SOPHIE",
+        "reaction_type": "eyes"
+      },
+      "reason": "Negative: correct message, reactor not a member of #project-alpha-dev."
+    },
+    {
+      "table": "message_reactions",
+      "op": "insert",
+      "values": {
+        "message_id": "1706200000.000001",
+        "user_id": "U_OLENA",
+        "reaction_type": "tada"
+      },
+      "reason": "Negative: correct message, reactor not a member of #project-alpha-dev."
+    },
+    {
+      "table": "message_reactions",
+      "op": "insert",
+      "values": {
+        "message_id": "1706200100.000001",
+        "user_id": "U_KENJI",
+        "reaction_type": "thumbsup"
+      },
+      "reason": "Negative: reactor is a #project-alpha-dev member but reacted to the wrong (lunch) message."
+    },
+    {
+      "table": "channel_members",
+      "op": "insert",
+      "values": {
+        "channel_id": "C02EFGH5678",
+        "user_id": "U_MATEO"
+      },
+      "reason": "Author of the lunch message needs membership in #random for coherent record."
+    },
+    {
+      "table": "channel_members",
+      "op": "insert",
+      "values": {
+        "channel_id": "C02EFGH5678",
+        "user_id": "U_KENJI"
+      },
+      "reason": "U_KENJI needs membership in #random to plausibly react to the lunch message there."
+    }
+  ],
+  "bindings": {
+    "target_reaction": [
+      {"message_id": "1706200000.000001", "user_id": "U_LUKAS", "reaction_type": "thumbsup"}
+    ],
+    "negative_reaction_nonmember_eyes": [
+      {"message_id": "1706200000.000001", "user_id": "U_SOPHIE", "reaction_type": "eyes"}
+    ],
+    "negative_reaction_nonmember_tada": [
+      {"message_id": "1706200000.000001", "user_id": "U_OLENA", "reaction_type": "tada"}
+    ],
+    "negative_reaction_wrong_message": [
+      {"message_id": "1706200100.000001", "user_id": "U_KENJI", "reaction_type": "thumbsup"}
+    ],
+    "migration_message": ["1706200000.000001"],
+    "lunch_message": ["1706200100.000001"],
+    "reactor_user": ["U_LUKAS"],
+    "nonmember_user_sophie": ["U_SOPHIE"],
+    "nonmember_user_olena": ["U_OLENA"],
+    "scope_channel": ["C06ALPHADEV"],
+    "announcement_channel": ["C_INFRA"],
+    "thank_you_reply": ["1706200000.000001"]
+  },
+  "selectors": [
+    {
+      "root_table": "message_reactions",
+      "scope": [],
+      "focal": {
+        "path": ["message_reactions", "messages", "users", "channel_members"],
+        "joins": [
+          "message_reactions.message_id",
+          "message_reactions.user_id",
+          "channel_members.user_id"
+        ],
+        "filters": [
+          {"node": 1, "field": "channel_id", "op": "eq", "value": "C_INFRA"},
+          {"node": 1, "field": "message_text", "op": "contains_ci", "value": "Postgres 16"},
+          {"node": 3, "field": "channel_id", "op": "eq", "value": "C06ALPHADEV"}
+        ]
+      },
+      "auxiliary": []
+    },
+    {
+      "root_table": "messages",
+      "scope": [],
+      "focal": {
+        "path": ["messages", "channels"],
+        "joins": ["messages.channel_id"],
+        "filters": [
+          {"node": 0, "field": "message_text", "op": "contains_ci", "value": "Postgres 16"},
+          {"node": 1, "field": "channel_name", "op": "eq", "value": "core-infra"}
+        ]
+      },
+      "auxiliary": []
+    }
+  ],
+  "negative_referents": [
+    {"message_id": "1706200000.000001", "user_id": "U_SOPHIE", "reaction_type": "eyes"},
+    {"message_id": "1706200000.000001", "user_id": "U_OLENA", "reaction_type": "tada"},
+    {"message_id": "1706200100.000001", "user_id": "U_KENJI", "reaction_type": "thumbsup"}
+  ],
+  "notes": "Fixed O1's focal query to follow the assigned complete route literally (REACTION → MESSAGE → USER → CONVERSATION_MEMBERSHIP as message_reactions → messages → users → channel_members) in a single query, using message_reactions' own message_id and user_id fields as the connecting joins (the reactor's user_id join is defined on the root reaction row itself, which is the FK that actually links the MESSAGE and USER route nodes for this reaction). Channel identity for both the announcement channel and the membership channel is expressed via the real channel_id field already present on messages and channel_members respectively, since the fixed 4-node route has no room for an added channels node; this remains a real stored field, not an invented one. Added an explicit 'thank_you_reply' binding equal to the migration message handle so O2's selector result (the thread-anchor message identified by channel name and content) is reflected in bindings, resolving the previously empty referent set for O2. All other roles, records, and the prompt remain unchanged."
+}
+```

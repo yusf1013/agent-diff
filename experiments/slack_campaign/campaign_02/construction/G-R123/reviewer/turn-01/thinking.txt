@@ -1,0 +1,18 @@
+I'm verifying the message details match up correctly — Priya's pprof delta comment in core-infra checks out against its message ID and user, and Aisha's trace note about duplicate API calls in #frontend matches its record too.
+
+Checking the reactions table, there's only one entry: a decoy "eyes" reaction on Lukas's OOM message, with nothing from Priya reacting to Aisha's message — confirming the absence is correct per the design. Now I'm tracing the join logic for identifying the reactor: it needs to match both the user_id and message_id fields in the reactions table itself, tying the reactor's identity to their authored message within the right conversation.
+
+But I'm noticing a potential problem: the route only lists a single MESSAGE node, yet the logic actually requires two distinct messages — the one the reactor authored (to confirm their identity) and the one they reacted to (the target message). This mismatch between one MESSAGE node in the route and two separate message roles seems like something worth scrutinizing further.
+
+The target message connection is actually implicit in the reaction row itself via message_id, not a separate traversal node—since REACTION already carries that field directly, the selection criteria enforces it matches the frontend message without needing another graph edge, even though MESSAGE also appears at the end of the identification chain for a different purpose (finding the reactor's own authored message).
+
+Confirming there's no matching reaction. Checking the decoys: the bot's eyes reaction on Lukas's message correctly distinguishes wrong reactor and wrong target, and Łukasz's speculation without confirmation is correctly excluded. Now I'm double-checking whether Łukasz had an earlier message questioning the CUDA allocator limit before Priya's confirmation.
+
+Yes, Lukas's message raising the hypothesis about a hard CUDA memory allocator limit does precede Priya's confirmation, matching the intended decoy about speculation before confirmation. The stored columns for message reactions, user, and message ID are all legitimate for the absent case, and the access plan using conversation history and reaction lookups looks correct.
+
+The binding note stating no stored reaction connects the reactor to that message also checks out—only one unrelated reaction exists. Overall the design seems solid and naturalistic, though I'm noticing the route nodes only include a single MESSAGE type while the design actually needs to bind two separate messages, the reactor's confirmation and the target message—that's worth flagging.
+
+I'm also seeing the same pattern with CONVERSATION: only one node slot exists in the route, yet two distinct channels (core-infra and frontend) need to be represented for reactor_channel versus target_channel. This raises the question of whether reusing a single node type for two different role bindings counts as an underspecified route, since the schema seems to expect the route to literally traverse each distinct entity involved.
+
+Since the guidance clarifies that repeated query shapes with different filters don't require separate schema fields, I'm treating this as an accepted design choice. Checking the singular vs. plural selection for the reactor and target reaction, "one" fits correctly, and the absence resolution (no reaction found linking the user and message) is properly justified. Overall this passes validity with strong quality.
+

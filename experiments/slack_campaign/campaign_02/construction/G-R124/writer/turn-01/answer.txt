@@ -1,0 +1,45 @@
+```json
+{
+  "prompt": "In our core-infra channel, Priya posted the message confirming the CUDA memory limit was the real root cause of the OOM issue. Lukas left a reaction on that message — please remove it.",
+  "binding_note": "The reaction is identified by walking REACTION→USER (Lukas as reactor) →MESSAGE (Priya's CUDA-limit confirmation)→CONVERSATION (core-infra)→WORKSPACE (Test Workspace); the emoji itself is not named in the prompt so it must be discovered via the conversation/reaction records.",
+  "roles": [
+    {"role": "actor", "entity": "users", "facts": "Agent bot U01AGENBOT9, member of core-infra and other channels in T01WORKSPACE.", "selection": "support", "reason": "Acting user issuing the removal request."},
+    {"role": "reactor_match", "entity": "users", "facts": "U_LUKAS, Łukasz Kowalski, member of core-infra (C_INFRA) and other engineering channels.", "selection": "match", "reason": "The user whose reaction must be removed, per the USER hop."},
+    {"role": "reactor_wrong_message", "entity": "users", "facts": "Same user U_LUKAS, but this record is his reaction on a different, non-matching message.", "selection": "negative", "reason": "Same person tested against a wrong message hop."},
+    {"role": "reactor_wrong_channel", "entity": "users", "facts": "Same user U_LUKAS, reaction on a message located in a different conversation (model-research).", "selection": "negative", "reason": "Tests that the conversation hop must match core-infra."},
+    {"role": "reactor_wrong_author_role", "entity": "users", "facts": "Same user U_LUKAS, reacting to his own posted message in core-infra rather than to Priya's message.", "selection": "negative", "reason": "Tests message authorship condition (must be Priya's message, not Lukas's own)."},
+    {"role": "other_reactor", "entity": "users", "facts": "U_OLENA, Olena Petrenko, also a member of core-infra, reacted on the exact same target message.", "selection": "negative", "reason": "Tests that the reactor must be Lukas, not another member reacting to the correct message."},
+    {"role": "target_message", "entity": "messages", "facts": "message_id 1706001931.000000, channel_id C_INFRA, user_id U_PRIYA, text confirms the batch-size increase hit a hard CUDA memory limit (root cause of the OOM incident).", "selection": "match", "reason": "This is the message Priya posted confirming the CUDA memory limit finding — the MESSAGE hop anchor."},
+    {"role": "wrong_message_same_channel", "entity": "messages", "facts": "message_id 1706000208.000000, channel_id C_INFRA, user_id U_PRIYA, an earlier alert about OOM kills — same channel/author but not the confirmation message.", "selection": "negative", "reason": "Distractor sharing channel and author but not the identifying content/role of confirming the root cause."},
+    {"role": "wrong_channel_message", "entity": "messages", "facts": "message_id 1706012456.000000, channel_id C_MODEL, user_id U_SOPHIE, about the new 7B checkpoint — unrelated topic in a different conversation.", "selection": "negative", "reason": "Used to construct the wrong-channel reaction negative."},
+    {"role": "self_authored_message", "entity": "messages", "facts": "message_id 1706069700.000001, channel_id C_INFRA, user_id U_LUKAS, about treating the GPU cluster like a supercomputer for scheduling.", "selection": "negative", "reason": "Same channel, but authored by Lukas himself rather than Priya — breaks the required authorship link."},
+    {"role": "target_channel", "entity": "channels", "facts": "C_INFRA, channel_name core-infra, team_id T01WORKSPACE, public, not archived; members include Lukas, Priya, Olena, and the actor.", "selection": "match", "reason": "The CONVERSATION hop that must contain the target message."},
+    {"role": "wrong_channel", "entity": "channels", "facts": "C_MODEL, channel_name model-research, team_id T01WORKSPACE; also contains Lukas as a member.", "selection": "negative", "reason": "A different conversation that also contains Lukas, used to build the wrong-channel negative reaction."},
+    {"role": "target_workspace", "entity": "teams", "facts": "T01WORKSPACE, Test Workspace, containing core-infra and model-research among other channels.", "selection": "support", "reason": "The WORKSPACE terminal node bounding the whole route."},
+    {"role": "target_reaction", "entity": "message_reactions", "facts": "message_id 1706001931.000000, user_id U_LUKAS, reaction_type raised_hands, created_at set shortly after the message.", "selection": "match", "reason": "The single reaction record satisfying all route hops: Lukas's reaction on Priya's CUDA-limit confirmation message in core-infra."},
+    {"role": "neg_wrong_message_reaction", "entity": "message_reactions", "facts": "message_id 1706000208.000000, user_id U_LUKAS, reaction_type eyes — Lukas reacting to the earlier alert message, not the confirmation.", "selection": "negative", "reason": "Fails the MESSAGE hop condition even though user and channel match."},
+    {"role": "neg_wrong_user_reaction", "entity": "message_reactions", "facts": "message_id 1706001931.000000, user_id U_OLENA, reaction_type raised_hands — Olena reacting on the correct message.", "selection": "negative", "reason": "Fails the USER hop condition even though the message matches exactly."},
+    {"role": "neg_wrong_channel_reaction", "entity": "message_reactions", "facts": "message_id 1706012456.000000, user_id U_LUKAS, reaction_type raised_hands — Lukas reacting to Sophie's checkpoint message in model-research.", "selection": "negative", "reason": "Fails the CONVERSATION hop even though the user and emoji match."},
+    {"role": "neg_wrong_authorship_reaction", "entity": "message_reactions", "facts": "message_id 1706069700.000001, user_id U_LUKAS, reaction_type raised_hands — Lukas reacting to his own message in core-infra.", "selection": "negative", "reason": "Same channel and user, but the message's author does not satisfy the required 'Priya's confirmation' condition."}
+  ],
+  "obligations": [
+    {
+      "name": "remove_target_reaction",
+      "description": "Select the single reaction that Lukas (the reactor) added to the message Priya authored in core-infra confirming the CUDA memory limit root cause, then remove that reaction.",
+      "table": "message_reactions",
+      "mode": "single",
+      "task_type": "state-changing",
+      "scope": "the identified reaction on the identified message within the core-infra channel of the Test Workspace",
+      "target_roles": ["target_reaction"],
+      "candidate_role_sets": null,
+      "selection": "one",
+      "written_attributes": []
+    }
+  ],
+  "task_spec": [
+    {"line": 1, "text": "Identify the message Priya posted in core-infra confirming the CUDA memory limit as the root cause, find Lukas's reaction on it, and remove that reaction.", "obligations": [1]}
+  ],
+  "scope_exception": null,
+  "access_plan": "Use conversations.history on the core-infra channel (C_INFRA) to locate Priya's message confirming the CUDA memory limit as the root cause; use reactions.get on that message's timestamp/channel to enumerate its reactions and find the one contributed by Lukas; then call reactions.remove with that channel, timestamp, and emoji name."
+}
+```

@@ -1,0 +1,95 @@
+```json
+{
+  "seed_edits": [
+    {
+      "table": "message_reactions",
+      "op": "insert",
+      "values": {
+        "message_id": "1706012456.000000",
+        "user_id": "U_OLENA",
+        "reaction_type": "dart"
+      },
+      "reason": "Instantiates the reaction_match role: Olena reacts with 'dart' on Sophie's 7B-checkpoint message, uniquely identifying the reactor per the design."
+    },
+    {
+      "table": "message_reactions",
+      "op": "insert",
+      "values": {
+        "message_id": "1706012456.000000",
+        "user_id": "U_MATEO",
+        "reaction_type": "rocket"
+      },
+      "reason": "Instantiates wrong_emoji_reaction: same anchor message, different emoji, to prevent Mateo from being mistaken for the identified user."
+    },
+    {
+      "table": "message_reactions",
+      "op": "insert",
+      "values": {
+        "message_id": "1706012683.000000",
+        "user_id": "U_LUKAS",
+        "reaction_type": "dart"
+      },
+      "reason": "Instantiates wrong_message_reaction: correct emoji ('dart') but on Mateo's earlier message, not the anchor, to show emoji+message binding must both match."
+    },
+    {
+      "table": "message_reactions",
+      "op": "insert",
+      "values": {
+        "message_id": "1706027877.000000",
+        "user_id": "U_INCOGNITO",
+        "reaction_type": "dart"
+      },
+      "reason": "Instantiates missing_membership_reaction: correct emoji but wrong message in a different channel, reacted by a user with no core-infra membership row at all, illustrating a genuine missing-relationship negative."
+    }
+  ],
+  "bindings": {
+    "anchor_message": ["1706012456.000000"],
+    "reaction_match": [
+      {"message_id": "1706012456.000000", "user_id": "U_OLENA", "reaction_type": "dart"}
+    ],
+    "identified_user": ["U_OLENA"],
+    "membership_target": [
+      {"channel_id": "C_INFRA", "user_id": "U_OLENA"}
+    ],
+    "wrong_emoji_reaction": [
+      {"message_id": "1706012456.000000", "user_id": "U_MATEO", "reaction_type": "rocket"}
+    ],
+    "wrong_message_reaction": [
+      {"message_id": "1706012683.000000", "user_id": "U_LUKAS", "reaction_type": "dart"}
+    ],
+    "missing_membership_reaction": [
+      {"message_id": "1706027877.000000", "user_id": "U_INCOGNITO", "reaction_type": "dart"}
+    ],
+    "decoy_other_membership": [
+      {"channel_id": "C_MODEL", "user_id": "U_OLENA"}
+    ]
+  },
+  "selectors": [
+    {
+      "root_table": "channel_members",
+      "scope": [
+        {"field": "channel_id", "op": "eq", "value": "C_INFRA"}
+      ],
+      "focal": {
+        "path": ["channel_members", "users", "message_reactions", "messages", "channels"],
+        "joins": [
+          "channel_members.user_id",
+          "message_reactions.user_id",
+          "message_reactions.message_id",
+          "messages.channel_id"
+        ],
+        "filters": [
+          {"node": 2, "field": "reaction_type", "op": "eq", "value": "dart"},
+          {"node": 3, "field": "message_text", "op": "contains_ci", "value": "7B checkpoint finished training"},
+          {"node": 4, "field": "channel_name", "op": "eq", "value": "model-research"}
+        ]
+      },
+      "auxiliary": []
+    }
+  ],
+  "negative_referents": [
+    {"channel_id": "C_MODEL", "user_id": "U_OLENA"}
+  ],
+  "notes": "All anchor/message roles already existed in the base seed; only the four message_reactions rows needed to be added to instantiate the match and three negatives. The actor (U01AGENBOT9) already has channel_members rows for both C_MODEL and C_INFRA, giving documented API access (conversations.history + reactions.get on #model-research, conversations.members/info on #core-infra) sufficient to resolve the request without relying on hidden seed knowledge. El Incognito's reaction in #product-growth is a genuine missing-relationship negative since he holds no channel_members row for C_INFRA; the actor does not need membership in #product-growth to make this negative valid, since it is a seed-completeness negative rather than something the solver must actively rule out via that channel's history. The decoy_other_membership (Olena's #model-research membership row) is the primary negative_referent risk: a solver who mistakenly binds the requested channel to model-research instead of core-infra would incorrectly select that row."
+}
+```

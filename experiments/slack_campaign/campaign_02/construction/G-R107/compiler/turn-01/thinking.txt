@@ -1,0 +1,54 @@
+I'm designing the seed data around existing infra channels, planning a Postgres migration announcement message plus an unrelated lunch message, and mapping out reactions from various users on the migration post.
+
+I'm cross-checking base seed channel memberships to confirm who's already in C06ALPHADEV—U_LUKAS and U_KENJI are members, while U_SOPHIE and U_OLENA are not, and verifying the actor bot has access to all necessary channels for inserting messages.
+
+Now I'm working out message IDs for the new migration and lunch messages before inserting them.
+
+Then I'm laying out the reactions to add: U_LUKAS's thumbsup and U_SOPHIE's eyes/U_OLENA's tada on the migration message, plus U_KENJI's thumbsup on the lunch message.
+
+For the target_reaction obligation, I'm mapping out the join path from message_reactions through messages, users, and channel_members, keeping all filtering conditions in a single query so the bindings between channel and membership stay consistent, per the design note about single-route selectors.
+
+I need to filter the message's channel to core-infra with text matching "Postgres 16", and also filter channel_members to project-alpha-dev — but since channel_members only stores channel_id rather than a readable name, and the guidance favors user-facing predicates over raw IDs, I'm extending the path to include a channels join for both filters so I can use channel_name instead of a hardcoded ID constant.
+
+Actually a single linear path can't fork back to users once messages is consumed for the channel join, so I need to reconsider the route order: reaction connects to both message and user directly, then user connects to channel_members, meaning the path should follow REACTION, MESSAGE, USER, CONVERSATION_MEMBERSHIP with the channel constraint handled separately since it doesn't sit on that direct chain.
+
+I'm reconsidering whether joins must strictly connect adjacent nodes in the path, since revisiting message_reactions later isn't allowed but the example path revisits distinct tables like users and channels fine. So I'm settling on a simpler path: message_reactions joined to users, then to channel_members, then to channels, filtering on the target channel name and adding scope filters for the message text on message_reactions.
+
+I wonder if the join structure could form a tree rather than a strict chain, with each node's join referencing any earlier node instead of just the immediate predecessor. Given the ambiguity, the safest interpretation is probably a linear sequence where each new node joins to the accumulated set of prior tables.
+
+Actually it is sequential after all - each join connects node i to node i+1 via the FK on whichever side owns it. So for filtering message content, I'd need to include messages itself in the path with an appropriate join reference.
+
+Since the root is message_reactions, the natural chain would be message_reactions to messages to channels, filtering on channel name and message text along the way. But then getting to users or channel_members requires going back to node0, which isn't possible since the path is strictly linear and can't fork once we've moved past a node.
+
+Given the ambiguity, I'll interpret "adjacent" as strictly adjacent in the listed path order, meaning no forking is allowed. So the safest structure is a strict chain: message_reactions to users to channel_members to channels, filtering appropriately.
+
+Since message_id is a legitimate field on the root table, I realize I can use a scope filter directly on message_id once I know the target message's ID from insertion, satisfying the root-field-filter constraint without needing extra joins for message-specific lookup.
+
+forehand since we created the message ourselves, so using its ID is legitimate—it's the actual join key, not a disguised name substitute. It's part of the same relationship path (REACTION→MESSAGE→USER→CONVERSATION_MEMBERSHIP), so the message-identity constraint isn't independent enough to need a separate auxiliary query; it should just be handled via scope.
+
+I'm now reconsidering whether the reaction table can reach the user directly without going through messages at all, since message_reactions might already store both message_id and user_id, which changes how I should structure the join path across these four entities.
+
+Actually, since prefer channel_name over raw ID for realism, I'll add a channels node for name-based filtering instead of using the raw channel_id field, giving a path through message_reactions, messages, channels, users, channel_members, channels again — reusing the same table name at two different node positions should be fine since filters reference by node index. Now I'm working out the join conditions starting with message_reactions.
+
+But I realize I can't chain from channels back to users directly since there's no FK between them, which breaks the linear path — so I can't jump back to message_reactions.user_id from node0 either. I'm now leaning toward treating the message-identity condition and the membership condition as two separate constraints, even though the binding note implies they should both apply to the same reaction record's user, so I need to figure out how that fusion should actually work.
+
+The message/channel-name check is a separate branch from membership, so it makes sense to route it through auxiliary: focal handles the join through channel membership filtered by channel name, while auxiliary independently traces message-to-channel filtered by message text and channel name.
+
+This binds correctly: the same reaction must have its user be a member of project-alpha-dev and its message be in core-infra with "Postgres 16" text. Checking uniqueness, U_LUKAS's thumbsup on the migration message satisfies both conditions, while other reactors either fail the membership check or the message-identity check, giving a single unique match.
+
+Now for the second obligation, the thank-you reply, this is a write action rather than a row selection, so I need a selector that identifies the target message to post the reply under—the migration message itself, using the messages table as the root.
+
+I'm building a selector joining messages to channels, filtering for message text containing "Postgres 16" and channel name equal to "core-infra," which uniquely identifies the migration message as the thread parent for the reply.
+
+Now I'm mapping the role labels to their concrete handles—target_reaction bound to Lukas's thumbsup on the migration message, negative reactions bound to Sophie's eyes and tada reactions on that same message...
+
+Adding lunch order text and inserting the reaction records for both messages, including Lukas's thumbsup, Sophie's eyes, and Olena's tada on the migration message.
+
+I'm also double-checking channel membership consistency—U_MATEO isn't in the seed channel_members list for that channel, so for coherence I should add a membership row for both U_MATEO and U_KENJI even though it's not strictly enforced by the schema.
+
+Actor already has membership in that channel from the base seed, so no additional membership row is needed there.
+
+For solving the actual task, the actor needs core-infra membership to read history, reactions.get likely just needs channel access, and checking project-alpha-dev membership via conversations.members may itself require the caller to belong to that channel.
+
+The actor is already a member of C06ALPHADEV per the base seed, so that requirement is satisfied. I don't see any conflicting existing message in core-infra with the migration theme, so I'm ready to produce the final JSON.
+

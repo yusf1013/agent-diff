@@ -1,0 +1,24 @@
+The validator flags negative_wrong_emoji as an unintended match since it's on the same admin's message, so I need to either move it to a non-admin message or adjust the selector so it excludes that reaction properly.
+
+Since the mechanical selector can't filter on emoji type at all, the wrong-emoji negative will always match the query mechanically, since admins likely only have those two qualifying reaction messages by design. This seems like a genuine incompatibility between the negative's intent and the selector's actual filtering capability, which may need to be flagged as a design defect rather than forced into compliance.
+
+I'm hesitant to add a filter that presupposes the answer, since that conflicts with the constraint that reaction_type stays an unknown target attribute. Maybe the real fix is to restrict the selector to a single reaction per message per admin, treating each admin's message as having one intended reaction rather than filtering by type directly.
+
+So adding the extra thumbsup reaction to Robert's message broke the "exactly one reaction per admin message" invariant the design relies on. Since the guidance allows smallest fixes to seed_edits without altering the locked route or resolution mode, I think the specific message/reaction binding itself isn't sacred -- I can choose which record satisfies the illustrative facts as long as the underlying logic stays intact.
+
+I'm realizing this negative case is fundamentally unrealizable given the selector's own logic — since it doesn't discriminate by emoji, any admin-authored message will match regardless. The real fix is either dropping this negative test entirely or reworking whose message it's attached to, since the design's "same admin, different emoji" scenario can't be excluded from the answer set as currently defined.
+
+I could instead swap the negative_wrong_emoji binding for a clearly excluded record, like a thumbsup reaction on a message from a non-admin user, so it trivially falls outside the matching set without relying on a hidden near_misses structure I don't have access to.
+
+Actually, since the selector filters purely on admin authorship and ignores emoji entirely, this negative can't exist as a true negative under any binding — any admin message reaction gets captured regardless of emoji. So the correct fix is to drop this negative's insertion rather than force an impossible binding, keeping its role pointed at an existing record instead.
+
+Actually, the selector's matches already total 3 when only 2 are expected, which tells me a "negative" role can't be part of the selector's actual match output at all. That means putting this reaction on the same message as the correct answer will always get swept into the match set — so maybe the negative shouldn't live on that same message in the first place.
+
+But then I realize the selector filters purely on admin authorship, not on a specific target message. So placing a wrong-emoji reaction on any other message by that same admin would still get captured as a match, since the query has no way to distinguish "the witnessed message" from any other message the admin authored. Under this mechanical selector, every reaction on every message by an admin counts as a match by design.
+
+Given the "exactly one reaction per admin message" invariant, there's no room to construct a third distinct negative case without breaking that constraint — the negative_wrong_emoji case simply cannot be realized validly here, so I need to drop it.
+
+The cleanest fix is to remove the negative_wrong_emoji edit entirely: don't insert the thumbsup reaction, and strip it from the bindings and negative_referents lists, adding a note explaining it's structurally unrealizable since the selector doesn't discriminate by emoji type — any additional reaction on the message automatically counts as a match, not a negative. Everything else in the design stays intact; I'm just recomputing the selector matches now that this one negative role is removed.
+
+Verifying against the validator's excluded negatives confirms the two other negatives and the pre-existing base reaction are correctly filtered out, leaving exactly the two intended matches — reaction_robert_eyes and reaction_morgan_eyes — consistent with the candidate role sets. That settles it, so I'm ready to finalize the answer.
+

@@ -1,0 +1,143 @@
+{
+  "prompt": "In #core-infra, find the reaction that was added to the Postgres 16 migration announcement by whoever is also a member of #project-alpha-dev, then post a reply there thanking that person by name for confirming they're ready for the downtime.",
+  "binding_note": "The target reaction is bound by: the reacting user (from the reaction record) must have a conversation-membership row in #project-alpha-dev, and the reacted-to message must be the specific Postgres migration announcement in #core-infra — both conditions must hold on the same reaction record's user.",
+  "roles": [
+    {
+      "role": "target_reaction",
+      "entity": "message_reactions",
+      "facts": "U_LUKAS reacted with 'thumbsup' to the Postgres 16 migration announcement message in #core-infra; U_LUKAS is a member of #project-alpha-dev",
+      "selection": "match",
+      "reason": "Same-record reactor satisfies both the message topic/channel condition and the project-alpha-dev membership condition"
+    },
+    {
+      "role": "negative_reaction_nonmember_eyes",
+      "entity": "message_reactions",
+      "facts": "U_SOPHIE reacted with 'eyes' to the same migration message; U_SOPHIE has no membership row in #project-alpha-dev",
+      "selection": "negative",
+      "reason": "Correct message but reactor fails the membership condition"
+    },
+    {
+      "role": "negative_reaction_nonmember_tada",
+      "entity": "message_reactions",
+      "facts": "U_OLENA reacted with 'tada' to the same migration message; U_OLENA has no membership row in #project-alpha-dev",
+      "selection": "negative",
+      "reason": "Second reactor on the correct message who still fails the membership condition"
+    },
+    {
+      "role": "negative_reaction_wrong_message",
+      "entity": "message_reactions",
+      "facts": "U_KENJI, a #project-alpha-dev member, reacted with 'thumbsup' to an unrelated lunch-confirmation message in #random",
+      "selection": "negative",
+      "reason": "Reactor satisfies membership but the reacted message is not the migration announcement"
+    },
+    {
+      "role": "migration_message",
+      "entity": "messages",
+      "facts": "Message in #core-infra authored by U_ROBERT: 'We're moving the primary database to Postgres 16 this weekend — expect brief downtime, please pause any long-running migration jobs.'",
+      "selection": "support",
+      "reason": "Anchor message that the qualifying reaction must attach to"
+    },
+    {
+      "role": "lunch_message",
+      "entity": "messages",
+      "facts": "Message in #random authored by U_MATEO confirming a lunch order for noon, unrelated to the migration",
+      "selection": "negative",
+      "reason": "Off-topic message used to host the wrong-message negative reaction"
+    },
+    {
+      "role": "reactor_user",
+      "entity": "users",
+      "facts": "U_LUKAS, real name Łukasz Kowalski, holds a channel_members row for #project-alpha-dev",
+      "selection": "support",
+      "reason": "The user whose membership satisfies the route condition and who is thanked in the reply"
+    },
+    {
+      "role": "nonmember_user_sophie",
+      "entity": "users",
+      "facts": "U_SOPHIE has no channel_members row for #project-alpha-dev (only infra/model/growth/frontend and a DM)",
+      "selection": "support",
+      "reason": "Establishes the membership contrast for a negative reactor"
+    },
+    {
+      "role": "nonmember_user_olena",
+      "entity": "users",
+      "facts": "U_OLENA has no channel_members row for #project-alpha-dev",
+      "selection": "support",
+      "reason": "Establishes the membership contrast for a second negative reactor"
+    },
+    {
+      "role": "scope_channel",
+      "entity": "channels",
+      "facts": "#project-alpha-dev (C06ALPHADEV), members include U_LUKAS, U_PRIYA, U_MATEO, U_KENJI, U_ROBERT, U_AISHA, U01AGENBOT9",
+      "selection": "support",
+      "reason": "The membership channel that identifies the qualifying reactor"
+    },
+    {
+      "role": "announcement_channel",
+      "entity": "channels",
+      "facts": "#core-infra (C_INFRA), hosts the migration announcement and all candidate reactions",
+      "selection": "support",
+      "reason": "The channel scoping the message whose reactions are examined"
+    }
+  ],
+  "obligations": [
+    {
+      "name": "target_reaction",
+      "description": "Select the single reaction on the Postgres migration announcement in #core-infra whose reacting user is also a member of #project-alpha-dev.",
+      "table": "message_reactions",
+      "mode": "single",
+      "task_type": "read-only",
+      "scope": "reactions on the identified migration announcement message in #core-infra, cross-checked against #project-alpha-dev membership",
+      "target_roles": [
+        "target_reaction"
+      ],
+      "candidate_role_sets": null,
+      "selection": "one",
+      "answer_attributes": [
+        [
+          "message_reactions.reaction_type"
+        ],
+        [
+          "message_reactions.user_id"
+        ]
+      ]
+    },
+    {
+      "name": "thank_you_reply",
+      "description": "Post a reply message in #core-infra (as a thread reply on the migration announcement) thanking the identified reactor by name for confirming readiness for the downtime.",
+      "table": "messages",
+      "mode": "single",
+      "task_type": "state-changing",
+      "scope": "new message posted in #core-infra referencing the reactor found in the target_reaction obligation",
+      "target_roles": [],
+      "candidate_role_sets": null,
+      "selection": "one",
+      "change_attributes": [
+        []
+      ],
+      "written_attributes": [
+        "messages.message_text",
+        "messages.channel_id",
+        "messages.parent_id"
+      ]
+    }
+  ],
+  "task_spec": [
+    {
+      "line": 1,
+      "text": "Find the reaction on the Postgres 16 migration announcement in #core-infra that was left by a member of #project-alpha-dev.",
+      "obligations": [
+        1
+      ]
+    },
+    {
+      "line": 2,
+      "text": "Post a reply in #core-infra thanking that person by name for confirming they're ready for the downtime.",
+      "obligations": [
+        2
+      ]
+    }
+  ],
+  "scope_exception": null,
+  "access_plan": "Use conversations.history on #core-infra to locate the Postgres migration announcement, then reactions.get on that message to enumerate its reactions and reacting user IDs. For each reacting user, check conversations.members on #project-alpha-dev (or users.conversations for that user) to confirm membership, isolating the single qualifying reaction. Then use chat.postMessage with thread_ts set to the announcement's ts to post the thank-you reply naming that user."
+}

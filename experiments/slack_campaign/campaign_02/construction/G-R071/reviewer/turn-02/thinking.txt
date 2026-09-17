@@ -1,0 +1,20 @@
+I'm checking the compiled query against the design and notice a bug: the join path connects channel_members to message_reactions only through user_id, without tying the reaction back to the actual message_id. That means the focal selector would incorrectly match any message in the engineering channel as long as some channel member has an eyes reaction on any message, rather than requiring the reaction to be on that specific message.
+
+So because agent1, a member of engineering, has an eyes reaction on any message anywhere, this loose condition holds true for every message in the engineering channel scope, meaning it would spuriously match all engineering messages as candidates rather than just the correct one.
+
+This confirms the auxiliary query is what narrows it down to the precise message/user/emoji binding, so the final compiled selector needs the intersection of the focal and auxiliary conditions to land on the correct answer.
+
+Now checking whether excluded reactions like Kenji's eyes reaction are properly filtered out due to failing channel membership in the auxiliary check — this seems to work correctly.
+
+This confirms exclusion is correct since the auxiliary check requires the reacting user's membership to hold specifically for that message's reactions, not globally. I also need to verify message 1706115000.000001 - agent1's eyes reaction exists elsewhere but not on this specific message, so this root message only has the wrong-emoji thumbsup reaction and should still be correctly excluded.
+
+Now I'm cross-checking the full list of engineering channel messages against the candidates to make sure none were missed.
+
+Then I verify the final message_reactions table has exactly 4 rows spanning the target, the DM, and other test cases, confirming the reaction dataset matches the intended design.
+
+Checking "our AI teammate" - agent1 is the only bot user in the seed (is_bot=true), so the referent is unambiguous. I also confirm the DM channel is correctly excluded from scope since it's a Conversation with is_dm=true, distinct from the engineering channel referenced in the prompt.
+
+The API mechanism using history, reactions, and members checks seems plausible even though it's multi-hop, since that's just how uniqueness was verified during construction, not necessarily the exact path the solving agent takes. Overall the mechanical checks confirm correctness, and I don't see any violations of the negation/exclusion rule here.
+
+Checking that resolution_mode is "single" and selection is "one," both match up correctly. This is a valid, high-quality test case with no issues.
+

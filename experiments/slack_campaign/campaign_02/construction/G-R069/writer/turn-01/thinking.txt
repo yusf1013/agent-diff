@@ -1,0 +1,24 @@
+I'm mapping the join path from message through conversation and conversation membership to user, then to workspace membership to capture role distinctions like owner versus admin. I want to build in an underspecified resolution mode by giving partial identifying details, like a shared first name across full names, to test how the query handles ambiguity.
+
+Testing with "Robert" - there's Robert Walsh who holds an admin role in the workspace and belongs to a few channels, and Robert Chen who's just a regular member but sits in several other channels. If the query condition specifies admin role specifically, that should resolve the ambiguity down to just Robert Walsh, filtering out Robert Chen.
+
+I should report the membership pair rather than resolving to just one person. Since the route is membership-based, not authorship, the task should ask about messages in channels where Robert (matching workspace role) is a member, not messages he authored — so I'll frame it around finding budget-related discussion in the channel tied to Robert's admin/owner status, while keeping "Robert" deliberately ambiguous between the two candidates.
+
+Actually the C_INFRA message about the cloud bill overspend is authored by Robert Chen, not Walsh — so this becomes the natural target set. I'll frame the scenario as "show messages about the cloud bill overspend in channels Robert is a member of, plus his workspace role" — since only Robert Chen's channels (C_INFRA, C_MODEL, C_GROWTH, C_FRONTEND) contain that topic, while Walsh's channels don't.
+
+But for genuine ambiguity, I need a topic that plausibly appears across both candidates' channel sets, so the solver has to surface both possible people rather than one clearly winning. Let me instead frame the request around server incident status messages and membership role, checking both Roberts' channels for overlap.
+
+I now have two clear candidates: Robert Walsh (admin, in C01ABCD1234/C02EFGH5678/C03IJKL9012, with login/auth and PyTorch rewrite discussions in the third channel), or Robert Chen (member role, across five channels including C_INFRA where GPU memory, cloud bill, and CDN issues are discussed). This is genuinely ambiguous with no way to disambiguate which Robert is meant.
+
+I also need to account for negative messages authored by Robert-named users unrelated to infra, plus support facts across channels, membership, and workspace roles. The main obligation centers on the messages table with underspecified role sets for candidates A and B, while the second obligation combines user identity with workspace membership role into a joint target.
+
+For membership role display, I'll treat it as its own obligation tied to the user_teams table, mirroring the same two-candidate underspecification: Robert Walsh with admin role and channel memberships versus Robert Chen with member role and infra channel memberships. Now I'm drafting the final role structure covering both alternative referents and their respective membership entries.
+
+I'm laying out matching evidence for each candidate: the engineering channel with Robert Walsh's login/auth incident messages, the core-infra channel with Robert Chen's GPU/cloud bill messages, plus negative distractors like an unrelated lunch message and a DM from Sophie to an agent that shouldn't factor into either match path.
+
+I'm also considering whether the Tokyo CDN latency thread in the growth channel counts as an infra incident since Robert Chen is a member there too, deciding it's fine to let that expand the second candidate set naturally. Now I'm drafting the first obligation: an underspecified "infra_incident_messages" task targeting either candidate role set, scoped to infrastructure incident messages in channels where a Robert is a member.
+
+For the second obligation, "robert_membership_role" pulls from user_teams to surface whichever Robert's admin/member role applies. I'm framing the final prompt naturally — "note his role in the workspace" — without hinting there are two Roberts, and the binding note explains that this partial name match splits into two distinct people with different channel memberships and resulting message sets.
+
+For the access plan, I'd start with users.list to find the Roberts, then use users.conversations or conversations.members to map their channels, conversations.history to surface infra-incident messages, and cross-reference their workspace role through users.info or the user_teams field. Now I'm assembling the full JSON output.
+

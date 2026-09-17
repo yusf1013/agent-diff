@@ -1,0 +1,167 @@
+{
+  "prompt": "In whichever channels Robert is a member of, pull together the messages that discuss infrastructure incidents (things like outages, memory pressure, login failures, or budget overruns), and note his role in the workspace for that membership.",
+  "binding_note": "Only a first name is given. Two workspace members are named Robert: Robert Walsh (admin role, member of general/random/engineering) and Robert Chen (member role, member of core-infra/model-research/product-growth/frontend/project-alpha-dev). Each yields a distinct channel-membership pair and a distinct set of infrastructure-incident messages; the request does not disambiguate which Robert is intended.",
+  "roles": [
+    {
+      "role": "robert_walsh_user",
+      "entity": "users",
+      "facts": "Robert Walsh, real_name 'Robert Walsh', workspace admin role, member of general/random/engineering channels",
+      "selection": "alternative",
+      "reason": "First Robert candidate whose channel memberships anchor one possible message set"
+    },
+    {
+      "role": "robert_chen_user",
+      "entity": "users",
+      "facts": "Robert Chen, real_name 'Robert Chen', workspace member role, member of core-infra/model-research/product-growth/frontend/project-alpha-dev channels",
+      "selection": "alternative",
+      "reason": "Second Robert candidate whose channel memberships anchor the other possible message set"
+    },
+    {
+      "role": "robert_walsh_membership",
+      "entity": "user_teams",
+      "facts": "Robert Walsh's workspace_membership row records role=admin for T01WORKSPACE",
+      "selection": "alternative",
+      "reason": "Displayed membership pair (user, role) for the first candidate"
+    },
+    {
+      "role": "robert_chen_membership",
+      "entity": "user_teams",
+      "facts": "Robert Chen's workspace_membership row records role=member for T01WORKSPACE",
+      "selection": "alternative",
+      "reason": "Displayed membership pair (user, role) for the second candidate"
+    },
+    {
+      "role": "channel_engineering",
+      "entity": "channels",
+      "facts": "engineering channel (C03IJKL9012), Robert Walsh is a conversation member",
+      "selection": "support",
+      "reason": "Conversation on the route linking Robert Walsh to his message set"
+    },
+    {
+      "role": "channel_infra",
+      "entity": "channels",
+      "facts": "core-infra channel (C_INFRA), Robert Chen is a conversation member",
+      "selection": "support",
+      "reason": "Conversation on the route linking Robert Chen to his message set"
+    },
+    {
+      "role": "messages_engineering_incident",
+      "entity": "messages",
+      "facts": "engineering channel messages about login 500 errors, SSO invalid_grant failures, login rate limiting, slow login endpoint, and circuit-tracer OOM debugging",
+      "selection": "match",
+      "reason": "Infrastructure-incident messages inside a channel Robert Walsh belongs to"
+    },
+    {
+      "role": "messages_infra_incident",
+      "entity": "messages",
+      "facts": "core-infra channel messages about GPU OOM/memory pressure on cluster-b, the CUDA batch-size root-cause investigation, and the $47K cloud budget overrun",
+      "selection": "match",
+      "reason": "Infrastructure-incident messages inside a channel Robert Chen belongs to"
+    },
+    {
+      "role": "unrelated_random_message",
+      "entity": "messages",
+      "facts": "random channel message about ordering pizza and coffee, posted by Lukas/Mateo/Sophie/Aisha, in a channel Robert Walsh is a member of",
+      "selection": "negative",
+      "reason": "Robert-member channel but not an infrastructure-incident topic"
+    },
+    {
+      "role": "unrelated_growth_message",
+      "entity": "messages",
+      "facts": "product-growth channel message about Reddit/Twitter social experiment traffic results, in a channel Robert Chen is not a member of and unrelated to infra incidents",
+      "selection": "negative",
+      "reason": "Neither the membership nor the topic condition is satisfied"
+    },
+    {
+      "role": "dm_no_robert_message",
+      "entity": "messages",
+      "facts": "dm-agent-sophie DM message about the circuit-tracer PyTorch rewrite status, in a conversation where neither Robert is a member",
+      "selection": "negative",
+      "reason": "Infrastructure-relevant topic but wrong relationship role: no Robert conversation membership on this channel"
+    }
+  ],
+  "obligations": [
+    {
+      "name": "infra_incident_messages_by_robert_channel",
+      "description": "Messages discussing infrastructure incidents located inside whichever channel(s) a user named Robert is a conversation member of; the referent Robert is not resolved between the two matching users.",
+      "table": "messages",
+      "mode": "underspecified",
+      "task_type": "read-only",
+      "scope": "messages in channels where a user first-named Robert holds conversation membership, restricted to infrastructure-incident content",
+      "target_roles": [
+        "messages_engineering_incident",
+        "messages_infra_incident"
+      ],
+      "candidate_role_sets": [
+        [
+          "messages_engineering_incident"
+        ],
+        [
+          "messages_infra_incident"
+        ]
+      ],
+      "selection": "set",
+      "answer_attributes": [
+        [
+          "messages.message_text"
+        ],
+        [
+          "messages.channel_id"
+        ],
+        [
+          "messages.created_at"
+        ]
+      ]
+    },
+    {
+      "name": "robert_workspace_membership_pair",
+      "description": "The displayed workspace-membership pair (which Robert, and his role) tied to whichever channel set was used above, since owner/admin distinctions on the membership must be reported rather than assumed.",
+      "table": "user_teams",
+      "mode": "underspecified",
+      "task_type": "read-only",
+      "scope": "workspace_membership role for whichever Robert anchors the selected channel/message set",
+      "target_roles": [
+        "robert_walsh_membership",
+        "robert_chen_membership"
+      ],
+      "candidate_role_sets": [
+        [
+          "robert_walsh_membership"
+        ],
+        [
+          "robert_chen_membership"
+        ]
+      ],
+      "selection": "one",
+      "answer_attributes": [
+        [
+          "user_teams.role"
+        ],
+        [
+          "user_teams.user_id"
+        ],
+        [
+          "user_teams.team_id"
+        ]
+      ]
+    }
+  ],
+  "task_spec": [
+    {
+      "line": 1,
+      "text": "Gather the infrastructure-incident messages found in the channel(s) Robert belongs to.",
+      "obligations": [
+        1
+      ]
+    },
+    {
+      "line": 2,
+      "text": "Alongside those messages, report which Robert it is and his workspace membership role for that channel.",
+      "obligations": [
+        2
+      ]
+    }
+  ],
+  "scope_exception": null,
+  "access_plan": "Use users.list to find all users whose real_name/display_name contains 'Robert', yielding Robert Walsh and Robert Chen. For each, use users.conversations to enumerate their conversation memberships. Use conversations.history on each of their channels to locate messages whose text concerns infrastructure incidents (outages, memory pressure, login failures, budget overruns). Cross-reference each candidate's workspace role via their workspace_membership (user_teams.role) as exposed through users.info/team association, presenting the membership pair (user, role) alongside the selected channel's messages without collapsing the two candidates into one."
+}

@@ -1,0 +1,18 @@
+This route models reactions filtered by workspace membership where the reactor's role is admin in Test Workspace, which fits "our workspace admins" since the actor is also a member. I'm checking the access plan, which uses reactions.get on the message then users.info to verify workspace membership.
+
+I trust that users.info exposes the membership role, since the domain model treats it as accessible per-user data. Target message identification via conversations.history/search on #general should work fine.
+
+For the plural resolution, there are two matches: Robert's own reaction and Morgan Freeman's, both as admins. Robert reacting to his own message is a bit unusual but not against any rule, so it's acceptable.
+
+I'm confirming the target message is anchored correctly - it's the one authored by Robert Walsh in the general channel asking about MCP deployment timing. John Doe and Hubert's reactions get excluded since they're not admins, and Robert's other reaction on an unrelated message is excluded too. Checking the workspace-wide admin set, only Robert and Morgan Freeman hold admin role among all users, so the two-emoji result (thumbsup, eyes) matches correctly.
+
+Verifying the join path from reaction to user to workspace membership to workspace checks out against the required route, and the exposure qualification around workspace IDs doesn't seem problematic. Now I'm double-checking whether "our workspace admins" should be scoped relative to the actor's own workspace context rather than just the single workspace present in the seed data.
+
+But then I notice something odd: the base seed's message_reactions table only has one row, tied to a completely different message ID than the target message, while the role definitions reference several other reaction rows involving Robert and Morgan that aren't reflected there.
+
+I recall this is fine though, since we're at the design stage before compilation - the instructions specifically say roles may describe planned additions the compiler hasn't created yet, so I shouldn't reject based on rows not yet existing in the base seed. The target message itself already exists in base_seed with matching author and channel, so it's a support role rather than something to-be-created, and I'm now confirming admin_robert's admin role via the user_teams entry.
+
+Checking admin_morgan, member_john, and member_hubert roles against the seed - all confirmed as existing facts, so no new user/role entities need creating. Only the message_reactions rows need creation for the match and negative test cases, and I'm now verifying reaction_hubert_unrelated's target message exists with the right channel and author.
+
+The wrong-message reaction case also checks out against an existing unrelated message. Overall the design looks consistent and valid - decent negative cases (wrong role, wrong message, unrelated), though since this is bare retrieval rather than a write action, I'd call the quality adequate rather than strong.
+

@@ -1,0 +1,44 @@
+Everything needed already exists in the base seed—Priya's C_INFRA membership, the message, and the decoys—so no seed edits are required, and the agent already has access as a member of C_INFRA. Now I'm working out the selector for the obligation, focusing on the channel_members table and tracing the path to find the right membership row.
+
+I need to link channel_members to channels to messages to users, ensuring the join correctly ties channel_members.user_id to the message's author via matching channel_id and user_id fields across the chain.
+
+Actually, chaining channel_members→users→messages→channels naturally enforces the identity constraint since the users node is shared across both joins. I'll build the path with joins on user_id twice and channel_id once, then add filters for the message text and channel name.
+
+I'm double-checking that this restricts channel_members.channel_id correctly, since the path locks the message's channel to core-infra but the membership record itself just needs to belong to Priya, not necessarily to the same channel—so I need to make sure that's actually what we want to select.
+
+Actually, this is a bug: nothing forces channel_members.channel_id to equal the message's channel, so Priya's membership in any channel would qualify. I need a path linking channel_members.channel_id directly to messages.channel_id to fix this.
+
+I doubt the join syntax supports revisiting the same table twice this way, since messages doesn't have a direct FK to channel_members as a table—only matching composite fields channel_id and user_id, which isn't a standard single-path join.
+
+The binding note implies the target membership row must match both channel and user simultaneously, but since the join syntax allows only one FK per adjacency, and there's no direct FK from messages to channel_members, this composite relationship isn't cleanly expressible with a single join step.
+
+Rereading the instructions, the assigned route is CONVERSATION_MEMBERSHIP -> CONVERSATION -> MESSAGE, meaning the root path is channel_members joined to channels joined to messages, without a separate hop to users. So matching the message's author against the membership's user_id field should just reuse that same field within the route rather than requiring an extra join.
+
+Actually, re-reading the design instructions about binding conceptual roles to native row handles, I think it's fine to reference known literal values directly, since the selector for the target user can just bind through the messages.user_id field itself as the author identity.
+
+Both channel_members.user_id and messages.user_id are foreign keys to users.user_id, not directly to each other, so I need to chain the join through the referenced users table rather than connecting them directly. Given this, the selector should probably root at channel_members and path through users to reach messages.
+
+I'm running into the problem that channel_members and channels aren't directly adjacent in a single linear path, so I can't cleanly enforce that the channel matches both branches through one join chain. It seems like I'll need to treat this as two constraints and rely on an auxiliary query for the independent piece, since the path selector only supports linear traversal.
+
+Wait, that actually pulls in all eight C_INFRA members, not just Priya, since the filter only constrains channel_name and message_text, not that the root row's user matches the message author. I need root.user_id to equal messages.user_id, but a straight join between channel_members and messages directly might be a workable path instead of going through channels.
+
+I'm now looking at their example join chain, which walks messages → message_reactions → users → channel_members → channels via a sequence of foreign keys, where each join field belongs to the next table's side of the connection.
+
+This confirms my path is valid: channel_members → users → messages → channels, joining channel_members.user_id, then messages.user_id, then messages.channel_id. But I realize this only enforces that the membership's user matches the message's author, sharing the same users node - it doesn't actually constrain channel_members.channel_id to match the message's channel.
+
+So Priya's membership in C_GROWTH or C_MODEL could equally satisfy this same join structure alongside her message in C_INFRA, meaning multiple valid root handles exist - the query is ambiguous rather than returning one clean answer.
+
+The design notes for the decoy explicitly call out that these other memberships need to be excluded by enforcing the channel-identifying condition, meaning channel_members.channel_id must actually be tied to the message's channel. Since there's no direct FK linking that composite condition in a single join step, I'm wondering if the engine permits specifying a composite join field like "channel_members.channel_id,user_id" together.
+
+Actually, only single field names appear in the syntax examples, so that composite approach won't work. Instead, I could build a four-node path—channel_members, channels, messages, users—joining on channel_id and user_id fields, with filters on channel_name and message_text, plus hardcoding the user_id value for Priya on the channel_members node directly. That sidesteps the dynamic join constraint but practically produces the correct result since Priya is confirmed as the author.
+
+I'm reassuring myself that hardcoding known entity IDs for the main match is standard practice in this kind of selector design, as long as the mechanical join/filter construction reflects real fields rather than just baking in the answer directly.
+
+Filtering on message text and user_id together at node2 uniquely identifies the message, and linking node0 via the same user_id is a reasonable way to trace authorship without needing a direct comparison capability -- so I'll finalize the selector using a fairly specific case-insensitive phrase match against the actual message content.
+
+Checking the phrase against the decoy Lukas message confirms it doesn't accidentally match, so the filter correctly isolates only the target message. Now I need to define negative referents for the conversation membership entity -- specifically Priya's memberships in other channels that could be mistakenly selected instead of the correct one.
+
+I'm laying out the full set of bindings: the target membership pointing to Priya in C_INFRA, the correct message timestamp, and the various decoy message timestamps for Lukas's theory, Olena's followup, and Priya's other-channel message, plus the wrong-channel membership decoys. Since all these records already exist in the base seed, no additional seed edits are needed.
+
+For joined_at on channel_members, I'm confirming no explicit value is set in the seed, so it'll just use whatever default insertion timestamp gets recorded — that satisfies the "ordinary date" requirement without needing a manual edit.
+

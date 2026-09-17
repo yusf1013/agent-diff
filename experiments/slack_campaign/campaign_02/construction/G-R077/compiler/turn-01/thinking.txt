@@ -1,0 +1,28 @@
+Good, the referent message already matches the base seed exactly, and Robert is already a member of C_INFRA - I just need to confirm his channel membership record.
+
+The incognito user Carlos Vega is only in C_GROWTH, not C_INFRA, which checks out against the base seed. His negative message about marketing overspend doesn't exist yet though, so I'll need to add it there.
+
+Checking Priya's reply in C_INFRA - it already discusses the $47K figure and utilization causes without duplicating the original report, so that one's already covered. That means the only real gap is creating the new incognito message in C_GROWTH with a fresh unique message ID.
+
+Now I'm turning to the selector design for the budget report obligation - I need a query path through messages joined to channels (filtering for core-infra) and to users/channel_members to verify authorship comes from a channel member, plus a content filter catching the over-budget dollar figure and driver language.
+
+But content matching alone won't distinguish Robert's original report from Priya's reply, since both mention the same $47K figure and both authors are channel members. I need a more precise text filter that captures the exact reporting phrase distinct from the discussion reply.
+
+Testing the exact phrase "$47K over budget" against both messages: Robert's text matches exactly, but Priya's phrasing about recouping the $47K doesn't include "over budget" together, so this filter uniquely isolates his message. I'll also need to join with channel membership to confirm Robert belongs to the channel, though the text filter alone already disambiguates the two candidates.
+
+I realize the selector syntax only compares fields to literals, not cross-field equality, so this join path won't actually enforce that the membership is in the same channel as the message. I need a different path structure—joining messages to channels directly via messages.channel_id, then to channel_members through that same channel node—to guarantee the membership and message share the channel.
+
+Right, so the fix is to route through the users node itself: path messages → users → channel_members → channels, joining on messages.user_id then channel_members.user_id then channel_members.channel_id. Since both messages and channel_members join to the same users node, that forces the channel_members entry to belong to the same user who authored the message.
+
+But there's still a gap—nothing directly forces messages.channel_id to match the membership's channel_id, since channels is only reached via channel_members, not messages. I could add a separate filter on the messages node's channel field to pin it to the known channel_name, addressing this indirectly through a literal comparison rather than a node-to-node join.
+
+Since channel names are unique within a workspace, filtering both the message's channel and the membership channel by the same name "core-infra" indirectly enforces they're the same channel, so I don't need explicit equality. But the path structure is linear, and I can't branch from "messages" to two different children (channels directly, and users→channel_members→channels) in a single chain -- I need to think about how to structure this as one continuous path.
+
+So I'll split it: a focal query establishing the message via messages→channels with the content and channel filters, plus an auxiliary query with path messages→users→channel_members→channels, filtering by the same content text to tie it to the same message and by channel_name='core-infra' to confirm the author's membership. Since the content filter uniquely identifies the message, this two-query approach should correctly enforce both constraints.
+
+Confirmed unique match. I'm setting up an auxiliary query to verify the message author's channel membership in core-infra by joining through users and channel_members, which confirms authorship and membership together. Now I need to define the negative referents (the incognito insert and Priya's reply) and start binding the referent message.
+
+For the negative referent, I'll insert a new message from U_INCOGNITO into channel C_GROWTH flagging a marketing overspend on paid social, giving it its own message_id and timestamp. The negative referents then become this new message and Priya's existing reply, both bound as message handles under the MESSAGE entity type.
+
+Checking access, the actor bot isn't a member of C_GROWTH but is already in C_INFRA, which is fine since the growth channel isn't required for this negative case. With that settled, I can put together the final JSON.
+

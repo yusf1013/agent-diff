@@ -1,0 +1,58 @@
+I need this scenario to require absent resolution, meaning no messages satisfy the full chain, so I should verify the base seed supports that before building the selector. Let me check who authored messages in the core-infra channel to confirm the right participants are involved.
+
+Checking channel membership and authorship in core-infra, the members there are regular users without admin role, while both actual admins in the workspace aren't part of that channel or its message authors, confirming the absence condition holds.
+
+Now I need to build a selector joining messages to their channel and team, then to the author's user_teams entry checking for admin role in that same team, scoped to the core-infra channel.
+
+The tricky part is enforcing that the author of the message is the same user whose team membership has admin role, since the join path only connects adjacent nodes by shared keys, not directly linking messages.user_id to user_teams.user_id.
+
+I'm considering restructuring the path as messages -> users (via user_id) -> user_teams (via user_id), which preserves the author's identity through the chain, then separately checking that this user_teams.team_id matches the channel's team_id.
+
+The equality between channel's team_id and user_teams's team_id isn't a direct join since those nodes aren't adjacent - I think the intended relationship is actually simpler: message's channel's workspace's membership's user, following a single linear chain like MESSAGE -> CONVERSATION -> WORKSPACE -> WORKSPACE_MEMBERSHIP -> USER.
+
+But this route selects a user reachable via the message's workspace membership, and that user isn't necessarily the message's author - the obligation needs the author too. Since the referent entity is MESSAGE, the selector likely needs to filter messages where this reachable admin user equals messages.user_id, tying the workspace membership user back to the author directly in the path.
+
+I'm questioning whether channels and user_teams can be joined directly given they both reference teams.team_id rather than each other, so the join name likely needs to be a real FK column connecting adjacent tables directly rather than a shared reference to a third table.
+
+Since channels and user_teams don't share a direct FK, teams must be an intermediate node in the path: messages → channels → teams → user_teams → users, using messages.channel_id, channels.team_id, user_teams.team_id, and user_teams.user_id as the connecting FKs. I still need to work out where the role='admin' filter applies on user_teams and how to tie the message author back to the users node.
+
+This works: link messages to users via author, then that user to user_teams for their membership, join to teams, then to channels, filtering on the user_teams role and the channel name.
+
+The specified route lists nodes as messages, conversation, workspace, workspace_membership, users in that order, while my path traverses messages, users, user_teams, teams, channels—same relations but different node ordering. Since the instructions emphasize following the assigned route's literal node sequence, I should try reordering to messages -> channels -> teams -> user_teams -> users while preserving the same join equivalence.
+
+But maybe the exposure_qualification's mention of "message author" is just describing possible interpretations of participant, not mandating that the USER node equals the author - it's clarifying the connection is inherent in the route itself, since the route's final USER is who counts as the participant regardless of role.
+
+I'm not sure the join structure supports closing a cycle like this, since joins should just be one per path step and the path is a linear list of tables. So I'm uncertain whether an extra join back to messages.user_id at the end is actually valid syntax, or if node4 (users) simply has to be the terminal point.
+
+Alternatively, maybe the path should start at messages, jump directly to users via user_id, then continue through workspace membership to workspace to conversation — but that just shifts the problem, since I'd still need to tie conversation back to message.channel_id somehow. The guidance about "ordinary witnesses" suggests the natural join sequence is short: message joins directly to user (as the author/participant), then user joins to workspace membership.
+
+Separately, I'd need message to join through channel to workspace to confirm the workspace matches, forming a diamond shape that a linear join list can't easily represent. This might require an auxiliary query to capture the independent constraint that user's team matches the channel's team.
+
+But then I realize since there's only a single team (T01WORKSPACE) in this seed data, that constraint is automatically satisfied by any path -- so I can simplify by joining messages to users to user_teams filtered on role='admin' without worrying about the diamond join at all.
+
+I should use user-facing predicates like channel_name and real_name rather than raw seed IDs, and lay out the join path in the prescribed order: messages, channels, teams, user_teams, users.
+
+But testing this path, I realize filtering on channel_name='core-infra' plus role='admin' on user_teams alone isn't enough—it would match any admin in the workspace, not necessarily the message's actual author. I need to explicitly tie the user node back to messages.user_id to enforce that the identified admin is the one who wrote the message, otherwise the query produces false positives.
+
+This is just the same edge set traversed in the opposite direction, which the join rules explicitly permit since joins work either way—so my ordering (message, user, membership, workspace, conversation) is equivalent to the prescribed route (message, conversation, workspace, membership, user).
+
+Continuing through channels via team_id closes the traversal, confirming the path is legitimate. Now I'm laying out the actual selector: root table messages, no scope filter since we want the whole population, and a focal path through users, user_teams, teams, channels with joins on user_id and team_id, filtering for admin role and the core-infra channel name. I need to double check the join order aligns correctly with the node indices in the path.
+
+This matches the focal query for the admin-authored incident messages obligation, expected to return empty under the "absent" mode. Now I'm mapping the role labels to their native handles — the target channel, workspace, admin users Robert and Morgan, member users Priya, Lukas, and Olena, and the specific off-topic message ID from Robert.
+
+I'm also compiling the list of Priya's messages in the core-infra channel by scanning all message IDs and filtering out any that belong to the growth channel instead.
+
+Narrowing down, I realize priya_incident_messages should specifically be the memory-pressure/OOM-related messages (the five earliest ones), since the later batch is about cloud billing—a separate topic entirely.
+
+For negative_referents, I need message handles that look plausible but get excluded by the full request constraints: robert_offtopic_message (wrong channel despite admin role) and the member-role messages from priya and lukas about the outage that don't fully satisfy the role/topic conditions.
+
+Checking the seed data, no edits are needed—Robert Walsh and Morgan Freeman aren't in the core-infra channel membership list, and all core-infra members already have the 'member' role as required, so the base seed already supports the scenario correctly.
+
+For the actor accessing the API, I'll assume it's the agent bot U01AGENBOT9, which is already a member of C_INFRA and can read channel history there.
+
+Since the design has just one obligation, I only need a single selector matching the focal obligation, which lines up with the "one selector per obligation" rule.
+
+Now I'm finalizing field names and the bindings structure - scalar IDs for single-key tables like teams, channels, and users, and full primary key objects for association tables like messages.
+
+Ready to write the final answer.
+

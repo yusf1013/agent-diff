@@ -1,0 +1,36 @@
+I'm checking the seeded data — there's already one reaction row for that message — and now I need to add a new reaction from Robert Walsh plus another member reacting on the same message.
+
+I'm also verifying roles and channel memberships: Robert, John, and Morgan are already admins/members as needed, but Morgan Freeman isn't yet in the engineering channel, so I need to add that membership entry. Then I'm drafting the actual seed insert statements for the new reactions on the target message.
+
+For the selector logic, I need to trace the join path from message_reactions through messages, users, and user_teams to correctly identify the target reaction based on channel, message text, and admin role -- though I still need to account for the channel filter properly through the channels table.
+
+Right, joins connect adjacent path nodes using whichever field belongs to either table in that pair, since message_reactions holds both message_id and user_id. Looking at the example path with messages, message_reactions, users, channel_members, channels, each join name corresponds to the FK field linking those two consecutive tables in sequence.
+
+For my case, I realize channels can't lead onward to the reactor's team role since that requires a separate branch through users and user_teams, which won't work as a single linear path if I go through channels first. So I should instead try message_reactions -> users -> user_teams as the path, filtering by role on the user_teams node.
+
+The message's channel and text content are constraints needed to anchor the specific message, but they don't belong to the assigned route of reaction->user->workspace_membership. Since the route is fixed, I need to figure out how the message-identifying conditions fit alongside it while still preserving the binding to the reactor's admin role.
+
+Since paths must start at root_table which is message_reactions, I can't branch back to reach channels through users linearly. So I'm considering splitting this: use the main path for message_reactions -> users -> user_teams to handle the admin condition, and rely on an auxiliary query to pull in the message/channel details separately.
+
+ins between message_reactions and user_teams filtered by admin role, then scope the root to that specific message_id. Since I don't have the message_id directly, I'd need an auxiliary query to resolve it from the message text and channel context, but scope filters require a real literal value — so I need to figure out whether that lookup path is even valid here or if I should treat the message identification as already given from context.
+
+Actually, keeping the path faithful means deriving the message through joining messages and channels by channel_name and text rather than hardcoding an ID, then continuing on to users and user_teams for the admin filter. But since the path must be linear and root_table has to be message_reactions given the entity being resolved is a reaction, I need to reconsider how to structure the join order so it stays valid.
+
+Reasoning further, root_table doesn't have to match the referent entity exactly, but here it makes sense to anchor on message_reactions. The problem is that connecting to messages/channels for identification and separately to users/user_teams for the admin condition both branch off message_reactions, which a single straight path can't accommodate without revisiting that node -- so I'll need a way to combine both branches, perhaps using an implicit scope filter tied together by message_id equality.
+
+This intersection of focal and auxiliary constraints should uniquely narrow to the target reaction row—the admin's reaction on the specific message in the engineering channel, which is Robert Walsh's reaction.
+
+I check the alternatives: Tanya's reaction fails since she isn't admin, and the bot's reaction fails both role and emoji criteria. Morgan's reaction on the wrong message is trickier since it's technically in the same channel, but the message text itself distinguishes it—the target message specifically mentions "circuit-tracer" and "OOM," while the other message discusses something unrelated.
+
+Actually both messages mention "circuit-tracer," so I need a more specific filter. Since only the target message contains "OOM," I can use that as the distinguishing text filter, and I verify no other message in that channel contains "OOM" either, confirming this filter uniquely identifies the anchor message.
+
+Checking the combined query, only Robert Walsh's reaction satisfies both the admin-role condition and the OOM-text-in-engineering condition — Morgan's, John's, and the bot's reactions all get excluded by one filter or the other, leaving a single match. Now I'm double-checking whether the focal and auxiliary conditions apply as a conjunction on the same root row or as separate joins.
+
+I need to figure out how many selectors are required — since there's only one obligation (remove_admin_reaction), the selectors list should contain just one entry, even though several support/negative roles exist for documentation purposes. For bindings, though, I'm considering whether every role in the design needs an entry, not just the obligation's role.
+
+Now I'm working through the concrete bindings for each role: mapping target_reaction, member_reactor_same_message, bot_reactor_same_message, admin_reactor_wrong_message, and the various admin/member user and membership records to their specific message IDs, user IDs, and reaction types.
+
+Then I define negative_referents as the reactions to exclude (member, bot, and wrong-message admin reactions), and lay out the seed edits: inserting the three message_reactions rows and one channel_members row needed to set up the scenario, noting created_at is optional.
+
+I'll add deterministic created_at timestamps and verify actor access — the agent bot is already a member of C03IJKL9012, so conversations.history and reactions.get on that channel work fine, including visibility into the wrong-anchor message since it's in the same channel.
+

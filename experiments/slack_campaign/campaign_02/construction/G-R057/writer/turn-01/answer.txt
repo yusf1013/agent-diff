@@ -1,0 +1,41 @@
+```json
+{
+  "prompt": "In #core-infra, which channel members reacted with a thumbsup to the message where Priya concluded the root cause was hitting a hard CUDA memory limit?",
+  "binding_note": "A qualifying record is a conversation_membership row in #core-infra whose user_id also appears on a message_reactions row with reaction_type 'thumbsup' on that specific pprof-delta message from Priya; membership channel, reaction emoji, and reacted message must all bind to the same user.",
+  "roles": [
+    {"role":"target_channel","entity":"channels","facts":"channel_id C_INFRA, channel_name core-infra, topic about infrastructure/on-call/incidents","selection":"support","reason":"scopes which conversation membership rows are eligible"},
+    {"role":"anchor_message","entity":"messages","facts":"message 1706001931.000000 in C_INFRA authored by Priya: 'Got the pprof delta—it's definitely the batch size increase hitting a hard CUDA memory limit...'","selection":"support","reason":"the message the request identifies by its content, the anchor for the reaction route"},
+    {"role":"priya_membership","entity":"channel_members","facts":"U_PRIYA is a member of C_INFRA","selection":"match","reason":"Priya reacts thumbsup to the anchor message and holds membership in core-infra"},
+    {"role":"priya_reaction","entity":"message_reactions","facts":"U_PRIYA, message 1706001931.000000, reaction_type thumbsup","selection":"match","reason":"the qualifying reaction binding Priya to the anchor message"},
+    {"role":"olena_membership","entity":"channel_members","facts":"U_OLENA is a member of C_INFRA","selection":"match","reason":"Olena reacts thumbsup to the anchor message and holds membership in core-infra"},
+    {"role":"olena_reaction","entity":"message_reactions","facts":"U_OLENA, message 1706001931.000000, reaction_type thumbsup","selection":"match","reason":"the qualifying reaction binding Olena to the anchor message"},
+    {"role":"lukas_membership","entity":"channel_members","facts":"U_LUKAS is a member of C_INFRA","selection":"match","reason":"Lukas reacts thumbsup to the anchor message and holds membership in core-infra"},
+    {"role":"lukas_reaction","entity":"message_reactions","facts":"U_LUKAS, message 1706001931.000000, reaction_type thumbsup","selection":"match","reason":"the qualifying reaction binding Lukas to the anchor message"},
+    {"role":"robert_membership","entity":"channel_members","facts":"U_ROBERT is a member of C_INFRA","selection":"negative","reason":"Robert reacts to the anchor message but with 'eyes', not thumbsup, so his membership does not qualify despite being in core-infra"},
+    {"role":"robert_reaction","entity":"message_reactions","facts":"U_ROBERT, message 1706001931.000000, reaction_type eyes","selection":"negative","reason":"wrong emoji on the correct message excludes Robert's membership"},
+    {"role":"mateo_membership","entity":"channel_members","facts":"U_MATEO is a member of C_INFRA","selection":"negative","reason":"Mateo is a core-infra member but his thumbsup reaction lands on a different message, not the anchor"},
+    {"role":"mateo_reaction","entity":"message_reactions","facts":"U_MATEO, message 1706012683.000000 (a C_MODEL discussion), reaction_type thumbsup","selection":"negative","reason":"correct emoji but wrong message excludes Mateo's core-infra membership"},
+    {"role":"incognito_reaction","entity":"message_reactions","facts":"U_INCOGNITO, message 1706001931.000000, reaction_type thumbsup","selection":"negative","reason":"reacted correctly to the anchor message but has no conversation membership in #core-infra (only in #product-growth)"},
+    {"role":"incognito_membership_elsewhere","entity":"channel_members","facts":"U_INCOGNITO is a member of C_GROWTH, not C_INFRA","selection":"negative","reason":"wrong conversation membership role excludes Incognito even though the reaction matches"}
+  ],
+  "obligations": [
+    {
+      "name":"qualifying_core_infra_memberships",
+      "description":"Select the conversation_membership (channel_members) rows for #core-infra whose user reacted with a thumbsup to Priya's message identifying the CUDA memory limit as root cause.",
+      "table":"channel_members",
+      "mode":"multiple",
+      "task_type":"read-only",
+      "scope":"channel_members rows in channel C_INFRA whose user_id has a matching message_reactions row (reaction_type thumbsup) on the anchor message in the same channel",
+      "target_roles":["priya_membership","olena_membership","lukas_membership"],
+      "candidate_role_sets":null,
+      "selection":"set",
+      "answer_attributes":[["channel_members.channel_id"],["channel_members.user_id"],["channel_members.joined_at"]]
+    }
+  ],
+  "task_spec": [
+    {"line":1,"text":"Identify the members of #core-infra who reacted with a thumbsup to Priya's message about the CUDA memory limit being the root cause, and report those memberships.","obligations":[1]}
+  ],
+  "scope_exception": null,
+  "access_plan": "Use conversations.history on #core-infra (C_INFRA) to locate Priya's message concluding the CUDA memory limit was the root cause, then reactions.get on that message's timestamp to enumerate thumbsup reactors, then conversations.members on #core-infra to confirm which of those reactors hold conversation memberships there."
+}
+```

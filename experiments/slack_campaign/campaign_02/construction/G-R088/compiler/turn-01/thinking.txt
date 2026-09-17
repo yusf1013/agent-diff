@@ -1,0 +1,22 @@
+I'm working out the seed edits: I need a target message from Kenji in #product-growth about the outdated signup-funnel doc, flagged with a rotating_light reaction by Priya, who's already in the right channels. Then I need a mismatched-reactor case using Mateo's campaign budget message in the same channel, but this time flagged by Carlos instead.
+
+Next I'm setting up the wrong-channel case with Sophie's eval-harness message in #model-research, and a wrong-reaction-type case with Aisha's JP localization message reacted with thumbsup instead of rotating_light. I also realize the agent bot isn't currently a member of #product-growth, so I'll need to add that membership for conversation history access, though it already has access to the model and infra channels it needs.
+
+Checking the message_reactions primary keys confirms no conflicts since all entries are new. I verify the channel memberships already satisfy the scenario: Priya is already in core-infra, and Carlos Vega is only in C_GROWTH, so no membership edits are needed for those.
+
+Now I'm assigning unique timestamp-style message_ids for the target and negative examples, then drafting the message texts themselves — the target about archiving an outdated signup-funnel doc, and negatives covering unrelated topics like campaign budget, eval-harness ownership, and localization QA to serve as distractors.
+
+Now I'm working through the selector for the delete_target_message obligation on the messages table in single mode, tracing the join path from messages through reactions and users to channel_members and channels, and reasoning about whether scope filters can reference channel_id directly since it's a native field on the messages table itself.
+
+The design guidance pushes toward joining channels for filtering by channel_name rather than seed-ID constants, but I realize the tricky part is I need two separate channel-related joins simultaneously — one filtering the message's own channel to product-growth, and another checking the reactor's membership in core-infra — and a single join path can't satisfy both at once.
+
+So I'm mapping out a path that revisits the channels table under two different roles: first joining messages directly to channels for the container channel, then continuing through message_reactions, users, and channel_members to reach channels again for the reactor's core-infra membership.
+
+Using channel_id directly would count as a hidden constant, so I need to join channels for the name filter instead. I'm considering whether an auxiliary query starting fresh at the root table could handle the product-growth constraint separately from the main join chain.
+
+Both focal and auxiliary queries begin at messages, so I can split this: the focal query traces messages through reactions, users, and channel_members to channels for the rotating_light/core-infra conditions, while an auxiliary query independently joins messages to channels to enforce the product-growth filter, and the two combine by intersecting on the same root row.
+
+Now I'm assigning the concrete role bindings: target message, target reaction, target reactor, reactor membership, the two channel handles, and the negative examples covering wrong reactor, wrong channel membership, wrong channel, and wrong reaction type. I'm working out which messages should be excluded as negative referents.
+
+I'm building the seed_edits list: adding the actor's channel membership for #product-growth so history reads work, inserting the four messages (target plus three negatives), and inserting their four corresponding reaction records, making sure timestamps stay consistent with each message id.
+

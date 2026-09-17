@@ -1,0 +1,111 @@
+{
+  "prompt": "Can you pull together the names and emails of the admins on our Test Workspace so I can loop them into the incident retro thread?",
+  "binding_note": "The requested workspace is identified by its team_name 'Test Workspace' (teams.team_name). The admin condition is a role value on the workspace-membership record (user_teams.role) that must belong to that same team_id — a user who is admin somewhere else, or a member (non-admin) of Test Workspace, does not satisfy the same-record binding.",
+  "roles": [
+    {
+      "role": "test_workspace",
+      "entity": "teams",
+      "facts": "team_id T01WORKSPACE, team_name 'Test Workspace' — the actor's own workspace, which the requester means by 'our Test Workspace'.",
+      "selection": "match",
+      "reason": "Identifies the target workspace node on the route."
+    },
+    {
+      "role": "beta_workspace",
+      "entity": "teams",
+      "facts": "New team_id T02BETA, team_name 'Beta Labs' — a distinct workspace added for contrast; the actor is not a member of it.",
+      "selection": "negative",
+      "reason": "Different workspace; admins here do not satisfy the Test Workspace condition."
+    },
+    {
+      "role": "robert_membership",
+      "entity": "user_teams",
+      "facts": "user_id U03ROBERT23, team_id T01WORKSPACE, role admin.",
+      "selection": "support",
+      "reason": "Binding membership record joining the matching user to Test Workspace with admin role."
+    },
+    {
+      "role": "morgan_membership",
+      "entity": "user_teams",
+      "facts": "user_id U07MORGANFREE, team_id T01WORKSPACE, role admin.",
+      "selection": "support",
+      "reason": "Binding membership record joining the second matching user to Test Workspace with admin role."
+    },
+    {
+      "role": "priya_membership",
+      "entity": "user_teams",
+      "facts": "user_id U_PRIYA, team_id T01WORKSPACE, role member.",
+      "selection": "negative",
+      "reason": "Correct workspace but wrong role (member, not admin)."
+    },
+    {
+      "role": "dana_membership",
+      "entity": "user_teams",
+      "facts": "New user_id U_DANA, team_id T02BETA, role admin.",
+      "selection": "negative",
+      "reason": "Admin role, but on the wrong workspace (Beta Labs, not Test Workspace)."
+    },
+    {
+      "role": "robert_user",
+      "entity": "users",
+      "facts": "user_id U03ROBERT23, real_name Robert Walsh, email robert@gmail.com.",
+      "selection": "match",
+      "reason": "User reached via admin membership in Test Workspace."
+    },
+    {
+      "role": "morgan_user",
+      "entity": "users",
+      "facts": "user_id U07MORGANFREE, real_name Morgan Freeman, email mfreeman@gmail.com.",
+      "selection": "match",
+      "reason": "User reached via admin membership in Test Workspace."
+    },
+    {
+      "role": "priya_user",
+      "entity": "users",
+      "facts": "user_id U_PRIYA, real_name Priya Sharma, email priya@neuroflow.ai, member of Test Workspace with role member.",
+      "selection": "negative",
+      "reason": "Same workspace but membership role is member, not admin."
+    },
+    {
+      "role": "dana_user",
+      "entity": "users",
+      "facts": "New user_id U_DANA, real_name Dana Whitfield, email dana@betalabs.io, admin only of Beta Labs.",
+      "selection": "negative",
+      "reason": "Admin role held, but the workspace membership is for Beta Labs, not Test Workspace."
+    }
+  ],
+  "obligations": [
+    {
+      "name": "workspace_admins",
+      "description": "Users whose workspace-membership record for the workspace named 'Test Workspace' carries the admin role; their names and emails are compiled for the incident retro invite list.",
+      "table": "users",
+      "mode": "multiple",
+      "task_type": "read-only",
+      "scope": "ordinary requested scope",
+      "target_roles": [
+        "robert_user",
+        "morgan_user"
+      ],
+      "candidate_role_sets": null,
+      "selection": "set",
+      "answer_attributes": [
+        [
+          "users.real_name"
+        ],
+        [
+          "users.email"
+        ]
+      ]
+    }
+  ],
+  "task_spec": [
+    {
+      "line": 1,
+      "text": "Compile the names and emails of the admins on the Test Workspace so they can be looped into the incident retro thread.",
+      "obligations": [
+        1
+      ]
+    }
+  ],
+  "scope_exception": null,
+  "access_plan": "The actor is a member of Test Workspace, so its team_id is available from the actor's own workspace context (no explicit team-name lookup API exists). Using that team_id, scan user_teams rows for that team filtered to role = admin (the workspace-membership role attribute exposed via users.list/users.conversations scoping to the actor's team), then call users.info on each matching user_id to surface real_name and email for the reply."
+}

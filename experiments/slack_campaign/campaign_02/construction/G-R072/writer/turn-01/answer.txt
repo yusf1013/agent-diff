@@ -1,0 +1,40 @@
+```json
+{
+  "prompt": "For the postmortem on the memory-pressure incident in #core-infra, pull together the messages written by teammates based in European time zones so I can build a timeline of how they diagnosed it.",
+  "binding_note": "Selection requires joining each candidate message to its author (messages.user_id -> users.user_id) and checking users.timezone begins with 'Europe/', while also restricting to messages that are part of the memory-pressure/OOM diagnosis thread in channel C_INFRA; other threads in the same channel and non-European authors are excluded even when topically or channel-adjacent.",
+  "roles": [
+    {"role": "lukas_author", "entity": "users", "facts": "Łukasz Kowalski, timezone Europe/Warsaw, member of C_INFRA", "selection": "support", "reason": "Author whose timezone attribute qualifies his messages for the route condition"},
+    {"role": "olena_author", "entity": "users", "facts": "Olena Petrenko, timezone Europe/Kiev, member of C_INFRA", "selection": "support", "reason": "Author whose timezone attribute qualifies her messages for the route condition"},
+    {"role": "priya_author", "entity": "users", "facts": "Priya Sharma, timezone Asia/Kolkata, member of C_INFRA, active participant in the same memory-pressure thread", "selection": "negative", "reason": "Same topic and channel but fails the European-timezone attribute on the author"},
+    {"role": "robert_author", "entity": "users", "facts": "Robert Chen, timezone America/New_York, member of C_INFRA", "selection": "negative", "reason": "Wrong timezone and his channel messages concern the cloud-budget thread, not the memory-pressure incident"},
+    {"role": "sophie_author", "entity": "users", "facts": "Sophie Dubois, timezone Europe/Paris, listed as a member of C_INFRA but never posts in that channel", "selection": "negative", "reason": "Correct timezone attribute but no authored message exists on this route (missing relationship)"},
+    {"role": "incident_channel", "entity": "channels", "facts": "#core-infra (C_INFRA), public engineering channel used for infra alerts and incident discussion", "selection": "match", "reason": "Channel scope containing the memory-pressure thread that anchors the route"},
+    {"role": "lukas_msg_root_cause", "entity": "messages", "facts": "Lukas's message in C_INFRA diagnosing the OOM as a hard CUDA memory limit tied to the batch-size push", "selection": "match", "reason": "Authored by a European-timezone user within the memory-pressure thread"},
+    {"role": "lukas_msg_profiles", "entity": "messages", "facts": "Lukas's message in C_INFRA asking for memory profiles and pprof delta analysis", "selection": "match", "reason": "Authored by a European-timezone user within the memory-pressure thread"},
+    {"role": "olena_msg_repro", "entity": "messages", "facts": "Olena's message in C_INFRA proposing a local repro of old vs new batch size", "selection": "match", "reason": "Authored by a European-timezone user within the memory-pressure thread"},
+    {"role": "olena_msg_tracer", "entity": "messages", "facts": "Olena's message in C_INFRA offering to run allocation tracing once profiles are ready", "selection": "match", "reason": "Authored by a European-timezone user within the memory-pressure thread"},
+    {"role": "priya_msg_revert", "entity": "messages", "facts": "Priya's message in C_INFRA announcing the batch-size revert and CUDA-limit conclusion", "selection": "negative", "reason": "Same thread and channel, but author's timezone (Asia/Kolkata) fails the condition"},
+    {"role": "robert_msg_budget", "entity": "messages", "facts": "Robert's message in C_INFRA about the $47K cloud budget overage", "selection": "negative", "reason": "Wrong topic (budget, not memory pressure) and wrong author timezone"},
+    {"role": "lukas_msg_offtopic", "entity": "messages", "facts": "Lukas's later message in C_INFRA about GPU cluster scheduling/resource quotas, unrelated to the OOM diagnosis thread", "selection": "negative", "reason": "Correct author timezone but wrong thread/topic, so the identifying route condition on topic scope excludes it"}
+  ],
+  "obligations": [
+    {
+      "name": "european_incident_messages",
+      "description": "The set of messages in #core-infra's memory-pressure diagnosis thread whose authors (joined via messages.user_id) have a users.timezone in a European zone; used to assemble a postmortem timeline.",
+      "table": "messages",
+      "mode": "multiple",
+      "task_type": "read-only",
+      "scope": "messages within the #core-infra memory-pressure incident thread authored by teammates with European timezones",
+      "target_roles": ["lukas_msg_root_cause", "lukas_msg_profiles", "olena_msg_repro", "olena_msg_tracer"],
+      "candidate_role_sets": null,
+      "selection": "set",
+      "answer_attributes": [["messages.message_text"], ["messages.user_id"], ["messages.created_at"]]
+    }
+  ],
+  "task_spec": [
+    {"line": 1, "text": "Identify and collect the messages in #core-infra's memory-pressure incident thread authored by teammates in European time zones, ordered to form a diagnosis timeline.", "obligations": [1]}
+  ],
+  "scope_exception": null,
+  "access_plan": "Actor is a member of C_INFRA and can use conversations.history/conversations.replies to read the memory-pressure thread's messages, then users.info per distinct author to check each author's timezone attribute, filtering to European zones and excluding messages from the unrelated budget thread or non-European authors."
+}
+```

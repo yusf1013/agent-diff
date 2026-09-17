@@ -1,0 +1,36 @@
+I'm mapping out the path from REACTION through USER and CONVERSATION_MEMBERSHIP to CONVERSATION and WORKSPACE, picking a reaction identified by its author, that user's membership, and the conversation's workspace so the path conditions do genuine identifying work. I'm now checking the scope note about retaining the scoped witness under group S3 with a visible workspace constraint.
+
+Since there's only one workspace in this dataset containing all users, that condition is nearly trivial for discrimination purposes, so I'm exploring whether membership in a specific channel like a core-infra one could serve as the real distinguishing factor instead.
+
+I'm designing a scenario using the existing reaction seed data - a bot reacting "eyes" to a message in the engineering channel - and considering adding more reactions to test alternatives. The route needs to trace from a reaction to its user, then that user's channel membership, then that channel's workspace attributes, so I'm picking specific emoji types and messages to build a concrete identifying path.
+
+Since there's only one workspace in this corpus, I'm treating "the workspace" as unambiguous without needing a literal team name lookup, since conversations.list only supports team_id anyway. Now I'm sketching out a concrete scenario involving a reaction being added, weighing whether this should be a state-changing or read-only task type.
+
+I'm leaning toward a consequential action - removing a specific reaction someone placed on a message, like an outdated acknowledgement emoji in a channel - using reactions.remove. I want the framing to feel natural, like removing a colleague's reaction on a GPU-scheduling message because they're not actually a member of that infra channel, rather than something artificial like just reporting which emoji was used.
+
+Since there's likely only one candidate matching the description in this scenario, I need to establish clean identifying conditions through channel membership that produce exactly one match, disambiguating between similarly-named users if needed - like two people named Robert with different channel memberships and roles.
+
+I'm thinking about the purpose of removing an outdated acknowledgment reaction, but reactions.remove typically only removes the acting user's own reaction based on token authentication, not an arbitrary specified user's reaction — that's a complication I need to account for.
+
+Given that mismatch, I'm leaning toward reframing this as a read-only question instead: asking which emoji reaction was applied to a specific message rather than attempting the removal, since that keeps things factual and doesn't overreach the API's actual semantics.
+
+Simplifying to avoid over-explaining: "What emoji reaction did Robert, who's part of core-infra, leave on the message about treating our GPU cluster like a mini supercomputer?" The route still needs REACTION→USER→CONVERSATION_MEMBERSHIP→CONVERSATION→WORKSPACE, and even though there's only one workspace, that condition still counts as a real (if non-discriminating) path.
+
+I can use the actor's own workspace ID explicitly as the scoping criterion for conversations.list, which conceptually bounds the corpus even though there's only one team present. That still counts as identifying work for the workspace dimension. Separately, "Robert" is ambiguous between Robert Walsh and Robert Chen, so I'll disambiguate using core-infra channel membership.
+
+For the reaction target, I'll finalize Robert Chen adding a "raised_hands" reaction to Lukas's "mini supercomputer" message in C_INFRA — this is the single valid candidate. For negatives, I want one where Robert Walsh reacts but isn't a member of C_INFRA (wrong relationship path), and another where Robert Chen reacts to a different message in the same channel with a mismatched emoji, testing whether the specific message content is being matched correctly.
+
+I can add the message context as an attribute of the reaction to narrow it further without breaking the route structure. Since Robert Chen only makes one reaction in my seed, it's naturally unique, but I should add distractor reactions—like Robert Walsh reacting in a non-member channel, and another core-infra member reacting differently to the same message—to properly test the negative cases.
+
+Now I need to word the final prompt carefully so "Robert" resolves via the core-infra membership qualifier rather than just message location, since those represent different resolution routes per the instructions.
+
+Right — the reaction's route through USER → CONVERSATION_MEMBERSHIP → CONVERSATION → WORKSPACE never touches the MESSAGE table, so the reaction's actual message location doesn't need to match the membership channel. That confirms I should place Robert's core-infra membership as the identifying detail independent of where the reacted-to message actually sits.
+
+Robert leaves a reaction on Kenji's Tokyo launch stats message in C_GROWTH. So the question becomes: "Robert, who's part of core-infra, reacted to Kenji's Tokyo launch stats update — what emoji did he use?" This cleanly exercises the reaction-user-membership-channel-workspace route.
+
+Now I'm setting up distractors: Robert Walsh (not a C_INFRA member) reacts to something with a different emoji to test name confusion; Priya (a C_INFRA member) reacts to the same Tokyo message but with a different emoji to test user matching; Robert Chen reacts to a different message entirely to test message specificity; and Robert Walsh also reacts to the Tokyo message but with yet another emoji, to confirm membership matters over name matching alone. I'm compiling these reaction records into the dataset now.
+
+I'm defining the write obligation, targeting the message_reactions native table in single-answer, read-only mode, with reaction_type as the answer attribute, and I'm outlining the required roles — the target reaction match, the reactor (Robert Chen), the membership record linking him to C_INFRA, and the infra channel itself.
+
+I'm also listing the negative roles: Robert Walsh reacting on the same Tokyo message, Priya reacting on the same message, and Robert Chen reacting on a different message, each serving as a distractor. Now I'm assembling all of this into the final JSON task specification.
+

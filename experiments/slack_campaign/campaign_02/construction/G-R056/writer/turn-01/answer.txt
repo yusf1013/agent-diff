@@ -1,0 +1,35 @@
+```json
+{
+  "prompt": "In model-research, find whoever reacted with a dart emoji to Sophie's message about the new 7B checkpoint finishing training, and tell me when that person joined core-infra.",
+  "binding_note": "The reaction (message + emoji 'dart') identifies a single user; the requested fact is that same user's channel_members row (joined_at) for core-infra, not any other channel they belong to.",
+  "roles": [
+    {"role": "anchor_message", "entity": "messages", "facts": "Sophie's message in #model-research (1706012456.000000): 'the new 7B checkpoint finished training. MMLU is up 2.4%...'", "selection": "support", "reason": "The message that reactions must be attached to for the route to resolve."},
+    {"role": "reaction_match", "entity": "message_reactions", "facts": "Olena reacted to the anchor message with reaction_type 'dart'.", "selection": "match", "reason": "Satisfies both the message and emoji condition, pinning the identified user to Olena."},
+    {"role": "identified_user", "entity": "users", "facts": "Olena Petrenko (U_OLENA), member of core-infra, model-research, product-growth, and frontend channels.", "selection": "support", "reason": "The user resolved by the matching reaction; her core-infra membership is the requested fact."},
+    {"role": "membership_target", "entity": "channel_members", "facts": "Olena's membership row for core-infra (channel_id=C_INFRA, user_id=U_OLENA) with a joined_at timestamp.", "selection": "match", "reason": "This is the referent record the request ultimately asks about."},
+    {"role": "wrong_emoji_reaction", "entity": "message_reactions", "facts": "Mateo reacted to the same anchor message with reaction_type 'rocket'.", "selection": "negative", "reason": "Same message but wrong emoji, so Mateo is not the identified user."},
+    {"role": "wrong_message_reaction", "entity": "message_reactions", "facts": "Lukas reacted with 'dart' but on Mateo's later reply message (1706012958.000000) in model-research, not the anchor message.", "selection": "negative", "reason": "Correct emoji but wrong message, so Lukas is excluded."},
+    {"role": "missing_membership_reaction", "entity": "message_reactions", "facts": "Kenji reacted with 'dart' on the correct anchor message, but Kenji has no channel_members row for core-infra (he is only in model-research, product-growth, frontend, and project-alpha-dev).", "selection": "negative", "reason": "Matches user-identification conditions but fails the membership relation the request asks about, showing a missing-relationship negative."},
+    {"role": "decoy_other_membership", "entity": "channel_members", "facts": "Olena's separate membership row for #model-research (channel_id=C_MODEL, user_id=U_OLENA).", "selection": "negative", "reason": "Same user but wrong channel; the request specifically asks about core-infra, not this membership."}
+  ],
+  "obligations": [
+    {
+      "name": "core_infra_membership_of_reactor",
+      "description": "Select the channel_members row for the user who reacted with 'dart' on Sophie's checkpoint-training message in #model-research, scoped specifically to their core-infra membership, and report its join time.",
+      "table": "channel_members",
+      "mode": "single",
+      "task_type": "read-only",
+      "scope": "the core-infra channel membership of the single user identified via that reaction",
+      "target_roles": ["membership_target"],
+      "candidate_role_sets": null,
+      "selection": "one",
+      "answer_attributes": [["channel_members.joined_at"], ["channel_members.user_id"], ["channel_members.channel_id"]]
+    }
+  ],
+  "task_spec": [
+    {"line": 1, "text": "Identify who reacted with a dart emoji to Sophie's 7B-checkpoint message in #model-research, then report when that person joined #core-infra.", "obligations": [1]}
+  ],
+  "scope_exception": null,
+  "access_plan": "Use conversations.history on #model-research (C_MODEL) to locate Sophie's checkpoint-training message, then reactions.get on that message's timestamp to find the 'dart' reactor (Olena) versus other reactors (Mateo's 'rocket', Lukas's 'dart' on a different message, Kenji's 'dart' on the same message). Then use conversations.members (or conversations.info) on #core-infra (C_INFRA) to confirm Olena's membership and read her joined_at, distinguishing it from her separate membership in #model-research and from Kenji's absence of any core-infra membership row."
+}
+```

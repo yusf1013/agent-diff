@@ -1,0 +1,40 @@
+```json
+{
+  "prompt": "In Test Workspace, which reactions have workspace admins added using the eyes emoji to messages posted in the #core-infra channel?",
+  "binding_note": "The reaction must be contributed by a user whose workspace_membership role is admin, on a message whose channel is the #core-infra conversation belonging to Test Workspace; no such reaction exists in the data even though admin-authored eyes reactions and core-infra reactions separately exist.",
+  "roles": [
+    {"role": "workspace", "entity": "channels", "facts": "Test Workspace (T01WORKSPACE) contains the #core-infra channel (C_INFRA), a public engineering-infra channel.", "selection": "support", "reason": "Anchors the workspace/channel scope of the route."},
+    {"role": "core_infra_channel", "entity": "channels", "facts": "#core-infra (C_INFRA), topic 'Infrastructure, K8s, AWS, on-call, incidents', team_id T01WORKSPACE.", "selection": "support", "reason": "Target conversation whose messages must be reacted to."},
+    {"role": "admin_robert", "entity": "user_teams", "facts": "Robert Walsh (U03ROBERT23) holds an admin-role workspace membership in T01WORKSPACE.", "selection": "negative", "reason": "Qualifies as an admin, tested against wrong-channel and wrong-emoji reaction attempts."},
+    {"role": "admin_morgan", "entity": "user_teams", "facts": "Morgan Freeman (U07MORGANFREE) holds an admin-role workspace membership in T01WORKSPACE.", "selection": "negative", "reason": "Second admin used to build a right-role/wrong-channel negative."},
+    {"role": "member_priya", "entity": "user_teams", "facts": "Priya Sharma (U_PRIYA) holds an ordinary member-role workspace membership in T01WORKSPACE and is a member of #core-infra.", "selection": "negative", "reason": "Right channel and emoji but wrong membership role (not admin)."},
+    {"role": "alert_message", "entity": "messages", "facts": "Message 1706000208.000000 in #core-infra authored by Priya: 'Alert: High memory pressure on cluster-b inference pods...'.", "selection": "support", "reason": "A real message in the target channel that reactions could plausibly attach to."},
+    {"role": "engineering_message", "entity": "messages", "facts": "Message 1700143200.000999 in #engineering (C03IJKL9012) authored by the agent bot: 'I've noticed a few auth issues...'.", "selection": "negative", "reason": "Used to host a right-role wrong-channel reaction negative."},
+    {"role": "general_message", "entity": "messages", "facts": "Message 1699564800.000123 in #general (C01ABCD1234) authored by the agent bot: 'Hey team, we just shipped the new feature!'.", "selection": "negative", "reason": "Used to host a second right-role wrong-channel reaction negative."},
+    {"role": "reaction_wrong_channel", "entity": "message_reactions", "facts": "Robert Walsh reacts with 'eyes' to engineering_message (1700143200.000999) in #engineering.", "selection": "negative", "reason": "Admin role and emoji match, but the message's channel is #engineering, not #core-infra."},
+    {"role": "reaction_wrong_role", "entity": "message_reactions", "facts": "Priya reacts with 'eyes' to alert_message (1706000208.000000) in #core-infra.", "selection": "negative", "reason": "Channel and emoji match, but Priya's workspace role is member, not admin."},
+    {"role": "reaction_wrong_emoji", "entity": "message_reactions", "facts": "Robert Walsh reacts with 'thumbsup' to alert_message (1706000208.000000) in #core-infra.", "selection": "negative", "reason": "Channel and admin role match, but the emoji is thumbsup, not eyes."},
+    {"role": "reaction_wrong_channel_morgan", "entity": "message_reactions", "facts": "Morgan Freeman reacts with 'eyes' to general_message (1699564800.000123).", "selection": "negative", "reason": "Admin role and emoji match, but the channel is #general, not #core-infra, showing exclusion isn't tied to one specific wrong channel only."},
+    {"role": "existing_bot_reaction", "entity": "message_reactions", "facts": "Seed reaction: agent bot (member, not admin) reacted 'eyes' to message 1706110000.000100 in #engineering.", "selection": "negative", "reason": "Pre-existing seed reaction fails both the admin-role and core-infra-channel conditions simultaneously."}
+  ],
+  "obligations": [
+    {
+      "name": "admin_eyes_reactions_core_infra",
+      "description": "Select reactions where the reacting user holds an admin-role workspace_membership in Test Workspace, the reaction_type is 'eyes', and the reacted message's channel is #core-infra; used to answer the user's question about which such reactions exist.",
+      "table": "message_reactions",
+      "mode": "absent",
+      "task_type": "read-only",
+      "scope": "Reactions by workspace-admin members with emoji 'eyes' on messages posted in the #core-infra channel of Test Workspace",
+      "target_roles": ["reaction_wrong_channel", "reaction_wrong_role", "reaction_wrong_emoji", "reaction_wrong_channel_morgan", "existing_bot_reaction"],
+      "candidate_role_sets": null,
+      "selection": "set",
+      "answer_attributes": [["message_reactions.message_id"], ["message_reactions.user_id"], ["message_reactions.reaction_type"]]
+    }
+  ],
+  "task_spec": [
+    {"line": 1, "text": "Identify any reactions meeting the criteria and report which ones (if any) qualify, along with the reacting admin and the reacted message.", "obligations": [1]}
+  ],
+  "scope_exception": null,
+  "access_plan": "Use conversations.list (or users.conversations) to locate the #core-infra channel ID within Test Workspace, then users.list/users.info to determine which members hold the admin workspace_membership role. Use conversations.history on #core-infra to enumerate its messages, then reactions.get on each message to check for 'eyes' reactions (name/user only, no timestamp) and cross-reference the reacting user's admin status; confirm no reaction satisfies all three conditions simultaneously."
+}
+```

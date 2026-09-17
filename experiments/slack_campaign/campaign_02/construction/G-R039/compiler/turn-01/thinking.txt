@@ -1,0 +1,28 @@
+I'm verifying the base seed data - confirming U_LUKAS authored the target message and is a workspace member, but checking whether they're already listed as a channel member in C03IJKL9012.
+
+Now I'm assembling the bindings: target channel, message, author, workspace membership, along with the negative examples for DM messages, member messages, reply author, and duplicate messages that shouldn't match.
+
+For the author_channel_membership obligation, I need to construct a selector that queries the channel_members table to check whether a row exists for this user in this channel, tracing the path from channels through messages to users.
+
+I'm working out the join path connecting channel_members to channels to messages to users to user_teams to teams, filtering by the target channel ID so the query would return the membership row if it existed—since it's absent, this confirms the check.
+
+But I realize the join structure only allows one FK per adjacency, and I need both channel_id and user_id to match simultaneously between channel_members and messages to guarantee the same user in the same channel, which a single join field can't enforce on its own.
+
+I think I can work around this by chaining messages -> users -> channel_members -> channels, adding filters so both messages.channel_id and channels.channel_id match the same value C03IJKL9012. This effectively confirms the message's author is a member of that specific channel, satisfying the compound match without needing a direct FK between channel_members and messages.
+
+But since the obligation schema specifies channel_members as the root table, I need to restructure the path so it starts there instead, going channel_members -> users -> messages -> channels.
+
+I'll anchor the channel with an explicit filter on the channels node's channel_id equal to C03IJKL9012, which combined with the join chain also pins messages.channel_id to the same value.
+
+But I realize channel_members.channel_id itself isn't constrained by the path, so I need to add a filter on the root node (channel_members) for channel_id equal to that same value, ensuring the membership row actually belongs to that channel. Then messages gets a text filter for the distinctive "OOM" content to identify the specific message.
+
+Since no channel_members row exists with that channel_id and user, the query correctly returns empty, confirming the membership is absent -- so I'm finalizing the path through channel_members, users, messages, channels with joins on user_id and channel_id, plus filters anchoring channel_id at the root and channels node and matching the message text.
+
+I also need an auxiliary check that U_LUKAS holds workspace membership in Test Workspace, since that's an independent constraint requiring its own join path through users, user_teams, and teams filtered by user_id.
+
+Now I'm considering negative referents: since the root referent table is channel_members, I want plausible but incorrect rows a naive query might pick, like the channel_members entry for a different user such as U02JOHNDOE1.
+
+The negative_referents field should capture existing channel_members rows that could be mistakenly selected as the answer, even though they don't match the actual query. One candidate is John Doe's membership row in the engineering channel, since he posted a related message there and might get incorrectly pulled in.
+
+So the closest negative referent is John Doe's membership row, which I'll flag as {"channel_id":"C03IJKL9012","user_id":"U02JOHNDOE1"} before finalizing my answer.
+

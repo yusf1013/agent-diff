@@ -1,0 +1,20 @@
+I need to design an "absent" resolution task following the MESSAGE→USER→REACTION route, where no match exists. I'm working out a coherent scenario where a message links to its author, and that user's reaction is traced, but ultimately the chain fails to resolve.
+
+I'm thinking of a message authored by a user who supposedly reacted with a specific emoji to another message — but that exact emoji reaction never actually occurred, only a different one (like "eyes") exists instead, making the query plausible but unresolvable.
+
+Let me refine the route: from the target MESSAGE, trace to its author USER, then to a REACTION that user made elsewhere. So the qualifying condition is "author reacted with ✅ to Priya's fix confirmation." Scenario: update Łukasz's GPU-scheduling message in #core-infra, but only if he's the one who reacted with ✅ to Priya's CUDA fix confirmation — which the seed data shows is false, since his actual reaction was "eyes" on Kenji's message, not a checkmark on Priya's. This makes the update target legitimately absent.
+
+Other candidates like Kenji's reactions or messages don't fit the criteria either, since no one actually reacted with ✅ to Priya's CDN confirmation message. This means the prompt's premise for identifying who authored the GPU supercomputer message via that reaction condition doesn't resolve to Lukas correctly — I need to trace this more carefully against the seed data.
+
+This works better as a read-only, open-ended question whose answer is expected to be absent - since nobody actually reacted with a checkmark to that message, there's no such authored message to find. That fits the calibration style well: task_type read-only, mode absent, scoped to a message in core-infra authored by whoever reacted with that specific emoji on Priya's confirmation message.
+
+Now I'm working through candidate roles - Lukas Kowalski authored the GPU supercomputer message and the OOM message, but reacted with the wrong emoji to the wrong message, so he's a negative match rather than the target.
+
+The confirmation message is Priya's Tokyo CDN fix note in C_GROWTH, which should be the anchor for a checkmark reaction that never actually happened. So the intended path runs from that message to its author to a checkmark reaction, but since no such reaction exists in the seed data, this route stays absent - I should also consider adding another user who reacted to that confirmation as a plausible negative alternative.
+
+Since target_roles stay empty for absent cases, I need to note answer_attributes should list the fields a read query would touch, like message text and channel id, even though the actual answer is that no such message exists. I'm now drafting the task_spec to reference the single obligation, and thinking about which support roles apply to the confirmation message.
+
+I'll treat the confirmation message as a support role under entity messages since it's an intermediate fact node in the route rather than the target itself, and add a role for the erroneous eyes reaction under message_reactions. I'm weighing whether a channels role is needed for scope, but since the channel is already specified by name in the prompt, it may not be strictly necessary to include separately.
+
+Now I'm outlining the access plan: the solver would use conversations.list/history to locate the core-infra channel and messages, then reactions.get on Priya's Tokyo CDN confirmation to identify who reacted and with what emoji, cross-referencing that against the author of the GPU flag message. Time to assemble the final JSON with roles, obligations, and task_spec.
+

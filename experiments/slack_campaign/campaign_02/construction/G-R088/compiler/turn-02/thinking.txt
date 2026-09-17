@@ -1,0 +1,22 @@
+I realize the auxiliary shouldn't hold the channel filter separately—per rule 4, all conditions along the assigned route need to live in the same query as the main path, so I need to fold the product-growth channel filter into the focal query itself.
+
+The problem is that node0 (messages) only has channel_id, not channel_name, and the assigned path already branches from messages to message_reactions, so there's no room to also join channels directly off messages for the filter. I'm trying to figure out if the path order can be restructured, but the root table has to stay messages per the referent entity design, so that option seems blocked too.
+
+Extending to channels for name-based filtering might be fine, but the real error is that the focal path doesn't match the assigned route exactly since all selection conditions along the route, including the channel_id filter on messages for product-growth, need to live in the same focal query rather than an auxiliary one—so I need to move that filter onto node0 itself.
+
+Actually joins can be traversed in either direction, so maybe I don't need an extra node at all. Looking at the required route again — messages, message_reactions, users, channel_members — that's exactly four nodes with no channels node included, so the extra "channels" node I added earlier goes beyond the defined route and would only be justifiable as a filtering addition, not a core path element.
+
+The bigger problem is that the product-growth filter lives in a separate auxiliary query computing an independent constraint over messages, rather than staying bound to the same reactor/message tuple as the main path. Since the focal query must express every route condition within a single unified query, splitting the filter into an auxiliary aggregate likely breaks the "main identifying path" requirement, meaning I need to fold that constraint directly into the primary joined path instead.
+
+So the join syntax only allows sequential adjacency, no branching. That means to capture both channel conditions, the natural chain would run messages → message_reactions → users → channel_members → channels, using the reactor's membership to check the core-infra channel, since messages itself can't fork into two separate channel joins simultaneously.
+
+Since scope only permits root-field filters without joins, I could technically filter channel_id directly using the known product-growth channel's literal ID, but that leans on a hardcoded ID constant rather than a readable name-based condition, which the guidance discourages even though it's not truly "hidden."
+
+Actually, using the channel_id field itself as a scope filter is fine since it's a real FK field, not a proxy for the answer—scope filters can't do joins, so translating the named channel to its actual ID is the only way to restrict the container, and that's the standard, legitimate usage pattern here.
+
+I'll finalize the fix by moving the product-growth restriction into scope as a root-level filter on channel_id, and keep the focal path strictly on the assigned route through messages, reactions, users, and channel_members, dropping the auxiliary path entirely.
+
+Now I'm checking which messages actually satisfy scope: C_GROWTH contains many prior seed messages too, so I need to verify the focal filter narrows things down—only the target message has the rotating_light reaction in core-infra, since the other growth-channel messages don't have that reaction at all.
+
+I confirm the previous evaluation's focal negatives (the Tokyo launch thread messages) were correctly excluded since none carry rotating_light reactions, so I'll finalize with scope on channel_id and drop the auxiliary condition.
+

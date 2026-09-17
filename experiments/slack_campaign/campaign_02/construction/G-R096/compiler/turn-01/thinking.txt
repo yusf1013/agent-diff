@@ -1,0 +1,36 @@
+Checking the base seed data, the message and reaction row already exist, and the actor is already a member of that channel per the channel_members list.
+
+No seed edits are needed since all referenced entities already exist. Now I need to build the selector for the single reaction-removal obligation, tracing the join path from message_reactions through messages, channels, teams, user_teams, and users to locate the acting user's membership.
+
+For filters, I need the users node to match Łukasz Kowalski by real_name, the channel node to match 'engineering', a reaction_type filter for 'eyes', and message_reactions.user_id matching the actor bot. But I'm realizing the binding note requires more than just workspace membership — the joined user must actually be the author of the specific reacted message, so I need to connect the message's authorship back to Łukasz rather than just his general team membership.
+
+Since the route mandates traversing workspace membership to reach the user, I need the FK chain from user_teams to users, filtered so that user matches the message's author. But the path doesn't let me directly compare two nodes, so I'd need to add a join from messages to users for the author, then continue through user_teams to workspace - though that risks creating a redundant hop back to the same user node.
+
+I'm settling on the path from message through conversation to workspace to workspace membership to user, checking the final user's real_name matches Łukasz Kowalski. Since this path can't directly tie messages.user_id to that same identity, I'll add an auxiliary check confirming the message's author also has that name.
+
+I think it's acceptable to accomplish this via the join path through channels, teams, and user_teams to reach users, rather than joining messages.user_id directly to users. I'm defining the path and joins connecting message_reactions to messages, channels, teams, and user_teams, filtering on the appropriate node to confirm the author's workspace membership matches the real_name Łukasz.
+
+I realize the selector syntax can't directly enforce node-to-node equality, so I need to restructure the join path so that the author join happens right after messages, then continues through user_teams and teams to channels, ensuring the same user node ties everything together correctly.
+
+But this diverges from the original message's channel, breaking the requirement that channels must be the exact channel from messages.channel_id, not just any channel shared by the team. Given this complexity, I think it's better to revert to the original path ordering: message_reactions → messages → channels → teams → user_teams → users, which preserves the correct same-record joins.
+
+Alternatively, I could just add a filter directly on messages.user_id using the raw foreign key value, which is legitimate since it's a real join field rather than a hidden constant. But since real_name is already used as the identifying predicate on the users node, adding a redundant user_id filter on messages might violate the preference for name-based predicates over ID-based ones, even though this particular ID isn't actually hidden or synthetic.
+
+Instead of matching by a hidden message ID, I want to build the auxiliary query around real foreign keys — filtering messages by their channel_id and joining to users — so identity is established through genuine relational fields rather than any constructed identifier.
+
+I could tie the auxiliary constraint to matching text content and author name, making it independently verify the same message the focal query targets, though this content-based link is a bit of a weak connection since both queries key off identical text.
+
+For the focal query itself, I'm settling on message_reactions as the root table, and considering scoping it by the actor's own user_id since the request explicitly refers to "the reaction I left" — this makes scoping to the actor's identity a legitimate, request-driven restriction rather than an overreach.
+
+I'm mapping out the join path from message_reactions through messages, channels, and teams to reach the users who share that team, verifying the foreign key chain lines up correctly node by node.
+
+Now I'm setting the filters: messages must mention 'circuit-tracer' and possibly 'PyTorch', channels must be named 'engineering', and the user's real name must match 'Łukasz Kowalski', with the actor and emoji reaction already handled by scope.
+
+For the auxiliary check, I'm confirming this via an independent path joining messages to users, filtering for the message text, the specific engineering channel ID, and the author's real name -- verifying that Łukasz authored this circuit-tracer message in the engineering channel.
+
+Now I'm binding the role labels to their native handles: workspace, author, engineering channel, and target message identifiers.
+
+For target_reaction, actor, and the two negative reply messages from Kenji and Robert plus the DM negative message, I'm working out negative referents. Since reactions are the main referent entity and there's only one reaction row recorded in the table, none of the other candidate messages have associated reaction rows to serve as plausible negative selections, so I need to think about how to satisfy the requirement of including at least one negative root despite this.
+
+Since there's no reaction attached to negative messages, I'll leave negative_referents empty and note the reasoning. I confirm no seed edits are needed since the base_seed already covers channel membership and DM access for the actor. Now I'm building the selectors array, which should have one entry per obligation since there's only one obligation here.
+

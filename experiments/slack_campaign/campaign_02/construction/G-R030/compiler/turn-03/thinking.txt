@@ -1,0 +1,18 @@
+The matches look right now, but the route doesn't line up - it expects CONVERSATION_MEMBERSHIP through CONVERSATION, WORKSPACE, and WORKSPACE_MEMBERSHIP, while my path goes channel_members to users to user_teams, missing those nodes entirely. I need to rework it to follow channel_members -> channels -> teams -> user instead.
+
+The real issue is that "real_name" filtering doesn't apply to user_teams directly, since that attribute lives on users. But the route terminates at WORKSPACE_MEMBERSHIP, so I probably need to filter using the already-resolved user IDs for Robert (robert_walsh_person and robert_chen_person) via an IN filter on user_teams.user_id rather than a name-based join, since the actual name resolution already happened earlier in the access plan.
+
+However, joining channels->teams->user_teams via team_id alone would pull in every user_teams row for that team, losing any tuple-level link back to the specific channel_members.user_id -- reproducing the same identity bug I hit before.
+
+Instead, the fix is simpler: I should just filter node 0 directly, adding "channel_members.user_id in [...]" as its own predicate at the root table, since the route doesn't need to relate back through the joins for that constraint at all.
+
+Actually the cleaner approach is filtering node0 (channel_members.user_id) directly to the two Robert IDs, letting the join chain to teams/user_teams just confirm workspace membership exists rather than needing an extra filter there — that avoids the cross-product problem entirely since the user is already pinned at the base node.
+
+Since the workspace filter binds only on team_id existing somewhere in user_teams, and every channel already belongs to T01WORKSPACE, the constraint becomes trivially true via existential satisfaction—so effectively this reduces to just filtering channel_members.user_id by the Robert IDs. I need to check whether that still counts as respecting the intended join route.
+
+The route's node list omits USER entirely, so I can't filter by real_name there; identifying Robert must rely on the pre-resolved user IDs bound directly on user_teams.user_id, consistent with using the assigned route without a name-based join.
+
+I'm drafting the final selector rooted at channel_members, joining through channels, teams, and user_teams, with filters restricting user_id to the known Robert IDs and team_id to the target workspace, so matches surface only channel_members rows tied to that team through the valid path.
+
+This should yield the same 8 expected records as before, just resolved through the correct join path, fixing the "identifying path differs from assigned route" mismatch.
+

@@ -1,0 +1,20 @@
+Checking the query design here: the DM target is a bot member of the archived #old-project-q3 channel, but no membership rows exist for that channel, so an absent resolution is the expected outcome. I'm now verifying negative cases, like beta_bot being a member of a different archived channel instead.
+
+The task obligation lists messages.message_text and channel_id as change attributes even though the outcome is absent — that seems odd since no DM should actually be sent when there's no qualifying bot member. I'm reasoning that these attributes probably reflect what would have been written had the resolution not been absent, and the agent's correct behavior is to recognize the absence and report it rather than send any message.
+
+Checking the access_plan next: it uses conversations.list to find the archived channel by name, then conversations.members to enumerate membership, cross-referencing users.info for is_bot — this seems like a realistic path that would legitimately return no rows given empty membership.
+
+Now I'm noticing wrong_channel_archive with id C_BETA_ARCHIVE doesn't actually appear in the base_seed channel list, and beta_bot U_BETABOT isn't in the base_seed users list either — these seem to be referencing entities that were never defined in the seed data.
+
+I want to verify the human_poster_old_project role: it claims U02JOHNDOE1 authored a message in channel C_OLD_PROJECT despite having no channel_members row there, but I don't see that message actually appearing in the base_seed messages list — I need to check the messages list for that channel_id specifically.
+
+Now cross-checking agent_bot_elsewhere: U01AGENBOT9's channel memberships already match the ten channels the role describes (general, random, engineering, growth, project-alpha-dev, project-alpha, core-infra, model-research, frontend, dm-agent-sophie), so that fact holds up.
+
+I also confirm C_OLD_PROJECT already exists in the seed with the archived state and topic matching. The route USER → CONVERSATION_MEMBERSHIP → CONVERSATION also lines up correctly with the domain model, so this task spec's phrasing about the bot being a member of the archived channel checks out.
+
+Since no such bot-membership actually exists, this correctly resolves to an absent case—selection "one" is appropriate given the singular phrasing, and since sending a DM is state-changing, execution should halt rather than proceed. The written and change attributes just reference message_text and channel_id as identifying columns, which seems right, though I notice the access plan doesn't explicitly account for creating a DM channel via conversations.open before posting.
+
+The exposure qualification language checks out fine, referencing exposed message, user, channel, reaction, and membership facts. As for calibration being set to false despite the absent resolution mode, I'll treat that as a fixed parameter of this task assignment rather than something to flag as inconsistent.
+
+Overall the design looks solid: negatives cover a good spread of confusion cases (different archived channel, bot with unrelated memberships, human poster lacking membership), the singular DM phrasing matches the selection field, and there's no hidden ID leak since the actor must discover the channel by name. I don't find any actual defect here — this passes validity with strong quality.
+

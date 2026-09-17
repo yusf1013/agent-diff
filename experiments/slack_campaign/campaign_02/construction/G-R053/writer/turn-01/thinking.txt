@@ -1,0 +1,34 @@
+I'm mapping out the join path from conversation membership through the user, to messages authored by that user, tied to a conversation within a workspace, treating conversation membership as the entity being resolved.
+
+I realize there's ambiguity since two different Roberts exist in the seed data — Robert Walsh and Robert Chen — each belonging to different channels, so the identifying route needs to disambiguate which one's membership is the target based on which channel they posted in.
+
+I'm designing the task as a channel removal request: "Robert posted about needing multi-GPU support for the 70B model interpretability work — can you remove him from that channel?" This maps to a state-changing kick operation targeting the specific membership record, so now I need to verify Robert Chen is actually listed as a member of C03IJKL9012 where that message was posted.
+
+He's not currently in the member list, which is inconsistent since he authored a message there — I should add that membership as a coherent seed fix. This also creates a useful ambiguity since there are two Roberts: Robert Walsh, who's an admin member of that same channel, and Robert Chen, who posted the multi-GPU message but belongs to different channels otherwise, so the request needs to disambiguate based on who actually posted about the specific topic.
+
+Checking the two candidates more carefully: Robert Walsh's message about MCP deployment doesn't touch GPU topics, while Robert Chen's clearly discusses multi-GPU support. That means the specific phrasing only matches one person exactly, so I need a vaguer topic reference that could plausibly apply to both Roberts to create genuine ambiguity.
+
+Since there's only one workspace here, I can't disambiguate by workspace membership alone - both Roberts sit inside the same team, so I should instead scope by a bounded set of engineering-related channels to narrow down which message and person actually fits.
+
+I'm noticing two distinct Roberts each posting "blocked" style questions in different channels: Robert Walsh asking about MCP deployment status in one channel, and Robert Chen asking about multi-GPU support blockage in another. This gives me two plausible candidate paths to disambiguate between based on message content and channel context.
+
+I want to make this genuinely ambiguous rather than lopsided—Chen's message literally uses the word "blocked," while Walsh's is just a timing question, so they're not perfectly symmetric. I think using the shared first name "Robert" as the loose identifier, combined with a generic "blocked on an engineering dependency" theme, is a better way to construct two plausible referents.
+
+So I'll add a coherent new record: Robert Walsh posting in the engineering channel about being blocked on GPU cluster capacity, which gives both Roberts a genuine "blocked" reference and creates real two-way ambiguity.
+
+I'm checking whether Robert Chen's existing message in C_INFRA about the cloud budget overage actually counts as being "blocked" — it's really about cost, not a blocker, so it doesn't create real ambiguity with Robert Walsh's GPU capacity issue.
+
+To create genuine ambiguity, I'm planning to add a new message from Robert Walsh in the general channel about being blocked on GPU access for a retraining job, so two different Roberts each have a plausible "blocked on GPU" post in different channels.
+
+This gives two distinct referent candidates — Robert Walsh's membership in the general channel versus Robert Chen's membership in the engineering channel — both matching "Robert" plus "blocked on GPU" without the prompt flagging any ambiguity itself. I still need to check other users' GPU-related messages to make sure they don't accidentally muddy the negative space.
+
+I'm framing this as a state-changing conversations.kick operation against channel_members, with the mode underspecified and target_roles being the union of Robert Walsh's and Robert Chen's respective channel memberships.
+
+I don't think I need a separate obligation for the message lookup itself, since it's just supporting evidence rather than an independent target—one obligation for the membership removal should suffice. Now I'm defining the two candidate user roles: Robert Walsh (U03ROBERT23) as a channel member of C01ABCD1234, and Robert Chen as a member of the other channel, representing the ambiguity between them.
+
+I also want their associated messages and memberships as candidate referents, plus negative roles to test disambiguation—like Priya's unrelated GPU message, Robert Chen's off-topic cloud budget message, Robert Walsh's MCP deployment message, and Robert Chen's membership in a different, wrong channel—so the model has to correctly filter on both person and topic.
+
+I should include workspace-level support since the route references T01WORKSPACE as a single-workspace entity team role. Now I need to draft the final JSON: since this is a state-changing removal of channel membership with two equally plausible candidates and no delegated resolution, I'm treating it as an ambiguous case requiring clarification rather than silently picking one, though I need to settle on how the selection field should represent that.
+
+For the change, since a kick removes the channel_members record entirely rather than modifying attributes, I'll represent the change as an empty attribute set to denote removal. I'm drafting the task description around Robert following up on a resolved GPU capacity block, referencing his own message in the channel as the identifying detail for which membership to remove.
+

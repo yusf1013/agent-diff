@@ -1,0 +1,153 @@
+```json
+{
+  "seed_edits": [
+    {
+      "table": "messages",
+      "op": "insert",
+      "values": {
+        "message_id": "1706200000.000001",
+        "channel_id": "C_INFRA",
+        "user_id": "U_ROBERT",
+        "message_text": "We're moving the primary database to Postgres 16 this weekend — expect brief downtime, please pause any long-running migration jobs.",
+        "type": "message",
+        "ts": "1706200000.000001"
+      },
+      "reason": "Anchor migration announcement message required by the design's migration_message role and as the reaction target."
+    },
+    {
+      "table": "messages",
+      "op": "insert",
+      "values": {
+        "message_id": "1706200100.000001",
+        "channel_id": "C02EFGH5678",
+        "user_id": "U_MATEO",
+        "message_text": "Lunch order confirmed for noon - burrito bowls all around, thanks for the headcount everyone!",
+        "type": "message",
+        "ts": "1706200100.000001"
+      },
+      "reason": "Off-topic lunch message required to host the wrong-message negative reaction (negative_reaction_wrong_message)."
+    },
+    {
+      "table": "message_reactions",
+      "op": "insert",
+      "values": {
+        "message_id": "1706200000.000001",
+        "user_id": "U_LUKAS",
+        "reaction_type": "thumbsup"
+      },
+      "reason": "Target reaction: U_LUKAS (member of #project-alpha-dev) reacts to the migration announcement."
+    },
+    {
+      "table": "message_reactions",
+      "op": "insert",
+      "values": {
+        "message_id": "1706200000.000001",
+        "user_id": "U_SOPHIE",
+        "reaction_type": "eyes"
+      },
+      "reason": "Negative: correct message, reactor not a member of #project-alpha-dev."
+    },
+    {
+      "table": "message_reactions",
+      "op": "insert",
+      "values": {
+        "message_id": "1706200000.000001",
+        "user_id": "U_OLENA",
+        "reaction_type": "tada"
+      },
+      "reason": "Negative: correct message, reactor not a member of #project-alpha-dev."
+    },
+    {
+      "table": "message_reactions",
+      "op": "insert",
+      "values": {
+        "message_id": "1706200100.000001",
+        "user_id": "U_KENJI",
+        "reaction_type": "thumbsup"
+      },
+      "reason": "Negative: reactor is a #project-alpha-dev member but reacted to the wrong (lunch) message."
+    },
+    {
+      "table": "channel_members",
+      "op": "insert",
+      "values": {
+        "channel_id": "C02EFGH5678",
+        "user_id": "U_MATEO"
+      },
+      "reason": "Author of the lunch message needs membership in #random for coherent record."
+    },
+    {
+      "table": "channel_members",
+      "op": "insert",
+      "values": {
+        "channel_id": "C02EFGH5678",
+        "user_id": "U_KENJI"
+      },
+      "reason": "U_KENJI needs membership in #random to plausibly react to the lunch message there."
+    }
+  ],
+  "bindings": {
+    "target_reaction": [
+      {"message_id": "1706200000.000001", "user_id": "U_LUKAS", "reaction_type": "thumbsup"}
+    ],
+    "negative_reaction_nonmember_eyes": [
+      {"message_id": "1706200000.000001", "user_id": "U_SOPHIE", "reaction_type": "eyes"}
+    ],
+    "negative_reaction_nonmember_tada": [
+      {"message_id": "1706200000.000001", "user_id": "U_OLENA", "reaction_type": "tada"}
+    ],
+    "negative_reaction_wrong_message": [
+      {"message_id": "1706200100.000001", "user_id": "U_KENJI", "reaction_type": "thumbsup"}
+    ],
+    "migration_message": ["1706200000.000001"],
+    "lunch_message": ["1706200100.000001"],
+    "reactor_user": ["U_LUKAS"],
+    "nonmember_user_sophie": ["U_SOPHIE"],
+    "nonmember_user_olena": ["U_OLENA"],
+    "scope_channel": ["C06ALPHADEV"],
+    "announcement_channel": ["C_INFRA"]
+  },
+  "selectors": [
+    {
+      "root_table": "message_reactions",
+      "scope": [],
+      "focal": {
+        "path": ["message_reactions", "users", "channel_members", "channels"],
+        "joins": ["message_reactions.user_id", "channel_members.user_id", "channel_members.channel_id"],
+        "filters": [
+          {"node": 3, "field": "channel_name", "op": "eq", "value": "project-alpha-dev"}
+        ]
+      },
+      "auxiliary": [
+        {
+          "path": ["message_reactions", "messages", "channels"],
+          "joins": ["message_reactions.message_id", "messages.channel_id"],
+          "filters": [
+            {"node": 1, "field": "message_text", "op": "contains_ci", "value": "Postgres 16"},
+            {"node": 2, "field": "channel_name", "op": "eq", "value": "core-infra"}
+          ]
+        }
+      ]
+    },
+    {
+      "root_table": "messages",
+      "scope": [],
+      "focal": {
+        "path": ["messages", "channels"],
+        "joins": ["messages.channel_id"],
+        "filters": [
+          {"node": 0, "field": "message_text", "op": "contains_ci", "value": "Postgres 16"},
+          {"node": 1, "field": "channel_name", "op": "eq", "value": "core-infra"}
+        ]
+      },
+      "auxiliary": []
+    }
+  ],
+  "negative_referents": [
+    {"message_id": "1706200000.000001", "user_id": "U_SOPHIE", "reaction_type": "eyes"},
+    {"message_id": "1706200000.000001", "user_id": "U_OLENA", "reaction_type": "tada"},
+    {"message_id": "1706200100.000001", "user_id": "U_KENJI", "reaction_type": "thumbsup"}
+  ],
+  "notes": "The target_reaction obligation is bound via a two-part query over the same message_reactions rows: focal enforces the reactor's membership in #project-alpha-dev, and auxiliary independently enforces that the reacted-to message is the Postgres 16 migration announcement in #core-infra. Both constraints apply to the same root row (same reaction record), preserving the design's same-record binding requirement without needing a branching join path. The thank_you_reply obligation's selector identifies the migration announcement message (the thread parent) by channel name and content, since the write action itself (thread_ts + chat.postMessage) is performed by the agent using the reactor's real name (Łukasz Kowalski) discovered via the target_reaction/reactor_user bindings. Actor (U01AGENBOT9) already holds memberships in #core-infra, #project-alpha-dev, and #random per the base seed, satisfying discovery requirements without additional edits. Added channel_members rows for U_MATEO and U_KENJI in #random ensure coherent record provenance for the new lunch message and its reaction, though not strictly required by the API contract."
+}
+```

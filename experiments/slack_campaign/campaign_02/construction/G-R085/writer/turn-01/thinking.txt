@@ -1,0 +1,34 @@
+I'm designing R085 which chains MESSAGE to REACTION to USER to WORKSPACE_MEMBERSHIP to WORKSPACE, selecting a message via a reaction from a user tied to a workspace membership. Since there's only one team in this seed, workspace scoping is trivial here, so I need to think through how that plays out for the query.
+
+Since there's just the single Test Workspace, I'll use membership role (admin) as the differentiator instead. Checking admins Robert Walsh and Morgan Freeman against the actual message_reactions data - only one reaction exists in the seed, from U01AGENBOT9 with "eyes" - which doesn't match either admin, giving me the "absent" resolution I need.
+
+I'm now planning negative records: Robert Walsh reacting with a different emoji (raised_hands) to create a wrong-emoji negative, plus other combinations to distinguish the specific query from adjacent ones.
+
+I should also add Morgan Freeman as an admin with zero reactions, and a non-admin member reacting with thumbsup, to cover both role-mismatch and missing-relationship negatives cleanly. Since only one workspace exists in this seed, I'm considering whether calling it "Test Workspace" is too trivial without a second team to disambiguate against.
+
+I think adding a second team, like "Product Beta," with a couple of memberships would give the workspace identification real meaning by letting me contrast admin roles across two distinct workspaces rather than assuming a single implicit one.
+
+The route chain is messages to reaction to user to workspace_membership to workspace, so the workspace name and admin role need to bind on the same membership record. To make it non-trivial, I'll give a user like Robert admin status in a new "Beta Workspace" while keeping his role different in the Test Workspace, creating a useful negative case.
+
+Actually, a cleaner negative: pick U08NICK23, who's only a member in Test Workspace, but grant him admin in Beta Workspace instead. He reacts with thumbsup, so the emoji matches but his admin role lives in the wrong workspace -- a solid "split across joined records" negative case.
+
+I also want to preserve the true absence condition (no valid admin-in-Test-Workspace thumbsup reactor exists), and start building out new message/reaction records: keeping the existing eyes reaction from U01AGENBOT9 as-is, then adding a new message with a raised_hands reaction from U03ROBERT23 (who is correctly admin in Test Workspace) as a wrong-emoji negative case.
+
+Then I add a wrong-role negative — a thumbsup reaction from U02JOHNDOE1, who is only a member in Test Workspace — and a wrong-workspace-binding negative from U08NICK23, who's admin in Beta but only a member in Test Workspace. Finally I confirm Morgan Freeman, who genuinely holds admin in Test Workspace, has no reactions at all, reinforcing the missing-relationship negative, which sets up the final prompt asking which messages have a thumbsup from a Test Workspace admin.
+
+Since we expect zero matching records, this is an absent-mode task: read-only, checking a plausible "which messages" query with no valid results. I'm defining the main obligation on the messages table with mode absent and empty target_roles, then working out the supporting facts and role bindings needed — messages, the workspace record, the admin users, and the reacting users — to represent all these entities for the negative scenario.
+
+I'm listing out the negative cases: Robert reacting with the wrong emoji, Morgan having no reactions at all, John being a member rather than admin, and Nick being cross-workspace bound as admin in Beta but only a member in Test. Each of these needs a corresponding message and reaction record so the fact set reflects why no valid match exists.
+
+I should also add explicit reaction entities for each negative case—reaction_robert_raised_hands, reaction_john_thumbsup, reaction_nick_thumbsup—and consider whether user_teams entries are needed to establish the admin/member role bindings per workspace.
+
+Since user_teams is itself a supported table, I can use it to represent membership records directly: Robert's admin membership in Test Workspace, Morgan's admin membership, Nick's admin membership in Beta, and Nick's member membership in Test. I'm starting to lay out these as distinct role entries, beginning with the target workspace entity for Test Workspace, then Robert's admin membership record needed to support the admin condition.
+
+Continuing with more negative reaction examples: John's thumbsup with wrong role, Nick's thumbsup bound to the wrong workspace, and the three messages M1-M3 excluded for their respective reasons. I should also account for the existing seeded reaction—the agent bot's 👀 reaction—as another fact to consider.
+
+Now I'm defining the main obligation for the messages target: mode absent, read-only task type, scope covering messages reacted with 👍 by an admin-role member of Test Workspace, with empty target roles since it's absent. For answer attributes, I just need field names like message text and channel id, plus a one-line task spec and access plan describing discovery via conversation history.
+
+I'm working through whether workspace admin role is even discoverable -- the model may only expose named roles via a separate table, not the underlying team membership role field, so I need to check if users.info actually surfaces that role information or if there's no direct API for it.
+
+My plan is to use conversations.list/history to pull messages and reactions, run reactions.get for details, then check each reacting user's workspace role via users.info before assembling the final JSON output.
+

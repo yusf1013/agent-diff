@@ -1,0 +1,18 @@
+I need to add three new reactions to the seed data - one from Łukasz on the infra message, one from Robert Walsh on the login message, and one from Priya on the context message. I'm checking the existing message_reactions to see what's already there before inserting, and I see there's just a single eyes reaction currently in place.
+
+Verifying that all the referenced messages, channel memberships, users, and channels already exist in the base seed - engineering and infra channels are there, both Robert users have their memberships confirmed. Now I'm trying to figure out who the actor is for this scenario, since it isn't explicitly stated, but since this is an underspecified case with two candidate "Robert" answers, the actor likely needs access to both channels to disambiguate.
+
+Confirming U01AGENBOT9 is a member of both C03IJKL9012 and C_INFRA already, so no seed edits are needed for access. I'm now tracing all channels containing a "Robert" - Robert Walsh appears in a few, Robert Chen appears in several others - but narrowing down to just the two channels that actually contain out-of-memory report messages: engineering and core-infra, which matches the intended ambiguity in the task.
+
+Since the obligation calls for a single selector covering both eligible reaction targets (reaction_eng and reaction_infra) under "selection":"one", I need to design that selector to return the union of both valid answers rather than picking just one, and I'm starting to construct it against the message_reactions table.
+
+The path should trace from reactions through messages, channels, and channel_members to users, filtering on message text containing 'OOM' (case-insensitive) and the member's real_name matching 'Robert'. This should correctly surface both candidates -- Robert Walsh's engineering-channel OOM message and Robert Chen's core-infra one -- though I need to double check whether the filter over-matches or under-matches given the two different Roberts.
+
+Filtering users by real_name containing "Robert" correctly matches Robert Walsh and Robert Chen for both target channels. The join path naturally enforces that channel membership ties to the message's channel through the proper foreign key chain.
+
+Now I'm building the selector with the node path from message_reactions through messages, channels, channel_members, to users, joining on message_id and channel/user matches, with filters for "OOM" in message text and "Robert" in real_name. This union correctly captures reaction_eng and reaction_infra rows, and I'm identifying reaction_login_negative and reaction_context_negative as negative referents, using the composite primary key of message_id, user_id, and reaction_type for the reaction entity's native handles.
+
+I'm now mapping out the concrete bindings for each role label to its native handle values—matching messages, channels, and channel memberships to specific IDs, and noting which reactions and memberships already exist versus which need new inserts to properly seed both the positive and negative referent sets.
+
+Now I need to write the seed edits themselves: three message_reactions row insertions, adding explicit deterministic created_at timestamps since time matters here rather than relying on defaults. With only a single obligation needing a matching selector, I finalize the array with just that one entry and prepare the output.
+

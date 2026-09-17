@@ -1,0 +1,28 @@
+I'm tracing the join path from REACTION through USER and CONVERSATION_MEMBERSHIP to CONVERSATION and MESSAGE, confirming the query needs reactions from channel members regardless of which specific message they reacted to, matching the binding note. Now I'm checking the identifying message to see which one reports the circuit issue.
+
+Verifying channel members for that channel against the base seed data, then checking the message_reactions table—only one entry actually exists there, matching my match_reaction_witness case, while the other candidate reactions (thumbsup, raised_hands, muscle) aren't present in that table at all, which rules them out as valid matches.
+
+That checks out - the reacting user doesn't need to match the message author, so this is fine per the binding note. Now I'm verifying U_KENJI's channel memberships against the base seed to confirm they're in core-infra, model-research, project-alpha-dev, and growth channels but excluded from engineering.
+
+I'm also confirming U08NICK23's sole membership is growth, and checking U_LUKAS's memberships against engineering channel to establish they authored the identifying message despite not being a member there.
+
+This is odd but seems intentional given the domain notes distinguish membership from posting rights — testing whether authorship is mistakenly conflated with membership rather than reflecting an actual data error.
+
+Now I'm tracing the intended route: REACTION joins to USER as the reactor, then follows through CONVERSATION_MEMBERSHIP to CONVERSATION and MESSAGE.
+
+This confirms the route: reactor's membership links to the conversation containing the identifying message, so the channel is properly scoped. The answer attributes pull reaction_type, message_id, and user_id from message_reactions, though I should check whether including user_id goes beyond what the prompt actually asked for.
+
+Since the primary key for a reaction is message_id, user_id, and reaction_type together, including all three fields is actually necessary to distinguish unique rows when multiple users react with the same emoji on the same message. So this isn't over-inclusion but a legitimate requirement for correctness.
+
+The resolution_mode being "multiple" checks out with three matching rows, and the task framing—asking which emojis were added and to which messages—matches the query's approach well. One remaining concern is feasibility: since reactions.get requires a specific channel and timestamp per message, gathering all reactions from channel members would require iterating over every message rather than a single API call, which affects how realistic the access plan actually is.
+
+Since reactions.get requires knowing the specific channel and timestamp, the solver would need to enumerate all channels via conversations.list, then pull history for each and check reactions per message—laborious but technically doable with enough API calls, not a fundamentally unsupported capability, just an expensive brute-force retrieval.
+
+Given base_seed only contains one reaction row, the compiler will need to add match/negative rows, which is explicitly allowed. I'm now verifying that the negative reactor examples reference messages that actually exist in base_seed—checking Robert's crash-report message, Morgan's slow-login message, and the #growth and #general messages tied to specific reactions, to confirm each has a corresponding real message before proceeding.
+
+I think the design passes with adequate quality overall, though a few minor points are worth flagging: the user_id attribute isn't explicitly requested but seems justified for uniquely distinguishing rows, and the broad "regardless of which message" scope for reactions implies a workspace-wide search that the access plan doesn't fully spell out but seems plausible. I'm also double-checking whether the MESSAGE route node is meant only to identify the channel.
+
+The reacted-to message and the identifying message are conceptually different uses of MESSAGE, but the route lists it once. The identifying message anchors the channel through the reverse CONVERSATION-contains-MESSAGE relationship, while the reacted-to message_id is actually available directly from the REACTION record itself, so no extra path through the route is needed for that.
+
+This design correctly separates authorship from conversation membership, testing exactly that distinction with a negative_author_not_member case. I'd rate this as strong given the thorough negative coverage using real seed data, and now I want to double-check whether there are other distinctions worth verifying.
+

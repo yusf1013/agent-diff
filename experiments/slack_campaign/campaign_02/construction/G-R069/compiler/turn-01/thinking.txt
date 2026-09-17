@@ -1,0 +1,80 @@
+This is tricky since there are two Roberts to disambiguate. I need to check the seed data for channel memberships—Robert Walsh belongs to the general, random, and engineering channels, and I need to look up which channels Robert Chen belongs to as well.
+
+Now I'm scanning through the engineering channel messages to find the login incident thread and the circuit-tracer OOM debugging thread, checking which user posted each reply. I notice Robert Chen (U_ROBERT) posts a reply in the engineering channel even though he's not listed among that channel's members, which suggests message existence doesn't strictly require recorded membership.
+
+I'm compiling the set of engineering incident messages: the four login-related messages (500 errors, SSO invalid_grant, rate limiting, slow endpoint) plus the circuit-tracer OOM thread, while excluding tangential messages like the AWS p5 instance request and unrelated chatter since those aren't actual incidents.
+
+I also need to weigh a couple of borderline cases — the login form UX note about empty password validation isn't really an outage, and the future captcha reminder is more of a planned improvement than an incident report, so I'm leaning toward excluding both since they don't match the specific incident types called out in the design.
+
+Now I'm shifting to the core-infra channel to find Robert Chen's messages: the GPU OOM/memory pressure cluster-b thread, the CUDA batch-size root cause discussion that seems to be part of that same thread, and the $47K budget overrun thread. I'm going through timestamps to pin down the exact message IDs for the memory pressure thread.
+
+That's 13 messages for the memory pressure/OOM thread, and another 13 for the budget overrun thread, totaling 26 messages for messages_infra_incident, which feels large but matches what's in the seed.
+
+I'll include the full threads since they're all discussing the incident, and now I need to work out role bindings from role_label to native handles. For negatives, I'm identifying candidates: an unrelated random message about the espresso machine from the pizza/coffee channel, a growth channel message from Nick, and a DM about the circuit-tracer PyTorch rewrite. I'm also verifying Robert Chen's workspace membership row exists in user_teams to confirm the design matches.
+
+I'm double-checking channel membership for both Roberts across all relevant channels—everything lines up, so no edits are needed there. For the unrelated negatives, I'm confirming the growth channel message works since neither Robert is a member of that channel, and now I'm checking who else could post in C02EFGH5678 for the unrelated random message.
+
+Robert Walsh is a member of C02EFGH5678, and even though Lukas posted there without being a current member per the channel list, that's fine as a seed inconsistency—the message existing in that channel is enough to satisfy the negative fact requirement.
+
+For the pizza/coffee ordering scenario, I'll settle on message 1706052160.000000 "3 larges it is!" from U_MATEO, which fits well since it references both pizza and coffee.
+
+Now checking dm_no_robert_message: D01AGENTSOPHIE has members U01AGENBOT9 and U_SOPHIE, neither of whom is Robert, and there's a message there about a circuit-tracer PyTorch rewrite that fits.
+
+I don't think any seed edits are needed since existing records already cover both candidate role sets, including the CUDA batch-size investigation tied to the memory pressure thread. For the user_teams membership obligation, existing rows already satisfy both alternatives, so now I need to build the selectors — for obligation 1 (infra_incident_messages_by_robert_channel), since it's underspecified, the selector should compute the union of eligible alternatives rather than pick one, per the disambiguation rules.
+
+The tricky part is that this union needs to span both candidate Roberts' message sets, filtered to channels where each is a member and messages match infra-incident content. A single query along the route would need to filter by users whose real_name contains 'Robert' and messages matching infra-incident keywords, but the design's actual matching messages span several different topics (login errors, memory, budget, OOM), so a single contains filter won't capture them all — I'd need multiple OR'd conditions instead of the AND-only conjunction that filters normally support.
+
+Maybe the practical solution is to drop the content filter and just scope the selector to messages in channels tied to conversation membership involving users named Robert, leaving the actual relevance matching to human review rather than enforcing it through the filter itself.
+
+Given the underspecified resolution mode with a "set" selection, I'm now thinking the obligation really wants the union of both candidate role sets combined into one full answer set, so the selector needs to compute all messages spanning that flattened alternative space.
+
+Since the filter syntax only supports AND conjunction, not OR, I don't think I can express a single query that matches all the infra-incident topics at once, so instead I'll write the selector using the real-field predicate on real_name containing 'Robert', deferring content-based topic filtering to the answer attributes evaluation.
+
+Given that, I'll skip trying to cram multiple substrings into one filter and instead rely on explicit message-handle bindings tied to role labels, letting selectors reflect channel scope rather than tight content narrowing, flagging that tradeoff in notes. Practically, I'll keep one selector per obligation rather than per role.
+
+For the "set" selection obligation, the solver needs the full qualifying set, so with underspecified alternatives the correct output is the union of eligible matches — messages tied to either Robert's channels or infra-related content. Given tool constraints, I'll write a query filtering by real_name containing 'Robert' (covering both people via one substring), routed through messages→channels→channel_members→users, deferring content filtering to reviewer notes and scoping to active, non-archived channels.
+
+Since no single term can capture the range of infra issues like login failures, memory pressure, or OOM, AND-only filters can't approximate content matching precisely. Given the design's emphasis on enumerating matches per role and instantiating bindings for each intended alternative, I'm concluding selectors should mainly enforce the route/scope constraint (channel membership plus user real_name), while the precise per-role matches are carried by bindings — likely the actual deliverable used for grading alongside the answer attributes.
+
+I'm drafting a selector for obligation1: root table messages, joining through channels, channel_members, and users, with a filter on the users node checking real_name contains 'Robert'. I'm double-checking that this path's joins correctly connect adjacent tables in sequence (messages→channels→channel_members→users), but I realize this filter would return every message in any channel where a user named Robert happens to be a member — far too broad, since content matching for the actual obligation still needs separate verification.
+
+This scope is too broad since it captures all channel messages regardless of infra-incident content, and since OR logic isn't supported I can't easily narrow the focal query further with message-text filters. I'm now considering whether auxiliary queries could help, but the guidance suggests auxiliary should only encode truly independent constraints, not narrow the scope of the focal query itself.
+
+Given selector syntax limits, my best approach is to leave scope empty, filter the focal query by real_name, and explicitly note the limitation that content-based filtering must be manually validated since keyword variants can't be combined without OR support — I'll still supply precise match bindings for both alternative sets. Moving to the second obligation about the workspace membership pair, I need to think through how the underspecified "one" selection rule should handle unioning alternatives.
+
+I'm designing the selector query to match both Robert rows via a name filter on the user_teams join, then mapping the role labels to their native handles—user IDs, team ID, channel IDs, and message ID lists for the engineering and infra channels.
+
+I'm compiling the seven message IDs from the engineering incident channel (C03IJKL9012) that Robert Walsh belongs to, covering the 500 errors, SSO invalid_grant, login rate limiting, and the circuit-tracer OOM thread with its replies.
+
+Now I'm cataloging the infra incident channel (C_INFRA, Robert Chen's channel), which has 26 messages across two threads: a 13-message memory pressure discussion and a 13-message budget overrun thread, and starting to work out which message IDs should serve as plausible negative referents.
+
+The design specifies three concrete negative candidates: an unrelated pizza/coffee message in Robert Walsh's channel, an unrelated growth-channel message where neither Robert is a member, and a DM message also excluding both Roberts. I'm considering whether other off-topic messages in Robert's own channels (like general chat about a watch party or cricket) should count too, but deciding to stick with the representative ones already specified. I also check whether the login validation message in the engineering incident set should be treated as a negative distractor since it's login-related but not truly incident-related — since it's not called out in the design, I'll leave it out of both categories.
+
+For the "unrelated_random_message" selector, I want something that clearly matches the "ordering pizza and coffee" theme. I land on a message from U_MATEO discussing whether to switch to French press and order a couple of pizzas for lunch — that fits well.
+
+Now I'm ready to write out the final selector list in design order, one per obligation, matching the two obligations defined.
+
+Since bindings need to cover all entries in the "roles" list rather than just obligations, I need to make sure every role label gets a corresponding entry. I also want to double-check that negative_referents properly excludes the unrelated random, growth, and no-Robert DM messages, then confirm the GPU cluster message from U_LUKAS is still relevant to the ongoing infra/budget thread before finalizing the JSON output.
+
+Now I'm thinking through access requirements — specifically whether the actor needs channel membership to call conversations.history in Robert's channels, since this affects whether the retrieval plan actually works.
+
+able to read them without needing explicit membership. Since no specific actor role is defined in this task, I'll assume the implicit agent user (like U01AGENBOT9) already has membership in engineering, C_INFRA, C_MODEL, C_FRONTEND, C05ALPHA, C06ALPHADEV, and D01AGENTSOP.
+
+Checking the other channels, that same actor also appears to be a member of C02EFGH5678 and C01ABCD1234. But looking at C_GROWTH's member list, the actor isn't included there — so there's a missing membership for the product-growth channel needed to access Robert Chen's messages.
+
+Robert is also a member of C_MODEL, C_FRONTEND, and C06ALPHADEV, so I should check all of those channels for infra-incident content too, not just core-infra. The design only flagged core-infra messages as matches, but the Growth channel's Tokyo launch latency issue could arguably count as an infra incident as well — I want to double-check that assumption against what the design actually covers.
+
+That growth channel thread about the Tokyo CDN routing misconfiguration is genuinely an infrastructure incident, and Robert Chen is a member of that channel, so it should likely count as an additional match for messages_infra_incident -- yet the design's role list only ties that field to core-infra channel messages, not growth channel ones.
+
+Given the ambiguity, I'll flag this as a limitation and lean toward including the growth-channel messages in the infra incident binding, since a CDN misconfiguration degrading latency to 800ms reasonably counts as a performance outage under the broader "outages... things like" framing.
+
+I should include this to be safe, noting it in the limitations. Checking other Robert Chen channels too - the model-research discussion about the hallucination incident is a model quality issue rather than infrastructure, so it doesn't count as a match. Still need to check the frontend channel for the React hydration performance discussion.
+
+The 4s+ load time issue there feels more like an application-level frontend bug than a true infra outage, so I'll leave it out even though it's borderline. The project-alpha-dev channel doesn't show any infra-related messages either, just membership. Overall, the Tokyo CDN incident stands out as the strongest additional candidate since it directly references p95 latencies, CDN routing, and edge locations - clear signs of an infrastructure outage.
+
+Similarly, the empty password submission UX note and the captcha reminder both touch on login issues but read as UX/improvement suggestions rather than incident reports, so I'll exclude them too, flagging the ambiguity. Checking the random channel for Robert Walsh next - lunch plans, a Gemini model discussion, pizza talk - nothing infra-related there.
+
+Now I'm building the first selector for the infra-incident obligation: since AND-only filters can't encode the OR of keyword themes I need for "infrastructure incidents," I'm scoping on the root and constructing a focal path joining messages through channels and channel_members to users, filtering on the real_name field to match Robert, while noting that exact content matching against the actual incident phrasing will need manual verification.
+
+Then I'm defining the second selector for Robert's workspace membership pair, joining user_teams to users and filtering on real_name to match Robert, before assembling the final bindings dictionary with all role labels for the answer.
+

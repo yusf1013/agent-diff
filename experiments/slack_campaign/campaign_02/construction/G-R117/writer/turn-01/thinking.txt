@@ -1,0 +1,24 @@
+I'm designing a scenario following the route from reaction to user to conversation membership, picking a reaction whose referent is identified by the user who made it and that user's channel membership—aiming for an underspecified case with two possible referents.
+
+I'll use "Robert" as a shared first name, since the seed data has both Robert Walsh and Robert Chen, giving ambiguity between two full names. Now I'm constructing the underlying records: a reaction by one of the Roberts on a message in the infrastructure channel, plus channel memberships, so the request's partial identification (first name plus reaction plus membership) resolves to two possible people.
+
+Then I'm designing the actual task around this ambiguity, framing it as a consequential action like removing a specific reaction, which requires the reference to be unambiguous even though the request only gives partial identifying info.
+
+Right, so the shared first name "Robert" should stay unresolved, but the route still needs membership as part of the identifying phrase for the reaction lookup. Maybe I phrase it as "the Robert who's a member of one of our engineering channels," so if both Roberts qualify under that loose description, the ambiguity persists while still exercising the REACTION -> USER -> CONVERSATION_MEMBERSHIP path.
+
+I'll make both reactions use "raised_hands" so the emoji matches exactly, adding one entry for Robert Walsh reacting to Lukas's OOM message in the engineering channel, and another for Robert Chen reacting to Lukas's GPU cluster message in core-infra. Both share the first name Robert, both channels are engineering-related, and both reacted to Lukas's infrastructure messages with the same emoji — genuine ambiguity by design.
+
+Since removing a reaction is state-changing and requires a specific channel/timestamp, the agent shouldn't guess between Robert Walsh and Robert Chen when the user just says "the engineering team member named Robert." I'll add a negative case too: Robert Walsh reacting elsewhere with a different emoji, so the model can't rely on emoji alone to disambiguate.
+
+I'll add another negative: Morgan reacting with raised_hands in an unrelated channel, testing that channel membership matters too. Then I'm defining the two ambiguous role candidates: Robert Walsh, a member of the engineering channel who reacted with raised_hands to Lukas's OOM message, and Robert Chen, a member of the core-infra channel who reacted with raised_hands to Lukas's GPU cluster message—both serving as alternative matches to test disambiguation.
+
+I also need a negative case where someone named Hubert reacted with raised_hands to the same message as Robert Walsh but has a different first name, to confirm the wrong person shouldn't match despite matching emoji, message, and channel. Since the obligation targets the message_reactions table, I'm restructuring the roles so the candidate reactions themselves are entities of type message_reactions rather than users—defining candidate_reaction_walsh as Robert Walsh's 🙌 reaction on Lukas's engineering OOM message, marked as an alternative selection, and continuing to build out the second candidate reaction for Robert Chen.
+
+I'm also adding a negative case for Morgan, who reacted with the same emoji but in an unrelated #random channel where they aren't tied to the engineering context, to test that channel membership actually matters for the resolution logic.
+
+Now for the target write task, since this needs to remove a reaction and both candidates (Robert Walsh, Robert Chen) are plausible, I want to phrase the prompt naturally without tipping off which one is correct — something like asking to remove the 🙌 reaction Robert left on Lukas's message about the infrastructure/technical issue, since both candidate messages happen to be authored by Lukas discussing technical problems, which keeps the phrasing consistent either way.
+
+With that finalized, I still need to write out the obligations lines, task_spec, and access_plan.
+
+Since this is a state-changing removal task, I don't need answer_attributes -- instead I'll use written_attributes as an empty list and change_attributes as a nested empty list to represent the deletion action, then draft the JSON.
+

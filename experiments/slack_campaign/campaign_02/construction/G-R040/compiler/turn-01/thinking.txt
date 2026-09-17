@@ -1,0 +1,38 @@
+Checking the base seed, all the required elements are already present: the target engineering channel, the specific message from Lukas, the eyes reaction from the bot, Lukas's author record, and his channel membership.
+
+Picking message_id 1706115300.000001 for Kenji's follow-up message about circuit-tracer OOM, then adding a thumbsup reaction from the actor on it. For Lukas's unrelated message in C_MODEL, I'm using id 1706115400.000001 with text about the evaluation harness, then adding the actor's eyes reaction to it.
+
+Now I'm consolidating all the bindings I need: the target engineering channel, the OOM message and its eyes reaction, Lukas's authorship and channel membership, the reply messages from Robert and Kenji, the DM update to Sophie, and the newly created messages/reactions. For the membership removal obligation, I'm designing the selector to root at channel_members, joining through channels to filter by the engineering channel name and through messages by channel_id.
+
+I'm working through how to constrain the query so that the message author matches the channel member -- since the join path connects tables via foreign keys like channel_id and message_id, I need to make sure channel_members.user_id lines up with messages.user_id (the author), not just that they're in the same channel, which isn't a direct foreign-key join in the path.
+
+I'm checking how joins are specified by field names, like table.field pairs, to figure out the correct direction for connecting channel_members to messages through shared user references.
+
+I'm mapping out the actual join path: filtering channel_members by channel_name to find the engineering channel, joining channels to messages via channel_id, then linking messages to message_reactions to filter for the eyes reaction from the specific actor, and joining messages to users to identify who wrote the message.
+
+I'm wondering whether the path can revisit the root table as an extra node to enforce the equality between the author's user_id and the root membership's user_id, since simple adjacency joins don't let me directly reference back to root otherwise.
+
+There's no direct FK linking channel_members to messages, so I'd need to route through users: channel_members→users→messages→message_reactions, but that path doesn't have a valid connection back to channels, so this route fails too.
+
+Alternatively, since messages already has a channel_id, I could build a shorter path: channel_members→users→messages→channels, filtering on channel_name and message text, and I'd need to check whether the channel filter should apply on node 0's channel_id directly since that's the same channel as root anyway.
+
+I'm mapping out the three joins connecting channel_members to users, users to messages, and messages to message_reactions, then adding filters restricting to the engineering channel and requiring the message text to mention 'circuit-tracer' and something like 'OOM' or 'memory'.
+
+The reaction filter requires 'eyes' from the specific agent user. Since the shared users node ties channel membership to message authorship, I need explicit channel filters on both the channel_members and messages nodes since the path itself doesn't force them to match.
+
+I'm hardcoding the same channel ID on both filters, which is acceptable since it's known seed data, though I could alternatively add a channels join for clarity instead of relying on the hardcoded ID.
+
+I try building the path with a channels node too, but run into trouble since channels and users don't share a direct foreign key, so a single linear path can't cover both branches—I need to think about whether two separate joins to channels makes more sense.
+
+Actually reversing direction, channel_members to channels to messages ties channel identity together nicely, but that alone doesn't guarantee the message author matches the membership holder. I still need to route through users somewhere in that same path to bind the user constraint alongside the channel constraint.
+
+So I'll enforce author identity through a join from channel_members to users to messages, then use literal channel_id filters on both nodes to satisfy the same-channel constraint, and add message_reactions filtered by 'eyes' reaction and the bot user for the final step.
+
+This gives one focal query covering the whole obligation chain. For negative referents against the main channel_members table, I'm flagging Robert's existing membership in the same channel as a plausible false match, while noting Kenji has no membership record so isn't a real competing row.
+
+Checking Lukas's other-channel message, I notice he does have a real membership in C_MODEL, which could be a plausible negative referent if the solver mistakenly kicks him from that channel instead of engineering.
+
+For dm_sophie, U_SOPHIE's membership in DM D01AGENTSOPHIE exists and could be mistakenly selected, so I'll include that pair too. I also want to remember that the actual answer membership itself counts as the positive case, not negative, and I should check whether U02JOHNDOE1's circuit-tracer AWS message (which lacks an eyes reaction) could serve as another plausible distractor.
+
+I'll finalize that U02JOHNDOE1's membership in C03IJKL9012 exists and add it as a negative referent since it matches only by the "circuit-tracer" keyword. Now I'm laying out the seed edits: inserting Lukas's channel membership, the two new messages, and their corresponding reactions, while confirming the new message IDs don't collide with existing ones. With everything verified, I'm ready to write the final answer.
+

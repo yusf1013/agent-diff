@@ -1,0 +1,22 @@
+I'm cross-checking whether the base seed data actually supports the two reactions the design claims—trying to match up Robert Walsh's tada on the login-fix message and Robert Chen's tada on the Tokyo latency message, but the Tokyo timestamp seems to point to Kenji's "Tokyo launch Day 1 stats" message instead of the described text about edge deployment.
+
+Searching further, the base seed's actual reactions list only contains one entry, a single "eyes" reaction, meaning neither of the design's described tada reactions exist yet—but that's fine since these are planned additions the compiler will create later, per the instructions not to reject based on missing rows. I'm also noting a timestamp collision: message 1699824000.000987 already exists in the base seed as a real crash report from Robert, not the login-fix message the design intends to reference.
+
+Now checking the two "Robert" users who each reacted with tada to different messages in different channels, following the route from message through reaction, user, conversation membership, conversation, to workspace. This route seems to hinge on verifying the reactor's channel membership, but that feels redundant since the message already carries its own channel_id—so I'm flagging this as an underspecified case with two equally valid candidate interpretations.
+
+Confirming the negative examples are properly excluded: Robert Walsh's thumbsup reaction on Hubert's message is out due to wrong emoji type, and Lukas's tada reaction on Sophie's message is excluded since it's not from Robert. I'm also puzzled by the answer_attributes including channel_id alongside message_text when the prompt only asks for the message text—checking whether this is tied to distinguishing the login_fix versus tokyo_latency candidate sets.
+
+The membership traversal here is redundant but consistent with verifying the reactor's own channel membership rather than confusing it with authorship, so the route design seems fine. Now I'm checking access: the bot needs to be a member of both channels involved per the seed's channel_members data.
+
+For each message discovered, I can call reactions.get with the channel and timestamp, and users.info returns the display_name for the reacting user, confirming "Robert." But now I'm spotting a mismatch — the prompt only requests the message text, yet the answer_attributes lists two different attribute sets that don't align consistently with the candidate role sets, mixing message_text and channel_id in a way that seems off.
+
+This looks like the answer requires both message_text and channel_id rather than just text, which goes beyond what the prompt asks for. It's possible channel_id was added to help disambiguate between the two candidate messages, but strictly speaking it's extra scope not requested — a minor annotation issue worth flagging, though the overall design (ambiguity modeling, route matching, access plan, negatives) still holds up well.
+
+The two negative examples testing emoji and reactor identity give solid coverage, and the new message IDs being introduced rather than pulled from the base seed is fine per the notes. The workspace scope being single-workspace adds unneeded complexity but isn't incorrect, and the candidate role sets with "one" selection align properly with the underspecified resolution mode, where the answer can report one or both candidates until the ambiguity is resolved.
+
+Checking the scope exception field being null and the exposure qualification text, both look consistent with the access plan since no workspace-name lookup occurs. The one real issue I've found is that answer_attributes includes messages.channel_id, which wasn't requested by the prompt—this is a supplemental field being enforced without being asked for, violating the guideline that such conditions must be requested rather than secretly imposed.
+
+I confirm both U_ROBERT and U03ROBERT23 belong to T01WORKSPACE, so the workspace_scope role checks out fine. The remaining question is whether this extra unrequested answer field is severe enough to fail validity outright, since it creates a mismatch between what the prompt asks and what the evaluation criteria actually require.
+
+I'll settle on validity "pass" with this annotation issue flagged, and quality "adequate" given that flaw against an otherwise solid design.
+

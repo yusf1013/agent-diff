@@ -1,0 +1,108 @@
+{
+  "prompt": "Our teammate Robert is on this workspace — what locations do the messages posted in the channels he belongs to mention?",
+  "binding_note": "The route runs MESSAGE→CONVERSATION→WORKSPACE→WORKSPACE_MEMBERSHIP: a message's channel must belong to the workspace, and the same workspace member named Robert must also be a member of that channel. Two workspace members share the first name Robert (Robert Walsh, admin, and Robert Chen, member), each tied to a disjoint set of channels, so the intended channel set — and therefore the message set whose locations should be reported — is unresolved without further disambiguation.",
+  "roles": [
+    {
+      "role": "robert_walsh",
+      "entity": "users",
+      "facts": "real_name Robert Walsh, workspace membership (user_teams) in T01WORKSPACE with role admin, channel member of general, random, and engineering",
+      "selection": "alternative",
+      "reason": "First Robert candidate whose channel memberships define one possible answer set"
+    },
+    {
+      "role": "robert_chen",
+      "entity": "users",
+      "facts": "real_name Robert Chen, workspace membership in T01WORKSPACE with role member, channel member of project-alpha-dev, core-infra, model-research, product-growth, and frontend",
+      "selection": "alternative",
+      "reason": "Second Robert candidate whose channel memberships define a different possible answer set"
+    },
+    {
+      "role": "match_A1",
+      "entity": "messages",
+      "facts": "Message in #general (C01ABCD1234, Robert Walsh's channel) reading 'We're booking the downtown venue for the watch party event'",
+      "selection": "match",
+      "reason": "Names a location and lies in a channel Robert Walsh belongs to"
+    },
+    {
+      "role": "match_A2",
+      "entity": "messages",
+      "facts": "Message in #random (C02EFGH5678, Robert Walsh's channel) about ordering pizza from a spot on Valencia",
+      "selection": "match",
+      "reason": "Names a location and lies in a channel Robert Walsh belongs to"
+    },
+    {
+      "role": "match_B1",
+      "entity": "messages",
+      "facts": "Message in #product-growth (C_GROWTH, Robert Chen's channel) reporting Tokyo launch Day 1 signup and activation stats",
+      "selection": "match",
+      "reason": "Names a location and lies in a channel Robert Chen belongs to"
+    },
+    {
+      "role": "match_B2",
+      "entity": "messages",
+      "facts": "Message in #product-growth (C_GROWTH, Robert Chen's channel) discussing CDN traffic routing through Singapore instead of Tokyo",
+      "selection": "match",
+      "reason": "Names locations and lies in a channel Robert Chen belongs to"
+    },
+    {
+      "role": "neg_old_project",
+      "entity": "messages",
+      "facts": "Message in the archived #old-project-q3 channel (C_OLD_PROJECT), where neither Robert holds channel membership and no location is named",
+      "selection": "negative",
+      "reason": "Excluded: missing the required channel-membership relation to either Robert, and no location content"
+    },
+    {
+      "role": "neg_engineering_login",
+      "entity": "messages",
+      "facts": "Message in #engineering (C03IJKL9012, Robert Walsh's channel) about login rate-limit errors, with no location mentioned",
+      "selection": "negative",
+      "reason": "Present in a Robert-linked channel but contributes no location, so it does not add to the answer under either interpretation"
+    }
+  ],
+  "obligations": [
+    {
+      "name": "robert_channel_location_messages",
+      "description": "Messages posted in the channels that the workspace member named Robert belongs to, used to enumerate the locations they mention; the intended Robert (and therefore channel/message set) is not resolved by the request",
+      "table": "messages",
+      "mode": "underspecified",
+      "task_type": "read-only",
+      "scope": "messages in conversations where a workspace member first-named Robert holds channel membership, within the shared workspace",
+      "target_roles": [
+        "match_A1",
+        "match_A2",
+        "match_B1",
+        "match_B2"
+      ],
+      "candidate_role_sets": [
+        [
+          "match_A1",
+          "match_A2"
+        ],
+        [
+          "match_B1",
+          "match_B2"
+        ]
+      ],
+      "selection": "set",
+      "answer_attributes": [
+        [
+          "messages.message_text"
+        ],
+        [
+          "messages.channel_id"
+        ]
+      ]
+    }
+  ],
+  "task_spec": [
+    {
+      "line": 1,
+      "text": "Identify which workspace member named Robert is meant, gather the messages from the channels that person belongs to, and report the locations those messages mention.",
+      "obligations": [
+        1
+      ]
+    }
+  ],
+  "scope_exception": null,
+  "access_plan": "Use users.list (or search) to find workspace members whose real name starts with 'Robert', confirm workspace membership via user_teams/auth.test context, then use users.conversations or conversations.members per candidate to enumerate their channel memberships. For each such channel, call conversations.history to retrieve messages and scan message_text for place names, producing one location list per Robert candidate since the request does not disambiguate between them."
+}

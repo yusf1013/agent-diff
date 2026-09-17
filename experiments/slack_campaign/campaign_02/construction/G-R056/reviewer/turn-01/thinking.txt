@@ -1,0 +1,18 @@
+I'm evaluating this task: finding who reacted with a dart emoji to Sophie's message in model-research, then checking their join date in core-infra. This traces through conversation membership, user, and reaction nodes, though I need to figure out the correct referent entity for the route.
+
+I checked the seed data - Sophie's message about the 7B checkpoint matches the anchor, but the only pre-existing reaction is an "eyes" emoji from a different user. The dart reactions from Olena, Mateo, Lukas, and Kenji described in the roles aren't in the base seed yet, but that's expected since these are planned additions the compiler will create later. Now I'm confirming Olena's existing membership in core-infra to validate the join date lookup.
+
+Actually, checking Kenji's channel memberships more carefully, I see he actually does have a channel_members row for core-infra in the seed data, which contradicts the design assumption that he's only in model-research, product-growth, frontend, and project-alpha-dev - this is a discrepancy I need to flag.
+
+Confirmed: U_KENJI is explicitly listed as a member of C_INFRA in the channel_members array, directly contradicting the claimed fact.
+
+This actually makes the query ambiguous: if both Olena and Kenji react with 'dart' on the same anchor message, and Kenji also has the core-infra membership the design claims he lacks, then the "reacted with dart AND has core-infra membership" filter would resolve to two users instead of one, breaking single-resolution mode entirely.
+
+Actually, that interpretation doesn't quite work either - the join date lookup is meant to happen after identifying the reactor, not as a filter beforehand. If both Olena and Kenji reacted with dart to the same message, the identification step itself becomes ambiguous, and nothing in the prompt suggests using core-infra membership to disambiguate between them.
+
+And there's a deeper problem: Kenji actually already has core-infra membership per the base facts, so the "missing membership" premise used to rule him out is factually false anyway. This means the negative design is broken on two levels - it contradicts the base seed data, and even setting that aside, it creates real ambiguity at the reaction-identification step since two people match.
+
+I should also check the wrong_message_reaction flag: the design claims Lukas reacted with dart on Mateo's later reply at timestamp 1706012958.000000, but that message actually belongs to Olena in the seed data, not Mateo. This is another factual mismatch I need to flag.
+
+Given these membership and message ownership mismatches against the base seed, I'm concluding this design fails validity. Now I need to compile the full list of issues.
+

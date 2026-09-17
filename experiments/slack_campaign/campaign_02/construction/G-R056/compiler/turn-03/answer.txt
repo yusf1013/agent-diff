@@ -1,0 +1,118 @@
+```json
+{
+  "seed_edits": [
+    {
+      "table": "message_reactions",
+      "op": "insert",
+      "values": {
+        "message_id": "1706012456.000000",
+        "user_id": "U_OLENA",
+        "reaction_type": "dart"
+      },
+      "reason": "Instantiates the reaction_match role: Olena reacts with 'dart' on Sophie's 7B-checkpoint message, uniquely identifying the reactor per the design."
+    },
+    {
+      "table": "message_reactions",
+      "op": "insert",
+      "values": {
+        "message_id": "1706012456.000000",
+        "user_id": "U_MATEO",
+        "reaction_type": "rocket"
+      },
+      "reason": "Instantiates wrong_emoji_reaction: same anchor message, different emoji, to prevent Mateo from being mistaken for the identified user."
+    },
+    {
+      "table": "message_reactions",
+      "op": "insert",
+      "values": {
+        "message_id": "1706012683.000000",
+        "user_id": "U_LUKAS",
+        "reaction_type": "dart"
+      },
+      "reason": "Instantiates wrong_message_reaction: correct emoji ('dart') but on Mateo's earlier message, not the anchor, to show emoji+message binding must both match."
+    },
+    {
+      "table": "message_reactions",
+      "op": "insert",
+      "values": {
+        "message_id": "1706027877.000000",
+        "user_id": "U_INCOGNITO",
+        "reaction_type": "dart"
+      },
+      "reason": "Instantiates missing_membership_reaction: correct emoji but wrong message in a different channel, reacted by a user with no core-infra membership row at all, illustrating a genuine missing-relationship negative."
+    }
+  ],
+  "bindings": {
+    "anchor_message": ["1706012456.000000"],
+    "reaction_match": [
+      {"message_id": "1706012456.000000", "user_id": "U_OLENA", "reaction_type": "dart"}
+    ],
+    "identified_user": ["U_OLENA"],
+    "membership_target": [
+      {"channel_id": "C_INFRA", "user_id": "U_OLENA"}
+    ],
+    "wrong_emoji_reaction": [
+      {"message_id": "1706012456.000000", "user_id": "U_MATEO", "reaction_type": "rocket"}
+    ],
+    "wrong_message_reaction": [
+      {"message_id": "1706012683.000000", "user_id": "U_LUKAS", "reaction_type": "dart"}
+    ],
+    "missing_membership_reaction": [
+      {"message_id": "1706027877.000000", "user_id": "U_INCOGNITO", "reaction_type": "dart"}
+    ],
+    "decoy_other_membership": [
+      {"channel_id": "C_MODEL", "user_id": "U_OLENA"}
+    ]
+  },
+  "selectors": [
+    {
+      "root_table": "channel_members",
+      "scope": [
+        {"field": "channel_id", "op": "eq", "value": "C_INFRA"}
+      ],
+      "focal": {
+        "path": ["channel_members", "users", "message_reactions"],
+        "joins": [
+          "channel_members.user_id",
+          "message_reactions.user_id"
+        ],
+        "filters": [
+          {"node": 2, "field": "reaction_type", "op": "eq", "value": "dart"},
+          {"node": 2, "field": "message_id", "op": "eq", "value": "1706012456.000000"}
+        ]
+      },
+      "auxiliary": [
+        {
+          "path": ["channel_members", "users", "message_reactions", "messages"],
+          "joins": [
+            "channel_members.user_id",
+            "message_reactions.user_id",
+            "message_reactions.message_id"
+          ],
+          "filters": [
+            {"node": 3, "field": "message_id", "op": "eq", "value": "1706012456.000000"},
+            {"node": 3, "field": "message_text", "op": "contains_ci", "value": "7B checkpoint finished training"}
+          ]
+        },
+        {
+          "path": ["channel_members", "users", "message_reactions", "messages", "channels"],
+          "joins": [
+            "channel_members.user_id",
+            "message_reactions.user_id",
+            "message_reactions.message_id",
+            "messages.channel_id"
+          ],
+          "filters": [
+            {"node": 4, "field": "channel_id", "op": "eq", "value": "C_MODEL"},
+            {"node": 4, "field": "channel_name", "op": "eq", "value": "model-research"}
+          ]
+        }
+      ]
+    }
+  ],
+  "negative_referents": [
+    {"channel_id": "C_MODEL", "user_id": "U_OLENA"}
+  ],
+  "notes": "Corrected both focal and auxiliary queries to start at the declared root_table (channel_members), as required by selector syntax. The focal path now follows exactly the assigned three-node route CONVERSATION_MEMBERSHIP->USER->REACTION (channel_members -> users -> message_reactions), pinning the anchor message via a direct filter on message_reactions.message_id (the reaction row's own FK field, equal to the anchor message's ID) combined with reaction_type='dart'. Two auxiliary queries, each also rooted at channel_members and extended through users/message_reactions to messages (and messages to channels), independently verify the anchor message's text ('7B checkpoint finished training') and its channel identity ('model-research'), matching the design's message and channel-scope facts without altering the focal route. All reaction inserts and other seed data are unchanged from the prior compilation. The actor (U01AGENBOT9) retains channel_members rows for both C_MODEL and C_INFRA, providing documented API access sufficient to resolve the request without hidden seed knowledge. The decoy_other_membership (Olena's #model-research membership row) remains the key negative_referent for a solver who mistakenly targets model-research instead of core-infra."
+}
+```

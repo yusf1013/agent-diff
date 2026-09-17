@@ -1,0 +1,70 @@
+I'm checking that all base records exist in the seed already, and confirming the negative reaction test cases need new entries added to message_reactions since only one existing reaction is present.
+
+For negative_wrong_reactor, negative_wrong_channel, and negative_wrong_emoji, I'm verifying each target message and user against the messages and channel_members lists to confirm they align with the intended test design. All three target messages already exist, so the seed_edits will consist of three inserts into message_reactions, and now I'm working out the corresponding bindings for each case.
+
+I realize the join path alone doesn't guarantee channel_members.channel_id matches the message's own channel_id — I need an explicit constraint tying messages.channel_id to the channel filtered by 'engineering', otherwise the query could match unrelated channels.
+
+I realize I need an explicit join tying the message's own channel to that same channel node, not just the reacting user's membership. So I'm restructuring the path to have messages join directly to channels, then to channel_members, then users, then message_reactions, making sure the reaction also ties back to the original message_id.
+
+Since message_reactions isn't adjacent to messages in this path, that FK edge isn't enforced by adjacency alone - only the message_reactions-users edge matters here. I recall the original example uses two joins from message_reactions (both message_id and user_id) since it sits between messages and users in the path, so I should check whether nodes can have multiple joins listed per adjacency.
+
+channels node filtered by name 'engineering'. But this doesn't actually constrain that the message itself is posted in the engineering channel - it only ties the reacting user's membership to that channel, not the message. That matches the exact example from the syntax doc, so I need to check whether the intended binding actually requires the message to belong to the engineering channel too.
+
+If so, I'd need to tie messages.channel_id back to that same channels record, but my current path only connects channel through channel_members, not through messages directly. I want to avoid hardcoding a channel ID constant and instead rely on user-facing predicates like channel_name, so I'm considering whether an auxiliary constraint or an extended path is the right way to enforce this without introducing raw ID values.
+
+Rather than an auxiliary condition, which is meant for truly independent constraints, I think I should extend the focal path so channels connects to messages via channel_id and to channel_members via channel_id as well, chaining through to users and then message_reactions to tie everything back to the same message and user.
+
+But I realize the linear path structure means message_reactions only connects adjacent to users, not directly back to messages, so there's no explicit constraint forcing the reaction to belong to the same message from node0 -- since joins only bind adjacent nodes in sequence, this path won't correctly tie message_reactions.message_id back to messages.message_id.
+
+This creates a real cycle problem: the message's own channel and the channel derived through reaction→user→membership need to be the same channel, but a linear path can't naturally enforce two separate branches converging back to one shared node.
+
+Right, that example literally just checks that the reacting user is a member of the security channel, without requiring the message itself belongs to security -- so it doesn't actually enforce the constraint I'd expect. This mirrors the route structure going MESSAGE-CONVERSATION-CONVERSATION_MEMBERSHIP-USER-REACTION, and I want to double check how CONVERSATION fits as its own node in that chain rather than an implicit link.
+
+Actually, maybe the last join should use message_reactions.message_id instead of user_id, tying the reaction directly back to the original message rather than through the user—since message_reactions carries both foreign keys but only one gets used per hop.
+
+But that raises the question of how the user constraint from node3 gets enforced if the join only ties back through message_id. The path mechanism seems to require carrying forward all prior node identities as a tuple, even though joins are only defined between adjacent nodes, so filtering conditions can still reference earlier nodes even if they aren't the direct join key at this step.
+
+This forms a diamond shape rather than a simple linear path — message_reactions needs to connect to both messages and channel_members through shared users, while channel_members also needs to tie back to messages via channel_id. Since this join system apparently only supports linear paths, not branching graphs, I suspect this "same channel" constraint is simply a known gap the example itself doesn't fully resolve.
+
+But maybe scope filtering handles part of it: if scope conditions only apply to root-table fields directly (like messages.channel_id) without joins, that could restrict the root set to the right channel independently, letting the focal path handle just the reaction/membership matching.
+
+So the path would be messages -> message_reactions -> users -> channel_members -> channels, filtering on channels.channel_name='engineering'. This captures that the reacting user is a member of the engineering channel, but doesn't force the message itself to be in that channel—so I need to check whether this over-matches messages that have a reaction from an engineering-channel member but aren't actually in that channel.
+
+Before adding negatives, the only reaction was on message 1706110000.000100 by U01AGENBOT9, who's already a channel member of engineering (C03IJKL9012)—so that's the intended match. Checking a negative case: message 1706112500.000001 has a reaction from U_KENJI, but Kenji isn't a member of the engineering channel (C03IJKL9012)—he's only in other channels—so this reaction correctly gets excluded by the membership constraint.
+
+But there's a subtler problem: negative_wrong_channel is Sophie's DM message reacted to by U01AGENBOT9, who IS a member of the engineering channel. Since the query path just checks that the reactor is a member of engineering (regardless of what channel the message itself is in), this DM message would incorrectly also satisfy the focal selector, breaking the intended single-match uniqueness. I need to add a stricter constraint requiring the message's own channel to actually be engineering, not just that the reactor happens to belong there.
+
+Since scope filters can't perform joins, I can't filter by channel_name there and must rely on messages.channel_id directly. That's a legitimate use of the real FK value, not a hidden construction, since it's the only way to scope by channel without joins.
+
+Alternatively, I could add a join node connecting channels to messages at the start of the path, enforcing the name equals engineering condition tied to the channel_id, then continue the path from that same channels node.
+
+Then from that channels node, I continue linearly to channel_members via channel_id, then to users, then to message_reactions matching message_id and user_id. Since a linear path can have channels sit between messages and channel_members with both edges emanating from it, the sequence works cleanly: messages, channels, channel_members, users, message_reactions.
+
+But then I realize this path doesn't actually constrain the reaction to be on the same message from node0 - it only ensures the message is in the engineering channel and that some member of that channel made an eyes reaction on any message, which is too loose and could match unintended combinations. I need the reaction's message to actually tie back to node0's message.
+
+This forces a diamond-shaped dependency: message_reactions needs to join to both messages (via message_id) and users (via user_id) simultaneously, which isn't expressible through a strict single linear chain of one-join-per-step. I'm wondering if the framework permits revisiting a node to handle this.
+
+Actually the doc's own example follows exactly this pattern -- messages to message_reactions to users to channel_members to channels filtered by name -- but that only confirms the reactor is a member of engineering, not that the message itself lives in that channel. I need to check whether negative_wrong_channel actually breaks this: a message in a DM channel reacted to by a member who also belongs to engineering would incorrectly pass.
+
+Since the join isn't restricted to the membership row matching the message's actual channel, the query engine will match ANY channel_members row for that user satisfying the filter — meaning the DM message incorrectly qualifies too via the user's separate engineering membership. This breaks the intended single-match resolution, which confirms negative_wrong_channel is deliberately testing this exact ambiguity.
+
+To avoid it, I need a diamond-join structure the linear-path notation doesn't support directly, so instead I should restrict the root scope itself to messages.channel_id equal to the engineering channel's actual ID — a legitimate direct-column filter, not a hidden construction, since I've already resolved that ID through the engineering_channel role selector.
+
+So the scope becomes filtering on that channel_id value, and the focal path continues from messages through message_reactions to users.
+
+The focal condition also needs the reacting user to be a member of the engineering channel via node3->node4; since there's only one engineering channel (C03IJKL9012), this stays consistent with the scope restriction already applied to messages.
+
+For the wrong-channel negative case, the message lives in a DM channel, so it's excluded outright by the scope filter—resolving that earlier concern cleanly.
+
+Checking the wrong-reactor negative: the message is in engineering and passes scope, with an eyes reaction from Kenji. Now I need to verify whether Kenji has any channel_members row tied to a channel named 'engineering'—his memberships are in C06ALPHADEV, C_INFRA, and C_MOD.
+
+Kenji isn't in an engineering-named channel, so this case is excluded properly. The wrong-emoji negative fails since its reaction type is thumbsup, not eyes, and the no-reaction negative has zero message_reactions rows, so both are excluded correctly. The target message passes scope, has an eyes reaction from U01AGENBOT9 who is indeed a member of the engineering channel—so it uniquely matches, confirming the scope filter design of channel_id='C03IJKL9012' works. Now I want to double-check there's no other message that could also satisfy this same match, to be sure uniqueness holds.
+
+With four rows total in message_reactions after inserting the negatives, only the original entry passes every condition, so I'm confident there's a single match. I'll write the selectors array with one obligation and a single selector. I'm also noting the actor identity isn't explicitly specified, but since access is assumed to be granted per the documented plan, this shouldn't block the solution.
+
+Now I'm assembling the seed_edits, starting with inserting a message_reactions row for Kenji's eyes reaction with the appropriate key fields.
+
+I'm adding two more negative reaction rows to message_reactions to cover the wrong-channel and wrong-emoji cases, then compiling the full bindings dictionary that maps target_message, engineering_channel, agent_member, agent_user, reaction_match, and each negative condition to their corresponding values.
+
+Now I'm identifying the negative_referents as the root message IDs that could be mistakenly selected—covering the wrong reactor, wrong channel, wrong emoji, and no-reaction cases—so the selector logic can correctly exclude them, and I'm preparing to assemble the final JSON output.
+

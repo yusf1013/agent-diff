@@ -1,0 +1,114 @@
+{
+  "prompt": "Add the person from #product-growth who isn't already part of any of our other team channels to #core-infra as well — they'll need infra visibility for the upcoming launch.",
+  "binding_note": "The target user is selected via their conversation-membership record linking them to the #product-growth conversation within workspace T01WORKSPACE, while lacking any conversation-membership record tying them to #core-infra, #model-research, #frontend, or #project-alpha-dev in that same workspace. This is a genuine USER→CONVERSATION_MEMBERSHIP→CONVERSATION→WORKSPACE route: the workspace bounds the channel corpus considered, and membership presence/absence across that corpus is what isolates the single user.",
+  "roles": [
+    {
+      "role": "target_user",
+      "entity": "users",
+      "facts": "Carlos Vega (username shadow.lurker, user_id U_INCOGNITO) holds a conversation-membership record only for #product-growth (C_GROWTH) within workspace T01WORKSPACE; no membership record exists for any other channel in that workspace.",
+      "selection": "match",
+      "reason": "Only user whose full conversation-membership set within the bounded workspace channel corpus contains product-growth and nothing else."
+    },
+    {
+      "role": "growth_channel",
+      "entity": "channels",
+      "facts": "#product-growth (C_GROWTH), team_id T01WORKSPACE, holds nine conversation-membership records including Priya, Lukas, Sophie, Olena, Mateo, Kenji, Robert, Aisha, and Carlos Vega.",
+      "selection": "support",
+      "reason": "Anchors the membership route; the scoping channel whose members form the candidate pool."
+    },
+    {
+      "role": "infra_channel",
+      "entity": "channels",
+      "facts": "#core-infra (C_INFRA), team_id T01WORKSPACE, currently has eight members (Priya, Lukas, Sophie, Olena, Mateo, Kenji, Robert, Aisha); Carlos Vega is not among them.",
+      "selection": "support",
+      "reason": "Destination conversation for the requested invite action."
+    },
+    {
+      "role": "overlapping_growth_member_priya",
+      "entity": "users",
+      "facts": "Priya Sharma holds conversation-membership records for #product-growth, #core-infra, #model-research, and #frontend within workspace T01WORKSPACE.",
+      "selection": "negative",
+      "reason": "Member of product-growth but fails the exclusion condition since she also has membership in other channels of the same workspace."
+    },
+    {
+      "role": "overlapping_growth_member_mateo",
+      "entity": "users",
+      "facts": "Mateo Rivera holds conversation-membership records for #product-growth, #core-infra, #model-research, #frontend, and #project-alpha-dev within workspace T01WORKSPACE.",
+      "selection": "negative",
+      "reason": "Same exclusion failure as other overlapping growth members; demonstrates the route condition must apply to the full membership set, not just one channel."
+    },
+    {
+      "role": "core_infra_only_member",
+      "entity": "users",
+      "facts": "Robert Chen holds conversation-membership records for #core-infra, #model-research, #frontend, and #product-growth within workspace T01WORKSPACE.",
+      "selection": "negative",
+      "reason": "Also a member of core-infra already and of multiple other channels, so he neither satisfies the exclusive product-growth condition nor needs inviting."
+    }
+  ],
+  "obligations": [
+    {
+      "name": "identify_isolated_growth_member",
+      "description": "Select the single user whose conversation-membership records within workspace T01WORKSPACE place them in #product-growth but in no other channel of that workspace.",
+      "table": "users",
+      "mode": "single",
+      "task_type": "read-only",
+      "scope": "conversation memberships bounded to the named workspace's channel corpus (#product-growth, #core-infra, #model-research, #frontend, #project-alpha-dev)",
+      "target_roles": [
+        "target_user"
+      ],
+      "candidate_role_sets": null,
+      "selection": "one",
+      "answer_attributes": [
+        [
+          "users.user_id"
+        ],
+        [
+          "users.real_name"
+        ],
+        [
+          "users.username"
+        ]
+      ]
+    },
+    {
+      "name": "invite_to_core_infra",
+      "description": "Invite the identified user into the #core-infra conversation, creating a new conversation-membership record.",
+      "table": "channel_members",
+      "mode": "single",
+      "task_type": "state-changing",
+      "scope": "adding one membership row for the identified user into the #core-infra channel",
+      "target_roles": [
+        "target_user",
+        "infra_channel"
+      ],
+      "candidate_role_sets": null,
+      "selection": "one",
+      "written_attributes": [
+        [
+          "channel_members.channel_id"
+        ],
+        [
+          "channel_members.user_id"
+        ]
+      ]
+    }
+  ],
+  "task_spec": [
+    {
+      "line": 1,
+      "text": "Find the product-growth channel member who has no membership in any other team channel within the workspace.",
+      "obligations": [
+        1
+      ]
+    },
+    {
+      "line": 2,
+      "text": "Invite that identified person into the #core-infra channel.",
+      "obligations": [
+        2
+      ]
+    }
+  ],
+  "scope_exception": null,
+  "access_plan": "Use conversations.members on #product-growth (C_GROWTH) to enumerate its membership, then cross-check each member against conversations.members results for #core-infra, #model-research, #frontend, and #project-alpha-dev (the bounded, visible channel-ID corpus of workspace T01WORKSPACE) to find the one member absent from all of them. Then call conversations.invite on #core-infra with that user's ID."
+}

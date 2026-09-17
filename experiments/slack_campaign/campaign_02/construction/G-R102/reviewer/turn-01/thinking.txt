@@ -1,0 +1,26 @@
+I'm thinking through this query about reactions on Priya's CUDA-related messages in #core-infra — the path goes reaction to message to user, filtering on the channel, Priya as the message author, and the CUDA memory investigation topic.
+
+The reacting user isn't part of that traversal since it's already stored directly on the reaction itself, so it comes through as a natural attribute rather than an additional join.
+
+Now checking the actual seed data for message_reactions - there's only one row in the table, tied to a completely different message (the circuit-tracer OOM one), not either of Priya's CUDA investigation messages. So the reactions I was expecting on the pprof and profiling messages don't actually exist in the seed data.
+
+That's fine since the design notes explicitly allow for planned reactions not yet present in the base seed. I'm now verifying the negative test cases - budget message shares author/channel but wrong topic, OOM message shares channel/topic but wrong author, and the Tokyo message shares author but wrong channel/topic - all good for testing binding correctness. I confirm the pprof delta message content and metadata (author U_PRIYA, channel C_INFRA) line up correctly with the expected anchor.
+
+Checking the "pulling profiles" message next, it also correctly matches Priya in C_INFRA. But when I look at the $47K budget message, I find it's actually authored by U_ROBERT, not U_PRIYA as the design's role name implies - that's a discrepancy worth flagging.
+
+Actually, this might be intentional: the role could describe a message the compiler plans to synthesize later with the correct author, rather than something pulled from the base seed. I'll move on to check the access_plan, which calls for using conversations.history on #core-infra to find Priya's messages about the CUDA memory limit investigation, then reactions.get on each matching timestamp - that seems like a reasonable, realistic sequence.
+
+I want to make sure the required "channel" and "timestamp" params for reactions.get are both obtainable from the history call, and they are, so this holds up as valid API usage with no reliance on hidden IDs. The target roles also line up correctly with the plural reaction request, and the answer attributes are legitimate columns without hardcoded literal values.
+
+The topic-matching condition for identifying the CUDA/GPU memory thread is content-based rather than a literal field, which is an acceptable semantic pattern here since it ties back to the real message_text column. I'm now weighing whether this thread identification is specific enough to be unambiguous.
+
+Multiple messages tie together contextually across Priya's posts, which is fine given the plural resolution mode implied by the question. Channel membership versus authorship doesn't matter here since channel_id is a direct field on the message, and I'm now checking whether the raised_hands emoji falls within the supported reaction vocabulary.
+
+I also want to flag that the seed data already has a genuine Priya message about GPU utilization and instance mix in C_INFRA that touches on the same cloud budget topic, distinct from the new planned message about the $47K overage — so I need to make sure these don't get conflated.
+
+Overall the design appears solid: routes and semantics are implemented correctly, negatives are well-supported, and the answers seem grounded in real seed data.
+
+One thing worth checking is actor access -- calling conversations.history requires membership in #core-infra, and while the base seed doesn't explicitly name the actor, this doesn't invalidate the design as written. I also want to verify the final step correctly resolves to the reacting user rather than stopping at the message level, since the prompt asks "who left each one" but the route ends at MESSAGE→USER.
+
+The reacting user's identity is actually reported as an attribute directly from message_reactions.user_id rather than through the route itself, which the design explicitly notes -- that's fine since it's a real column already in the answer_attributes. The final USER node in the route maps to authorship (Priya's check), not the reactor, which is a legitimate use of the MESSAGE→USER edge. With calibration not a concern here, I'm settling on validity: pass, quality: strong.
+

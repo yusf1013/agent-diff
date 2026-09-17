@@ -1,0 +1,30 @@
+I'm designing a scenario tracing REACTION → MESSAGE → USER with multiple resolution, using core-infra and model-research channel messages about the GPU memory incident, pprof profiling, and quantization discussion, picking reactions that mostly don't already exist in the seed data.
+
+I'm thinking about a "multiple" mode task where the actor removes their own reactions from teammates' messages about the CUDA memory investigation, since reactions.remove only lets a user remove their own reaction, not others'. So I'll set the actor as the agent bot removing its own reactions across several messages authored by a specific user in #core-infra.
+
+Actually, a cleaner design: make it read-only instead—identify which emoji reactions teammates left on Priya's messages about the CUDA memory investigation in core-infra, and who left them, routing from REACTION to MESSAGE (filtered by author) to USER.
+
+I want fresh seed data though, since existing message_reactions doesn't map cleanly to this scenario, so I'll construct new messages and reactions specifically for Priya's CUDA profiling thread in #core-infra.
+
+The task: list reactions on Priya's CUDA memory investigation messages, showing emoji and reactor. This is read-only, routing REACTION->MESSAGE->USER to filter by Priya as author (not reactor), with selection mode multiple since several reactions need to match, plus some plausible negatives to avoid trivial resolution.
+
+I'm adding a reaction on the "Got the pprof delta" message with a raised_hands emoji as the first entry.
+
+Now I'm working out negative cases: a reaction on an Olena-authored message (wrong author), a reaction on a Priya message that's about cloud costs rather than CUDA memory (wrong content topic), and considering a case where the same reactor appears on a different Priya message to test whether the model over-generalizes by reactor identity alone.
+
+I decide the cleanest additional negative is Kenji reacting with "rocket" on Priya's Tokyo latency message in C_GROWTH — this covers both a different channel and a different topic simultaneously, which nicely rules out any spurious matching on channel or subject alone.
+
+Now I settle on the final prompt: "In #core-infra, what reactions did teammates leave on Priya's messages from the CUDA memory investigation, and who left each one?" This is clean since it names the channel literally, attributes authorship to Priya, and ties content to the CUDA/GPU investigation, with the binding note clarifying reactions are tied to that joined author-channel-content record and each reacting user is reported per match.
+
+I define the obligation against message_reactions with multiple matches, read-only task type, targeting the two correct reactions as a set, and specify the answer attributes as reaction_type, user_id, and message_id. I add supporting roles for the message pair, Priya as author, core-infra as channel, and the reacting users Lukas and Olena as support, then start assembling the full JSON with facts and selection tags distinguishing matches, negatives, and support roles.
+
+Continuing to map out roles: the "message_pprof_delta" role covers Priya's message about getting the pprof delta, tied to binding one reaction, and "message_pulling_profiles" role covers her earlier message about pulling profiles now, both as support entities in core-infra.
+
+For the reactions, Lukas's raised_hands emoji matches to the pprof delta message, and Olena's eyes emoji matches to the pulling profiles message.
+
+Then I'm checking Priya's budget message about spot instances - it's a different topic (cost, not CUDA memory), so that gets negative support, and Robert's moneybag reaction to it is also excluded despite being from the same author and channel, since the topic doesn't align with the CUDA memory investigation. Now I'm looking at Olena's message about the training job eviction and CUDA memory during what appears to be the same infrastructure incident.
+
+Olena's message matches the topic but not the author since it's not from Priya, so it's negative support, and Lukas's fire reaction to it gets excluded for the same reason - author mismatch despite topic and channel matching. I'm also flagging Priya's Tokyo CDN latency message, which is from the right author but wrong channel (#product-growth) and wrong topic, and Kenji's rocket reaction to it is excluded for channel and topic mismatch. This gives good negative coverage across wrong author, wrong topic with matching author/channel, and wrong channel scenarios - now I'm moving to the "cuda_investigation_reactions" obligation on the message_reactions table with multiple mode.
+
+This is a read-only task scoped to reactions on Priya's CUDA memory investigation messages in #core-infra, targeting roles for raised-hands and eyes reactions, with a selection set and specific answer attributes for reaction type, user, and message ID. I'm sketching the access plan around using conversation history to locate Priya's relevant messages then pulling reactions per message, and binding the selection criteria to channel, author, and topic while treating the reacting user as an output attribute rather than a filter. I've drafted the final prompt text asking about reactions on Priya's CUDA investigation messages in #core-infra and confirmed it avoids flagging ambiguity or using absolute language, so now I'm finalizing the JSON with written/change attributes omitted since this is read-only.
+

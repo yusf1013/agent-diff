@@ -1,0 +1,106 @@
+The error seems to indicate the binding for obligation O1 got mismatched—it's comparing an empty selector match against planned bindings that actually included all five negative_referent handles, suggesting there's some implicit binding role tied to the obligation's expected answer set that got misassigned.
+
+Actually the mismatch is between private expected_matches and recomputed matches, which points to a schema field I might be missing entirely rather than a bindings issue. The computed_focal_negatives only lists 2 items instead of all target_roles, suggesting the focal query logic filters differently than I assumed, likely due to the reaction_type=eyes scope excluding some candidates upfront.
+
+The real problem is that "Main identifying path differs from assigned complete route" means my focal path only traversed REACTION-MESSAGE-CONVERSATION but was supposed to follow the full assigned route through WORKSPACE and WORKSPACE_MEMBERSHIP as well. I incorrectly split that route into a separate auxiliary condition instead of keeping the entire route within the single focal query, so I need to merge everything back into one main selector.
+
+This means WORKSPACE_MEMBERSHIP has to be in the focal query too, so I need to figure out how to link the reactor directly to their membership row without a separate users node - maybe by joining message_reactions.user_id straight to user_teams.user_id, treating them as adjacent tables in the route.
+
+So the five tables map directly to the five route nodes with no explicit users table needed, giving four joins: reactions to messages, messages to channels, channels to teams, and finally reactions to user_teams on user_id.
+
+But I still need to enforce that the reacting user matches the admin membership user, and that's the part the route structure doesn't naturally express. I'm wondering whether cross-table equality filters are even supported here, since the selector syntax may not allow binding two different table's user_id fields together directly.
+
+Since the path must be strictly linear, looping back to reference message_reactions.user_id from a non-adjacent node isn't allowed. This makes me think the actual route may include implicit junction tables like "users" as connectors, similar to an earlier example path that had extra nodes not part of a simplified route.
+
+Given the constraint forces one direction, maybe the intended full ordered route explicitly lists REACTION, MESSAGE, CONVERSATION, WORKSPACE, WORKSPACE_MEMBERSHIP as the sequence to follow.
+
+This suggests a linear chain: REACTION to MESSAGE to CONVERSATION to WORKSPACE to WORKSPACE_MEMBERSHIP, reaching membership through the workspace itself filtered by admin role, rather than through the reactor directly. But this seems to conflict with the binding note that ties the reactor to the admin membership as the same user, so if the route only reaches "any" admin membership in that workspace rather than the reactor's own, it wouldn't enforce that identity properly.
+
+Looking at the error output, computed_focal_negatives includes reaction_wrong_channel and reaction_wrong_channel_morgan, which are cases where the channel isn't core-infra. If focal only filters on core-infra, these shouldn't match focal at all -- so something in my channel filter isn't excluding them correctly, meaning my focal query is broken or these negatives are defined differently than I assumed.
+
+That doesn't align with the core-infra filter at all, so I'm reconsidering whether the grader treats "focal card negatives" differently -- perhaps as the set of negatives specifically meant to be excluded by the focal component's design, rather than a literal recomputation of my query.
+
+Setting that aside, the real issue is the first errors: the main identifying path doesn't match the assigned route. The route should chain REACTION → MESSAGE → CONVERSATION → WORKSPACE → WORKSPACE_MEMBERSHIP, mapping to message_reactions → messages → channels → teams → user_teams, connected via their actual foreign keys in that exact order.
+
+If admin-membership isn't tied to the reactor, then any eyes reaction on a core-infra message would satisfy the route since the workspace almost certainly has an admin, which would make Priya's wrong-role reaction match too. But the computed matches came back empty, so I need to figure out whether that empty result reflects the grader's actual recomputation or just my fix attempt.
+
+This is getting complicated. I think I should simplify by using a single-query path through message_reactions to messages to channels to teams to user_teams with admin filters, dropping the auxiliary join, though I still need to figure out whether the same-user constraint can be enforced without a literal declared foreign key—maybe any real matching join on user_id fields counts as valid.
+
+Actually, the route as literally defined only needs a reaction on a message in the channel, workspace, and any workspace-level admin membership - without tying the admin to the reactor. But this contradicts the binding note, which explicitly excludes Priya's case even though the workspace has admins elsewhere, meaning the design must require the admin role to belong specifically to the reactor, not just anyone in the workspace.
+
+So this means the reaction's user_id identifies the participant for the workspace membership branch, while a separate path traces through message and conversation to identify the workspace itself—rather than a strict linear chain, the route likely forks from the reaction node into two branches that both need to align.
+
+Actually, maybe the reactor's membership isn't reached linearly from the message chain at all — instead REACTION branches to WORKSPACE_MEMBERSHIP directly via user identity, while separately the MESSAGE→CONVERSATION→WORKSPACE chain just establishes scope, and that membership must also match the same workspace and user. So the path needs two attachment points off REACTION rather than one linear sequence.
+
+Maybe the intended fix is simpler than I think: perhaps they just want the literal 5-table chain (message_reactions, messages, channels, teams, user_teams) as the path, dropping the same-user nuance entirely. But checking core-infra eyes reactions against workspace admins, that naive chain without the same-user constraint would still produce a match through Priya's reaction and the workspace admins.
+
+So the same-user binding must be essential to keep the result empty—meaning the join implicitly ties user_teams.user_id to message_reactions.user_id since both reference the same identity column, and the grader may accept this non-adjacent join as valid.
+
+Trying a straightforward practical route instead: chain the path through message_reactions, messages, channels, teams, user_teams with joins connecting each adjacent pair, but this still leaves the user_id equality between message_reactions and user_teams unaddressed since filters can't express cross-node field equality — only literal comparisons. I need to consider another approach.
+
+Actually maybe the chain is linear after all: user_teams to users to message_reactions to messages to channels to teams, since each adjacent pair shares a valid FK relationship even if the direction reverses partway through.
+
+But checking the first example again, path[0] matched root_table exactly, so the path has to start there, not sit in the middle. Since message_reactions has two separate FKs branching in opposite directions, it can't sit mid-chain with a single node before and after it in a strictly linear path — it can only extend one direction at a time from node0.
+
+Maybe I'm overcomplicating this—perhaps the grader simply wants the focal path to traverse the five conceptual nodes in order without enforcing strict same-user binding through the join graph.
+
+Maybe the validation is looser than I thought, just checking that the field is a real foreign key column pointing somewhere, without strictly requiring the adjacent table match. That still feels too permissive for a spec, so given time constraints I should just go with the fix that matches the error messages directly, since my old auxiliary-based approach was incorrectly matching negatives against the focal case.
+
+I'm second-guessing my node indexing for the channel_name filter -- node2 should map to channels, which ought to correctly restrict to core-infra only, so something else must be causing engineering to leak through as a false match. It's possible the grader applies scope and focal filters separately in a way that doesn't compose the way I expect, or there's a case-sensitivity issue with the channel_name comparison.
+
+Actually, "computed_focal_negatives" likely just describes items correctly rejected by the focal filter alone (engineering, general) since their channel isn't core-infra -- that's expected behavior, not an error. The real problem must lie elsewhere in the failing checks.
+
+Looking more carefully, the failure "O1: complete selector matches [], but planned bindings are [...]" is the clearest signal -- it points to a mismatch where some obligation expects role bindings to equal the selector's matched set, but the selector returns nothing while planned bindings list five items.
+
+Actually since matches ends up empty, that exclusion requirement holds trivially, so the reported error is probably just a symptom of the real issue—the identifying path not matching the assigned route—rather than a separate failure. The core fix is to make the focal path literally follow the mapped route chain in order, accepting that the "same user" constraint may not be enforceable here, with users bridging message_reactions and messages in the chain.
+
+Reconsidering the route order, I wonder if WORKSPACE_MEMBERSHIP is meant to bind to any of several participant roles—channel member, message author, or reaction contributor—rather than requiring the same identity to persist across the whole chain. Since REACTION is the root and directly identifies its contributor, maybe the intended design doesn't require MESSAGE/CONVERSATION/WORKSPACE to trace the same user identity at all.
+
+I could try swapping the join field to user_id instead of team_id for that last connection, but that loses the team association I actually need. Using two join fields for one step doesn't seem supported either, so this path may be a dead end.
+
+By symmetry, this breaks down either way: whether we treat "user_teams.user_id" or "message_reactions.user_id" as the join field, the FK target is "users," not the literal adjacent node in the ordering, so skipping the "users" bridge fails the adjacency requirement regardless of which side owns the field.
+
+This means both interpretations really need an explicit "users" node inserted between message_reactions and user_teams, and since the path must be linear from a fixed root_table, fitting both branches into one path seems impossible unless one branch reaches the other indirectly. I'm now checking whether users could connect to teams or channels through channel_members instead—routing message_reactions to users, then to user_teams for the admin check, and separately trying to see if user_teams or teams can reach channels through another FK chain.
+
+I realize once a join reaches teams, it can reverse through channels.team_id to filter by channel_name, then forward into messages via channel_id—but that message needs to be the exact one referenced by message_reactions.message_id, which loops back to node0's own field and isn't reachable going forward. Since message_reactions stays anchored throughout the join sequence even as later nodes shift, I'm working out whether that anchor persists as a constant reference or gets effectively replaced once we move past the first join.
+
+I'm reconsidering whether the join path list strictly determines adjacency, or whether the joins could be specified independently of node order—so a later join step could reference node0's message_id directly rather than requiring a linear chain through node1 and node2.
+
+With these joins forming the linear chain I already described, adding the same-user path would require branching into "users" and an extra edge, which pushes past a simple N-1 spanning tree unless the structure allows non-linear branching rather than one strict sequential chain.
+
+So I just need N-1 joins forming a valid spanning tree over the tables, where order in the list doesn't dictate adjacency—the join fields determine which tables connect. Trying to build the path with message_reactions, messages, channels, teams, user_teams, users, I start wiring up edges through message_id, channel_id, team_id, and user_id relationships, but I catch myself creating a cycle between message_reactions, users, user_teams, and teams instead of a proper tree.
+
+For 6 nodes I need exactly 5 edges to form a spanning tree without cycles, so connecting users to both message_reactions and user_teams while also linking teams through user_teams creates a redundant 6th edge and closes a loop—that violates the tree structure requirement.
+
+But maybe I don't need the teams-user_teams edge at all: if I filter user_teams directly by a literal team_id value instead of joining to the teams table, I avoid the cycle entirely while still tying the reactor's identity through the shared users node linking message_reactions and user_teams.
+
+Still, since route_nodes explicitly lists WORKSPACE, the grader likely expects an actual teams table node bridging channels and user_teams rather than a literal filter shortcut.
+
+Now I'm sketching the node/edge structure for the spanning tree: six nodes (message_reactions, messages, channels, teams, user_teams, users) needing enough edges to connect them, considering whether to filter teams by team_name for a more general, identifying predicate rather than hardcoding the team_id.
+
+Rather than trying to join teams and user_teams together directly, I realize I can split this into two independent constraints that both resolve to the same literal team_id value: one path checks the message's channel belongs to the "Test Workspace" team, and the other checks the reacting user's membership and admin role in that same team via a literal filter—so they don't need to be structurally joined.
+
+Actually, structuring this as a tree with the workspace as a central hub makes more sense: teams connects outward to both channels (via team_id) and user_teams (via team_id), keeping the workspace's dual role explicit without forming a cycle, and channels separately links onward to messages.
+
+Counting it out: 6 edges connecting 6 nodes actually does form a valid tree by definition, since message_reactions branches off both messages and users independently rather than creating a closed loop—so I may have been wrong to call it a cycle.
+
+I could instead filter user_teams by team_id as a literal match, avoiding the join back to teams entirely since there's only one workspace in this scenario, which breaks the cycle without losing the same-team constraint.
+
+So I'm laying out the full seven-node tree structure: message_reactions as root branching to messages then channels then teams (filtered by workspace name) on one side, and to users then user_teams then a second teams occurrence (filtered by admin role and workspace name) on the other side, confirming table names can repeat as distinct aliased nodes in the path.
+
+This gives six edges for seven nodes, a valid acyclic tree since the two teams occurrences stay separate rather than merging. The route still captures both the reaction-message-channel-workspace chain and the membership-workspace chain, with consistency enforced by both branches filtering on the same workspace name value rather than through a shared node.
+
+But I'm second-guessing whether this violates the requirement that the main path match the assigned route exactly—maybe it expects a straight five-node chain without duplicate entities or bridge nodes. Still, earlier valid examples did include bridge nodes beyond the named entities, so extra hops might be acceptable.
+
+Given the difficulty of validating this without execution, I'm considering just simplifying to the literal five-node route and dropping the reactor-specific constraint, since the grader's expectation might treat "any workspace admin" as valid rather than requiring it to match the specific reacting user—though I need to double-check whether that would let Priya's reaction incorrectly pass.
+
+Testing this simpler chain confirms it would falsely match Priya's reaction, since Robert and Morgan both hold admin roles on the team regardless of who reacted, contradicting the requirement that the result set be empty. So this approach is definitely wrong, and I need to keep the same-user linkage in place. Since my earlier submission with that constraint produced the correct empty match set, that confirms the auxiliary condition is actually necessary.
+
+Checking reaction_wrong_role next: Priya's eyes reaction on the core-infra alert passes the channel filter through node1-3, so I need to trace the user branch through user_teams to see whether the role condition correctly excludes it.
+
+Priya has a member-role row in user_teams, so the admin-role filter correctly excludes her reaction. The wrong_emoji case gets excluded earlier by the scope filter on reaction_type, and the bot reaction case gets excluded by the channel filter, so both are consistent with no matches — meaning the computed matches being empty lines up with the grader's expected result. Now I can move on to writing the JSON selector, starting with root_table as message_reactions and the scope condition on reaction_type equaling eyes.
+
+I'm laying out the path array with seven table entries and constructing six join edges connecting them into a branching tree structure, where message_reactions connects to both messages and users as two separate subtrees. I'm also defining a filter on the team name field to match a specific workspace value.
+
+Now I'm assigning filters to each node: channel name equals "core-infra", role equals "admin", and team name equals "Test Workspace" for the admin membership branch, making sure the join path reaches node6 (teams) through user_teams.team_id without hardcoding any IDs.
+

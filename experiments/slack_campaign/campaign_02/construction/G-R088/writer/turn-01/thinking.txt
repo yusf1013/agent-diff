@@ -1,0 +1,34 @@
+I'm mapping out a task that traces MESSAGE to REACTION to USER to CONVERSATION_MEMBERSHIP, using a single resolution mode with MESSAGE as the referent entity — essentially identifying a message via someone's reaction and then checking that user's channel membership.
+
+I'm looking at the seed example with a reaction from an agent user, but I want to design fresh entities: a message that got a specific reaction from a user who also happens to be a member of another channel. That combination becomes the identifying condition for a natural user request, likely a read-only lookup on what the message said.
+
+I'll construct new reaction records: Priya and Aisha both reacting with an emoji, but distinguishing them by their channel memberships so only one satisfies the identifying route to the target message.
+
+I'll pick a message-to-user-to-channel chain: find a message that received a specific reaction emoji from a user, where that user's identifying trait is membership in a particular channel rather than their name. This makes the deletion task depend on resolving the reactor's identity through channel membership first — a scenario like "delete the message that got a 🚩 reaction from someone who's a member of that channel."
+
+I'll design a new message from Kenji in product-growth about an outdated signup funnel doc, with Priya (a core-infra member) flagging it with a 🚨 reaction to satisfy the identifying condition. For the negative case, I need another message with the same reaction type but from someone not in core-infra, so it doesn't match the deletion criteria.
+
+Then I want a message reacted by Priya but placed in the wrong channel (model-research instead of product-growth), testing that the channel condition on the message itself matters, not just the reactor's membership.
+
+I'm also verifying Priya's core-infra membership against the channel_members data to confirm the reactor condition holds, then setting up the actual matching message M1 in C_GROWTH authored by U_KENJI to serve as the positive case.
+
+For negatives, I'm designing several close variants: swapping the reactor to Carlos (who lacks core-infra membership) to test the wrong-relationship case, moving the same reaction to a message in C_MODEL to test wrong-container matching, changing Priya's reaction to "thumbsup" to test wrong-value matching, and having Priya react to her own message to test self-authorship edge cases.
+
+I need to double-check that adding these alternate reactors doesn't accidentally create a second valid match — I confirm Aisha is also a core-infra member, so I have to avoid using her, and instead rely on Carlos and Kenji since neither belongs to C_INFRA.
+
+Nearly everyone at NeuroFlow qualifies as a core-infra member, so that condition alone isn't distinguishing. But it doesn't matter since the combination of specific message, specific reactor, and specific channel still narrows it down to exactly one matching reaction record.
+
+I'll finalize the scenario: channel is #product-growth, reaction is the rotating-light emoji, and the reactor must belong to #core-infra, ensuring Incognito and other non-members clearly fail. Now I'm drafting the natural-language prompt asking to delete the message in #product-growth that got flagged with a 🚨 reaction from someone also in #core-infra.
+
+I'm assigning concrete IDs: the matching message is Kenji's funnel doc note in the growth channel, reacted to by Priya with rotating_light. For the negative case testing wrong reactor membership, I'm using Mateo's budget reminder message reacted to by the Incognito user, who isn't a core-infra member.
+
+For the wrong-channel negative case, I'm placing Sophie's eval harness message in the model channel with Priya reacting correctly but in the wrong location. Now I'm working on a third negative case for wrong reaction type, checking channel membership details to pick an appropriate author distinct from the reactor.
+
+Confirming Incognito isn't in core-infra membership, matching the intended negative design. Checking N2's message in C_MODEL — Priya is a member there too with the same reaction type, but the channel is wrong since C_GROWTH is expected, giving a clean exclusion. Verifying selection mode is single since only one message satisfies all conditions (right channel, reaction type, and reactor membership), with no coincidental matches elsewhere in the seed data—now drafting the obligation for the target message as state-changing.
+
+Since chat.delete removes the record rather than modifying fields, I'm setting change_attributes and written_attributes to empty arrays to reflect that it's a pure deletion. I'm writing the task spec line describing deleting the flagged message in #product-growth, then listing supporting roles: the target message, the identifying reaction, and the reactor.
+
+I'm rounding out the roles with Priya's user record and her core-infra membership, plus negative examples covering wrong reactors, wrong channels, and wrong reaction types, along with the two channel records that anchor the scope conditions. That should give enough coverage without needing separate negative reaction rows, since the obligation only targets the messages table.
+
+Now I'm drafting the binding note explaining that the message, its reaction, and the core-infra membership must all trace back to the same user and same message, and outlining the access plan using conversations.history, reactions.get, and members-lookup calls to verify that chain before producing the final JSON answer.
+

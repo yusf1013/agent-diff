@@ -1,0 +1,74 @@
+{
+  "prompt": "We're cleaning up dead channels. Can you send a DM to the bot that's a member of the archived #old-project-q3 channel, asking if it still needs access before we delete the channel?",
+  "binding_note": "The identifying route is USER -> CONVERSATION_MEMBERSHIP -> CONVERSATION: the same conversation-membership record must tie a user's bot flag to a membership in the conversation named old-project-q3. No conversation_membership record exists for that channel in the data, so the route yields no user. Bots that are members of other (even other archived) channels, or users who merely authored a message in that channel without holding a membership record there, do not satisfy the route.",
+  "roles": [
+    {
+      "role": "target_channel",
+      "entity": "channels",
+      "facts": "channel_id C_OLD_PROJECT, channel_name old-project-q3, is_archived true, topic 'Q3 2025 Project - ARCHIVED'; no channel_members rows reference this channel_id",
+      "selection": "support",
+      "reason": "Provides the named, archived conversation that anchors the membership route; it has zero membership records."
+    },
+    {
+      "role": "wrong_channel_archive",
+      "entity": "channels",
+      "facts": "new channel_id C_BETA_ARCHIVE, channel_name beta-legacy-archive, is_archived true, team_id T01WORKSPACE",
+      "selection": "support",
+      "reason": "A different archived channel used to host a bot membership that must not be confused with old-project-q3."
+    },
+    {
+      "role": "beta_bot",
+      "entity": "users",
+      "facts": "new user U_BETABOT, is_bot true, holds a conversation_membership row for C_BETA_ARCHIVE only",
+      "selection": "negative",
+      "reason": "Satisfies 'bot member of an archived channel' but the archived channel is beta-legacy-archive, not the requested old-project-q3, so the route excludes it."
+    },
+    {
+      "role": "agent_bot_elsewhere",
+      "entity": "users",
+      "facts": "U01AGENBOT9, is_bot true, holds conversation_membership rows for general, random, engineering, growth, project-alpha, project-alpha-dev, core-infra, model-research, frontend, and dm-agent-sophie — none of them old-project-q3",
+      "selection": "negative",
+      "reason": "A bot with many memberships, but never in the requested archived channel, so the route condition still fails."
+    },
+    {
+      "role": "human_poster_old_project",
+      "entity": "users",
+      "facts": "U02JOHNDOE1 authored a message text in channel C_OLD_PROJECT but has no channel_members row for that channel",
+      "selection": "negative",
+      "reason": "Message authorship in the target channel is not a conversation_membership, so it must not satisfy the USER->MEMBERSHIP->CONVERSATION route."
+    }
+  ],
+  "obligations": [
+    {
+      "name": "old_project_bot_member",
+      "description": "Select the single user who holds a conversation_membership in the conversation named old-project-q3 and is classified as a bot, in order to DM them; no such membership record exists in this workspace, so no user satisfies the route.",
+      "table": "users",
+      "mode": "absent",
+      "task_type": "state-changing",
+      "scope": "member (bot) of the archived channel named old-project-q3",
+      "target_roles": [],
+      "candidate_role_sets": null,
+      "selection": "one",
+      "change_attributes": [
+        [
+          "messages.message_text",
+          "messages.channel_id"
+        ]
+      ],
+      "written_attributes": [
+        "messages.message_text"
+      ]
+    }
+  ],
+  "task_spec": [
+    {
+      "line": 1,
+      "text": "Identify the bot member of the archived #old-project-q3 channel and send them a DM asking whether they still need access before the channel is deleted.",
+      "obligations": [
+        1
+      ]
+    }
+  ],
+  "scope_exception": null,
+  "access_plan": "Use conversations.list (or users.conversations for the acting user) to locate the archived channel named old-project-q3 by exact name, then conversations.members on that channel to enumerate its membership; cross-reference each member's users.info for the is_bot flag. Since conversations.members returns no rows for this channel, the bot-member condition along the membership route cannot be satisfied, establishing the absent outcome."
+}

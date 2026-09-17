@@ -10,6 +10,7 @@ from .bedrock import Conversation, save
 from .generate import ROOT, HERE, read, dump, domain_context, materialize
 from .selection import SELECTOR_GUIDE, evaluate_selector, SCHEMA
 from .validate import validate_case
+from .route_contract import build as build_route_contract
 
 BASE = ROOT / 'examples/slack/seeds/slack_bench_v2.json'
 PROMPTS = HERE / 'prompts/v2'
@@ -55,7 +56,7 @@ def write_design(folder, assignment):
     if (folder/'design.json').exists():
         return read(folder/'design.json')
     agent = Conversation(folder/'writer', (PROMPTS/'writer.md').read_text(), max_tokens=12000)
-    packet = {'assignment':assignment, 'domain':source_context(), 'base_seed':read(BASE),
+    packet = {'assignment':assignment, 'route_contract':build_route_contract(assignment['route_nodes']), 'domain':source_context(), 'base_seed':read(BASE),
               'acting_user_id':'U01AGENBOT9',
               'instruction':'Write a fresh scenario; do not copy the calibration names or prompts.'}
     if assignment.get('source_context'):
@@ -144,6 +145,9 @@ def check(case, assignment, design, compiled):
         source=assignment['source_context']
         if case['prompt'] != source['prompt']:
             errors.append('Environment-only mutation must preserve source prompt byte-for-byte')
+        original_seed = source['seed']
+        if all(sorted(dump(row) for row in case['seed'].get(table, [])) == sorted(dump(row) for row in original_seed.get(table, [])) for table in set(case['seed']) | set(original_seed)):
+            errors.append('Environment-only mutation made no actual seed changes; add a plausible path-derived negative while preserving all original intended references.')
         old=source['cards'][assignment.get('source_obligation',1)-1]['Referent set']
         if {dump(x) for x in case['private']['expected_matches']} != {dump(x) for x in old}:
             errors.append('Environment-only mutation must preserve source intended referent set')

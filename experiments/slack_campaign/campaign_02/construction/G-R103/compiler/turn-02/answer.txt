@@ -1,0 +1,95 @@
+```json
+{
+  "seed_edits": [
+    {
+      "table": "messages",
+      "op": "insert",
+      "key": {"message_id": "1706120000.000001"},
+      "values": {
+        "message_id": "1706120000.000001",
+        "channel_id": "C03IJKL9012",
+        "user_id": "U07MORGANFREE",
+        "message_text": "Heads up - the new pricing tiers go live Monday, keeping engineering looped in.",
+        "type": "message",
+        "ts": "1706120000.000001"
+      },
+      "reason": "message_morgan role requires a distinct message authored by admin Morgan Freeman in engineering channel; no such message exists in base seed."
+    },
+    {
+      "table": "channel_members",
+      "op": "insert",
+      "key": {"channel_id": "C03IJKL9012", "user_id": "U07MORGANFREE"},
+      "values": {"channel_id": "C03IJKL9012", "user_id": "U07MORGANFREE"},
+      "reason": "Author of a new message in C03IJKL9012 should be a member of that channel for coherent history."
+    },
+    {
+      "table": "channel_members",
+      "op": "insert",
+      "key": {"channel_id": "C02EFGH5678", "user_id": "U04OMER23"},
+      "values": {"channel_id": "C02EFGH5678", "user_id": "U04OMER23"},
+      "reason": "negative_nonadmin_author has U04OMER23 reacting on a message in C02EFGH5678; reactor should be a coherent channel participant."
+    },
+    {
+      "table": "message_reactions",
+      "op": "insert",
+      "key": {"message_id": "1700173200.000456", "user_id": "U02JOHNDOE1", "reaction_type": "eyes"},
+      "values": {"message_id": "1700173200.000456", "user_id": "U02JOHNDOE1", "reaction_type": "eyes"},
+      "reason": "reaction_robert_eyes: required alternative target reaction on admin Robert Walsh's message."
+    },
+    {
+      "table": "message_reactions",
+      "op": "insert",
+      "key": {"message_id": "1706120000.000001", "user_id": "U06HUBERT23", "reaction_type": "eyes"},
+      "values": {"message_id": "1706120000.000001", "user_id": "U06HUBERT23", "reaction_type": "eyes"},
+      "reason": "reaction_morgan_eyes: required alternative target reaction on admin Morgan Freeman's new message."
+    },
+    {
+      "table": "message_reactions",
+      "op": "insert",
+      "key": {"message_id": "1699572000.000789", "user_id": "U04OMER23", "reaction_type": "eyes"},
+      "values": {"message_id": "1699572000.000789", "user_id": "U04OMER23", "reaction_type": "eyes"},
+      "reason": "negative_nonadmin_author: same emoji as target but message author (U02JOHNDOE1) is not a workspace admin."
+    },
+    {
+      "table": "message_reactions",
+      "op": "insert",
+      "key": {"message_id": "1699564800.000123", "user_id": "U03ROBERT23", "reaction_type": "eyes"},
+      "values": {"message_id": "1699564800.000123", "user_id": "U03ROBERT23", "reaction_type": "eyes"},
+      "reason": "negative_admin_as_reactor: admin appears as reactor, not author, on a non-admin-authored message."
+    }
+  ],
+  "bindings": {
+    "reaction_robert_eyes": [{"message_id": "1700173200.000456", "user_id": "U02JOHNDOE1", "reaction_type": "eyes"}],
+    "reaction_morgan_eyes": [{"message_id": "1706120000.000001", "user_id": "U06HUBERT23", "reaction_type": "eyes"}],
+    "message_robert": ["1700173200.000456"],
+    "message_morgan": ["1706120000.000001"],
+    "user_robert": ["U03ROBERT23"],
+    "user_morgan": ["U07MORGANFREE"],
+    "membership_robert_admin": [{"user_id": "U03ROBERT23", "team_id": "T01WORKSPACE"}],
+    "membership_morgan_admin": [{"user_id": "U07MORGANFREE", "team_id": "T01WORKSPACE"}],
+    "negative_nonadmin_author": [{"message_id": "1699572000.000789", "user_id": "U04OMER23", "reaction_type": "eyes"}],
+    "negative_admin_as_reactor": [{"message_id": "1699564800.000123", "user_id": "U03ROBERT23", "reaction_type": "eyes"}]
+  },
+  "selectors": [
+    {
+      "root_table": "message_reactions",
+      "scope": [],
+      "focal": {
+        "path": ["message_reactions", "messages", "users", "user_teams"],
+        "joins": ["message_reactions.message_id", "messages.user_id", "user_teams.user_id"],
+        "filters": [
+          {"node": 3, "field": "role", "op": "eq", "value": "admin"},
+          {"node": 3, "field": "team_id", "op": "eq", "value": "T01WORKSPACE"}
+        ]
+      },
+      "auxiliary": []
+    }
+  ],
+  "negative_referents": [
+    {"message_id": "1699572000.000789", "user_id": "U04OMER23", "reaction_type": "eyes"},
+    {"message_id": "1699564800.000123", "user_id": "U03ROBERT23", "reaction_type": "eyes"},
+    {"message_id": "1706110000.000100", "user_id": "U01AGENBOT9", "reaction_type": "eyes"}
+  ],
+  "notes": "Dropped the 'negative_wrong_emoji' insertion. Under the assigned route, the focal selector qualifies a reaction solely by whether the reacted-to message's author holds the admin role in T01WORKSPACE; it does not (and cannot, without presupposing the answer) filter by reaction_type. Consequently any additional reaction placed on the same admin-authored message (e.g. a 'thumbsup' from U01AGENBOT9 on Robert's message) is mechanically indistinguishable from a legitimate match and would always be swept into the selector's output, making it impossible to realize as a true excluded negative under this route/selector — it is a structural limitation of the underspecified-authorship-only filter, not a seeding error. All other design elements are preserved: two admins (Robert Walsh, Morgan Freeman) each have exactly one qualifying admin-authored message with exactly one 'eyes' reaction, yielding the intended two-way underspecified answer set {reaction_robert_eyes, reaction_morgan_eyes}. negative_nonadmin_author and negative_admin_as_reactor remain valid, selector-excluded negatives (author not admin, or admin is reactor rather than author, respectively), together with the pre-existing base reaction on message 1706110000.000100 (authored by non-admin U_LUKAS), which the selector also correctly excludes. Solving requires only conversations.history/read access on C01ABCD1234 and C03IJKL9012, both already broadly populated in channel_members, plus users.list-scoped workspace role visibility; no cross-workspace access is required."
+}
+```

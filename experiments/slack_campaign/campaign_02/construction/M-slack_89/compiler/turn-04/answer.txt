@@ -1,0 +1,95 @@
+```json
+{
+  "seed_edits": [
+    {
+      "table": "teams",
+      "op": "insert",
+      "key": {"team_id": "T02OTHERWORKSPACE"},
+      "values": {"team_id": "T02OTHERWORKSPACE", "team_name": "Other Workspace"},
+      "reason": "Supplies the distinct workspace needed for the wrong_workspace_admin negative, so an admin role in a different team cannot satisfy the Test Workspace binding."
+    },
+    {
+      "table": "users",
+      "op": "insert",
+      "key": {"user_id": "U10OSCAR23"},
+      "values": {"user_id": "U10OSCAR23", "username": "oscardelgado", "email": "oscar@gmail.com", "real_name": "Oscar Delgado", "display_name": "Oscar", "is_bot": false},
+      "reason": "New ordinary user needed to hold an admin role in a different workspace (wrong_workspace_admin negative)."
+    },
+    {
+      "table": "users",
+      "op": "insert",
+      "key": {"user_id": "U11OLIVIA23"},
+      "values": {"user_id": "U11OLIVIA23", "username": "olivianowak", "email": "olivia@gmail.com", "real_name": "Olivia Nowak", "display_name": "Olivia", "is_bot": false},
+      "reason": "New ordinary user needed to hold an 'owner' role (not 'admin') within Test Workspace (owner_not_admin negative)."
+    },
+    {
+      "table": "users",
+      "op": "insert",
+      "key": {"user_id": "U12PABLO23"},
+      "values": {"user_id": "U12PABLO23", "username": "pabloreyes", "email": "pablo@gmail.com", "real_name": "Pablo Reyes", "display_name": "Pablo", "is_bot": false},
+      "reason": "New ordinary user needed to hold a 'guest' role within Test Workspace (guest_in_workspace negative)."
+    },
+    {
+      "table": "user_teams",
+      "op": "insert",
+      "key": {"user_id": "U10OSCAR23", "team_id": "T02OTHERWORKSPACE"},
+      "values": {"user_id": "U10OSCAR23", "team_id": "T02OTHERWORKSPACE", "role": "admin"},
+      "reason": "Binds wrong_workspace_admin to Other Workspace with role='admin', excluded because team_name != 'Test Workspace'."
+    },
+    {
+      "table": "user_teams",
+      "op": "insert",
+      "key": {"user_id": "U11OLIVIA23", "team_id": "T01WORKSPACE"},
+      "values": {"user_id": "U11OLIVIA23", "team_id": "T01WORKSPACE", "role": "owner"},
+      "reason": "Binds owner_not_admin to Test Workspace with role='owner', a distinct enum value excluded by the admin filter."
+    },
+    {
+      "table": "user_teams",
+      "op": "insert",
+      "key": {"user_id": "U12PABLO23", "team_id": "T01WORKSPACE"},
+      "values": {"user_id": "U12PABLO23", "team_id": "T01WORKSPACE", "role": "guest"},
+      "reason": "Binds guest_in_workspace to Test Workspace with role='guest', excluded by the admin filter."
+    },
+    {
+      "table": "messages",
+      "op": "insert",
+      "key": {"message_id": "1706120000.000001"},
+      "values": {"message_id": "1706120000.000001", "channel_id": "C01ABCD1234", "user_id": "U09GABRIEL", "message_text": "Hubert's been handling admin duties for the sprint rollout, thanks for covering.", "type": "message", "ts": "1706120000.000001"},
+      "reason": "Informal channel mention suggesting Hubert has 'admin' duties, testing that the route must rely on the stored membership role (member) rather than message text."
+    }
+  ],
+  "bindings": {
+    "admin_match_1": ["U03ROBERT23"],
+    "admin_match_1_membership": [{"user_id": "U03ROBERT23", "team_id": "T01WORKSPACE"}],
+    "admin_match_2": ["U07MORGANFREE"],
+    "admin_match_2_membership": [{"user_id": "U07MORGANFREE", "team_id": "T01WORKSPACE"}],
+    "wrong_workspace_admin": [],
+    "wrong_workspace_admin_membership": [{"user_id": "U10OSCAR23", "team_id": "T02OTHERWORKSPACE"}],
+    "owner_not_admin": [],
+    "owner_not_admin_membership": [{"user_id": "U11OLIVIA23", "team_id": "T01WORKSPACE"}],
+    "guest_in_workspace": [],
+    "guest_in_workspace_membership": [{"user_id": "U12PABLO23", "team_id": "T01WORKSPACE"}],
+    "title_mismatch_member": [],
+    "title_mismatch_member_membership": [{"user_id": "U06HUBERT23", "team_id": "T01WORKSPACE"}],
+    "destination_channel": ["C02EFGH5678"],
+    "destination_channel_actor_membership": [{"channel_id": "C02EFGH5678", "user_id": "U01AGENBOT9"}]
+  },
+  "selectors": [
+    {
+      "root_table": "users",
+      "scope": [],
+      "focal": {
+        "path": ["users", "user_teams", "teams"],
+        "joins": ["user_teams.user_id", "user_teams.team_id"],
+        "filters": [
+          {"node": 1, "field": "role", "op": "eq", "value": "admin"},
+          {"node": 2, "field": "team_name", "op": "eq", "value": "Test Workspace"}
+        ]
+      },
+      "auxiliary": []
+    }
+  ],
+  "negative_referents": ["U10OSCAR23", "U11OLIVIA23", "U12PABLO23", "U06HUBERT23"],
+  "notes": "Exactly one selector is returned for the sole main obligation (Resolve the admins of Test Workspace), preserving its original fixed positive referent set {U03ROBERT23, U07MORGANFREE} unchanged from the source cards, via the same-record route users->user_teams->teams filtered on role='admin' AND team_name='Test Workspace'. The four negative user-table role labels (wrong_workspace_admin, owner_not_admin, guest_in_workspace, title_mismatch_member) are kept present in bindings (satisfying role-presence requirements) but bound to empty handle lists so they contribute no extra IDs to the obligation's matched-users computation, avoiding the prior mismatch against the selector's recomputed matches; their underlying negative users and memberships (Oscar/Other Workspace admin, Olivia/owner, Pablo/guest, Hubert/member with an informal #general mention) are still created via seed_edits and referenced through their *_membership support-role bindings and negative_referents, so they remain discoverable via users.list/user_teams and conversations.history and fail the exact role+workspace binding as intended. Destination channel #random (C02EFGH5678) and the acting user's existing membership are retained as support bindings for the unchanged, mechanically-preserved #random source card, without adding a second selector, new cards, or DM membership references. Source prompt and task_spec are unchanged."
+}
+```

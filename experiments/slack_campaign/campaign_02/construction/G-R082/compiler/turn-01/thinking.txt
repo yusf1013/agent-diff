@@ -1,0 +1,22 @@
+I'm checking which seed messages already exist versus need to be added for the various reaction test cases—verifying the wrong_reactor_message and other records against existing timestamps like 1706001104.000000 and 1706001628.000000 to avoid duplicate inserts.
+
+Now I'm mapping out the message_reactions I need to insert: the target_reaction on message 1706001931.000000 with the raised_hands emoji from Olena, plus wrong_reactor, wrong_emoji, and wrong_channel reaction records on their respective messages, since none of these currently exist beyond the single seeded reaction. I'm also confirming the core_infra_channel and actor identifiers are already set up correctly.
+
+I need to trace the join path from messages through message_reactions to users, filtering on channel core-infra, raised_hands reaction, and Olena as the reacting user - working out how channels connects into that chain to enforce the channel filter.
+
+Since users and channels don't join directly, but channel_id is actually a root field on messages, I can filter that directly via scope rather than through the path's node identifiers.
+
+However, the guidance to prefer name-based predicates like channels.channel_name over raw IDs makes me hesitate to just use the channel_id value directly. I'm now trying to figure out if there's a single path that can incorporate both the reactions/users join and the channels join simultaneously.
+
+Given there's no direct FK between channels and message_reactions, and the path must be a linear join chain from messages, I can't branch into both channels and message_reactions in one path. I'll need to pick a linear sequence like messages → message_reactions → users to satisfy the reaction condition.
+
+For the channel constraint, I'm considering an auxiliary query starting at root_table messages joined to channels filtering on channel_name, since it still applies against the same root row even though it's a separate query path.
+
+Given the route only lists MESSAGE and REACTION nodes, though, I lean toward treating channel_id as a direct field on messages and applying it via scope rather than as a separate auxiliary query, since it's a legitimate FK field on the root table itself.
+
+I'm structuring the focal query to join messages through message_reactions to users, filtering on the reactor's name and reaction type, then setting up an auxiliary path joining messages to channels for the channel scoping.
+
+This design leaves the root scope empty since the focal and auxiliary paths together cover user, reaction, and channel constraints, yielding exactly one matching message. I'm verifying that the near-miss messages (wrong reactor, wrong emoji, wrong channel) each get excluded by exactly one of these conjunctive filters, confirming the query's discriminative power.
+
+Now I'm assigning native handles to each entity: the target message, the reactor, the reaction record itself, the core-infra channel, and each negative referent message. I'll finalize the seed edits by inserting the four reaction rows, including deterministic timestamps for completeness.
+

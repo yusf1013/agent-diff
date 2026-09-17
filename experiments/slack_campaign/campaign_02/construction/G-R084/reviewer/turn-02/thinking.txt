@@ -1,0 +1,42 @@
+I'm noticing the compiled case adds two extra channel_members rows for the actor in C_GROWTH and C_OLD_PROJECT, justified as needed to rule out additional Robert reactions elsewhere—this widens scope beyond what was explicitly requested, though the actor already belongs to most channels so it's plausible but still a bit unusual.
+
+I'm trying to figure out whether conversations.list requires no membership while conversations.history does, since the design's access_plan didn't state an explicit scope_exception yet the compiler silently granted broader membership to enable full discovery. This feels like the compiler filling a gap the base design didn't officially account for, so I need to weigh whether that's a legitimate completeness step or an unstated exception.
+
+Actually, since these are public channels not private ones, the actor likely could already read their history without needing explicit membership, per typical Slack API behavior—so adding these membership entries may be an unnecessary mutation not called for by the design, though it's more of a superfluous access grant than a clear violation.
+
+Turning to other checks: the mechanical match count aligns with the design's expected two messages, and Sophie Dubois's self-reaction on her own message seems plausible. I also want to verify that the "reactor_workspace_role" card's "resolved" status is consistent given the design's "multiple" mode and null candidate role sets, which seems fine since it isn't itself ambiguous.
+
+Checking the candidate sets in card 1, they match candidate_role_sets correctly. I'm also noting that obligation1's identifying path pulls in the full user_teams join even though its answer-computation attributes don't need user_teams.role -- that role data belongs to obligation2, so this seems to fold the whole membership route into a single selector per the design's intent.
+
+This inclusion feels a bit artificial since the join isn't actually filtered on, but it satisfies the requirement that the complete route be used within the query. Since obligation2 separately queries user_teams as well, both obligations end up touching that table redundantly.
+
+Given the required path through workspace membership from the referent entity, the full route must be traversed in one query, which matches the assigned mode and referent entity intent. I'm checking that computed_focal_negatives sensibly covers the rest of the population, and confirming near-misses like wrong emoji or wrong person cases are properly excluded by the filters.
+
+Everything checks out against the design—the seed edits, real users, route usage, and underspecified resolution via candidate sets all align, and the near-miss cases (Robert Chen's own message reaction, wrong emoji instances) match their expected role descriptions correctly.
+
+Checking the actual obligations spec text, it seems the intent is that the reported role should track whichever Robert alternative is actually confirmed as the reactor, not both simultaneously by default -- which supports my earlier suspicion of a mismatch between the "multiple" mode design and the paired-alternative logic.
+
+I worry this could unfairly penalize a solver who correctly identifies only one valid alternative but omits the other's role, since obligation2's target_roles spans both. But the top-level "underspecified" resolution mode likely intends that role reporting follow whichever referent messages are actually found, so partial-but-correct identification should still count as complete for that alternative.
+
+That makes sense: for underspecified referents, the correct solver behavior is likely to surface both candidate interpretations as paired message+role entries, which would explain why obligation2's "multiple" mode allows both roles to appear regardless of which candidate set was picked.
+
+But that raises the question of why obligation1 splits candidate_role_sets into two singleton sets rather than one combined set, if the intent is both messages together. This actually fits the candidate_role_sets pattern for OR-choice alternatives under "underspecified" resolution mode, where "selection":"set" means exactly one of the listed sets should be chosen, not all combined.
+
+Given this pattern, obligation2 should logically have a parallel candidate_role_sets pairing its two roles the same way, but it doesn't - target_roles lists both with mode=multiple and no candidate_role_sets. This looks like an actual inconsistency where the pairing between message and role alternatives isn't preserved across obligations, and I'm inclined to flag it as a validity issue.
+
+I should check whether this design flaw was already present before compilation or only surfaces now that we have compiled data confirming the mismatch, and whether it would actually cause an unfair grading outcome for a solver who picks a consistent interpretation.
+
+This actually exposes a real inconsistency: task instructions say to report the role per matched message (one or two, depending on interpretation), but obligation2 hardcodes both roles as required regardless of how many messages satisfy obligation1. That's a genuine design flaw carried through from spec compilation that should be flagged rather than silently resolved.
+
+Given the ambiguity in how strictly grading enforces this alternative-pairing logic, I'll mark it as a validity concern but lean toward keeping the overall verdict as pass unless it's clearly a blocking issue rather than a minor annotation flaw.
+
+I'll classify this as an "annotation" quality issue while keeping validity at "pass," since re-reading the exposure_qualification language actually seems to support both memberships being displayed as a pair, which aligns with obligation2's design intent rather than contradicting it.
+
+So this resolves my concern—the design intentionally decouples the role obligation from the alternative message structure, showing both membership rows regardless of which message alternative is chosen. Everything seems consistent here, so no defect to flag.
+
+Now I'm checking the answer_attributes fields, confirming they're all bare table.column references matching the allowed format, and verifying messages.channel_id and messages.user_id are used correctly as stored columns for context rather than literal values. I also want to confirm the seed edits align with the final message_reactions bindings and that mechanical_checks show no errors—then I still need to verify whether the two extra channel_members insertions are actually necessary.
+
+Since these channels are public rather than private/DM, the actor likely doesn't need explicit membership to read history there, so this addition may be unnecessary but isn't harmful—just extra scaffolding, not a defect. I'm also checking whether adding actor to those channels could cause unintended side effects elsewhere, but since it's only for discovery justification, it seems fine. Overall the compiled artifact looks valid and consistent with the design intent, correctly implementing the assigned route.
+
+The seed rows for reactions and negative cases match the design specs, and the mechanical checks confirm correct answer computations with matching negative populations, so I'm calling this a pass with strong quality given the thorough handling of ambiguity and clean route usage. I also double-checked the alternate identifying set for card2, which uses real_name plus user_teams join—this is a reasonable alternate path consistent with the underlying support-role design. I don't see any glaring mechanical or validity errors here.
+

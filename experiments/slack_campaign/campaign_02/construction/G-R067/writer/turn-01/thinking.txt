@@ -1,0 +1,30 @@
+I'm designing a scenario following the route from message to conversation to conversation membership - selecting a message by identifying its channel, where that channel is defined by specific membership, like a private channel where both Priya and Lukas are members.
+
+Looking at the seed data, I'm considering the circuit-tracer OOM message in the engineering channel authored by Lukas with a reply from Robert, but I notice the channel's listed members don't actually include the people posting there - a minor seed inconsistency I'll work around since the base data is fixed.
+
+I'm now trying to design a condition based on channel membership overlap. Core-infra has a large overlapping set of members similar to other channels like model, growth, and frontend, so I need something that uniquely distinguishes one channel - like growth's unique member, or the direct message channel that's just two people. Testing whether "includes Robert but excludes Kenji" works as a distinguishing condition, but both end up in core-infra together, so that doesn't isolate a single channel.
+
+I realize plain membership comparison across infra/model/frontend won't discriminate since they share nearly identical member sets - only growth has an extra unique person. So I need to anchor the condition on actual message content instead, then verify the channel it belongs to against a membership constraint, since routing needs real identifying work through message-to-conversation-to-membership relationships. I'm sketching a scenario: a budget-related message from Robert Chen in core-infra, but I need to watch for name collision since there appear to be two different Roberts in the data.
+
+Rather than trying to distinguish messages among the highly similar channel groups, I'm considering pivoting to a direct message channel instead, since DMs have exact two-person membership that's trivially unique - like the agent-Sophie DM, which would let me pick a specific message there as a clean identifying anchor.
+
+I should add negatives too: a message from Sophie in a non-DM channel about a checkpoint, which fails since it's the wrong channel type. And maybe another Sophie message in the same DM but on a different topic and day, to test that content/topic matching still distinguishes the target message even within the correct conversation.
+
+Another strong negative would be a circuit-tracer message posted in the public engineering channel by Lukas, which fails because it's not the DM relationship with the actor. I could also introduce a second DM (agent with someone else, like Priya) discussing a different project, to confirm that "the DM with Sophie" specifically excludes similar updates happening elsewhere.
+
+For the final design, I'm identifying the target_message entity as the circuit-tracer update itself.
+
+I'll skip the wrong-role negative for now. Instead I'll set up a separate DM channel D02AGENTPRIYA with member records and an unrelated "budget dashboard" message, plus add another Sophie message in D01AGENTSOPHIE about the ICLR paper deadline as a content-based negative.
+
+For the actual request, I'm crafting a natural user prompt: find the DM message from Sophie about her circuit-tracer PyTorch rewrite update, then reply confirming the Wednesday target works. This is a state-changing action — posting a reply via chat.postMessage with thread_ts pointing at that target message — so the obligation is to correctly identify the single target message and then perform the consequential reply operation.
+
+Right, following the calibration pattern, the created message isn't tracked as an obligation since it doesn't exist yet — the obligation should just be the read-only lookup of the target message. So the task_type for this obligation stays read-only, even though the broader task ultimately posts a reply, since no field on the target message itself actually changes.
+
+I'll set task_type to state-changing since the ultimate action is posting a reply, even though the target message itself isn't modified. Rather than splitting the lookup and the reply into separate obligations, I should treat this as one obligation on messages describing the reply-write action, since the target message is just the anchor for a new record via thread_ts.
+
+I'll finalize with task_type "state-changing" and written_attributes covering the new message's text and parent_id, since it's a creation rather than an update, so change_attributes isn't needed and answer_attributes gets omitted per the state-changing rule. Now I'm defining the roles: target_message pointing to Sophie's anchor DM about the circuit-tracer PyTorch rewrite, and dm_channel as a supporting fact for the reply context.
+
+I'm also setting up the channel membership rows for both the agent and Sophie in that DM, plus negative examples to test discrimination — a public engineering channel message about an unrelated OOM issue, a different DM with Priya on an unrelated topic, and a same-channel message from Sophie about ICLR deadlines rather than the circuit-tracer work. This means I need to add new base records for the Priya DM channel, its membership rows, and the corresponding message.
+
+Now I'm drafting the access plan: the agent (U01AGENBOT9) discovers the DM channel via conversations.list filtered to type=im, then pulls conversations.history to locate the message about circuit-tracer among the noise.
+

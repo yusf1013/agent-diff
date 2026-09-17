@@ -1,0 +1,88 @@
+```json
+{
+ "prompt": "In #core-infra, remove from the channel whoever posted the message that got a 🎉 reaction from Robert.",
+ "binding_note": "The target is the channel_members row for the user who both authored a message inside #core-infra and received a 🎉 (tada) reaction from Robert Chen on that message; no message in #core-infra carries a tada reaction from Robert, so no membership satisfies the full chain.",
+ "roles": [
+  {
+   "role": "target_channel",
+   "entity": "channels",
+   "facts": "channel_id C_INFRA, channel_name core-infra, public non-archived channel with many messages from Priya, Olena, Lukas, and Robert about cluster memory, batch sizing, and cloud costs.",
+   "selection": "support",
+   "reason": "Fixes the conversation scope for both the authored message and the membership to be removed."
+  },
+  {
+   "role": "reactor",
+   "entity": "users",
+   "facts": "user_id U_ROBERT, real_name Robert Chen, member of #core-infra, author of the cloud-bill overspend message; never recorded as adding any reaction.",
+   "selection": "support",
+   "reason": "Identifies the required reactor whose 🎉 must be attached to the target message."
+  },
+  {
+   "role": "candidate_author_priya",
+   "entity": "users",
+   "facts": "user_id U_PRIYA, member of #core-infra, author of several detailed messages there (memory pressure alert, pprof analysis) that carry no reactions at all.",
+   "selection": "negative",
+   "reason": "Authors messages in the right channel but no reaction of any kind exists on them, so the reaction leg of the chain fails."
+  },
+  {
+   "role": "candidate_author_olena",
+   "entity": "users",
+   "facts": "user_id U_OLENA, member of #core-infra, author of multiple troubleshooting messages there with no stored reactions.",
+   "selection": "negative",
+   "reason": "Same channel and authorship role as Priya, but again missing any reaction, so it cannot satisfy the reactor+emoji condition."
+  },
+  {
+   "role": "wrong_channel_message",
+   "entity": "messages",
+   "facts": "message_id 1706110000.000100 by Lukas in #engineering (C03IJKL9012) describing circuit-tracer OOM errors; this message is the only one in the workspace carrying a reaction.",
+   "selection": "negative",
+   "reason": "Shows a message that does have a reaction, but it sits in the wrong channel (#engineering, not #core-infra), so it cannot ground the membership in the requested scope."
+  },
+  {
+   "role": "wrong_reaction",
+   "entity": "message_reactions",
+   "facts": "reaction on message 1706110000.000100 by user_id U01AGENBOT9 with reaction_type 'eyes'.",
+   "selection": "negative",
+   "reason": "The only stored reaction is 'eyes' from the bot, not '🎉' from Robert, so both the emoji and reactor conditions fail even in the wrong channel."
+  },
+  {
+   "role": "priya_membership",
+   "entity": "channel_members",
+   "facts": "channel_id C_INFRA, user_id U_PRIYA, joined_at recorded membership.",
+   "selection": "negative",
+   "reason": "A real membership in the scoped channel, but its holder's messages have no qualifying reaction, so this membership cannot be the removal target."
+  },
+  {
+   "role": "olena_membership",
+   "entity": "channel_members",
+   "facts": "channel_id C_INFRA, user_id U_OLENA, joined_at recorded membership.",
+   "selection": "negative",
+   "reason": "Same channel membership pattern as Priya's; excluded for the identical missing-reaction reason."
+  }
+ ],
+ "obligations": [
+  {
+   "name": "membership_removal_target",
+   "description": "The conversation membership (channel_members row) in #core-infra held by the user who authored a message in that channel which received a 🎉 (tada) reaction from Robert Chen; to be removed via kick if found.",
+   "table": "channel_members",
+   "mode": "absent",
+   "task_type": "state-changing",
+   "scope": "channel_members rows for channel_id C_INFRA whose user_id authored a messages.message_id in C_INFRA that has a message_reactions row with reaction_type 'tada' and user_id U_ROBERT",
+   "target_roles": [],
+   "candidate_role_sets": null,
+   "selection": "one",
+   "change_attributes": [["channel_members.user_id"], ["channel_members.channel_id"]],
+   "written_attributes": []
+  }
+ ],
+ "task_spec": [
+  {
+   "line": 1,
+   "text": "Remove from #core-infra the membership of whoever posted the message there that got a 🎉 reaction from Robert.",
+   "obligations": [1]
+  }
+ ],
+ "scope_exception": null,
+ "access_plan": "Use conversations.history on C_INFRA to enumerate its messages and their authors, then reactions.get on each message to check for a 'tada' reaction contributed by Robert (U_ROBERT); cross-check conversations.members on C_INFRA against message_reactions to confirm none of the channel's messages carry that emoji from that reactor before concluding no membership qualifies for removal."
+}
+```

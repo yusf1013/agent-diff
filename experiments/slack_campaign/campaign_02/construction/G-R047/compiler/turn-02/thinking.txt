@@ -1,0 +1,18 @@
+I'm realizing the join path is off — there's no direct FK between channels and users, so after joining channel_members to channels, I need to route back through channel_members.user_id to reach users rather than assuming a direct channels-users link.
+
+Rethinking the path structure: maybe channel_members should connect directly to both channels and users as siblings, with channels handled as a root-field scope filter (channel_id) rather than a join, though that risks exposing a hidden ID as a proxy filter, which conflicts with using user-facing fields like channel_name.
+
+Since root_table must be channel_members, I'm stuck trying to fit both the channels join for name filtering and the users/user_teams/teams chain into one linear path, since channels doesn't connect to users directly and the path can't fork into two branches.
+
+Maybe using channel_id directly as an anchor value is acceptable here, since it's a legitimate foreign key reference rather than a fabricated constant, letting me drop channels from the path entirely and go straight from channel_members to users to user_teams to teams.
+
+I realize the path would need channels and users both adjacent to channel_members, forming a star rather than a linear chain, but if joins can only connect sequential path elements, there's no valid FK linking channels directly to users, so this ordering breaks the constraint system.
+
+This is inherently a star pattern at that node, which linear path syntax can't express. But the assignment's route_nodes (CONVERSATION_MEMBERSHIP, USER, WORKSPACE_MEMBERSHIP, WORKSPACE) match a clean linear chain: channel_members -> users -> user_teams -> teams. The channel filter should be applied as a scope on the root table's own channel_id field rather than requiring a separate join to a channels node, since route_nodes doesn't include one.
+
+So I'm setting root_table to channel_members with a scope filtering channel_id, focal path through users then user_teams then teams, joined on the user_id and team_id keys, with filters on user_teams role and teams team_name. This matches the assigned 4-node route exactly, which should resolve the earlier error about the identifying path differing from the assigned route.
+
+Though I'm second-guessing whether channel_id belongs as the scope filter versus a channel_name predicate, but since channel_id is a legitimate FK value tied to the separate target_channel role selector rather than a hidden test-construction ID, it should be fine.
+
+The workspace_scope and target_channel roles are both marked as "support," which typically means they're bound directly rather than needing their own separate selectors. Given the route doesn't traverse a channels table node, using channel_id in the scope filter is necessary and correct — it's the direct root filter, not a stand-in for a name predicate.
+

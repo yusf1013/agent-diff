@@ -1,0 +1,24 @@
+I'm mapping out a route from conversation membership through conversation, message, to reaction, with multiple resolution mode, thinking about selecting memberships of users in a specific channel like core-infra.
+
+Actually, let me anchor on a real reaction in the seed data: Lukas's message about circuit-tracer OOM in the engineering channel, which got an 👀 reaction from an agent bot. I'll build the route around this concrete case — his membership in that channel, tied to his message and its reaction.
+
+Since only one such match exists in this seed, I'll design the task to accept "multiple" as a valid intent even with a single result. A read-only framing works well here: something like listing join times of members whose messages got eyes-reactions, to help decide early access invites for a new tool preview.
+
+I'm tracing the binding: the membership's user must be the message's author, and that message must carry the eyes reaction. Checking the seed data, Lukas authored the reacted message in engineering, so his membership record should satisfy the join condition -- I need to confirm his channel membership actually exists in the seed.
+
+Good, I'll go with it, adding the membership fact for Lukas as needed. For negatives, I'm thinking of using other engineering messages without reactions as one contrast, and considering whether to add a false-positive message in a different channel with a matching reaction to test channel-scope restriction.
+
+I also want a negative where a member authored an unreacted message (testing that membership alone isn't enough), and another where the same user reacts with a different emoji in the channel (testing that emoji type matters). I should also weigh whether the query is meant to return multiple members, which would require adding another reacted message from a different author in the same channel.
+
+I'll add an eyes reaction from Hubert to Robert's crash report message, giving him a valid match since he's already an engineering channel member. For Lukas, I'll add his membership to the engineering channel to pair with his existing OOM message reaction, making him the second match. Morgan stays a negative case since his message about login slowness gets no reaction added.
+
+For John Doe, rather than leaving his SSO message reaction-free, I'll add a "thumbsup" reaction from Hubert instead of "eyes" — this tests the wrong-emoji-type negative case distinctly from missing-relationship negatives. I'll also keep Priya's eyes-reacted message in the infra channel as a negative, since she isn't part of engineering, testing wrong channel/scope exclusion.
+
+Hubert himself only reacts and doesn't author reacted messages, which serves as a negative for testing whether the reactor role gets mistakenly matched to authorship. Since the underlying goal is identifying engineering members whose messages got eyes-reactions along with their join dates for an early preview invite, this naturally ties back to conversation membership data (joined_at) as the answer attribute.
+
+I'm drafting the final phrasing: something like asking to find engineering channel members whose messages received an 👀 reaction, then reporting when each joined, framed around building an early-access list for the interpretability tool preview — avoiding "all/every" language. Now I'm checking the grounding cards against the roles involved: the engineering channel itself, plus matching message roles like Lukas's OOM report and Robert's crash report, versus non-matching ones like Morgan's login message.
+
+I'm distinguishing users who qualify (Lukas, Robert) from those who don't — Morgan lacks a reaction, John has the wrong emoji type, Hubert only reacted but didn't post, and Priya belongs to a different channel entirely. The core obligation is a read-only conversation_memberships lookup against the channel_members table, targeting Lukas's and Robert's memberships to pull their joined_at values.
+
+For the access plan, I'll use conversations.info/members to verify engineering channel membership and joined_at timestamps, conversations.history to pull messages, and reactions.get on each message to confirm reaction types.
+

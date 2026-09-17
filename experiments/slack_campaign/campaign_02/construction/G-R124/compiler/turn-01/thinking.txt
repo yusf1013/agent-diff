@@ -1,0 +1,22 @@
+I'm checking the base seed for records matching the design: the target message, the wrong-message-same-channel case, and the wrong-channel message all already exist and align with what's needed, so I'm continuing to verify the remaining timestamps.
+
+I need to insert five reaction records: the target reaction (Lukas, raised_hands on Priya's message), plus four negative variants covering wrong message, wrong user, wrong channel, and wrong authorship - each swapping one dimension while keeping the others fixed. All the users and channel memberships already exist in the base seed, and the actor bot is confirmed to belong to both relevant channels, so I just need to verify it has proper access before finalizing.
+
+Now I'm constructing the selector for the main obligation: I need a query joining message_reactions to messages, users, and channels that pins down the reaction by matching Lukas as the reactor, Priya as the message author, the specific CUDA memory limit message content, and the core-infra channel name.
+
+I realize I need a fifth node to also check the message author against Priya, so the path would need to revisit the users table again with a second join through messages.user_id, giving five nodes and four joins total.
+
+Maybe simplify by keeping the focal path limited to reaction, reactor, message, channel, and handling the authorship constraint separately as an independent filter rather than another chained node, since real_name lives on users while the message only stores user_id directly. I could pin the authorship fact using the known message_id and its fixed user_id, expressing that as an auxiliary check rather than forcing it into the same linear chain.
+
+I'm restructuring the query into a focal path covering reactions through messages to channels, filtered by message text and channel name, then adding two auxiliary checks: one confirming the reactor's real_name is Lukas, another confirming the message author's real_name is Priya. Though I'm second-guessing whether user and message hops really count as core route steps versus valid auxiliary constraints per the stated guidance.
+
+Actually this forms a tree structure rather than a linear path, and the selector syntax seems to expect one join per step in a strict chain, which doesn't allow branching. So I need to split this into a focal path (reactor, message, channel) plus a separate auxiliary constraint that references the messages table independently to narrow candidates by author, since the whole thing can't be expressed as a single linear chain.
+
+Since the message text itself is unique enough to identify the exact message when combined with the channel, I can treat the author check as a purely independent verification rather than part of the root path — this fits the guidance that auxiliary queries should only be used for truly separate constraints. So the final structure is a focal path starting with message_reactions and users.
+
+The auxiliary check just confirms Priya authored a message with that unique text, serving as an existence validation rather than a binding constraint. With only one obligation—removing the target reaction—there's just a single selector needed, with root_table, empty scope, focal, and auxiliary fields.
+
+Now I'm laying out the concrete bindings: mapping role labels to actual user IDs, message timestamps, channel IDs, and the specific reaction objects (target and negative variants) that the test scenario depends on.
+
+The plan is to insert five new message_reactions rows—one target plus four negatives—since everything else in the seed data already exists. With this mapping settled, I'm ready to write the final JSON.
+

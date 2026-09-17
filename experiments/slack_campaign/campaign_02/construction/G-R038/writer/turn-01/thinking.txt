@@ -1,0 +1,38 @@
+I'm mapping out the query path from conversation membership through conversation, message, user, to workspace membership, since the referent entity is the membership record itself. I need to select it using conversation attributes, the authors of messages within it, and those authors' workspace role—so I'll design this with an underspecified resolution mode to build in ambiguity.
+
+So the target is the conversation membership of the message author, provided that author holds an admin role in the workspace. Checking the seed data, the only true admins are Robert Walsh and Morgan Freeman, since new users like Priya are all marked as regular members. This surfaces a naming ambiguity: there's both Robert Walsh (admin) and Robert Chen (member), so referring to "Robert" alone without more context could be genuinely ambiguous even though only one of them qualifies as admin.
+
+I need to design the scenario so that ambiguity persists through a partial-match field rather than being resolved outright by the role filter. Using the engineering channel as the test conversation, I'm checking whether Robert Chen has any messages there at all, since if he doesn't post in that channel, the ambiguity naturally collapses to Robert Walsh anyway.
+
+So I'll design two Robert candidates to create real ambiguity: Robert Walsh, an admin in the engineering channel who posted about the login rate limit crash, versus Robert Chen, a regular member across several channels who never authored any messages in the seed data. That contrast gives a genuinely underspecified query when someone just asks about "Robert" without specifying which disambiguating trait to use.
+
+The join path I need is: conversation membership to conversation, to messages authored there, to the user, then to their workspace membership role — ultimately to pull the joined_at date for whichever Robert matches "posted about a login incident in engineering" and "holds admin role," with the ask being to remove them.
+
+Actually I want this to be a state-changing task rather than just a lookup — something like removing that person from #engineering, which is consequential enough to warrant checking the admin distinction carefully. Since the target person is underspecified (there could be multiple Roberts matching partial criteria), the obligation should resolve as "underspecified," with candidate role sets covering each possible matching membership.
+
+So the answer itself should surface owner/admin distinctions during resolution, but the query phrasing should leave the selection mode genuinely ambiguous rather than resolved upfront—something like asking for Robert's membership join date in the channel where a recent infrastructure discussion happened, without specifying which Robert or channel precisely.
+
+I'm identifying two real Roberts posting about different topics in different channels: Robert Walsh discussing login/auth issues in engineering, and Robert Chen (U_ROBERT) posting about the cloud budget overrun in C_INFRA at a specific timestamp. This gives me a natural ambiguity to build the query around, asking about "Robert" posting on a login issue in an engineering channel and whether he's an admin—forcing disambiguation between the two Roberts.
+
+Since exact channel names are literal but vague organizational phrasing can be broader, I could phrase the query as "in one of our engineering channels" — which genuinely could point to either the literal "engineering" channel or the infrastructure-themed one — then reference "a Robert who raised a concern about something going over budget" to build the ambiguous scenario.
+
+Checking candidates: Robert Walsh posted in the general channel and had a crash report in the engineering channel, but neither quite matches "went over what was expected" phrasing. Robert Chen posted about the cloud bill going $47K over budget in the infra channel, which fits well.
+
+To make the ambiguity real, I want to add a second Robert Walsh message in the engineering channel about the login latency issue taking longer than expected, so both Roberts have a plausible "went over" claim.
+
+This creates genuine ambiguity between two conversation memberships: Robert Walsh's SLA overrun in engineering versus Robert Chen's budget overrun in infra. The added wrinkle is that Robert Walsh is an admin while Robert Chen is a regular member, which matters for the resolved answer even though the request itself won't hint at any ambiguity.
+
+I'm drafting a natural-sounding query: someone asking about a "Robert in one of our engineering-related channels" who flagged something over budget or over target, wanting to know when that person joined the channel and whether they're a workspace admin — phrased so it depends entirely on discovery through membership history and user role lookups. Now I'm considering negative cases to sharpen the ambiguity, like other similarly-named people or a Robert whose flagged message doesn't actually relate to the engineering context.
+
+I'm also weighing distractors, like unrelated admins or users only relevant to other channels, and thinking about grounding the second Robert's SLA-related message with a plausible timestamp so it fits coherently into the existing message history. I want to keep the phrasing broad enough not to give away which Robert or which channel is the right answer.
+
+The main obligation is figuring out conversation membership for whichever Robert flagged the over-budget issue in an engineering channel, since it's ambiguous between Robert Walsh and Robert Chen. I'll treat this as an underspecified read-only task, reporting membership details like join dates for both candidates, plus supporting workspace role info, rather than resolving to a single answer myself.
+
+Now I'm listing out the roles: Robert Walsh as the admin user, his conversation membership pairing as a candidate, and his message in the SLA overrun thread as supporting evidence for identification.
+
+On the Robert Chen side, I'm noting his member status, membership pairing, and existing message about being $47K over budget as separate support evidence, plus his workspace role entry.
+
+I'm also flagging negatives — Robert Walsh's unrelated general-channel message about MCP deployment (wrong topic/conversation) and Morgan Freeman as an unrelated admin — along with the two relevant conversations, engineering and core-infra, before starting to write out the final judgment.
+
+I'm deciding not to create a separate obligation for the supporting message since it's just corroborating evidence rather than a required destination. I'll set answer_attributes to channel_members.joined_at for the main answer and user_teams.role for the support obligation, and since "a Robert" implies a single unresolved person, I'll mark selection as "one." Now I'm putting together the final JSON.
+

@@ -1,51 +1,58 @@
 {
   "prompt": "Invite the Morgan who is NOT an admin to #random.",
-  "binding_note": "The route runs USER → WORKSPACE_MEMBERSHIP: two users share the display/real name 'Morgan' in workspace T01WORKSPACE (Morgan Stanley and Morgan Freeman), so the workspace-membership role attribute is what actually resolves which Morgan is meant. Morgan Stanley's user_teams.role is 'member' while Morgan Freeman's is 'admin', binding the same user_id across the users and user_teams records to select the non-admin one.",
+  "binding_note": "The route runs users → user_teams: two users share the name 'Morgan' in workspace T01WORKSPACE (Morgan Stanley and Morgan Freeman), so the user_teams.role value tied to each user_id is what actually resolves which Morgan is meant. Morgan Stanley's user_teams.role is 'member' while Morgan Freeman's is 'admin', binding the same user_id across the users and user_teams records to select the non-admin one.",
   "roles": [
     {
       "role": "target_user",
       "entity": "users",
-      "facts": "U05MORGAN23, real_name/display_name 'Morgan Stanley', a plain member of T01WORKSPACE",
+      "facts": "U05MORGAN23, real_name/display_name 'Morgan Stanley', joined T01WORKSPACE with user_teams.role 'member'",
       "selection": "match",
-      "reason": "Only Morgan whose workspace_membership.role is 'member', satisfying 'NOT an admin'."
+      "reason": "Only Morgan whose user_teams.role is 'member', satisfying 'NOT an admin' along the users→user_teams route."
     },
     {
       "role": "admin_namesake",
       "entity": "users",
-      "facts": "U07MORGANFREE, real_name/display_name 'Morgan Freeman', workspace_membership.role is 'admin' in T01WORKSPACE",
+      "facts": "U07MORGANFREE, real_name/display_name 'Morgan Freeman', joined T01WORKSPACE with user_teams.role 'admin'",
       "selection": "negative",
-      "reason": "Shares the first name 'Morgan' but fails the non-admin condition on the same workspace-membership route."
+      "reason": "Shares the first name 'Morgan' but fails the non-admin condition on the same users→user_teams route, so must be excluded."
     },
     {
       "role": "target_channel",
       "entity": "channels",
       "facts": "C02EFGH5678, channel_name 'random', public, non-archived, in T01WORKSPACE",
       "selection": "match",
-      "reason": "Exact channel name '#random' identifies the sole destination conversation."
+      "reason": "Exact channel name '#random' identifies the sole destination conversation; literal name identity, not a broader organizational term."
     },
     {
       "role": "acting_user",
       "entity": "users",
-      "facts": "U01AGENBOT9, bot member of T01WORKSPACE, already a member of #random",
+      "facts": "U01AGENBOT9, bot member of T01WORKSPACE, already a channel_members row in #random",
       "selection": "support",
-      "reason": "Actor issuing the invite; already present in target channel so can perform the invite."
+      "reason": "Actor issuing the invite; already present in the target channel so can perform the invite action."
     },
     {
-      "role": "unrelated_member_of_random",
+      "role": "existing_random_members",
       "entity": "channel_members",
-      "facts": "U03ROBERT23 (admin) and U06HUBERT23 (member) already belong to #random",
+      "facts": "U03ROBERT23 (user_teams.role admin) and U06HUBERT23 (user_teams.role member) already hold channel_members rows for #random",
       "selection": "negative",
-      "reason": "Existing members of the target channel who are not named Morgan and are irrelevant to resolving the Morgan condition; they merely populate ordinary channel membership."
+      "reason": "Existing members of the target channel with no relation named 'Morgan'; they exercise the channel_members path without matching the requested person, showing that plain channel membership alone doesn't satisfy the request."
+    },
+    {
+      "role": "non_workspace_morgan_analog",
+      "entity": "user_teams",
+      "facts": "Hypothetical scenario avoided by seed: no seeded user named Morgan lacks any user_teams row in T01WORKSPACE — both Morgans are workspace members",
+      "selection": "negative",
+      "reason": "Confirms the route requires an existing user_teams membership record to read role from; a Morgan without a workspace_membership row would be unresolvable via this path, but the seed provides such a row for both Morgans so this remains a structural boundary case rather than an added record."
     }
   ],
   "obligations": [
     {
       "name": "Resolve the non-admin Morgan",
-      "description": "Resolve the workspace member whose real name is Morgan and whose workspace_membership role is not admin, distinguishing this person from another workspace member also named Morgan who holds admin role.",
+      "description": "Resolve the single workspace member whose real_name/display_name is 'Morgan...' and whose user_teams.role (joined on user_teams.user_id = users.user_id within team_id T01WORKSPACE) is not 'admin', distinguishing this person from another workspace member also named Morgan who holds the 'admin' role.",
       "table": "users",
       "mode": "single",
       "task_type": "state-changing",
-      "scope": "users in workspace T01WORKSPACE",
+      "scope": "users holding a user_teams membership in workspace T01WORKSPACE",
       "target_roles": [
         "target_user",
         "admin_namesake"
@@ -55,28 +62,6 @@
       "change_attributes": [
         [
           "users.user_id"
-        ]
-      ],
-      "written_attributes": [
-        "channel_members.channel_id",
-        "channel_members.user_id"
-      ]
-    },
-    {
-      "name": "Resolve #random",
-      "description": "Resolve the named channel #random by its exact name to select the one seeded public conversation to invite the resolved user into.",
-      "table": "channels",
-      "mode": "single",
-      "task_type": "state-changing",
-      "scope": "channels in workspace T01WORKSPACE",
-      "target_roles": [
-        "target_channel"
-      ],
-      "candidate_role_sets": null,
-      "selection": "one",
-      "change_attributes": [
-        [
-          "channels.channel_id"
         ]
       ],
       "written_attributes": [
@@ -96,5 +81,5 @@
     }
   ],
   "scope_exception": null,
-  "access_plan": "The acting user U01AGENBOT9 is a member of #random and of the workspace, so users.list/users.info and conversations.members are available to enumerate both Morgan-named users and their workspace_membership.role values before inviting the resolved non-admin Morgan into channel C02EFGH5678."
+  "access_plan": "Acting user U01AGENBOT9 is a member of workspace T01WORKSPACE and of #random, so users.list (or users.info per candidate user_id) together with user_teams role data is available to enumerate both Morgan-named users and their workspace_membership role, and conversations.members/conversations.invite is available on channel C02EFGH5678 to add the resolved non-admin Morgan."
 }

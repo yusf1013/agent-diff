@@ -1,0 +1,67 @@
+```json
+{
+  "prompt": "Find the user who complained about 'captcha' in #general and send them a DM saying 'I am looking into this.'",
+  "binding_note": "Referent is the author U06HUBERT23 of the #general message mentioning captcha (message_id 1700083200.000888). Negatives share one of: wrong channel (captcha-adjacent auth discussion in #engineering does not mention captcha directly; login complaints in #general/#engineering lack the word captcha), or right channel #general but wrong topic (deployment question, MCP question), so no other message in #general both names captcha and complains.",
+  "roles": [
+    {"role":"target_channel","entity":"channels","facts":"#general (C01ABCD1234), public, workspace T01WORKSPACE","selection":"match","reason":"identifying channel named in the request"},
+    {"role":"qualifying_message","entity":"messages","facts":"message_id 1700083200.000888, channel_id C01ABCD1234, user_id U06HUBERT23, text 'Reminder: auth improvements next sprint must cover captcha for repeated login failures.'","selection":"match","reason":"the message in #general mentioning captcha, framed as flagging a gap needing attention"},
+    {"role":"author","entity":"users","facts":"U06HUBERT23, username hubertmarek, member of #general","selection":"match","reason":"the identified subject of the DM"},
+    {"role":"dm_channel_open","entity":"channel_members","facts":"new/resumed DM channel between U01AGENBOT9 and U06HUBERT23, membership rows for both users on the opened DM conversation","selection":"support","reason":"intermediate membership record required to host the DM message, separate from the messages-table write"},
+    {"role":"dm_message","entity":"messages","facts":"new message authored by U01AGENBOT9 in the opened DM channel with U06HUBERT23, message_text 'I am looking into this.'","selection":"match","reason":"the actual DM message record that fulfills the send request, scoped strictly to table messages"},
+    {"role":"wrong_channel_captcha_negative_message","entity":"messages","facts":"message_id 1700143200.000999 in #engineering (C03IJKL9012) by U01AGENBOT9, text 'I've noticed a few auth issues and potential improvements:' — general auth discussion, no captcha keyword","selection":"negative","reason":"wrong channel relative to #general requirement even though topic is auth-related"},
+    {"role":"wrong_channel_captcha_negative_author","entity":"users","facts":"U01AGENBOT9, the acting agent bot, author of the #engineering auth-issues message","selection":"negative","reason":"author of a negative record; not in #general and message lacks captcha keyword"},
+    {"role":"general_no_captcha_negative_message_1","entity":"messages","facts":"message_id 1699996800.000777 in #general by U02ARTEM23: 'UX note: login form still lets users submit empty password—should throw validation instead.'","selection":"negative","reason":"in #general and about login but never mentions captcha"},
+    {"role":"general_no_captcha_negative_author_1","entity":"users","facts":"U02ARTEM23, username artembogdanov, member of #general","selection":"negative","reason":"author of a #general login message that omits the captcha keyword"},
+    {"role":"general_no_captcha_negative_message_2","entity":"messages","facts":"message_id 1700173200.000456 in #general by U03ROBERT23: 'Does anyone know when the MCP deployment will be done?'","selection":"negative","reason":"in #general but unrelated topic, no captcha mention"},
+    {"role":"general_no_captcha_negative_author_2","entity":"users","facts":"U03ROBERT23, username robertwalsh, admin, member of #general","selection":"negative","reason":"author of an unrelated #general message lacking the captcha keyword"},
+    {"role":"other_channel_login_negative_messages","entity":"messages","facts":"messages 1699651200.000321, 1699737600.000654, 1699824000.000987, 1699910400.000246 in #engineering discuss login errors, SSO failures, rate limiting, slow endpoint but none mention captcha and none are in #general","selection":"negative","reason":"split failure: right general topic (login problems) but wrong channel and no captcha keyword"},
+    {"role":"other_channel_login_negative_authors","entity":"users","facts":"U01AGENBOT9, U02JOHNDOE1, U03ROBERT23, U05MORGAN23 — authors of the #engineering login-issue messages above","selection":"negative","reason":"authors of records excluded by wrong channel and missing captcha keyword"}
+  ],
+  "obligations": [
+    {
+      "name":"Resolve the author of the captcha complaint in #general",
+      "description":"Identify the single user who authored the message in #general that flags missing captcha coverage for login failures; this user is the DM recipient.",
+      "table":"users",
+      "mode":"single",
+      "task_type":"read-only",
+      "scope":"messages in channel #general (C01ABCD1234) within workspace T01WORKSPACE",
+      "target_roles":["author"],
+      "candidate_role_sets":null,
+      "selection":"one",
+      "answer_attributes":[["users.user_id"]]
+    },
+    {
+      "name":"Send DM message to resolved user",
+      "description":"Send a fixed-text direct message to the resolved author. The write targets only the new message record; the DM channel/membership setup is a separate supporting obligation.",
+      "table":"messages",
+      "mode":"single",
+      "task_type":"state-changing",
+      "scope":"the DM conversation between acting user U01AGENBOT9 and the resolved author",
+      "target_roles":["dm_message"],
+      "candidate_role_sets":null,
+      "selection":"one",
+      "change_attributes":[],
+      "written_attributes":["messages.channel_id","messages.message_text"]
+    },
+    {
+      "name":"Open DM channel with resolved user",
+      "description":"Open or resume the 1:1 DM conversation between the acting user and the resolved author, establishing the membership records needed to host the DM message.",
+      "table":"channel_members",
+      "mode":"single",
+      "task_type":"state-changing",
+      "scope":"membership rows for the DM conversation between U01AGENBOT9 and the resolved author",
+      "target_roles":["dm_channel_open"],
+      "candidate_role_sets":null,
+      "selection":"one",
+      "change_attributes":[],
+      "written_attributes":["channel_members.channel_id","channel_members.user_id"]
+    }
+  ],
+  "task_spec": [
+    {"line":1,"text":"Find the user who complained about 'captcha' in #general.","obligations":[1]},
+    {"line":2,"text":"Open a DM with that user and send them the message 'I am looking into this.'","obligations":[3,2]}
+  ],
+  "scope_exception": null,
+  "access_plan": "Use conversations.history on #general (C01ABCD1234) to locate the message containing 'captcha'; identify its author via the message's user_id; then use conversations.open with that user to establish/resume a DM (dm_channel_open) and chat.postMessage to send the fixed text as the dm_message record."
+}
+```

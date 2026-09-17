@@ -1,0 +1,48 @@
+{
+  "prompt": "Send a Slack DM to Robert from our team, the one who's part of the engineering channel's discussion about the circuit-tracer PyTorch rewrite, asking for an ETA update on the multi-GPU streaming work.",
+  "binding_note": "The route runs USER→WORKSPACE_MEMBERSHIP→WORKSPACE→CONVERSATION: the target is a workspace member whose participation (as channel member or message author) connects to the #engineering conversation where the circuit-tracer rewrite is discussed. Two workspace members named Robert both qualify as participants of that same conversation — Robert Walsh is a channel member of engineering (and has posted there, on an unrelated topic), and Robert Chen authored the reply directly asking about the rewrite's ETA in that channel's thread — so the first-name condition does not resolve to one person.",
+  "roles": [
+    {"role":"robert_walsh","entity":"users","facts":"Robert Walsh (U03ROBERT23), workspace admin, member of #engineering (C03IJKL9012), previously posted an unrelated crash-report message in that channel.","selection":"alternative","reason":"Shares first name 'Robert' and is a workspace member participating in #engineering, but his message there is unrelated to the circuit-tracer rewrite."},
+    {"role":"robert_chen","entity":"users","facts":"Robert Chen (U_ROBERT), workspace member, replied directly under the circuit-tracer OOM message in #engineering asking when the PyTorch rewrite with multi-GPU support will be ready.","selection":"alternative","reason":"Shares first name 'Robert' and is a workspace member who authored the message asking about the rewrite's ETA in #engineering, making him equally plausible as the intended Robert."},
+    {"role":"engineering_channel","entity":"channels","facts":"#engineering (C03IJKL9012), a public channel in Test Workspace containing the circuit-tracer OOM thread and replies.","selection":"support","reason":"The conversation whose contained thread anchors the identifying condition."},
+    {"role":"workspace","entity":"channels","facts":"Test Workspace (T01WORKSPACE) — the single workspace both Roberts belong to via workspace membership.","selection":"support","reason":"Supplies the WORKSPACE node joining membership to the conversation."},
+    {"role":"anchor_message","entity":"messages","facts":"Message by Lukas Kowalski in #engineering describing circuit-tracer's OOM errors and need for a PyTorch rewrite with proper GPU streaming.","selection":"support","reason":"Establishes the topic that both Robert candidates are connected to via the conversation."},
+    {"role":"reply_eta_message","entity":"messages","facts":"Reply authored by Robert Chen in #engineering, parented to the anchor message, asking when the PyTorch rewrite will be ready.","selection":"support","reason":"The specific contained record tying Robert Chen to the topic."},
+    {"role":"unrelated_message","entity":"messages","facts":"Message authored by Robert Walsh in #engineering about login rate-limiting, unrelated to circuit-tracer.","selection":"support","reason":"Shows Robert Walsh's participation in the same conversation without matching the rewrite topic."},
+    {"role":"non_robert_admin","entity":"users","facts":"Morgan Freeman (U07MORGANFREE), workspace admin, not a member of #engineering and not named Robert.","selection":"negative","reason":"Different name and no participation in the target conversation; excluded on both grounds."},
+    {"role":"other_engineering_member","entity":"users","facts":"Hubert Marek (U06HUBERT23), member of #engineering, posted an auth-related reminder there.","selection":"negative","reason":"Participates in the same conversation but does not match the first name 'Robert'."}
+  ],
+  "obligations": [
+    {
+      "name": "identify_robert",
+      "description": "Identify the single workspace member named Robert whose participation (channel membership or message authorship) connects to the #engineering conversation discussing the circuit-tracer PyTorch rewrite; underspecified because two Roberts both participate in that conversation.",
+      "table": "users",
+      "mode": "underspecified",
+      "task_type": "read-only",
+      "scope": "workspace members named Robert who participate in the #engineering conversation",
+      "target_roles": ["robert_walsh", "robert_chen"],
+      "candidate_role_sets": [["robert_walsh"], ["robert_chen"]],
+      "selection": "one",
+      "answer_attributes": [["users.real_name"], ["users.username"], ["users.user_id"]]
+    },
+    {
+      "name": "send_eta_dm",
+      "description": "Send a direct message to the identified Robert asking for an ETA update on the circuit-tracer multi-GPU streaming rewrite; depends on resolving identify_robert first.",
+      "table": "messages",
+      "mode": "single",
+      "task_type": "state-changing",
+      "scope": "new DM message to the resolved Robert",
+      "target_roles": [],
+      "candidate_role_sets": null,
+      "selection": "one",
+      "change_attributes": [["messages.channel_id"], ["messages.message_text"], ["messages.user_id"]],
+      "written_attributes": ["messages.message_text", "messages.channel_id"]
+    }
+  ],
+  "task_spec": [
+    {"line": 1, "text": "Determine which workspace member named Robert is the participant tied to the #engineering circuit-tracer rewrite discussion.", "obligations": [1]},
+    {"line": 2, "text": "Send that person a DM asking for an ETA update on the multi-GPU streaming rewrite.", "obligations": [2]}
+  ],
+  "scope_exception": null,
+  "access_plan": "Use conversations.list/conversations.info to locate #engineering within the single workspace, conversations.history/conversations.replies on that channel to find the circuit-tracer OOM message and its reply thread, conversations.members to see channel membership, and users.info/users.list to pull real names for any user named Robert surfaced as a channel member or message author — surfacing both Robert Walsh and Robert Chen as unresolved candidates before any DM is sent via conversations.open + chat.postMessage."
+}

@@ -1,0 +1,32 @@
+I'm working out a route that identifies a user via their workspace membership role, keeping the scope limited to just USER and WORKSPACE_MEMBERSHIP without pulling in a message reference, since that would violate the constraint of this particular route definition.
+
+Checking the base seed data, there's no "owner" role, only "member" and "admin," so I try anchoring on admin status—but two admins exist (Robert Walsh and Morgan Freeman), which breaks single-resolution uniqueness. I need another distinguishing attribute tied to the user or membership record itself to narrow it down to just one person while staying within the allowed route nodes.
+
+I'm thinking of a task like sending a DM to notify the other admin about a policy update, but I have to be careful not to pre-resolve the person by stating their real name while treating "admin" as mere background color—the role itself needs to do the actual identifying work.
+
+Two candidates fit the admin role, Robert Walsh and Morgan Freeman, so I need a genuine disambiguator drawn from actual fields on the User record (like username or workspace context) rather than just naming them outright. I'm leaning toward phrasing this as "the only admin in the core-infra adjacent workspace" to keep the identification role-driven and unique.
+
+I'll assign distinguishing titles: Robert Walsh as "Director of Engineering" and Morgan Freeman as "Director of Marketing," both workspace admins. This lets the request uniquely target Robert by combining the admin role with his title attribute, since title lives directly on the User node.
+
+The task itself is sending a DM about the Q3 archived channel review—this is a state-changing action (posting a message), with the target being the single identified user via conversations.open and chat.postMessage.
+
+I'm leaning toward a state-changing task: identify the workspace admin, then take a real action like inviting them into a newly created channel or sending them a direct message about the archive review, keeping the obligation centered on selecting the right user before acting.
+
+Actually, maybe a cleaner read-only framing fits better: compiling an internal escalation contact list by finding the workspace admin whose title is Director of Engineering, pulling their email for the users table. But a state-changing DM task feels more like the natural business action—selecting the target user and sending a message via chat.postMessage, so I'll lean toward treating this as state-changing with the user as the selection target, per the calibration example's approach to change/written attributes.
+
+Actually the mismatch runs deeper: writing a message affects the messages table, not the user table, so maybe I should reframe the task as simpler and read-only, like identifying the right channel or person, rather than forcing a state-changing frame onto a mismatched table. Even inviting a user into a channel would technically write to channel_members, not users, so the obligation table needs to align correctly with whatever action I actually pick.
+
+I'll settle on a clean, consequential-but-read-only question: something like requesting the email address of the admin responsible for escalations, which stays business-relevant without introducing attribute mismatches. For the scenario, I'm setting up Robert Walsh as the correct match (admin, Director of Engineering) with Morgan Freeman as a near-miss negative who shares the admin role but has a different title.
+
+Now I want additional negatives to sharpen the conjunction test: Nick Fury will have the right title but wrong role (member, not admin), and Artem Bogdanov will have neither the role nor title match, ensuring only Robert Walsh satisfies both conditions simultaneously.
+
+I'm adding a title column to the seed data since it's nullable in schema, and settling on exactly one valid match: admin role plus "Director of Engineering" title, uniquely identifying Robert Walsh among the two workspace admins.
+
+Now I need to verify how workspace roles are actually exposed through the API—checking whether users.list surfaces role info or if it's only accessible via users.info, which seems to return a single team association with admin/owner flags.
+
+So the access plan becomes: call users.list to enumerate all workspace members, then call users.info on each admin-flagged candidate to confirm their role and title, ultimately matching against "Director of Engineering" to isolate the one correct person—since other candidates either have the right title but wrong role (member, not admin) or the right role but wrong title (Director of Marketing).
+
+Now I'll set up the obligation structure: a single read-only obligation targeting the workspace admin whose title matches, requiring the email as the answer attribute, with scope defined by both role and title matching.
+
+Finally I'll draft the user-facing prompt: something like requesting the email address of the workspace admin whose title is Director of Engineering, for an internal escalation list, and assemble this into the final task_spec JSON.
+

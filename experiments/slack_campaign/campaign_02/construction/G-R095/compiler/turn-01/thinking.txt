@@ -1,0 +1,88 @@
+I'm checking the existing seed data to see what's already set up correctly - Robert and Morgan Freeman as admins, Priya as a member - so I know what still needs to be added through seed edits.
+
+The bot's eyes reaction already matches the design, so that's fine. But I need to insert four new reactions: Robert reacting with eyes on the engineering message in the wrong channel, Priya reacting with eyes on the alert message despite her role, Robert reacting with thumbsup on the alert message with the wrong emoji, and Morgan reacting with eyes on the general message in the wrong channel. I also want to confirm Robert's membership in #engineering stays consistent with these additions.
+
+Since the resolution scope is restricted to core-infra messages, the actor really only needs membership in that channel to pull its history plus access to users.list to identify admins across the workspace — the other channels are just for constructing negative examples, not for the main query.
+
+No actor id is explicitly given in the assignment, so I'm guessing it defaults to one of the existing channel members with admin-level visibility, possibly U_ROBERT, since they'd need to cross-reference membership info via users.info.
+
+This bot has broad channel membership across the workspace, confirming it as the right actor choice. Now I need to construct the seed edits, starting with four message_reactions rows to insert.
+
+I'm mapping each seed edit's reason to the design roles it exercises: wrong-channel and wrong-role reactions from various admin users, plus a wrong-emoji case, all tied to specific message and user IDs, and setting explicit created_at values for determinism.
+
+Next I'm binding the role labels used in the design to actual native handles for the workspace, channels, and admin users.
+
+Now I'm defining the selector for the admin_eyes_reactions_core_infra obligation: read-only scope over message_reactions where the reactor is an admin in this workspace, the reaction_type is eyes, and the message's channel is core-infra. Since mode is absent here, I need the selector to resolve to an empty result set.
+
+I'm mapping the join path from message_reactions through users and user_teams (filtered to admin role in T01WORKSPACE) into messages and channels (filtered to core-infra), tracing which foreign keys connect each table in that chain.
+
+The issue is message_reactions needs two separate outgoing joins—one to users and one to messages—but a linear path can only extend from the current endpoint, so I need to figure out an ordering where message_reactions sits between messages/channels on one side and users/user_teams on the other.
+
+I could order the path as message_reactions to users to user_teams for the admin check, but that path linear structure means each step is just a FK join between adjacent nodes -- it doesn't require the whole path to branch back to messages, since identity is preserved along the chain from the anchor row.
+
+But since I need both messages/channels and users/user_teams info attached to the same reaction, and the syntax only supports a linear path, I'd need to sequence it as message_reactions to messages to channels to users to user_teams, joining each via its FK -- though I'm hitting a snag connecting channels back to users since that jump isn't a direct FK relation.
+
+Looking at the working example, each join step just needs to be the FK column on either adjacent table, regardless of which side "owns" the reference -- that's the pattern I should follow here.
+
+But my actual case needs message_reactions to connect both to users (via reactor) and separately back to messages/channels, and once I move past a node in a linear chain I can't re-enter it to add new constraints, since the path only advances forward from the current end.
+
+So I think the root has to be message_reactions since that's the anchor table specified, meaning node 0 is message_reactions, and I need to figure out how the chain continues from there through messages, channels, and users/user_teams without needing to double back.
+
+So node0=message_reactions joins to node1=messages via "message_reactions.message_id", then node1 joins node2=channels via "messages.channel_id" with the filter on channel_name='core-infra'. Now I still need to connect users and user_teams to node0's user_id, but node2 is channels so the next node would have to provide that foreign key link.
+
+Since the path is linear and can't branch, I can't just add channel_members for a random member's role -- I specifically need message_reactions.user_id's team role, meaning I need users and user_teams anchored to node0, not tacked onto the channel side. Putting messages and channels first via message_id, then continuing from message_reactions to users and user_teams as a separate leg of the same linear path seems like the way to satisfy both constraints.
+
+But the reactor's user_teams and message's channel info connect through message_reactions via different foreign keys, user_id versus message_id, which means branching that a strictly linear path can't handle unless the join structure allows repeated visits to relations from the same table.
+
+I'm checking whether users can be added as a later node via message_reactions.user_id even after the path moves through messages first, since node0 stays part of the tuple. I need to verify the fourth join in the example, going from channel_members to channels, to see if steps can reference an earlier node again.
+
+Actually, tracing the join array confirms it's strictly linear: each join connects only consecutive nodes in the path, using an FK between them, so revisiting node0 after moving to node1 isn't allowed. Given that constraint, I need to figure out how to enforce both conditions within a single linear chain.
+
+Since message_reactions links directly to both messages and users, I could start the path there, but branching to channels for the message's channel while also reaching user_teams for the reactor's role isn't possible in one linear sequence — there's no FK path connecting channels back to user_teams through message_reactions.user_id. I'm now considering whether an auxiliary condition (like checking the identity constant) could substitute for the missing branch instead of a full join.
+
+Right, path[0] should match root_table, so it must start with message_reactions. That resolves the earlier confusion - node0=message_reactions, node1=messages works fine since message_reactions.message_id is a legitimate FK column on the anchor table itself, regardless of join direction.
+
+Continuing the chain, node2=channels connects via messages.channel_id, filtering on channel_name='core-infra'. For node3=users, I need a join field belonging to either channels or users, but there's no direct FK between them - they only relate through the channel_members table, so I may need to insert that intermediate node.
+
+That messages.user_id points to the author, not the reactor, so it's a different user than the one I'm tracking through message_reactions. The join structure really is strictly sequential—each step must reference the exact adjacent node's FK—so I can't sneak both users and messages into a single linear chain from message_reactions without breaking that adjacency requirement.
+
+Right, checking the join spec format confirms each join names one FK field matched against the adjacent table's primary key, like channel_members.user_id joining to users. Since message_reactions and user_teams have no direct FK between them—both only reference users—I need to route through users as an intermediate step: message_reactions to users, then users to user_teams.
+
+But now I'm stuck on the messages/channels branch, since node0 already used its user_id FK to reach users, and there's no FK from user_teams onward to messages. This raises the question of whether the path structure allows revisiting a previously visited node as a new pivot point, effectively branching from an earlier anchor rather than strictly chaining forward.
+
+Actually, re-reading the syntax description, joins must connect strictly adjacent tables in the list -- so branching isn't allowed, it's a genuine linear chain. That means I can't express both conditions (users->user_teams admin AND messages->channels core-infra) tied to the same message_reactions row within a single linear path, since it requires branching from the message_reactions node itself.
+
+I could instead put a root scope filter on message_reactions for reaction_type='eyes' with no join needed, then thread the focal path through message and channel, and use an auxiliary query for the admin-role check via user_id -> users -> user_teams. The concern is whether that admin condition counts as a "truly independent" constraint per the design notes, since it's actually tied to the same row's user_id rather than being unrelated -- but an auxiliary query starts fresh from the root table anyway.
+
+I'm mapping the intended route (reaction → message → conversation → workspace → workspace membership) and realizing linking the workspace membership back to the specific reactor requires rejoining on user_id, which loops back to the same starting node.
+
+The route itself doesn't force the reactor's identity through the membership node — that binding must come from the constraint that the reaction's user_id matches the workspace_membership's user_id, which is an access qualification rather than something the join path structurally guarantees.
+
+So the join must be an actual declared FK relationship, meaning the field's table must be adjacent to the FK's target table in the path. Since message_reactions and user_teams share no direct FK to each other (both only reference users), I can't connect them directly—I need to route through an explicit users node in between.
+
+This properly binds the reactor's identity to their workspace membership through that shared users row. But I also need the message/channel constraint tied to that same message_reactions row—requiring a branch from the anchor node, which isn't possible in a strictly linear chain.
+
+So I need to split into a focal query plus an auxiliary query, both anchored at message_reactions, intersecting constraints on the same root rows. The focal route follows REACTION→MESSAGE→CONVERSATION→WORKSPACE→WORKSPACE_MEMBERSHIP, which routes through user_teams without an explicit USER node in the sequence.
+
+But that literal path would just match any admin in the workspace, not necessarily the reactor themselves - unless the reactor's identity is meant to be implicitly bound via REACTION's own user_id field, which would make WORKSPACE_MEMBERSHIP's user need to match that same id even though no explicit USER node is listed in the route.
+
+So message_reactions and user_teams can't be directly adjacent since neither has an FK pointing straight to the other's table—users has to sit as an intermediate hop in between. That means the actual join path likely needs to pass through the users table implicitly, even if it's not listed as an explicit route node, since these nodes represent conceptual entities rather than the literal join chain.
+
+The trouble is I still can't linearly chain message_reactions through messages/channels and simultaneously back through users/user_teams without branching, since a strict linear path only lets me continue forward, not double back to the origin table.
+
+So the answer must be to use two separate top-level queries — a focal chain and an auxiliary chain — both anchored at the same root table, with results combined by intersecting the root row handles they each produce.
+
+Since the selector language has no other branching mechanism, I'll go with this best-effort interpretation: the focal path anchors at message_reactions, joins to messages and channels, filtering for channel_name "core-infra" and reaction_type "eyes" on the anchor node.
+
+Actually reaction_type fits better as a root-level scope filter since it's a direct field, so I'll set scope=[{field:"reaction_type",op:"eq",value:"eyes"}] instead — cleaner without needing a node reference. Then I add an auxiliary branch joining message_reactions to users to user_teams, filtering for role "admin" and team "T01WORKSPACE", which together satisfies the full constraint: reaction type, channel match, and reactor's admin role on that team.
+
+Since mode is "absent", I need to verify none of my seeded reactions accidentally satisfy all three conditions simultaneously — checking each one confirms they're each missing at least one criterion (wrong channel, wrong role, or wrong emoji), so the final result set stays empty as intended.
+
+Now I'm setting up negative_referents as the excluded reaction handles - the 4 new plus 1 existing reaction that could be mistakenly matched by a naive query - then building the selector object with root_table, scope, focal, and auxiliary fields, followed by bindings for each role like workspace, channel, and admin user identifiers.
+
+I'm defining the exact reaction records with their message_id, user_id, and reaction_type combinations that represent wrong-channel, wrong-role, and wrong-emoji mismatches, plus the existing bot reaction that shouldn't be touched, before moving on to specify the seed edits for inserting the new message reactions.
+
+Thinking about the actor's access requirements now — since the roles table doesn't explicitly list an "actor" role, I'm noting in my design notes that the actor needs membership in C_INFRA at minimum, and possibly the other channels too, though for this "absent" case scoped to core-infra only, the actor's access to those other channels isn't strictly necessary for correctness.
+
+users.info should confirm Priya isn't admin/owner in that workspace, so the actor just needs channel membership in C_INFRA, which U01AGENBOT9 already has. I'll go with that as my actor choice and move on to finalizing the JSON output.
+

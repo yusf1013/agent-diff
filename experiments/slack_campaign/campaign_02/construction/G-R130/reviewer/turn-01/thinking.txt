@@ -1,0 +1,34 @@
+Checking the design for finding a teammate's thumbsup reaction on Aisha's fix message in #frontend — the route goes through membership and conversation tables, but the seed data only shows one reaction row from a bot with "eyes", not a thumbsup, so this resolves as absent.
+
+Verifying the negatives: Aisha's message has no reactions at all, Mateo's rocket/party emojis are just text characters not actual reactions, and the bot's eyes reaction was on a different message in #engineering entirely — all consistent with an absent resolution. But I notice the route as specified ends at CONVERSATION_MEMBERSHIP without including message_reactions in the node list, even though checking the reaction is essential to the task.
+
+Actually, reconsidering the exposure qualification, identifying the reactor might be a terminal alternative to conversation membership rather than an additional hop. So the route could legitimately end at CONVERSATION_MEMBERSHIP if that's interpreted as the participant-identification step itself, not requiring separate MESSAGE/REACTION traversal.
+
+But the query genuinely needs "reaction contributor" as the defining trait, not "channel member" - these are distinct alternatives per the exposition, and the route picked the wrong one, or is conflating both requirements when only reaction-based identification should apply.
+
+So the route_nodes stopping at CONVERSATION_MEMBERSHIP misses MESSAGE and REACTION nodes that are actually required to establish the reaction condition - this looks like a genuine mismatch between the assigned route and what the request needs, though I should double check whether CONVERSATION_MEMBERSHIP was deliberately chosen for another reason.
+
+That could be a real design gap — the reaction requirement is essential to the query but isn't reflected in route_nodes. Tracing the full semantic chain (workspace membership, channel membership, message authorship, and reaction) shows MESSAGE and REACTION should appear as entities/edges in the route but don't, matching the "assigned path incomplete" defect pattern.
+
+But then I reconsider: maybe route_nodes are meant only to capture the identity/traversal chain to the candidate participant, while the reaction check is a separate filtering condition applied afterward rather than part of the core route.
+
+So chaining beyond the participant node this way, from user to message_reactions, matches exactly the forbidden pattern of following another relation from that participant. This looks like a genuine design defect where the route grouping requirement is violated, so I should flag it as a validity issue.
+
+But then again, maybe the message_reactions check is just an identifying-field predicate rather than a separate route node — filters attached to fields don't necessarily need new route labels, so this could actually be legitimate rather than a violation.
+
+Then I recall the guidance that channel-membership and message-authorship are distinct relation types that shouldn't be conflated under one route. That principle likely extends here: "member of channel" and "reactor on message" are separate relations, so requiring the reaction condition while only declaring conversation membership as the route risks smuggling in an unrepresented relation.
+
+Given the route_nodes lack MESSAGE and REACTION entirely while the binding_note explicitly needs message_reactions, this is a clear mismatch I should flag as a validity defect. I also want to confirm the "absent" mode is justified - since the seed data has no matching thumbsup reactions, absent seems correct - and check that target_roles being empty is acceptable for that mode, with no underspecified user choice issues here.
+
+The route matches a chain from workspace membership through conversation membership, consistent with the "channel member" alternative rather than "reaction contributor" - but the task's actual distinguishing criterion is the reaction itself, which the route excludes entirely. This means the resolution mode is determined by criteria falling completely outside the stated route.
+
+Actually, reconsidering: the route may just establish the candidate set of users, while the obligation applies additional predicate filtering using message and reaction tables as answer/negative filters not necessarily part of the route itself - this is a plausible and common pattern.
+
+But re-reading the exposure_qualification text more carefully, it explicitly names reaction contributor as an alternate participant type alongside channel member and message author, which suggests REACTION should have been the terminal route node instead of CONVERSATION_MEMBERSHIP, since the defining relation is "reacted to a message" rather than plain channel membership.
+
+That said, the abstract shape only requires picking one participant alternative per route instance, so combining channel-membership with a reaction requirement as a joint AND condition improperly stacks two separate participant relations together rather than choosing one.
+
+I'm fairly convinced this constitutes a genuine violation: the binding note effectively follows an extra relation (message_reactions) from the already-identified channel-member participant, which the qualification text explicitly disallows. So my conclusion is validity = fail, with the issue located in the binding_note/route design, matching this route's constraints precisely.
+
+I'll finalize with validity fail while still noting quality separately—the negatives are well constructed, so quality is adequate even though the route mismatch fails validity.
+

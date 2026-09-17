@@ -1,0 +1,22 @@
+The base seed already includes all the target messages, but only one reaction currently exists in it, so I need to add the rest of the reactions matching the design.
+
+Confirming the bot user is already a member of all needed channels, so no membership inserts required. Now I'm working out which role selectors to define for each match and negative case — channel_infra, the three positive message/reaction pairs, and the three negative cases (cloudbill/topic, circuit_oom/channel, quant/other_channel).
+
+For the incident_reactions obligation, I need one selector that captures the reaction set tied to the OOM/batch-size incident thread in core-infra, filtered through message_reactions joined to messages and channels. Since the three incident messages don't share a common text substring for a contains-based filter, I'm considering using message_id references directly since these are specific known thread messages rather than a general pattern.
+
+Actually checking the message contents directly, I find "batch size" appears in the revert message, the pprof message, and Lukas's summary message — all three legitimately share that phrase. The cloud bill message and the circuit-tracer OOM message don't contain it, confirming they're correctly excluded as negatives.
+
+But I need to double check whether other C_INFRA messages accidentally contain "batch size" too, like Olena's message referencing "batch size bump" — that could complicate a simple content-filter approach since it's part of the thread but might not be a strict match target.
+
+Continuing to scan the rest of the messages for "batch size" mentions—several more appear in the OOM thread but none of them carry any reactions, and the later cloud-bill/idle-GPU messages don't seem to reference batch size at all.
+
+So confirming that only the three target messages with reactions contain "batch size" in core-infra, meaning the contains_ci filter on that phrase joined with the channel filter should correctly isolate them. I'm now constructing the selector object rooted at message_reactions, joining through messages to channels, and building out the filter conditions for channel name and text matching.
+
+Now I'm mapping the role labels to their native identifiers—channel, messages, and reaction records—assigning each abstract binding to its concrete value like message IDs, user IDs, and reaction types for the three matching reactions, then continuing on to the next binding for the billing message and a negative topic reaction.
+
+I'm noting the seed edits needed: inserting five new message_reactions rows, while one (reaction_neg_channel) already exists so no edit is required there, plus considering whether to add a created_at timestamp for determinism.
+
+Then I'm identifying the negative referents—the reaction handles that could be mistakenly selected instead of the correct one—settling on the topic, channel, and other-channel reactions as the distractors.
+
+For the actor, I'm settling on U01AGENBOT9 since it's the bot with broad channel memberships matching the access plan, confirming it belongs to the necessary channels for the circuit_oom and quant negatives.
+

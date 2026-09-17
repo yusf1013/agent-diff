@@ -10,6 +10,7 @@ from .bedrock import Conversation,save
 from .generate import ROOT,read,dump
 from .workflow import PROMPTS,source_context,assemble,check,check_design
 from .selection import SELECTOR_GUIDE
+from .route_contract import build as build_route_contract
 
 def resume_recorded(folder):
     """Recover the actual native history even after an unanswered transport call."""
@@ -38,7 +39,7 @@ def recover(cid):
     feedback='Continue this same design. The attached current instructions clarify serialization and the task; earlier outputs remain recorded. Use native table names consistently; absence still has the assigned referent table and an empty target set. For a collection request with one seeded match use multiple, not single, and do not manufacture an extra positive in an environment-only mutation. Include all computation/written metadata required by task_type. A mutation uses exactly the same sketch JSON contract: describe the existing positives and proposed negative additions; the compiler, not you, writes the actual seed patch. The source prompt and intended referents remain fixed. Do not change the assignment to fit a draft. Return the complete corrected design JSON, or a concrete unrealized_reason if necessary.'
     save(folder/'recovery-feedback.json',{'provenance':'General development corrections, no solver output or ground-truth labels','feedback':feedback})
     design=writer.ask(dump({'feedback':feedback,'current_writer_instructions':(PROMPTS/'writer.md').read_text(),
-                            'assignment':a,'prior_construction_failure':old}))
+                            'assignment':a,'route_contract':build_route_contract(a['route_nodes']),'prior_construction_failure':old}))
     save(folder/'design-before-recovery.json',read(folder/'design.json'))
     save(folder/'design.json',design)
     if design.get('unrealized_reason'):
@@ -51,7 +52,7 @@ def recover(cid):
         save(folder/'recovery-summary.json',{'status':'unrealized','errors':errors});return
     cf=folder/'compiler'
     compiler=resume_recorded(cf) if cf.exists() and list(cf.glob('turn-*/request.json')) else Conversation(cf,(PROMPTS/'compiler.md').read_text(),max_tokens=20000)
-    compiled=compiler.ask(dump({'instruction':(PROMPTS/'compiler.md').read_text(),'assignment':a,'design':design,
+    compiled=compiler.ask(dump({'stage':'Explicit writer revision: the supplied current design supersedes earlier defective designs. Lock this current prompt during compilation.','instruction':(PROMPTS/'compiler.md').read_text(),'assignment':a,'design':design,
         'base_seed':read(ROOT/'examples/slack/seeds/slack_bench_v2.json'),'domain':source_context(),'selector_syntax':SELECTOR_GUIDE}))
     rf=folder/'reviewer'
     reviewer=resume_recorded(rf) if rf.exists() and list(rf.glob('turn-*/request.json')) else Conversation(rf,(PROMPTS/'reviewer.md').read_text(),max_tokens=10000)

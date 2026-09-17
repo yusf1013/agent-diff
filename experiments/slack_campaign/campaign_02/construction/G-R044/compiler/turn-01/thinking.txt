@@ -1,0 +1,50 @@
+Checking the base seed message from U_LUKAS in that channel, I confirm the reaction matches — U01AGENBOT9 left an "eyes" reaction, matching the target reactor, and that bot is already a channel member.
+
+Now I need to add the decoy reactions: U_ROBERT's thumbsup on the same message, U_PRIYA's eyes reaction in the wrong channel, and U_KENJI's eyes reaction on a different message in the same channel. The plain member decoy needs no reaction added. I'm also checking whether channel_members.joined_at needs to be set explicitly for reproducibility rather than relying on a default timestamp.
+
+Schema doesn't enforce channel membership for reactions, so this isn't strictly a problem, though I want the decoy to feel realistic - checking whether U_ROBERT belongs to an engineering channel would make the reaction more plausible even though he's not actually in C03IJKL9012.
+
+I'm weighing whether reactions strictly require channel membership in this schema—they likely don't, so adding U_ROBERT as a member of the engineering channel just for realism isn't strictly necessary, but it wouldn't compromise the negative example status since selection filters on emoji type anyway.
+
+Checking the other decoys: U_PRIYA is already a member of C_INFRA, so no edit needed there. For U_KENJI reacting in C03IJKL9012 with the same emoji though, he's not currently a member, so I'll add that membership to make this same-channel-wrong-message decoy more convincing and coherent.
+
+Kenji already posts in that engineering channel despite lacking a formal membership row - that's a pre-existing inconsistency in the base seed, but since I'm adding a decoy reaction for him there, I should add the membership entry too for consistency. I'll now insert the new reaction rows and the missing channel membership entries for the relevant users.
+
+I should also set an explicit joined_at timestamp for the target agent's membership rather than relying on the default, for determinism.
+
+Now I'm working out the selector path for the reactor_channel_membership obligation - tracing from messages through message_reactions to users to channel_members to channels, filtering by message ID, reaction type "eyes", and channel name "engineering," while making sure the root table is set correctly.
+
+I'm realizing the linear path traversal doesn't automatically enforce that channel_members.channel_id matches messages.channel_id—each join step only connects adjacent nodes, so I need to make sure the same channel is shared across both ends of the chain rather than relying on implicit equality.
+
+I need to restructure the join path: start from channel_members joined to channels filtered on 'engineering', then channels to messages (same channel), then messages to message_reactions filtered on 'eyes', then reactions back to users to tie into the original channel_members.user_id, forming a closed loop that ties everything to the right person and channel.
+
+I need to restructure the path differently: start from channel_members, join to users, then message_reactions, messages, and channels. This chains channel_members.user_id to message_reactions.user_id, then message_reactions.message_id to messages.channel_id, with filters for the eyes reaction, the circuit-tracer message, and the engineering channel name.
+
+However, I realize this doesn't force channel_members.channel_id to actually equal the engineering channel—the membership row could belong to any channel since node0's channel_id is left unconstrained. I need to add another connection so the channel of membership matches the channel of the message.
+
+Since scope filters only work on root-table fields, I need to restructure the focal path to bring channels directly into the join chain instead. I'll build the path as channel_members → channels → messages → message_reactions → users, joining on channel_id at each step, filtering the channels node by channel_name eq 'engineering' and the messages node by the relevant message text, then continuing the join through to reactions.
+
+But now I realize the linear path structure creates a problem: I need message_reactions.user_id to equal channel_members.user_id (the reactor must be the same person from the membership), but joins can only connect adjacent nodes in a linear chain, so I can't directly compare node3 back to node0 without routing through users as an intermediate node, which doesn't actually enforce that equality on its own.
+
+That clicks: channel_members joins directly to messages on matching channel_id (both being the engineering channel), then messages joins to message_reactions via message_id, then onward to find the reacting user.
+
+Actually, joins need real FK relationships between adjacent tables, and channel_members and message_reactions don't share a direct foreign key—they only connect indirectly through users or messages, so I need to rethink which tables sit next to each other in the chain.
+
+So the path has to route through users: channel_members joins users, users joins message_reactions, then message_reactions joins messages, and messages joins channels. But that still leaves channel_members' channel_id unconstrained relative to the messages' channel, so I need an extra scope constraint tying that root field to the engineering channel directly.
+
+Since scope filters are restricted to root-field predicates without joins, and channel_members has no channel_name field, I can't filter by name at the root—only by channel_id, which forces using the ID constant despite the naming guideline. That seems unavoidable given the syntax restrictions.
+
+But I realize the focal path itself starts at channel_members too, and it can join to channels using channel_name as a legitimate user-facing filter through the join chain. So I'm laying out the focal path: channel_members joined to channels (filtering on channel_name), then to users, then to message_reactions (filtering reaction_type), then to messages—using named filters everywhere except the unavoidable root scope.
+
+The concern remaining is whether the message text itself is unique enough to implicitly guarantee it belongs to the engineering channel, since there's no direct join linking node4's channel back to node1's channel within this path structure. I decide the message_text filter for "circuit-tracer OOM" is unique enough across the whole dataset that this ambiguity doesn't matter practically, even though it's not enforced structurally.
+
+Adding the reaction_type='eyes' and engineering channel_name filters pins the target fully, so I'll finalize the query path through channel_members, channels, users, message_reactions, and messages with joins on channel_id, user_id, and message_id, filtering on channel_name='engineering', reaction_type='eyes', and message_text containing 'circuit-tracer'.
+
+This uniquely identifies the channel_members row for C03IJKL9012/U01AGENBOT9, so I'll leave scope empty and skip auxiliary queries since one selector suffices. I'm now mapping out the bindings: target channel, message timestamp, reactor, and the composite membership key, plus decoys for wrong emoji, wrong channel, same-channel-wrong-message, and a plain member, with the main referent entity being the conversation membership record.
+
+The negatives are the channel_members rows that could be mistakenly selected instead — memberships tied to the wrong-emoji reactor, wrong-channel reactor, same-channel-wrong-message reactor, and the plain member without any reaction. Now I'm drafting the seed edits: adding reaction rows for each decoy scenario (wrong emoji on the right message, right emoji on the wrong channel/message, right emoji on the same channel but wrong message), then starting to insert the corresponding channel_member row.
+
+Adding more channel_members rows...
+
+I'm also setting an explicit deterministic joined_at timestamp on the existing agent's membership row so the answer stays consistent, while deciding to leave the other existing decoy membership untouched since no change is strictly required there.
+

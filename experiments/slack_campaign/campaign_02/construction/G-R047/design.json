@@ -1,0 +1,76 @@
+{
+  "prompt": "We're sunsetting the archived old-project-q3 channel for good. Before we do, pull together the current members of that channel who hold owner or admin privileges in Test Workspace, so we can loop them in on the shutdown.",
+  "binding_note": "The route requires a conversation-membership record in channel old-project-q3 whose user also holds a workspace-membership with role owner/admin in Test Workspace (the workspace that channel belongs to). The base seed has zero channel_members rows for old-project-q3, so no conversation-membership record satisfies the full chain regardless of who holds admin/owner roles elsewhere — the request is absent.",
+  "roles": [
+    {
+      "role": "target_channel",
+      "entity": "channels",
+      "facts": "old-project-q3 (C_OLD_PROJECT), archived, belongs to Test Workspace (T01WORKSPACE); has no channel_members rows at all in the seed.",
+      "selection": "support",
+      "reason": "Anchors the conversation whose memberships are being requested; the route must terminate here."
+    },
+    {
+      "role": "admin_wrong_channel",
+      "entity": "users",
+      "facts": "Robert Walsh (U03ROBERT23), workspace role admin in Test Workspace, member of general/random/engineering channels — not a member of old-project-q3.",
+      "selection": "negative",
+      "reason": "Satisfies the workspace-role condition but fails the conversation-membership condition (wrong relationship: not a member of the target channel)."
+    },
+    {
+      "role": "admin_no_membership",
+      "entity": "users",
+      "facts": "Morgan Freeman (U07MORGANFREE), workspace role admin in Test Workspace, but has no channel_members rows anywhere in the seed, including old-project-q3.",
+      "selection": "negative",
+      "reason": "Correct workspace role but entirely missing the conversation-membership relationship needed by the route."
+    },
+    {
+      "role": "similar_channel_member",
+      "entity": "users",
+      "facts": "Robert Chen (U_ROBERT), member of project-alpha-dev (similarly named, active channel) with workspace role member (not admin/owner) in Test Workspace.",
+      "selection": "negative",
+      "reason": "Wrong conversation (similar name, but not the exact old-project-q3 identity) and wrong workspace role — double exclusion, and no fabricated match is introduced."
+    },
+    {
+      "role": "workspace_scope",
+      "entity": "teams",
+      "facts": "Test Workspace (T01WORKSPACE), the workspace containing old-project-q3 and holding all users' team memberships/roles referenced above.",
+      "selection": "support",
+      "reason": "Provides the workspace-membership scope (owner/admin role) the route must join through after the user hop."
+    }
+  ],
+  "obligations": [
+    {
+      "name": "old_project_admin_members",
+      "description": "Conversation-membership records in channel old-project-q3 belonging to users who hold an owner or admin workspace-membership role in Test Workspace; used to decide whom to notify before the channel is permanently retired.",
+      "table": "channel_members",
+      "mode": "absent",
+      "task_type": "read-only",
+      "scope": "membership records scoped to the archived old-project-q3 channel, joined through the member's user record to their Test Workspace membership role",
+      "target_roles": [],
+      "candidate_role_sets": null,
+      "selection": "set",
+      "answer_attributes": [
+        [
+          "channel_members.channel_id"
+        ],
+        [
+          "channel_members.user_id"
+        ],
+        [
+          "channel_members.joined_at"
+        ]
+      ]
+    }
+  ],
+  "task_spec": [
+    {
+      "line": 1,
+      "text": "Identify the members of the old-project-q3 channel who currently hold owner or admin privileges in Test Workspace, so they can be notified about the channel's permanent removal.",
+      "obligations": [
+        1
+      ]
+    }
+  ],
+  "scope_exception": null,
+  "access_plan": "Use conversations.info/conversations.members on old-project-q3 (C_OLD_PROJECT) to enumerate its conversation-membership records (discoverable via users.conversations or conversations.list plus conversations.members) — this returns no members. For any members found, users.info would report each user's real_name and, via workspace membership context (user_teams role), their owner/admin standing in Test Workspace; this is what distinguishes decoys like Robert Walsh and Morgan Freeman (admins elsewhere but not in this channel) and Robert Chen (correct-looking channel name, wrong role) from a genuine match."
+}

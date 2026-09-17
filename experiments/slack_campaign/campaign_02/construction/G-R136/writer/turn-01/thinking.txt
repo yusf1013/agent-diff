@@ -1,0 +1,24 @@
+I'm mapping out a route from USER through CONVERSATION_MEMBERSHIP, CONVERSATION, WORKSPACE, and WORKSPACE_MEMBERSHIP, aiming to resolve multiple users tied to a workspace by tracing which users are members of it and then linking to conversations they belong to.
+
+The identifying path: anchor on a known channel (found via topic/content), pull a participant from its membership, follow that person to their workspace, then surface other members of that workspace — essentially finding users who share a workspace with participants of a specific channel while keeping the initial witness scoped to that group.
+
+But since there's only one workspace in this dataset, this workspace join won't actually discriminate between users — I need a more specific anchor, like identifying a participant through message authorship with particular content, then filtering the resulting workspace members by another attribute like timezone or role to make the target set meaningful.
+
+I'm settling on: identify the person who posted about the CUDA memory limit root-cause in core-infra (Priya), then find other workspace admins in her workspace via WORKSPACE_MEMBERSHIP records filtered by role.
+
+That gives U03ROBERT23 and U07MORGANFREE as admins - fitting a "multiple" resolution mode. I should note negatives too, like users with a plain "member" role or admins in a different context, to sharpen the distinction.
+
+Now I'm thinking through the task construction itself, framing it around a consequential supported operation.
+
+I'll design a scenario where the actor first finds who identified the CUDA memory limit as the OOM root cause in core-infra, then creates a new private channel and invites all workspace admins for a postmortem — making the resolution require both channel creation and invite actions.
+
+For the roles, I need a witness (the message author identifying root cause), two target admins to be invited, and negative cases: a regular member who shouldn't be invited, and another user who posted in the same channel about the incident but didn't identify the root cause, testing that identification must be precise.
+
+For the invite_admins obligation, I'm setting it as a state-changing operation on channel_members targeting both admins, with the changed attributes being the user_id and channel_id fields that get written when adding members.
+
+Now for create_channel, I'm defining it as creating a new "incident-retro" channel row, with no target roles since it's a fresh entity, and the changed attributes covering the channel name and privacy setting.
+
+Rethinking the ordering: since the main obligation targets users (admins), invite_admins should come first as the primary obligation, with create_channel as the supporting one needed to establish the destination channel—even though naturally you'd create the channel before inviting people. I'll finalize the obligations list with invite as main, and confirm "multiple" selection mode works fine even with just two matching admins.
+
+Now I'm working out the access plan: searching #core-infra history or using search.messages to find who identified the root cause, then cross-referencing with users.list and users.info to determine which users hold admin roles in the workspace, since role membership seems to be exposed through the workspace association data.
+

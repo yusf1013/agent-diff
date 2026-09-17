@@ -1,0 +1,30 @@
+Looking at this final compiled case, I notice the seed edits already inserted the DM channel, membership rows, and a message reading "I am looking into this." from U01AGENBOT9 — meaning the exact response the solver is supposed to produce is already pre-populated in the environment. That's a real validity defect since it pre-inserts the target state before the solver even acts.
+
+The compiler notes explain this was done to satisfy a "resolved Referent set must not be empty" requirement, but that reasoning is flawed — state-changing obligations should be created by the solver during evaluation, not pre-seeded, otherwise the DM-send condition is already satisfied regardless of the agent's behavior. This directly undermines the point of testing a state-changing task.
+
+Checking the design section's obligations list more closely, I notice it now only contains obligation 1 (resolving the author), even though roles like dm_channel_open and dm_message are still referenced and the mutation notes still talk about "obligation 2's selector" and "obligation 3's selector" — suggesting an inconsistency between what's declared and what's actually being tracked.
+
+Indeed, task_spec's obligations only lists [1], meaning the case formally grounds only the referent-finding obligation while the send-DM action is unformalized — yet the seed already contains the resulting DM message before any solving occurs. This is a serious validity problem: grading can't distinguish an agent that did nothing from one that correctly sent the DM, since the expected artifact is pre-seeded regardless of action.
+
+Confirmed: only 1 grounding obligation exists in the final spec, even though roles reference dm_channel_open/dm_message and seed_edits already inject the sent DM into the environment. This means the actual answer (the DM already sent with correct content) is pre-seeded, but grading never verifies that write — only the read-only "identify correct user" step is checked, so the real requested action goes unvalidated and a solver could exploit this.
+
+That checks out - the top-level card's written attributes list covers the actual DM write (channel_members and messages fields), so the grading likely verifies the write through that top-level check rather than a separate obligation, keeping consistent with preserving the original card structure.
+
+The provenance note confirms the source cards were copied mechanically with only the Test ID changed, so preserve_source_cards being true means I shouldn't require re-extraction here - this preserved structure is expected and matches the stage's explicit instruction. The remaining question is whether the compiler already pre-seeded the DM message artifact into the seed, making the state-change check trivially true regardless of what the solver does - I need to check the computed_matches entry referencing "U06HUBERT23" to see what it points to.
+
+Looking closer, the seed_edits explicitly create the exact expected message row in the channel with the precise text and author before the solver even acts - this looks like a genuine defect, since the initial state shouldn't already contain the outcome of the action being tested. If grading just checks final state rather than a delta, the test would trivially pass without any agent action.
+
+Actually, I should double check whether those seed_edits are inserted into the base seed before the task starts, or whether they represent the expected post-task state used only for verification. If it's the latter, my concern about the environment collapsing the test's discriminating power would be unfounded.
+
+This looks like a genuine flaw worth flagging: if the seed already includes the completed DM message when the agent starts, then the task's action is pre-fulfilled, which undermines testing whether the agent correctly performs the write and could confuse the agent into thinking it already sent the message or prompting a duplicate send.
+
+This looks like a compiler misunderstanding: it seems to have conflated the "non-empty referent set" requirement with needing to pre-populate the DM channel/message, when state-changing writes shouldn't require a pre-existing matching row at all. State-changing obligations should be validated post-hoc by checking the write occurred, not by requiring seeded referents beforehand — so this concern about referent sets seems misapplied here.
+
+Also, the design's final obligations list only kept obligation 1, dropping obligations 2 and 3, yet the compiled seed_edits and bindings still reference those old obligations' selectors — a stale compilation artifact where the compiler pre-seeded exactly the expected outcome, defeating the point of testing a state change. Given this construction defect, I'll flag this as a critical validity issue and lean toward marking it "fail."
+
+I'm considering whether the checker verifies these writes by diffing against the pre-mutation seed state versus the post-run state — if so, it would only correctly detect the created row if the actual solver action produces it during execution, not from the pre-existing seed artifact.
+
+Actually, I'm now second-guessing this: maybe seed_edits represent the expected outcome the compiler computes for verification purposes, not something that should be baked into the initial environment before the agent acts. If it's mistakenly folded into the actual "case.seed" that initializes the environment, that would be the underlying bug — the seed section explicitly includes the new DM membership and message text as part of the starting state, which suggests this confusion is present.
+
+This is a critical validity issue. I'm leaning toward failing overall, since the core send-DM action is pre-satisfied in the seed and there's also a mismatch between the design's dropped obligations and the seed edits/notes that still reference them. Completeness-wise I'd call it weak given this construction bug, though that's somewhat moot once validity fails — time to write the final JSON.
+

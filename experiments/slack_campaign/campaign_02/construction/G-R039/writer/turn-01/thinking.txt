@@ -1,0 +1,38 @@
+I'm mapping out the join path from conversation membership through conversation, message, user, and workspace membership to workspace, since the referent entity is the conversation membership and I need to identify it by tracing that a member's conversation has a message from a user who also holds a workspace membership.
+
+But since this seed only has one workspace, workspace-based filtering is trivially satisfied by everyone, which undermines the exposure qualification for group S4 - I need another distinguishing condition to ensure the target conversation membership is genuinely absent.
+
+The route follows: conversation membership traces to a conversation containing a message, authored by a user, whose workspace membership sits in that single workspace. So the query is really asking whether the author of a specific message is a member of a particular channel, framed through this chain, where the actual answer must be "no such membership exists."
+
+I'm checking channel "core-infra" and its authors—everyone who posted there is indeed a listed member, so that path doesn't produce the needed absence. To get a genuine mismatch, I need someone who wrote a message in a channel but isn't currently on that channel's membership list, so the identified conversation membership record simply doesn't exist.
+
+I'm mapping out the route through conversation membership to conversation to message to author to workspace membership to workspace, making sure the chain deliberately breaks at the membership step rather than anywhere else.
+
+Actually the natural reading is that the message's author is the same user as the conversation membership - I'm identifying that user by them having authored a message in that conversation, plus being a workspace member. Since only one workspace exists, that condition is trivially satisfied for anyone already in the system.
+
+I want to find a case where someone authored a message in a channel without being a listed member, since the model doesn't seem to enforce authorship-implies-membership. Checking C_GROWTH's roster against its message authors to spot such a mismatch.
+
+Then examining the engineering channel C03IJKL9012: its member list is U01AGENBOT9, U02JOHNDOE1, U03ROBERT23, U05MORGAN23, U06HUBERT23, but I notice messages authored by U_LUKAS and U_ROBERT in that channel even though neither appears on the membership roster - that's exactly the absence case I'm looking for.
+
+U_LUKAS's message about circuit-tracer hitting OOM errors and needing a PyTorch rewrite gives me a distinctive way to identify them by content. I can build a task around this: identify the person via their circuit-tracer message in engineering, confirm they're a workspace member, then probe some consequential operation involving their channel membership status.
+
+I'll lean toward a read-only ask, framing it as checking whether Łukasz is actually a member of the engineering channel he posted in, expecting the answer to reveal he's not.
+
+But I should identify him through his message content rather than naming him directly upfront, letting the description do the identifying work instead of pre-resolving who he is.
+
+So the phrasing becomes something like: "In the engineering channel, someone posted about circuit-tracer hitting OOM errors and needing a from-scratch PyTorch rewrite with proper multi-GPU streaming — since they're part of our workspace team, can you confirm they're actually a member of that channel?" This ties together the specific message, the author, and the membership check without stating a name.
+
+I should make sure only the initiating message uniquely matches, not the reply, to keep identification unambiguous despite the absent membership result. For negatives, Sophie's circuit-tracer PR update in her DM channel works well since it's a distinct conversation where she is an actual member.
+
+I also want negatives where someone is a member but the message content differs from the target (like the AWS supercomputer post in engineering), and cases where someone posted similar topical content but in a channel they don't belong to, or where the message is a reply rather than the target parent message itself.
+
+Since all users belong to the same single workspace, that condition is uniformly satisfied and doesn't discriminate. Now I'm working out the obligations: the conversation_membership record is the primary one with absent resolution mode, target_roles stay empty since there's no match, and I still need supporting roles for the message, conversation, and user.
+
+For answer_attributes, since the record is absent, there's nothing to report as a match, but I'll still note the field that would have been checked—joined_at—to reflect what the query is looking for. Then I start building out the roles list, beginning with the target_channel role for the engineering channel itself.
+
+Next, target_message covers Łukasz's original message about circuit-tracer hitting OOM errors, followed by target_author for Łukasz Kowalski and target_workspace_membership confirming his membership in the test workspace. I add target_workspace as supporting context, then move to a negative_dm_message role for Sophie's separate DM discussing the same PyTorch rewrite topic but in a different conversation entirely.
+
+I mark John Doe's message about AWS p5 instances as negative — he's an actual engineering channel member but his message content doesn't match. Robert Chen's reply asking about timeline is also negative since he's neither the message author nor a channel member. Kenji Sato's messages about JAX prototypes and food are negative too, and he's not a channel member either. Now I'm setting up the author_channel_membership obligation, which needs the CONVERSATION_MEMBERSHIP record confirming the OOM message's author is actually part of the engineering channel.
+
+I'll phrase the prompt naturally without revealing test terminology, referencing the OOM/rewrite message to identify the author without naming them, and asking whether they're a member of that channel given their confirmed workspace membership. The key binding is that no channel_members row exists for that specific user-channel pairing, even though the user is confirmed as a Test Workspace member.
+

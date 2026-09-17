@@ -1,0 +1,22 @@
+Checking base_seed, message_reactions only has one existing row for an "eyes" reaction, so the roles describing additional reactions like reaction_walsh or reaction_chen are planned additions the compiler will create later, which is fine at this design stage. Now I'm moving into a semantic check.
+
+The prompt asks which messages Robert reacted to with thumbsup and his role for each — since there are two users both displayed as "Robert" (Walsh and Chen), this is genuinely ambiguous, and the design correctly marks it as underspecified since there's no delegated authority to pick one. The route MESSAGE → REACTION → USER → WORKSPACE_MEMBERSHIP is correct for finding a reactor's team role, and the candidate_role_sets splitting into separate Walsh and Chen message matches aligns with treating this as two valid interpretations. But the reactor_workspace_role obligation forcing mode "multiple" with both target roles set seems like it should instead mirror the split alternatives rather than combining both memberships together.
+
+Actually, reporting both roles regardless of message alternative could be reasonable if both admin/member rows genuinely exist independent of which Robert answers the message question—so the "multiple" mode might not be a real inconsistency after all, just a different axis of ambiguity than the message one.
+
+Now I want to check the exposure_qualification piece next, about retaining the scoped witness under group S2 and using owner/admin distinctions on the displayed membership.
+
+I verify the messages match base_seed: message_match_walsh and message_match_chen both correspond to real messages already in the seed data, which checks out. Then I move to the negative rows, confirming negative_wrong_emoji_walsh's referenced message also exists in the base seed under Robert Walsh's account.
+
+Similarly, negative_wrong_emoji_chen matches an existing message authored by Robert Chen, and negative_wrong_person references a self-reaction by Sophie Dubois, which works as a valid "wrong person" negative case.
+
+Now checking access plausibility: discovering thumbsup reactors would require iterating all channels, messages, and reactions, which fits the available API surface. The agent bot's membership in C_INFRA confirms it can traverse that channel, but I need to verify whether it's also a member of C_MODEL to see Sophie's reaction.
+
+The bot is a member of C_MODEL too, so discovery access checks out across both channels. I confirm users.info returning a single workspace association is fine since only one team exists here, and the task's request for reacting Robert's workspace role maps cleanly to the user_teams.role field (admin/member enum). The "alternative" selection designation seems appropriate given the underspecified resolution mode, though I want to double-check that the reactor_workspace_role scope correctly references the user_teams table rather than some other membership table.
+
+Overall the construction seems solid — it genuinely tests handling of name collisions, correctly matching reactions to the right user's role, and distinguishing workspace membership from channel membership. The negative test cases around emoji specificity and author-versus-reactor distinction also seem well thought out. I'm now checking whether "his role in our workspace" as a pronoun reference is unambiguous enough to correctly resolve to the reacting user.
+
+Checking the mechanical constraints too: the message_reactions key allows multiple emoji types per user per message, so negative rows using a different emoji per message are fine. The binding note about leaving the resolution choice open matches the underspecified requirement, and no mechanical design errors turn up.
+
+So overall verdict: the design passes validity checks with strong quality.
+

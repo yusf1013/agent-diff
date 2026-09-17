@@ -1,0 +1,46 @@
+I see the mismatch now: the assigned route order is MESSAGE-CONVERSATION-CONVERSATION_MEMBERSHIP-USER-REACTION, but my focal path went MESSAGE-REACTION-USER-CONVERSATION_MEMBERSHIP-CONVERSATION, which is the reverse traversal order.
+
+Rebuilding the path as messages -> channels -> channel_members -> users -> message_reactions with joins tying each step by channel_id then user_id, but this loses the connection between the reaction and the specific message at node0 - the reaction could belong to any message from that user, not the one I need.
+
+The only valid FK between users and message_reactions is user_id, so node4 can only join to node3 that way. That leaves message_id disconnected from a direct join, but since filters and scope are evaluated per candidate row of the root table, the message_reactions node's filter could effectively bind message_id to node0's value at runtime, like a self-join constraint rather than an explicit join path.
+
+Rereading the spec's phrase about preserving identities along the path, I wonder if same-name fields reused across nodes implicitly enforce identity, but that shouldn't apply to non-adjacent nodes. I'm now checking the computed negative examples against this hypothesis to see if they contradict it.
+
+Actually the computed_matches confirms only a single correct match, so the error isn't about logic—it's structural, about the path node order not matching the assigned route_nodes order. The fix is simply to reorder the path to follow MESSAGE, CONVERSATION, CONVERSATION_MEM... in the correct sequence.
+
+Restructuring with that order, I map the joins: messages tie to channel, channel tie to membership, membership tie to user, user tie to reaction, filtering on channel_name and reaction_type. But I still need to connect the reaction's message_id back to the original message node, otherwise the path is incomplete.
+
+Without that link, this structure means "message X in engineering; someone Y is a member of engineering; Y made an eyes reaction on any message" — this would incorrectly match every engineering message as long as any engineering member ever reacted eyes to any message anywhere, since the existential condition would be satisfied broadly. That contradicts the earlier validator result which only matched a single message, so my earlier submission must have used a different structure, likely one where the reaction node connects directly to the message node.
+
+But the assigned route requires the fixed linear order MESSAGE-CONVERSATION-CONVERSATION_MEMBERSHIP-USER-REACTION, and this order seemingly can't tie the reaction to the specific message without another mechanism — unless the framework itself enforces this link implicitly, since each reaction row inherently references its own message_id, and the resolution mode operating over root_table messages might already require that connection when computing complete matching tuples.
+
+But re-reading the rule, it explicitly says a join connects adjacent tables in the path - previous and current node only, not arbitrary back-references. So under this strict adjacency constraint, satisfying the diamond shape within a single focal query following the exact assigned order seems impossible unless another node gets inserted.
+
+But wait - filters only compare against literal values, and scope constraints just restrict root messages by channel, which could still match multiple messages in that channel. So a static filter can't dynamically bind message_id to the row itself. Unless the reaction join could instead route through scope directly on the messages table, bypassing the need for a separate reaction join for that field.
+
+Since REACTION only connects adjacently to USER, only message_reactions.user_id is available, losing the tie to message_id. I'm checking whether the join spec allows a single step to encode two FK fields, but the documentation confirms it's strictly one join entry per step, so a compound join isn't possible here.
+
+Given that constraint, maybe the auxiliary query could start from "messages" and traverse to message_reactions directly, enforcing both message_id and user_id together as an independent path rather than trying to force it through the main step sequence.
+
+Actually, if focal alone is too weak (existential over any member reacting, not tied to the specific message), I could instead make the auxiliary query carry the real chain: message -> reaction -> user -> channel_member -> channel named 'engineering', replicating the original constraint exactly. Then combining focal (weaker root check) AND auxiliary (specific chain) together should reconstruct the correct restriction, though I need to check if this passes validation.
+
+This focal alone would match too many messages, since any engineering member could have an eyes reaction somewhere unrelated to the specific message. The auxiliary needs to tighten this by tying the reaction's message_id directly to the root message and confirming the reacting user is an engineering member.
+
+But even combining both this way doesn't guarantee it's the same user across focal and auxiliary - they could each be satisfied independently by different users. I need to check against actual data whether this composite query produces false matches by walking through the engineering channel's messages one by one.
+
+Listing out the eleven engineering channel messages, I see this matches the candidate population size from the validator, so the scope restriction is consistent. Checking which of these have an eyes reaction narrows it down to just two messages - one with agent1's eyes reaction and one with Kenji's (a negative case) - everything else lacks an eyes reaction entirely.
+
+Now I need to jointly evaluate the focal and auxiliary conditions together, since it's an AND across both per candidate row. The focal condition requires that some engineering member has an eyes reaction on any message, and I'm reconsidering whether to keep the root scoped to the engineering channel specifically to keep the candidate space clean and consistent with what the candidate population showed.
+
+Since the reactions node isn't tied to the root message at all, just to the user, the existential check for "an engineering member reacted with eyes" is satisfied globally by agent1's genuine reaction — meaning this condition holds true for every candidate row regardless of which message is being evaluated as root.
+
+So this focal filter ends up non-restrictive, and combining it with the auxiliary condition (message has an eyes reaction) would give two matches instead of one, which is the wrong result. The fix requires the auxiliary path itself to enforce that the reacting user is an engineering member — joining messages to reactions to users to channel_members to channels, filtering on channel_name='engineering' and reaction_type='eyes' together in that single path, which is what the original correct query does.
+
+This auxiliary joins message_reactions through channel_members to channels, checking per-candidate that the same message has an eyes reaction from a user who's also an engineering member — that's the precise binding I need, since it's evaluated in the context of each root message row.
+
+Testing against exclusions confirms it works: Kenji's reaction fails because he's not an engineering member, the DM message is excluded by channel scope, the thumbsup-only message fails since it lacks an eyes reaction, and messages with no reactions at all fail the auxiliary too. So this design correctly isolates the single matching timestamp.
+
+Now I'm checking the root-level scope filter on channel_id, and cross-referencing the computed focal negatives list against other engineering-channel messages to confirm they form the right candidate population. I'm also verifying the node indexing along the focal path—messages, channels, channel_members, users, message_reactions—making sure the join array positions line up correctly with each edge in that chain.
+
+I'm assigning the correct filters to each node: node1 (channels) needs channel_name='engineering', and node4 (message_reactions) needs reaction_type='eyes'. For the auxiliary path with a different node ordering, I'm flipping which node gets which filter accordingly, since message_reactions and channels swap positions there. The seed_edits and bindings from before still hold, so I just need to fix these selector assignments before assembling the final corrected JSON.
+

@@ -1,0 +1,60 @@
+I'm checking the base seed for existing reaction records matching this design's roles—looking at message_reactions for the specific user, message, and channel, and comparing against what's currently seeded to figure out what new reaction entry needs to be inserted.
+
+Robert Chen and Robert Walsh both already exist as users with the right roles and channel memberships, so those parts are already satisfied. I still need to insert the Chen reaction to Lukas's message, and I'm working through Hubert Marek's and Morgan Stanley's negative reaction cases, verifying their channel memberships against the base seed before deciding what needs inserting.
+
+Actually, thinking further, this still works as a negative regardless of the channel membership inconsistency - the wrong name is what disqualifies it, since the message is posted in #random about lunch and unrelated to Lukas's infra message. So the negative still functions correctly even if the channel description is slightly off.
+
+For the actual reaction, I'll use the existing lunch message in #random ("Anyone up for lunch?") and have Morgan react to it with raised_hands, since that's an unrelated message perfect for the negative case. I confirm the target infra message from Lukas is correctly identified as the OOM/root-cause diagnosis message.
+
+Now I'm mapping out the candidate reactions across Walsh and Chen (the two Roberts), plus negative reactions from Hubert and Morgan, so I can build the full binding set. Since the "robert_infra_reaction" obligation is underspecified between Walsh and Chen, the selector needs to compute the union of both eligible alternatives rather than arbitrarily picking one - so I'll search for all message_reactions with raised_hands across both candidate users.
+
+I also need a separate selector that finds reactions where the reactor's real name starts with "Robert", on a message authored by Lukas, within a channel the reactor belongs to. I'm working out the join path: message_reactions joins to users (reactor), then to messages, then to users again (the message author), plus a channel membership check to confirm the reactor is part of that channel.
+
+Since both message_reactions.user_id and channel_members.user_id reference users.user_id, they could link through the shared user identity in the join chain since the tuple carries the same user id across those foreign keys.
+
+I'm realizing the selector language only supports a linear join path, not branching, so I can't easily express that the channel_members.user_id must match back to the original reactor node while also traversing through messages to check the author's name—cross-node equality constraints like that don't seem expressible with simple per-node eq filters.
+
+Actually, looking at the example path more carefully, the join goes through users as an intermediate node, then connects to channel_members via matching user_id fields on both sides — so consecutive joins can share a field name across a bridging table like users.
+
+That confirms the chain pattern: consecutive tables share FKs, so messages→message_reactions→users→channel_members→channels works directly via matching IDs at each step.
+
+For my task, I'll set root_table as message_reactions since the referent is REACTION, with node1 as users (the reactor) joined via user_id, filtering on real_name containing 'Robert' since there are multiple candidates like Robert Walsh and Robert Chen.
+
+Then node2 is messages joined via message_id to find what was reacted to, with node3 as the author users table joined via messages.user_id—filtering here needs care since the seed's real_name for the "Lukas" reference is actually "Łukasz Kowalski", so a simple substring match on 'lukas' won't work due to the special character.
+
+I'm realizing I still need a channel constraint: the reactor must be a member of the channel where the message lives, which means joining node1's user_id to channel_members and matching that channel_id against node2's channel_id. But since filters only compare against explicit values rather than other node values, this cross-node comparison isn't straightforward with a linear join path.
+
+That works since both messages and channel_members reference channels.channel_id, so I could chain: message_reactions -> messages -> channel_members -> users to get the channel member's user_id. But I still need to separately verify that this user matches the reactor from message_reactions.user_id, which means I need two distinct references to users in the path.
+
+Since the exact channel_id values are known for the two candidate messages, I can hardcode that constraint directly rather than trying to link it symbolically across nodes.
+
+The membership constraint might just be a natural consequence of the data rather than something the selector must explicitly enforce, since the selector's role is to match the obligation's stated criteria, not fully replicate every nuance of the natural language. The obligation itself centers on a reaction by someone named Robert belonging to a particular channel.
+
+Working through the join path: I'm chaining message_reactions to users via user_id to identify the reactor, then to messages via message_id to trace the reacted message back to its channel.
+
+Actually, the correct order should link message_reactions to messages first via message_id, then messages to users via user_id for the author filter—but that leaves no room to also join to the reactor's user record in a single linear chain, since node1 (messages) is already consumed. This makes me question whether the path structure allows branching or revisiting nodes at all, since each step seems strictly sequential.
+
+Given this constraint, I'm starting to think we may need two separate queries: one focal query matching reactions where author is Lukas and reactor is Robert through two hops, plus a separate auxiliary check for channel membership.
+
+Actually maybe the cleaner path is message_reactions branching directly: reach the reactor via user_id, and separately reach the message author by hopping to messages then to users again -- but that reuses the users table twice in one path, which seems like it needs two distinct joins from message_reactions rather than continuing from the reactor node.
+
+Actually the join must connect adjacent tables in the path, not arbitrary earlier ones. So since users and messages lack a direct FK, I need to restructure the path using message_reactions as the connector, following the same pattern as the given example: messages → message_reactions → users → channel_members → channels, each join tying consecutive tables together.
+
+But since the referent entity is REACTION, the root_table should be message_reactions rather than messages, meaning it must also serve as the first element of the path since scope filters apply there.
+
+So I'm reworking the path to start at message_reactions and hop to messages then users, filtering the author to Lukas and the reaction scope to raised_hands. Now I need to figure out how to also capture the reactor's identity and membership, since that seems to require a separate auxiliary constraint outside the main path.
+
+I can add an auxiliary starting at message_reactions and hopping directly to users to filter the reactor's real_name to Robert, tying it back to the same underlying row. For the membership requirement -- confirming the reactor belongs to the message's channel -- I'd need another auxiliary path linking message_reactions through users, channel_members, and channels, filtering on the appropriate channel condition.
+
+Now I'm sketching the query structure: a focal path through message reactions to messages to users, joining on message and user IDs, filtering for Łukasz Kowalski's real name, with a root-level scope for raised_hands reactions. Then I'm adding an auxiliary path checking for a user named Robert reacting, plus a second auxiliary constraint continuing that same pattern.
+
+Verifying this correctly isolates just Walsh's and Chen's reactions -- filtering on reaction type, message author, reactor name containing "robert", and channel membership in engineering or core-infra -- while excluding Hubert and Morgan due to name or channel mismatches. Checking against the base data: only one existing reaction (eyes, from a bot) plus four new candidate reactions being added, confirming Walsh and Chen are the only valid matches.
+
+Since there's a single obligation, I only need one selector object in the final list. Now I'm compiling the seed edits: inserting Walsh's raised_hands reaction and Chen's raised_hands reaction as new message_reactions rows, with more insertions still to define.
+
+Now I'm mapping out the bindings dictionary that ties role labels to specific rows and user IDs for the walsh, chen, hubert, and morgan cases, confirming no new users, channels, or messages are needed since everything already exists in the seed data.
+
+I'm noting that the negative referents are the reaction handles for Hubert and Morgan that get excluded from the main referent set, and flagging that the resolution has some underspecified ambiguity worth mentioning. I also want to verify the agent (U01AGENBOT9) has the right channel memberships to discover these histories — checking it's already a member of engineering, infra, and random channels from the base seed data, so no membership additions are needed there.
+
+Confirmed the agent has all necessary channel memberships already listed, so I can move on to finalizing the JSON output.
+

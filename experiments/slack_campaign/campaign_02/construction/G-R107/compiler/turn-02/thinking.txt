@@ -1,0 +1,30 @@
+I need to fix the bindings for obligation 2's thank_you_reply, since the target_roles table is empty and its selector lacks referents. Also the selector for obligation 1 doesn't match its assigned route of REACTION, MESSAGE, USER, CONVERSATION_MEMBERSHIP — my focal path goes through message_reactions, users, and channel_members instead, so I need to realign that path.
+
+I'm reworking the main focal path to follow the route order properly: message_reactions to messages to users to channel_members. The tricky part is that messages.user_id refers to the author, not the reactor, but since message_reactions has both message_id and user_id, I can still connect these nodes even though they aren't a strict linear FK chain, since the join doesn't need to be strictly sequential.
+
+Trying reactions->users->channel_members->channels branches off from message_reactions as node0, but then messages can't join in since its link back to reactions isn't adjacent anymore. Both messages and the users/channel_members chain branch off the same node0, so they can't coexist in one linear path—yet the error about the "assigned complete route" suggests the intended order might actually start with REACTION then MESSAGE.
+
+Actually messages.user_id connects messages to users as the author FK, but I need the reactor's user, which comes from message_reactions.user_id directly - so maybe node2=users should attach to node0 (message_reactions) rather than node1 (messages), meaning the path order itself might not require strictly sequential FK adjacency the way I assumed.
+
+So the validator flagged my selected path as differing from the assigned route - it wanted REACTION->MESSAGE->USER->MEMBERSHIP order, not what I had. That means I should keep message_reactions as node0 and let later joins reference back to it even when connecting non-adjacent nodes, since it's still part of the accumulated join tuple rather than strictly the immediate predecessor.
+
+I'm constructing path=["message_reactions","messages","users","channel_members"] with joins connecting message_id, user_id, and channel_members.user_id, and now I need to figure out whether the channel filter goes on messages.channel_id directly or requires adding a channels node.
+
+I'll filter node1 by both channel_id eq 'C_INFRA' and message_text containing 'Postgres 16' to uniquely identify that announcement, and similarly filter the channel_members node by channel_id eq 'C06ALPHADEV' to pin down project-alpha-dev, since these are legitimate FK fields even without a dedicated channels node in the route.
+
+For the joins, node0 to node1 uses message_reactions.message_id since that's the real FK linking reactions to messages. For node1 to node2, the field I actually need is message_reactions.user_id (the reactor, not the author), even though technically that FK lives on node0 rather than node1 -- I'll treat node1 and node2 as adjacent in the route sequence and let the join use whichever field correctly connects the data, since the FK itself determines validity, not which literal node object it's attached to.
+
+But a direct FK from messages to users would be messages.user_id, the author, not semantically matching a reactor. So maybe the route just needs the four entities involved via FK-consistent connections somewhere, not literally a strict sequential chain of adjacent-only foreign keys.
+
+Actually, the error suggests a defined route with a fixed literal order (R107: REACTION, MESSAGE, USER, CONVERSATION_MEMBERSHIP), so the validator probably expects the focal path to be exactly message_reactions → messages → users → channel_members, with each step needing a valid FK link.
+
+Since strictly requiring adjacent-only FK for the messages→users link doesn't work here, the tool must allow the join field to reference any earlier node in the path rather than only the immediately preceding one. I'll go with constructing the path as message_reactions, messages, users, channel_members.
+
+With three joins covering the four nodes and filters applied to the relevant node's channel_id, message_text, and channel_members' channel_id, this matches the assigned route correctly, so I can drop the auxiliary structure since everything's merged into the main path.
+
+Now I need to fix the bindings for the second obligation, since the resolved referent set can't be empty — the selector is matching a single timestamp value, but the planned bindings don't align with that.
+
+I'll add a binding key like "thank_you_reply" mapped to that matched message id, since the empty target_roles for this obligation still requires the validator to see a non-empty binding tied to the selector's match.
+
+Checking the computed matches, Lukas's reaction correctly matches while Sophie's and Olena's fall into focal negatives, which fits the intended design. The pre-existing reaction from the bot user doesn't satisfy either condition, so it won't interfere. I'm ready to finalize the JSON with the corrected selectors and bindings.
+

@@ -1,0 +1,28 @@
+I'm mapping out a route from user to workspace membership to workspace, thinking about how to select users based on their role within a workspace. Since all seed users belong to the single test workspace, I need to differentiate by role to make this a meaningful query rather than a trivial one.
+
+The plan: identify the workspace by name, then filter members by role=admin to get U03ROBERT23 and U07MORGANFREE as positive matches, with regular members like U02JOHNDOE1 as negatives. This is a legitimate use of the route since the role attribute lives on the membership record itself, distinct from just fixing a workspace and listing its channels.
+
+I want a natural task around this: inviting those admins to an incident channel like #core-infra, which is a state-changing action. That means the obligation selects the admin users first, then a separate action adds them as channel members — I need to check whether invite operates on the channel_members table as its own obligation.
+
+Simplifying, I'll have one obligation on the users table with multiple mode, marked state-changing since it drives the membership action, with the target roles set to the matching admins.
+
+Actually splitting this into two obligations makes more sense: one read-only selection over users to identify target admins by route, and a second state-changing one on channel_members writing channel_id and user_id — but that raises a conflict since target_roles need to reference roles defined against the obligation's own table, not the users table used for selection. I need to check the calibration examples for how roles and cross-table actions are handled together.
+
+Let me pivot away from the membership write scenario toward something simpler: a read-only task like "pull together the workspace admins' names and emails for the incident retro so I know who to invite manually." That keeps it a single obligation on the users table, mode multiple, with a natural consequential purpose.
+
+Tracing the join path from USER to WORKSPACE_MEMBERSHIP to WORKSPACE, I identify the workspace by team_name "Test Workspace" and filter membership role = admin, which matches U03ROBERT23 and U07MORGANFREE while excluding regular members like johndoe and artembogdanov. Since there's only one team in the seed data, workspace identification is technically trivial, but I'm considering adding a second workspace to make the identification step more meaningful.
+
+I'll add a new team "Beta Labs" (team_id T02BETA) with its own admin user distinct from Test Workspace's admins, creating a genuine negative case where role-based filtering must be paired with workspace identification to get correct results.
+
+I'll note the binding constraint: matching admin role alone isn't sufficient—the specific membership record must also match the correct team_id for "Test Workspace," since users could hold admin roles across different workspaces. This confirms the selection mode should be multiple, since more than one record matches the criteria.
+
+Now I'm drafting the prompt: something natural like asking to pull together names and emails of Test Workspace admins for an incident retro thread—consequential and plausible.
+
+I'm laying out the roles: Robert Walsh and Morgan Freeman both match as admins of the Test Workspace, while I need to add negative entries for users like Priya who hold different roles or workspace memberships that shouldn't be selected.
+
+I'll add user_teams role entities for the membership binding records: test_workspace and beta_workspace as team roles (support/negative respectively), plus robert_membership and morgan_membership as supporting admin bindings for T01, and priya_membership as a negative since her role is member, not admin.
+
+Then I'll add dana_membership as a negative admin binding tied to team T02 instead. For the actual answering roles on the users table, robert_user and morgan_user match, while priya_user and dana_user are negatives. I'm now drafting the obligation for "workspace_admins" — pulling real names and emails of admins from Test Workspace for the incident retro invite list, targeting robert_user and morgan_user with a read-only task spec.
+
+My access plan: filter users.list by team_id for Test Workspace, cross-reference the role field from user_teams to isolate admin members, then confirm each candidate's real_name and email via users.info. Now I'll write out the final answer JSON.
+

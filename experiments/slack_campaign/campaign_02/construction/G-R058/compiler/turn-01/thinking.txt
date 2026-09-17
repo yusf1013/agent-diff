@@ -1,0 +1,118 @@
+I'm mapping out the existing seed data—checking which Robert candidates already have messages, reactions, and channel memberships set up before deciding what to add for the design.
+
+I need two new update messages announcing the circuit-tracer fix: one from Kenji Sato in #engineering and one from Łukasz Kowalski in #core-infra, plus corresponding eyes reactions from Robert Walsh and Robert Chen on each respective message. Memberships already exist, so I'm just confirming that part is covered.
+
+I also need to check whether Robert Chen needs an eyes reaction on an unrelated 7B checkpoint message from Sophie in the model channel, and I've confirmed that message exists so I can attach the reaction there. Sophie's DM about the circuit-tracer PyTorch rewrite already exists with no reactions needed.
+
+I've verified Kenji Sato (U_KENJI) and Łukasz Kowalski (U_LUKAS) both exist in the base users already, matching the design names. Now I'm adding two new messages: one from Kenji in the engineering channel about the layer-by-layer streaming update fixing OOM issues, and another from Łukasz in the infra channel continuing that circuit-tracer discussion, picking a fresh timestamp that doesn't collide with existing messages.
+
+I'm also planning three reactions—Robert Walsh reacting with "eyes" on the engineering message, and Robert Chen reacting with "eyes" on both the infra message and an unrelated off-topic message. I confirmed U_ROBERT is a member of C_MODEL, so that reaction is valid, and checked that the acting agent has access to all three relevant channels since it's already listed as a member of each.
+
+Now I'm verifying Robert Walsh and Robert Chen's channel memberships hold for the other two channels as well, which they do. Since the task obligation is underspecified—two valid alternative candidate role sets (either Robert Walsh's or Robert Chen's membership path could satisfy it)—I'm reasoning that the selector should return the union of both eligible alternatives rather than arbitrarily picking one, following the root table structure starting from channel_members.
+
+I'm tracing the required join path: channel_members joins to users, then to message_reactions (matching a user whose real_name contains "Robert" and who reacted with an eyes emoji), then to messages containing "circuit-tracer rewrite update," then to channels. I need to check whether the reacted-to message must belong to the same channel as the membership, or whether the design only requires the reaction to identify the qualifying Robert regardless of channel location.
+
+Actually, the design likely binds Robert's membership to the same channel he reacted in, since that channel is #engineering and his membership there provides the context needed.
+
+Without that join constraint, the query would incorrectly pick up unrelated memberships—like Robert Walsh also belonging to #random—since nothing would tie the membership channel to the channel where the qualifying reaction actually occurred, letting a false positive slip through.
+
+I'm defining the query structure: starting from channel_members, chaining through users, message_reactions, and messages to channels, joining on user_id and message_id matches, then filtering for a real_name containing "Robert", a reaction_type of "eyes", and a message_text condition still being written...
+
+But now I realize there's a structural problem: the channels node reached via messages.channel_id is a separate identity from channel_members' own channel_id field, and there's no way to enforce that these two match through a simple field filter since the selector syntax only supports value comparisons, not node-to-node equality. I need to find another way to constrain the membership's channel to be the same as the message's channel.
+
+Actually, rerouting the path from channel_members through channels directly, then to messages via the reverse channel_id relationship, then to message_reactions and users, would make the channel a single shared node rather than two separate ones—solving the identity mismatch.
+
+But there's still a gap: this doesn't guarantee that the member's user_id matches the reactor's user_id, since those are two different edges into the same users table. I need to check whether that constraint is actually required or if the join structure implicitly handles it.
+
+I realize the join field needs to belong to whichever node is adjacent in the path, so channel_members.channel_id can't connect directly to channels if users sits between them in the sequence — the adjacency constraint means each join field must live on one of the two neighboring nodes.
+
+So a valid path could go channel_members → channels → messages → message_reactions → users, joining on the reversed FK chain. But then I need this reached users node (the reactor) to be verified as the same user as channel_members.user_id, which is tricky since filters only compare fields to literals, not across nodes.
+
+Alternatively, I could root at channel_members → users (join on channel_members.user_id) → message_reactions (join on user_id) → messages → channels, which naturally enforces that the membership's user and the reacting user are identical, since node1's users primary key is tied directly to channel_members.user_id.
+
+Right, since the reaction/message filters only depend on the user, both of Robert's memberships would match, incorrectly including the unrelated one. I need to add an explicit constraint tying the message's channel back to the same channel as the membership row, which isn't something the path structure naturally enforces on its own.
+
+Right, since "his membership" means the reactor and the member must be the same person, I need an explicit equality constraint tying channel_members.user_id (node0) to the users node representing the reactor (node4's PK), plus the name filter for "Robert" applied at the appropriate user node.
+
+But the path is linear so node0 can't join both node1 and node4 directly - I'm considering reordering the chain: channel_members → users → message_reactions → messages → channels, but then I lose the ability to filter scope on the root's channel directly since scope filters only apply to root-level fields.
+
+I'm also wondering if a strict channel-match constraint is even needed here, since auxiliary queries are meant for separate constraints, not re-routing the same path. Maybe the intended answer is simpler than I'm making it: Robert Walsh having two memberships means only one is validated by his actual qualifying reaction, and that's determined by matching the specific membership record referenced in role documentation.
+
+I'm considering an alternate join order to enforce the channel-equality constraint naturally: starting from channel_members, joining through channels, messages, and message_reactions to users, then filtering on the user's name, reaction type, and message text.
+
+But that ordering fails too, since it doesn't tie the reacting user back to the specific membership row—it would incorrectly match any member of the channel regardless of whether they're the one who reacted. I need both conditions simultaneously: the membership's user matching the reactor, and the membership's channel matching the message's channel.
+
+Actually, I recall the prompt's own example path uses exactly this pattern: joining message_reactions to channel_members via matching user_id fields even though they're both FKs to users, not a direct FK between those two tables. That confirms this kind of shared-reference join is intended to be valid.
+
+Since obligation requires root_table channel_members, the path must start there: channel_members joined to users, then to message_reactions, then to messages, and finally to channels.
+
+Now I need to check whether the message's channel (from node4) actually matches the channel_member's own channel_id -- since these are separate nodes with no automatic tie, I'd need an explicit filter linking node0's channel_id to a known value to enforce that connection.
+
+So actually the channel constraint matters for correctness - the message's channel must match the channel_members' channel, ruling out unrelated memberships like Robert Walsh's #random one. I'm testing whether the path can revisit channels by restructuring: starting from channel_members, joining to channels, then messages, then message_reactions, then users, forming a cycle back to the original channel constraint.
+
+I don't see a way to enforce that the reacting user is a member of that same channel using only the join structure, since node0's user_id field isn't otherwise referenced in the chain. Given the design likely doesn't strictly enforce full circular consistency, I'll just accept the practical constraint here and move forward with the closest feasible query structure.
+
+Actually, chaining channel_members -> channels -> messages works: since node1 is a fixed channels row tied to channel_members.channel_id, the FK join to messages forces messages.channel_id to equal that same row, effectively enforcing the equality constraint we needed without an explicit cross-field filter.
+
+Now continuing the chain from messages to message_reactions to users gets me the reactor, but I still need to tie that reactor back to being the same user as the channel_members root — and the join syntax only supports field-to-literal filters, not node-to-node equality, so I can't directly assert node4.user_id equals root.user_id this way. Swapping the users node to be adjacent to root would fix the reactor-tie but break the channel-tie, so with a strictly linear join chain I can only satisfy one of the two equality constraints at a time.
+
+That confirms the pattern: channel_members' two FK columns (user_id, channel_id) each get used sequentially to adjacent nodes, exactly matching our scenario. But since our root_table is required to be channel_members, I need to figure out how that constraint plays out with this same sequential-join structure.
+
+I could try repeating channel_members later in the path, but that seems like an awkward, ambiguous hack rather than a real solution. Given the practical constraints here, I think the better approach is to prioritize enforcing the user-identity join first (channel_members.user_id to users) since that's the most critical link, and treat the channel-match requirement as something to approximate through filtering instead.
+
+That confirms the flaw: since the join reaches a matching tuple regardless of which channel_members row it started from, both memberships for Robert Walsh incorrectly qualify. I need a different scoping approach, but scope conditions can only use static value comparisons on root columns, not dynamic cross-references to the message's channel—so I'm considering reordering the path to put channels directly adjacent to the relevant join instead.
+
+Actually, that join wouldn't work since a valid join must be an FK that directly connects two adjacent tables—channel_members.user_id points to users, not to message_reactions, so those two tables aren't directly related by FK at all.
+
+The valid direct FK pairs I'm identifying are: channel_members↔users, channel_members↔channels, message_reactions↔messages, and message_reactions↔users.
+
+Also messages connects to channels, users, and self (via parent_id). Since channel_members only has two possible neighbors (users or channels), starting the path there and needing to satisfy both user and channel constraints simultaneously creates a bottleneck, since only one of those neighbors can be chosen as the next node in a linear path.
+
+Extending further, I realize the path could still touch both users and channels if I route through message_reactions: channel_members joins users on user_id, then users joins message_reactions on user_id (linking the same member's reaction), then message_reactions joins messages on message_id, then messages joins channels on channel_id -- this correctly ties the member's user identity to their reaction and the reacted message's channel.
+
+But critically, node0's own channel_id never gets equated with the final channel node's channel_id, since that field is only touched via the user_id join, not a channel_id join. So the reactor-is-member relationship is verified, but there's no guarantee the reacted message actually happened in the member's own channel, meaning edge cases like Robert Walsh's #random membership could still slip through unconstrained.
+
+I'm reconsidering whether one selector should apply per obligation rather than per candidate — the underspecified resolution mode implies a single selector must return the union of valid channel_member rows across both candidate role sets, rather than letting me pick just one.
+
+Restricting on channel name directly feels like it risks overfitting to the answer, even though it's a legitimate user-facing predicate. The more robust approach might be to drop the channel join at this node entirely and instead derive the final answer's channel from elsewhere.
+
+Since scope filters only apply to root fields and can't use subqueries, I can't pre-filter channel_members rows to only those in channels containing the rewrite-update message directly. Given these tool constraints, my practical compromise is to build the path as channel_members joined to channels, then joined to messages via the channel relationship.
+
+Actually, this approach breaks the identity binding: it would tie the channel correctly but not confirm the member is the same person as the reactor, so it could wrongly include every member of #engineering rather than only Robert Walsh. I need to weigh this against an alternative that constrains user identity but not the channel path correctly.
+
+The safer choice is the option that maps directly to the explicit negative cases the design calls out, since failing to exclude other channel members is a worse violation of intent than the alternative's gap.
+
+Let me try reworking the join path with two user joins to encode the identity chain differently, but I keep hitting dead ends since channel_members can't be rejoined and there's no direct FK linking messages to membership except through the channel_id filter comparison, which isn't a proper node-to-node join.
+
+Given the tool's limitations, I'm considering that the intended solution might just use a readable-channel scope filter rather than trying to strictly match membership and message channels through joins. Since this exercise likely has some evaluation tolerance rather than requiring a strict formal proof, I'll settle on a practical approach that captures the spirit of the requirement.
+
+The tool's semantics won't strictly enforce that the member's channel matches the message's channel — that final CONVERSATION node is probably just there to fetch the terminal channel for filtering or scope purposes, not to tie back to the root's channel_id. So Robert Walsh's unrelated #random membership wouldn't necessarily get excluded by the route structure itself, which makes me reconsider whether the answer really hinges on selecting node0.channel_id.
+
+The answer likely comes from channel_members' own columns (channel_id, user_id, joined_at) via the root table, but without a constraint tying node0's channel_id to the message's channel, all of Robert Walsh's memberships qualify as candidate rows — which seems like a genuine gap unless the compiler adds an implicit filter matching the message channel to the root's channel.
+
+I'm considering whether channels could be reached directly from root through channel_members.channel_id instead of through the message path, which might resolve the ambiguity by construction.
+
+But looking at the actual route_nodes order given—CONVERSATION_MEMBERSHIP, USER, REACTION, MESSAGE, CONVERSATION—the channels node genuinely comes last, reached via MESSAGE, exactly matching the structure I'd already identified as Option A. This suggests the query intentionally doesn't enforce that the membership's channel matches the message's channel, treating this as an accepted limitation rather than something to work around.
+
+Given that, I'm reconsidering whether the negative test case "robert_walsh_unrelated_membership" is meant to check exclusion at all, or whether it's testing something else since the selector structurally can't distinguish those channels—maybe the real constraint comes from requiring exactly one complete matching tuple for the focal query.
+
+The design doc explicitly flags this as a limitation case that must be excluded, yet the join structure has no way to distinguish this membership row from a legitimately qualifying one purely through the join constraints — the only distinguishing fact is which channel the membership row points to, which isn't part of the reaction-based condition at all. I'm starting to think this really is a structural defect rather than something solvable through added scoping.
+
+Actually, rereading the spec, auxiliary queries also start at root_table, which changes things. That means I could build an auxiliary path from channel_members through channels to messages, filtering on the message text containing the update phrase, rather than trying to compose scope and aux filters the way I was attempting.
+
+This confirms the root's own channel (not just the reactor's) contains a qualifying message, which is an independent constraint separate from the focal query's user-reaction chain. Combining focal (user reacted with eyes to a matching message somewhere) with auxiliary (root's channel contains a matching message from anybody) correctly excludes rows like Robert Walsh in #random, since that channel lacks such a message.
+
+Now I'm checking Robert Chen's other memberships beyond #core-infra — he's also in the model, growth, frontend, and one other channel — to see if any of those also contain a matching message, since only two channels currently have one added.
+
+Now I'm assembling the final selector structure: a focal path joining channel_members through users, message_reactions, messages, and channels with filters for the real name, the eyes reaction, and the matching message text, plus an auxiliary path checking channel_members against channels and messages to confirm channel membership.
+
+I'm pausing to consider how the focal and auxiliary queries should combine—whether the same root row needs to satisfy both the focal chain and every auxiliary query independently, which seems to be the standard pattern for these selector obligations.
+
+I'm now double-checking the seed data to confirm the reaction_type value "eyes" matches what I expect, then scanning if any real_name field like "Robert" also fits the pattern I'm building.
+
+For the message filter, I'm verifying the exact phrase "circuit-tracer rewrite update" appears in the two new candidate messages but not in the original problem-report message, which only mentions rewriting the library without that exact phrasing.
+
+Checking Sophie's DM confirms it also lacks that exact phrase, and being a DM she's not visible to Robert anyway, so it's correctly excluded from further reaction checks.
+
+I check the other channels Robert Chen belongs to and confirm none contain the target message text, so only C_INFRA and C03IJKL9012 pass the auxiliary filter. The selector logic now correctly handles both focal and auxiliary conditions per root row, so next I need to work out the negative_referents for the root channel.
+

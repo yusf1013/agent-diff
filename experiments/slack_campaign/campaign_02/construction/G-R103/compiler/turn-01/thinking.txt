@@ -1,0 +1,38 @@
+Checking the base seed data, I see both target reactions and messages already exist there. The message from U03ROBERT23 in C01ABCD1234 about the MCP deployment matches exactly, and I'm now verifying the message from U07MORGANFREE in C03IJKL9012 about the new pricing tiers.
+
+That message doesn't exist in base seed and needs to be inserted. I also need to check the required reactions - only one reaction currently exists in base seed (an eyes reaction by U01AGENBOT9), so I need to insert reaction_robert_eyes and reaction_morgan_eyes, plus the negative test reactions: negative_wrong_emoji, negative_nonadmin_author, and negative_admin_as_reactor, each targeting specific existing messages. Now I'm checking whether membership_robert_admin and membership_morgan_admin already exist in the base seed user_teams table.
+
+Neither Robert nor Morgan exists in base channel_members for C03IJKL9012, so I should add a channel membership entry for Morgan alongside the new message for coherence, even though it's not strictly required by the API.
+
+I also need to think about who the actor is for solving the task, since the task doesn't specify one explicitly, but the actor would need channel access to both C01ABCD1234 and C03IJKL9012 to discover the admin messages via conversations.history.
+
+For coherence, I should add channel membership for morgan into C03IJKL9012 to match the message posted there, since real Slack requires posting members.
+
+The obligation "admin_message_reaction" has an underspecified selection mode, so my selector should represent the union of eligible alternatives rather than a specific choice. I'm building the selector rooted at message_reactions, joining through messages, users, and user_teams to capture the admin's eligible reactions.
+
+But wait, negative_wrong_emoji sits on the same message as reaction_robert_eyes, and both messages come from admin authors - so my filter wouldn't distinguish emoji type and could wrongly pull in that negative example too, unless the "exactly one reaction per message" constraint is what rules it out.
+
+Actually, since our selector doesn't filter by emoji type, adding this second thumbsup reaction wouldn't break the main obligation's selection—it just adds another matching reaction to the union. So the negative's intent might be testing something else, but as written it doesn't create a genuine conflict with the main query logic.
+
+Actually the query returns all matching tuples as a union, so having two reactions on the same message isn't inherently a problem—the real question is whether target_roles correctly isolates just the eyes reactions from Robert and Morgan, excluding the thumbsup distractor by construction of the filter logic.
+
+Checking the guidance about auxiliary queries only for independent constraints makes me realize the real issue: the message itself has two reactions, so my query naturally matches both since they share the same message and admin author. The distinction between the correct emoji and the wrong one is semantic, not something the query filters can mechanically separate.
+
+Actually this reveals a deeper contradiction: the negative case demands two reactions on the same message, which conflicts with the binding_note's premise that each message received exactly one reaction. Given instruction 2's mandate to preserve same-record joins, and the rule that a design defect should be flagged when faithful compilation is impossible, this scenario looks like it genuinely can't be resolved without violating the stated data constraints.
+
+That's mechanically consistent with note 5's guidance that a broad selector is just a witness construction, not proof of semantic match, so I'll flag the overinclusion as a limitation and move on. Now I need to handle the negative_admin_as_reactor case: an eyes reaction by admin U03ROBERT23 on a message authored by non-admin U01AGENBOT9, inserting that reaction record against the existing seeded message.
+
+This case correctly gets excluded by the filter since the author isn't admin, confirming a true negative. I'm also verifying negative_nonadmin_author works the same way—a reaction by U04OMER23 on a message from member U02JOHNDOE1 gets properly filtered out. For negative_wrong_emoji, I'm noting it may slip through the main selector as a semantic distractor, so I should flag it in negative_referents for reviewer attention rather than trying to artificially exclude it with ID restrictions, since the instructions call for following the given route without those exclusions.
+
+Adding a second reaction from U01AGENBOT9 won't conflict with the existing unique key on message_reactions since it differs in user and reaction type from the existing eyes reaction. Now I'm compiling the seed edits: inserting a new message from U07MORGANFREE in channel C03IJKL9012 about pricing tiers, adding the corresponding channel_members entry for authorship consistency, and starting to insert the message_reactions rows including the eyes reaction from U02JOHNDOE1.
+
+I'm also verifying the reactors' channel memberships for consistency - checking U06HUBERT23, U02JOHNDOE1, and U01AGENBOT9 all check out fine, but I found that U04OMER23 is reacting to a message in C02EFGH5678 without being a listed member there, so I need to add that membership too.
+
+Now I'm assembling the final bindings: pairing reaction_robert_eyes and reaction_morgan_eyes with their message IDs, user IDs (U03ROBERT23 for Robert, U07MORGANFREE for Morgan), and their respective admin membership records in T01WORKSPACE.
+
+I'm defining three negative cases: a wrong emoji reaction from the bot, a non-admin author reacting, and an admin reacting to their own message. Then I'm constructing a selector for the "admin_message_reaction" obligation that joins message_reactions through messages and user_teams, filtering for admin role in T01WORKSPACE so it captures the union of both admins' eligible reactions.
+
+I flag that the emoji-filter gap causes overinclusion of the wrong-emoji case, which I'll note as a limitation, while confirming the non-admin author and admin-as-reactor cases are correctly excluded since their message authors aren't admins in that team.
+
+I confirm channel membership is properly added for the morgan message, roles are already set correctly, so no further edits needed there before writing the final JSON answer.
+

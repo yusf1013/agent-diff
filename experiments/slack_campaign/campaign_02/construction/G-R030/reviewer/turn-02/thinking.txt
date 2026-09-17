@@ -1,0 +1,24 @@
+Checking the compiled version against the design: the acting user is the bot itself, playing the "unrelated_bot" negative role, being asked about Robert. That makes sense since the bot is functioning as the assistant executing tasks here.
+
+The bot can discover real_name info via users.list without extra scope restrictions. Verifying the route structure — CONVERSATION_MEMBERSHIP through channel_members, CONVERSATION through channels, WORKSPACE through teams, and WORKSPACE_MEMBERSHIP through user_teams — all aligns correctly. But the filter on the first node already assumes knowledge of both Robert user_ids, which means disambiguation would need to happen upstream via a users.list query since this route has no USER node, and the compiled notes do call that out explicitly.
+
+The two IDs come from the access plan's separate users.list discovery step, then get bound directly as explicit filter values, which seems like a reasonable and consistent design choice. Though the literal ID values technically clash with the constraint that written attributes should be real column-based lookups rather than hardcoded values, I think this is acceptable since it isn't secretly enforcing extra conditions beyond what the original design intended—it's just binding the filter to the specific candidates already identified.
+
+However, since the route doesn't include the USER entity, the compiled selector can't actually join on real_name; it's only filtering by hardcoded IDs that happen to match the two real Roberts. That raises a question about whether this constitutes a hidden exact-field assumption, since the design specifies identifying "Robert" via a name field but the compiled query never filters on any name field at all.
+
+I'm re-checking whether the "written attributes must be real, not literal values" rule applies to selector filters or only to the exposed answer_attributes — it seems more likely to be scoped to the latter, since that's what's identifying/computation attributes exposed in cards.
+
+The actual answer_attributes here (channel_members.channel_id, channel_members.user_id, channels.channel_name) are proper table.column references, so that part checks out. The hardcoded user IDs used as filter values in the selector are likely fine too, since they come from bound role values established during the access plan's discovery step — that's standard binding-to-selector practice. Still, it's worth noting that since the compiled query skips joining through users directly, "Robert" is being identified purely through these pre-bound literal values rather than a live name lookup.
+
+I'm now checking that the solver is still expected to independently discover Robert-matching users via users.list, with the pre-bound values just serving as the ground truth for grading. That seems consistent with the framework's usual design. Now I want to verify the negative/near-miss sets are complete, making sure the focal negatives properly cover other users' channel memberships that aren't part of the correct answer.
+
+I also want to double check that the mode correctly requires presenting candidate sets rather than a single resolved answer given the ambiguity, and that the "requires_near_miss" flag lines up with the bot's channel memberships serving as decoys, and that the card's referent set and identifying paths fields match the intended schema.
+
+Then I'm scrutinizing the join path for filtering users by team: the chain goes channel_members to channels to teams to user_teams, filtered on team_id=T01WORKSPACE, but I'm not sure that filter actually ties back to confirm the specific candidate user belongs to that team, since user_teams has both user_id and team_id and only team_id is being filtered.
+
+It's a bare retrieval task but the ambiguity test is genuine, so I'll keep the verdict as valid with adequate quality. Both robert candidates share the same workspace membership (T01WORKSPACE), which checks out consistently, and the prompt's phrasing "channels he currently belongs to" uses a single referent despite the ambiguity between candidates.
+
+Now I'm checking whether the two candidate sets properly preserve the ambiguity rather than merging into one inflated list, which they do. I'm also verifying access realism—whether the bot's channel memberships across all the listed IDs plausibly justify visibility into the relevant conversations without overreaching into channels it shouldn't see.
+
+Similarly, users.conversations with a "user" parameter to browse another member's channels doesn't seem to require special permissions beyond workspace membership, so this should work fine for public channels too. I don't see a significant defect here, so I'll finalize with pass/adequate as in the previous review.
+

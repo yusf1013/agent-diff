@@ -1,0 +1,69 @@
+```json
+{
+  "seed_edits": [
+    {
+      "table": "message_reactions",
+      "op": "insert",
+      "key": {"message_id": "1706112500.000001", "user_id": "U_KENJI", "reaction_type": "eyes"},
+      "values": {"message_id": "1706112500.000001", "user_id": "U_KENJI", "reaction_type": "eyes"},
+      "reason": "Negative alternative: same channel and emoji as target, but reactor (Kenji) has no channel_members row in #engineering, breaking the membership hop."
+    },
+    {
+      "table": "message_reactions",
+      "op": "insert",
+      "key": {"message_id": "1706100000.000001", "user_id": "U01AGENBOT9", "reaction_type": "eyes"},
+      "values": {"message_id": "1706100000.000001", "user_id": "U01AGENBOT9", "reaction_type": "eyes"},
+      "reason": "Negative alternative: same reacting member (agent1) and same emoji, but message is in the Sophie DM, not #engineering."
+    },
+    {
+      "table": "message_reactions",
+      "op": "insert",
+      "key": {"message_id": "1706115000.000001", "user_id": "U01AGENBOT9", "reaction_type": "thumbsup"},
+      "values": {"message_id": "1706115000.000001", "user_id": "U01AGENBOT9", "reaction_type": "thumbsup"},
+      "reason": "Negative alternative: same channel (#engineering) and reacting member (agent1), but wrong emoji (thumbsup, not eyes)."
+    }
+  ],
+  "bindings": {
+    "target_message": ["1706110000.000100"],
+    "engineering_channel": ["C03IJKL9012"],
+    "agent_member": [{"channel_id": "C03IJKL9012", "user_id": "U01AGENBOT9"}],
+    "agent_user": ["U01AGENBOT9"],
+    "reaction_match": [{"message_id": "1706110000.000100", "user_id": "U01AGENBOT9", "reaction_type": "eyes"}],
+    "negative_wrong_reactor": [{"message_id": "1706112500.000001", "user_id": "U_KENJI", "reaction_type": "eyes"}],
+    "negative_wrong_channel": [{"message_id": "1706100000.000001", "user_id": "U01AGENBOT9", "reaction_type": "eyes"}],
+    "negative_wrong_emoji": [{"message_id": "1706115000.000001", "user_id": "U01AGENBOT9", "reaction_type": "thumbsup"}],
+    "negative_no_reaction": ["1706110000.000200"]
+  },
+  "selectors": [
+    {
+      "root_table": "messages",
+      "scope": [{"field": "channel_id", "op": "eq", "value": "C03IJKL9012"}],
+      "focal": {
+        "path": ["messages", "channels", "channel_members", "users", "message_reactions"],
+        "joins": ["messages.channel_id", "channel_members.channel_id", "channel_members.user_id", "message_reactions.user_id"],
+        "filters": [
+          {"node": 1, "field": "channel_name", "op": "eq", "value": "engineering"},
+          {"node": 4, "field": "reaction_type", "op": "eq", "value": "eyes"}
+        ]
+      },
+      "auxiliary": [
+        {
+          "path": ["messages", "message_reactions", "users", "channel_members", "channels"],
+          "joins": ["message_reactions.message_id", "message_reactions.user_id", "channel_members.user_id", "channel_members.channel_id"],
+          "filters": [
+            {"node": 1, "field": "reaction_type", "op": "eq", "value": "eyes"},
+            {"node": 4, "field": "channel_name", "op": "eq", "value": "engineering"}
+          ]
+        }
+      ]
+    }
+  ],
+  "negative_referents": [
+    "1706112500.000001",
+    "1706100000.000001",
+    "1706115000.000001",
+    "1706110000.000200"
+  ],
+  "notes": "Focal now follows the assigned route order MESSAGE->CONVERSATION->CONVERSATION_MEMBERSHIP->USER->REACTION exactly (messages.channel_id -> channel_members.channel_id -> channel_members.user_id -> message_reactions.user_id), satisfying the route-order requirement. Because this linear order cannot itself also tie the reaction's message_id back to the same root message (message_reactions is adjacent only to users in this order), the precise message/user/emoji binding is enforced by the auxiliary query, which independently confirms, for the same candidate root message, that it carries an eyes reaction from a user who holds an actual #engineering channel_members row. Scope restricts the root population to #engineering (channel_id C03IJKL9012) so the wrong-channel negative (agent1's eyes reaction on the Sophie DM message) is excluded before the focal/auxiliary checks run. Together scope+focal+auxiliary yield the single correct match 1706110000.000100; the wrong-reactor, wrong-emoji, and no-reaction negatives are excluded by the auxiliary query, and the wrong-channel negative is excluded by scope."
+}
+```

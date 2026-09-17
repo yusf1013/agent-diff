@@ -1,0 +1,46 @@
+Checking the seed data, I see all the roles and key messages already exist there, including the DM and some negative candidates. But the design references additional negatives not yet in the seed, like a growth channel question and an engineering root timeline mention, so I need to account for those too.
+
+Two messages are missing: robert_growth_channel_question and engineering_root_timeline_mention. I'll need to create a root message and reply in C_GROWTH by Robert for the first one, but first I need to verify Robert is actually a member of that channel.
+
+I confirm Robert belongs to C_GROWTH's member list. Now I'm drafting a plausible root message from another user (like Kenji) about growth infra tooling, which Robert's reply will respond to, similar in topic to the circuit-tracer question but placed in the wrong channel.
+
+Actually I'll have Lukas post a cross-channel message about circuit-tracer's PyTorch rewrite in the growth channel, then have Robert reply to it there, keeping the timestamps sequential.
+
+Then I create a separate root message from Robert in the engineering channel asking about the same rewrite timeline for the 70B model work, with its own message ID and no parent.
+
+Now I'm mapping out the bindings: robert's question, the thread root, the engineering channel ID, and Sophie's DM message, making sure everything lines up correctly.
+
+I'm identifying the negative cases too - Robert's growth channel question and its reply, an off-topic engineering reply, another author's reply in engineering, and the root timeline mention - to make sure the selectors don't accidentally match these.
+
+Now I'm building the first selector for Robert's circuit-tracer question and its thread, scoping to the engineering channel and filtering for a non-null parent, Robert as the author, and text about the pytorch rewrite timeline.
+
+Writing selector JSON...
+
+I'm reconsidering whether null comparisons are actually supported in this filter syntax, and realizing it's simpler to identify the target message by combining the reply relationship (parent_id present), the channel, and the text content instead.
+
+I'm reasoning that using "ne empty string" as a proxy for parent_id being set works since it excludes null-parent rows in SQL semantics, keeping this as a main filter condition rather than an auxiliary constraint.
+
+Actually, given the selector's uncertain handling of null comparisons, I think it's safer to rely on content, author, and channel binding instead, since that combination alone should uniquely identify the target message among the seed set. I'm checking the actual message text now to confirm it distinguishes cleanly from the negative examples.
+
+But then I realize there's a problem: the negative root_timeline_mention message also contains "PyTorch rewrite" and "multi-GPU support," and is also from Robert in the same engineering channel -- so content+author+channel alone is ambiguous and doesn't distinguish the reply from this root message. I need to add a parent_id-not-null constraint, but the selector's supported operators don't include an explicit "is not null" check, so I'm looking for a workaround using one of the existing ops.
+
+I'm assuming the filter engine translates a "ne" comparison against a null value into a proper IS NOT NULL check, similar to how SQLAlchemy treats `!= None` as `.isnot(None)`. I'll build the filter with parent_id, op "ne", value null, trusting the engine handles that idiom correctly, then move on to constructing the selector for the first obligation with the channel and parent_id filters.
+
+Now I'm drafting the selector for obligation 2, involving Sophie's DM message, requiring the DM channel, Sophie as sender, and confirming the bot user is a channel member -- but I need to double-check that node indexing stays consistent across each path array.
+
+Writing query filters...
+
+Wait, I need to double check — there could be a conflict: another engineering root message also contains "circuit-tracer" (the PyTorch rewrite one), which would break the uniqueness assumption for that selector, so I need to verify this carefully before finalizing.
+
+Looking closer, the actual thread root text mentions "OOM errors" while the ambiguous negative message doesn't contain "OOM" at all, so the selector can be disambiguated by requiring that keyword instead of just "circuit-tracer."
+
+The parent_id filter already excludes the null-parent timeline mention, and the channel_name filter excludes the growth channel question. The offtopic reply is also ruled out since it's by John Doe rather than Robert.
+
+Kenji's reply is excluded by the author filter too, confirming obligation1's selector is correct. Now I'm compiling the negative referents list: the growth channel reply, the offtopic reply, the other-author reply, and the timeline mention message IDs, noting obligation3 doesn't need a competing alternative since it's already disambiguated. Next I need to work out the seed edits for inserting the two messages.
+
+Writing message insertion objects...
+
+Now I'm noting the assumptions I'm making: treating null values as non-matches in comparisons, and relying on the agent's existing channel memberships (engineering, growth, and the DM) for access rather than granting new permissions.
+
+I also need to compile the list of negative referents, including native handles like scalar message ID strings and single-key table references. With that established, I'm ready to write the final answer.
+

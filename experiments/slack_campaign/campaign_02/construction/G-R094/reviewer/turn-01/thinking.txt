@@ -1,0 +1,34 @@
+I'm checking the base seed data against the candidates, and I notice the message_reactions table only has one actual row—an "eyes" reaction tied to the engineering channel—while the model-research candidate claims a separate reaction event that doesn't appear to match this data.
+
+Scanning through all the C_MODEL channel messages, they're all about MMLU/quantization checkpoints, and none of them reference a circuit-tracer PyTorch rewrite being "nearly done" as the modelresearch role claims. So that fact doesn't actually exist in the base seed—it seems to be a planned addition rather than something already present, which might be fine since the design's mechanical_design_errors list is empty.
+
+Since this is a design under review rather than the final compiled output, the missing message and reaction rows are expected—the instructions note that roles may describe planned additions the compiler creates later, so I shouldn't flag their absence as an error at this stage. Now I'm tracing the reaction-to-workspace route for the prompt about who reacted to the circuit-tracer message and checking whether the workspace scope properly bounds the query to T01WORKSPACE.
+
+The key question is whether "underspecified" resolution is justified: since two different channels each contain a similar message about the circuit-tracer rewrite with eyes reactions from different people, the prompt is genuinely ambiguous about which one it refers to, which fits the underspecified category requiring unresolved user choice. I'm also confirming the negative examples hold up—the DM with no reaction, the same message with a different emoji, and an unrelated message with the matching emoji all serve as valid negatives contrasting against the true target.
+
+I'm also verifying that the actor has proper access to both channels via membership, so searching across them for the circuit-tracer messages and checking reactions is consistent with the plan. And I'm confirming that the model-research message about circuit-tracer, though not yet in the seed data, is fully specified as something the compiler should add later.
+
+The request phrasing is singular, so if two possible referents genuinely exist, that supports treating it as ambiguous/underspecified rather than a hard multiple-match case. I should also check whether the DM channel is actually accessible to the actor doing the search, since that affects whether it counts as a valid negative case.
+
+Since the presumed actor bot is a member of that DM, it would technically show up in search, but since it has no reactions there, it still works fine as a negative match. The message text itself is already present in the base seed data, so that's consistent, and the workspace scope is unambiguous since both channels belong to the same single workspace. The route follows reaction to message to conversation to workspace, which matches the expected structure.
+
+The answer attributes align with what's being asked - who reacted and when, with reaction type as supplementary detail. Now I need to verify the underspecified mode requirement is truly satisfied: the prompt doesn't specify which channel or message, creating genuine ambiguity between two candidates, but I should double-check whether one of those candidates is actually a valid match or not.
+
+Both the engineering message (a problem statement needing rewrite) and the model-research message (a status report saying it's nearly done) discuss the same "circuit-tracer PyTorch rewrite" topic, so both are legitimate matches and the ambiguity holds. The Sophie DM also discusses this topic but has no reaction, which helpfully distinguishes reactions from mere message content, and the off-topic social-media message is correctly excluded. I'm noticing there may actually be three messages on this topic rather than two, which I need to account for.
+
+The referent entity type checks out as REACTION, and the candidate role sets correctly reflect the underspecified matching design with "one" selection. Overall the query reads naturally as a plausible workplace question, phrased simply and providing the needed negatives to disambiguate.
+
+I'm double-checking that the negative_dm_no_reaction entity is correctly scoped under messages rather than message_reactions, and confirming the workspace_scope and empty error list are consistent. The design looks solid overall, with only a minor note that the reaction_match_modelresearch case requires the compiler to add a new message and reaction row not present in the base seed.
+
+This is fine for design review purposes, since reaction_match_engineering already matches an existing seed row, while reaction_match_modelresearch introduces a new message and reaction pairing. Checking the base seed confirms only one existing 'eyes' reaction row, so there's no ambiguity before the planned addition is introduced.
+
+Now I'm working through the checklist systematically: confirming the underspecified mode with a single selected answer is correct, and verifying how membership and reaction timestamps are handled given they're stored but not exposed through the APIs.
+
+Rechecking the reactions.get documentation, the derived "Reaction summary" representation only mentions grouping by message and emoji to produce a user list and count, with no response schema showing individual timestamps. This raises doubt about whether message_reactions.created_at is actually retrievable from the documented API at all.
+
+The rule is explicit: reaction timestamps are stored but not exposed through these APIs, and this belongs to a separate capability test rather than a normal route case. That confirms this as a real access defect worth flagging, since the domain model never documents created_at being retrievable via reactions.get.
+
+Confirming that reactions.get only returns user lists and counts per emoji, not timestamps, so the underlying data needed to answer "when" simply isn't exposed by the API. This makes the task's requirement to state both who and when unanswerable given documented capabilities, so I'm settling on flagging this as a validity failure due to the missing timestamp field.
+
+So my final judgment is validity: fail, quality: weak, since the core defect is that reaction created_at isn't exposed through reactions.get or any documented API.
+

@@ -1,0 +1,36 @@
+I'm mapping out the query for finding engineering channel members whose messages got 👀 reactions, tracing the path from conversation membership through messages and reactions, with a multiple resolution mode since several members could match.
+
+I'm building out positive cases: Lukas's existing message with the eyes reaction already seeded, and Robert's message where I'm adding a new eyes reaction. I'm also setting up negative cases that shouldn't match — Morgan with no reaction, John with the wrong emoji, Hubert as only a reactor rather than author, and Priya's message being in the wrong channel entirely.
+
+Checking that this design faithfully captures the request: engineering members who authored a message getting an eyes reaction, with their channel join time reported, and confirming the binding note correctly requires the membership's user to be the same person who authored the reacted message.
+
+But now verifying against the seed data, I've hit a real problem — checking the channel_members list for the engineering channel, U_LUKAS doesn't appear among the listed members even though his message exists in that channel. So the design's claim that Lukas is added as a member of the engineering channel doesn't match what's actually in the base seed.
+
+However, per the review guidance, this is treated as a planned addition the compiler will create later, so it's acceptable at the design stage. Applying the same logic, I check the other planned reaction additions (Robert's eyes reaction, John's negative thumbsup reaction) and they also count as valid planned additions.
+
+I'm also verifying negative_wrong_channel and negative_reactor_hubert -- both look correctly designed since Priya's actual channel membership contradicts the false claim, and Hubert only reacts without ever authoring a reacted message. That leaves Lukas and Robert as the confirmed matching members for the unique set.
+
+Adding Lukas's membership means creating a new joined_at row, which fits fine even though his messages are dated later than most others in the engineering channel -- he's already a member elsewhere, so this addition stays plausible.
+
+Checking reactions: the eyes reaction from the bot on Lukas's message already exists in the seed data, while Hubert's eyes reaction on Robert's message is a new planned addition. The negative examples look sound too - Morgan's unreacted message, John's wrong-emoji reaction, and Hubert's reactor-only role all correctly fail the matching criteria, testing that the same person must both author and receive the right reaction.
+
+I also notice Priya's eyes-reacted message sits in the wrong channel, which correctly gets excluded to test channel scoping. Looking at route_nodes, the full traversal through membership, conversation, message, and reaction matches what's actually needed here, and the "multiple" resolution mode fits since there are genuinely two matching members. For the access plan, I'd enumerate engineering channel membership and join dates, pull message history for those members, check reactions on candidate messages, and cross-reference authorship.
+
+Checking the wording carefully, "the members whose message got an 👀 reaction" clearly means the reaction landed on a message that member authored, which lines up with the design's binding note. I don't see any issue with membership timing or the calibration field being false—that's just metadata, not a defect. Reviewing the roles list against the route, "match_reaction_lukas" already appears in the seed.
+
+Verifying no double-counting: the plan reuses existing seed data correctly rather than treating it as a new addition. Hubert is a genuine member of C03IJKL9012 and reacts twice—eyes on Robert's message, thumbsup on John's—which is fine since reactions are keyed by message, user, and type, so no conflict there. Now I want to check the base seed messages in that channel to make sure no other member's message already has an eyes reaction that would create an unaccounted-for match.
+
+Checking through the message timestamps and the message_reactions table, I find only one existing reaction in the base seed—U01AGENBOT9 reacting with eyes on Lukas's message—so there's no hidden extra match. I also confirm U01AGENBOT9's own authored messages don't carry any reactions themselves, since the eyes reaction is one they gave, not one they received.
+
+I notice U_KENJI authored messages in C03IJKL9012 despite not being listed as a channel member there, which is a minor inconsistency but doesn't affect this task since none of Kenji's messages have reactions. Now I'm making sure adding Lukas as a new member doesn't create any conflicts with the existing data.
+
+Overall the scenario holds up well - it's a plausible read-only retrieval task with useful negatives testing multiple failure modes, and the obligation scope matches the task specification. I'm now double-checking that the actor and access assumptions remain plausible.
+
+The route also confirms unbounded relations aren't limited by edge depth, and the full route selects CONVERSATION_MEMBERSHIP as root matching the route's starting node, so that's consistent. I'm now checking whether the roles list has a role matching the referent entity to root fully.
+
+This design seems solid overall - it has multiple distinct negative test categories (missing reaction, wrong emoji, wrong role, wrong channel) plus a meaningful positive output like real join-time for an "early access list" task, which is a plausible use case. The "multiple" resolution mode works fine since exactly two members qualify, and using message timestamps as native message IDs is consistent with runtime expectations.
+
+The "CONVERSATION_MEMBERSHIP" referent maps cleanly to the channel_members table, so that's fine. The "under group S1" phrase in the exposure qualification looks like boilerplate template text rather than something requiring a specific reference in the design, so I don't think it's a real issue for this review.
+
+Overall this looks like a strong pass with no significant defects—the negative_reactor_hubert role mismatch is intentional and useful, and Lukas/Kenji being planned additions rather than pre-existing members is acceptable under the rules.
+

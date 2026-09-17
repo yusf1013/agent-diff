@@ -1,0 +1,42 @@
+Checking the second auxiliary path, the join list looks off—it pairs message_reactions.message_id with messages.user_id directly, which doesn't make sense. It should really chain through message_reactions.message_id to messages.message_id, then messages.user_id to users.user_id, so this join field appears to be conflating two separate hops into one.
+
+Checking the earlier path confirms this convention: each join entry names just the FK column on one side, with the matching key on the other side left implicit, so the two-item join list for a three-entity path makes sense under that shorthand.
+
+Verifying the four-entity path with three joins for message_reactions, users, channel_members, channels holds the same convention correctly.
+
+Now I'm checking the filter node numbering, making sure node1 and node2 correctly correspond to their respective entities across the two paths (users for real_name, and whichever entity node2 should map to).
+
+Confirming path2 and path3 filter nodes correctly point to users and channels entities matching real_name and channel_name fields respectively, so all selectors are consistent across paths.
+
+Checking that the four inserted seed edits satisfy primary key uniqueness for message_reactions given its composite key of message_id, user_id, and reaction_type -- no conflicts found. Now verifying computed_matches only includes Hubert as focal negative since Morgan Stanley's real_name never matches the "robert" filter in the first place, so it wouldn't qualify as a focal negative at all.
+
+Actually, "focal negatives" likely means rows matching the join structure but excluded by scope filters, kept as negative contrast examples. Since "Hubert Marek" doesn't contain "robert", the name filter would exclude him from true matches, which fits with him being flagged as a computed negative.
+
+This lines up with the design's "hubert_negative_reaction" being same message and channel but wrong name, confirming this negative referent is correct. Now I'm checking the Morgan negative case involving John Doe's message in #random.
+
+Actually, checking channel membership more carefully, Morgan Stanley does appear as a member of the #engineering channel in the base seed data, which contradicts the design's claim that Morgan is unrelated to infra/engineering channels - this is worth flagging.
+
+But re-examining the actual reaction in question, it occurs on a message from John Doe in #random, so the negative example fails due to wrong author and wrong topic rather than channel membership per se, since the reaction itself happened in an unrelated channel.
+
+This is a factual error in the design's stated rationale then—it claims she fails the channel condition when she actually satisfies it—but the exclusion itself remains correct since she still fails on name and author mismatch.
+
+This is more of an annotation quality issue than a validity-breaking one, since the exclusion still holds due to name and author mismatches. I'll note it as a minor flaw and move on to verify other channel memberships, confirming Robert Walsh and Robert Chen's roles match the channel records.
+
+Continuing my checks: the message is confirmed authored by Lukas, and the raised_hands emoji mapping seems standard. The ambiguity in choosing between two candidates for the reactions.remove action seems like an intentional underspecification the solver needs to resolve or clarify, which fits the task type.
+
+I'm also verifying that Morgan doesn't qualify as a focal negative since her real_name doesn't contain "robert," while checking whether Hubert's filtering logic differs from the auxiliary checks in a way that affects which candidates get flagged.
+
+Maybe "computed_focal_negatives" isn't actually running the query filter but just reporting the designated negative binding, "hubert_negative_reaction," as a structural placeholder rather than a true match.
+
+This seems consistent with how other cases in the benchmark are structured, so I won't flag it as an error unless prior examples treated this pattern as a problem. Since mechanical_checks.errors is empty, I'll move on without overanalyzing this.
+
+The Morgan negative role's factual claim about channel membership does look like a genuine annotation inaccuracy, so I'll note it as a minor issue without treating it as invalidating. The unrelated lunch message in #random seems fine as a negative example regardless of the channel-membership claim.
+
+Checking further, I realize the auxiliary channel filter actually checks whether the reacting user belongs to engineering or core-infra channels—and Morgan is indeed a member of engineering, so that condition would technically be satisfied for her even though her reaction is on an unrelated #random message. This means the auxiliary filter alone wouldn't exclude her; it's the primary/focal filter that needs to do the real work of excluding this case.
+
+The name filter (real_name contains "robert") and the author filter (Lukas as author) both correctly fail for Morgan, so she's excluded overall despite the channel-membership condition passing. The negative's stated reasoning about "wrong channel context" is inaccurate, but this doesn't affect the correctness of the final result since the other two conditions properly exclude her—so this is purely an annotation inaccuracy rather than a computational error.
+
+I'll flag this as a minor documentation issue rather than a validity problem, since the mechanical checks and computed matches remain correct overall.
+
+Checking the rubric requirement that supplemental identifying conditions must be explicitly requested rather than secretly enforced—not violated here, and no accidental match was introduced. I'm settling on an overall verdict of validity pass with quality rated strong, noting the one annotation issue as a minor deduction rather than something that changes the outcome.
+

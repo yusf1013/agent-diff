@@ -1,0 +1,43 @@
+```json
+{
+  "prompt": "Looking at the channels where Aisha Okonkwo is a member, what reactions have people added to Łukasz Kowalski's messages there, and which emoji did they use?",
+  "binding_note": "Each qualifying reaction must chain: reaction -> reacting user -> the reacted message, which must be authored by Łukasz Kowalski -> the message's conversation -> a conversation-membership record showing Aisha Okonkwo belongs to that same conversation. Reactions on Łukasz's messages in conversations Aisha does not belong to, or reactions on someone else's message in a conversation Aisha does belong to, do not qualify.",
+  "roles": [
+    {"role": "target_channel_frontend", "entity": "channels", "facts": "C_FRONTEND ('frontend'), react/TS discussion channel; Aisha Okonkwo is a member.", "selection": "support", "reason": "One of the two conversations that satisfies Aisha's membership condition along the route."},
+    {"role": "target_channel_infra", "entity": "channels", "facts": "C_INFRA ('core-infra'), incident/infra channel; Aisha Okonkwo is a member.", "selection": "support", "reason": "Second conversation satisfying Aisha's membership condition."},
+    {"role": "membership_aisha_frontend", "entity": "channel_members", "facts": "Membership row linking U_AISHA to C_FRONTEND.", "selection": "support", "reason": "The membership record that lets the frontend message qualify."},
+    {"role": "membership_aisha_infra", "entity": "channel_members", "facts": "Membership row linking U_AISHA to C_INFRA.", "selection": "support", "reason": "The membership record that lets the infra message qualify."},
+    {"role": "lukas_message_frontend", "entity": "messages", "facts": "Message ts 1706043921.000000 in C_FRONTEND authored by U_LUKAS, part of the React 19 hydration debugging thread.", "selection": "support", "reason": "The authored-by-Łukasz message inside a conversation where Aisha is a member."},
+    {"role": "lukas_message_infra", "entity": "messages", "facts": "Message ts 1706001016.000000 in C_INFRA authored by U_LUKAS, diagnosing the OOM root cause during the cluster memory incident.", "selection": "support", "reason": "Second authored-by-Łukasz message inside a conversation where Aisha is a member."},
+    {"role": "reactor_mateo", "entity": "users", "facts": "U_MATEO, Mateo Rivera, product lead, member of C_FRONTEND.", "selection": "support", "reason": "Reactor for the first matching reaction."},
+    {"role": "reactor_priya", "entity": "users", "facts": "U_PRIYA, Priya Sharma, infra engineer, member of C_INFRA.", "selection": "support", "reason": "Reactor for the second matching reaction."},
+    {"role": "reaction_match_1", "entity": "message_reactions", "facts": "Mateo Rivera reacts with 'rocket' to Łukasz's hydration message (ts 1706043921.000000) in C_FRONTEND, added shortly after the fix branch was proposed.", "selection": "match", "reason": "Satisfies the full route: reactor -> Łukasz's message -> C_FRONTEND -> Aisha's membership there."},
+    {"role": "reaction_match_2", "entity": "message_reactions", "facts": "Priya Sharma reacts with 'thumbsup' to Łukasz's OOM-diagnosis message (ts 1706001016.000000) in C_INFRA, added while the team converged on reverting the batch-size change.", "selection": "match", "reason": "Satisfies the full route: reactor -> Łukasz's message -> C_INFRA -> Aisha's membership there."},
+    {"role": "lukas_message_engineering", "entity": "messages", "facts": "Message ts 1706110000.000100 in C03IJKL9012 (engineering) authored by U_LUKAS, describing circuit-tracer OOM errors during layer-by-layer loading.", "selection": "negative", "reason": "Authored by Łukasz but sits in a channel where Aisha holds no membership, breaking the required membership link."},
+    {"role": "reaction_negative_wrong_channel", "entity": "message_reactions", "facts": "The agent bot (U01AGENBOT9) reacts with 'eyes' to Łukasz's engineering-channel message (ts 1706110000.000100).", "selection": "negative", "reason": "Reacts to a Łukasz message, but the containing channel (engineering) has no Aisha membership record, so the route fails at the conversation-membership step."},
+    {"role": "priya_message_infra_other", "entity": "messages", "facts": "Message ts 1706000208.000000 in C_INFRA authored by U_PRIYA reporting the initial memory-pressure alert.", "selection": "negative", "reason": "Sits in a channel where Aisha is a member, but is not authored by Łukasz Kowalski."},
+    {"role": "reaction_negative_wrong_author", "entity": "message_reactions", "facts": "Sophie Dubois reacts with 'thumbsup' to Priya's memory-pressure alert message (ts 1706000208.000000) in C_INFRA.", "selection": "negative", "reason": "The channel membership condition holds, but the reacted-to message is authored by Priya, not Łukasz, so the message-authorship link along the route fails."}
+  ],
+  "obligations": [
+    {
+      "name": "qualifying_reactions",
+      "description": "Reactions where the reacting user reacted to a message authored by Łukasz Kowalski, and that message's conversation has a conversation-membership record for Aisha Okonkwo; report the reactor and emoji for each.",
+      "table": "message_reactions",
+      "mode": "multiple",
+      "task_type": "read-only",
+      "scope": "ordinary requested scope: channels containing Aisha Okonkwo's conversation memberships, restricted to reactions on Łukasz Kowalski's authored messages",
+      "target_roles": ["reaction_match_1", "reaction_match_2"],
+      "candidate_role_sets": null,
+      "selection": "set",
+      "answer_attributes": [["message_reactions.reaction_type"], ["message_reactions.user_id"], ["message_reactions.message_id"]],
+      "change_attributes": null,
+      "written_attributes": null
+    }
+  ],
+  "task_spec": [
+    {"line": 1, "text": "Identify the channels where Aisha Okonkwo holds membership, find Łukasz Kowalski's messages within those channels, and report every reaction on those messages along with who added it and which emoji was used.", "obligations": [1]}
+  ],
+  "scope_exception": null,
+  "access_plan": "Use conversations.members (or users.conversations for the acting user's visibility) on C_FRONTEND and C_INFRA to confirm Aisha Okonkwo's membership; use conversations.history/search.messages scoped to those two channels to locate messages authored by Łukasz Kowalski; then use reactions.get (or the reaction summaries surfaced in conversations.history) on each of those messages to enumerate reactors and emoji names, discarding any reactions found on Łukasz's messages in channels lacking Aisha's membership record."
+}
+```

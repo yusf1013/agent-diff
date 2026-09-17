@@ -1,0 +1,16 @@
+I need to fix the join path since channels doesn't connect directly to users - there's no valid join between those two tables, so I need to route through the correct membership table connections instead.
+
+The right path should be channel_members to users to messages, using channel_id as a native field on the root table itself for scoping rather than joining to channels for the name. I'm weighing whether to use the channel_id constant directly versus deviating from the assigned route by adding a channels join just to get a friendlier channel_name predicate.
+
+Root_table must match path[0], so with channel_members as root, the path has to start there. Since it can't branch to both channels and users simultaneously, I could instead structure the path as channel_members→users→messages, joining on user_id fields, and put the channel filter on the messages node's channel_id field instead of trying to scope by name-based channel path.
+
+Confirming path[0] must equal root_table, so with channel_members as root, the linear path would need to go channel_members -> users -> messages, filtering on messages.channel_id as the scoping value -- but that raises the same concern about using a raw ID constant instead of resolving the channel by name.
+
+Actually the real bug is the join list mismatch: the second join "channel_members.user_id" was supposed to connect node1 (channels) to node2 (users), but there's no such foreign key between channels and users directly, which is what's throwing the connectivity error.
+
+Rather than fighting that path, I can restructure so channel scoping happens as a filter directly on the root table's channel_id field instead of joining through a channels node. Since channel_id already lives on channel_members (the root table), filtering on it there avoids the broken join entirely while still scoping to the right channel.
+
+The cleanest fix uses channel_id directly on root scope since channel_members has that field, avoiding a broken join back to channels once we've already moved to users. So I'll scope by channel_id equal to the core-infra channel, with the focal path going channel_members to users to messages, joined on user_id and filtered redundantly by channel_id on messages too, matching the intended membership-to-user-to-message route.
+
+For the message filters, I need the text to contain both the CUDA memory limit phrase and the batch size reversion phrase, plus require the message's channel_id to match the core-infra channel to prevent cross-channel false matches like something from the growth channel. This keeps it a single connected query, and the same selector fix should resolve the earlier obligation issue too. Now I'll finalize the JSON.
+

@@ -1,0 +1,28 @@
+I'm mapping out a join path from reactions to messages: starting at the reaction, tracing to the user who reacted, then to their conversation membership, then to the conversation itself, so I can find reactions from users who belong to a channel containing a specific message like an announcement.
+
+Let me pick a concrete example: the circuit-tracer OOM error message posted in the engineering channel, then check which users are members of that channel so I can trace back to their reactions elsewhere.
+
+Now that I have the members - U01AGENBOT9, U02JOHNDOE1, U03ROBERT23, U05MORGAN23, U06HUBERT23 - I can check the seed reaction on that message: U01AGENBOT9 reacted with "eyes" and is indeed a member, giving me one valid match. I'll need to add a mix of matching and non-matching reactions across other messages to make this a proper multi-answer retrieval task.
+
+So the identifying condition should use MESSAGE to pin down the CONVERSATION rather than naming the channel directly - like a channel identified by a specific message posted there. Then I get the members of that channel and pull reactions from those members, regardless of what they reacted to.
+
+I'll frame this as auditing engagement: "which emoji reactions were added by members of the channel where the circuit-tracer OOM issue was first reported, and what messages did they react to?" That's read-only, multiple mode, referent REACTION. Now I'm setting up the specific channel (C03IJKL9012, engineering) uniquely identified by the OOM message from U_LUKAS.
+
+For matches I'm picking members of that channel—U01AGENBOT9, U02JOHNDOE1, U03ROBERT23, U06HUBERT23—and giving them reactions like "eyes," "thumbsup," and "raised_hands" on various messages. For negatives I'm including U_LUKAS's own reaction despite not being a channel member (authorship without membership pitfall), plus a reaction from someone who belongs to a different channel entirely (C04MNOP3456), so the query has to correctly filter on channel membership rather than message authorship or other channel context.
+
+I should avoid ambiguity since both channels mention circuit-tracer. Phrasing it as "the channel where the circuit-tracer OOM issue was first reported" uniquely points to C03IJKL9012, since the DM in D01AGENTSOPHIE discusses a different aspect—the PyTorch rewrite—rather than the OOM errors.
+
+Now I'm working through which new reactions to add: for the crash report message, I'll have U02JOHNDOE1 react with thumbsup rather than reacting to his own message, since he's a valid member of C03IJKL9012. Then I'm adding another reaction from U03ROBERT23 using raised_hands on a different message.
+
+For negatives, I'm setting up cases where reactors don't actually belong to the channel despite superficial connections—like U_LUKAS authoring a message but not being a channel member, U_KENJI reacting to something outside his channel memberships, and U08NICK23 only belonging to a different channel than the one in question. These give clean contrast cases between matches and non-matches based on membership rules.
+
+For the main obligation, I'm identifying the message_reactions table with multiple target matches: the seed eyes reaction plus new thumbsup and raised_hands reactions from engineering members, giving three total matches. The question about which messages they reacted to doesn't need a separate obligation since message_id is already a natural field within the reaction record itself, so I can fold it into the answer attributes alongside reaction_type and user_id.
+
+Now I'm laying out the supporting roles: the identifying message reporting the circuit-tracer OOM issue, the engineering channel it was posted in, the channel members list, and then separately the three matching reaction rows versus the negative (non-matching) reaction rows, making sure each role maps to its correct native table—messages for the identifying message, channels for the target channel, and message_reactions for the reaction entities rather than treating the author as a user-table role.
+
+I should also include channel_members as supporting facts for grounding membership, without splitting them into separate obligations - just enough rows to justify the five members referenced. That rounds out the set, so I'll finalize the single obligation now.
+
+For the second obligation, I'm setting up a read-only, multi-match task over message_reactions: find reactions added by members of the identified channel, matching several target roles, and returning reaction_type, user_id, and message_id as answer attributes.
+
+The final prompt ties both obligations together by asking about the channel where the circuit-tracer OOM issue was first reported, then asking which emoji reactions were added by members of that channel and which messages they reacted to - letting me note how the binding connects the two parts.
+

@@ -1,0 +1,22 @@
+I'm mapping out the join path: conversation membership to user, then to that user's reactions, tracing through to the message being reacted to, then up to its conversation and workspace, with conversation_membership as the entity being selected.
+
+Since the exposure_qualification requires referencing workspace by visible ID and an explicitly bounded set of named channels, I need to construct a user request scoped this way, while ensuring the actual conditions (specific emoji reaction, workspace/channel scope) don't align with any real membership record, so the query returns nothing.
+
+A concrete candidate: asking which members reacted with thumbsup to CUDA memory limit messages across the core-infra, model-research, and product-growth channels in workspace T01WORKSPACE. Since the seed data only contains a single "eyes" reaction elsewhere in the dataset and no thumbsup reactions at all, this naturally produces zero matches -- a good fit for absent mode.
+
+For plausible negatives, I'm considering swapping in a wrong emoji, or a reaction that exists but targets a different message or channel outside the CUDA discussion, or a topic mismatch, or a membership that doesn't belong to those channels. I'm mapping out the route through conversation membership, user, reaction, message, conversation, and workspace tables, tracing how each join condition (channel membership, user match on reaction, message-to-channel link, channel-to-team link) would need to align for a match to occur -- and confirming none of them do here.
+
+Other C_INFRA members were exposed to the discussion but never reacted at all, reinforcing the absence.
+
+Now drafting the actual prompt: asking which members reacted with 👍 to the specific message where Priya confirmed the CUDA memory limit was the root cause, scoped to the core-infra, model-research, and product-growth channels in T01WORKSPACE, anchored to that exact message.
+
+This targets conversation_membership records via channel membership joined against reaction data on that message—since the message has zero reactions, the answer set is legitimately empty. I'm now assembling the role list, starting with the membership_target role covering channel_members across C_INFRA, C_MODEL, and C_GROWTH in that workspace.
+
+Next I'm defining supporting roles: teams as the workspace scope, the three bounded channels forming the corpus, and the root_cause message itself as the anchor point with zero attached reactions, marked as negative since it's the target with no matching reaction.
+
+I'm also identifying negative evidence: a lone "eyes" reaction from a bot on an unrelated message in a different channel and topic, plus the three engaged users who discussed the CUDA finding but left no reactions, both flagged as negative since they don't satisfy the reaction relationship. I'm now listing channel members for the core-infra channel.
+
+I'll frame the task text asking which members reacted 👍 to Priya's message confirming the CUDA memory limit as root cause of the pod OOM incident, across the three channels in that workspace. The access plan starts with pulling channel membership via conversations.members, then scanning conversations.history in C_INFRA to find Priya's confirmation message.
+
+Then I check reactions.get on that message's timestamp and cross-reference reacting users against channel membership. Since the seed data shows the target message has zero reactions, no membership row completes the full chain, so the correct answer is an absent result despite several near-miss members and reactions existing elsewhere. I'll finalize the JSON with answer_attributes referencing channel_members.user_id and channel_members.channel_id.
+

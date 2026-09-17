@@ -1,0 +1,40 @@
+I'm checking the base seed for existing role messages—Priya's pprof delta note about the CUDA memory limit in C_INFRA, and Aisha's frontend trace about duplicate API calls post-hydration—along with tracking down a decoy reaction message ID for verification.
+
+No seed edits are needed since everything already exists. I need to identify the actor with access to both channel histories, and U01AGENBOT9 fits since it's a member of both C_INFRA and C_FRONTEND, making it the natural choice as actor.
+
+For the target reaction obligation, since Priya reacting to Aisha's frontend message doesn't exist in the seed, the selector should legitimately return no rows - mode absent works here. I'm designing the selector to identify the reactor via a confirming core-infra message about the CUDA hard limit using text-content matching rather than hardcoded user IDs, joining through reactions to messages to channels to establish the multi-hop path starting from message_reactions as the root table.
+
+I'm building the path from message_reactions to users to messages to channels, filtering the intermediate messages node for the confirming CUDA limit text and the channel node for 'core-infra', which identifies the reactor. But I still need to constrain the root reaction's own message_id to point at Aisha's target frontend message, so I need to work out how to add that condition on the root node itself.
+
+So really I need two separate join branches: one linking message_reactions to messages/channels for the target message, and another linking message_reactions to users then to their authored message and channel for the reactor's confirming message in core-infra. These are distinct message identities that both need to be satisfied within the same query.
+
+Actually the auxiliary path can't bind values across rows since it's independent, so that approach fails since we need the same reaction row to satisfy both the target-message link and the reactor-identity link. The path needs to branch from message_reactions in two directions simultaneously—one to the target message via message_id, another to the reactor's identity via user_id—which linear chain syntax can't express directly.
+
+I realize channels don't link directly to users, so node3 can't connect back that way - each step must join adjacent tables only, meaning a single linear path can't capture both the message_id branch and user_id branch originating from message_reactions at once.
+
+Maybe instead I should root the path differently: start at message_reactions, join to users via user_id to identify the reactor, then from users to messages to channels to confirm context - that gives the reactor's identifying chain. But I'd still need to tie the specific reaction back to the target message without hardcoding a value, and message_reactions itself doesn't expose a text field to filter on directly.
+
+But I still need to bind the target message itself - since only one MESSAGE node appears in the route, the target message must be tied in via a root-level filter instead of a join, comparing message_reactions.message_id directly against the target message's id.
+
+Since the target message likely already has its own selector defined elsewhere (matched via message text), I can bind that message's id to this scope filter rather than treating it as a hidden constant, since it's a legitimate natural key referencing an already-identified entity.
+
+Actually there's only one obligation here (target_reaction), so only one selector is needed. The other roles - reactor, target_message, decoys - should just be covered through bindings mapping each role label to its native handle, not through additional selectors.
+
+For the single selector, I'm working out the path: rooting at message_reactions and joining through messages and channels to confirm the reaction is absent for the specific message and channel combination, since we're checking that no such row exists.
+
+But I realize this join alone doesn't tie the reactor's identity to the confirming message, nor does it bind the reaction target to Aisha's actual message - I need a chain like reaction to user to message to channel to properly capture both conditions simultaneously.
+
+So the scope must instead pin down message_id directly using its actual value—the specific message_id belonging to Aisha's target message, resolved separately—since message_reactions has no text field to filter on. That means setting the scope as a root filter of message_id equal to that concrete PK value, alongside optional filters on user_id and reaction_type as needed.
+
+Then I trace the reactor's identity by joining message_reactions to users, then to messages, then to channels, adding filters for the target message's text content and the specific channel name.
+
+This query looks for reactions on the target message where the reacting user also authored a matching message in the core-infra channel—since Priya never actually reacted to Aisha's message, this correctly returns nothing, matching the intended design. I double-check the join directions: message_reactions to users via user_id, users to messages via user_id (reverse FK direction), and messages to channels via channel_id—all valid.
+
+I confirm Priya's actual message text contains the literal phrase "hard CUDA memory limit," while Łukasz's earlier message says "hard limit in the CUDA memory allocator"—different word order, so it wouldn't match as a substring. This confirms only Priya's message satisfies the filter.
+
+I verify Aisha's target message ID and content line up with the role facts about duplicate API calls on dashboard components. I also flag the "eyes" reaction on Lukas's circuit-tracer message as a decoy—wrong reactor and wrong message. Finally, I check that the bot actor already has membership in both core-infra and frontend channels, so no additional setup is needed there.
+
+Now I confirm all the remaining role mappings against the base seed: Priya as reactor with her confirmation message in core-infra, the target message and channel for frontend, and Lukas as the decoy speculator tied to his speculation message. Everything already exists without requiring edits, so I compile these into the bindings dictionary using native handles for each role, and note that the mismatched reaction record serves as the negative referent meant to mislead if picked as the real reactor evidence.
+
+The backtick difference is negligible—no seed edit needed since the content matches semantically. I'll finalize the answer with a single selector object and include notes explaining the access path and the reasoning behind the absent-reaction conclusion.
+

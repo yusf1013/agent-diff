@@ -1,0 +1,52 @@
+I'm mapping out the join path from reaction to workspace: linking the reaction to its message, the message to its user, that user to their conversation membership, then to the conversation and workspace for proper scoping.
+
+Now I'm thinking through a concrete example: a reaction placed on a message authored by someone who's a member of a specific channel, using U_LUKAS and his membership in C06ALPHADEV as the identifying detail to construct the scenario.
+
+Robert Chen (U_ROBERT) versus Robert Walsh (U03ROBERT23) — these two distinct people share a first name and belong to different channels, so specifying "Robert" without a last name gives two plausible referent sets depending on which channel membership anchors the resolution path back through message authorship to reactions.
+
+So the ambiguity should come from a shared display name like "Robert" matching both Robert Walsh and Robert Chen, without a disambiguating channel. That gives two distinct candidate sets of reactions tied to messages from each Robert in their respective channels, which is exactly the kind of underspecified query I need to construct.
+
+Actually the ambiguity itself shouldn't resolve cleanly — I want two different people named Robert who could both plausibly match the request's identifying details, without further disambiguating info. I need to construct candidate role sets where each set is tied to a distinct channel membership, so the request stays genuinely ambiguous across multiple possible referents.
+
+Since there's only one workspace in the seed, I should reference it by ID rather than name, per the exposure guidance. The channel membership is what really disambiguates which "Robert" is meant, so I'll set up two candidates: Robert Walsh in engineering (C03IJKL9012) and Robert Chen in core-infra, both posting messages that get reactions.
+
+I'm weighing whether to instead have both Roberts as members of the same channel (core-infra), adding Robert Walsh there too since he's an admin, which would make the ambiguity coherent rather than relying on vague channel-category language that risks gray exclusions.
+
+I'll add Robert Walsh to core-infra's channel members and create a message from him there ("Rotating on-call schedule for next month is posted in the wiki"), plus a reaction on it from another user, so both Roberts have authored, reacted-to messages in the same channel -- giving a genuinely ambiguous referent set.
+
+I also need to add a reaction to Robert Chen's existing cloud-bill message in core-infra to make it a real positive match too. With both Roberts satisfying the pattern, the query "Which reactions have been left on messages that Robert posted in core-infra?" becomes properly ambiguous.
+
+For negatives, I'm checking Robert Walsh's message in the engineering channel with a reaction — since the route binds via the author's core-infra membership rather than requiring the message itself be in core-infra, I need to think carefully about whether that message still counts as a match despite being posted elsewhere.
+
+There's ambiguity since two different Roberts are both core-infra members, so I need to determine which one's authored messages should count. This broadens scope to any message either Robert authored anywhere, not just core-infra channel, so I'm going through the seed data to find all messages authored by each Robert account.
+
+Since the existing seed only has one unrelated reaction, I need to add genuine reactions to Robert Walsh's and Robert Chen's messages to create real matches -- starting with a raised_hands reaction from Mateo on Robert Walsh's MCP deployment question.
+
+This creates two candidate matches: one tied to Robert Walsh with Mateo's reaction, another tied to Robert Chen with Priya's eyes reaction on his cloud bill message. For both to be plausible, both Roberts need channel membership in core-infra, so I'm adding Robert Walsh as a member there too since he'd plausibly oversee infra work.
+
+I should also build in negatives: existing non-Robert authored messages with reactions stay negative since the author name doesn't match, and I want a Robert Walsh message with no reaction at all to test that same-author-but-no-reaction case fails the match.
+
+Now I'm adding a "wrong role" negative where Robert Chen is the reactor rather than the author—say he reacts with thumbsup on Aisha's frontend message—since the route only cares about messages authored by Robert, not reactions from Robert.
+
+With that set, I'm drafting the final natural-language prompt asking which reactions people left on messages Robert posted, given he's part of the core-infra channel.
+
+Since the channel name is an exact literal identifier, it's valid for the route. The selection mode is underspecified, so I need to define candidate role sets—one where the reaction is Priya's eyes emoji on Robert's cloud bill message, and another candidate reaction role to compare against.
+
+I'm also mapping out the supporting roles: the messages and users tied to each Robert, the channel and workspace context, plus a set of negative examples like the existing reaction on Lukas's message, the mismatched reactor case with Robert Chen and Aisha, and the unreacted crash report message that should be excluded.
+
+Since the obligation's referent is the reaction table, I need to double-check whether negatives strictly need to be reaction records too, or whether other entity types (like an absent channel membership) could also serve as valid negative support facts representing a non-match.
+
+I'm setting target_roles to the union of both candidate sets, with candidate_role_sets kept separate per reaction. For selection, I need to decide whether this counts as targeting "one" reaction or a "set" — since each candidate set really just contains a single reaction, but conceptually reactions could be treated as a collection, so I'm leaning toward treating this as underspecified with separate single-item referent sets.
+
+I'm marking the answer attributes as the reaction type, message id, and user id fields, and setting up the main obligation tied to Robert's reactions with no additional obligations needed. Now I'm starting to lay out the roles list, beginning with the user role for Robert Walsh and his membership facts.
+
+Continuing this, I'm adding Robert Chen as a second user role, then the core-infra channel and workspace team roles, followed by the two candidate messages tagged as support entries, and I'm starting to add the reaction candidate role for Priya's eyes reaction as a match/alternative.
+
+Since the mode is underspecified, I'm treating both candidate reaction sets as alternatives rather than a definitive match, tagging Mateo's raised hands reaction similarly, and marking Lukas's eyes reaction and Robert Chen's reactor role as negatives since they involve wrong authorship. I'm also flagging the crash report message as negative due to its missing reaction relationship, then adding Lukas and Aisha as supporting user roles tied to their authored messages.
+
+Now I'm finalizing the JSON structure: the obligations list has one main entry referencing message_reactions with two candidate role sets for Priya's and Mateo's reactions, with target_roles as their union. For the access plan, I'm outlining discovery steps -- the actor bot is already a member of the core-infra channel, so it can list channel members, use users.info to disambiguate the two Roberts (Walsh and Chen), then search message history or use search.messages to find messages authored by each Robert across channels.
+
+Both target channels (general C01ABCD1234 and core-infra C_INFRA) are ones the bot has access to, so discovery is feasible. I'm drafting the final prompt phrasing: "What reactions have been left on messages posted by Robert, who is a member of the core-infra channel?" -- deliberately natural without flagging the name ambiguity. I need to note that "Robert" resolves to two users, both core-infra members, producing two separate reaction sets.
+
+Now I'm assembling the JSON output: setting answer_attributes to the reaction type, user id, and message id fields on message_reactions, marking mode as underspecified, defining the scope as reactions on messages from users named Robert in core-infra, and listing target_roles and candidate_role_sets for the two Robert candidates with selection type "set" before finalizing the task_spec and scope_exception fields.
+

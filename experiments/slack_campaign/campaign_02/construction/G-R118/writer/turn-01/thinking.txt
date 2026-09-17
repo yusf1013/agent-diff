@@ -1,0 +1,24 @@
+I'm designing an absent-resolution task tracing Reaction to User to their conversation membership to the specific Conversation, looking for identifying conditions along that path that would make the resulting reaction set empty.
+
+Checking the data, only one reaction is seeded anywhere - the agent bot's "eyes" reaction on a specific message in the engineering channel. I need to check whether that bot is also a member of the core-infra channel, since if so I'd need a different disambiguating condition to keep the answer absent.
+
+I'm designing the scenario around the eyes reaction on the circuit-tracer OOM message, but framing the question as asking about a reaction added by a member of the product-growth channel specifically. Since the agent bot who actually added that reaction isn't a member of product-growth, this framing gives a genuinely absent result.
+
+I could frame this as confirming whether product-growth acknowledged the circuit-tracer OOM alert, which gives a plausible business purpose while confirming no such reaction exists. The route is clear: the message is the OOM alert in engineering, and I need to check if the reactor belongs to product-growth via REACTION -> USER -> CONVERSATION_MEMBERSHIP -> CONVERSATION, which resolves cleanly with no match.
+
+For negatives, I can use the existing agent-bot reaction on the OOM message as a "wrong membership" case since that reactor belongs to engineering, not growth. I'll also add a plausible negative where a growth member like Kenji reacts to a different message entirely, giving a "right person, wrong message" mismatch alongside a membership-only negative.
+
+I should add plausible near-miss reactions to strengthen the negative case: Kenji reacting to a different message, Priya reacting to an unrelated infra message, and Robert as an author-only decoy who never actually reacted. The existing seed reaction from the agent bot on the OOM message also stays as a valid negative since that reactor isn't a growth member — this all confirms the target table is message_reactions with absent mode and a read-only task.
+
+I also want supporting context roles: the OOM alert message itself, the engineering channel it lives in, the growth channel used for the filtering condition, plus the negative-reaction users. The answer will need attributes like reaction_type, user_id, and message_id since it's read-only, and the prompt should ask something like whether anyone from product-growth reacted to the circuit-tracer OOM alert.
+
+Now I'm mapping out the binding note explaining the absence: the only reactor is an agent bot outside product-growth, while actual growth members reacted on different messages entirely. I'm laying out the roles precisely — the target message, the target channel, and the negative reactor users — to justify why the result comes back empty.
+
+I don't think a separate role entry is needed for membership itself—textual facts should cover it, unless I need it for a negative test case like wrong relationship role. That gives me an idea: someone who's a workspace/team admin but not actually a conversation member of product-growth, despite reacting on the message.
+
+That existing negative case already covers reactions from engineering-only members, so I don't need another one. Now I need to add the new coherent records for Kenji and Priya's reactions, making sure the messages they react to remain distinct in identity from the target.
+
+I'm finalizing the obligation structure now: a single "growth_reaction" obligation on the message_reactions table, read-only task type, empty target_roles, scoped to reactions on the target message from product-growth channel members.
+
+For selection, I'm leaning toward "set" since the query is asking whether anyone reacted, which could match multiple growth members. I'm also including two support role entries for Kenji's and Priya's channel_members records in product-growth, since those establish the join facts, and now I'm sketching out the access plan describing how a solver would discover this through conversation membership lookups.
+

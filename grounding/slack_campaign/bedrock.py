@@ -24,7 +24,14 @@ def save(path, value):
 def parse_json(text):
     text = text.strip()
     fence = re.fullmatch(r'```(?:json)?\s*\n(.*?)\n```', text, re.S)
-    return json.loads(fence.group(1) if fence else text)
+    if fence:
+        return json.loads(fence.group(1))
+    blocks = list(re.finditer(r'```(?:json)?\s*\n(.*?)\n```', text, re.S))
+    if len(blocks) == 1:
+        # A single explicitly delimited object has no answer-selection ambiguity.
+        # Preserve the original prose and fence in answer.txt for audit.
+        return json.loads(blocks[0].group(1))
+    return json.loads(text)
 
 
 class Conversation:

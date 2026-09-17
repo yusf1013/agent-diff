@@ -1,0 +1,28 @@
+I'm designing the task route from conversation membership through user, reaction, message, to conversation, with the referent entity being a channel_members record found via an underspecified path: a user who reacted with some emoji to a message on some topic in a conversation.
+
+I'll ground this using a real example: the reaction is 👀 on a message about a circuit-tracer OOM issue posted by U_LUKAS in the #engineering channel, and the reacting user's own membership (in that same channel) is what gets identified.
+
+I should design a genuinely ambiguous case using a shared first name, "Robert" - there's Robert Walsh (U03ROBERT23, admin) and Robert Chen (U_ROBERT), each belonging to different sets of channels, so identifying "Robert" alone isn't enough. I need to add an actual reaction from one of them to a real message so the task correctly resolves to one specific membership.
+
+I'm sketching two candidate Roberts: Robert Walsh in one channel reacting to a message about OOM errors and a PyTorch rewrite, versus Robert Chen in another infra channel who'd need a similar circuit-tracer message added to create genuine ambiguity between them.
+
+Once that second message exists, I'm thinking about what consequential action to layer on top rather than a plain lookup—something like inviting users to a channel—to make the task meaningfully test disambiguation.
+
+Actually a read-only membership question works better: asking which channel the Robert who reacted 👀 to the circuit-tracer update belongs to and when he joined, phrased naturally like "I saw someone named Robert react with the eyes emoji—can you tell me when he joined that channel?" This keeps the ambiguity genuine since there are two Roberts and two candidate role sets to resolve.
+
+I need to build distractors: an agent bot reacting with eyes on an unrelated message (wrong name), a Robert Walsh who authored a different message rather than reacting (wrong action), and another Robert reacting with 👍 instead of 👀 (wrong emoji) — each ruling out membership records that don't match all the criteria.
+
+I'll also add a message about circuit-tracer authored by Sophie in a DM channel, since it shares the topic but has no reaction from Robert, making it a solid negative to rule out membership by topic alone.
+
+I'm also adding another negative: Robert reacting with 👀 on an unrelated message in a different channel, and a plain channel membership for Robert Walsh unconnected to any reaction event — both distractors testing that topic, emoji, and membership alone don't satisfy the full path. Now I'm starting to lay out the roles list, beginning with the Robert Walsh user entity.
+
+9. The new C_INFRA message about the circuit-tracer rewrite update, plus a negative candidate where the agent bot's eyes reaction on that same message is wrong since it's not actually Robert. I'm also ruling out Sophie's DM about the circuit-tracer PR since it matches the topic but has no Robert reaction, and flagging Robert Walsh's membership in the wrong channel as another negative candidate.
+
+Then I'm checking Robert Chen's eyes reaction on an unrelated C_MODEL message as a topic mismatch negative, and confirming the engineering and core-infra channels already exist in the base seed for conversation context.
+
+Now I'm setting up the obligation itself: identifying Robert's membership(s), underspecified mode, targeting the channel_members table with candidate role sets split between Robert Walsh's and Robert Chen's memberships, and answer attributes covering the channel and joined_at fields -- framed as a task asking which channel a membership belongs to and when they joined it.
+
+I'm deciding to keep support roles for message/user grounding as intermediate context rather than separate obligations, and I'm drafting a binding_note explaining that two different Roberts each reacted with 👀 to circuit-tracer-related messages in different channels, creating ambiguous membership candidates that the prompt doesn't resolve. Now I'm working out the exact JSON structure for answer_attributes, deciding whether channel_id and joined_at should be grouped as one set or listed as separate alternative sets.
+
+For the access plan, I'm outlining how a solver would search messages for eyes-emoji reactions on circuit-tracer content, identify reactors named Robert, then look up their channel memberships through the membership API before finalizing the JSON output.
+

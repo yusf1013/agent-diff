@@ -1,0 +1,20 @@
+Since it's ambiguous which Robert is intended, I should resolve this by including both Roberts' channel memberships as the union of eligible alternatives. Checking the base seed, I see both Robert Walsh and Robert Chen already exist with their channel_members rows, so no seed edits are needed—I just need to confirm the actor has workspace access with users.list permissions and channel membership visibility to discover the relevant channels.
+
+I'm binding both Roberts' identifiers and their respective channel memberships, then constructing a single selector query that joins users to channel_members and filters by real_name matching either 'Robert Walsh' or 'Robert Chen' (or using a case-insensitive contains on 'Robert') to compute the union of eligible rows for this underspecified case.
+
+I'm building the selector JSON with root_table channel_members joined to users, filtering on real_name contains_ci "Robert" -- verifying this correctly excludes the bot user and only captures Walsh's and Chen's memberships. Now I should also add a workspace scope filter, though since there's only one workspace it may be unnecessary.
+
+Actually workspace_membership doesn't carry real_name—that's on users. So the route through WORKSPACE_MEMBERSHIP likely just confirms Robert's membership in the workspace, while I'll still need to join to users separately to filter by his name.
+
+So the actual join path should be channel_members to channels to teams to user_teams, filtering by matching user_teams.user_id to channel_members.user_id where that user's real_name is Robert—this is the participant connection point described in the exposure rules linking workspace affiliation to channel membership.
+
+Working out the join field naming for each edge: channel_members.channel_id, channels.team_id, user_teams.team_id, and user_teams.user_id, matching FK column to the referencing table. Filtering will target the teams node by team_id.
+
+Then I add filters for team_id equal to T01WORKSPACE and real_name containing 'Robert' on the users node, using node indices 0-4 for channel_members through users. This forms the single selector satisfying the query, capturing both Roberts while excluding the bot.
+
+For negative referents, since the root entity is channel_members rows, I'm identifying the bot's membership rows across channels as negative referents since they don't match the Robert name filter despite being valid channel_members entries.
+
+I'm now cataloging all of the bot's channel_members rows across every channel and DM it belongs to, and starting to map role labels like workspace_scope, robert_walsh_person, and robert_chen_person to their native handles.
+
+The base seed already satisfies these facts, so no edits are needed there. For access, the actor would need to call users.list and users.conversations for discovery—reading channel membership via the API doesn't require the actor to belong to those channels themselves, just workspace access.
+

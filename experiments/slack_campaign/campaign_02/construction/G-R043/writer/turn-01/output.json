@@ -1,0 +1,90 @@
+{
+  "prompt": "Who are the members of the channel that has the message about circuit-tracer hitting OOM errors on large model loads, given that a workspace admin reacted to that message with the eyes emoji?",
+  "binding_note": "The route requires: conversation membership → conversation (the channel) → message (the OOM/circuit-tracer message) → reaction (eyes emoji) → user (the reactor) → workspace membership (must be owner/admin). The only eyes reaction on that message belongs to a plain member, so no channel qualifies and no membership pair can be returned.",
+  "roles": [
+    {
+      "role": "oom_message",
+      "entity": "messages",
+      "facts": "Message in #engineering (C03IJKL9012) from Łukasz describing circuit-tracer OOM errors when loading large models layer-by-layer, needing a PyTorch rewrite with proper GPU streaming.",
+      "selection": "support",
+      "reason": "Anchors the message-level identifying condition on the route."
+    },
+    {
+      "role": "target_channel",
+      "entity": "channels",
+      "facts": "The #engineering channel (C03IJKL9012) that contains oom_message and has an ordinary member roster.",
+      "selection": "support",
+      "reason": "Is the conversation the membership pairs would be drawn from if the reaction condition were satisfied."
+    },
+    {
+      "role": "bot_reactor",
+      "entity": "users",
+      "facts": "U01AGENBOT9 reacted to oom_message with the eyes emoji.",
+      "selection": "negative",
+      "reason": "Matches message and emoji but this user's workspace role is plain member, not owner/admin, so the admin condition fails."
+    },
+    {
+      "role": "bot_workspace_membership",
+      "entity": "user_teams",
+      "facts": "U01AGENBOT9 holds role 'member' in T01WORKSPACE.",
+      "selection": "negative",
+      "reason": "Confirms the reactor on the target message lacks the required admin/owner role, breaking the chain to any membership pair."
+    },
+    {
+      "role": "admin_wrong_message_reactor",
+      "entity": "users",
+      "facts": "U03ROBERT23 (workspace admin) reacts with the eyes emoji to an unrelated message in #general about MCP deployment timing, not to oom_message.",
+      "selection": "negative",
+      "reason": "Right role and right emoji but wrong message, so this channel/message pair is excluded."
+    },
+    {
+      "role": "admin_wrong_emoji_reactor",
+      "entity": "users",
+      "facts": "U07MORGANFREE (workspace admin) reacts with a thumbsup emoji to oom_message instead of eyes.",
+      "selection": "negative",
+      "reason": "Right role and right message but wrong emoji, so this reaction is excluded."
+    },
+    {
+      "role": "candidate_members",
+      "entity": "channel_members",
+      "facts": "Existing membership pairs for #engineering: U01AGENBOT9, U02JOHNDOE1, U03ROBERT23, U05MORGAN23, U06HUBERT23.",
+      "selection": "negative",
+      "reason": "These are the membership pairs that would be reported if the channel qualified, but since no admin reacted with eyes to oom_message, the channel is never identified and these pairs cannot be surfaced as the answer."
+    }
+  ],
+  "obligations": [
+    {
+      "name": "qualifying_channel_membership_report",
+      "description": "Select conversation membership pairs (channel_id, user_id) for whichever channel contains a message about circuit-tracer OOM errors that a user holding an owner/admin workspace role reacted to with the eyes emoji; report those membership pairs.",
+      "table": "channel_members",
+      "mode": "absent",
+      "task_type": "read-only",
+      "scope": "membership listing for a channel identified via a message-reaction-role chain",
+      "target_roles": [],
+      "candidate_role_sets": null,
+      "selection": "set",
+      "answer_attributes": [
+        [
+          "channel_members.channel_id"
+        ],
+        [
+          "channel_members.user_id"
+        ],
+        [
+          "channel_members.joined_at"
+        ]
+      ]
+    }
+  ],
+  "task_spec": [
+    {
+      "line": 1,
+      "text": "Find the channel holding the circuit-tracer OOM-error message that a workspace admin reacted to with the eyes emoji, then list that channel's members.",
+      "obligations": [
+        1
+      ]
+    }
+  ],
+  "scope_exception": null,
+  "access_plan": "Use conversations.history/search.messages on #engineering to locate the circuit-tracer OOM message, then reactions.get on that message's timestamp/channel to inspect its reactions and reactor IDs. Cross-check each reactor's workspace role via users.info (owner/admin vs member) rather than the conversation membership role, which channel_members does not store. Only if a reactor qualifies as owner/admin would conversations.members on that channel be used to enumerate membership pairs; here the check fails for the only eyes reactor, so no membership pairs are returned."
+}
