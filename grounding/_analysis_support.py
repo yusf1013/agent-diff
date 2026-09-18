@@ -7,6 +7,7 @@ import csv
 import hashlib
 import io
 import json
+import os
 from collections import Counter
 from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
@@ -40,7 +41,8 @@ def refs_text(refs):
     return "`" + safe(json.dumps(refs, ensure_ascii=False, separators=(",", ":"))) + "`"
 
 
-def make_outputs(analysis, entries, seed, config):
+def make_outputs(analysis, entries, seed, config, here=None):
+    entry_link = os.path.relpath(ROOT / config["entry"], here) if here else "../../datasets/agent-diff-bench/all_numbered.jsonl"
     per_test = [test_metrics(t) for t in analysis]
     sum_keys = ["obligations", *RESOLUTIONS, "fully_covered", "partially_covered", "unchecked", "not_fully_covered"]
     aggregate = {k: sum(t[k] for t in per_test) for k in sum_keys}
@@ -71,7 +73,7 @@ def make_outputs(analysis, entries, seed, config):
         tid = item["test_id"]
         entry = entries[tid]
         report += ["", f'<a id="{tid}"></a>', f"## #{item['number']} — {tid}", "", entry["question"], "",
-            f"[Test entry](../../datasets/agent-diff-bench/all_numbered.jsonl#L{item['number']}) · [Cards](cards.md#{tid})", "",
+            f"[Test entry]({entry_link}#L{item['number']}) · [Cards](cards.md#{tid})", "",
             "| Obligation | Resolution | Referent set | Assertion coverage | Assertion evidence |",
             "|---|---|---|---|---|"]
         card_md += [f'<a id="{tid}"></a>', f"## #{item['number']} — {tid}", ""]
@@ -149,7 +151,7 @@ def run(here):
                         assert isinstance(alt, list) and len(alt) == len(set(alt))
                         assert set(alt) <= fields, (t["test_id"], set(alt) - fields)
             assert set(c.get("Written attributes", [])) <= fields, t["test_id"]
-    outputs = make_outputs(analysis, entries, seed, config)
+    outputs = make_outputs(analysis, entries, seed, config, here)
     audit = [f"# {config['title']} outcome-coverage review", "", "All coverage annotations are judged against final state/output, not retrieval traces. This table collects every partial label and its concrete missing constraint. Predicate examples are not full benchmark executions. See report.md for all assertions and semantic notes.", "", "| Test / obligation | Partial-coverage reason |", "|---|---|"]
     for t in analysis:
         for i,o in enumerate(t["obligations"],1):
