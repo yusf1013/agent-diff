@@ -17,6 +17,7 @@ from .usage import report
 
 PROMPTS = Path(__file__).parent / 'prompts/v4'
 ACTOR = 'U01AGENBOT9'
+MAX_OUTPUT_TOKENS = 24_000  # Compiler and construction reviewer, including thinking.
 
 
 def parse_sketch(text):
@@ -218,7 +219,7 @@ def run(source, case_id, out, *, max_attempts=3):
     out.mkdir(parents=True, exist_ok=False)
     packet=packet_for(source,case_id); save(out/'input.json',packet)
     (out/'story.md').write_text(packet['sketch']['final_sketch']+'\n')
-    compiler=Conversation(out/'compiler', system_prompt(), cache_system=True, max_tokens=12000)
+    compiler=Conversation(out/'compiler', system_prompt(), cache_system=True, max_tokens=MAX_OUTPUT_TOKENS)
     message=compiler_message(packet); locked=None; reviewers=0
     result={'status':'running'}
     try:
@@ -242,7 +243,7 @@ def run(source, case_id, out, *, max_attempts=3):
                 message='Thanks. Validation failed: '+dump(checks['errors'])+'. Please fix only the concrete compilation errors. Preserve the story and locked selector; otherwise report design_defect. Return the complete JSON.'
                 continue
             save(out/f'case-{attempt}.json',case)
-            reviewer=Conversation(out/'reviews'/f'attempt-{attempt}'/'reviewer',system_prompt(True),cache_system=True,max_tokens=5000)
+            reviewer=Conversation(out/'reviews'/f'attempt-{attempt}'/'reviewer',system_prompt(True),cache_system=True,max_tokens=MAX_OUTPUT_TOKENS)
             reviewers+=1
             review=reviewer.ask(reviewer_message(packet,compiled,case,checks))
             save(out/f'review-{attempt}.json',review)

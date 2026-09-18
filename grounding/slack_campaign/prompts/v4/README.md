@@ -78,6 +78,11 @@ Writer mode/count and operation-menu dispatch remain unchanged, and positive-var
 guidance lives only in the multiple-mode writer fragment. Self-reflection is unchanged.
 Saved experiment requests retain the exact historical instructions they used.
 
+Compiler and construction-reviewer calls have a 24,000-token output allowance each,
+including thinking. Both fresh calls and explicit compiler continuations use this
+limit; prior request artifacts retain their original limits. This setting does not
+change writer/self-reflection limits or automatically retry truncated responses.
+
 From the repository root, using a fresh output directory for each command:
 
 ```sh
