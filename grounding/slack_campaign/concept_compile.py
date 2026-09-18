@@ -66,6 +66,23 @@ def system_prompt(review=False):
                          '# Restricted selector syntax\n' + SELECTOR_GUIDE])
 
 
+def mode_instructions(assignment):
+    """Dispatch on fixed metadata, outside the shared cached system prefix."""
+    mode = assignment['resolution_mode']
+    if mode not in ('single', 'multiple', 'absent', 'underspecified'):
+        raise ValueError('Unknown assigned resolution mode: ' + str(mode))
+    return (PROMPTS/'compiler_modes'/f'{mode}.md').read_text().format_map(assignment).strip()
+
+
+def compiler_message(packet):
+    return mode_instructions(packet['assignment']) + '\n\n' + dump(packet)
+
+
+def reviewer_message(packet, compiled, case, checks):
+    return mode_instructions(packet['assignment']) + '\n\n' + dump(
+        {'source':packet,'compilation':compiled,'case':case,'mechanical_checks':checks})
+
+
 def packet_for(source, case_id):
     assignment = next(a for a in read(source/'assignments.json') if a['case_id'] == case_id)
     path = source/case_id/'writer/turn-02/output.md'
@@ -202,7 +219,7 @@ def run(source, case_id, out, *, max_attempts=3):
     packet=packet_for(source,case_id); save(out/'input.json',packet)
     (out/'story.md').write_text(packet['sketch']['final_sketch']+'\n')
     compiler=Conversation(out/'compiler', system_prompt(), cache_system=True, max_tokens=12000)
-    message=dump(packet); locked=None; reviewers=0
+    message=compiler_message(packet); locked=None; reviewers=0
     result={'status':'running'}
     try:
         for attempt in range(1,max_attempts+1):
@@ -227,7 +244,7 @@ def run(source, case_id, out, *, max_attempts=3):
             save(out/f'case-{attempt}.json',case)
             reviewer=Conversation(out/'reviews'/f'attempt-{attempt}'/'reviewer',system_prompt(True),cache_system=True,max_tokens=5000)
             reviewers+=1
-            review=reviewer.ask(dump({'source':packet,'compilation':compiled,'case':case,'mechanical_checks':checks}))
+            review=reviewer.ask(reviewer_message(packet,compiled,case,checks))
             save(out/f'review-{attempt}.json',review)
             valid=(isinstance(review,dict) and review.get('validity') in ('pass','fail','unresolved')
                    and review.get('quality') in ('strong','adequate','weak') and isinstance(review.get('issues'),list)
@@ -266,6 +283,7 @@ def main():
     args.out.mkdir(parents=True,exist_ok=False)
     save(args.out/'input.json',packet)
     (args.out/'compiler_instructions.md').write_text(system_prompt())
+    (args.out/'compiler_input.md').write_text(compiler_message(packet)+'\n')
 
 
 if __name__=='__main__':main()

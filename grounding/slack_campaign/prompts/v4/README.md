@@ -69,6 +69,15 @@ workflow or multi-obligation compilation. API access is a supplied domain contra
 not an extra model task. Optional native load/read checks exercise that contract
 with Python and the real handlers, without a solver or LLM fallback.
 
+Resolution guidance is selected in code for both compiler and reviewer from
+`compiler_modes/{assigned_mode}.md`, with the assigned count substituted. It is
+included in the case request after the shared cached system prefix. Only an
+underspecified assignment receives the clarification about intentional unresolved
+alternatives; only an absent assignment receives the intentional-absence guidance.
+Writer mode/count and operation-menu dispatch remain unchanged, and positive-variant
+guidance lives only in the multiple-mode writer fragment. Self-reflection is unchanged.
+Saved experiment requests retain the exact historical instructions they used.
+
 From the repository root, using a fresh output directory for each command:
 
 ```sh

@@ -16,13 +16,25 @@ class ConceptWriterTests(unittest.TestCase):
         self.assertNotEqual(system_prompt(), system_prompt(prompts))
 
     def test_mode_instructions_are_exclusive(self):
+        for prompts in (PROMPTS, PROMPTS.parent/'v4'):
+            for a in assignments():
+                text = user_prompt(a, prompts)
+                for mode in ('single', 'multiple', 'absent', 'underspecified'):
+                    self.assertEqual(f'The assigned mode is {mode.upper()}.' in text,
+                                     mode == a['resolution_mode'])
+                self.assertNotIn('{match_count}', text)
+                self.assertNotIn('{alternative_count}', text)
+
+    def test_current_writer_limits_positive_variants_to_multiple_mode(self):
+        prompts = PROMPTS.parent/'v4'
+        shared = system_prompt(prompts)
+        self.assertNotIn('Give multiple matches useful variants', shared)
+        self.assertNotIn('an existing environment', shared)
+        self.assertIn('a fresh environment', shared)
         for a in assignments():
-            text = user_prompt(a)
-            for mode in ('single', 'multiple', 'absent', 'underspecified'):
-                self.assertEqual(f'The assigned mode is {mode.upper()}.' in text,
-                                 mode == a['resolution_mode'])
-            self.assertNotIn('{match_count}', text)
-            self.assertNotIn('{alternative_count}', text)
+            text = shared + user_prompt(a, prompts)
+            self.assertEqual('Make useful positive variants' in text,
+                             a['resolution_mode'] == 'multiple')
 
     def test_long_route_directions_preserve_roles(self):
         self.assertEqual(relationship('MESSAGE', 'USER'), 'is authored by')

@@ -1,7 +1,7 @@
 Write one conceptual benchmark scenario with the assigned referent, complete route,
 resolution mode and counts. Those are fixed; names, story, identifying values and
 request wording are yours to design. A compiler later instantiates the sketch in
-an existing environment. You do not write database records, cards or oracle rules.
+a fresh environment. You do not write database records, cards or oracle rules.
 
 Work in this order:
 
@@ -27,8 +27,7 @@ Work in this order:
 4. Build initial roots using only the assigned mode instructions. Label each root
    distinctly and put its related records in its facts. Reusing a person or message
    reuses that record's facts everywhere. Multiple qualifying witnesses for one
-   root still give one root. Give multiple matches useful variants, such as extra
-   unrelated activity that preserves the full match.
+   root still give one root.
 5. Construct each negative as a NEW competing root in the SAME environment. Give
    it facts satisfying the query, then break exactly one requirement while keeping
    shared records unchanged. A different value, missing relationship or broken

@@ -33,5 +33,6 @@ observable. There is an acting user; use “I/my” for that actor when relevant
   use an explicit read fallback about observable facts and state the limitation
   briefly. Do not replace the assigned root with another entity to obtain a write.
 
-The compiler will check the full existing seed, access and concrete capabilities.
+The compiler constructs and checks a fresh seed under the supplied domain contract.
+API accessibility is supplied domain knowledge, not a separate compiler investigation.
 This stage designs the story; it does not claim a validated runnable test.

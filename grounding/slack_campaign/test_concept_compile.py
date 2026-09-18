@@ -2,7 +2,10 @@
 from copy import deepcopy
 import unittest
 
-from .concept_compile import check_compilation, packet_for, ROOT, parse_sketch
+from .concept_compile import (check_compilation, packet_for, ROOT, parse_sketch,
+                              compiler_message, reviewer_message, mode_instructions,
+                              system_prompt)
+from .concept_writer import assignments
 from .route_contract import build
 from .test_validation import case_fixture
 
@@ -24,6 +27,37 @@ def fixture():
 
 
 class CompilationTests(unittest.TestCase):
+    def test_compiler_and_reviewer_receive_only_assigned_mode_instructions(self):
+        shared = {review: system_prompt(review) for review in (False, True)}
+        for a in assignments():
+            packet = {'assignment': a}
+            for review in (False, True):
+                message = (reviewer_message(packet, {}, {}, {}) if review
+                           else compiler_message(packet))
+                full = shared[review] + message
+                for mode in ('single', 'multiple', 'absent', 'underspecified'):
+                    self.assertEqual(f'The assigned mode is {mode.upper()}.' in full,
+                                     mode == a['resolution_mode'])
+                self.assertEqual('singular request with these unresolved' in full,
+                                 a['resolution_mode'] == 'underspecified')
+                self.assertEqual("requested target's absence is" in full,
+                                 a['resolution_mode'] == 'absent')
+                self.assertNotIn('{match_count}', full)
+                self.assertNotIn('{alternative_count}', full)
+                if a['resolution_mode'] in ('single', 'multiple'):
+                    self.assertIn(f"exactly\n{a['match_count']}", message)
+                elif a['resolution_mode'] == 'underspecified':
+                    self.assertIn(f"exactly\n{a['alternative_count']} competing", message)
+        for text in shared.values():
+            self.assertNotIn('The assigned mode is', text)
+            self.assertNotIn('For underspecified,', text)
+
+    def test_mode_instructions_reject_unknown_or_missing_assignment_values(self):
+        with self.assertRaises(ValueError):
+            mode_instructions({'resolution_mode': 'invented'})
+        with self.assertRaises(KeyError):
+            mode_instructions({'resolution_mode': 'multiple'})
+
     def test_existing_sketches_extract_final_conditions_and_counts(self):
         for i in range(1,11):
             packet=packet_for(ROOT/'experiments/slack_campaign/writer_pilot_04',f'W{i:02}')

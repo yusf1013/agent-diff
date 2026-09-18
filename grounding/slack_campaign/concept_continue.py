@@ -10,7 +10,8 @@ from pathlib import Path
 
 from .bedrock import Conversation, save
 from .concept_batch import execute
-from .concept_compile import check_compilation, selector_is_valid, system_prompt
+from .concept_compile import (check_compilation, selector_is_valid, system_prompt,
+                              mode_instructions, reviewer_message)
 from .generate import ROOT, read, dump
 
 
@@ -25,7 +26,7 @@ def continue_compilation(source, out, feedback, candidate=None):
         'reason': feedback, 'original_outcome': read(source/'summary.json')})
     compiler = Conversation.resume(source/'compiler')
     lock = read(source/'locked_selector.json') if (source/'locked_selector.json').exists() else None
-    message = feedback
+    message = mode_instructions(packet['assignment']) + '\n\n' + feedback
     result = {'status': 'running'}
     try:
         while candidate is not None or compiler.turn < 3:
@@ -46,7 +47,7 @@ def continue_compilation(source, out, feedback, candidate=None):
                 message='Thanks. Validation failed: '+dump(checks['errors'])+'. Correct only compilation defects. Keep the sketch and locked selector unchanged. Return complete JSON.'
                 continue
             reviewer=Conversation(out/f'review-{label}'/'reviewer',system_prompt(True),cache_system=True,max_tokens=5000)
-            review=reviewer.ask(dump({'source':packet,'compilation':compiled,'case':case,'mechanical_checks':checks}))
+            review=reviewer.ask(reviewer_message(packet,compiled,case,checks))
             save(out/f'review-{label}.json',review)
             issues=review.get('issues')
             if not isinstance(issues,list) or any(not isinstance(i,dict) or i.get('kind') not in ('validity','quality') or i.get('origin') not in ('design','compilation','selector') for i in issues):
