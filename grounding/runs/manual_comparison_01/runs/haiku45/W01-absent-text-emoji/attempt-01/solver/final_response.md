@@ -1,0 +1,1 @@
+Task analysis complete: Priya has not reacted to any messages with the 🙌 emoji. She has only reacted with 👀 (eyes) to 2 messages. Therefore, there are no messages to add 🚀 reactions to. The task cannot be completed as there are no matching reactions from Priya with 🙌.

@@ -4,8 +4,9 @@ No model calls occur in ``prepare``. ``run_prepared`` is the paid boundary.
 The database must be the local backend's database. Only fresh campaign-owned
 schemas are created/dropped; baseline schemas are never written. Each solver
 invocation imports its own baseline module, so concurrent cases share no patched
-module globals. The baseline episode, model options, prompt, and sandbox remain
-unchanged; its platform client redirects native assertion evaluation to diffRun.
+module globals. The baseline episode defaults, prompt, and sandbox remain
+unchanged; model options may be explicitly overridden. Its platform client
+redirects native assertion evaluation to diffRun.
 """
 from __future__ import annotations
 
@@ -820,18 +821,30 @@ def load_baseline():
 
 async def run_prepared(case, prepared, out, database_url=None,
                        model="us.anthropic.claude-sonnet-5", validate_installed: Callable | None = None,
-                       *, environment_out=None, evaluation_inputs=None):
+                       *, environment_out=None, evaluation_inputs=None,
+                       max_output_tokens=128000, thinking_budget=None, rates=None,
+                       record_requests=False):
     """Run the original episode using the private prepared template, then cleanup.
 
     validate_installed is an optional synchronous callback(case, initial_state).
     It must raise to block the solver. The caller should separately accept the
     semantic generation review before invoking this paid operation.
+
+    max_output_tokens includes the optional thinking_budget, rather than adding
+    to it. rates overrides estimated USD-per-million prices for this invocation
+    only. record_requests saves gzipped logical SDK requests before each call.
     """
     if digest(case) != prepared["case_sha256"]:
         raise ValueError("Case changed since installation/preflight; prepare it again")
     if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]*", case["case_id"]):
         raise ValueError("case_id must be a safe filename component")
     baseline = load_baseline()
+    args = SimpleNamespace(base_url=prepared["base_url"], model=model,
+                           max_output_tokens=max_output_tokens, thinking_budget=thinking_budget,
+                           record_requests=record_requests)
+    options = baseline.model_options(args)
+    if rates is not None:
+        baseline.RATES = dict(rates)  # This invocation's private imported module.
     BaseClient = baseline.AgentDiff
     engine = engine_for(database_url)
     out = Path(out).resolve()
@@ -892,8 +905,11 @@ async def run_prepared(case, prepared, out, database_url=None,
     config = {"model": model, "baseline_runner": str(BASELINE),
               "baseline_runner_sha256": hashlib.sha256(BASELINE.read_bytes()).hexdigest(),
               "prompt_sha256": hashlib.sha256(prompt.encode()).hexdigest(),
-              "turn_limit": 40, "timeout_seconds": 480, "max_output_tokens_per_call": 128000,
-              "temperature": "provider_default", "effort": "provider_default",
+              "turn_limit": 40, "timeout_seconds": 480,
+              "max_output_tokens_per_call": options["max_tokens"],
+              "temperature": options.get("temperature", "provider_default"),
+              "thinking": options.get("thinking", "provider_default"),
+              "record_requests": record_requests, "effort": "provider_default",
               "prompt_caching": "explicit_5m", "native_assertions": False,
               "case_sha256": prepared["case_sha256"],
               "cost_source": "baseline runner estimate; not provider-billed dollars",
@@ -905,7 +921,7 @@ async def run_prepared(case, prepared, out, database_url=None,
                                 "impersonate_user_id": case["acting_user_id"]}),
            "answer": "{}"}
     try:
-        record = await baseline.episode(row, SimpleNamespace(base_url=prepared["base_url"], model=model), prompt, out)
+        record = await baseline.episode(row, args, prompt, out)
         record["campaign"] = {"case_sha256": prepared["case_sha256"],
                               "initial_state": str(environment_out / "initial_state.json"),
                               "final_state": str(environment_out / "final_state.json"),

@@ -11,6 +11,7 @@ This directory owns our test generation, evaluation, domain annotations, and exp
 | Solver | [solver/slack/](solver/slack/README.md) | Our Bedrock runner and sandbox bridge using the benchmark's solver prompt |
 | Automated evaluator | [evaluation/](evaluation/README.md) | Evidence adapter, recorded model calls, assessment schema, mechanical validation, and one repair turn |
 | Domain materials | [domains/slack/](domains/slack/README.md) | Adopted model, capabilities, coverage catalog, cards, task specifications, and benchmark-coverage measurements |
+| Cross-domain modeling | [domain comparison](domains/route_comparison.md), [modeling tools](modeling/README.md) | Box, Calendar and Linear conceptual models, source ledgers, API-read qualifications and exact structural route counts |
 | Reference judgments | [reference_labels/slack/](reference_labels/slack/README.md) | Manual ground truth and adjudication; never supplied to evaluator calls |
 | Reusable protocols | [protocols/](protocols/README.md) | Card extraction, ground-truth labeling, domain modeling, and evaluation plan |
 | Experiment evidence | [runs/](runs/README.md) | Saved inputs, outputs, thinking supplied by the provider, usage, state records, and human reviews |

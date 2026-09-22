@@ -1,0 +1,1 @@
+Based on the API responses, the bot in #incident-response is **WatcherBot** (U_WATCHER). Looking at its profile information, the workspace shown is **T_ATLAS** (visible in both the "team_id" field and the "team" field within the profile). This is the workspace/team that the bot is associated with.

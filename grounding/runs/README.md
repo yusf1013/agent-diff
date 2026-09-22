@@ -6,6 +6,8 @@ All tracked historical experiments moved here intact internally:
 - [oracle_evaluation](oracle_evaluation/): evaluator variants, repeats, comparisons and archived trials.
 - [slack_baseline](slack_baseline/): original saved Bedrock solver runs.
 
+The [manual Slack comparison](manual_comparison_01/report.md) runs all 57 [manual exemplars](manual_exemplars_01/story3.md) on Sonnet 5 and Haiku 4.5, with per-case manual judgments, full trajectories/state evidence, and cache/cost accounting.
+
 Historical paths inside JSON and provider transcripts were not rewritten. Human review links were updated where their targets moved. Use `python -m grounding.paths OLD_PATH` to locate recorded paths. A folder name or a recorded `review_pass` is not a new validity claim; retain the associated manual review and failed attempts.
 
 New writer and compilation batches use:

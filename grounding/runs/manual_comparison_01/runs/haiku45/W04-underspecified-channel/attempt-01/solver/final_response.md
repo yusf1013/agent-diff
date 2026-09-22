@@ -1,0 +1,1 @@
+Successfully replied to the rollout checklist message! I found the "rollout checklist for the permissions update" message in the #release-updates channel that had received a 🚀 reaction from U_FARAH. I posted a reply in the thread with the message: "Please confirm the final go-ahead timing." (ts: 1790098347.167370)

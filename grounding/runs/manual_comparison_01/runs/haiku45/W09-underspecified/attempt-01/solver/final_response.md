@@ -1,0 +1,1 @@
+The workspace shown on the profile of the bot (SignalBot, user ID: U_SIGNAL) in the #incident-response channel is **T_ORION**.

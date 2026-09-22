@@ -1,0 +1,1 @@
+Found the budget-freeze announcement in #finance ("Budget freeze: spending limits are now in effect for the coming quarter.") and checked its reactions. Two users had reacted with 🔥: U_DANA and U_MORGAN. Sent a DM to both with the message: "The follow-up meeting is Thursday at 2pm." Both messages were delivered successfully.

@@ -1,0 +1,1 @@
+Successfully added the 🚀 (rocket) reaction to the message "The draft schedule is ready for review." This is the message that Priya reacted to with 🙌 (raised_hands emoji). The reaction was added to the message with timestamp 1735808520.000001 in the #general channel.

@@ -1,0 +1,1 @@
+Task completed. Jordan (U_JORDAN) has been successfully removed from #team-hub. Jordan was identified as the member who reacted with 👍 to the security-audit message in #announcements and has been kicked from the #team-hub channel.

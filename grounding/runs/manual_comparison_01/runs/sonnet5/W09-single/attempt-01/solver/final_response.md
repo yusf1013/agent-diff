@@ -1,0 +1,1 @@
+The bot in #incident-response is **WatcherBot** (user ID `U_WATCHER`). Its profile shows it belongs to the **Atlas** workspace (`team_id: T_ATLAS`) — the same workspace as the channel itself, distinguishing it from other members like Dana Reyes who is from a different workspace (`T_NIMBUS`), indicating this is likely a Slack Connect shared channel.

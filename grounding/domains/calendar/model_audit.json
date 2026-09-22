@@ -1,0 +1,457 @@
+{
+  "status": "Completed source-to-model accounting and model-to-source review for the frozen structural model, with the qualifications and validation limits below. No entity, stored attribute, relationship, or published route-count change was adopted.",
+  "api_groups": [
+    {
+      "id": "C-A0",
+      "source": "[api/methods.py](../../../backend/src/services/calendar/api/methods.py) — `get_user_id; resolve_calendar_id; api_handler; request parsers`",
+      "mapping": "**Represented:** actor → User; primary alias resolves an existing Calendar for that actor. calendarId/eventId/ruleId select the corresponding entities. **Deferred:** ETag headers, page/sync tokens, maxResults, sorting/time windows, sendUpdates, field/version/format controls and errors. Their being accepted does not imply every advertised effect is implemented."
+    },
+    {
+      "id": "C-A1",
+      "source": "[core/serializers.py](../../../backend/src/services/calendar/core/serializers.py) — `serialize_calendar`; [api/methods.py](../../../backend/src/services/calendar/api/methods.py) — `calendars_insert; calendars_update; calendars_patch`",
+      "mapping": "**Represented:** id/etag/summary/description/location; timeZone → time_zone, conferenceProperties → conference_properties, autoAcceptInvitations → auto_accept_invitations, dataOwner → data_owner. **Derived/fixed:** absent conference properties become allowedConferenceSolutionTypes=[hangoutsMeet]; dataOwner may fall back to owner.email when calendar.id differs. This fallback does not equate arbitrary data_owner with owner_id. kind is a fixed discriminator."
+    },
+    {
+      "id": "C-A2",
+      "source": "[core/serializers.py](../../../backend/src/services/calendar/core/serializers.py) — `serialize_calendar_list_entry`",
+      "mapping": "**Represented:** id is CalendarListEntry.calendar_id, not entry.id; accessRole/colorId/backgroundColor/foregroundColor/hidden/selected/primary/deleted/defaultReminders/notificationSettings/summaryOverride map to their snake_case entry fields. **Derived:** summary prefers summary_override, otherwise Calendar.summary; description/location/timeZone/conferenceProperties/autoAcceptInvitations/dataOwner come from Calendar. description_override is stored but unused here. **Fixed fallback:** colors #9fc6e7/#000000, hidden=false, selected=true, reminders=[], four email-notification kinds for primary entries without settings. No new Notification entity."
+    },
+    {
+      "id": "C-A3",
+      "source": "[core/serializers.py](../../../backend/src/services/calendar/core/serializers.py) — `serialize_event; _convert_time_object; _build_person_object`",
+      "mapping": "**Represented:** id/etag/status/summary/description/location/colorId; created/updated → created_at/updated_at; htmlLink → html_link with generated URL fallback. creator/organizer email/displayName/id/self come from the separate *_email/*_display_name/*_profile_id/*_self fields, not local User FKs. start/end/originalStartTime are structured time values, optionally timezone-formatted. recurringEventId/recurrence retain master/occurrence meaning. iCalUID → ical_uid; sequence and guest/visibility/transparency/privateCopy/locked flags map to stored values with omission/default rules."
+    },
+    {
+      "id": "C-A4",
+      "source": "[core/serializers.py](../../../backend/src/services/calendar/core/serializers.py) — `serialize_event; serialize_attendee`; [database/operations.py](../../../backend/src/services/calendar/database/operations.py) — `create_event; update_event`",
+      "mapping": "**Represented:** attendees are EventAttendee rows; email/responseStatus/displayName/organizer/resource/optional/comment/additionalGuests map to their fields. attendee.id is profile_id, not row id; self may derive from actor email as well as self_. **Derived:** maxAttendees truncation sets attendeesOmitted in addition to the stored flag. reminders, conferenceData, attachments, extendedProperties, source, gadget, hangoutLink and event-type properties remain Event structured/scalar values. Empty reminders serialize as useDefault=true; EventReminder rows are not the source."
+    },
+    {
+      "id": "C-A5",
+      "source": "[core/serializers.py](../../../backend/src/services/calendar/core/serializers.py) — `serialize_events_list; serialize_event_instances; serialize_calendar_list; serialize_acl_list; serialize_settings_list`",
+      "mapping": "**Derived:** items are existing record projections; collection updated is maximum event.updated_at, falling back to current time; summary/description/timeZone/accessRole/defaultReminders come from the calendar/list/access context supplied by the caller. **Deferred:** collection etag, nextPageToken/nextSyncToken and kind are response/interface metadata. Instances reuse Event representation rather than establishing a separate entity type."
+    },
+    {
+      "id": "C-A6",
+      "source": "[core/serializers.py](../../../backend/src/services/calendar/core/serializers.py) — `serialize_acl_rule`; [api/methods.py](../../../backend/src/services/calendar/api/methods.py) — `acl_insert; acl_update; acl_patch`",
+      "mapping": "**Represented:** rule id/etag/role; scope.type/value → scope_type/scope_value. Insert also accepts emailAddress as a scope-value fallback. User/group/domain/default are scope classifications, not guaranteed links to local User/group objects. **Deferred:** permission checking and ACL lifecycle. Group expansion is not implemented."
+    },
+    {
+      "id": "C-A7",
+      "source": "[core/serializers.py](../../../backend/src/services/calendar/core/serializers.py) — `serialize_setting; serialize_settings_list`; [api/methods.py](../../../backend/src/services/calendar/api/methods.py) — `settings_get; settings_list`",
+      "mapping": "**Represented:** id is Setting.setting_id (the key), value and etag belong to the folded User.settings collection; the storage id is preserved separately. **Derived/fixed:** settings_get supplies virtual defaults for autoAddHangouts/dateFieldOrder/defaultEventLength/format24HourTime/hideInvitations/hideWeekends/locale/remindOnRespondedEventsOnly/showDeclinedEvents/timezone/useKeyboardShortcuts/weekStart when applicable; settings_list only returns stored settings. A default response does not prove a stored row exists."
+    },
+    {
+      "id": "C-A8",
+      "source": "[core/serializers.py](../../../backend/src/services/calendar/core/serializers.py) — `serialize_channel`; [api/methods.py](../../../backend/src/services/calendar/api/methods.py) — `calendar_list_watch; events_watch; acl_watch; settings_watch; channels_stop`; [api/batch.py](../../../backend/src/services/calendar/api/batch.py) — `batch_handler`",
+      "mapping": "**Deferred:** Channel id/resourceId/resourceUri/type/address/expiration/token/params/payload and SyncToken cursor/resource/expiry state belong to interface/watch behavior. Batch wraps the registered operations and their same domain inputs/outputs; it adds no scheduling concept. Watch registration is not evidence of implemented push delivery."
+    },
+    {
+      "id": "C-A9",
+      "source": "[core/serializers.py](../../../backend/src/services/calendar/core/serializers.py) — `serialize_free_busy; serialize_colors`; [database/operations.py](../../../backend/src/services/calendar/database/operations.py) — `query_free_busy`",
+      "mapping": "**Derived:** freeBusy timeMin/timeMax and calendars[id].busy start/end intervals from stored events; groups/errors are interface/compatibility structures, not a managed Group entity. The helper does not expand recurring masters. **Fixed:** calendar/event color IDs and background/foreground palette, kind and updated response values; they are display vocabulary, not independent color records."
+    },
+    {
+      "id": "C-A10",
+      "source": "[database/operations.py](../../../backend/src/services/calendar/database/operations.py) — `get_event_instances; move_event; import_event; quick_add_event`; [core/utils.py](../../../backend/src/services/calendar/core/utils.py) — `recurrence/time helpers`",
+      "mapping": "**Derived:** recurring occurrences reuse Event plus originalStartTime/master references and generated instance IDs; persisted exceptions remain Event rows. quickAdd text derives event summary/timing rather than adding an NLP-plan entity. **Represented:** import iCalUID/eventType/sequence and organizer email/displayName payload. Move changes calendar_id without rewriting organizer payload/FK; documents describing organizer change are not authority."
+    }
+  ],
+  "operations": [
+    {
+      "operation": "POST /calendars",
+      "groups": [
+        "C-A0",
+        "C-A1"
+      ],
+      "note": "Writes accept summary/description/location/timeZone; clear affects contained Events, not a new entity."
+    },
+    {
+      "operation": "GET /calendars/{calendarId}",
+      "groups": [
+        "C-A0",
+        "C-A1"
+      ],
+      "note": "Writes accept summary/description/location/timeZone; clear affects contained Events, not a new entity."
+    },
+    {
+      "operation": "PUT /calendars/{calendarId}",
+      "groups": [
+        "C-A0",
+        "C-A1"
+      ],
+      "note": "Writes accept summary/description/location/timeZone; clear affects contained Events, not a new entity."
+    },
+    {
+      "operation": "PATCH /calendars/{calendarId}",
+      "groups": [
+        "C-A0",
+        "C-A1"
+      ],
+      "note": "Writes accept summary/description/location/timeZone; clear affects contained Events, not a new entity."
+    },
+    {
+      "operation": "DELETE /calendars/{calendarId}",
+      "groups": [
+        "C-A0",
+        "C-A1"
+      ],
+      "note": "Writes accept summary/description/location/timeZone; clear affects contained Events, not a new entity."
+    },
+    {
+      "operation": "POST /calendars/{calendarId}/clear",
+      "groups": [
+        "C-A0",
+        "C-A1"
+      ],
+      "note": "Writes accept summary/description/location/timeZone; clear affects contained Events, not a new entity."
+    },
+    {
+      "operation": "GET /users/me/calendarList",
+      "groups": [
+        "C-A0",
+        "C-A1",
+        "C-A2",
+        "C-A5"
+      ],
+      "note": "Current actor scopes entries. Insert/update/patch forward presentation and reminder/notification preferences, not arbitrary Calendar fields."
+    },
+    {
+      "operation": "POST /users/me/calendarList",
+      "groups": [
+        "C-A0",
+        "C-A1",
+        "C-A2",
+        "C-A5"
+      ],
+      "note": "Current actor scopes entries. Insert/update/patch forward presentation and reminder/notification preferences, not arbitrary Calendar fields."
+    },
+    {
+      "operation": "POST /users/me/calendarList/watch",
+      "groups": [
+        "C-A0",
+        "C-A8"
+      ],
+      "note": "Domain fields use the listed shared mapping; CRUD preconditions and transport controls remain deferred."
+    },
+    {
+      "operation": "GET /users/me/calendarList/{calendarId}",
+      "groups": [
+        "C-A0",
+        "C-A1",
+        "C-A2",
+        "C-A5"
+      ],
+      "note": "Current actor scopes entries. Insert/update/patch forward presentation and reminder/notification preferences, not arbitrary Calendar fields."
+    },
+    {
+      "operation": "PUT /users/me/calendarList/{calendarId}",
+      "groups": [
+        "C-A0",
+        "C-A1",
+        "C-A2",
+        "C-A5"
+      ],
+      "note": "Current actor scopes entries. Insert/update/patch forward presentation and reminder/notification preferences, not arbitrary Calendar fields."
+    },
+    {
+      "operation": "PATCH /users/me/calendarList/{calendarId}",
+      "groups": [
+        "C-A0",
+        "C-A1",
+        "C-A2",
+        "C-A5"
+      ],
+      "note": "Current actor scopes entries. Insert/update/patch forward presentation and reminder/notification preferences, not arbitrary Calendar fields."
+    },
+    {
+      "operation": "DELETE /users/me/calendarList/{calendarId}",
+      "groups": [
+        "C-A0",
+        "C-A1",
+        "C-A2",
+        "C-A5"
+      ],
+      "note": "Current actor scopes entries. Insert/update/patch forward presentation and reminder/notification preferences, not arbitrary Calendar fields."
+    },
+    {
+      "operation": "GET /calendars/{calendarId}/events",
+      "groups": [
+        "C-A0",
+        "C-A3",
+        "C-A4",
+        "C-A5"
+      ],
+      "note": "calendarId/eventId select Event context; read controls include recurrence/time windows and attendee truncation. Per-operation write whitelists differ; a serialized field is not automatically writable."
+    },
+    {
+      "operation": "POST /calendars/{calendarId}/events",
+      "groups": [
+        "C-A0",
+        "C-A3",
+        "C-A4",
+        "C-A5"
+      ],
+      "note": "calendarId/eventId select Event context; read controls include recurrence/time windows and attendee truncation. Per-operation write whitelists differ; a serialized field is not automatically writable."
+    },
+    {
+      "operation": "POST /calendars/{calendarId}/events/import",
+      "groups": [
+        "C-A0",
+        "C-A3",
+        "C-A4",
+        "C-A5",
+        "C-A10"
+      ],
+      "note": "calendarId/eventId select Event context; read controls include recurrence/time windows and attendee truncation. Per-operation write whitelists differ; a serialized field is not automatically writable."
+    },
+    {
+      "operation": "POST /calendars/{calendarId}/events/quickAdd",
+      "groups": [
+        "C-A0",
+        "C-A3",
+        "C-A4",
+        "C-A5",
+        "C-A10"
+      ],
+      "note": "calendarId/eventId select Event context; read controls include recurrence/time windows and attendee truncation. Per-operation write whitelists differ; a serialized field is not automatically writable."
+    },
+    {
+      "operation": "POST /calendars/{calendarId}/events/watch",
+      "groups": [
+        "C-A0",
+        "C-A8"
+      ],
+      "note": "Domain fields use the listed shared mapping; CRUD preconditions and transport controls remain deferred."
+    },
+    {
+      "operation": "GET /calendars/{calendarId}/events/{eventId}/instances",
+      "groups": [
+        "C-A0",
+        "C-A3",
+        "C-A4",
+        "C-A5",
+        "C-A10"
+      ],
+      "note": "calendarId/eventId select Event context; read controls include recurrence/time windows and attendee truncation. Per-operation write whitelists differ; a serialized field is not automatically writable."
+    },
+    {
+      "operation": "POST /calendars/{calendarId}/events/{eventId}/move",
+      "groups": [
+        "C-A0",
+        "C-A3",
+        "C-A4",
+        "C-A5",
+        "C-A10"
+      ],
+      "note": "calendarId/eventId select Event context; read controls include recurrence/time windows and attendee truncation. Per-operation write whitelists differ; a serialized field is not automatically writable."
+    },
+    {
+      "operation": "GET /calendars/{calendarId}/events/{eventId}",
+      "groups": [
+        "C-A0",
+        "C-A3",
+        "C-A4",
+        "C-A5"
+      ],
+      "note": "calendarId/eventId select Event context; read controls include recurrence/time windows and attendee truncation. Per-operation write whitelists differ; a serialized field is not automatically writable."
+    },
+    {
+      "operation": "PUT /calendars/{calendarId}/events/{eventId}",
+      "groups": [
+        "C-A0",
+        "C-A3",
+        "C-A4",
+        "C-A5"
+      ],
+      "note": "calendarId/eventId select Event context; read controls include recurrence/time windows and attendee truncation. Per-operation write whitelists differ; a serialized field is not automatically writable."
+    },
+    {
+      "operation": "PATCH /calendars/{calendarId}/events/{eventId}",
+      "groups": [
+        "C-A0",
+        "C-A3",
+        "C-A4",
+        "C-A5"
+      ],
+      "note": "calendarId/eventId select Event context; read controls include recurrence/time windows and attendee truncation. Per-operation write whitelists differ; a serialized field is not automatically writable."
+    },
+    {
+      "operation": "DELETE /calendars/{calendarId}/events/{eventId}",
+      "groups": [
+        "C-A0",
+        "C-A3",
+        "C-A4",
+        "C-A5"
+      ],
+      "note": "calendarId/eventId select Event context; read controls include recurrence/time windows and attendee truncation. Per-operation write whitelists differ; a serialized field is not automatically writable."
+    },
+    {
+      "operation": "GET /calendars/{calendarId}/acl",
+      "groups": [
+        "C-A0",
+        "C-A6",
+        "C-A5"
+      ],
+      "note": "calendarId/ruleId select scope; insert provides role and scope, update/patch only role."
+    },
+    {
+      "operation": "POST /calendars/{calendarId}/acl",
+      "groups": [
+        "C-A0",
+        "C-A6",
+        "C-A5"
+      ],
+      "note": "calendarId/ruleId select scope; insert provides role and scope, update/patch only role."
+    },
+    {
+      "operation": "POST /calendars/{calendarId}/acl/watch",
+      "groups": [
+        "C-A0",
+        "C-A8"
+      ],
+      "note": "Domain fields use the listed shared mapping; CRUD preconditions and transport controls remain deferred."
+    },
+    {
+      "operation": "GET /calendars/{calendarId}/acl/{ruleId}",
+      "groups": [
+        "C-A0",
+        "C-A6",
+        "C-A5"
+      ],
+      "note": "calendarId/ruleId select scope; insert provides role and scope, update/patch only role."
+    },
+    {
+      "operation": "PUT /calendars/{calendarId}/acl/{ruleId}",
+      "groups": [
+        "C-A0",
+        "C-A6",
+        "C-A5"
+      ],
+      "note": "calendarId/ruleId select scope; insert provides role and scope, update/patch only role."
+    },
+    {
+      "operation": "PATCH /calendars/{calendarId}/acl/{ruleId}",
+      "groups": [
+        "C-A0",
+        "C-A6",
+        "C-A5"
+      ],
+      "note": "calendarId/ruleId select scope; insert provides role and scope, update/patch only role."
+    },
+    {
+      "operation": "DELETE /calendars/{calendarId}/acl/{ruleId}",
+      "groups": [
+        "C-A0",
+        "C-A6",
+        "C-A5"
+      ],
+      "note": "calendarId/ruleId select scope; insert provides role and scope, update/patch only role."
+    },
+    {
+      "operation": "POST /channels/stop",
+      "groups": [
+        "C-A0",
+        "C-A8"
+      ],
+      "note": "Domain fields use the listed shared mapping; CRUD preconditions and transport controls remain deferred."
+    },
+    {
+      "operation": "GET /colors",
+      "groups": [
+        "C-A0",
+        "C-A9"
+      ],
+      "note": "freeBusy items[].id identifies calendars; fixed color palettes carry no persistent identities."
+    },
+    {
+      "operation": "POST /freeBusy",
+      "groups": [
+        "C-A0",
+        "C-A9"
+      ],
+      "note": "freeBusy items[].id identifies calendars; fixed color palettes carry no persistent identities."
+    },
+    {
+      "operation": "GET /users/me/settings",
+      "groups": [
+        "C-A0",
+        "C-A7",
+        "C-A5"
+      ],
+      "note": "Actor plus setting key identifies the folded value; no general settings write endpoint."
+    },
+    {
+      "operation": "POST /users/me/settings/watch",
+      "groups": [
+        "C-A0",
+        "C-A8"
+      ],
+      "note": "Domain fields use the listed shared mapping; CRUD preconditions and transport controls remain deferred."
+    },
+    {
+      "operation": "GET /users/me/settings/{setting}",
+      "groups": [
+        "C-A0",
+        "C-A7",
+        "C-A5"
+      ],
+      "note": "Actor plus setting key identifies the folded value; no general settings write endpoint."
+    },
+    {
+      "operation": "POST /batch/calendar/v3",
+      "groups": [
+        "C-A0",
+        "C-A8"
+      ],
+      "note": "Domain fields use the listed shared mapping; CRUD preconditions and transport controls remain deferred."
+    }
+  ],
+  "reverse_checks": [
+    {
+      "elements": "All seven entity definitions, 10 table dispositions and 140 columns",
+      "check": "schema.py definitions and source inventory; compare each PK/FK/value, composite constraint and enum with metadata; C-A1–C-A10 follow API meaning.",
+      "result": "Global Event.id retained; no local Person/Group/File invented from email/scope/attachment values. Settings fold and Channel/SyncToken deferrals have explicit field destinations."
+    },
+    {
+      "elements": "Ten relationships and both-end cardinalities",
+      "check": "Nine retained FKs; recurring_event_id is interpreted by recurrence helpers but not a database FK. Required/optional targets follow nullability; inverse uniqueness checked against composite constraints.",
+      "result": "No local-User relationship inferred from creator/organizer/attendee profile payload. ACL nullable scope_value uniqueness is qualified; an absent owner setting differs from a present null value."
+    },
+    {
+      "elements": "Every diagram edge and identity participation",
+      "check": "All retained records have their own id PK; none of the retained FKs contributes to that PK.",
+      "result": "Corrected dashed non-identifying notation without changing edges or cardinalities."
+    },
+    {
+      "elements": "Setting fold; reminder distinction; transport deferrals",
+      "check": "C-A4/C-A7/C-A8 trace actual serializer and writer sources. User.settings is keyed by unique (user_id,setting_id); EventReminder remains independently identified.",
+      "result": "No conflation of Setting.id with API key, attendee.id with row identity, or Event.reminders JSON with EventReminder table. Deferred transport records remain fully inventoried."
+    },
+    {
+      "elements": "C1–C8 qualifications and all derived representations",
+      "check": "C-A1–C-A10 plus stored schema; verify aliases, copied/fallback values, recurring instances and free/busy computation.",
+      "result": "Calendar.dataOwner and person payloads are not certificates of their local FK values. Snapshot versus computed fields and actor scope are recorded explicitly."
+    },
+    {
+      "elements": "Eight enums and open structured classifications",
+      "check": "schema AccessRole/EventStatus/EventTransparency/EventVisibility/EventType/AttendeeResponseStatus/AclScopeType/ReminderMethod; handlers/serializers apply _enum_value and defaults.",
+      "result": "Values belong to existing entities/attributes; transitions and advertised permission enforcement are not inferred. Structured notification kinds, conference solution defaults and color IDs are values/constants, not new graph nodes."
+    },
+    {
+      "elements": "Calendar migration/metadata agreement",
+      "check": "2ac6c433442a_add_calendar_tables.py table/column sets compared with current ORM SQL names; 3d8f1e2a4b5c adds Channel.user_id; a1b2c3d4e5f6 only adds nonunique query indexes. Seeder creates Base.metadata.",
+      "result": "Every current table/column is accounted for; Channel.user_id is already in the deferred transport record. No additional domain structure found."
+    }
+  ],
+  "findings": [
+    "Diagram notation corrected without changing counts.",
+    "Newly explicit identity qualifications: serialized attendee.id is profile_id; serialized Setting.id is setting_id; list-entry id is calendar_id. All corresponding stored fields already exist in the model.",
+    "API fallback defaults are not persisted records. Interface watch/batch/token machinery remains deferred under the same abstraction rule used for Slack."
+  ],
+  "source_addenda_sha256": {
+    "backend/src/platform/db/migrations/versions/2ac6c433442a_add_calendar_tables.py": "63acb9595ad34bc86de824ca5f7508e7215230ae3a0538acc34e7a3b37310407",
+    "backend/src/platform/db/migrations/versions/3d8f1e2a4b5c_add_channel_user_id.py": "572dbc42040b25acca9e0246d0291e687bee9caa71c591423ad6437968226a95",
+    "backend/src/platform/db/migrations/versions/a1b2c3d4e5f6_calendar_composite_indexes.py": "2b45a0531dc1e9786b2da2a92d43cd154c55b3262669dba3e478c409a04487a3"
+  }
+}

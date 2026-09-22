@@ -1,0 +1,1 @@
+Replied "Please confirm the final go-ahead timing." in thread to the two rollout-checklist messages in #release-updates that received a 🚀 reaction from a #beta-testers member (U_GRACE on the search index migration message, and U_FARAH on the permissions update message). Both replies posted successfully.

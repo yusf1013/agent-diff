@@ -1,0 +1,1 @@
+Found the message in the `product-launch` channel (topic: "Launch readiness plan"), authored by U_ELENA, which had my 🔥 reaction. Successfully removed the reaction using `reactions.remove`, and confirmed via `reactions.get` that the reaction is no longer present on the message.

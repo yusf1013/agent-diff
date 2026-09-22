@@ -1,0 +1,1 @@
+Successfully completed the task! I found the budget-freeze announcement in #finance and identified the 2 people who reacted with 🔥 (U_DANA and U_MORGAN). I then sent each of them a direct message saying "The follow-up meeting is Thursday at 2pm."

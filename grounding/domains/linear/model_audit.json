@@ -1,0 +1,2082 @@
+{
+  "status": "Completed source-to-model accounting and model-to-source review for the frozen structural model, with the qualifications and validation limits below. No entity, stored attribute, relationship, or published route-count change was adopted.",
+  "api_groups": [
+    {
+      "id": "L-A0",
+      "source": "[api/resolvers.py](../../../backend/src/services/linear/api/resolvers.py) — `bindables; apply_pagination; encode_cursor; decode_cursor`; [api/graphql_linear.py](../../../backend/src/services/linear/api/graphql_linear.py) — `LinearGraphQL._build_context`",
+      "mapping": "**Represented:** actor is User from context, IDs select existing entity identities (Issue helpers may also accept identifier). **Derived/deferred:** nodes/edges/cursor/pageInfo/totalCount are result views and transport; success/entityId/entity/archivePayload/lastSyncId are operation outputs, not new entities. UserFlag.lastSyncId is separately a real stored field. Mutation argument containers and transactional effects are not domain objects."
+    },
+    {
+      "id": "L-A1",
+      "source": "[database/schema.py](../../../backend/src/services/linear/database/schema.py) — `mapped columns and relationship properties`; [api_surface.json](api_surface.json); [api_field_accounting.json](api_field_accounting.json)",
+      "mapping": "**Represented:** same-named GraphQL fields backed by mapped columns retain that entity attribute; named relationship properties follow the exact FK/association recorded in model.json. **Omitted from implemented inference:** public fields with neither storage nor resolver. A field declaration, Python-list/Connection mismatch, or raw ORM object returned where a Payload is expected does not establish operational support. metadata_ and API metadata are not automatically aliases under default resolution. All mapped type fields and relationship shapes are inventoried; storage still remains in the full conceptual model when unexposed."
+    },
+    {
+      "id": "L-A2",
+      "source": "[api/resolvers.py](../../../backend/src/services/linear/api/resolvers.py) — `resolve_issue; _resolve_issue_id; resolve_issueCreate; resolve_issueUpdate; resolve_issueBatchCreate; resolve_issueBatchUpdate; resolve_issueReminder`",
+      "mapping": "**Represented:** Issue title/description/descriptionData, dates/SLA/reminder/estimate/priority/order/archive/trash values and team/state/user/cycle/project/milestone/parent/template/source-comment roles. *Id inputs map to their same-named Issue FK where present; createAsUser supplies creatorId; labelIds/addedLabelIds/removedLabelIds and subscriberIds operate on existing labels/subscribers. **Derived:** identifier/number/branchName/url/priorityLabel may be generated. **Separate stores:** labelIds JSON is not the relational issue.labels collection; batch update can diverge. preserveSortOrderOnCreate and permanentlyDelete are behavior controls."
+    },
+    {
+      "id": "L-A3",
+      "source": "[api/resolvers.py](../../../backend/src/services/linear/api/resolvers.py) — `resolve_issue_labels; resolve_issueAddLabel; resolve_issueSubscribe; resolve_issueUnsubscribe; resolve_issueLabelCreate; resolve_issueRelationCreate`",
+      "mapping": "**Represented:** labelId identifies IssueLabel; userId/userEmail identify User; subscription and label pair tables are relationships. IssueLabel color/name/description/retirement/group flags and team/organization/creator/parent/inherited roles stay distinct. IssueRelation issueId/relatedIssueId/type are two endpoints plus classification; overrideCreatedAt is a timestamp input. replaceTeamLabels is a behavior control. The two title snapshots are retained as stored values, not recomputed identity."
+    },
+    {
+      "id": "L-A4",
+      "source": "[api/resolvers.py](../../../backend/src/services/linear/api/resolvers.py) — `resolve_issue_comments; resolve_commentCreate; resolve_commentUpdate; resolve_commentResolve; resolve_issue_documents`",
+      "mapping": "**Represented:** Comment body/bodyData/quotedText, archive/edit/resolve fields and actor/context/parent/resolvingComment/resolvingUser/subscriber roles. Context keys issueId/documentContentId/projectUpdateId/initiativeUpdateId/postId select different stored links. creator comes from context. **Derived:** Issue.documents joins DocumentContent.documentId and issueId; it does not add a direct stored Issue–Document edge. Comment.documentId and documentContentId remain different FK roles."
+    },
+    {
+      "id": "L-A5",
+      "source": "[api/resolvers.py](../../../backend/src/services/linear/api/resolvers.py) — `resolve_attachmentCreate; resolve_attachmentUpdate; resolve_attachmentLinkSlack; resolve_attachmentLinkGitHubPR; resolve_attachmentSyncToSlack; resolve_issueExternalSyncDisable`",
+      "mapping": "**Represented:** Attachment title/subtitle/url/iconUrl/groupBySource/bodyData, creator/externalUserCreator, issue/originalIssue and metadata_ / source / sourceType. Input metadata maps to metadata_ in writers. External channelId/messageTs/workspace/conversationId/partId/jiraIssueId/caseId/ticketId/repo/owner/number/projectPathWithNamespace/linkKind are structured source metadata or URL composition. They do not create local Slack/GitHub/Jira/etc. entities. commentBody/commentBodyData may create a local Comment. Sync flags alter metadata; they do not demonstrate a live external synchronization service."
+    },
+    {
+      "id": "L-A6",
+      "source": "[api/resolvers.py](../../../backend/src/services/linear/api/resolvers.py) — `resolve_cycleCreate; resolve_cycleUpdate; resolve_cycleShiftAll; resolve_cycleStartUpcomingCycleToday; resolve_teamCyclesDelete`",
+      "mapping": "**Represented:** Cycle teamId/name/description/startsAt/endsAt/completedAt and stored classification/progress fields. daysToShift changes existing dates, not a new schedule entity. Team.activeCycleId is a separate stored role. **Deferred:** archive/shift/start/delete effects and requirements; dates do not certify every stored isCurrent/isPast/isFuture-style flag is recomputed."
+    },
+    {
+      "id": "L-A7",
+      "source": "[api/resolvers.py](../../../backend/src/services/linear/api/resolvers.py) — `resolve_documentCreate; resolve_documentUpdate; resolve_documentDelete; resolve_documentUnarchive`; [database/schema.py](../../../backend/src/services/linear/database/schema.py) — `Document; DocumentContent`",
+      "mapping": "**Represented:** Document title/content/contentState/color/icon/sortOrder/archive/trash/hidden values; contentData input maps to contentState. projectId/initiativeId/teamId/lastAppliedTemplateId and creator/updater/subscriber roles remain distinct. resourceFolderId is a stored opaque string; documentContentId is unjoined storage. DocumentContent has its own ID/content/state and independent context FKs; do not collapse it using uselist=False."
+    },
+    {
+      "id": "L-A8",
+      "source": "[api/resolvers.py](../../../backend/src/services/linear/api/resolvers.py) — `resolve_initiativeCreate; resolve_initiativeUpdate; resolve_initiativeRelationCreate; resolve_initiativeToProjectCreate`",
+      "mapping": "**Represented:** Initiative name/description/content/color/icon/status/targetDate/targetDateResolution/order/reminder frequency values and owner/creator/organization. InitiativeRelation has initiativeId/relatedInitiativeId/sortOrder; InitiativeToProject has initiativeId/projectId/sortOrder and independent identity. **Not consolidated:** the initiative_project pair table is not synchronized by these identified-link writers. Archive/delete/restore are behavior; update objects have only their actually stored fields."
+    },
+    {
+      "id": "L-A9",
+      "source": "[api/resolvers.py](../../../backend/src/services/linear/api/resolvers.py) — `resolve_projectCreate; resolve_projectUpdate; resolve_projectReassignStatus; resolve_projectAddLabel; resolve_projectMilestoneMove`",
+      "mapping": "**Represented:** Project name/description/content/color/icon/priority/order/date/state/health/reminder/progress values; leadId/statusId/template/convertedFromIssueId plus memberIds/teamIds/labelIds select existing roles/associations. Milestone name/description/descriptionData/targetDate/sortOrder and projectId stay on ProjectMilestone. Move returns previousIssueTeamIds/previousProjectTeamIds as transient prior membership information, not new persistent attributes. ProjectRelation project/relatedProject and optional milestone anchors plus anchorType/relatedAnchorType/type remain named roles and classifications. ProjectStatus/ProjectLabel are separate classifications, not scalar synonyms."
+    },
+    {
+      "id": "L-A10",
+      "source": "[api/resolvers.py](../../../backend/src/services/linear/api/resolvers.py) — `resolve_userUpdate; user role mutations; resolve_userFlagUpdate; resolve_userSettingsUpdate; resolve_notificationCategoryChannelSubscriptionUpdate`",
+      "mapping": "**Represented:** User profile/status/role/suspension flags and organization; UserFlag.flag/value/lastSyncId plus user identity; folded UserSettings values preserve settings-row id/presence. settings/input, notificationCategoryPreferences/notificationChannelPreferences/notificationDeliveryPreferences, subscriptions/unsubscribedFrom/feedSummarySchedule/usageWarningHistory are structured owner values. category/channel/subscribe indexes nested preference maps. flag operations incr/decr/clear/lock alter the existing value (lock uses 999999). Discord code/redirectUri and external service disconnection are behavior; synthetic discordUserId is not evidence of a real authorization flow."
+    },
+    {
+      "id": "L-A11",
+      "source": "[api/resolvers.py](../../../backend/src/services/linear/api/resolvers.py) — `resolve_teamCreate; resolve_teamUpdate; resolve_team_members; resolve_user_teams; resolve_teamMembershipCreate; resolve_teamKeyDelete`",
+      "mapping": "**Represented:** Team naming/key/timezone/color/icon/order/privacy/estimate/cycle/SLA/triage/inheritance/configuration values at their stored names; role IDs keep distinct WorkflowState/Template/Cycle/parent/organization links. autoCloseStateId is interpreted by validation despite lacking an FK. TeamMembership id/teamId/userId/owner/sortOrder and archive/dates remain an identified relation object. **Derived:** Team.members and User.teams join memberships; no duplicate graph edge. copySettingsFromTeamId copies values, not a persistent new role. mapping and cycleEnabledStartDate are not implemented; teamKeyDelete is a no-op, not a managed TeamKey deletion."
+    },
+    {
+      "id": "L-A12",
+      "source": "[api/resolvers.py](../../../backend/src/services/linear/api/resolvers.py) — `resolve_organizationUpdate; resolve_organizationInviteCreate; resolve_organizationDomainVerify; organization trial/delete resolvers`",
+      "mapping": "**Represented:** Organization name/urlKey/logoUrl, configuration/policy/usage/trial/deletion values. Invite email/role/external/metadata_ and inviter/invitee/organization/teams map to the existing entity and pair table. Domain id/name/verification/claim/authentication configuration and creator remain on OrganizationDomain; no missing organization FK is invented. **Deferred:** verificationCode/deletionCode/auth credentials and trial/action inputs. Public advertised enforcement or external identity-provider behavior is not inferred from stored flags."
+    },
+    {
+      "id": "L-A13",
+      "source": "[api/resolvers.py](../../../backend/src/services/linear/api/resolvers.py) — `resolve_notificationUpdate; notification bulk resolvers; resolve_notifications`",
+      "mapping": "**Represented:** Notification readAt/snoozedUntilAt/unsnoozedAt/archive plus actor/externalActor/recipient and stored issue/project/initiative/update pointers. Bulk input IDs constrain those existing fields; oauthClientApprovalId is an opaque value, not a new local OAuth entity. **Qualified:** related target FKs are not exposed as fields of Notification’s SDL type; a mutation/filter can refer to them without direct readable links."
+    },
+    {
+      "id": "L-A14",
+      "source": "[api/resolvers.py](../../../backend/src/services/linear/api/resolvers.py) — `resolve_issueImportCreateAsana; resolve_issueImportCreateClubhouse; resolve_issueImportCreateCSVJira; resolve_issueImportCreateGithub; resolve_issueImportCreateJira; resolve_issueImportCreateLinearV2; resolve_issueImportProcess`",
+      "mapping": "**Represented:** IssueImport service/status/progress/mapping/metadata/csvFileUrl and creator/organization. External team/project/repo identifiers, teamName, includeClosedIssues, instantProcess and source organization are job metadata/configuration. **Deferred:** service tokens/credentials and process controls. No actual external issue population or source-system ER entities are established by these handlers."
+    },
+    {
+      "id": "L-A15",
+      "source": "[api/resolvers.py](../../../backend/src/services/linear/api/resolvers.py) — `resolve_searchIssues; resolve_searchProjects; resolve_searchDocuments; resolve_attachmentSources; resolve_projectStatusProjectCount; filter helpers`",
+      "mapping": "**Derived:** search/filtered lists, attachment source summaries and project-status counts use existing fields/relations; count/archivedTeamCount/privateCount are query results. term/query/name/URL/Figma key/VCS branch filter existing records, not new entities. searchProjects exposes loaded scalar dictionaries plus metadata={} and ignores teamId/includeComments; searchIssues/searchDocuments have different predicates. **Deferred:** comparator vocabulary, and/or, some/every/none, ordering/pagination and snippet controls. An implemented filter is not automatically an exact read witness for every hidden relation."
+    },
+    {
+      "id": "L-A16",
+      "source": "[api/resolvers.py](../../../backend/src/services/linear/api/resolvers.py) — `resolve_issue_history`; [database/schema.py](../../../backend/src/services/linear/database/schema.py) — `IssueHistory; Reaction; Template; update/history placeholders`",
+      "mapping": "**Represented:** only actually stored identity/roles on minimal entities. **Omitted from implemented inference:** missing emoji/user on Reaction, missing text/name on Template/update placeholders, missing history payload/timestamps. Issue.history references absent archivedAt/createdAt/updatedAt and returns an empty connection after exceptions; an empty result does not establish absence of stored history."
+    }
+  ],
+  "operations": [
+    {
+      "operation": "issue_type.labels",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A2",
+        "L-A3"
+      ],
+      "note": "Explicit nested resolver: context comes from the parent object; pagination controls do not add relationships."
+    },
+    {
+      "operation": "issue_type.relations",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A2",
+        "L-A3"
+      ],
+      "note": "Explicit nested resolver: context comes from the parent object; pagination controls do not add relationships."
+    },
+    {
+      "operation": "issue_type.subscribers",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A2",
+        "L-A3"
+      ],
+      "note": "Explicit nested resolver: context comes from the parent object; pagination controls do not add relationships."
+    },
+    {
+      "operation": "issue_type.children",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A2",
+        "L-A3"
+      ],
+      "note": "Explicit nested resolver: context comes from the parent object; pagination controls do not add relationships."
+    },
+    {
+      "operation": "issue_type.history",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A16"
+      ],
+      "note": "Explicit nested resolver: context comes from the parent object; pagination controls do not add relationships."
+    },
+    {
+      "operation": "issue_type.inverseRelations",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A2",
+        "L-A3"
+      ],
+      "note": "Explicit nested resolver: context comes from the parent object; pagination controls do not add relationships."
+    },
+    {
+      "operation": "issue_type.comments",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A4"
+      ],
+      "note": "Explicit nested resolver: context comes from the parent object; pagination controls do not add relationships."
+    },
+    {
+      "operation": "issue_type.documents",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A4",
+        "L-A7"
+      ],
+      "note": "Explicit nested resolver: context comes from the parent object; pagination controls do not add relationships."
+    },
+    {
+      "operation": "team_type.states",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A11"
+      ],
+      "note": "Explicit nested resolver: context comes from the parent object; pagination controls do not add relationships."
+    },
+    {
+      "operation": "team_type.issues",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A11"
+      ],
+      "note": "Explicit nested resolver: context comes from the parent object; pagination controls do not add relationships."
+    },
+    {
+      "operation": "team_type.members",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A11"
+      ],
+      "note": "Explicit nested resolver: context comes from the parent object; pagination controls do not add relationships."
+    },
+    {
+      "operation": "team_type.labels",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A2",
+        "L-A3"
+      ],
+      "note": "Explicit nested resolver: context comes from the parent object; pagination controls do not add relationships."
+    },
+    {
+      "operation": "user_type.teams",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A11"
+      ],
+      "note": "Explicit nested resolver: context comes from the parent object; pagination controls do not add relationships."
+    },
+    {
+      "operation": "user_type.assignedIssues",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A2",
+        "L-A10"
+      ],
+      "note": "Explicit nested resolver: context comes from the parent object; pagination controls do not add relationships."
+    },
+    {
+      "operation": "user_type.createdIssues",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A2",
+        "L-A10"
+      ],
+      "note": "Explicit nested resolver: context comes from the parent object; pagination controls do not add relationships."
+    },
+    {
+      "operation": "user_type.delegatedIssues",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A2",
+        "L-A10"
+      ],
+      "note": "Explicit nested resolver: context comes from the parent object; pagination controls do not add relationships."
+    },
+    {
+      "operation": "query.issue",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A2",
+        "L-A15"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "query.issueRelation",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A3",
+        "L-A15"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "query.issueRelations",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A3",
+        "L-A15"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "query.attachmentSources",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A5",
+        "L-A15"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "query.attachment",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A5",
+        "L-A15"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "query.attachmentIssue",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A5",
+        "L-A15"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "query.attachments",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A5",
+        "L-A15"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "query.attachmentsForURL",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A5",
+        "L-A15"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "query.issueFigmaFileKeySearch",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A5",
+        "L-A15"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "query.searchIssues",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A2",
+        "L-A15"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "query.issueSearch",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A2",
+        "L-A15"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "query.user",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A10",
+        "L-A15"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "query.issueVcsBranchSearch",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A2",
+        "L-A15"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "query.issues",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A2",
+        "L-A15"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "query.users",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A10",
+        "L-A15"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "query.viewer",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A10",
+        "L-A15"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "query.administrableTeams",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A11",
+        "L-A15"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "query.archivedTeams",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A11",
+        "L-A15"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "query.team",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A11",
+        "L-A15"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "query.teams",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A11",
+        "L-A15"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "query.organization",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A12",
+        "L-A15"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "query.organizationExists",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A12",
+        "L-A15"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "query.organizationInvite",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A12",
+        "L-A15"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "query.organizationInvites",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A12",
+        "L-A15"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.organizationInviteCreate",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A12"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.organizationInviteUpdate",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A12"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.organizationInviteDelete",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A12"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "query.projectStatus",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A9",
+        "L-A15"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "query.projectStatuses",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A9",
+        "L-A15"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "query.projectStatusProjectCount",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A9",
+        "L-A15"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "query.projectLabel",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A9",
+        "L-A15"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "query.projectLabels",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A9",
+        "L-A15"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "query.projectMilestone",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A9",
+        "L-A15"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "query.projectMilestones",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A9",
+        "L-A15"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "query.projectRelation",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A9",
+        "L-A15"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "query.projectRelations",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A9",
+        "L-A15"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "query.searchProjects",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A9",
+        "L-A15"
+      ],
+      "note": "teamId and includeComments arguments are not applied; scalar dictionaries do not supply arbitrary lazy ORM relationships."
+    },
+    {
+      "operation": "query.notification",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A13",
+        "L-A15"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "query.notifications",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A13",
+        "L-A15"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "query.initiative",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A8",
+        "L-A15"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "query.initiatives",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A8",
+        "L-A15"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "query.document",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A7",
+        "L-A15"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "query.cycles",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A6",
+        "L-A15"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "query.documents",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A7",
+        "L-A15"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "query.searchDocuments",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A7",
+        "L-A15"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "query.cycle",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A6",
+        "L-A15"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "query.teamMembership",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A11",
+        "L-A15"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "query.teamMemberships",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A11",
+        "L-A15"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "query.initiativeRelation",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A8",
+        "L-A15"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "query.initiativeRelations",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A8",
+        "L-A15"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "query.initiativeToProject",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A8",
+        "L-A15"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "query.initiativeToProjects",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A8",
+        "L-A15"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.initiativeToProjectCreate",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A8"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.initiativeToProjectUpdate",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A8"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.initiativeToProjectDelete",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A8"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "query.externalUser",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A10",
+        "L-A15"
+      ],
+      "note": "ExternalUser id/name/displayName/email/service/organization are separate from local User identity; no unique-name assumption."
+    },
+    {
+      "operation": "query.externalUsers",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A10",
+        "L-A15"
+      ],
+      "note": "ExternalUser id/name/displayName/email/service/organization are separate from local User identity; no unique-name assumption."
+    },
+    {
+      "operation": "mutation.commentCreate",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A4"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.commentResolve",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A4"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.commentUnresolve",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A4"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.commentUpdate",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A4"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.commentDelete",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A4"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.attachmentCreate",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A5"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.attachmentDelete",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A5"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.attachmentLinkDiscord",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A5"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.attachmentLinkFront",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A5"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.attachmentLinkGitHubIssue",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A5"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.attachmentLinkGitHubPR",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A5"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.attachmentLinkGitLabMR",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A5"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.attachmentLinkIntercom",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A5"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.attachmentLinkJiraIssue",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A5"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.attachmentLinkSalesforce",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A5"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.attachmentLinkSlack",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A5"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.attachmentLinkURL",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A5"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.attachmentLinkZendesk",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A5"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.attachmentSyncToSlack",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A5"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.attachmentUpdate",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A5"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.cycleCreate",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A6"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.cycleArchive",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A6"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.cycleShiftAll",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A6"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.cycleStartUpcomingCycleToday",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A6"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.cycleUpdate",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A6"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.documentCreate",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A7"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.documentUpdate",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A7"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.documentDelete",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A7"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.documentUnarchive",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A7"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.initiativeCreate",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A8"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.initiativeUpdate",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A8"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.initiativeArchive",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A8"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.initiativeUnarchive",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A8"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.initiativeDelete",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A8"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.initiativeRelationCreate",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A8"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.initiativeRelationDelete",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A8"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.initiativeRelationUpdate",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A8"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.issueAddLabel",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A3"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.issueRemoveLabel",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A3"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.issueArchive",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A2"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.issueUnarchive",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A2"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.issueUnsubscribe",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A3"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.issueDelete",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A2"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.issueUpdate",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A2"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.issueCreate",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A2"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.issueBatchCreate",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A2"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.issueBatchUpdate",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A2"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.issueDescriptionUpdateFromFront",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A2"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.issueExternalSyncDisable",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A5"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.issueImportCreateAsana",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A14"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.issueImportCreateClubhouse",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A14"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.issueImportCreateCSVJira",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A14"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.issueImportCreateGithub",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A14"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.issueImportCreateJira",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A14"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.issueImportCreateLinearV2",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A14"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.issueImportProcess",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A14"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.issueReminder",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A2"
+      ],
+      "note": "reminderAt updates Issue.reminderAt; this is not evidence of notification scheduling/delivery."
+    },
+    {
+      "operation": "mutation.issueSubscribe",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A3"
+      ],
+      "note": "userId or userEmail is required in the implementation; documented current-user fallback is absent. Returns raw Issue where SDL expects IssuePayload; do not infer payload success."
+    },
+    {
+      "operation": "query.issueLabel",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A3",
+        "L-A15"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "query.issueLabels",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A3",
+        "L-A15"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "query.comment",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A4",
+        "L-A15"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "query.comments",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A4",
+        "L-A15"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.issueLabelCreate",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A3"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.issueLabelUpdate",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A3"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.issueLabelDelete",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A3"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.issueRelationCreate",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A3"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.issueRelationUpdate",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A3"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.issueRelationDelete",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A3"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.userPromoteAdmin",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A10"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.userDemoteAdmin",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A10"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.userDemoteMember",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A10"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.userPromoteMember",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A10"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.userSuspend",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A10"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.userUnsuspend",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A10"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.userUnlinkFromIdentityProvider",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A10"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.userDiscordConnect",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A10"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.userExternalUserDisconnect",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A10"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.userFlagUpdate",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A10"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.userSettingsFlagsReset",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A10"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.userSettingsUpdate",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A10"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.userUpdate",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A10"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.notificationArchive",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A13"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.notificationUnarchive",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A13"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.notificationUpdate",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A13"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.notificationArchiveAll",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A13"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.notificationCategoryChannelSubscriptionUpdate",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A13",
+        "L-A10"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.notificationMarkReadAll",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A13"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.notificationMarkUnreadAll",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A13"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.notificationSnoozeAll",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A13"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.notificationUnsnoozeAll",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A13"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.organizationCancelDelete",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A12"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.organizationDeleteChallenge",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A12"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.organizationDelete",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A12"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.organizationDomainClaim",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A12"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.organizationDomainVerify",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A12"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.organizationStartTrial",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A12"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.organizationStartTrialForPlan",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A12"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.organizationUpdate",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A12"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.projectCreate",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A9"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.projectAddLabel",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A9"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.projectRemoveLabel",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A9"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.projectArchive",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A9"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.projectUnarchive",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A9"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.projectDelete",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A9"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.projectReassignStatus",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A9"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.projectUpdate",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A9"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.projectLabelCreate",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A9"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.projectLabelDelete",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A9"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.projectLabelUpdate",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A9"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.projectMilestoneCreate",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A9"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.projectMilestoneUpdate",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A9"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.projectMilestoneDelete",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A9"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.projectMilestoneMove",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A9"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.projectRelationCreate",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A9"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.projectRelationDelete",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A9"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.projectRelationUpdate",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A9"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.projectStatusCreate",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A9"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.projectStatusArchive",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A9"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.projectStatusUnarchive",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A9"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.projectStatusUpdate",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A9"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.teamCreate",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A11"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.teamUpdate",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A11"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.teamCyclesDelete",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A11"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.teamDelete",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A11"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.teamUnarchive",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A11"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.teamKeyDelete",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A11"
+      ],
+      "note": "Returns success and entityId without deleting a stored object; no TeamKey entity inferred."
+    },
+    {
+      "operation": "mutation.teamMembershipCreate",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A11"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.teamMembershipDelete",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A11"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.teamMembershipUpdate",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A11"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "query.workflowState",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A11",
+        "L-A3",
+        "L-A15"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "query.workflowStates",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A11",
+        "L-A3",
+        "L-A15"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.workflowStateArchive",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A11",
+        "L-A3"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.workflowStateCreate",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A11",
+        "L-A3"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    },
+    {
+      "operation": "mutation.workflowStateUpdate",
+      "groups": [
+        "L-A0",
+        "L-A1",
+        "L-A11",
+        "L-A3"
+      ],
+      "note": "Same-named stored values and named FK/association roles follow L-A1; effect/precondition details remain behavior."
+    }
+  ],
+  "reverse_checks": [
+    {
+      "elements": "49 entity meanings; all 59 tables and 703 columns",
+      "check": "Source inventory and schema class definitions, L-A1–L-A16. Review each minimal entity against its actual columns; retain all independently identified records and explicitly contract only nine pair tables plus the UserSettings fold.",
+      "result": "No public fields invented for Reaction/Template/history/update placeholders. No merge of Draft and IssueDraft or independent initiative-project stores. Minimal source records remain candidates consistently with Slack’s dormant records."
+    },
+    {
+      "elements": "Every identity, attribute and uniqueness claim",
+      "check": "Compare every rendered stored field to mapped metadata; User email/inviteHash, Issue.identifier, Organization.urlKey and Team inviteHash/(organizationId,key) constraints; UserSettings.userId unique.",
+      "result": "Names and membership pairs are not presumed unique. JSON caches/content/source values retain independent storage; scalar column existence does not certify API exposure."
+    },
+    {
+      "elements": "159 relationships, including ten self roles, plus diagram/cardinalities",
+      "check": "All retained FK columns checked to target PK and nullability/uniqueness; nine contracted pair tables checked by endpoint keys; autoCloseStateId checked in teamUpdate. ORM inverse properties do not add roles.",
+      "result": "uselist=False alone does not imply unique ownership. Parallel source/target/creator/assignee/delegate/state roles remain distinct. Diagram line style corrected; self roles remain modeled though excluded from route counts."
+    },
+    {
+      "elements": "UserSettings fold and attributed associations",
+      "check": "Unique userId supports settings value fold while retaining row identity/existence. TeamMembership, IssueRelation, ProjectRelation, InitiativeRelation and InitiativeToProject carry own identity/fields. DocumentContent ownership FKs are not unique.",
+      "result": "No arbitrary collapse based on an ORM scalar relationship. Pair associations and identified links use the same identity-based simplification rule as Slack."
+    },
+    {
+      "elements": "All API bindings and domain-bearing representations",
+      "check": "207 operation rows each name manual field groups. Actual bindables, defaults, SDL contract, explicit nested resolvers, output construction, input mapping and serializers reviewed separately. L-A0/L-A1/L-A15 cover shared mechanics; L-A2–L-A14 map entity-specific inputs.",
+      "result": "191 root bindings and 16 nested bindings are not equivalent to the much larger public schema. Parameters with no implementation are qualified. Returned ORM-versus-Payload mismatches must be recorded as interface defects rather than new concepts."
+    },
+    {
+      "elements": "L1–L10 and all derived entries",
+      "check": "L-A4/L-A11 trace membership/document projections; L-A15 traces search/counters/identifiers; L-A16 traces missing history columns; source references in model.json trace each read witness.",
+      "result": "Derived shortcuts do not add duplicate graph edges. Read screen remains an edge-level source screen, not a guarantee that all concatenations, attributes or populations are usable."
+    },
+    {
+      "elements": "States and classifications",
+      "check": "ProjectMilestoneStatus enum, priority mapping, WorkflowState.type strings, archivedAt/trashed/health/progress/role/status fields, UserFlag operations, actual SDL enum use.",
+      "result": "State values remain on existing attributes; do not infer state transitions, continuously maintained progress, external workflows or permission enforcement. GraphQL enum validation and persistence constraints remain separate."
+    },
+    {
+      "elements": "Linear migration/metadata agreement",
+      "check": "4e7f9b2c1d8a adds IssueRelation title snapshots already modeled; 68296ff4834d converts existing JSON fields to JSONB; 9d2f4ac1cd31 adds nonunique indexes. seed_linear_template.create_tables uses complete metadata.",
+      "result": "No additional entity/attribute/relationship inferred from storage format/index changes. Platform change-journal/template-order migrations belong to infrastructure, not this domain."
+    }
+  ],
+  "findings": [
+    "Diagram notation corrected without changing graph counts.",
+    "Explicitly recorded ignored searchProjects teamId/includeComments, missing current-user fallback in issueSubscribe, and raw ORM versus GraphQL Payload mismatch. These are interface qualifications, not new entities or relations.",
+    "No count-changing correction is adopted by this audit record. Any such finding requires user review before changing model.json or route_counts.json.",
+    "Confirmed with the actual executable schema: Attachment.metadata resolves to inherited SQLAlchemy MetaData, not Attachment.metadata_. GraphQL execution returns that object and JSON serialization fails. OrganizationInvite.metadata has the same default-lookup collision; IssueSuggestion.metadata also collides but has no stored metadata_ value. No stored attribute was removed.",
+    "The exhaustive api_field_accounting.json now distinguishes storage-backed fields, relationship projections, explicit resolvers, declared-only fields and Python-attribute collisions. Public declarations are not silently added to the model."
+  ],
+  "source_addenda_sha256": {
+    "backend/src/platform/db/migrations/versions/4e7f9b2c1d8a_add_issue_relation_titles.py": "69adabd3247d2d44f768a285b0090a36c5d23ddb7296defb18a0d34430862f62",
+    "backend/src/platform/db/migrations/versions/68296ff4834d_linear_json_to_jsonb.py": "db6ee9621032e9284ea8dd5c429dbebd21262df8a1aa03b15084a6174d017e74",
+    "backend/src/platform/db/migrations/versions/9d2f4ac1cd31_linear_query_indexes.py": "cc5a1cb406c2e78b5c3e38f07a6c5582a3b9f08035a2b9f10ab30ace5af23d29"
+  }
+}

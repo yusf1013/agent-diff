@@ -9,7 +9,9 @@ from __future__ import annotations
 import argparse
 import ast
 import asyncio
+from copy import deepcopy
 from datetime import datetime, timezone
+import gzip
 import hashlib
 import json
 from pathlib import Path
@@ -68,6 +70,39 @@ def cost(tokens):
     return sum(tokens.get(key, 0) * rate / 1_000_000 for key, rate in RATES.items())
 
 
+def model_options(args):
+    """Keep the original provider defaults unless a caller explicitly opts in."""
+    max_tokens = getattr(args, "max_output_tokens", 128000)
+    budget = getattr(args, "thinking_budget", None)
+    if max_tokens < 1:
+        raise ValueError("max_output_tokens must be positive")
+    options = {"max_tokens": max_tokens}
+    if budget is not None:
+        if not 1024 <= budget < max_tokens:
+            raise ValueError("thinking_budget must be at least 1024 and below max_output_tokens")
+        # Pass native options, not the client's thinking_budget convenience
+        # argument, which adds that budget to max_tokens.
+        options.update(thinking={"type": "enabled", "budget_tokens": budget}, temperature=1)
+    return options
+
+
+def save_model_request(llm, messages, prompt, options, path):
+    """Save the logical SDK request, including the helper's actual cache markers.
+
+    Internal retries reuse this request. This is the Messages SDK input, before
+    SDK transport serialization, rather than a claim to record raw HTTP bytes.
+    """
+    request = deepcopy({"model": llm.model_id, "messages": messages,
+                        "system": prompt, **options})
+    request["max_tokens"] = max(options["max_tokens"], llm.max_output_tokens or options["max_tokens"])
+    if llm.prompt_caching:
+        llm._add_cache_breakpoints(request)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with gzip.open(path, "wt", encoding="utf-8") as handle:
+        json.dump(request, handle, indent=2, ensure_ascii=False)
+        handle.write("\n")
+
+
 def assistant_content(message):
     """Keep model content while removing response-only fields and empty text."""
     return [
@@ -78,6 +113,8 @@ def assistant_content(message):
 
 
 async def episode(row, args, prompt, out):
+    options = model_options(args)
+    record_requests = getattr(args, "record_requests", False)
     client = AgentDiff(base_url=args.base_url)
     env = run = process = None
     record = {"test_id": row["test_id"], "test_name": row["test_name"],
@@ -111,8 +148,18 @@ async def episode(row, args, prompt, out):
         try:
             async with asyncio.timeout(480):
                 for turn in range(1, 41):
-                    response = await llm.create(messages, system=prompt, max_tokens=128000,
-                                                usage_label=row["test_id"])
+                    request_path = out / "requests" / row["test_id"] / f"turn-{turn:03d}.json.gz"
+                    if record_requests:
+                        save_model_request(llm, messages, prompt, options, request_path)
+                    try:
+                        response = await llm.create(messages, system=prompt, **options,
+                                                    usage_label=row["test_id"])
+                    except Exception as exc:
+                        if record_requests:
+                            save(request_path.with_name(f"turn-{turn:03d}.error.json"),
+                                 {"error_type": type(exc).__name__, "error": str(exc),
+                                  "usage": llm.usage.snapshot().to_dict()})
+                        raise
                     text = response.text
                     step = {"turn": turn, "response": response.message.model_dump(mode="json"),
                             "usage": response.usage.to_dict()}
@@ -188,6 +235,9 @@ async def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--base-url", default="http://127.0.0.1:18000")
     parser.add_argument("--model", default="us.anthropic.claude-sonnet-5")
+    parser.add_argument("--max-output-tokens", type=int, default=128000)
+    parser.add_argument("--thinking-budget", type=int)
+    parser.add_argument("--record-requests", action="store_true")
     parser.add_argument("--limit", type=int, default=10)
     parser.add_argument("--offset", type=int, default=0,
                         help="Skip this many Slack tasks before selecting tasks")
@@ -196,6 +246,10 @@ async def main():
     args = parser.parse_args()
     if args.limit < 1 or args.offset < 0 or args.concurrency < 1:
         parser.error("limit/concurrency must be positive and offset nonnegative")
+    try:
+        options = model_options(args)
+    except ValueError as exc:
+        parser.error(str(exc))
     rows = [json.loads(line) for line in (ROOT / "datasets/agent-diff-bench/all_numbered.jsonl").read_text().splitlines()]
     rows = [row for row in rows if row["service"] == "slack"]
     if args.test_ids:
@@ -214,7 +268,10 @@ async def main():
     config = {"model": args.model, "docs_mode": "relevant", "concurrency": min(args.concurrency, len(rows)),
               "offset": args.offset,
               "trials": 1, "turn_limit": 40, "timeout_seconds": 480,
-              "max_output_tokens_per_call": 128000, "temperature": "provider_default",
+              "max_output_tokens_per_call": options["max_tokens"],
+              "temperature": options.get("temperature", "provider_default"),
+              "thinking": options.get("thinking", "provider_default"),
+              "record_requests": args.record_requests,
               "effort": "provider_default", "prompt_caching": "explicit_5m",
               "rates_usd_per_million": RATES, "test_ids": [row["test_id"] for row in rows],
               "git_commit": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip(),

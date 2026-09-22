@@ -1,0 +1,1 @@
+Identified the rollout-checklist message in #release-updates ("The rollout checklist for the permissions update is ready. The deployment window is booked for Thursday.") as the one with a 🚀 reaction from U_FARAH, a member of #beta-testers. Posted the reply "Please confirm the final go-ahead timing." as a threaded response to that message.
