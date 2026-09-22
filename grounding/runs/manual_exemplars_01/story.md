@@ -56,6 +56,7 @@ The actor can read the scenario's channels and messages. Channels are in the act
 | #office-updates | Contains office-relocation message M4, which Alex Kim reacted to with 🎉. M4 does not discuss budgets. | Wrong message topic only |
 | #procurement-updates | Contains budget-approved message M5, which Morgan reacted to with 🎉. Neither Alex reacted to it. | Wrong reactor name only |
 | #delivery-updates | Contains budget-approved message M6. Alex Rivera reacted 👍 and Morgan reacted 🎉; these are its only reactions. | Alex and 🎉 occur on different reactions |
+| #purchasing-updates | Contains budget-approved message M7, authored by Alex Rivera. Its only reaction is Morgan's 🎉; neither Alex reacted to it. | Alex is the author, not the reactor |
 
 ## W04
 
@@ -73,6 +74,7 @@ The actor can read the scenario's channels and messages. Channels are in the act
 | M4 | A rollout-checklist message. Farah reacted 👀 and Ethan reacted 🚀; these are its only reactions. | 🚀 and #beta-testers membership belong to different reactors |
 | M5 | A rollout-checklist message with no reactions. | Missing reaction relationship |
 | M6 | A rollout-checklist message. Its only reaction is Harold's 🚀. Harold belongs to #beta-testers-west, not #beta-testers. | Wrong membership channel only; the similarly named channel is distinct |
+| M7 | A rollout-checklist message authored by Farah, who belongs to #beta-testers. Its only reaction is Ethan's 🚀; Ethan does not belong to #beta-testers. | The author has the required membership, but the reactor does not |
 
 ## W05
 
