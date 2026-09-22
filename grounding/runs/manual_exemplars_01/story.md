@@ -115,18 +115,18 @@ The actor can read the scenario's channels and messages. Channels are in the act
 
 **Resolution mode:** underspecified — one membership is requested; two singleton alternatives remain.
 
-**Request:** Remove from #general the member named Jordan who reacted with 👍 to the security-audit message in #announcements.
+**Request:** Remove from #team-hub the member named Jordan who reacted with 👍 to the security-audit message in #announcements.
 
 | Referent | Environment facts | Interpretation |
 |---|---|---|
-| Jordan Lee's #general membership | Jordan Lee reacted 👍 to security-audit message M1 in #announcements. | Alternative through Jordan Lee |
-| Jordan Kim's #general membership | Jordan Kim reacted 👍 to the same M1. | Alternative through Jordan Kim |
-| Jordan Patel's #general membership | Jordan Patel reacted 👀 to M1 and has no 👍 reaction on it. | Wrong emoji only |
-| Jordan Nguyen's #general membership | Jordan Nguyen reacted 👍 to office-relocation message M2 in #announcements, not to M1. M2 does not discuss security audits. | Wrong message topic only |
-| Jordan Ahmed's #general membership | Jordan Ahmed reacted 👍 to security-audit message M3 in #security-team, not to M1. | Wrong message channel only |
-| Jordan Diaz's #random membership | Jordan Diaz reacted 👍 to M1 but has no #general membership. | Wrong membership channel only |
-| Morgan Lee's #general membership | Morgan Lee reacted 👍 to M1. Morgan is not named Jordan. | Wrong person's first name only |
-| Jordan Park's #general membership | Jordan Park reacted 👀 to M1 and 👍 to M2; has no other reactions. | Requested emoji and requested message occur on different reactions |
+| Jordan Lee's #team-hub membership | Jordan Lee reacted 👍 to security-audit message M1 in #announcements. | Alternative through Jordan Lee |
+| Jordan Kim's #team-hub membership | Jordan Kim reacted 👍 to the same M1. | Alternative through Jordan Kim |
+| Jordan Patel's #team-hub membership | Jordan Patel reacted 👀 to M1 and has no 👍 reaction on it. | Wrong emoji only |
+| Jordan Nguyen's #team-hub membership | Jordan Nguyen reacted 👍 to office-relocation message M2 in #announcements, not to M1. M2 does not discuss security audits. | Wrong message topic only |
+| Jordan Ahmed's #team-hub membership | Jordan Ahmed reacted 👍 to security-audit message M3 in #security-team, not to M1. | Wrong message channel only |
+| Jordan Diaz's #random membership | Jordan Diaz reacted 👍 to M1 but has no #team-hub membership. | Wrong membership channel only |
+| Morgan Lee's #team-hub membership | Morgan Lee reacted 👍 to M1. Morgan is not named Jordan. | Wrong person's first name only |
+| Jordan Park's #team-hub membership | Jordan Park reacted 👀 to M1 and 👍 to M2; has no other reactions. | Requested emoji and requested message occur on different reactions |
 
 ## W08
 
