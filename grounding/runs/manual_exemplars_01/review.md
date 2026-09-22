@@ -1,20 +1,20 @@
 # Manual suite review
 
-The reviewed result is **32 new variants plus 10 originals: 42 full tests**. Every case has a concrete seed, prompt, grounding card, task specification, independent expected targets, and reference outcome. These are manually authored tests, not automated campaign results.
+The reviewed result is **57 full tests: 10 originals, 32 resolution variants, and 15 additional ambiguity-location variants**. Every case has a concrete seed, prompt, grounding card, task specification, independent expected targets, and reference outcome. These are manually authored tests, not automated campaign results.
 
-| Resolution mode | Originals | New variants | Total |
-|---|---:|---:|---:|
-| Single | 2 | 8 | 10 |
-| Multiple | 4 | 6 | 10 |
-| Absent | 2 | 9 | 11 |
-| Underspecified | 2 | 9 | 11 |
-| **Total** | **10** | **32** | **42** |
+| Resolution mode | Originals | Resolution variants | Location additions | Total |
+|---|---:|---:|---:|---:|
+| Single | 2 | 8 | 0 | 10 |
+| Multiple | 4 | 6 | 0 | 10 |
+| Absent | 2 | 9 | 0 | 11 |
+| Underspecified | 2 | 9 | 15 | 26 |
+| **Total** | **10** | **32** | **15** | **57** |
 
-W01 has two absence mechanisms. W02 has two ambiguity mechanisms. Each other family adds its three missing modes. W01/W05/W06/W10 single variants intentionally retain plural wording when the fixture contains exactly one qualifying target, following the agreed W01 convention. This is an instance-cardinality distinction; no coverage-catalog policy is changed here.
+The initial resolution pass gave W01 two absence mechanisms and W02 two ambiguity mechanisms; each other family added its three missing modes. The later location pass adds the contrasts documented in [story3.md](story3.md), bringing the underspecified total to 26. W01/W05/W06/W10 single variants intentionally retain plural wording when the fixture contains exactly one qualifying target, following the agreed W01 convention. This is an instance-cardinality distinction; no coverage-catalog policy is changed here.
 
 ## Executable test index
 
-`base` denotes the corresponding original story. Links open complete JSON tests.
+`base` denotes the corresponding original story. The table below indexes the original 42 cases; [the additional contrast index](story3.md#contrast-index) links all 15 additions and their existing comparison cases. Links open complete JSON tests.
 
 | Family | Single | Multiple | Absent | Underspecified |
 |---|---|---|---|---|
@@ -52,8 +52,8 @@ No remaining semantic validity defect was identified in this review. These are c
 
 ## Native verification and corrections
 
-- **42/42** pass seed/schema/foreign-key, selector, card, task-link and independent expected-set checks: [checks.json](checks.json), [independent audit](audit_suite.py).
-- **42/42** load into isolated PostgreSQL schemas and pass native Slack read/visibility checks: [read_checks.json](read_checks.json). Reads leave state unchanged. Required W09/W10 probes additionally verify the workspace and role answer fields.
+- **57/57** pass seed/schema/foreign-key, selector, card, task-link and independent expected-set checks: [checks.json](checks.json), [independent audit](audit_suite.py).
+- **57/57** load into isolated PostgreSQL schemas and pass native Slack read/visibility checks: [read_checks.json](read_checks.json). Reads leave state unchanged. Required W09/W10 probes additionally verify the workspace and role answer fields. The location pass checks the 15 additions and retains hash-matching native results for the unchanged 42 fixtures.
 - **16/16** resolved state-changing cases successfully execute the requested native operations and produce exactly the intended net changes: [write_checks.json](write_checks.json). Checks cover all changed tables, exact targets/text/thread parents, recipient-specific DMs, and absence of unrelated changes. These are reference-operation smoke tests with known targets, not solver runs.
 - Absent and underspecified mutations are not executed by the reference checks. Their expected behavior is acknowledgment/clarification without making an unsupported selection. Read-only cases remain read-only. Assessing a solver's actual response still requires the existing evaluator and recorded execution.
 
@@ -61,4 +61,17 @@ The write test discovered `cant_kick_from_general` for W07. The user explicitly 
 
 Two verification-harness issues were corrected without weakening a case: profile-probe paths must be arrays rather than dotted strings; and write-check middleware must commit the scoped transaction, matching the real runtime boundary. The initial uncommitted-session diagnostic is retained in [write_checks_initial_uncommitted_sessions.json](write_checks_initial_uncommitted_sessions.json). Final checks refer to the final case hashes in [manifest.json](manifest.json).
 
-All temporary native schemas were cleaned up. **No solver/evaluator experiments or paid model calls were made. No commits were made.** Platform HTTP authentication and the solver sandbox were not exercised by these in-process checks.
+All temporary native schemas were cleaned up. **No solver/evaluator experiments or paid model calls were made.** Platform HTTP authentication and the solver sandbox were not exercised by these in-process checks.
+
+## Ambiguity-location review
+
+The 15 additions are written in [story3.md](story3.md); all earlier 42 executable fixtures are unchanged. Every new case has two concrete competing target sets. [The independent location audit](audit_locations.py) derives each set from its corresponding choice in the seed, without reading the authored selector or expected sets. The general audit compares the result with the card and selector checks. All matching roots appear in the story tables; no legitimate alternative is left labeled as a negative.
+
+- **W04 Reaction:** one release-date announcement has two reaction emojis. One selects M8, the other M2. The source announcement is not a rollout checklist and is not an action target. Its real source fields and identifying path appear in the card. The finite executable selector uses the two source emoji values; the independent audit derives those values from the source and resolves each alternative separately. This adds an auxiliary source reference, explicitly documented rather than presented as a pure one-field edit.
+- **W07 removal channel:** Jordan Lee, the source message and its channel are fixed. Lee has distinct memberships in two team-coordination channels. The removal-channel identifying path is a side branch directly from Membership; the test does not move ambiguity to the announcement channel. The private outcome specifies no arbitrary fixed removal destination.
+- **W03 quantifiers:** the definite announcement variant and existential-announcement/target-channel variant have the same environment and candidate targets but different request meanings. Their comparison concerns wording as well as the locus of selection.
+- **Collections:** W06's channel alternatives are `{M1, M2}` versus `{M4}`. W10 retains `{Alice, Ben}` versus `{Elena}` across its three locations. These remain competing collections, never permission to combine all members.
+- **W08 Reaction:** the two alternatives are different actor-owned reactions on the same message. Different final reaction records make the choice consequential even though the message stays fixed. W08's channel variant uses author membership, not message containment; its two messages remain in #general.
+- **No forced symmetry:** W01 has two natural locations, W05 one, and W09 two. The other seven families have three. Extra locations requiring unrelated criteria or unsupported profile semantics were not introduced merely to equalize counts.
+
+Native checks establish usable fixtures and visible evidence, not solver accuracy or empirical difficulty. New absent/underspecified writes are not executed as reference operations; clarification or acknowledgment is expected before any unsupported target selection. No additional model runs or commits accompanied this location pass.

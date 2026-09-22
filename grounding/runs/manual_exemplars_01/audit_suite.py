@@ -12,6 +12,8 @@ import json
 import re
 from pathlib import Path
 
+from audit_locations import alternatives as location_alternatives
+
 
 ROOTS = {
     'W01': 'messages', 'W02': 'users', 'W03': 'channels', 'W04': 'messages',
@@ -45,6 +47,9 @@ def first_name(user, name):
 
 def recompute(case):
     """Return independently matched native root handles, without the selector."""
+    groups = location_alternatives(case)
+    if groups is not None:
+        return list({freeze(h): h for group in groups for h in group}.values())
     family = case['private']['base_story']
     seed, prompt = case['seed'], case['prompt']
     users = {row['user_id']: row for row in seed['users']}
@@ -152,7 +157,22 @@ def audit(case) -> list[str]:
             errors.append('Underspecified candidate sets must be nonempty and distinct')
         if set().union(*sets) != actual:
             errors.append('Underspecified alternatives do not cover the eligible roots')
-        if family == 'W01':
+        groups = location_alternatives(case)
+        if groups is not None:
+            independently_grouped = {frozenset(freeze(h) for h in group) for group in groups}
+            if set(sets) != independently_grouped:
+                errors.append('Location alternatives disagree with independently resolved choices')
+            if len(groups) != 2 or len(independently_grouped) != 2:
+                errors.append('Location contrast must have two distinct consequential choices')
+        if case['case_id'] == 'W04-underspecified-reaction':
+            anchors = [m['message_id'] for m in seed['messages']
+                       if 'release date announcement:' in normalized(m['message_text'])]
+            source_emojis = {r['reaction_type'] for r in seed['message_reactions']
+                             if r['message_id'] in anchors}
+            supplied = private['materialized_selection_inputs']
+            if supplied['source_message'] not in anchors or set(supplied['values']) != source_emojis:
+                errors.append('Materialized emoji inputs disagree with their source announcement')
+        if family == 'W01' and groups is None:
             # Priya's plural messages form one collection per possible identity.
             users = {u['user_id']: u for u in seed['users']}
             independently_grouped = {
@@ -163,7 +183,7 @@ def audit(case) -> list[str]:
                 errors.append('W01 alternatives do not correspond to the two Priya identities')
             if case['cards'][0]['Referent set']['selection'] != 'set(messages)':
                 errors.append('W01 ambiguity concerns a message collection, not one(message)')
-        if family == 'W10':
+        if family == 'W10' and groups is None:
             users = {u['user_id']: u for u in seed['users']}
             messages = {m['message_id']: m for m in seed['messages']}
             independently_grouped = set()

@@ -16,10 +16,22 @@ sys.path.insert(0, str(HERE.parents[2]))
 from grounding.integrations.agentdiff.native_compile_check import check
 
 
-def run(database_url):
+def run(database_url, case_ids=None):
     manifest = json.loads((HERE / 'manifest.json').read_text())
     results = []
+    current = {item['case_id']: item for item in manifest['cases']}
+    if case_ids:
+        unknown = set(case_ids) - current.keys()
+        if unknown:
+            raise ValueError(f'Unknown case IDs: {sorted(unknown)}')
+        saved = HERE / 'read_checks.json'
+        if saved.exists():
+            results = [r for r in json.loads(saved.read_text())['results']
+                       if r['case_id'] not in case_ids and r['case_id'] in current
+                       and r.get('case_sha256') == current[r['case_id']]['sha256']]
     for item in manifest['cases']:
+        if case_ids and item['case_id'] not in case_ids:
+            continue
         path = HERE / item['path']
         case = json.loads(path.read_text())
         with tempfile.TemporaryDirectory(prefix='manual-slack-read-') as tmp:
@@ -39,6 +51,7 @@ def run(database_url):
                     for p in probes if p['probe'].get('checks')]
             results.append(result)
         print(case['case_id'], result['status'], 'visible=' + str(result.get('mechanical_visibility_established')), flush=True)
+    results.sort(key=lambda r: r['case_id'])
     passed = sum(r['status'] == 'passed' and r.get('mechanical_visibility_established') for r in results)
     report = {'total': len(results), 'passed': passed, 'model_calls': 0,
               'scope': 'Actual isolated PostgreSQL loading and native Slack read/visibility checks. Includes required profile answer-field checks for W09/W10. No solver or platform HTTP authentication.',
@@ -51,5 +64,6 @@ def run(database_url):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--database-url', default='postgresql://postgres@127.0.0.1:15432/agentdiff_campaign')
+    parser.add_argument('--cases', nargs='+', help='Check these fixtures, retaining hash-matching saved results for others.')
     args = parser.parse_args()
-    raise SystemExit(0 if run(args.database_url) else 1)
+    raise SystemExit(0 if run(args.database_url, args.cases) else 1)
