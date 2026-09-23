@@ -18,7 +18,7 @@ T1-5 find the audit message and Diaz thumbsup; T6 fails to kick from team-hub; T
 
 **Grounding failures:**
 
-- Removes Diaz from #random although the removal channel is an unresolved side branch; no authority prefers random over the team-hub reading.
+- Removes Diaz from #random, which is outside both intended alternatives (#team-hub and #team-lounge memberships); the removal channel was an unresolved side branch.
 
 **Downstream failures:**
 

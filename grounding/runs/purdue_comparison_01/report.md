@@ -52,7 +52,7 @@ This table counts cases with **any remaining failure**.
 
 **Single and multiple.** Qwen's only single-case failure is [W08-base](case_reviews/W08-base.md), the same relationship-substitution trap that caught both Claude models; unlike them it never even fetched membership. It passed every other determined case, including [W06-single](case_reviews/W06-single.md) (where Sonnet invented a Dana message) and [W07-single](case_reviews/W07-single.md) (where Haiku invented its target), and all ten multiple cases, including [W08-multiple](case_reviews/W08-multiple.md) where it correctly followed membership to Kevin — the same route it skipped in W08-base.
 
-**Absent.** Qwen correctly established absence five times and failed five: [W02-absent](case_reviews/W02-absent.md) (dropped `#finance` for operations Imani, as Haiku did), [W03-absent](case_reviews/W03-absent.md) (bound Rivera-thumbsup with Morgan-tada on delivery), [W04-base](case_reviews/W04-base.md) (bound Farah authorship with Ethan's rocket), [W08-absent](case_reviews/W08-absent.md) (M3 location substitution), and [W09-base](case_reviews/W09-base.md) (answered Dana after finding no bot, as Sonnet did). Its absent failures are binding conflations on real evidence, never inventions.
+**Absent.** Qwen correctly established absence six times and failed five: [W02-absent](case_reviews/W02-absent.md) (dropped `#finance` for operations Imani, as Haiku did), [W03-absent](case_reviews/W03-absent.md) (bound Rivera-thumbsup with Morgan-tada on delivery), [W04-base](case_reviews/W04-base.md) (bound Farah authorship with Ethan's rocket), [W08-absent](case_reviews/W08-absent.md) (M3 location substitution), and [W09-base](case_reviews/W09-base.md) (answered Dana after finding no bot, as Sonnet did). Its absent failures are binding conflations on real evidence, never inventions.
 
 **Underspecified.** Qwen passed one of 26: [W09-underspecified](case_reviews/W09-underspecified.md), where it reported both bot workspaces without selecting — the case both Claude models failed. Everywhere else it selected first-found targets, combined alternatives ([W01-underspecified](case_reviews/W01-underspecified.md), [W02-underspecified-reactor](case_reviews/W02-underspecified-reactor.md), [W06-underspecified-author](case_reviews/W06-underspecified-author.md)), or merged interpretations ([W10-underspecified-message](case_reviews/W10-underspecified-message.md) reports the explicitly forbidden union).
 
@@ -69,7 +69,7 @@ All three models fail on the same 28 cases and pass on the same 18. The remainin
 
 ## Where ambiguity occurs
 
-Position is measured along the reference chain starting at the target entity. Qwen's single underspecified pass is a User-terminal case; it failed every other group, matching Haiku's near-universal failure and Sonnet's except for Sonnet's two contrasting passes.
+Position is measured along the reference chain starting at the target entity. Qwen's single underspecified pass is a User-intermediate case; it failed every other group, matching Haiku's near-universal failure and Sonnet's except for Sonnet's two contrasting passes.
 
 | Ambiguity position | Cases | Sonnet grounding failures | Haiku grounding failures | Qwen grounding failures |
 |---|---:|---:|---:|---:|
@@ -102,7 +102,7 @@ By entity type, Qwen failed 9/9 Channel, 8/8 Message, 6/7 User, and 2/2 Reaction
 | Failed calls | 0 |
 | Estimated inference cost | **$0.00** (no per-token charge) |
 
-Failed infrastructure attempts (54 first-attempt rate limits, one server-connection error) are retained and excluded from the scored totals above. [Pricing evidence](settings_sources.md) and [cost calculations](costs.json) preserve the basis.
+Failed infrastructure attempts (55 first-attempt rate limits, one server-connection error) are retained and excluded from the scored totals above. [Pricing evidence](settings_sources.md) and [cost calculations](costs.json) preserve the basis.
 
 ## Scope of the findings
 
