@@ -1,0 +1,1 @@
+Posted "Please complete the compliance training module by Friday." to two onboarding channels with exactly six members: onboarding-fall and onboarding-spring.

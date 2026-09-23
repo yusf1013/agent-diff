@@ -1,0 +1,1 @@
+Posted "Please send feedback by Friday." in the #planning-sync channel (C_PLANNING), which contains the budget-approved message that Alex Rivera reacted to with 🎉.

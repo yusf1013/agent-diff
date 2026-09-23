@@ -1,0 +1,1 @@
+Successfully posted "Please send feedback by Friday." to the #delivery-updates channel (C_DELIVERY), which contains the budget-approved message ("Budget approved for the regional training workshop") where Alex Rivera reacted and a 🎉 reaction was present.

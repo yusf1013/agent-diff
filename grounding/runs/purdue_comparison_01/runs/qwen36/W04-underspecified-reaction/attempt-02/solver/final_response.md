@@ -1,0 +1,1 @@
+Replied to the rollout-checklist message (permissions update) in #release-updates with "Please confirm the final go-ahead timing." This message had been reacted to by U_FARAH, a member of #beta-testers, using the "rocket" emoji — which matches one of the emojis used on the release-date announcement.
