@@ -48,8 +48,11 @@ class _Block:
             setattr(self, key, value)
 
     def model_dump(self, mode: str = "json", **kwargs: Any) -> dict[str, Any]:
+        # Evidence serialization: thinking blocks keep their text here. The
+        # conversation path (_content_to_text) excludes non-text blocks by
+        # type, so this does not change what is sent on later turns.
         data = {"type": self.type}
-        if self.type == "text":
+        if self.type in ("text", "thinking"):
             data["text"] = self.text
         for key in ("thinking", "signature", "reasoning"):
             if hasattr(self, key):
@@ -74,6 +77,7 @@ class _Message:
             "model": self.model,
             "stop_reason": self.stop_reason,
             "content": [b.model_dump(mode=mode) for b in self.content],
+            "raw": self.raw,
         }
 
 
@@ -86,10 +90,15 @@ def _content_to_text(content: Any) -> str:
         parts = []
         for block in content:
             if isinstance(block, Mapping):
-                if block.get("type") == "text":
+                block_type = block.get("type")
+                if block_type is not None and block_type != "text":
+                    continue
+                if block_type == "text":
                     parts.append(block.get("text", ""))
                 elif "text" in block:
                     parts.append(str(block["text"]))
+            elif getattr(block, "type", "text") != "text":
+                continue
             elif hasattr(block, "text"):
                 parts.append(getattr(block, "text") or "")
             else:
