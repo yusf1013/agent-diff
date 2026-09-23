@@ -23,6 +23,8 @@ import httpx
 
 from bedrock_llm.usage import TokenUsage, UsageTracker
 
+from grounding.solver.slack.purdue_rate_limit import acquire_purdue_slot
+
 logger = logging.getLogger(__name__)
 
 DEFAULT_BASE_URL = "https://genai.rcac.purdue.edu/api/chat/completions"
@@ -204,6 +206,7 @@ class PurdueClient:
             try:
                 logger.info("Calling %s on Purdue GenAI (attempt %s/%s, max_tokens=%s)",
                             self.model_id, attempt, self.max_attempts, effective_max)
+                await acquire_purdue_slot()
                 response = await self._client.post(self.base_url, headers=headers, json=body)
                 try:
                     response.raise_for_status()

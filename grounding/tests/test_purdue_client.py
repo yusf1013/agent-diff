@@ -52,5 +52,24 @@ class SerializationTests(unittest.TestCase):
         self.assertEqual(out[0]["role"], "system")
 
 
+class LimiterTests(unittest.TestCase):
+    def test_shared_window_across_calls(self):
+        with tempfile.TemporaryDirectory() as d:
+            path = str(Path(d) / "rl.json")
+            with mock.patch.dict(os.environ, {"PURDUE_RATE_LIMIT_FILE": path,
+                                              "PURDUE_RATE_LIMIT_PER_MINUTE": "2",
+                                              "PURDUE_RATE_LIMIT_DISABLE": "0"}):
+                async def two():
+                    await rl.acquire_purdue_slot()
+                    await rl.acquire_purdue_slot()
+                    return rl.read_state_for_tests(Path(path))
+                stamps = asyncio.run(two())
+                self.assertEqual(len(stamps), 2)
+
+    def test_bypass_flag(self):
+        with mock.patch.dict(os.environ, {"PURDUE_RATE_LIMIT_DISABLE": "1"}):
+            asyncio.run(rl.acquire_purdue_slot())
+
+
 if __name__ == "__main__":
     unittest.main()
