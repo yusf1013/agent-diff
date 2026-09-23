@@ -41,7 +41,7 @@ def _purdue_save_model_request(llm, messages, prompt, options, path):
     """Save the logical OpenAI-style request actually sent to Purdue."""
     body = {"model": llm.model_id,
             "messages": llm._openai_messages(messages, prompt),
-            "max_tokens": max(options["max_tokens"], llm.max_output_tokens or options["max_tokens"]),
+            "max_tokens": min(options["max_tokens"], llm.max_output_tokens or options["max_tokens"]),
             "stream": False}
     request = deepcopy(body)
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -77,7 +77,8 @@ def summarize(folder):
             r = read(record_path)
             s.update(usage=r.get('usage', {}), cost_usd=r.get('cost_usd', 0),
                      turns=len(r.get('steps', [])), termination=r.get('termination'))
-            s['thinking_tokens'] = 0
+            s['thinking_tokens'] = None
+            s['thinking_tokens_note'] = 'unavailable: provider does not report thinking-token counts'
         s['evidence'] = str(p.parent.relative_to(folder))
         records.append(s)
     models = {}
@@ -85,7 +86,8 @@ def summarize(folder):
         rows = [r for r in records if r['model_alias'] == alias]
         tokens = {k: sum(r.get('usage', {}).get(k, 0) for r in rows) for k in config['rates']}
         models[alias] = {'attempts': len(rows), 'completed': sum(r['status'] == 'completed' for r in rows),
-                         'tokens': tokens, 'thinking_tokens': 0,
+                         'tokens': tokens, 'thinking_tokens': None,
+                         'thinking_tokens_note': 'unavailable: provider does not report thinking-token counts',
                          'estimated_cost_usd': 0.0,
                          'cost_source': COST_SOURCE}
     runtime.write(folder / 'usage_summary.json', {'models': models, 'attempts': records})
@@ -179,7 +181,7 @@ async def run(args):
             'prompt_caching': 'none on Purdue GenAI Studio; same prompt bytes, no cache markers',
             'warmup': 'first pending real case per model completes before remaining cases of that model launch',
             'qwen_settings': 'Provider defaults; no thinking/temperature overrides; 16384 max output tokens per call within 65536 deployed context',
-            'retries': 'transport retry behavior mirrored from baseline client (3 attempts, backoff); episode infrastructure retries explicit and separately retained; no correctness retries',
+            'retries': 'up to 6 attempts per call with exponential backoff (longer waits for rate-limit/transient-server 400s); shared cross-process rate limiter (60/min) acquired before every HTTP attempt including retries; episode infrastructure retries explicit and separately retained; no correctness retries',
             'manual_evaluation': 'Review all trajectories, final responses and unfiltered net diffs; no paid oracle or assertion scores',
             'solver_context_excludes': ['cards', 'selectors', 'private reference outcomes', 'story tables', 'manual judgments'],
             'fairness': 'Same official_prompt bytes, same XML action/done parsing (first action block per turn), same sandbox image, same environment lifecycle as manual_comparison_01; only model endpoint differs'})

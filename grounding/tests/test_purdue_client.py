@@ -71,5 +71,71 @@ class LimiterTests(unittest.TestCase):
             asyncio.run(rl.acquire_purdue_slot())
 
 
+class LimitTests(unittest.TestCase):
+    def _posted_max_tokens(self, call_value, client_cap):
+        import httpx
+        seen = {}
+
+        async def fake_post(url, headers=None, json=None):
+            seen.update(json)
+            req = httpx.Request("POST", str(url))
+            return httpx.Response(200, json={
+                "id": "r", "model": "m",
+                "choices": [{"message": {"content": "<done>x</done>"},
+                             "finish_reason": "stop"}],
+                "usage": {"prompt_tokens": 1, "completion_tokens": 1}},
+                request=req)
+
+        async def run():
+            client = pc.PurdueClient(model_id="m", api_key="test",
+                                     max_output_tokens=client_cap)
+            client._client.post = fake_post
+            try:
+                await client.create([{"role": "user", "content": "hi"}],
+                                    max_tokens=call_value)
+            finally:
+                await client.close()
+        asyncio.run(run())
+        return seen["max_tokens"]
+
+    def test_client_cap_takes_precedence(self):
+        self.assertEqual(self._posted_max_tokens(16384, 8192), 8192)
+        self.assertEqual(self._posted_max_tokens(4096, 8192), 4096)
+        self.assertEqual(self._posted_max_tokens(16384, None), 16384)
+
+    def test_retryable_transient_400s(self):
+        import httpx
+        client = pc.PurdueClient.__new__(pc.PurdueClient)
+        for body in ("Rate limit exceeded", "Open WebUI: Server Connection Error",
+                     "model overloaded, try again"):
+            req = httpx.Request("POST", "https://x")
+            resp = httpx.Response(400, text=body, request=req)
+            self.assertTrue(client._is_retryable(
+                httpx.HTTPStatusError("e", request=req, response=resp)), body)
+        req = httpx.Request("POST", "https://x")
+        resp = httpx.Response(400, text="invalid max_tokens", request=req)
+        self.assertFalse(client._is_retryable(
+            httpx.HTTPStatusError("e", request=req, response=resp)))
+
+
+class LimiterTests(unittest.TestCase):
+    def test_shared_window_across_calls(self):
+        with tempfile.TemporaryDirectory() as d:
+            path = str(Path(d) / "rl.json")
+            with mock.patch.dict(os.environ, {"PURDUE_RATE_LIMIT_FILE": path,
+                                              "PURDUE_RATE_LIMIT_PER_MINUTE": "2",
+                                              "PURDUE_RATE_LIMIT_DISABLE": "0"}):
+                async def two():
+                    await rl.acquire_purdue_slot()
+                    await rl.acquire_purdue_slot()
+                    return rl.read_state_for_tests(Path(path))
+                stamps = asyncio.run(two())
+                self.assertEqual(len(stamps), 2)
+
+    def test_bypass_flag(self):
+        with mock.patch.dict(os.environ, {"PURDUE_RATE_LIMIT_DISABLE": "1"}):
+            asyncio.run(rl.acquire_purdue_slot())
+
+
 if __name__ == "__main__":
     unittest.main()

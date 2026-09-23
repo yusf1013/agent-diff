@@ -192,7 +192,12 @@ class PurdueClient:
             raise TypeError(f"Pass {sorted(forbidden)} via named create() arguments")
         request_options.pop("thinking", None)
         request_options.pop("temperature", None)
-        effective_max = max(max_tokens, self.max_output_tokens or max_tokens)
+        # Precedence: the per-call value applies, capped by the client-level
+        # cap when one is set. (Previously this took the larger of the two,
+        # which silently ignored the cap; no historical run set a client cap,
+        # so recorded runs are unaffected.)
+        cap = self.max_output_tokens
+        effective_max = min(max_tokens, cap) if cap else max_tokens
         body: dict[str, Any] = {
             "model": self.model_id,
             "messages": self._openai_messages(messages, system),

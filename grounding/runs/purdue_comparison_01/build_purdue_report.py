@@ -103,7 +103,9 @@ def main():
   reqs += u.get('successful_requests',0)
   retries += u.get('retry_attempts',0)
  costs={'qwen36':{'attempts':57,'completed':57,'tokens':tokens,
-   'thinking_tokens':0,'estimated_cost_usd':0.0,
+   'thinking_tokens':None,
+   'thinking_tokens_note':'unavailable: provider does not report thinking-token counts; historical costs.json records 0, see LIMITATIONS.md',
+   'estimated_cost_usd':0.0,
    'cost_source':'Purdue GenAI Studio has no per-token charge to this account; tokens are provider-reported, cost is recorded as 0 (not an invoice)',
    'total_prompt_tokens':tokens['input_tokens'],'cache_read_fraction':0.0,
    'same_tokens_without_cache_usd':0.0,'estimated_savings_usd':0.0,'estimated_savings_fraction':0.0,
