@@ -1,0 +1,1 @@
+Removed my "fire" reaction from the message in the product-launch channel (which is about launch readiness) written by U_ELENA.

@@ -1,0 +1,1 @@
+The bot in #incident-response is WatcherBot (U_WATCHER). Its profile shows the workspace/team as **T_ATLAS** (Atlas), as indicated by both the team_id "T_ATLAS" and the profile.team field "T_ATLAS" (also consistent with its email domain atlas.example).

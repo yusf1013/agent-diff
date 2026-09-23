@@ -823,7 +823,8 @@ async def run_prepared(case, prepared, out, database_url=None,
                        model="us.anthropic.claude-sonnet-5", validate_installed: Callable | None = None,
                        *, environment_out=None, evaluation_inputs=None,
                        max_output_tokens=128000, thinking_budget=None, rates=None,
-                       record_requests=False):
+                       record_requests=False, prompt_caching_label="explicit_5m",
+                       cost_source_label="baseline runner estimate; not provider-billed dollars"):
     """Run the original episode using the private prepared template, then cleanup.
 
     validate_installed is an optional synchronous callback(case, initial_state).
@@ -910,9 +911,9 @@ async def run_prepared(case, prepared, out, database_url=None,
               "temperature": options.get("temperature", "provider_default"),
               "thinking": options.get("thinking", "provider_default"),
               "record_requests": record_requests, "effort": "provider_default",
-              "prompt_caching": "explicit_5m", "native_assertions": False,
+              "prompt_caching": prompt_caching_label, "native_assertions": False,
               "case_sha256": prepared["case_sha256"],
-              "cost_source": "baseline runner estimate; not provider-billed dollars",
+              "cost_source": cost_source_label,
               "rates_usd_per_million": baseline.RATES}
     write(out / "config.json", config)
     row = {"test_id": case["case_id"], "test_name": case.get("name", case["case_id"]),

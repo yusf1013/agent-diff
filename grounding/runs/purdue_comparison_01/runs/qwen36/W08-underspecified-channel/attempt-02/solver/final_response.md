@@ -1,0 +1,1 @@
+Successfully removed the 🔥 reaction from the message written by U_ELENA in the product-launch channel (about launch readiness plan).
