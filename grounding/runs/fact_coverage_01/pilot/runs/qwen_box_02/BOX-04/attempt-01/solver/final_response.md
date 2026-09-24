@@ -1,0 +1,1 @@
+Successfully added the "Brand guidelines" folder (ID 4030, owned by Maya Chen) to the "Marketing hub" (ID 5004). This hub was created by Leo Park and already included the "Marketing" folder, which contains the "Launch assets" folder.

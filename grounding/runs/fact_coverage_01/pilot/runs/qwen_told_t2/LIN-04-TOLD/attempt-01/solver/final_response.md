@@ -1,0 +1,1 @@
+Removed the blocking relation between ENG-7 ("Upgrade auth library") and ENG-9 ("Run database migration for the v2 schema"). The relation (id: r-1, type: "blocks") has been deleted and verified — ENG-7 no longer has any issue relations.

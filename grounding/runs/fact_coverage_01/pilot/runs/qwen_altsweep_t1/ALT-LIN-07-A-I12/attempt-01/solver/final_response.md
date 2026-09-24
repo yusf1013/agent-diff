@@ -1,0 +1,1 @@
+There isn't a doc that Maya Chen created for the Growth initiative. The only document Maya Chen has is "Referral launch plan," and it's not linked to the Growth initiative (or any team). No documents are currently associated with the Growth initiative at all.

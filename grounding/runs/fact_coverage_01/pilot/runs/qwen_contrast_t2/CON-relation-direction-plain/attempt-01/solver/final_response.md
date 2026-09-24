@@ -1,0 +1,1 @@
+There isn't a blocking relation between ENG-7 ("Upgrade auth library") and the database migration issue (ENG-9, "Run database migration for the v2 schema"). ENG-7 has no relations at all, and ENG-9's only blocking relation is with ENG-8 ("Refactor session store"). Nothing to remove.

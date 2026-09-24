@@ -1,0 +1,1 @@
+I checked Thursday's (June 21) design reviews on your calendar. There is one — "Design review: Billing" at 12:00 PM — but **Priya Nair is the organizer of that event**, not an attendee who declined it. The person who declined was **Omar Haddad**. There is no design review on Thursday that Priya Nair declined, so no change was made.

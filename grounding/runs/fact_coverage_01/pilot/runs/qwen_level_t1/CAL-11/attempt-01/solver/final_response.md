@@ -1,0 +1,1 @@
+Updated the location of this week's moved Design sync (Wednesday, June 20 at 10:00 AM) from Room 2A to Room 4C. Only that specific instance was changed, leaving other occurrences of the recurring Design sync unaffected.

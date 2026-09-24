@@ -1,0 +1,1 @@
+The Design sync that was moved from Tuesday (June 19) to Wednesday (June 20) has been updated. I found the specific recurring event instance (ID: ev_ds_20180619T100000Z, original start: Tuesday June 19) and changed its location from "Room 2A" to "Room 4C". The API response confirms the location is now "Room 4C".

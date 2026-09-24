@@ -1,0 +1,1 @@
+There isn't a review task on the Acme vendor contract that's assigned to Omar Haddad. The only task on the file ("Review liability caps," created by Dana Whitfield) is a review task that hasn't been completed, but it's assigned to **Sam Rivera** — Omar Haddad was the one who assigned it to Sam, not the assignee. So I wasn't able to update the due date.

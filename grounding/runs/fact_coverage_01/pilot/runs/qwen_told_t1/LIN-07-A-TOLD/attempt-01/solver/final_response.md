@@ -1,0 +1,1 @@
+I checked the Linear workspace and there is no doc (or any other document-type item) that Maya Chen created for the Growth initiative. In fact, the workspace currently has no issues at all. Linear also doesn't have a "document" entity — it manages teams, issues, labels, workflow states, and comments. So there's nothing to rename.

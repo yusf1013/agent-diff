@@ -1,0 +1,1 @@
+Successfully made Omar Haddad an optional attendee on the all-day "Offsite" event (June 29) organized by Maya Chen. The update was applied and confirmed — his attendee record now shows `"optional": true`.

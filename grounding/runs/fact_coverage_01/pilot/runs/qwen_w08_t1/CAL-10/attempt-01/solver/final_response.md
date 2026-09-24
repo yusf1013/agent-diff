@@ -1,0 +1,1 @@
+Successfully moved the "Quarterly planning" event on Kenji Sato's calendar (APAC team, `apac@northwind.example`) from 3:00–4:00 PM to 4:00–5:00 PM on Friday, June 22, 2018. The event retains its original 1-hour duration.

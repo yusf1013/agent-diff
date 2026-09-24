@@ -1,0 +1,1 @@
+Successfully deleted Leo Park's comment (id: c-1) from issue ENG-42 "Release 2.3 checklist". The comment "Please update the release notes before Friday." has been removed. Only Sam Rivera's comment remains on the issue.

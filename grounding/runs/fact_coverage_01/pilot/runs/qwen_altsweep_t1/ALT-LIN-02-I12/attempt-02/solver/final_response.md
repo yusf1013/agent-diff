@@ -1,0 +1,1 @@
+There is no comment from Leo Park on ENG-42 ("Release 2.3 checklist"). The only comment on that issue is from Sam Rivera, which says "Can we postpone the release to next week?" — but it's not from Leo Park, so there's nothing to delete.

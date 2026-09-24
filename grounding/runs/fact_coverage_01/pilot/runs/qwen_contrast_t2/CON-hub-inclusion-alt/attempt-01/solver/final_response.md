@@ -1,0 +1,1 @@
+There isn't a hub created by Leo Park that already includes a "Launch assets" folder. The only hub he created is the **"Marketing hub"** (ID 5004), and its only item is the **Marketing** folder (ID 4000). Since the required precondition (a hub containing "Launch assets") isn't met, I did not add the Brand guidelines folder (ID 4030, owned by Maya Chen).

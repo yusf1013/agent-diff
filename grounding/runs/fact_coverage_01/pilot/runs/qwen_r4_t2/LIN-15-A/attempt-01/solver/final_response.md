@@ -1,0 +1,1 @@
+Successfully set the priority to High (3) on the issue "Archive old landing pages" (ID: i-w4), which is assigned to Maya Chen, a member of the Design team. The API confirmed the update was successful with priority now set to 3.0.

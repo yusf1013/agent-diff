@@ -1,0 +1,1 @@
+Successfully removed the blocking relation on ENG-7. The relation "r-1" (ENG-7 → blocks → ENG-9 "Run database migration for the v2 schema") has been deleted. The API confirmed the deletion with `success: true`.

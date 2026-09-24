@@ -1,0 +1,1 @@
+There is no Checkout project issue with a GitHub pull request that Leo Park attached. The only GitHub PR attachment in the workspace is "PR #483: Retry saved cards" (https://github.com/northwind/web/pull/483), which is attached to the issue "Saved cards not loading" (WEB-4) in the Checkout project, but it was attached by **Sam Rivera**, not Leo Park.

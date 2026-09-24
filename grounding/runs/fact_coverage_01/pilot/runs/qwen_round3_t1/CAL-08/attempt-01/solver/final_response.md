@@ -1,0 +1,1 @@
+The dentist appointment has been successfully deleted from your primary calendar. The event was scheduled for June 21 (Thursday) at 9:00 AM – 10:00 AM. It appears you may have thought it was on Wednesday, but it was the only dentist appointment on your calendar for that week.

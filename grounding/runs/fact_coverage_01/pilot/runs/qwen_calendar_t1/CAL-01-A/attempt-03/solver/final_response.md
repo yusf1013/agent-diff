@@ -1,0 +1,1 @@
+Successfully moved the "Design review: Billing" event (Thursday, June 21, 12:00–12:30 PM) to Room 5B. This was the design review where Priya Nair declined — she was the organizer/creator but not attending as a participant, unlike the other two Thursday design reviews where she was listed as "accepted" or "tentative."

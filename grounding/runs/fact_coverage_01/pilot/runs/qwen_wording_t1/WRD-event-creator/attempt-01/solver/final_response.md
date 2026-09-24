@@ -1,0 +1,1 @@
+Found the all-day "Offsite" event on June 29, 2018, organized by Maya Chen (created by Sam Rivera). Successfully made Omar Haddad an optional attendee by setting his status to "tentative" and his `optional` flag to `true`.

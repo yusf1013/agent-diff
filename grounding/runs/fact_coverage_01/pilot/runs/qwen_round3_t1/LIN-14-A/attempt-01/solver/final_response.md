@@ -1,0 +1,1 @@
+Set the priority to Urgent (4.0) on the issue about certificate expiry (PLT-1: "Certificate expiry alerts for the edge proxy"). Note: The Infra team did not have a certificate expiry issue - the closest match was this Platform team issue related to the edge proxy. The priority was successfully updated to Urgent.

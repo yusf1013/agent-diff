@@ -1,0 +1,1 @@
+I couldn't find a design review on Thursday that Priya Nair declined. The only design review on Thursday (June 21) is "Design review: Billing" — but Priya Nair is the **organizer** of that event, not a declining attendee. The person who declined it was **Omar Haddad**. So there's no matching event to move to Room 5B.

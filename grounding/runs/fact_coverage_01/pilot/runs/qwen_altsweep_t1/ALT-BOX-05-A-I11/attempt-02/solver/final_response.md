@@ -1,0 +1,1 @@
+The shared link has been successfully removed from **Pack summary.xlsx** — the one locked spreadsheet found in your Favorites collection (inside the "Budget pack" folder). It was the only matching file.

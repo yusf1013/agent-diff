@@ -1,0 +1,1 @@
+There is no legal-tagged contract that matches all your criteria. The closest candidate is **"Globex contract.pdf"** (id 8002), which has the "legal" tag, is on version 4, and was last modified on September 10, 2026. However, its latest version was uploaded by **Dana Whitfield**, not Leo Park. Leo Park created the file originally, but did not upload the latest version.

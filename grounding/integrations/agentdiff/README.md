@@ -4,6 +4,10 @@ These adapters belong to the grounding project. AgentDiff itself remains in `bac
 
 `smoke_runtime.py` supplies the native-case Box/Calendar/Linear Qwen lifecycle. Its fixed-seed scope, setup commands, evidence, and limitations are documented in the [solver handoff](../../solver/README.md). It shares the Purdue client and request limiter with Slack.
 
+`custom_runtime.py` extends the smoke lifecycle to a case's own Box/Calendar/Linear seed: it installs the seed with
+the backend seed script's functions, records read probes and the installed state, and runs the unchanged episode loop
+(used by `grounding/runs/fact_coverage_01`). It creates and removes only its own UUID-named templates.
+
 `runtime.py` installs an isolated generated seed, exports its actual state, exercises documented reads, checks selector-relevant visibility, runs our solver through AgentDiff, captures the final snapshot and native diff, assembles evaluator inputs, and cleans up the isolated template/environment. Its `prepare`, `run`, and `cleanup` CLI subcommands expose those operations.
 
 `native_compile_check.py` is a smaller in-process load/read smoke check against the real PostgreSQL schema and Slack handlers. It uses no LLM, HTTP server, or sandbox. It does not certify requested writes or platform authentication. Its summary separates successful loading/reads from selector visibility certification; the integrated batch requires certified visibility before running the solver.

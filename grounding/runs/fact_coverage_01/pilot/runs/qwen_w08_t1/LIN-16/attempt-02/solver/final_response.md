@@ -1,0 +1,1 @@
+Successfully set the priority to Urgent on the bug in Maya Chen's project. The issue "Coupon code rejected at checkout" (WEB-1) in the "Checkout Redesign" project (led by Maya Chen), which is labeled as a Bug, now has its priority set to Urgent (4).

@@ -1,0 +1,1 @@
+There isn't a meeting organized by Priya Nair on Thursday. The only event she organized in that range is **"Budget check-in"**, which falls on **Wednesday, June 20** (11:00–11:30 AM PT). The Thursday events in your calendars were organized by other people (Dana Whitfield and Omar Haddad).

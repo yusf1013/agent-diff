@@ -1,0 +1,1 @@
+Successfully removed my 🔥 (fire) reaction from the message by U_ELENA in the "product-launch" channel (the channel about launch readiness, with topic "Launch readiness plan"). The message was "The vendor review is at 2pm on Thursday in the Maple room." and the reaction removal was confirmed with ok: true.

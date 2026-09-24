@@ -1,0 +1,1 @@
+There isn't a spreadsheet in the Finance Reports folder that Priya Nair commented on about travel costs. The only spreadsheet in that folder is "Events budget.xlsx", and its sole comment about travel costs ("Travel costs are over plan for the offsite.") was made by Omar Haddad, not Priya Nair. No rename was performed.

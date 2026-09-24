@@ -1,0 +1,1 @@
+Done! I added the **Brand guidelines** folder (owned by Maya Chen) to the **Marketing hub** created by Leo Park. The hub already contained the Marketing folder (which includes the Launch assets folder), and now it also includes the Brand guidelines folder.

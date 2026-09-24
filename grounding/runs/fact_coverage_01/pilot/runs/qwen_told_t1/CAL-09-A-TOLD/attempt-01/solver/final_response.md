@@ -1,0 +1,1 @@
+There is no meeting on Thursday (June 21, 2018) organized by Priya Nair. The only event that day is "Hiring sync" (2:00–2:30 PM), which is organized by Dana Whitfield — Priya Nair is just an attendee of that event.

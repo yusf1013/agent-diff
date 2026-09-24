@@ -1,0 +1,1 @@
+I couldn't find a hub created by Leo Park that lists the "Launch assets" folder directly as one of its items. The only hub Leo Park created is "Marketing hub" (ID 5004), and it contains the parent "Marketing" folder (ID 4000), not the "Launch assets" subfolder itself. Since no matching hub exists, I did not proceed with adding the Brand guidelines folder.

@@ -1,0 +1,1 @@
+There is no PDF that Maya Chen **owns** directly in the Finance Reports folder (outside its subfolders). The only PDF in that folder is "Q3 expense summary.pdf," which was created by Maya Chen and last modified by Leo Park, but it is **owned by Dana Whitfield** — not Maya Chen. Since the ownership criterion isn't met, no tag was added.

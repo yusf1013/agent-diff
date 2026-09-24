@@ -1,0 +1,3 @@
+No folder matching all of your criteria exists under Projects. The closest candidate is **"Atlas team"** (ID 7003) — it was created by Sam Rivera, is client-tagged, sits directly under Projects, and contains the PDF **Migration plan.pdf** owned by Maya Chen. However, its description reads **"Borealis migration notes"**, not "Atlas rollout." The only other folder under Projects is "Archive" (created by Jordan Lee, no description, no contents), which clearly isn't the one.
+
+In other words, the folder whose description says it's for the **Atlas rollout** doesn't exist in this workspace, so I can't add the `atlas-q3` tag to it. If you'd like me to add the tag to "Atlas team" instead (or create the folder you were expecting), just let me know.

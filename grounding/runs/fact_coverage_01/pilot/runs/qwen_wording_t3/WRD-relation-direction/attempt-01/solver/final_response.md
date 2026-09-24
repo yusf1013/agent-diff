@@ -1,0 +1,1 @@
+Found and removed the blocking relation between ENG-7 ("Upgrade auth library") and ENG-9 ("Run database migration for the v2 schema"). The relation ID was `r-1` and it was of type "blocks". The deletion was successful.

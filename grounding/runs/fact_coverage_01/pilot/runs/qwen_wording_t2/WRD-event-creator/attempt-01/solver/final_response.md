@@ -1,0 +1,1 @@
+Successfully made Omar Haddad an optional attendee on the all-day "Offsite" event on June 29, 2018 (organized by Maya Chen). The event ID is `ev_off_org`, and his attendee status now shows `"optional": true`.

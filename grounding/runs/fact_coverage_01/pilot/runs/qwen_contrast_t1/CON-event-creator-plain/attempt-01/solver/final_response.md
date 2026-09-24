@@ -1,0 +1,1 @@
+There is no all-day offsite created by Maya Chen for June 29. The only offsite event on that date was created by Sam Rivera. So there's nothing to update — Omar Haddad is already an attendee on Sam's offsite, but that's not the event you asked about.

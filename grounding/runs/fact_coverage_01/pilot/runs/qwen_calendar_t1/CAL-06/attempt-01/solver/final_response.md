@@ -1,0 +1,1 @@
+Successfully made Omar Haddad (omar.haddad@northwind.example) an optional attendee on the all-day "Team offsite" event (June 29, 2018) that Maya Chen created. The event ID is "ev_off" and the PATCH request updated the attendees list to include Omar Haddad.

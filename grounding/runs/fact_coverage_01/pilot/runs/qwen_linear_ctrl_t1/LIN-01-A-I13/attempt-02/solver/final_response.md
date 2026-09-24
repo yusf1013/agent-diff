@@ -1,0 +1,1 @@
+Successfully moved the Mobile team's high-priority issue MOB-5 "Cache images for offline mode" (assigned to Priya Nair) from "Todo" to "In Review" using the issueUpdate mutation. The API confirmed the update was successful with the new state set to "In Review".

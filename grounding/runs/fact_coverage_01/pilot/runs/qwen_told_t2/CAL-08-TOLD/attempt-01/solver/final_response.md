@@ -1,0 +1,1 @@
+There is no dentist appointment on Wednesday (June 20). However, I found a **Dentist** appointment on **Thursday, June 21 at 9:00–10:00 AM** (Pacific). If you meant the Thursday appointment and would like me to delete that one instead, just let me know!

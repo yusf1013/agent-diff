@@ -1,0 +1,1 @@
+There is no hub created by Leo Park that already includes a "Launch assets" folder. The only hub Leo Park has created is "Marketing hub," and it currently contains just one item ("Q4 campaign"). Since the specified hub doesn't exist, I did not perform the addition.

@@ -1,0 +1,1 @@
+There isn't a hub created by Leo Park that already includes the "Launch assets" folder. The only hub he created is the **"Marketing hub"** (id: 5004), and its current items contain only the **"Q4 campaign"** folder. So the condition for the task isn't met — no action was taken.

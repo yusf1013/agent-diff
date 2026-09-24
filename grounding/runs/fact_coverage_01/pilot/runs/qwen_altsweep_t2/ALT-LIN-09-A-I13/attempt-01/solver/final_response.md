@@ -1,0 +1,1 @@
+There is no Checkout project issue that has a GitHub pull request attached by Leo Park. The only GitHub PR in the Checkout project is "PR #483: Retry saved cards" on the issue "Saved cards not loading" (i-4), but that PR was attached by **Sam Rivera**, not Leo Park. No assignment was made.

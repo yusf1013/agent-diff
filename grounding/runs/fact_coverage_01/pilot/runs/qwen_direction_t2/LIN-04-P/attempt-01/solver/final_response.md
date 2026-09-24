@@ -1,0 +1,1 @@
+Successfully removed the blocking relation from issue ENG-7 ("Upgrade auth library"). The relation (id: r-1) that linked it to the database migration issue (ENG-9 "Run database migration for the v2 schema") has been deleted.

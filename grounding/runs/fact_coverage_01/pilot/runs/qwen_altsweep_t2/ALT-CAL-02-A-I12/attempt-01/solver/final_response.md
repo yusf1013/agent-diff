@@ -1,0 +1,1 @@
+There is no weekly "Platform sync" event organized by Omar Haddad on your calendar. Your primary calendar (jordan.lee@northwind.example) is completely empty — it contains no events at all, and it's the only calendar in your calendar list. There's nothing to cancel.

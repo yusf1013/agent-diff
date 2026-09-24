@@ -1,0 +1,1 @@
+I checked the locked spreadsheets in your Favorites collection. There's one locked spreadsheet — **"Travel spend.xlsx"** — and it doesn't have a shared link. (The other spreadsheet, "Office spend.xlsx", does have a shared link, but it's not locked.) So there were no shared links to remove.

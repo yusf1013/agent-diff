@@ -1,0 +1,1 @@
+There isn't a document in the Growth initiative that was created by Maya Chen. The only doc under the Growth initiative is "Growth metrics," which was created by **Sam Rivera**. Maya Chen has created two other docs — "Referral launch plan" (no initiative) and "Retention ideas" (Retention initiative) — but neither is tied to the Growth initiative. No rename was performed.

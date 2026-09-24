@@ -1,0 +1,1 @@
+There isn't a high-priority bug assigned to Priya Nair in the Mobile team. The Mobile team currently only has 2 issues, both assigned to Leo Park ("Push notifications arrive twice" and "Offline mode epic"), and neither is assigned to Priya Nair.

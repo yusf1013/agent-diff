@@ -1,0 +1,1 @@
+The Platform team (PLT) has no cycles configured, so there is no "current cycle" or "next cycle" to move issues between. In Linear, cycles are optional and this team doesn't use them. There's nothing to move — you'd need to first set up cycles for the Platform team before issues can be organized into cycles.

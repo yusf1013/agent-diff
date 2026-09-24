@@ -1,0 +1,1 @@
+The Platform team has cycles enabled, but there is no current (active) cycle and no other cycles at all. Because there is no next cycle to move issues into, no action was taken. You may want to create or schedule a cycle for the Platform team first before running this migration.

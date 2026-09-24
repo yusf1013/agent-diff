@@ -1,0 +1,1 @@
+Omar Haddad has been made an optional attendee on the "Offsite" event (June 29, all-day, organized by Maya Chen). The event was updated successfully with Omar's `optional` flag set to `true`, and external attendees were notified of the change.

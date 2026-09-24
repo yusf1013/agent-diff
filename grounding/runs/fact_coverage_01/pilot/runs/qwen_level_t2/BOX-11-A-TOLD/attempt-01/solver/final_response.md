@@ -1,0 +1,1 @@
+There is no comment that Omar Haddad replied to on the Acme vendor contract. Omar Haddad's only comment ("Clause 12 sets a 90-day notice period.") is an original comment, not a reply. It's Priya Nair who made a reply ("Thanks Omar, that settles it."), not Omar. So there's nothing to delete.

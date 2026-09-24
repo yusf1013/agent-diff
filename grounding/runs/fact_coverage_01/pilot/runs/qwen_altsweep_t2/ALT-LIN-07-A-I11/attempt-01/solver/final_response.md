@@ -1,0 +1,1 @@
+There isn't a document created by Maya Chen for the Growth initiative. The only document in the workspace is "Growth metrics," which was created by Sam Rivera. So there's nothing to rename to "Growth Q4 plan."

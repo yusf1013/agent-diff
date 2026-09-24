@@ -1,0 +1,1 @@
+Updated the location of this week's Design sync event (moved from Tuesday June 19 to Wednesday June 20, 10:00 AM) from "Room 2A" to "Room 4C". The event ID is `ev_ds_20180619T100000Z` and the change was confirmed in the API response.

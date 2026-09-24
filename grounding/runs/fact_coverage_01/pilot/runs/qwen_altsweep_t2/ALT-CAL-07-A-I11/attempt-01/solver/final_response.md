@@ -1,0 +1,1 @@
+There isn't a Tokyo-time calendar belonging to Kenji Sato with the all-hands on June 21. The only Tokyo-time calendar with an all-hands on June 21 is the "Tokyo office" calendar (tokyo-office@northwind.example), but its data owner is Aiko Mori (aiko.mori@northwind.example), not Kenji Sato. So I did not make any changes.

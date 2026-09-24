@@ -1,0 +1,1 @@
+Found the folder "Atlas launch" (ID 7002) directly under Projects. It was owned by Sam Rivera, had the "client" tag, a description of "Atlas rollout workspace," and contained "Rollout plan.pdf" owned by Maya Chen. I successfully added the tag "atlas-q3" to it. The folder now has tags: ["client", "atlas-q3"].

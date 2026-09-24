@@ -1,0 +1,1 @@
+Successfully removed dana.whitfield@northwind.example's write access to the Marketing calendar (marketing@northwind.example). The ACL rule (acl_1) granting them a "writer" role was deleted, and verification confirms the rule is no longer present in the calendar's access control list.

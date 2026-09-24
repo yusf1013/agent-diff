@@ -1,0 +1,1 @@
+There is no comment by Leo Park on ENG-42 asking to postpone the release. Leo Park's only comment on that issue says "Please update the release notes before Friday." The comment about postponing the release ("Can we postpone the release to next week?") was left by **Sam Rivera**, not Leo Park. No action was taken.

@@ -1,0 +1,1 @@
+There is no blocking relation between ENG-7 and the database migration issue (ENG-9). ENG-7 currently has no relations at all, and ENG-9 only has a "blocks" relation pointing to ENG-8, not ENG-7. Nothing to remove.

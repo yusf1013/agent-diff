@@ -1,0 +1,1 @@
+There is no open issue assigned to a member of the Design team. The Design team has two members — Maya Chen and Mia Wong — and the only issue assigned to either of them is WEB-3 (assigned to Maya Chen), which is already in the "Done" state. No action was taken.

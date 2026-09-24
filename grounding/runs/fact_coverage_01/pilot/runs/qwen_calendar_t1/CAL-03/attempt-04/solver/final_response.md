@@ -1,0 +1,1 @@
+Successfully removed dana.whitfield@northwind.example's write access to the Marketing calendar (marketing@northwind.example). The user-level ACL rule (acl_1) has been explicitly set to the "reader" role, which overrides any domain-level writer access from the northwind.example domain rule. Dana now has read-only access to the Marketing calendar.

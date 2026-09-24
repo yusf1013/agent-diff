@@ -1,0 +1,1 @@
+I couldn't find any design review event (or any events at all) on Thursday, June 14, 2018, on your calendar. Since you only have one calendar (your primary), there's no design review that Priya Nair declined to move to Room 5B. It's possible the event was already deleted, was on a different date, or was on a calendar you're no longer subscribed to.

@@ -1,0 +1,3 @@
+I was unable to complete the task because the specified comment does not exist. After searching all comments on issue ENG-42 ("Release 2.3 checklist") and across the entire workspace, the only comment present is from **Sam Rivera** (not Leo Park), which reads: *"Can we postpone the release to next week?"* (comment id: c-2, created 2026-06-01). 
+
+Leo Park (leo.park@northwind.example) is a valid user in the workspace, but has not left any comment on ENG-42 or any other issue. No comment matching the description "Leo Park asking to postpone the release on ENG-42" exists to delete. If you'd like, I can delete Sam Rivera's comment instead — just confirm.

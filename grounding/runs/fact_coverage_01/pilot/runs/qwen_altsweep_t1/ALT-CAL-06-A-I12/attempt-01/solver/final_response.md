@@ -1,0 +1,1 @@
+Done! I found the all-day "Offsite" event on June 29, organized by Maya Chen, and updated Omar Haddad's attendee status to **optional**. The change was applied successfully (sequence bumped to 1) and attendees were notified.

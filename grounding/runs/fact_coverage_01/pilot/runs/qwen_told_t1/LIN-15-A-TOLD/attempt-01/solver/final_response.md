@@ -1,0 +1,1 @@
+There is no open issue assigned to a member of the Design team. Maya Chen has one issue (WEB-3: "Archive old landing pages") but it's in "Done" state, and Mia Wong has no issues assigned to her. No priority update was needed.

@@ -1,0 +1,1 @@
+Successfully set the priority to High on the open issue assigned to a Design team member. The issue **WEB-1** ("Update the pricing page illustrations"), assigned to **Mia Wong** (Design team member) in the **Todo** state, now has priority set to **High** (priority: 2).

@@ -1,0 +1,1 @@
+There isn't an all-day offsite event created by Maya Chen for June 29. The only offsite-related event on that date is "Team offsite planning," which is a regular timed event from 9:00 AM to 5:00 PM (not all-day). No changes were made.

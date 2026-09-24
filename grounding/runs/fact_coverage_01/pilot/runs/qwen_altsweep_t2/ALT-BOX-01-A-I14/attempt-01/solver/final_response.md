@@ -1,0 +1,1 @@
+There is no PDF in the Finance Reports folder that meets all your criteria. The only PDF directly in that folder is "Q3 payroll summary.pdf" (ID 1005), and while Maya Chen does own it, it was last modified by Maya Chen — not Leo Park. Leo Park is the one who *created* the file, but Maya Chen is listed as the last modifier.

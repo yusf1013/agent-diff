@@ -1,0 +1,1 @@
+Found one locked spreadsheet in your Favorites collection: **"Pack summary.xlsx"** (inside the "Budget pack" folder). It had a shared link (`https://app.box.com/s/6003`). I've successfully removed the shared link from that file.

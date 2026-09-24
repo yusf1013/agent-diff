@@ -1,0 +1,1 @@
+There is no hub created by Leo Park that already lists a "Launch assets" folder as one of its items. The only hub Leo Park created is **"Marketing hub"** (ID: 5004), and its sole listed item is a folder called **"Marketing"** (ID: 4000). Since the condition isn't met, no folder was added.

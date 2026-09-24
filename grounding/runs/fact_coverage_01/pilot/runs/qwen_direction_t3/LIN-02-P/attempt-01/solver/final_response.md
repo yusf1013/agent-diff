@@ -1,0 +1,1 @@
+Successfully deleted the comment (id: c-5) that Leo Park left on ENG-42 asking to postpone the release. The comment body was "Can we postpone the release until the migration lands?" and the API confirmed the deletion was successful.

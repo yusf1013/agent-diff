@@ -1,0 +1,1 @@
+Successfully deleted comment 3301 ("Is the renewal notice 60 or 90 days?" by Priya Nair) from the Acme vendor contract.pdf. This was the original comment that Omar Haddad replied to with "It's 90 days, see clause 12." The file now has 3 remaining comments.

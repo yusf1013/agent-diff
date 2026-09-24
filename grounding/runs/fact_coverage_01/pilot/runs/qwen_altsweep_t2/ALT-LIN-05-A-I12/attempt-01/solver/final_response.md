@@ -1,0 +1,1 @@
+The Platform team has cycles enabled, but there is no active (current) cycle right now. `activeCycle` returns null, so there are no issues sitting in a "current cycle" to move. Without a current cycle, there's also no "next cycle" to move issues into. No action was taken.
