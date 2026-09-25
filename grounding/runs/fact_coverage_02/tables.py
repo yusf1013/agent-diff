@@ -76,6 +76,9 @@ def new_facts():
     out.append(row("**all controls**", controls))
     out.append(row("**all probes**", probes))
     out.append(row("**controls + probes**", controls + probes))
+    t1 = load(["method_new", "method_new_lin25", "method_new_slk21"], only=["t1"])
+    out.append(row("all controls, trial 1", [t for t in t1 if t["form"] == "cover control"]))
+    out.append(row("all probes, trial 1", [t for t in t1 if t["form"] in ("probe", "packed plain")]))
     only_c, only_p = facts(controls) - facts(probes), facts(probes) - facts(controls)
     out += ["", f"Found only by a control: {mark(only_c, facts(controls, True))}. "
                 f"Found only by probes: {mark(only_p, facts(probes, True))}.", ""]
@@ -84,7 +87,7 @@ def new_facts():
 
 def families(tests, title):
     out = [f"## Yield by family: {title}", "",
-           "| Family | Probes | Exposing | Share | Distinct facts |", "|---|---:|---:|---:|---:|"]
+           "| Family | Probes | Exposing | Share | Distinct facts | Found by no other family |", "|---|---:|---:|---:|---:|---|"]
     fam = defaultdict(list)
     for t in tests:
         if t["form"] == "probe":
@@ -92,7 +95,10 @@ def families(tests, title):
     for f in sorted(fam):
         ts = fam[f]
         n = sum(1 for t in ts if t["failures"])
-        out.append(f"| {f} | {len(ts)} | {n} | {n / len(ts):.0%} | {len(facts(ts))} |")
+        others = facts([t for g, us in fam.items() if g != f for t in us])
+        unique = sorted(facts(ts) - others)
+        out.append(f"| {f} | {len(ts)} | {n} | {n / len(ts):.0%} | {len(facts(ts))} | "
+                   f"{len(unique)}: {', '.join(f'`{u}`' for u in unique)} |")
     return out + [""]
 
 
@@ -133,15 +139,59 @@ def panel(tests):
     return out + [""]
 
 
-def usage(runs):
-    out = ["## Usage", "", "| Run | Tests | Requests | Input tokens | Output tokens |", "|---|---:|---:|---:|---:|"]
-    for r in runs:
-        ts = load([r])
-        if not ts:
-            continue
-        out.append(f"| {r} | {len(ts)} | {sum(t['requests'] for t in ts):,} | "
-                   f"{sum(t['tokens']['input'] for t in ts):,} | {sum(t['tokens']['output'] for t in ts):,} |")
+def bug_list(tests, manual):
+    """One row per distinct fact: the tests exposing it (failing trials / established trials) and a reviewed note."""
+    by_fact = defaultdict(list)
+    for t in tests:
+        for f in t["exposed"]:
+            if not f.startswith("policy:"):
+                by_fact[f].append(t)
+    out = ["## Distinct facts exposed", "",
+           "| Fact | Domain | Pilot bug | Tests (failing/established trials) | One reviewed trial |", "|---|---|---|---|---|"]
+    for f in sorted(by_fact, key=lambda x: (by_fact[x][0]["domain"], x)):
+        ts = by_fact[f]
+        cells = ", ".join(f"{t['case_id']} ({'' if t['run'] == 'b1' else t['family'] or t['form'] or ''}"
+                          f"{', B1' if t['run'] == 'b1' else ''}) {t['failures']}/{t['established']}" for t in ts)
+        note = ""
+        for t in ts:
+            for trial, r in sorted(t["trials"].items()):
+                label = manual.get(f"{t['run']}/{trial}/{t['case_id']}")
+                if label and f in label.get("exposed", []) and label.get("note"):
+                    note = f"{t['run']}/{trial}/{t['case_id']}: {label['note']}"
+                    break
+            if note:
+                break
+        pilot = str(PILOT_BUGS.index(f) + 1) if f in PILOT_BUGS else ""
+        out.append(f"| `{f}` | {ts[0]['domain']} | {pilot} | {cells} | {note.replace('|', '/')} |")
     return out + [""]
+
+
+def usage(runs):
+    """Every attempt of every trial, including retries and superseded first versions (provider-reported)."""
+    out = ["## Usage (all attempts)", "",
+           "| Run | Case ids | Attempts | Requests | Input tokens | Output tokens | Cache tokens |",
+           "|---|---:|---:|---:|---:|---:|---:|"]
+    total = defaultdict(int)
+    for r in runs:
+        cases, row = set(), defaultdict(int)
+        for path in sorted((RUNS / r).glob("t*/*/attempt-*/execution_summary.json")):
+            s = json.loads(path.read_text())
+            u = s.get("usage") or {}
+            cases.add(s["case_id"])
+            row["attempts"] += 1
+            row["requests"] += u.get("total_requests", 0)
+            row["input"] += u.get("input_tokens", 0)
+            row["output"] += u.get("output_tokens", 0)
+            row["cache"] += u.get("cache_creation_input_tokens", 0) + u.get("cache_read_input_tokens", 0)
+        if not row["attempts"]:
+            continue
+        for k, v in row.items():
+            total[k] += v
+        out.append(f"| {r} | {len(cases)} | {row['attempts']} | {row['requests']:,} | {row['input']:,} | "
+                   f"{row['output']:,} | {row['cache']:,} |")
+    out.append(f"| **total** | | {total['attempts']} | {total['requests']:,} | {total['input']:,} | "
+               f"{total['output']:,} | {total['cache']:,} |")
+    return out + ["", "Exploration runs (`smoke_slack`) and no-model preflights (`prepare_*`) are not counted."]
 
 
 def main():
@@ -149,7 +199,10 @@ def main():
     lines += families(new, "new facts")
     pilot_lines, pilot = pilot_facts()
     lines += pilot_lines + families([t for t in pilot if t["run"] == "method_pilot"], "pilot facts")
+    lines += families([t for t in new + pilot if t["run"] != "b1"], "both suites")
     lines += panel(new + pilot)
+    manual = json.loads((HERE / "manual_labels.json").read_text())
+    lines += bug_list([t for t in new + pilot if t["form"] != "policy panel"], manual)
     lines += usage(["b1", "method_new", "method_new_lin25", "method_new_slk21", "method_pilot", "method_pilot_panel"])
     print("\n".join(lines))
 

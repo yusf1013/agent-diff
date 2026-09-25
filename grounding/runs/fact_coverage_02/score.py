@@ -35,7 +35,8 @@ def attempted(case, attempt, reference):
     if not records:
         return []
     steps = json.loads(records[0].read_text()).get("steps", [])
-    writes = [str(s.get("action")) for s in steps if WRITES[case["domain"]].search(str(s.get("action") or ""))]
+    writes = [str(s.get("action")).replace("%40", "@") for s in steps  # ids may be URL-encoded in paths
+              if WRITES[case["domain"]].search(str(s.get("action") or ""))]
     query = reference["query"]
     table, key = query["table"], query.get("key", ["id"])
     rows = {str(r.get(key[0])): r for r in case["seed"].get(table, [])} if len(key) == 1 else {}
@@ -135,7 +136,7 @@ def collect(runs, manual, only=None):
             usage = row.get("usage") or {}
             t = tests.setdefault((Path(run).name, row["case_id"]), {
                 "run": Path(run).name, "case_id": row["case_id"], "domain": case["domain"],
-                **{k: meta.get(row["case_id"], {}).get(k) for k in ("suite", "form", "scenario", "fact", "family")},
+                **{k: meta.get(row["case_id"], {}).get(k) for k in ("suite", "form", "scenario", "fact", "family", "note")},
                 "trials": {}, "tokens": {"input": 0, "output": 0}, "requests": 0})
             t["trials"][row["trial"]] = result
             t["tokens"]["input"] += usage.get("input_tokens", 0)
