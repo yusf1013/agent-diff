@@ -1,0 +1,1 @@
+There is no Web team issue about the login redirect created by Omar Haddad on September 10. The closest match is **WEB-3 – "Login redirect ignores locale"**, but it was created on **September 11, 2026**, not September 10. Since no issue matching your exact criteria exists, I did not make any assignment.

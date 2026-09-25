@@ -19,12 +19,17 @@ INTERPRETED = {  # interpreted references not declared as database foreign keys
     "calendar": [("calendar_events", "recurring_event_id", "calendar_events", "id")],
     "linear": [("issue_label_issue_association", "issue_id", "issues", "id"),
                ("issue_subscriber_user_association", "issue_id", "issues", "id")],
+    "slack": [("channel_members", "channel_id", "channels", "channel_id"), ("messages", "channel_id", "channels", "channel_id"),
+              ("messages", "parent_id", "messages", "message_id"), ("message_reactions", "message_id", "messages", "message_id"),
+              ("file_messages", "message_id", "messages", "message_id"), ("user_mentions", "message_id", "messages", "message_id")],
 }
+PRIMARY_KEYS = {"slack": {"teams": "team_id", "users": "user_id", "channels": "channel_id", "messages": "message_id",
+                          "files": "file_id", "file_messages": "file_message_id", "user_mentions": "mention_id"}}
 
 
 def foreign_keys(domain):
     if domain == "slack":
-        return []
+        return INTERPRETED["slack"]
     inv = json.loads((REPO_ROOT / f"grounding/domains/{domain}/source_inventory.json").read_text())
     out = []
     for t in inv["tables"]:
@@ -40,19 +45,21 @@ def foreign_keys(domain):
 def cascade_remove(seed, domain, table, ids):
     """Remove rows of `table` with ids in `ids` and, transitively, rows referencing them."""
     fks = foreign_keys(domain)
+    pk = PRIMARY_KEYS.get(domain, {})
     pending = [(table, set(map(str, ids)))]
     while pending:
         tbl, gone = pending.pop()
         if tbl not in seed:
             continue
-        seed[tbl] = [r for r in seed[tbl] if str(r.get("id")) not in gone]
+        seed[tbl] = [r for r in seed[tbl] if str(r.get(pk.get(tbl, "id"))) not in gone]
         for child, col, parent, pcol in fks:
             if parent != tbl or child not in seed:
                 continue
             dead = [r for r in seed[child] if str(r.get(col)) in gone]
             if dead:
-                if "id" in dead[0]:
-                    pending.append((child, {str(r["id"]) for r in dead}))
+                key = pk.get(child, "id")
+                if key in dead[0]:
+                    pending.append((child, {str(r[key]) for r in dead}))
                 else:
                     seed[child] = [r for r in seed[child] if str(r.get(col)) not in gone]
     return seed

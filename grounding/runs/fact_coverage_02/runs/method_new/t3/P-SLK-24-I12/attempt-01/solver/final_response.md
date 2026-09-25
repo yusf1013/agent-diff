@@ -1,0 +1,1 @@
+There is no private channel that both Priya Sharma and Leo Park are members of. The only private channel in the workspace is "budget-review," which includes Priya Sharma and **Leo Parker** (a different person), but not Leo Park.

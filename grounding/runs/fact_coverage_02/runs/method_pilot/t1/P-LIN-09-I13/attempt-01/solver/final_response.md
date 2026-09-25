@@ -1,0 +1,1 @@
+I checked both issues in the **Checkout** project — "Saved cards not loading" (WEB-4) and "Checkout performance epic" (WEB-5). Neither has any comments, descriptions, or linked GitHub pull requests, so **there is no Checkout project issue with a GitHub pull request attached by Leo Park**.

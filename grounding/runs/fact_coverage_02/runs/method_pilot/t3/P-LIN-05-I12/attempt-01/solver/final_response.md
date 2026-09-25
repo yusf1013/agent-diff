@@ -1,0 +1,1 @@
+There are no open issues in the Platform team's current cycle that need to be moved. In fact, the Platform team currently has no issues at all, and no active cycle is set up. So there's nothing to move.

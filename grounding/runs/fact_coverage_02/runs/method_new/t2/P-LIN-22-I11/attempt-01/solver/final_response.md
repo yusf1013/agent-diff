@@ -1,0 +1,1 @@
+There isn't a document in the **Checkout Redesign** project that was last edited by Leo Park. The only document in that project is "Checkout rollout," which was last edited by Sam Rivera. So I couldn't find a doc to rename to "Checkout QA plan."

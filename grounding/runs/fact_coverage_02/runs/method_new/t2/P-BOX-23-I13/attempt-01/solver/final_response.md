@@ -1,0 +1,1 @@
+I couldn't find a contract PDF that meets **all** the required criteria. The only PDF with "Initech renewal" in its description is **"Initech NDA.pdf"** (ID: 8104), which is 2.6 MB (larger than 2 MB ✓), but it only has **2 comments** — not the required at least 3. So the tag "renewal" was not added.

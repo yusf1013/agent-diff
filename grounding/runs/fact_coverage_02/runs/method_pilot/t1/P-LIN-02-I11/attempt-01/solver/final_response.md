@@ -1,0 +1,1 @@
+I checked the comments on **ENG-42** ("Release 2.3 checklist"). Leo Park did leave a comment on that issue, but it says *"Please update the release notes before Friday."* — it is **not** a comment asking to postpone the release. There is no such comment, so I did not delete anything.

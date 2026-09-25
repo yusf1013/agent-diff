@@ -1,0 +1,1 @@
+There are no open issues in the Platform team's current cycle (Cycle 14, Sept 14–27, 2026) that meet **all** of the criteria — estimated at 5 points or more **and** past their due date. The cycle only contains two open issues, both past due (Sept 15), but their estimates are 3 and 4 points, so neither qualifies for a move to the next cycle.

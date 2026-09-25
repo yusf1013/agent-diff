@@ -1,0 +1,1 @@
+There's no planning session on Thursday that ends at 5 PM with a Q4 roadmap reference. The only "Planning session" that day (with the description "Q4 roadmap follow-ups") runs from 5 PM to 6 PM, so it doesn't match your criteria. If you'd like, I can move that 5–6 PM session to Room 2B instead — just let me know.

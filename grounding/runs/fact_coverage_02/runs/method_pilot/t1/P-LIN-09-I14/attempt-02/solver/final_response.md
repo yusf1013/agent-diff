@@ -1,0 +1,1 @@
+There isn't a Checkout project issue with a GitHub pull request Leo Park attached. The only issue in the Checkout project is **"Checkout performance epic" (WEB-5)**, and it has no linked GitHub PR (no integration source, no synced external entities, and no comments referencing a PR). No reassignment was made.

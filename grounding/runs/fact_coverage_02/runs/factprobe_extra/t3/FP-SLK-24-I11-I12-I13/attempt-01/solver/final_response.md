@@ -1,0 +1,1 @@
+There is no private channel that both Priya Sharma and Leo Park are members of. Priya is in three private channels (budget-review, hr-partners, ops-leads), but Leo Park is not a member of any private channels, so no common private channel exists. The reminder message could not be posted.

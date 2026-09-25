@@ -1,0 +1,1 @@
+There is no issue about certificate expiry on the Infra team. The only issue on the Infra team is "Rotate the database credentials" (id: i-i1), which is unrelated to certificates. So I cannot set a priority on a non-existent issue.

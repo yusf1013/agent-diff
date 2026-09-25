@@ -1,0 +1,1 @@
+There are no issues to move. The Platform team's current cycle (Cycle 14, Sep 14–27, 2026) contains only one issue — "Add request tracing" — which is open and estimated at 5 points, but its due date is September 30, 2026, which is still in the future relative to today (September 23, 2026). Since it's not past its due date, it doesn't qualify for being moved to the next cycle.

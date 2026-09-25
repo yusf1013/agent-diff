@@ -1,0 +1,1 @@
+Successfully moved the Mobile team's high-priority bug "MOB-5: Cache images for offline mode" (assigned to Priya Nair) from "Todo" to "In Review". The update was confirmed by the API with a successful response showing the issue's state is now "In Review".

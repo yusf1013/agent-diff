@@ -1,0 +1,1 @@
+The Finance Reports folder is owned by Maya Chen, but the only PDF in it ("Q3 summary.pdf") was created by Dana Whitfield, not by Maya. There is no PDF in the Finance Reports folder that was created by the owner, so there is nothing to tag.

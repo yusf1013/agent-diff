@@ -1,0 +1,1 @@
+There isn't a weekly "Platform sync" event organized by Omar Haddad on your calendar. I searched your (only) calendar for "Platform sync," "Platform," "sync," and "Omar" and found no matching events. If you think the event exists under a slightly different name, let me know and I can search again.

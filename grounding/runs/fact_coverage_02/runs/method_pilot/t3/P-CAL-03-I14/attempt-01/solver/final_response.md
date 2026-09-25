@@ -1,0 +1,1 @@
+dana.whitfield@northwind.example does not have write access (or any access at all) to the Marketing calendar. The only user with write access is **dana.white@northwind.example** — a different email address. No action was taken. If you meant dana.white@northwind.example, let me know and I'll remove their access.

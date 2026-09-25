@@ -1,0 +1,1 @@
+The Platform team has no current (active) cycle. Even though cycles are enabled for the team, there is no active cycle at the moment, so there are no open issues in a current cycle that could be evaluated for the criteria (estimated ≥ 5 points and past due). Nothing to move.

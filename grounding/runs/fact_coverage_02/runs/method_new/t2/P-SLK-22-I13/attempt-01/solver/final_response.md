@@ -1,0 +1,1 @@
+I couldn't add the :eyes: reaction because **Diego Alvarez (U_DIEGO) has no reply in the checkout outage thread**. The thread in #incidents ("Checkout outage: 502s on /pay since 14:05 UTC." by Leo Park) contains only one reply — from **Omar Haddad** ("Payments dashboards look normal again."). There is no message from Diego Alvarez to add a reaction to.

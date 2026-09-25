@@ -1,0 +1,1 @@
+There is no Regression label in the Bug group. While a "Regression" label does exist in the workspace (id: lab-reg-top), it is not a child of the "Bug" group — its parent is null, meaning it's an independent/top-level label. The "Bug" label (id: lab-bug) is confirmed as a group (isGroup: true), but it does not contain a "Regression" child label. No changes were made to MOB-3.

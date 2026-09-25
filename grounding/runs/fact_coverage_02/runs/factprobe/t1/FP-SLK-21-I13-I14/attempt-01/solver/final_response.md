@@ -1,0 +1,9 @@
+I searched the entire workspace for rollback-related messages from Priya Sharma. **There is no message from Priya Sharma about a rollback in #deploys.** 
+
+Here's what I did find:
+- In **#deploys-staging**: "Rollback on staging went through cleanly." (by priya.sharma)
+- In **#general**: "FYI: the billing rollback is complete." (by priya.sharma)
+
+The **#deploys** channel itself only has a single message from a different user (Leo) about deploying web 4.12. Priya's rollback message was posted in **#deploys-staging**, not #deploys.
+
+If you'd like, I can add the :thumbsup: reaction to the message in **#deploys-staging** instead — just say the word.

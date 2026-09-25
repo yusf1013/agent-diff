@@ -1,0 +1,1 @@
+There are no shared links to remove. The only spreadsheet in your Favorites collection is **"Travel spend.xlsx"** — it is indeed locked, but it has **no shared link** set. The "Budget pack" folder in Favorites is also empty, so no other spreadsheets were found.

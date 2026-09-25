@@ -1,0 +1,1 @@
+Dana Whitfield (dana.whitfield@northwind.example) does **not** have write access to the Marketing calendar. Their current role is **"reader"** (read-only access). Since there is no writer-level permission to remove, no changes were made.

@@ -1,0 +1,1 @@
+There is no PDF directly in the Finance Reports folder (excluding subfolders). The folder only contains a subfolder called "Drafts" and a single file called "Board notes.docx" (a Word document). No PDF owned by Maya Chen (or anyone else) exists at the top level of that folder, so the tag "q3-close" was not applied.

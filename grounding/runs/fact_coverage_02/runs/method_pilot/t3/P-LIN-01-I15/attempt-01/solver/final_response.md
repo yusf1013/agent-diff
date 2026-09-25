@@ -1,0 +1,1 @@
+There is no high-priority bug in the Mobile team assigned to Priya Nair. The only issue assigned to Priya Nair is WEB-1 ("Checkout button unresponsive on Safari") in the Web team, not Mobile. So there's nothing to move to In Review.

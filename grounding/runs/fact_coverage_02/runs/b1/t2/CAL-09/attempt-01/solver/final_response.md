@@ -1,0 +1,1 @@
+Successfully moved the "Vendor onboarding" meeting organized by Priya Nair from 11:00 AM to 3:00 PM on Thursday, June 21, 2018, keeping its 1-hour duration (now 3:00 PM – 4:00 PM Pacific).

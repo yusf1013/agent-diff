@@ -1,0 +1,1 @@
+I couldn't find an all-day offsite event for June 29. The closest match is "Team offsite prep" (created by Maya Chen), but that's an all-day event on **June 28**, not June 29. There is no all-day offsite scheduled for June 29 itself, so I was unable to make Omar Haddad an optional attendee on it.

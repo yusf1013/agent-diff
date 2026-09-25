@@ -1,0 +1,1 @@
+I found and deleted your private focus-time block in the Library this Friday (June 22, 9:00–11:00 AM). It was the "Focus time" event set to private and transparent (showing you as free). The other Library focus-time events didn't match all your criteria (one was default-visibility, one was showing as busy).

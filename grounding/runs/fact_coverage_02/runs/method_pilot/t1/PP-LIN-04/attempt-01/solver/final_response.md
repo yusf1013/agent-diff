@@ -1,0 +1,1 @@
+There is no "blocked by" relation on ENG-7 to remove. ENG-7 ("Upgrade auth library") does have a relation with ENG-9 ("Run database migration for the v2 schema"), but it is of type **"related"**, not **"blocks"** or **"isBlockedBy"**. The only blocking relation involving ENG-9 is one where it **blocks ENG-8** ("Refactor session store"). So there's nothing to delete here.

@@ -1,0 +1,1 @@
+There isn't a Diego Alvarez reply in the #incidents thread about the checkout outage. That thread only contains Leo's original message ("Checkout outage: 502s on /pay since 14:05 UTC.") with no replies. Diego did reference the checkout outage, but in a separate thread about search latency, so there was nothing to react to there.

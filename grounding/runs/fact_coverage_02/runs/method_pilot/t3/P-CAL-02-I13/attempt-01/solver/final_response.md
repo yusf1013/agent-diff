@@ -1,0 +1,1 @@
+There is no weekly "Platform sync" event organized by Omar Haddad on your calendar. I searched for events matching "Platform sync," "Platform," "sync," and "Omar" across your only calendar (jordan.lee@northwind.example), and also listed every event for the entire month of June 2018 — the calendar is completely empty. There's nothing to cancel.

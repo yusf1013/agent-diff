@@ -1,0 +1,1 @@
+I searched your calendar (your only calendar, jordan.lee@northwind.example) for a "Platform sync" event organized by Omar Haddad, including broad searches for "Platform," "sync," and "Omar" across all of June 2018. There are no events on your calendar at all for that month. There is no Platform sync session to cancel — no such event exists on your calendar.

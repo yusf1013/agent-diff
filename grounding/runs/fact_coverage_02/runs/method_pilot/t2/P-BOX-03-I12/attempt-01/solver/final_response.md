@@ -1,0 +1,1 @@
+There isn't one. The only task on the "Acme vendor contract.pdf" (ID 3100) is a review task assigned to Omar Haddad that hasn't been completed yet, but it was **created by Sam Rivera**, not Dana Whitfield. Dana Whitfield was the one who *assigned* it to Omar, but Sam Rivera is the task's creator. Since no task on that file was created by Dana Whitfield, there's no task to update.

@@ -1,0 +1,1 @@
+There isn't a private focus-time block in the Library this Friday (June 22). The only focus-time event you have that day is "Deep work" at **Cafe** (4:30–5:30 PM), which is private and shows you as free — but it's not in the Library, so I left it alone. Nothing was deleted.

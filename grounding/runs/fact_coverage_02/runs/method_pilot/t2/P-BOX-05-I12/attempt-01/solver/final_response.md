@@ -1,0 +1,1 @@
+I checked your **Favorites** collection and found one locked spreadsheet: **"Travel spend.xlsx"** (it has an active lock). However, it does **not** have a shared link set, so there was nothing to remove. The only other item in Favorites is the folder "Budget pack," which is empty. In short — no locked spreadsheets in your Favorites have a shared link to remove.

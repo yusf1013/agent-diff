@@ -1,0 +1,1 @@
+The high-priority bug assigned to Priya Nair (WEB-1: "Checkout button unresponsive on Safari") has been moved to "In Review" state. Note: This issue was on the Web team (not Mobile), as it was the only high-priority bug assigned to Priya Nair in the workspace. The update was confirmed successful.

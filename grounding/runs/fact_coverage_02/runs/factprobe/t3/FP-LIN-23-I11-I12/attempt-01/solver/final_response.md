@@ -1,0 +1,1 @@
+Successfully reopened the comment thread on WEB-5 ("Flaky checkout test"). The comment **"Can we pin the browser version?"** by Maya Chen (comment ID: c-22) was resolved, and I used the `commentUnresolve` mutation to reopen it. Its `resolvedAt` is now `null`, confirming the thread is active again.

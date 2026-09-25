@@ -1,0 +1,1 @@
+There isn't a Kenji Sato Tokyo-time calendar in your calendar list. The only Tokyo-timezone calendar is **"Tokyo office"** (tokyo-office@northwind.example), which does have an "All-hands" event on June 21, but it's owned by **Aiko Mori** (aiko.mori@northwind.example), not Kenji Sato. Since no calendar owned by Kenji Sato matches the criteria, I did not make any changes.

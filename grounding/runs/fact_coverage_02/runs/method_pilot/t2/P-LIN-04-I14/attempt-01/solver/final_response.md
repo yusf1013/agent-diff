@@ -1,0 +1,1 @@
+ENG-7 ("Upgrade auth library") has no blocking relations — its relation list is empty. There is no relation to the database migration issue (ENG-9, "Run database migration for the v2 schema") or to any other issue, so there's nothing to remove.

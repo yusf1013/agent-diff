@@ -1,0 +1,1 @@
+There is no write access (or any access) for **dana.whitfield@northwind.example** on the Marketing calendar. The only Dana listed on the calendar's ACL is **dana.white@northwind.example** (note: "white" vs "whitfield"), who has writer access. If you meant dana.white@northwind.example, let me know and I can remove her access instead.

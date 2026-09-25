@@ -1,0 +1,1 @@
+There is no Web team issue that Dana Whitfield is subscribed to. The Web team has three issues ("Pagination skips a page," "Filters reset on back," and "Sort order ignored"), but the only subscribers are Leo Park and Sam Rivera. Since no matching issue exists, no priority change was made.

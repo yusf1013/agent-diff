@@ -1,0 +1,1 @@
+There isn't a high-priority bug assigned to Priya Nair in the Mobile team. Her only issue in that team is **MOB-5 – "Cache images for offline mode"**, which has **Medium** priority (not High) and carries no "bug" label. So there's nothing to move to In Review.

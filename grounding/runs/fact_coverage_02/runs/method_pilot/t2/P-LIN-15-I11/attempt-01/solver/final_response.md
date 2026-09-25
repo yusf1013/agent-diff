@@ -1,0 +1,1 @@
+There is no open issue assigned to a member of the Design team. The only issue in the system ("Refresh the icon set") is assigned to Leo Park, who is not a member of the Design team (its members are Maya Chen and Mia Wong). No priority update was made.

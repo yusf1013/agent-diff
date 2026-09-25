@@ -1,0 +1,1 @@
+There are no open issues in the Platform team's current cycle (Cycle 14, Sep 14 – Sep 27) that are estimated at 5 points or more and past their due date. In fact, there are no issues in Cycle 14 at all. The only Platform issue in the workspace is "Migrate cron jobs" (8 pts, due Sep 10), and it is already assigned to the next cycle (Cycle 15). Nothing needed to be moved.

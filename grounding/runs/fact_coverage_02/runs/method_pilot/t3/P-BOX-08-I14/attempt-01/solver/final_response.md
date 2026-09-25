@@ -1,0 +1,1 @@
+There isn't a file that meets all the criteria. The only file in the workspace is "Nonprofit pricing.xlsx," which has an open review task created by Dana Whitfield, due September 20, 2026 (before October 1, 2026). However, that task is assigned to only one person (Omar Haddad), not two or more. Therefore, no file qualifies for the "escalate" tag.

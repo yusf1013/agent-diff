@@ -1,0 +1,1 @@
+There is no ACL entry for dana.whitfield@northwind.example on the Marketing calendar (marketing@northwind.example). The only rule on that calendar's access control list is jordan.lee@northwind.example as owner, so there's no write access to remove.

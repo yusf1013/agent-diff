@@ -1,0 +1,1 @@
+There isn't a high-priority bug assigned to Priya Nair in the Mobile team. She has one high-priority issue (MOB-5: "Cache images for offline mode"), but it is not labeled as a bug — it has no labels at all. No action was taken.

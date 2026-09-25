@@ -1,0 +1,1 @@
+There isn't a private channel that both Priya Sharma and Leo Park share. The only private channel in the workspace is "hr-partners," and its members are Priya Sharma, Omar Haddad, and the bot — Leo Park is not a member. No message was posted.

@@ -1,0 +1,1 @@
+There is no spreadsheet in the **Finance Reports** folder. The folder contains only one file: **"Travel policy.docx"**, which is a Word document, not a spreadsheet. Since there is no spreadsheet to rename, no changes were made.

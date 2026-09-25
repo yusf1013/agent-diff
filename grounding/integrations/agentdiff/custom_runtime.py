@@ -59,6 +59,9 @@ def install_custom_template(service: str, seed_data: dict, engine, case_id: str)
         if referenced in order and referrer in order and order.index(referenced) > order.index(referrer):
             order.remove(referenced)
             order.insert(order.index(referrer), referenced)
+    # The loader's order omits the declared issue-subscriber association; load it after issue labels.
+    if service == "linear" and "issue_subscriber_user_association" not in order:
+        order.insert(order.index("issue_label_issue_association") + 1, "issue_subscriber_user_association")
     seed_module.TABLE_ORDER = order
     unknown = set(seed_data) - set(seed_module.TABLE_ORDER)
     if unknown:

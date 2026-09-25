@@ -1,0 +1,1 @@
+There is no issue about login redirect in the **Web** team created by Omar Haddad on September 10. The only matching issue — "Login redirect fails behind the proxy" (WBP-1) — belongs to the **Web Platform** team, not the Web team. No assignment was made since the task condition ("if there isn't one, just tell me") was met.

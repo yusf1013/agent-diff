@@ -1,0 +1,1 @@
+There isn't a Web team issue about the login redirect created by Omar Haddad on September 10. The only matching issue is **"Login redirect opens the browser"** (MOB-1), but it belongs to the **Mobile** team, not the Web team. No Web team issues were created by Omar Haddad at all.

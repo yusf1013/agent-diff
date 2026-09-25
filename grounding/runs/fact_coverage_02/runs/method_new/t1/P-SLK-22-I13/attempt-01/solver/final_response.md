@@ -1,0 +1,1 @@
+Diego Alvarez doesn't have a reply in the #incidents checkout outage thread. The thread (started by Leo Park: "Checkout outage: 502s on /pay since 14:05 UTC.") only has one reply, from Omar Haddad ("Payments dashboards look normal again."). Diego is a member of the channel but didn't participate in that thread, so there's nothing to react to.

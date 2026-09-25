@@ -1,0 +1,1 @@
+Successfully posted "Reminder: expense reports are due Friday" in the private channel "finance-leads" (C_FINLEADS), which is the private channel shared by both Priya Sharma (U_PRIYA) and Leo Park (U_LEO).

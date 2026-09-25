@@ -1,0 +1,1 @@
+There is no "Beta" milestone in the Checkout Redesign project. I searched all milestones across the entire workspace and the only one that exists is a "Beta" milestone in the **Growth Experiments** project (led by Sam Rivera), which is unrelated. Neither of the two "Checkout Redesign" projects in the workspace contains a "Beta" milestone, so there is nothing to update.

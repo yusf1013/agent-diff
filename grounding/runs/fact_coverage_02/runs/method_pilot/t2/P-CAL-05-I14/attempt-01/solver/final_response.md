@@ -1,0 +1,1 @@
+I checked your calendar for focus-time blocks this Friday (June 22). The only one I found is a "Deep work" block from 4:30–5:30 PM, but it's located at the **Cafe**, not the Library. There's no private focus-time block in the Library this Friday to delete.

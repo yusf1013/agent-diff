@@ -1,0 +1,1 @@
+Deleted your private focus-time block titled "Focus time" at the Library this Friday, June 22, 9:00 AM – 11:00 AM. That event was set as private and transparent (showing you as free), matching all your criteria.

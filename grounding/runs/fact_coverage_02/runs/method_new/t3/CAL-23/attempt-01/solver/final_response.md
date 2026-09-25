@@ -1,0 +1,1 @@
+Successfully deleted Friday's "Architecture review" event (ID: ev_ar_target) scheduled for June 22, 2018 at 10:00 AM. This was the event where Kenji Sato (kenji.sato@northwind.example) was attending as an optional guest. The other two architecture review events on the same day ("Architecture review: storage" and "Architecture review: search") were left intact.

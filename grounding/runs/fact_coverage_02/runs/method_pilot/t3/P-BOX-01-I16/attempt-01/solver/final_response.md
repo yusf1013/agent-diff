@@ -1,0 +1,1 @@
+There is no PDF owned by Maya Chen directly in the Finance Reports folder. The folder contains only one PDF — "Q3 travel summary.pdf" — and it is owned by **Maya Lopez** (not Maya Chen), though it was last modified by Leo Park. Since it doesn't match the owner criterion, no tag was added.

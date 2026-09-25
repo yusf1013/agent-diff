@@ -1,0 +1,1 @@
+There is no PDF file directly in the Finance Reports folder. The folder only contains two non-PDF files ("Board notes.docx" and "Q3 revenue summary.xlsx") and one subfolder ("Drafts"). Since the task requires the PDF to be directly in the folder (not in subfolders), there is nothing to tag.

@@ -1,0 +1,1 @@
+There isn't a design review on Thursday (June 21) that Priya Nair declined. The only design review that day is "Design review: Billing" at 12:00 PM, but Priya Nair is the **organizer** of that event — it's **Omar Haddad** who declined it. If you meant to move *that* event to Room 5B, or if the event is on a different day, let me know and I'll take care of it.

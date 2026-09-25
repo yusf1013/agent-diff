@@ -1,0 +1,1 @@
+There is no "Regression" label from the "Bug" group. The only "Regression" label that exists (id: lab-reg-top) is not part of the "Bug" group — it has no parent, meaning it's a standalone label. The "Bug" group (id: lab-bug) exists but does not contain a "Regression" child label. Therefore, I could not add it to MOB-3.

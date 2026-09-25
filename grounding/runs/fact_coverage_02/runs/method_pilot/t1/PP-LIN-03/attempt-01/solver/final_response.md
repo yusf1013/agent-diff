@@ -1,0 +1,1 @@
+The "Checkout Redesign" project led by Maya Chen does not have a "Beta" milestone. The only milestone in that project is "GA" (target date: November 15, 2026). There is no Beta milestone to update, so no changes were made.

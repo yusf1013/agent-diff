@@ -1,0 +1,1 @@
+I searched the **Finance Reports** folder and it contains only one file: **Travel policy.docx** — a Word document, not a spreadsheet. There is no spreadsheet in that folder, so there's nothing to rename. If the file you're looking for might be elsewhere, let me know and I can search more broadly.

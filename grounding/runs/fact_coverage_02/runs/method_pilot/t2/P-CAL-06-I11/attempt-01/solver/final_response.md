@@ -1,0 +1,1 @@
+There is no all-day offsite event created by Maya Chen on June 29. The only offsite event on that date is "Team offsite planning" (created by Maya Chen), but it's a timed event from 9:00 AM to 5:00 PM, not an all-day event. Omar Haddad is already a (required) attendee on it. If you'd like me to make him an optional attendee on that event instead, just let me know.

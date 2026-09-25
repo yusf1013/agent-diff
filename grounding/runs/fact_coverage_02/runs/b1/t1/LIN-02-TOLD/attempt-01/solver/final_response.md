@@ -1,0 +1,1 @@
+There is no comment from Leo Park on ENG-42 asking to postpone the release. Leo Park's comment on that issue says "Please update the release notes before Friday." The comment asking to postpone the release ("Can we postpone the release to next week?") was actually left by **Sam Rivera**, not Leo Park. So there's nothing to delete.

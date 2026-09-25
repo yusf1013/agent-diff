@@ -1,0 +1,3 @@
+I checked the private channels in your workspace and found only one: **#procurement** (C_PROC). Its formal purpose is *"Purchase approvals and budgets"* and its topic is *"Vendor contracts this quarter."*
+
+There is no private channel whose purpose is specifically **coordinating vendor contracts**. The closest match is #procurement, but its purpose field reads "Purchase approvals and budgets," not vendor contract coordination. If you'd like me to set the topic on #procurement instead, just let me know.

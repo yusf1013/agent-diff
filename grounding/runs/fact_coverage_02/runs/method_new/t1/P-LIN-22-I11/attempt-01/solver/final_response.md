@@ -1,0 +1,1 @@
+I checked the "Checkout Redesign" project for documents. There is only one document in that project — "Checkout rollout" — and it was last edited by **Sam Rivera**, not Leo Park. There is no document in the Checkout Redesign project that Leo Park last edited, so there's nothing to rename.

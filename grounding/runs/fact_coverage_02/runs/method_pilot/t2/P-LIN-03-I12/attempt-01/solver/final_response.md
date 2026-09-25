@@ -1,0 +1,1 @@
+The "Checkout Redesign" project led by Maya Chen does not have a "Beta" milestone. The only "Beta" milestone in any "Checkout Redesign" project belongs to a different one led by Sam Rivera. So there is no Beta milestone to update for Maya Chen's project.

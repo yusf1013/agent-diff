@@ -1,0 +1,1 @@
+Linear doesn't have a "doc" (document) entity in its API. The available entities are issues, teams, comments, labels, workflow states, users, and issue relations — but no documents. Therefore, there is no "doc" in the Checkout Redesign project (or anywhere in Linear) that Leo Park last edited, and nothing to rename to "Checkout QA plan."

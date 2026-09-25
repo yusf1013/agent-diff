@@ -1,0 +1,1 @@
+There are no issues in the Platform team's current cycle (Cycle 14) that meet all the criteria. The only open issue in the cycle is **PLT-6 "Add request tracing"** (5-point estimate), but its due date is September 30, 2026 — which is still in the future (7 days from today, Sep 23). Since it's not yet past due, there's nothing to move to the next cycle.

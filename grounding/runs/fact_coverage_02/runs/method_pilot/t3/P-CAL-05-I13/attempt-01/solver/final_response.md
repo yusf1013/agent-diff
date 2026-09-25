@@ -1,0 +1,1 @@
+There isn't a private focus-time block in the Library this Friday that shows you as free (transparent). The only focus-time event I found is "Deep work" at the Library on Friday June 22 from 3:00 PM – 4:00 PM, but it's set to show you as **busy** (opaque) by default. If you'd like me to delete that one instead, just let me know!

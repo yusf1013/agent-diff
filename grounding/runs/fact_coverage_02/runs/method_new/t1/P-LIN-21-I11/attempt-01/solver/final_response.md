@@ -1,0 +1,1 @@
+There is no Web team issue about the login redirect created by Omar Haddad on September 10. The only matching Web team issue — "Login redirect drops the return URL" (created on September 10) — was created by **Dana Whitfield**, not Omar Haddad. Omar Haddad has no issues created in the workspace. No assignment was made.

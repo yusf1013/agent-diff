@@ -1,0 +1,1 @@
+There is no task matching your description. I searched through all files in the workspace and found only one task created by pat.kim@northwind.example on September 14 — it's on "Acme MSA.pdf" and the message reads "Please approve the invoice," not something about checking an indemnity clause. No other tasks exist in the workspace, so I couldn't find the one you're referring to.

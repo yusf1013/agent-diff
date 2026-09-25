@@ -1,0 +1,1 @@
+I checked both your primary calendar and the "Priya Nair" calendar (priya-team@northwind.example) for events on Thursday, June 21, 2018 — and more broadly for any events organized by or involving Priya Nair. Neither calendar has any events at all, so there is no meeting organized by Priya Nair on Thursday to move.

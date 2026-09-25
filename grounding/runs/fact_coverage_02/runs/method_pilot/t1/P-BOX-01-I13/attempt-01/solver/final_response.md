@@ -1,0 +1,1 @@
+There is no PDF directly in the Finance Reports folder. The folder only contains a "Drafts" subfolder and a "Board notes.docx" file. Since there are no PDFs at all in that folder (excluding subfolders), there is no file to tag.

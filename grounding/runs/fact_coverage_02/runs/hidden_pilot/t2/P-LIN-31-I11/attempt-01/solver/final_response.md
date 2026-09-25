@@ -1,0 +1,1 @@
+There is no sub-issue whose parent issue is assigned to Maya Chen. Maya Chen is assigned to WEB-1 (a top-level issue with no sub-issues) and WEB-4 (a sub-issue whose parent, WEB-3, is assigned to Sam Rivera). So there's nothing to update.

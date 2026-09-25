@@ -1,0 +1,1 @@
+Successfully moved 2 open, past-due issues (PLT-1 and PLT-2) from the Platform team's current cycle (Cycle 14) to the next cycle (Cycle 15). Both issues had estimates of 5+ points and due dates before today (September 23, 2026).

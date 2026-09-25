@@ -1,0 +1,1 @@
+There is no "Regression" label in the **Bug** group. The only "Regression" label in your workspace belongs to the **Bug triage** group (not "Bug"). So I did not add any label to MOB-3. If you'd like me to add the Regression label from the "Bug triage" group instead, just let me know.

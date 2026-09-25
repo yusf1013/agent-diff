@@ -1,0 +1,1 @@
+There is no PDF created by Maya Chen (the owner of the Finance Reports folder). The Finance Reports folder is completely empty, and the only PDF in the workspace ("Vendor list.pdf") was created by Dana Whitfield, not Maya Chen. Therefore, there is no PDF to add the `owner-draft` tag to.

@@ -1,0 +1,1 @@
+I couldn't find an all-hands event on June 21 in Kenji Sato's Tokyo-time calendar ("Kenji team" / kenji-team@northwind.example). The only all-hands event in that calendar is on June 22 (9:00 AM US Pacific / June 23 in Tokyo). Since there's no all-hands on June 21, I did not make the description change.

@@ -1,0 +1,1 @@
+There are no active admins who are owners of the Design team. Its only member is Ethan Cole, who is an active admin but is **not** an owner of the Design team (he is an owner of the Web team instead).

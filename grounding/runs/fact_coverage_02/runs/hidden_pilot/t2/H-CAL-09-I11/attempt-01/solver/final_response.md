@@ -1,0 +1,1 @@
+Successfully moved the "Vendor onboarding" meeting (organized by Priya Nair on Thursday, June 21, 2018) to 3:00 PM, keeping its 1-hour duration. The event now runs from 3:00 PM to 4:00 PM in the America/Los_Angeles timezone.

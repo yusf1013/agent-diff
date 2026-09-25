@@ -15,6 +15,8 @@ Start with [README.md](README.md) for the component map, then the relevant guide
 
 [configs/current.json](configs/current.json) identifies active prompt sources; [prompts/README.md](prompts/README.md) maps them to agents. Saved requests establish what a particular run actually received. `archive/` contains superseded workflows, not default entry points.
 
+Raw run evidence (episode folders under each study in `runs/`) is tracked but hidden from default ripgrep searches by each study's `.ignore`. To find an episode, start from the study's README, labels or run index, then open or search that folder by name (`rg PATTERN <folder>`; add `--no-ignore` if nothing comes back). `find` and `ls -R` do not honor `.ignore`.
+
 ## Ownership and responsibilities
 
 Our harness, prompts, domain annotations, reference labels, and experiment evidence live here. AgentDiff core lives in the repository's `backend/`, `sdk/`, `examples/`, `datasets/`, and `ops/`. Prefer our [integration adapters](integrations/agentdiff/README.md) for harness-specific integration changes; change upstream code when the task requires it.

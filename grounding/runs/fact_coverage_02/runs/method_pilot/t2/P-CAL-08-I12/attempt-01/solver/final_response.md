@@ -1,0 +1,1 @@
+I searched your primary calendar for a dentist appointment on Wednesday (checked both this coming Wednesday, June 20, and last Wednesday, June 13). There is no dentist appointment scheduled on any Wednesday. Nothing was deleted.

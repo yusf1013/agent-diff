@@ -1,0 +1,1 @@
+There are no open issues in the Platform team's current cycle to move. The Platform team currently has no active cycle. The only open issue in the team — PLT-3 "Migrate cron jobs" (8 points, due 2026-09-10) — is already assigned to Cycle 15, which is the *next* (future) cycle starting 2026-09-28. No action needed.

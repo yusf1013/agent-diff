@@ -1,0 +1,1 @@
+There isn't a high-priority bug assigned to Priya Nair in the Mobile team. The only high-priority issue she has is **MOB-6: "Add biometric login"**, which is labeled as a **Feature** (not a Bug), and is currently in the **Todo** state. No action was taken.

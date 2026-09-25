@@ -1,0 +1,1 @@
+There isn't a Tokyo-time calendar for Kenji Sato. The only calendar associated with him — "Kenji planning" (kenji-home@northwind.example) — does have the All-hands event on June 21, but its timezone is set to America/Los_Angeles, not Asia/Tokyo. No calendar with a Tokyo timezone was found on your calendar list, so no change was made.

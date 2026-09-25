@@ -1,0 +1,1 @@
+There isn't an open issue assigned to a member of the Design team. The only issue assigned to a Design team member (Maya Chen) is WEB-3, which is already in the "Done" (completed) state. No priority update was needed.

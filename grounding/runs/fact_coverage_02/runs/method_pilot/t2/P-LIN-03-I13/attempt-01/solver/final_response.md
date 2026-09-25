@@ -1,0 +1,1 @@
+There is no Beta milestone in the Checkout Redesign project. The only Beta milestone that exists in the workspace belongs to the "Payments Revamp" project (which is also led by Maya Chen), not to "Checkout Redesign". No action was taken.

@@ -1,0 +1,1 @@
+Successfully reopened the comment thread on WEB-5 that Maya Chen resolved. The comment "Can we pin the browser version?" (c-22) was resolved and has been unresloved — its `resolvedAt` is now null. This was done using the `commentUnresolve` mutation.

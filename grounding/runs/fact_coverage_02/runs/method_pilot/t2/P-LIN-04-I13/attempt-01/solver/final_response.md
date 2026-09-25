@@ -1,0 +1,1 @@
+There is no blocking relation on ENG-7 ("Upgrade auth library"). The issue currently has zero relations, so there's nothing to remove. If you'd like, I can add a blocking relation or make any other changes.

@@ -1,0 +1,1 @@
+There are no issues to move. The Platform team's current cycle (Cycle 14) has only one open issue — **PLT-4 "Tune database pool sizes"** — which is past due (Sept 15) but is estimated at only **3 points**, below the 5-point threshold. No issues meet all the criteria (open, in current cycle, estimated ≥ 5 points, and past due).

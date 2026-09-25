@@ -1,0 +1,1 @@
+Successfully made Omar Haddad an optional attendee on the all-day "Team offsite" event created by Maya Chen for June 29. The event ID is `ev_off`, and Omar's attendee record now includes `"optional": true`.

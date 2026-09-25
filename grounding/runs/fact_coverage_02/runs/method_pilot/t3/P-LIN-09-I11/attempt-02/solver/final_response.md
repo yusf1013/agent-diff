@@ -1,0 +1,1 @@
+I looked into the Checkout project issue (WEB-5: "Checkout performance epic"), but there is no GitHub pull request attached to it by Leo Park. The issue has no comments and an empty description, so there's no PR reference to find. I was unable to assign it to Leo Park since the condition (a GitHub PR attached by Leo) doesn't exist.

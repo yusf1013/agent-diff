@@ -1,0 +1,1 @@
+There is no calendar in your calendar list with a description indicating it is for the London office. The only secondary calendar is "Iberia team" (madrid@northwind.example), which is described as "Calendar for the Madrid office." No action was taken.

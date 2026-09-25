@@ -1,0 +1,1 @@
+There's no calendar located in Tokyo. There is a calendar named "Tokyo" (tokyo@northwind.example), but its location is set to Singapore. The closest is the "Japan team" calendar (jp-team@northwind.example), which is located in Osaka. If you'd like me to update the description of either of those, let me know!

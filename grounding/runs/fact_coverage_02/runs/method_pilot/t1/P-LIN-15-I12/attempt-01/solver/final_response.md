@@ -1,0 +1,1 @@
+There are no open issues assigned to a member of the Design team (Maya Chen or Mia Wong). The only issue in the system (WEB-1: "Fix the navigation spacing") is assigned to Zoe Park, who belongs to the "Design Systems" team, not the "Design" team. No priority change was made.

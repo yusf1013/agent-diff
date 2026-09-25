@@ -1,0 +1,1 @@
+Successfully removed dana.whitfield@northwind.example's write access to the Marketing calendar. The calendar had a domain-level rule granting `writer` access to all of `northwind.example`. I added a user-specific ACL rule for dana.whitfield@northwind.example with role `none`, which overrides the domain rule and blocks their write access to the Marketing calendar.

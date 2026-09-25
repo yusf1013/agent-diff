@@ -1,0 +1,1 @@
+Deleted "Architecture review: search" (Friday, June 22, 2018, 3:00–4:00 PM PT). Kenji Satou was listed as an optional attendee, and Aiko Mori as a required one. The event has been removed from your primary calendar.

@@ -1,0 +1,1 @@
+Found the Mobile team's high-priority bug assigned to Priya Nair: **MOB-3 – "Settings toggle misaligned on tablets"** (labeled "Bug", priority High). Successfully moved it from **Todo** to **In Review**.

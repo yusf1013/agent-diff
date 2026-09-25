@@ -1,0 +1,1 @@
+I couldn't find a document to rename. The Linear API available here supports teams, issues, comments, labels, and workflow states — but it does not expose any document endpoints. There is no "doc" resource in this workspace's Linear instance to rename. If Maya Chen created a document, it may be in a different tool or not accessible through the Linear API as configured here.

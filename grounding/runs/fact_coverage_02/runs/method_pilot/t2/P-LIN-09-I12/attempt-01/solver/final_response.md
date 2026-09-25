@@ -1,0 +1,1 @@
+There is no GitHub pull request that Leo Park attached to a Checkout project issue. The only attachment Leo Park has made on a Checkout issue is a **Figma file** ("Coupon field mockups") on **WEB-3 – Coupon field redesign**, which is not a GitHub PR. So no assignment was made.

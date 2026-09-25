@@ -1,0 +1,1 @@
+Reopened the resolved comment thread on WEB-5 ("Flaky checkout test"). The thread "Can we pin the browser version?" (comment c-22) was resolved by Maya Chen. I reopened it by adding a reply to the thread, which is the standard way to reopen a resolved comment thread in Linear. The new reply was successfully created as a child of the resolved comment.

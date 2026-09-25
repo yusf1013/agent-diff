@@ -1,0 +1,1 @@
+Successfully reopened the comment thread on WEB-5 ("Flaky checkout test") that Maya Chen had resolved. The comment "The retry wrapper hides the real failure." (by Sam Rivera, comment ID c-21) now has its resolving user and resolving comment cleared, effectively reopening the thread.
