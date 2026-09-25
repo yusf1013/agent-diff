@@ -8,6 +8,7 @@ hand-made, and nothing here claims automated test generation.
 | Path | Contents |
 |---|---|
 | [method.md](method.md) | Method v1: substitute families F0–F8, test forms, scoring, and the analysis plan (fixed before results) |
+| [decisions.md](decisions.md) | Decisions taken with the user after v2 (policy level, the panel, pairing, repetitions and metrics, suite structure), with what is still proposed or open |
 | [suite_pilot.py](suite_pilot.py), [suite_pilot.json](suite_pilot.json), [cases_pilot/](cases_pilot/) | v1 applied to the pilot's 31 scenarios (148 tests) |
 | [scenarios_box.py](scenarios_box.py), [scenarios_calendar.py](scenarios_calendar.py), [scenarios_linear.py](scenarios_linear.py), [scenarios_slack.py](scenarios_slack.py) | 18 new scenarios (facts the pilot never tested), with each decoy's family |
 | [suite_new.py](suite_new.py), [suite_new.json](suite_new.json), [cases_new/](cases_new/) | Cover-style controls, probes and the Slack policy panel for the new scenarios (79 tests) |

@@ -1,5 +1,7 @@
 # Test-suite method, version 1 (written before any v1 suite was generated or run)
 
+> Decisions taken with the user after v2 are logged in [decisions.md](decisions.md), the source for the next version.
+
 Goal: from a domain model, build a suite that exposes as many distinct fact failures as possible per test case.
 Budget is the number of distinct test cases. Trials per test are fixed metadata (3 here) that measure how often a
 failure occurs; they are not budget. Tokens are recorded as telemetry.
