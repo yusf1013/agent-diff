@@ -230,3 +230,52 @@ Suite builders refuse a hidden-target test that fails one of these, as they refu
   - mechanism tags;
   - facts exposed by a hidden-target test but not by its probe.
 - **Size:** small by construction, so counts are reported without significance claims.
+
+### Amendment after the backtest (written before any pilot case was built)
+The check was run on the 44 target-present references of the recorded covers ([hiding.py](hiding.py)). Three
+changes to the path table came from it:
+- **Containers are listed whole.** When the target is a channel, calendar, team, hub, label or user, the natural first
+  call lists every one of them. That listing is an easy path. (SLK-24: Qwen listed every channel in 3 of 3 trials.)
+- **A recurring event is listed as its series.** A root on derived occurrences is checked against the seed's events,
+  because the default listing returns the series.
+- **Calendar `q` searches one calendar,** the primary unless the agent picks another.
+
+**With these changes, the strict rule** (a decoy on some easy path, no target on any) **marks 4 of the 44
+references:** BOX-09, BOX-24, CAL-02 and LIN-15.
+- All 4 separated in practice.
+- The 5 decoy actions among separated trials all came from them.
+- **Separations it did not predict:**
+  - SLK-22, 1 trial: a search route. The channel's history, the other route, shows the target.
+  - BOX-08, 1 trial: a degenerate search for "a".
+  - CAL-04 r2, 1 trial: calendar-list management, which the table does not model.
+
+**Pilot selection, applied to the pool:**
+- **Arm A is capped at 2 per domain.** Decoys whose look-alike is itself what an easy path selects come first, then
+  suite order. The target may be moved (the decoy may not), provided the reference and the claims are unchanged.
+  - Only Calendar has qualifying decoys.
+  - In Box and Linear, the target's container or team is a condition of every request, or the request has no entry
+    point.
+  - In Slack, a named channel's history includes replies and channels are listed whole.
+  - The two Calendar tests:
+    - **H-CAL-02-I11:** the series-for-occurrence decoy. The default listing returns the series; the target is its
+      Tuesday occurrence. The other series are removed.
+    - **H-CAL-09-I11:** the event on the calendar named "Priya Nair", which Omar organized. The target, which Priya
+      organized, moves from the primary calendar to a shared "Vendor programs" calendar. The lure is declared
+      (`calendar_named: Priya Nair`).
+- **Arm B**, one scenario each, with a probe twin:
+  - **BOX-31**, `A:Comment.message`: "Add the tag travel-reviewed to the spreadsheet Priya Nair commented on about
+    travel costs."
+    - The decoy is "Travel costs 2026.xlsx", where Priya's comment is about the hiring plan. Search matches its name.
+    - The target is "Q3 forecast.xlsx", with Priya's travel-costs comment. Comments are never search results.
+  - **BOX-32**, `R:File.modified_by_id`: "Add the tag owner-edit to the PDF that the owner of the Budget folder last
+    modified."
+    - The decoy is the only PDF in Budget, last modified by Dana.
+    - The target is a PDF in Planning, last modified by Maya, who owns Budget.
+  - **LIN-31**, `H:Issue.parentId`: "Set the priority to High on the sub-issue whose parent issue is assigned to
+    Maya Chen."
+    - The decoy is a sub-issue assigned to Maya whose parent is Sam's. Maya's issues list shows it.
+    - The target is the sub-issue (Leo's) of Maya's issue. It is reachable through that issue's sub-issues.
+  - **Slack: none.** No layout passes the rule in this replica.
+
+  At most 2 per domain were allowed; Box has 2 and Linear 1 because each passes the checks with one lever.
+- **The pilot is 5 hidden-target tests and 3 twins at 3 trials: 24 runs.**
