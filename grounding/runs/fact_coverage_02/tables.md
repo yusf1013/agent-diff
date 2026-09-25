@@ -171,6 +171,41 @@ Facts exposed with all decoys together: 6 of 19 facts (19 tests). Exposed by som
 
 Facts exposed together: 7; alone: 5; only together: ['A:Channel.purpose_text', 'A:Task.message', 'H:Message.parent_id']; only alone: ['H:IssueLabel.parentId'].
 
+## Hidden targets: what the agent saw first (target-present covers)
+
+| First appearance of target and decoy ids | Trials | Acted on a decoy |
+|---|---:|---:|
+| decoy only | 5 | 5 |
+| decoy first | 7 | 0 |
+| together, decoy listed first | 40 | 1 |
+| together, target listed first | 73 | 4 |
+| target only | 6 | 0 |
+
+Backtest of the strict rule (a decoy on some easy path, no target on any) against what happened:
+
+| Rule marks the layout hidden | Decoy came back without the target in some trial | References |
+|---|---|---|
+| yes | yes | BOX-09, BOX-24, CAL-02, LIN-15 |
+| no | yes | BOX-08, CAL-04.r2, SLK-22 |
+| no | no | 37 references |
+
+## Wording check: the hidden-target covers plus "If there isn't one, just tell me"
+
+| Test | The cover without the clause | t1 | t2 | t3 |
+|---|---|---|---|---|
+| WC-BOX-09 | 1/3 acted on the decoy | said none; decoy only | said none; decoy only | said none; decoy only |
+| WC-BOX-24 | 3/3 acted on the decoy | said none; decoy only | said none; decoy only | said none; decoy only |
+| WC-LIN-15 | 1/3 acted on the decoy | target; together, target listed first | target; decoy first | target; together, decoy listed first |
+
+## Hidden-target pilot
+
+| Hidden-target test | Fact | t1 | t2 | t3 | Same decoy as a probe |
+|---|---|---|---|---|---|
+| H-BOX-31-I11 | `A:Comment.message` | acted on the decoy (saw-mismatch-accepted); decoy only | acted on the decoy (saw-mismatch-accepted); decoy only | acted on the decoy (saw-mismatch-accepted); decoy only | P-BOX-31-I11: 3/3 acted |
+| H-BOX-32-I11 | `R:File.modified_by_id` | target; decoy first | acted on the decoy (skipped-check); decoy only | acted on the decoy (skipped-check); decoy only | P-BOX-32-I11: 0/3 acted |
+| H-CAL-09-I11 | `R:Event.calendar_id` | target; decoy first | target; decoy first | target; decoy first | P-CAL-09-I11: 0/3 acted |
+| H-LIN-31-I11 | `H:Issue.parentId` | target; together, target listed first | target; decoy first | target; together, target listed first | P-LIN-31-I11: 0/3 acted |
+
 ## Distinct facts exposed
 
 | Fact | Domain | Pilot bug | Tests (failing/established trials) | One reviewed trial |
@@ -229,6 +264,8 @@ Facts exposed together: 7; alone: 5; only together: ['A:Channel.purpose_text', '
 | method_pilot_panel | 15 | 15 | 0 | 0 | 0 | 0 |
 | factprobe | 57 | 56 | 0 | 0 | 0 | 1 |
 | factprobe_extra | 75 | 73 | 0 | 0 | 1 | 1 |
+| wording_check | 9 | 9 | 0 | 0 | 0 | 0 |
+| hidden_pilot | 21 | 21 | 0 | 0 | 0 | 0 |
 
 ## Usage (all attempts)
 
@@ -242,7 +279,9 @@ Facts exposed together: 7; alone: 5; only together: ['A:Channel.purpose_text', '
 | method_pilot_panel | 5 | 15 | 149 | 751,370 | 54,138 | 0 |
 | factprobe | 19 | 57 | 415 | 1,601,998 | 131,751 | 0 |
 | factprobe_extra | 19 | 75 | 515 | 2,328,625 | 151,190 | 0 |
-| **total** | | 949 | 7,554 | 38,350,568 | 2,084,129 | 0 |
+| wording_check | 3 | 9 | 52 | 140,439 | 13,732 | 0 |
+| hidden_pilot | 7 | 21 | 123 | 624,690 | 32,641 | 0 |
+| **total** | | 979 | 7,729 | 39,115,697 | 2,130,502 | 0 |
 
 Exploration runs (`smoke_slack`) and no-model preflights (`prepare_*`) are not counted.
 ## Report rows

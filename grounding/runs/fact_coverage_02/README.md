@@ -13,6 +13,8 @@ hand-made, and nothing here claims automated test generation.
 | [suite_new.py](suite_new.py), [suite_new.json](suite_new.json), [cases_new/](cases_new/) | Cover-style controls, probes and the Slack policy panel for the new scenarios (79 tests) |
 | [suite_factprobe.py](suite_factprobe.py), [suite_factprobe.json](suite_factprobe.json), [cases_factprobe/](cases_factprobe/) | Follow-up: one probe per fact with several decoys, holding all of them (19 tests) |
 | [anchors.py](anchors.py) | Check that every entity the request names besides the target survives in each no-target test; the suite builders enforce it |
+| [hiding.py](hiding.py) | Hidden-target tests: each entry point's easy path on the seed, the check the builders enforce, what each trial saw first, and the backtest on the recorded covers |
+| [scenarios_hidden.py](scenarios_hidden.py), [suite_hidden.py](suite_hidden.py), [suite_hidden.json](suite_hidden.json), [cases_hidden/](cases_hidden/) | Follow-up: the wording check (the hidden-target covers plus "just tell me") and the hidden-target pilot with its probe twins |
 | [followups.py](followups.py) | Follow-up analyses of the recorded trials: packed vs one decoy at a time, and budgets counted in runs |
 | [run.py](run.py) | Runs cases at 3 trials into `runs/<run>/t<k>/<case>/attempt-XX` (the pilot's episode); `--pairs` retries single trials |
 | [analyze.py](analyze.py), [score.py](score.py) | Attribution per trial (state diff, write attempts, answer triage, priority values) and per-test outcomes |
@@ -20,7 +22,7 @@ hand-made, and nothing here claims automated test generation.
 | [launch.py](launch.py) | Runs any module with the environment these runs used (key from `grounding/.env`, the shared rate limiter, database, `PYTHONPATH`) |
 | [manual_labels.json](manual_labels.json) | Reviewed verdicts ("run/trial/case" to outcome, exposed facts, note); they override provisional labels |
 | [tables.py](tables.py), [tables.md](tables.md) | Every table in the report, generated from the runs and labels |
-| [runs/](runs/) | Every attempt kept. `b1` (the pilot's cover cases at 3 trials), `method_pilot` and `method_pilot_panel`, `method_new`, and the reruns of two fixed scenarios (`method_new_lin25`, `method_new_slk21`). `prepare_*` are no-model preflights; `smoke_slack` is one exploration episode. Console `.log` files stay local |
+| [runs/](runs/) | Every attempt kept. `b1` (the pilot's cover cases at 3 trials), `method_pilot` and `method_pilot_panel`, `method_new`, and the reruns of two fixed scenarios (`method_new_lin25`, `method_new_slk21`). Follow-ups: `factprobe` and `factprobe_extra`, `wording_check`, `hidden_pilot`. `prepare_*` are no-model preflights (`prepare_hidden` holds the replica check of the hidden-target tests); `smoke_slack` is one exploration episode. Console `.log` files stay local |
 
 ## Reproduce (from the worktree root)
 

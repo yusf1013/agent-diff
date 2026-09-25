@@ -1,0 +1,1 @@
+There is no sub-issue whose parent issue is assigned to Maya Chen. The only sub-issue in the workspace is "Fix the cart badge count" (WEB-4), whose parent "Cart improvements" (WEB-3) is assigned to Sam Rivera — not Maya Chen.

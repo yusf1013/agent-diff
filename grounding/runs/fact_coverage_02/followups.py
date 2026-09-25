@@ -4,6 +4,8 @@
   probes of the same decoys.
 - run_budget: if every run (not every test) counted against the budget: new facts per run by kind of run, and fixed
   run budgets replayed on the recorded trials in order (t1, t2, t3).
+- hidden_targets: what each target-present trial saw first, the backtest of the hiding rule, the wording check
+  and the hidden-target pilot (method.md, "hidden-target tests").
 """
 from __future__ import annotations
 
@@ -139,3 +141,78 @@ def run_budget(load):
     for name, cells in rows.items():
         out.append(f"| {name} | " + " | ".join(f"{cells[k][1]} ({cells[k][0]} runs)" for k in sets) + " |")
     return out + ["", "Probes are ordered by family yield (F8, F1, F6, …), itself measured on these runs.", ""]
+
+
+def _trial_class(run, case_id, trial):
+    from grounding.runs.fact_coverage_02.analyze import current
+    from grounding.runs.fact_coverage_02.hiding import first_seen, hiding_class
+    attempt = sorted((HERE / "runs" / run / trial / case_id).glob("attempt-*"))[-1]
+    case = current(json.loads((attempt / "case.json").read_text()))
+    refs = [r for r in case["references"] if r.get("claims") and r.get("expected")]
+    return hiding_class(*first_seen(attempt, case, refs[0])) if refs else "no target"
+
+
+OUTCOME_WORDS = {"incorrect": "acted on the decoy", "presented": "presented the decoy", "correct": "target",
+                 "false_absence": "said none", "correct_absent": "said none"}
+
+
+def _cell(t, trial, manual):
+    r = t["trials"].get(trial)
+    if not r:
+        return "-"
+    out = OUTCOME_WORDS.get(r["outcome"], r["outcome"])
+    mech = (manual.get(f"{t['run']}/{trial}/{t['case_id']}") or {}).get("mechanism")
+    if mech:
+        out += f" ({mech})"
+    if not t["case_id"].startswith("P-") and r["outcome"] not in ("not_established", "artifact"):
+        out += f"; {_trial_class(t['run'], t['case_id'], trial)}"
+    return out
+
+
+def hidden_targets(load):
+    from grounding.runs.fact_coverage_02.hiding import HIDDEN_HELD, backtest
+    manual = json.loads((HERE / "manual_labels.json").read_text())
+    rows, per_ref = backtest(load)
+    counts = defaultdict(lambda: [0, 0])
+    for r in rows:
+        counts[r["class"]][0] += 1
+        counts[r["class"]][1] += r["acted"]
+    out = ["## Hidden targets: what the agent saw first (target-present covers)", "",
+           "| First appearance of target and decoy ids | Trials | Acted on a decoy |", "|---|---:|---:|"]
+    for k in ["decoy only", "decoy first", "together, decoy listed first", "together, target listed first",
+              "target first", "target only", "neither seen"]:
+        if counts[k][0]:
+            out.append(f"| {k} | {counts[k][0]} | {counts[k][1]} |")
+    confusion = defaultdict(list)
+    for rid, v in sorted(per_ref.items()):
+        seen = any(c.rstrip("*") in HIDDEN_HELD for c in v["classes"])
+        confusion[(v["layout"]["strict"], seen)].append(rid.replace(".r1", ""))
+    out += ["", "Backtest of the strict rule (a decoy on some easy path, no target on any) against what happened:", "",
+            "| Rule marks the layout hidden | Decoy came back without the target in some trial | References |",
+            "|---|---|---|"]
+    for (strict, seen), refs in sorted(confusion.items(), key=lambda kv: (not kv[0][0], not kv[0][1])):
+        shown = ", ".join(refs) if len(refs) <= 8 else f"{len(refs)} references"
+        out.append(f"| {'yes' if strict else 'no'} | {'yes' if seen else 'no'} | {shown} |")
+    if not (HERE / "runs/wording_check").exists():
+        return out + [""]
+    covers = {t["case_id"]: t for t in load(["b1", "method_new"])}
+    out += ["", "## Wording check: the hidden-target covers plus \"If there isn't one, just tell me\"", "",
+            "| Test | The cover without the clause | t1 | t2 | t3 |", "|---|---|---|---|---|"]
+    for t in load(["wording_check"]):
+        cover = covers[t["case_id"][3:]]
+        before = f"{cover['failures']}/{cover['established']} acted on the decoy"
+        out.append(f"| {t['case_id']} | {before} | " + " | ".join(_cell(t, k, manual) for k in ("t1", "t2", "t3")) + " |")
+    if not (HERE / "runs/hidden_pilot").exists():
+        return out + [""]
+    pilot = {t["case_id"]: t for t in load(["hidden_pilot"])}
+    probes = {t["case_id"]: t for t in load(["method_pilot"])}
+    out += ["", "## Hidden-target pilot", "",
+            "| Hidden-target test | Fact | t1 | t2 | t3 | Same decoy as a probe |", "|---|---|---|---|---|---|"]
+    for cid, t in sorted(pilot.items()):
+        if not cid.startswith("H-"):
+            continue
+        probe = pilot.get("P-" + cid[2:]) or probes.get("P-" + cid[2:])
+        probe_cell = f"{probe['case_id']}: {probe['failures']}/{probe['established']} acted" if probe else "none"
+        out.append(f"| {cid} | `{t.get('fact') or ''}` | " + " | ".join(_cell(t, k, manual) for k in ("t1", "t2", "t3"))
+                   + f" | {probe_cell} |")
+    return out + [""]

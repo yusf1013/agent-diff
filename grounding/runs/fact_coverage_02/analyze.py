@@ -15,7 +15,8 @@ from pathlib import Path
 from grounding.runs.fact_coverage_01.pilot import analyze as pilot
 
 HERE = Path(__file__).resolve().parent
-SOURCES = [HERE / "cases_new", HERE / "cases_pilot", HERE / "cases_factprobe", HERE.parent / "fact_coverage_01/pilot/cases"]
+SOURCES = [HERE / "cases_new", HERE / "cases_pilot", HERE / "cases_factprobe", HERE / "cases_hidden",
+           HERE.parent / "fact_coverage_01/pilot/cases"]
 
 
 def current(case):

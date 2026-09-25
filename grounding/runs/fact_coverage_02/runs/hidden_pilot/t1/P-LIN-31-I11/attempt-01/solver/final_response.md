@@ -1,0 +1,1 @@
+There is no sub-issue whose parent issue is assigned to Maya Chen. The only top-level issue assigned to Maya Chen is **WEB-1 ("Checkout redesign")**, which has no sub-issues. The only existing sub-issue, **WEB-4 ("Fix the cart badge count")**, has its parent **WEB-3 ("Cart improvements")** assigned to Sam Rivera, not Maya Chen.

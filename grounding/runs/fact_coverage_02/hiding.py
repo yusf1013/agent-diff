@@ -191,8 +191,10 @@ def _pattern(value):
 
 
 def _observations(attempt):
-    record = [p for p in (attempt / "solver").glob("*.json") if p.name != "config.json"][0]
-    for step in json.loads(record.read_text())["steps"]:
+    records = [p for p in (attempt / "solver").glob("*.json") if p.name != "config.json"]
+    if not records:  # an episode that never started or has not finished
+        return
+    for step in json.loads(records[0].read_text())["steps"]:
         obs = step.get("observation")
         if isinstance(obs, dict):
             obs = obs.get("stdout") or obs.get("output") or json.dumps(obs)
