@@ -1,7 +1,7 @@
 """Run cases on Purdue Qwen with a fixed number of trials per case (trials are metadata, not budget).
 
     python -m grounding.runs.fact_coverage_02.run --out <new run dir> [--cases-dir DIR] [--cases ID ...] \
-        [--trials 3] [--concurrency 6] [--prepare-only] [--retry-infrastructure]
+        [--trials 3] [--concurrency 6] [--prepare-only] [--retry-infrastructure] [--retry-timeouts] [--pairs tK/ID ...]
 
 Each trial writes to <out>/t<k>/<case_id>/attempt-XX, exactly as the pilot runner does, so the pilot's analysis
 tools read it unchanged. The trials of one case are queued next to each other, so they run together. The episode
@@ -69,8 +69,10 @@ async def main_async(args):
         write_plan(sub.out, args, items, k)
         trial_args[k] = sub
     slot = asyncio.Semaphore(args.concurrency)
+    pairs = set(args.pairs or [])  # "t2/LIN-05": only these trial/case pairs run (targeted retries)
     # Case-major order: the trials of one case start together.
-    await asyncio.gather(*(execute(case, path, trial_args[k], slot) for case, path in items for k in trials))
+    await asyncio.gather(*(execute(case, path, trial_args[k], slot) for case, path in items for k in trials
+                           if not pairs or f"t{k}/{case['case_id']}" in pairs))
     for sub in trial_args.values():
         summarize(sub.out)
 
@@ -86,6 +88,8 @@ def main():
                         help="Retry attempts that failed for infrastructure reasons or were interrupted")
     parser.add_argument("--retry-timeouts", action="store_true",
                         help="Retry episodes that hit the 480 s limit")
+    parser.add_argument("--pairs", nargs="*",
+                        help="Run only these trial/case pairs, e.g. t2/LIN-05 (retry just the trials with no result)")
     parser.add_argument("--concurrency", type=int, default=6)
     parser.add_argument("--model", default="qwen3.8:27b")
     parser.add_argument("--database-url", default="postgresql://postgres@127.0.0.1:15432/agentdiff_campaign")
