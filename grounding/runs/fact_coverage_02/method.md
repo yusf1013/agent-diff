@@ -67,3 +67,31 @@ The policy panel is per domain, not per scenario.
 Per suite: distinct test cases (probes, packed tests, layer tests, panel tests), distinct fact bugs, failure
 frequencies, requests and tokens. The comparison baselines on the pilot's facts are B1 (the 31 cover cases, rerun
 at 3 trials) and B2 (the pilot's 125 fact-sensitive cases, 16 bugs).
+
+## Analysis plan (fixed before any method-suite result)
+
+Written after B1 started and before the method suites ran.
+
+- **Unit.** A distinct bug is a distinct fact (catalog requirement) whose decoy was acted on, or presented as the match,
+  in at least one trial. Trials never add budget; the budget is the number of distinct test cases.
+- **Pilot facts.** Compare distinct bugs against test count at these budget points of the same runs:
+  - F1–F8 probes only (84 tests);
+  - plus packed plain tests (94);
+  - plus F0 probes (125);
+  - the full v1 suite (148);
+  - B1, the 31 cover cases (3 trials);
+  - B2, the pilot's 125 fact-sensitive cases (16 bugs; mostly 1 trial).
+  Report trial 1 alone next to all 3 trials, for both the method and B1: B2 had about one trial per case, so this
+  separates the effect of the design from the effect of repetition. Bugs found on the new F7 decoys are reported
+  apart from bugs on the pilot's own claims, since those decoys are new substitutes.
+- **New facts (prospective).** The cover-style control (one test per scenario, target present, all decoys) against the
+  method's probes (and packed tests) on the same scenarios. The main result is distinct bugs and tests for each arm,
+  plus the bugs one arm finds and the other misses. The Slack policy panel is reported as policy results.
+- **Yield per family.** The share of probes that expose a failure, by family. This is the evidence for which families
+  earn their test in a minimal suite.
+- **Review before counting.** Every exposing trial and every trial whose answer is unclear is read (trajectory, answer
+  and diff) before it counts. Infrastructure errors get one retry. A trial that still has no result is reported as not
+  established.
+- **Caveats recorded in advance.** In real Linear, creators and assignees are subscribed automatically. LIN-26's F1
+  decoys therefore rely on the replica's explicit subscriber list. If Qwen acts on them without reading subscribers,
+  the realism question is reported with the result.
