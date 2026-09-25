@@ -107,6 +107,14 @@ multi-condition request whose near misses each fail one condition.
 - 2 facts, not 3, are found only by covers once fact probes count.
 - BOX-31 is an invalid test.
 
+**D11. Raw run evidence stays in git, hidden from default search.**
+- **Git history size is not a concern.** What matters is how quickly coding agents find what they need.
+- **Each study's `.ignore`** hides its raw episode folders from default ripgrep searches. Naming a folder still
+  searches it.
+- **A default search now sees 5,161 files instead of 87,378.**
+- **Navigation:** a lean run index ([runs/INDEX.md](runs/INDEX.md)) and a short note in `grounding/AGENTS.md`.
+- **Not done:** archiving or rewriting history.
+
 ## Proposed, not yet decided
 
 - **P4:** a hidden target plus "just tell me", once per domain, to measure false "there isn't one" answers.
@@ -125,5 +133,4 @@ multi-condition request whose near misses each fail one condition.
 - **The Claude rerun** (Sonnet 5, Haiku 4.5), optionally with modified OpenClaw, to test the split between policy and
   fact.
 - **Capability boundaries:** the replica gaps listed in [report.md §9](report.md).
-- **Where run evidence is stored, and the merge to main.** To be recorded here once decided.
 - **Method v3:** a single procedure written from this log and method.md.
