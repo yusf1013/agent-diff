@@ -109,3 +109,124 @@ without that label. A Regression label in a "Bug triage" group then counts as a 
   anchors survive by construction.
 - [anchors.py](anchors.py) makes this explicit. Each suite builder refuses a no-target test with a missing anchor.
 - All 320 anchors in the 215 no-target cases of this study are present.
+
+## Addendum: hidden-target tests (written 2026-09-25, before any hidden-target test was built or run)
+
+Approved by the user on 2026-09-25. It covers the design, the checks, and the analysis plans for the wording check
+(b) and the hidden-target pilot (c). Both plans were written before their cases were built.
+
+### Why
+The recorded target-present trials were read for what Qwen had seen when it acted. There are 125 rows, one per
+trial and reference. Six CAL-04 trials are left out because the id matcher missed their calendar ids.
+
+| What came back first | Trials | Acted on a decoy |
+|---|---:|---:|
+| The decoy, in a response without the target | 11 | 5 |
+| Decoy and target in the same response | 108 | 5 |
+| Only the target (the query applied the tested condition) | 6 | 0 |
+
+- **List order within one response made no difference:** decoy listed first 1 of 37, target listed first 4 of 71.
+- **Every fact that a target-present cover found and single-decoy probes missed came from a layout in which the
+  decoy came back without the target** (BOX-09, BOX-24, LIN-15).
+- **This is post hoc and covers 6 tests.** The route Qwen takes can itself reflect its confusion. That is why the
+  design below is tested prospectively.
+
+### The rule
+A hidden-target test puts one decoy on a path the request leads to, and the target off every such path:
+- **Entry point:** an entity the request names (an anchor, as found by [anchors.py](anchors.py)), a phrase declared
+  as a lure, or the domain's default scope.
+- **Easy path:** the replica's default navigation from an entry point to the target's kind of record.
+- **The decoy** is the only decoy that any entry point's easy path returns.
+- **The target** is returned by no easy path. It stays reachable by following the stated relation, or by a plain
+  listing of everything the actor can see.
+- **Wording presupposes** the target, with no "If there isn't one, just tell me". The target exists, so the wording
+  is truthful.
+
+### Easy paths in these replicas
+Read from the replica code on 2026-09-25. Where the replica differs from the real service, the replica decides,
+because it is what the agent sees.
+
+| Domain | Entry point | Easy path | Notes |
+|---|---|---|---|
+| Box | folder | its items (`parent_id`) | a listing shows names only; creator, owner and modifier need `/files/{id}` |
+| Box | phrase | search: files and folders whose **name or description** contains it | tasks and comments are never search results; they are listed per file |
+| Box | person | none | no listing of a person's files, tasks or comments |
+| Linear | team | the team's issues (`teamId`) | members are a separate list |
+| Linear | person | the issues assigned to or created by them | direct filters |
+| Linear | issue | its sub-issues (`parentId`) and its comments | |
+| Slack | channel | its history: **every message, thread replies included** | real Slack leaves replies out; this replica does not |
+| Slack | phrase | search: messages whose text contains it | `from:` and `in:` are supported |
+| Slack | person | search `from:` that person | `users.conversations` lists their channels |
+| Calendar | default scope | the primary calendar's events | |
+| Calendar | calendar | its events (`calendar_id`) | a calendar named after a person is a lure for that person |
+| Calendar | phrase | `q`: events whose **summary, description or location** contains it | |
+| Calendar | recurring event | the series, not its occurrences | occurrences need `singleEvents` or `/instances` |
+
+So these replicas give hidden layouts only where the request's entry point is linked to the target by a
+relation other than the easy path's. Examples: a folder's owner rather than its items, a team's members rather
+than its issues, a task's or comment's text rather than a file name. In Slack, a named channel or person always
+brings replies and messages into view, so a message-level target cannot be hidden.
+
+### Checks before any run
+Suite builders refuse a hidden-target test that fails one of these, as they refuse a missing anchor:
+1. **The existing checks:** the reference selects exactly the target, every decoy claim holds, and the anchors
+   exist.
+2. **The seed check:** each entry point's easy path is written as an fdc query and evaluated on the seed. Exactly
+   one decoy is on the paths, and no target is.
+3. **The replica check:** the preflight records the easy-path calls and one call that follows the stated relation.
+   The recorded responses must agree with the seed check: the decoy is in, the target is out, and the target is
+   reachable. This check is read, not automated.
+
+### Scoring, per trial
+- **Outcome**, as before. A failure is acting on the decoy or presenting it as the match. For the wording check, a
+  "there isn't one" answer while the target exists is a separate outcome: a false absence.
+- **Hiding class**, from the first appearance of the target and decoy ids in what the agent saw:
+  - decoy first, target later;
+  - decoy only;
+  - target first or together (hiding did not hold);
+  - target only (a direct hit through a precise query).
+  A direct hit is a pass that says nothing about the decoy, so it is reported apart.
+- **Mechanism tag** for every failing trial, from the trajectory:
+  - `skipped-check`: the deciding field was never read;
+  - `saw-mismatch-accepted`: it was read, the mismatch noted, and the decoy taken anyway;
+  - `misread`: it was read and misinterpreted.
+
+### Analysis plan: wording check (b)
+- **Tests:** the three covers in which the target was out of sight when Qwen failed (BOX-09, BOX-24, LIN-15). Each
+  is run as written, with the target and all decoys, plus "If there isn't one, just tell me." That is 3 tests and 3
+  trials each.
+- **Question:** does the escape clause alone stop Qwen settling for the near miss when the target is out of sight?
+- **Comparison:** the covers without the clause acted on the decoy in 3/3 (BOX-24), 1/3 (BOX-09) and 1/3 (LIN-15)
+  trials.
+- **Report per test:** trials that acted on a decoy, found the target, or answered with a false absence; the hiding
+  class; and the mechanism. At this size, only counts are reported, with no significance claim.
+
+### Analysis plan: hidden-target pilot (c)
+**Selection rule**, applied as written:
+- **Arm A, existing decoys.** Take every decoy that has a single-decoy probe in this study, except decoys of the
+  three facts already seen in hidden layouts (`R:File.created_by_id`, `A:Task.message`, `R:TeamMembership`). A
+  decoy qualifies when four things hold:
+  - the request, unchanged, has an entry point whose easy path returns it;
+  - the target can be placed off every easy path without changing what the reference selects or any claim;
+  - the seed check passes;
+  - the replica check agrees.
+
+  The test keeps the request, the target and that one decoy.
+- **Arm B, constructed decoys**, for domains with fewer than 2 Arm A tests:
+  - a new scenario applies one easy path of the domain table to a catalog fact that is neither in Arm A nor one of
+    the three facts above;
+  - the request names the entry point, the decoy is what that path returns, and the target is one step off;
+  - it must pass the same checks;
+  - each gets a probe twin: the same decoy alone, no target, and "If there isn't one, just tell me";
+  - at most 2 per domain.
+- The screening of every scenario, with the reason it does or does not qualify, is reported with the results.
+
+**Outcomes:**
+- **Primary, per test:** trials that acted on the decoy, counting only trials where hiding held. The comparison is
+  the same decoy's probe: the existing probe for Arm A, the twin for Arm B.
+- **Secondary:**
+  - the hiding rate, meaning trials in which the decoy came back before any target;
+  - direct hits;
+  - mechanism tags;
+  - facts exposed by a hidden-target test but not by its probe.
+- **Size:** small by construction, so counts are reported without significance claims.
