@@ -144,12 +144,17 @@ def run_budget(load):
 
 
 def _trial_class(run, case_id, trial):
+    """What came first, the target or the test's hidden decoy (not the scenario's other decoys)."""
     from grounding.runs.fact_coverage_02.analyze import current
     from grounding.runs.fact_coverage_02.hiding import first_seen, hiding_class
+    suite = {t["case_id"]: t for t in json.loads((HERE / "suite_hidden.json").read_text())}
+    hidden = suite.get(case_id, {}).get("hidden_decoy")
     attempt = sorted((HERE / "runs" / run / trial / case_id).glob("attempt-*"))[-1]
     case = current(json.loads((attempt / "case.json").read_text()))
     refs = [r for r in case["references"] if r.get("claims") and r.get("expected")]
-    return hiding_class(*first_seen(attempt, case, refs[0])) if refs else "no target"
+    if not refs:
+        return "no target"
+    return hiding_class(*first_seen(attempt, case, refs[0], only={hidden} if hidden else None))
 
 
 OUTCOME_WORDS = {"incorrect": "acted on the decoy", "presented": "presented the decoy", "correct": "target",

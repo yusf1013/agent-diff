@@ -211,10 +211,12 @@ def _aliases(case, ref, witness):
     return names
 
 
-def first_seen(attempt, case, ref):
-    """(turn, offset) of the first appearance of any target, and of the earliest decoy with its id."""
+def first_seen(attempt, case, ref, only=None):
+    """(turn, offset) of the first appearance of any target, and of the earliest decoy with its id. With `only`,
+    just those decoy witnesses count (a hidden-target test's own decoy, not the scenario's other decoys)."""
     targets = [a for t in ref.get("expected") or [] for a in _aliases(case, ref, t)]
-    decoys = {a: str(c["witness"]) for c in ref.get("claims", []) for a in _aliases(case, ref, c["witness"])}
+    decoys = {a: str(c["witness"]) for c in ref.get("claims", []) for a in _aliases(case, ref, c["witness"])
+              if only is None or str(c["witness"]) in only}
     t_first = d_first = None
     for turn, obs in _observations(attempt):
         for name in targets:

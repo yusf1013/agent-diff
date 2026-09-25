@@ -28,6 +28,7 @@ HERE = Path(__file__).resolve().parent
 PILOT = HERE.parent / "fact_coverage_01/pilot/cases"
 WORDING = [(PILOT / "box/BOX-09.json", "b1"), (PILOT / "linear/LIN-15.json", "b1"),
            (HERE / "cases_new/box/BOX-24.json", "method_new")]
+HIDDEN_DECOY = {"BOX-09": "9902", "LIN-15": "i-d1", "BOX-24": "8304"}  # the decoy the cover's layout hides behind
 
 
 def fresh(path):
@@ -58,12 +59,12 @@ def build():
         base = fresh(path)
         case = told(rename(copy.deepcopy(base), f"WC-{base['case_id']}"), plural=False)
         add(case, "wording check", base["case_id"], note=f"the cover as run in {run}, plus the escape clause",
-            cover_run=run)
+            cover_run=run, hidden_decoy=HIDDEN_DECOY[base["case_id"]])
     for builder, ci, scenario in ARM_A:
         case = builder()
         hidden = case["references"][0]["claims"][ci]
         add(rename(case, f"H-{scenario}-I1{ci + 1}"), "hidden target", scenario, arm="A", fact=hidden["requirement"],
-            family=FAMILY[scenario][f"I1{ci + 1}"], probe=f"P-{scenario}-I1{ci + 1}",
+            family=FAMILY[scenario][f"I1{ci + 1}"], probe=f"P-{scenario}-I1{ci + 1}", hidden_decoy=str(hidden["witness"]),
             note="pilot scenario; other decoys removed" + ("; lures " + json.dumps(case["lures"]) if case.get("lures") else ""))
     for builder in ARM_B:
         base = builder()
@@ -71,7 +72,7 @@ def build():
         hidden = base["references"][0]["claims"][0]
         add(rename(copy.deepcopy(base), f"H-{scenario}-I11"), "hidden target", scenario, arm="B",
             fact=hidden["requirement"], family=hidden.get("family"), probe=f"P-{scenario}-I11",
-            note="constructed scenario")
+            hidden_decoy=str(hidden["witness"]), note="constructed scenario")
         twin = told(rename(isolate(base, 0, 0), f"P-{scenario}-I11"), plural=False)
         add(twin, "probe twin", scenario, arm="B", fact=hidden["requirement"], family=hidden.get("family"),
             note="the hidden test's decoy alone")

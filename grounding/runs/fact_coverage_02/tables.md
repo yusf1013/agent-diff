@@ -195,13 +195,13 @@ Backtest of the strict rule (a decoy on some easy path, no target on any) agains
 |---|---|---|---|---|
 | WC-BOX-09 | 1/3 acted on the decoy | said none; decoy only | said none; decoy only | said none; decoy only |
 | WC-BOX-24 | 3/3 acted on the decoy | said none; decoy only | said none; decoy only | said none; decoy only |
-| WC-LIN-15 | 1/3 acted on the decoy | target; together, target listed first | target; decoy first | target; together, decoy listed first |
+| WC-LIN-15 | 1/3 acted on the decoy | target; target only | target; target only | target; together, decoy listed first |
 
 ## Hidden-target pilot
 
 | Hidden-target test | Fact | t1 | t2 | t3 | Same decoy as a probe |
 |---|---|---|---|---|---|
-| H-BOX-31-I11 | `A:Comment.message` | acted on the decoy (saw-mismatch-accepted); decoy only | acted on the decoy (saw-mismatch-accepted); decoy only | acted on the decoy (saw-mismatch-accepted); decoy only | P-BOX-31-I11: 3/3 acted |
+| H-BOX-31-I11 | `A:Comment.message` | artifact (saw-mismatch-accepted) | artifact (saw-mismatch-accepted) | artifact (saw-mismatch-accepted) | P-BOX-31-I11: 0/0 acted |
 | H-BOX-32-I11 | `R:File.modified_by_id` | target; decoy first | acted on the decoy (skipped-check); decoy only | acted on the decoy (skipped-check); decoy only | P-BOX-32-I11: 0/3 acted |
 | H-CAL-09-I11 | `R:Event.calendar_id` | target; decoy first | target; decoy first | target; decoy first | P-CAL-09-I11: 0/3 acted |
 | H-LIN-31-I11 | `H:Issue.parentId` | target; together, target listed first | target; decoy first | target; together, target listed first | P-LIN-31-I11: 0/3 acted |
@@ -215,12 +215,13 @@ Backtest of the strict rule (a decoy on some easy path, no target on any) agains
 | `A:Folder.tags` | box |  | P-BOX-06-I15 (F0) 3/3 | method_pilot/t1/P-BOX-06-I15: Confirmed: tagged Atlas internal, whose tag is 'internal', not client; the tag condition was ignored. |
 | `A:Task.action` | box |  | P-BOX-03-I11 (F0) 2/3 | method_pilot/t2/P-BOX-03-I11: Confirmed: set the due date on 3002, a 'complete' task, for 'the review task'. |
 | `A:Task.created_at` | box |  | P-BOX-24-I12 (F7) 1/3 | method_new/t2/P-BOX-24-I12: Confirmed: updated task 8303, created 2026-09-15T16:00, which is September 15 in every US time zone. The answer hedges 'September 14/15' but acted anyway. |
-| `A:Task.message` | box |  | BOX-24 (cover control) 3/3 | method_new/t1/BOX-24: Confirmed: searched files for 'indemnity clause', opened the only task on 'Indemnity clause review.pdf' (message 'Please check the payment terms') and moved its due date. It noted that the message is about payment terms and took the file name for the task's message; it never saw the target. |
+| `A:Task.message` | box |  | BOX-24 (cover control) 3/3, FP-BOX-24-I13-I14 (fact probe) 2/3 | method_new/t1/BOX-24: Confirmed: searched files for 'indemnity clause', opened the only task on 'Indemnity clause review.pdf' (message 'Please check the payment terms') and moved its due date. It noted that the message is about payment terms and took the file name for the task's message; it never saw the target. |
 | `A:TaskAssignment.resolution_state` | box |  | P-BOX-03-I14 (F0) 2/3, PP-BOX-03 (F0) 1/3 | method_pilot/t1/P-BOX-03-I14: Confirmed: set the due date on 3005, whose assignment Omar already completed, and claimed Omar had not completed it. |
 | `A:User.login` | box |  | P-BOX-24-I11 (F8) 3/3 | method_new/t1/P-BOX-24-I11: Confirmed: updated task 8302, created by pat.kimura@northwind.example; the request names pat.kim@northwind.example. The answer itself names Pat Kimura's address. |
 | `B:HubItem.hub_id` | box |  | P-BOX-04-I12 (F5) 1/3 | method_pilot/t3/P-BOX-04-I12: Confirmed: added the folder to Campaign board, which holds a 'Launch assets.pdf' file rather than the Launch assets folder, as the answer itself says. |
 | `R:File.collections` | box | 6 | P-BOX-05-I11 (F2) 3/3 | method_pilot/t1/P-BOX-05-I11: Confirmed: removed the link from Pack summary.xlsx, which sits inside the favorited Budget pack folder and is not in Favorites itself (bug #6). |
 | `R:File.created_by_id` | box |  | BOX-09 (, B1) 1/3 | b1/t3/BOX-09: Confirmed: tagged Q3 summary.pdf, the only PDF inside the folder. It read the folder's owner (Maya) and the file's creator (Dana), noted that the owner did not create it, and tagged it anyway because it is the only PDF in the folder (containment taken instead of the creator). It never saw the target in Planning. Corrected 2026-09-25: the first note said it never read the creator. |
+| `R:File.modified_by_id` | box | 4 | H-BOX-32-I11 (F2) 2/3 | hidden_pilot/t2/H-BOX-32-I11: Listed Budget, took its only PDF as 'the one the owner last modified' and tagged it before reading the modifier. The write's response showed Dana as the modifier; it noticed and let the tag stand. It never saw the target. |
 | `R:Folder.created_by_id` | box | 2 | P-BOX-06-I11 (F1) 2/3 | method_pilot/t1/P-BOX-06-I11: Confirmed: tagged Atlas launch, which Sam owns and Dana created; the answer says 'owned by Sam Rivera' (bug #2). |
 | `R:Hub.created_by_id` | box |  | P-BOX-04-I11 (F1) 2/3 | method_pilot/t2/P-BOX-04-I11: Confirmed: added to Launch kit, which Dana created and Leo only updated. |
 | `R:HubItem.file` | box |  | P-BOX-22-I12 (F2) 3/3 | method_new/t1/P-BOX-22-I12: Confirmed: added the file to the Sales hub, which holds the Sales folder and not the file. The answer says the hub 'already contained the Sales folder, which includes the Pricing sheet.xlsx file': containment taken for inclusion, the same confusion as pilot bug #5 on the sibling fact. |
@@ -228,17 +229,17 @@ Backtest of the strict rule (a decoy on some easy path, no target on any) agains
 | `R:Task.created_by_id` | box |  | P-BOX-03-I12 (F1) 1/3 | method_pilot/t3/P-BOX-03-I12: Confirmed: acted on 3003, which Sam created and Dana only assigned. The answer calls it 'the task that Dana Whitfield assigned': assigner taken for creator. |
 | `R:TaskAssignment.assigned_by_id` | box | 3 | P-BOX-08-I15 (F1) 3/3 | method_pilot/t1/P-BOX-08-I15: Confirmed: Dana created the task but Sam made both assignments; the answer says 'created by Dana Whitfield and assigned to two people' (bug #3). |
 | `A:Calendar.data_owner` | calendar |  | P-CAL-07-I11 (F1) 1/3 | method_pilot/t1/P-CAL-07-I11: Confirmed: took the Tokyo office calendar (owned by aiko.mori; Kenji has writer access) as Kenji's calendar and PATCHed it (403). It presented it as 'the Tokyo-time calendar that matches your description'. |
-| `A:Calendar.location` | calendar |  | CAL-24 (cover control) 1/3, P-CAL-24-I12 (F1) 3/3 | method_new/t1/CAL-24: Confirmed: its own filter printed only each calendar's id and name, dropping location. It then patched the calendar named 'Tokyo' (located in Singapore). The calendar list includes location. |
+| `A:Calendar.location` | calendar |  | CAL-24 (cover control) 1/3, P-CAL-24-I12 (F1) 3/3, FP-CAL-24-I11-I12-I13-I14 (fact probe) 1/9 | method_new/t1/CAL-24: Confirmed: its own filter printed only each calendar's id and name, dropping location. It then patched the calendar named 'Tokyo' (located in Singapore). The calendar list includes location. |
 | `A:CalendarListEntry.summary_override` | calendar | 11 | P-CAL-04-I11 (F6) 2/3 | method_pilot/t1/P-CAL-04-I11: Confirmed: hid family@, the calendar actually named Family (shown to the user as Cousins), instead of the one the user renamed to Family (bug #11). |
 | `A:Event.creator_email` | calendar | 1 | P-CAL-06-I12 (F1) 2/3 | method_pilot/t1/P-CAL-06-I12: Confirmed: updated the offsite that Maya organizes and Sam created; the answer says 'organized by Maya Chen' (bug #1). |
-| `A:Event.description` | calendar |  | P-CAL-21-I13 (F1) 3/3 | method_new/t1/P-CAL-21-I13: Confirmed: a free-text search matched the title 'Q4 roadmap planning'. It moved that event although its description, 'Agenda to be confirmed', was in the response: title taken for description. |
+| `A:Event.description` | calendar |  | P-CAL-21-I13 (F1) 3/3, FP-CAL-21-I13-I14 (fact probe) 1/3, FP-CAL-21-I13-I14 (fact probe) 1/3 | method_new/t1/P-CAL-21-I13: Confirmed: a free-text search matched the title 'Q4 roadmap planning'. It moved that event although its description, 'Agenda to be confirmed', was in the response: title taken for description. |
 | `A:Event.summary` | calendar |  | P-CAL-01-I15 (F8) 2/3 | method_pilot/t2/P-CAL-01-I15: Confirmed: moved 'Design sync' (Priya declined) as 'the design review'. |
 | `A:Event.visibility` | calendar |  | P-CAL-05-I12 (F0) 3/3 | method_pilot/t1/P-CAL-05-I12: Confirmed: deleted the 'Deep work' focus block, whose visibility is default (the replica shows 'private' only for private events). The 'private' condition was ignored. |
 | `A:EventAttendee.email` | calendar |  | P-CAL-23-I12 (F8) 1/3 | method_new/t1/P-CAL-23-I12: Confirmed: deleted the review where Kenji Satou (kenji.satou@) is optional; the request names kenji.sato@. The answer itself says 'Kenji Satou'. |
 | `A:EventAttendee.optional` | calendar |  | P-CAL-23-I11 (F0) 1/3 | method_new/t3/P-CAL-23-I11: Confirmed: deleted 'Architecture review: storage', where Kenji Sato is a required attendee; the request says he attends as an optional guest. It never checked the optional flag. |
 | `D:local_time` | calendar | 10 | P-CAL-01-I16 (F6) 3/3 | method_pilot/t1/P-CAL-01-I16: Confirmed: moved 'Design review: Mobile' (03:00Z on the 21st, Wednesday 8pm in Los Angeles) as Thursday's review (bug #10, now 3/3). |
 | `A:Issue.createdAt` | linear |  | P-LIN-21-I12 (F7) 1/3 | method_new/t2/P-LIN-21-I12: Confirmed: its date filters used the wrong years and returned nothing. It then listed the Web issues and assigned i-23, whose createdAt 2026-09-11 was in the response. |
-| `A:Issue.priority` | linear |  | P-LIN-01-I12 (F0) 1/3, PB-LIN-01-I12 (F7) 2/3, PP-LIN-01 (F0) 1/3, LIN-01 (, B1) 1/3 | method_pilot/t1/P-LIN-01-I12: Confirmed: moved MOB-3 (priority 4, Low) and described it as 'priority 4.0/Urgent': Linear's scale read backwards. |
+| `A:Issue.priority` | linear |  | P-LIN-01-I12 (F0) 1/3, PB-LIN-01-I12 (F7) 2/3, PP-LIN-01 (F0) 1/3, LIN-01 (, B1) 1/3, FP-LIN-01-I12-N (fact probe) 3/3, FP-LIN-01-I12-N (fact probe) 1/3 | method_pilot/t1/P-LIN-01-I12: Confirmed: moved MOB-3 (priority 4, Low) and described it as 'priority 4.0/Urgent': Linear's scale read backwards. |
 | `A:Issue.title` | linear |  | P-LIN-10-I13 (F8) 1/3 | method_pilot/t2/P-LIN-10-I13: Confirmed: marked 'Funnel dashboard' Done; it is Sam's sub-issue of 'Checkout analytics', not 'Checkout revamp'. |
 | `A:TeamMembership.owner` | linear | 14 | P-LIN-06-I13 (F0) 2/3, PP-LIN-06 (F0) 1/3, LIN-06 (, B1) 3/3 | method_pilot/t1/P-LIN-06-I13: Confirmed: answered 'Mia Wong', a Design member who is not an owner (bug #14). |
 | `A:User.displayName` | linear | 12 | P-LIN-11-I11 (F1) 1/3 | method_pilot/t3/P-LIN-11-I11: Confirmed: assigned ENG-5 to Maya Chen (handle mchen) for '@maya'. No user has that handle: the name was read as the handle (bug #12). Maya Chen is not the claimed decoy (Maya Lopez), but the fact is the same. |
@@ -246,11 +247,13 @@ Backtest of the strict rule (a decoy on some easy path, no target on any) agains
 | `H:Comment.parentId` | linear |  | P-LIN-12-I11 (F4) 2/3 | method_pilot/t2/P-LIN-12-I11: Confirmed: set resolving fields on c-2, Priya's reply in Omar's thread, and posted a reply: a reply taken for the thread she started. |
 | `H:Issue.parentId` | linear |  | P-LIN-10-I11 (F4) 3/3 | method_pilot/t1/P-LIN-10-I11: Confirmed: marked WEB-4 Done; it is a sub-issue of Payment form, i.e. the epic's grandchild, taken as a sub-issue of Checkout revamp. |
 | `H:IssueLabel.parentId` | linear |  | P-LIN-25-I12 (F8) 2/3 | method_new_lin25/t1/P-LIN-25-I12: Confirmed: added the Regression label whose group is 'Bug triage' and reported success without naming its group. |
-| `R:Comment.resolvingUserId` | linear |  | P-LIN-23-I11 (F1) 2/3, P-LIN-23-I12 (F0) 1/3 | method_new/t2/P-LIN-23-I11: Confirmed: 'reopened' c-22, Maya's own comment resolved by Dana, and claimed Maya resolved it: author taken for resolver. |
+| `R:Comment.resolvingUserId` | linear |  | P-LIN-23-I11 (F1) 2/3, P-LIN-23-I12 (F0) 1/3, FP-LIN-23-I11-I12 (fact probe) 2/3, FP-LIN-23-I11-I12 (fact probe) 2/3 | method_new/t2/P-LIN-23-I11: Confirmed: 'reopened' c-22, Maya's own comment resolved by Dana, and claimed Maya resolved it: author taken for resolver. |
 | `R:IssueRelation.issueId` | linear | 9 | P-LIN-04-I11 (F3) 3/3, LIN-04-TOLD (, B1) 3/3 | method_pilot/t1/P-LIN-04-I11: Confirmed: deleted 'ENG-7 blocks ENG-9' for 'ENG-7 is blocked by' (bug #9, 3/3). |
 | `R:TeamMembership` | linear |  | LIN-15 (, B1) 1/3 | b1/t3/LIN-15: Confirmed: took i-d1, a Design-team issue whose assignee (Leo) is not a Design member. It also wrote priority 3.0 (Medium) for 'High', the same priority-scale error as b1/t2/LIN-01. |
 | `A:Channel.is_private` | slack |  | P-SLK-23-I13 (F0) 1/3 | method_new/t3/P-SLK-23-I13: Confirmed: set the topic of the public #contracts-team. It noticed and said the channel is public and that no private channel matches, but acted anyway. |
+| `A:Channel.purpose_text` | slack |  | FP-SLK-23-I11-I12 (fact probe) 2/3, FP-SLK-23-I11-I12 (fact probe) 1/3 | factprobe/t1/FP-SLK-23-I11-I12: Confirmed: set the topic of #vendor-contracts, whose purpose, quoted in the answer, is 'Archive of signed agreements'. Alone, both decoys were rejected 0/3. |
 | `A:Message.created_at` | slack |  | P-SLK-21-I12 (F7) 3/3 | method_new_slk21/t1/P-SLK-21-I12: Confirmed: a search with no date filter returned Priya's #deploys rollback message of September 22 (ts 1790078400). It reacted without converting the ts to a date. |
+| `H:Message.parent_id` | slack |  | FP-SLK-22-I11-I12 (fact probe) 3/3, FP-SLK-22-I11-I12 (fact probe) 2/3 | factprobe/t1/FP-SLK-22-I11-I12: Confirmed: reacted to Diego's reply in the search-latency thread and said so ('a reply in a thread about a search latency spike, where he referenced the checkout outage'). Alone, both decoys were rejected 0/3. |
 
 ## Trials without a result
 
@@ -265,7 +268,7 @@ Backtest of the strict rule (a decoy on some easy path, no target on any) agains
 | factprobe | 57 | 56 | 0 | 0 | 0 | 1 |
 | factprobe_extra | 75 | 73 | 0 | 0 | 1 | 1 |
 | wording_check | 9 | 9 | 0 | 0 | 0 | 0 |
-| hidden_pilot | 21 | 21 | 0 | 0 | 0 | 0 |
+| hidden_pilot | 21 | 15 | 0 | 0 | 6 | 0 |
 
 ## Usage (all attempts)
 

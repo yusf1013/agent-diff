@@ -322,7 +322,8 @@ def main():
     lines += fact_probes() + fact_probes_equal_runs(load)
     lines += hidden_targets(load)
     manual = json.loads((HERE / "manual_labels.json").read_text())
-    lines += bug_list([t for t in new + pilot if t["form"] != "policy panel"], manual)
+    followup = load(["factprobe", "factprobe_extra"]) + [t for t in load(["hidden_pilot"]) if t["form"] == "hidden target"]
+    lines += bug_list([t for t in new + pilot if t["form"] != "policy panel"] + followup, manual)
     runs = ["b1", "method_new", "method_new_lin25", "method_new_slk21", "method_pilot", "method_pilot_panel", "factprobe",
             "factprobe_extra", "wording_check", "hidden_pilot"]
     lines += denominators(runs)

@@ -425,7 +425,8 @@ by recorded preflight calls:
   - it matches file and folder names and descriptions;
   - it reads only the item `type` and ignores `content_types`, so a request to search comments is dropped. Real Box
     can search comments.
-- **Box folder listings ignore `fields`.** Creator, owner and modifier need one call per file.
+- **Box folder listings return the short form** (id, type, etag, name) whatever `fields` asks for. Creator, owner and
+  modifier need one call per file.
 - **Calendar recurring events:** `events.list` returns a series only when the window covers the series' first start.
   A windowed `singleEvents` query returns nothing, so occurrences need `/instances`.
 - **Calendar `q`** matches summary, description and location, not the organizer or attendees.
@@ -449,14 +450,16 @@ latest attempt; the rerun first versions of LIN-25 and SLK-21 (30 trials) are ex
 | Fact probes (§12.2) | 57 | 56 | 0 | 0 | 1 |
 | Fact probes, extra runs (§12.2) | 75 | 73 | 0 | 1 | 1 |
 | Wording check (§12.3) | 9 | 9 | 0 | 0 | 0 |
-| Hidden-target pilot (§12.3) | 21 | 21 | 0 | 0 | 0 |
+| Hidden-target pilot (§12.3) | 21 | 15 | 0 | 6 | 0 |
 
 - **Infrastructure:** CAL-02 t1. Its prompt exceeds Qwen's 65,536-token context with the 16,384-token output
   allowance, and it failed again on retry.
-- **Replica or seed artifacts** (9 in total):
+- **Replica or seed artifacts** (15 in total):
   - the ignored `eventTypes` filter: CAL-05-TOLD t1 and t3, P-CAL-05-I11 t1–t3;
   - the ignored `subscribers` filter: P-LIN-26-I11 t3, P-LIN-26-I13 t2, and one extra FP-LIN-26 run;
-  - the unobservable project lead: P-LIN-03-I12 t1.
+  - the unobservable project lead: P-LIN-03-I12 t1;
+  - the defective hidden-target test H-BOX-31 and its twin, 6 trials (§12.3). Its wording is ambiguous, and its
+    hiding rests on the replica ignoring comment search.
 - **Other:**
   - LIN-02-TOLD t2 claimed an authentication error after one schema error and stopped;
   - P-LIN-07-I12 t2 and two FP-LIN-22 runs claimed Linear has no documents;
@@ -512,7 +515,7 @@ Each step is marked **kept** from v1, **new**, or **changed**.
    - **Hiding** (new, from §12.3, asserted by the builder of hidden-target tests; see [hiding.py](hiding.py)). A
      hidden-target test has exactly one decoy and no target on the easy paths, on the seed and in the recorded
      preflight calls.
-   - **Unambiguous wording** (changed, from §12.3). A phrase that can attach to either noun turns a decoy into a
+   - **Unambiguous wording** (new, from §12.3). A phrase that can attach to either noun turns a decoy into a
      correct reading, as "the spreadsheet Priya commented on about travel costs" did.
 3. **Tests per scenario.**
    - **One target-present test, built as a hidden-target test where a layout passes the checks** (changed, from
@@ -558,7 +561,9 @@ Each step is marked **kept** from v1, **new**, or **changed**.
 - **One contestable decoy.** `A:File.name` rests on "Pricing sheet 2025.xlsx"; it is counted with an asterisk.
   BOX-31 (§12.3) is defective and not counted at all.
 - **Hidden layouts are scarce here.** In these replicas they exist only where the request's entry point relates to
-  the target by a relation the easy path does not follow. Several easy paths differ from the real services (§9).
+  the target by a relation the easy path does not follow. They also need a domain where listing every record of the
+  target's kind is not cheap: that held in Box, not in a small Linear workspace. Several easy paths differ from the
+  real services (§9).
 - **One unresolved question.** LIN-26 carried a realism caveat, recorded in advance: real Linear auto-subscribes
   assignees and creators. Both LIN-26 failures turned out to be replica artifacts, so the caveat never had to
   decide a verdict.
@@ -744,8 +749,9 @@ Three trials each, in [runs/wording_check](runs/wording_check).
   it has to decide. It does not show that the agent would have kept looking. The underlying habit, stopping at the
   first candidate in view, shows up as acting on the decoy without the clause and as a false "none" with it. Only a
   test with the target present measures search depth.
-- **WC-LIN-15 says little about the clause.** Hiding held in 1 of its 3 trials; in the other two Qwen fetched the
-  team's members first.
+- **WC-LIN-15 says nothing about the clause.** Its hidden decoy never came back without the target. Twice Qwen fetched
+  the team's members first, and once it listed every issue. The hiding class is computed against the test's hidden
+  decoy, not the scenario's other decoys.
 
 **The pilot.** The rule was applied as written.
 - **Arm A** (existing decoys, capped at 2 per domain) yielded only CAL-02 and CAL-09.
@@ -753,6 +759,8 @@ Three trials each, in [runs/wording_check](runs/wording_check).
   no target, "just tell me").
 - **Slack had no layout that passes.** Its channel history includes thread replies, and channels are listed whole.
 - **H-CAL-02 failed the replica check** before any run and was dropped, not replaced.
+- **The screening of each reference** is the backtest table in [tables.md](tables.md): a target on some easy path
+  disqualifies it. CAL-09 qualified only because its target could move off the primary calendar.
 
 That left 4 hidden-target tests and 3 twins at 3 trials, all 21 trials read, in [runs/hidden_pilot](runs/hidden_pilot).
 The primary outcome counts trials in which hiding held.
@@ -762,7 +770,7 @@ The primary outcome counts trials in which hiding held.
 | H-BOX-32, last modifier (`R:File.modified_by_id`) | **2/3** (both `skipped-check`) | 3/3 | twin 0/3: "none" 3/3 |
 | H-CAL-09, organizer (`R:Event.calendar_id`) | 0/3 | 3/3 | P-CAL-09-I11 0/3 |
 | H-LIN-31, sub-issue's parent (`H:Issue.parentId`) | 0/1 held (0/3 in all) | 1/3 | twin 0/3 |
-| H-BOX-31, comment text (`A:Comment.message`), defective | 3/3 | 3/3 | twin 3/3 |
+| H-BOX-31, comment text (`A:Comment.message`) | invalid test, not established | 3/3 | twin also acted 3/3 |
 
 - **One clean positive: H-BOX-32.**
   - Qwen listed the Budget folder and took its only PDF as "the one the owner last modified". It tagged the file
@@ -776,13 +784,22 @@ The primary outcome counts trials in which hiding held.
   listing, so the check cost nothing.
 - **H-LIN-31 mostly did not hide.** Two trials listed issues together with their parents and saw the target at
   once. In the trial that held, Qwen read the parents and chose right.
-- **H-BOX-31 is defective and is not counted.**
+- **H-BOX-31 is defective and is not counted.** Its 6 trials are recorded as artifacts, like the other invalid tests
+  (§9).
   - Its twin failed exactly like the hidden-target test, so the failure is not about hiding.
   - The wording lets "about travel costs" describe the spreadsheet, and one trial named that reading.
   - Real Box search can match comments; this replica ignores `content_types`.
 
   The lesson for building these tests: check the request for a phrase that can attach to either noun, and do not
   build a hidden layout on a replica gap.
+- **Where hiding held depended on the domain, not only on the layout.** It held in every valid Box and CAL-09 trial,
+  in 1 of 3 LIN-31 trials and in none of WC-LIN-15's.
+  - In Box there is no cheap listing of every file: search needs a query and folders are listed one at a time.
+  - In a small Linear workspace, one unfiltered issues query lists everything, parents included.
+  - The rule keeps the target reachable by a plain listing of everything. Where that listing is cheap, it is often
+    Qwen's first move, and it defeats hiding.
+  - So a hidden layout needs a domain without a cheap listing of the target's kind of record, or a seed large enough
+    that listing everything is not the natural first move.
 - **Across every hidden layout so far,** hiding exposed a fact that the same decoy's single-decoy probe missed in 4 of
   7 layouts: BOX-09, BOX-24, LIN-15 and BOX-32. It did not in CAL-02, CAL-09 and LIN-31. Only the pilot's three were
   prospective, and there it is 1 of 3.
@@ -798,7 +815,8 @@ The primary outcome counts trials in which hiding held.
 **Replica paths that decide whether a target can hide.** Recorded in [method.md](method.md) and §9:
 - **Slack history includes thread replies.** Real Slack leaves them out.
 - **Box search** matches names and descriptions, and ignores `content_types`.
-- **Box folder listings ignore `fields`,** so a creator or modifier needs a call per file.
+- **Box folder listings return the short form** (id, type, etag, name) whatever `fields` asks for, so a creator or
+  modifier needs a call per file.
 - **Calendar lists a recurring series only when the window covers its first start.** A windowed `singleEvents`
   query returns nothing.
 - **Calendar `q`** matches summary, description and location, not the organizer or attendees.
