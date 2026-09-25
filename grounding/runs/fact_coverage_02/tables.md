@@ -92,6 +92,59 @@ Facts not among the pilot's 16: `A:Calendar.data_owner`, `A:Event.summary`, `A:E
 | LIN-01-A | linear | pilot case, presupposing wording | 3/3 |
 | LIN-01-A-I15 | linear | pilot case, presupposing wording | 2/3 |
 
+## Packed "just tell me" vs one decoy at a time (8 pilot scenarios)
+
+| Form | Tests | Distinct facts | Decoy-trials acted on |
+|---|---:|---:|---:|
+| All decoys, no target, "just tell me" (B1 -TOLD covers) | 8 | 2 | 4/84 |
+| One decoy per probe (same decoys) | 32 | 7 | 17/93 |
+
+Only packed: none. Only alone: ['A:Event.visibility', 'A:Folder.tags', 'B:HubItem.hub_id', 'R:Folder.created_by_id', 'R:Hub.created_by_id'].
+
+## Budget counted in runs
+
+| Use of a run (both fact sets pooled) | Runs | New facts | Per run |
+|---|---:|---:|---:|
+| First run of a probe | 183 | 25 | 0.137 |
+| Repeat of a probe (2nd or 3rd run) | 366 | 13 | 0.036 |
+| Cover run, counting only facts the probes did not find | 147 | 3 | 0.020 |
+
+| Policy (runs used, facts) | Pilot facts, 200 runs | New facts, 100 runs |
+|---|---:|---:|
+| Probes once each, then repeat probes | 21 (200 runs) | 11 (100 runs) |
+| Probes once, covers once, then repeat probes | 20 (200 runs) | 10 (100 runs) |
+| Covers ×3, then probes once | 19 (200 runs) | 9 (100 runs) |
+| Probes once, covers once, then repeat covers | 18 (200 runs) | 9 (100 runs) |
+| Covers only, ×3 | 7 (93 runs) | 2 (54 runs) |
+
+Probes are ordered by family yield (F8, F1, F6, …), itself measured on these runs.
+
+## Fact probes: all of a fact's decoys together vs one decoy per probe
+
+| Fact probe | Fact | Together: failing trials (decoys acted on) | Alone: failing trials per decoy |
+|---|---|---|---|
+| FP-BOX-21-I13-I15 | `A:Folder.created_at` | 0/3 | F7 0/3; F0 0/3 |
+| FP-BOX-24-I13-I14 | `A:Task.message` | 2/3 (8304 ×2) | F1 0/3; F0 0/3 |
+| FP-CAL-21-I11-I12 | `A:Event.end` | 0/3 | F1 0/3; F7 0/3 |
+| FP-CAL-21-I13-I14 | `A:Event.description` | 1/3 (ev_ps_title ×1) | F1 3/3; F0 0/3 |
+| FP-CAL-22-I11-I12-I13 | `A:Calendar.description` | 0/3 | F1 0/3; F1 0/3; F0 0/3 |
+| FP-CAL-24-I11-I12-I13-I14 | `A:Calendar.location` | 0/3 | F1 0/3; F1 3/3; F6 0/3; F0 0/3 |
+| FP-LIN-21-I13-I14 | `R:Issue.teamId` | 0/3 | F8 0/3; F0 0/3 |
+| FP-LIN-22-I12-I13-I14 | `R:Document.projectId` | 0/2 | F2 0/3; F8 0/3; F0 0/3 |
+| FP-LIN-23-I11-I12 | `R:Comment.resolvingUserId` | 2/3 (c-22 ×2) | F1 2/3; F0 1/3 |
+| FP-LIN-25-I11-I12 | `H:IssueLabel.parentId` | 0/3 | F4 0/3; F8 2/3 |
+| FP-LIN-26-I11-I12-I13 | `R:issue_subscriber_user_association` | 0/3 | F1 0/2; F1 0/3; F0 0/2 |
+| FP-SLK-21-I13-I14 | `R:Message.channel_id` | 0/3 | F8 0/3; F0 0/3 |
+| FP-SLK-22-I11-I12 | `H:Message.parent_id` | 3/3 (1790093400.000006 ×3) | F4 0/3; F2 0/3 |
+| FP-SLK-23-I11-I12 | `A:Channel.purpose_text` | 2/3 (C_VENDOR ×2) | F1 0/3; F1 0/3 |
+| FP-SLK-24-I11-I12-I13 | `R:channel_members` | 0/3 | F1 0/3; F8 0/3; F0 0/3 |
+| FP-BOX-08-I13-N | `A:Task.due_at` | 0/3 | F0 0/3; F7 0/3 |
+| FP-LIN-01-I12-N | `A:Issue.priority` | 3/3 (i-mob-14n ×3) | F0 1/3; F7 2/3 |
+| FP-LIN-05-I13-N | `A:Issue.estimate` | 0/3 | F0 0/3; F7 0/3 |
+| FP-LIN-05-I15-N | `A:Issue.dueDate` | 0/3 | F0 0/3; F7 0/3 |
+
+Facts exposed with all decoys together: 6 of 19 facts (19 tests). Exposed by some single-decoy probe: 5 (44 tests). Only together: ['A:Channel.purpose_text', 'A:Task.message', 'H:Message.parent_id']. Only alone: ['A:Calendar.location', 'H:IssueLabel.parentId'].
+
 ## Distinct facts exposed
 
 | Fact | Domain | Pilot bug | Tests (failing/established trials) | One reviewed trial |
@@ -148,6 +201,7 @@ Facts not among the pilot's 16: `A:Calendar.data_owner`, `A:Event.summary`, `A:E
 | method_new_slk21 | 21 | 21 | 0 | 0 | 0 | 0 |
 | method_pilot | 417 | 411 | 0 | 0 | 4 | 2 |
 | method_pilot_panel | 15 | 15 | 0 | 0 | 0 | 0 |
+| factprobe | 57 | 56 | 0 | 0 | 0 | 1 |
 
 ## Usage (all attempts)
 
@@ -159,7 +213,8 @@ Facts not among the pilot's 16: `A:Calendar.data_owner`, `A:Event.summary`, `A:E
 | method_new_slk21 | 7 | 22 | 174 | 1,035,910 | 68,369 | 0 |
 | method_pilot | 139 | 434 | 3,621 | 18,997,996 | 940,792 | 0 |
 | method_pilot_panel | 5 | 15 | 149 | 751,370 | 54,138 | 0 |
-| **total** | | 817 | 6,624 | 34,419,945 | 1,801,188 | 0 |
+| factprobe | 19 | 57 | 415 | 1,601,998 | 131,751 | 0 |
+| **total** | | 874 | 7,039 | 36,021,943 | 1,932,939 | 0 |
 
 Exploration runs (`smoke_slack`) and no-model preflights (`prepare_*`) are not counted.
 ## Report rows

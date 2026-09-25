@@ -1,0 +1,1 @@
+There is a "Q4 roadmap planning" session on Thursday, June 21 that ends at 5:00 PM, but its description field reads "Agenda to be confirmed" — it does not mention the Q4 roadmap (that phrase appears only in the event title/summary). Since no planning session ending at 5 PM on Thursday has a *description* that mentions the Q4 roadmap, there is no matching event to move to Room 2B.

@@ -1,0 +1,3 @@
+I did not add the tag. There is no file that meets **all** the criteria. The only near-match — *Education pricing EMEA.xlsx* — has an open review task created by Dana Whitfield and assigned to two people, but its due date is **exactly October 1, 2026 (09:00)**, which is *on* October 1, not **before** it. The other file's task is due October 15, 2026 (after). So no file has an open review task due *before* October 1, 2026, and therefore I left everything unchanged.
+
+If you'd actually intended the file due *on* October 1 (Education pricing EMEA.xlsx, ID 9014), let me know and I'll add the "escalate" tag to it.

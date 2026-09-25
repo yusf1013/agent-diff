@@ -1,0 +1,1 @@
+The Platform team (PLT) has cycles enabled (2-week duration), but there is **no current active cycle**. Since there's no current cycle, there are no open issues to move to a next cycle. Nothing needed to be done.

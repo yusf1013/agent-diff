@@ -11,6 +11,8 @@ hand-made, and nothing here claims automated test generation.
 | [suite_pilot.py](suite_pilot.py), [suite_pilot.json](suite_pilot.json), [cases_pilot/](cases_pilot/) | v1 applied to the pilot's 31 scenarios (148 tests) |
 | [scenarios_box.py](scenarios_box.py), [scenarios_calendar.py](scenarios_calendar.py), [scenarios_linear.py](scenarios_linear.py), [scenarios_slack.py](scenarios_slack.py) | 18 new scenarios (facts the pilot never tested), with each decoy's family |
 | [suite_new.py](suite_new.py), [suite_new.json](suite_new.json), [cases_new/](cases_new/) | Cover-style controls, probes and the Slack policy panel for the new scenarios (79 tests) |
+| [suite_factprobe.py](suite_factprobe.py), [suite_factprobe.json](suite_factprobe.json), [cases_factprobe/](cases_factprobe/) | Follow-up: one probe per fact with several decoys, holding all of them (19 tests) |
+| [followups.py](followups.py) | Follow-up analyses of the recorded trials: packed vs one decoy at a time, and budgets counted in runs |
 | [run.py](run.py) | Runs cases at 3 trials into `runs/<run>/t<k>/<case>/attempt-XX` (the pilot's episode); `--pairs` retries single trials |
 | [analyze.py](analyze.py), [score.py](score.py) | Attribution per trial (state diff, write attempts, answer triage, priority values) and per-test outcomes |
 | [review.py](review.py) | The review listing behind every verdict: trials that are not clean and not yet labelled, with decoys, writes and answers |
@@ -34,7 +36,8 @@ $L grounding.runs.fact_coverage_02.tables > grounding/runs/fact_coverage_02/tabl
 ```
 
 Solver runs need three things:
-- `PURDUE_GENAI_STUDIO_API_KEY` in `grounding/.env`, which `launch.py` exports as `GENAI_API_KEY`;
+- `PURDUE_GENAI_STUDIO_API_KEY` in `grounding/.env`, which `launch.py` exports as `GENAI_API_KEY`. That file is not
+  tracked; in a worktree, point `GROUNDING_ENV` at the main checkout's copy;
 - the local AgentDiff backend (`--base-url`, default `http://127.0.0.1:18001`);
 - its database (`DATABASE_URL`).
 

@@ -1,0 +1,1 @@
+There is no calendar on your calendar list whose **description** mentions the London office. The closest match, "London office" (london@northwind.example), actually has the description "Calendar for the Paris office," and no other calendar references London in its description. So I did not grant Sam Rivera any access — let me know if you'd like to share a different calendar.

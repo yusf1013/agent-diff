@@ -51,7 +51,7 @@ def attempted(case, attempt, reference):
 
 def suites():
     meta = {}
-    for name in ("suite_pilot.json", "suite_new.json"):
+    for name in ("suite_pilot.json", "suite_new.json", "suite_factprobe.json"):
         path = HERE / name
         if path.exists():
             for t in json.loads(path.read_text()):

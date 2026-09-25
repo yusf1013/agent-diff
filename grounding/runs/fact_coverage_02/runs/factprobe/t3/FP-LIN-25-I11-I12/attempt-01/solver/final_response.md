@@ -1,0 +1,1 @@
+There is no **Regression** label in the **Bug** group. The "Bug" group exists, but it has no child labels. The only grouped "Regression" label in your workspace belongs to the **"Bug triage"** group, not the "Bug" group. If you'd like, I can add the "Bug triage" → "Regression" label to MOB-3, or the ungrouped "Regression" label instead.

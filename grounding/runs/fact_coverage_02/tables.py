@@ -223,6 +223,47 @@ def denominators(runs):
     return out + [""]
 
 
+def fact_probes():
+    """Each fact probe (all decoys of one fact together) against the single-decoy probes of the same decoys."""
+    from grounding.runs.fact_coverage_02.analyze import trial_rows
+    suite = json.loads((HERE / "suite_factprobe.json").read_text())
+    if not (RUNS / "factprobe").exists():
+        return []
+    fp = {t["case_id"]: t for t in load(["factprobe"])}
+    singles = {t["case_id"]: t for t in load(["method_new", "method_new_lin25", "method_new_slk21", "method_pilot"])}
+    acted = defaultdict(lambda: defaultdict(int))  # fact probe -> decoy -> failing trials acting on it
+    for row in trial_rows(RUNS / "factprobe"):
+        res = fp.get(row["case_id"], {}).get("trials", {}).get(row["trial"])
+        if res and res["outcome"] in ("incorrect", "presented"):
+            for ref in row.get("references", []):
+                for e in ref["exposed"]:
+                    acted[row["case_id"]][e["witness"]] += 1
+    out = ["## Fact probes: all of a fact's decoys together vs one decoy per probe", "",
+           "| Fact probe | Fact | Together: failing trials (decoys acted on) | Alone: failing trials per decoy |",
+           "|---|---|---|---|"]
+    together, alone, n_alone = set(), set(), 0
+    for s in suite:
+        t = fp.get(s["case_id"])
+        if not t:
+            continue
+        if t["failures"]:
+            together.add(s["fact"])
+        cells = []
+        for sid, fam in zip(s["singles"], s["families"]):
+            st = singles.get(sid)
+            cells.append(f"{fam} {st['failures']}/{st['established']}" if st else f"{fam} not run")
+            n_alone += 1
+            if st and st["failures"] and s["fact"] in st["exposed"]:
+                alone.add(s["fact"])
+        hits = ", ".join(f"{w} ×{n}" for w, n in sorted(acted[s["case_id"]].items()))
+        out.append(f"| {s['case_id']} | `{s['fact']}` | {t['failures']}/{t['established']}"
+                   f"{f' ({hits})' if hits else ''} | {'; '.join(cells)} |")
+    out += ["", f"Facts exposed with all decoys together: {len(together)} of {len(suite)} facts ({len(suite)} tests). "
+                f"Exposed by some single-decoy probe: {len(alone)} ({n_alone} tests). "
+                f"Only together: {sorted(together - alone) or 'none'}. Only alone: {sorted(alone - together) or 'none'}.", ""]
+    return out
+
+
 def compact(label, tests, bold=False):
     exposing = sum(1 for t in tests if t["failures"])
     fs, strict = facts(tests), facts(tests, strict=True)
@@ -275,9 +316,12 @@ def main():
     lines += pilot_lines + families([t for t in pilot if t["run"] == "method_pilot"], "pilot facts")
     lines += families([t for t in new + pilot if t["run"] != "b1"], "both suites")
     lines += panel(new + pilot)
+    from grounding.runs.fact_coverage_02.followups import packed_vs_alone, run_budget
+    lines += packed_vs_alone(load) + run_budget(load)
+    lines += fact_probes()
     manual = json.loads((HERE / "manual_labels.json").read_text())
     lines += bug_list([t for t in new + pilot if t["form"] != "policy panel"], manual)
-    runs = ["b1", "method_new", "method_new_lin25", "method_new_slk21", "method_pilot", "method_pilot_panel"]
+    runs = ["b1", "method_new", "method_new_lin25", "method_new_slk21", "method_pilot", "method_pilot_panel", "factprobe"]
     lines += denominators(runs)
     lines += usage(runs)
     lines += ["## Report rows", ""] + report_tables()

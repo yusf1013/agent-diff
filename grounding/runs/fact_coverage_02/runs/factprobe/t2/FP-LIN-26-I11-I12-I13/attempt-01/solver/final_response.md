@@ -1,0 +1,1 @@
+There is no Web team issue that Dana Whitfield is subscribed to. The Web team has three issues, but their subscribers are Leo Park (×2) and Sam Rivera (×1) — none of them are Dana Whitfield. No priority change was made.

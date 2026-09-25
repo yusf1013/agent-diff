@@ -1,0 +1,1 @@
+There is no Web team issue that Dana Whitfield is subscribed to. The Web team currently has 3 issues, but their subscribers are Leo Park (two issues) and Sam Rivera (one issue). Dana is not subscribed to any of them, so there's nothing to update.
