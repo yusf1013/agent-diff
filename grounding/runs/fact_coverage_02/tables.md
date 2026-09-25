@@ -36,23 +36,23 @@ Found only by a control: `A:Task.message`. Found only by probes: `A:Channel.is_p
 |---|---:|---:|---:|---:|---|
 | B1 cover cases, trial 1 | 31 | 3 | 4 (4) | 30/31 | `A:TeamMembership.owner`, `B:TeamMembership`, `R:HubItem.folder`, `R:IssueRelation.issueId` |
 | B1 cover cases, 3 trials | 31 | 6 | 7 (7) | 89/93 | `A:Issue.priority`, `A:TeamMembership.owner`, `B:TeamMembership`, `R:File.created_by_id`, `R:HubItem.folder`, `R:IssueRelation.issueId`, `R:TeamMembership` |
-| substitute probes (F1–F8), 3 trials | 84 | 21 | 21 (21) | 239/252 | `A:Calendar.data_owner`, `A:CalendarListEntry.summary_override`, `A:Event.creator_email`, `A:Event.summary`, `A:File.uploader_display_name`, `A:Issue.priority`, `A:Issue.title`, `A:User.displayName`, `B:HubItem.hub_id`, `B:TeamMembership`, `D:local_time`, `H:Comment.parentId`, `H:Issue.parentId`, `R:File.collections`, `R:Folder.created_by_id`, `R:Hub.created_by_id`, `R:HubItem.folder`, `R:IssueRelation.issueId`, `R:Project.leadId`, `R:Task.created_by_id`, `R:TaskAssignment.assigned_by_id` |
-| + packed plain tests, 3 trials | 94 | 24 | 23 (23) | 269/282 | `A:Calendar.data_owner`, `A:CalendarListEntry.summary_override`, `A:Event.creator_email`, `A:Event.summary`, `A:File.uploader_display_name`, `A:Issue.priority`, `A:Issue.title`, `A:TaskAssignment.resolution_state`, `A:TeamMembership.owner`, `A:User.displayName`, `B:HubItem.hub_id`, `B:TeamMembership`, `D:local_time`, `H:Comment.parentId`, `H:Issue.parentId`, `R:File.collections`, `R:Folder.created_by_id`, `R:Hub.created_by_id`, `R:HubItem.folder`, `R:IssueRelation.issueId`, `R:Project.leadId`, `R:Task.created_by_id`, `R:TaskAssignment.assigned_by_id` |
-| all probes (F0 one by one), 3 trials | 125 | 27 | 26 (26) | 357/375 | `A:Calendar.data_owner`, `A:CalendarListEntry.summary_override`, `A:Event.creator_email`, `A:Event.summary`, `A:Event.visibility`, `A:File.uploader_display_name`, `A:Folder.tags`, `A:Issue.priority`, `A:Issue.title`, `A:Task.action`, `A:TaskAssignment.resolution_state`, `A:TeamMembership.owner`, `A:User.displayName`, `B:HubItem.hub_id`, `B:TeamMembership`, `D:local_time`, `H:Comment.parentId`, `H:Issue.parentId`, `R:File.collections`, `R:Folder.created_by_id`, `R:Hub.created_by_id`, `R:HubItem.folder`, `R:IssueRelation.issueId`, `R:Project.leadId`, `R:Task.created_by_id`, `R:TaskAssignment.assigned_by_id` |
-| all probes + packed + layer, 3 trials | 139 | 31 | 26 (26) | 399/417 | `A:Calendar.data_owner`, `A:CalendarListEntry.summary_override`, `A:Event.creator_email`, `A:Event.summary`, `A:Event.visibility`, `A:File.uploader_display_name`, `A:Folder.tags`, `A:Issue.priority`, `A:Issue.title`, `A:Task.action`, `A:TaskAssignment.resolution_state`, `A:TeamMembership.owner`, `A:User.displayName`, `B:HubItem.hub_id`, `B:TeamMembership`, `D:local_time`, `H:Comment.parentId`, `H:Issue.parentId`, `R:File.collections`, `R:Folder.created_by_id`, `R:Hub.created_by_id`, `R:HubItem.folder`, `R:IssueRelation.issueId`, `R:Project.leadId`, `R:Task.created_by_id`, `R:TaskAssignment.assigned_by_id` |
-| all probes + packed + layer, trial 1 | 139 | 21 | 18 (18) | 133/139 | `A:Calendar.data_owner`, `A:CalendarListEntry.summary_override`, `A:Event.creator_email`, `A:Event.visibility`, `A:File.uploader_display_name`, `A:Folder.tags`, `A:Issue.priority`, `A:TaskAssignment.resolution_state`, `A:TeamMembership.owner`, `B:TeamMembership`, `D:local_time`, `H:Issue.parentId`, `R:File.collections`, `R:Folder.created_by_id`, `R:HubItem.folder`, `R:IssueRelation.issueId`, `R:Project.leadId`, `R:TaskAssignment.assigned_by_id` |
-| B1 + substitute probes, 3 trials | 115 | 27 | 24 (24) | 328/345 | `A:Calendar.data_owner`, `A:CalendarListEntry.summary_override`, `A:Event.creator_email`, `A:Event.summary`, `A:File.uploader_display_name`, `A:Issue.priority`, `A:Issue.title`, `A:TeamMembership.owner`, `A:User.displayName`, `B:HubItem.hub_id`, `B:TeamMembership`, `D:local_time`, `H:Comment.parentId`, `H:Issue.parentId`, `R:File.collections`, `R:File.created_by_id`, `R:Folder.created_by_id`, `R:Hub.created_by_id`, `R:HubItem.folder`, `R:IssueRelation.issueId`, `R:Project.leadId`, `R:Task.created_by_id`, `R:TaskAssignment.assigned_by_id`, `R:TeamMembership` |
+| substitute probes (F1–F8), 3 trials | 84 | 20 | 20 (20) | 246/252 | `A:Calendar.data_owner`, `A:CalendarListEntry.summary_override`, `A:Event.creator_email`, `A:Event.summary`, `A:File.uploader_display_name`, `A:Issue.priority`, `A:Issue.title`, `A:User.displayName`, `B:HubItem.hub_id`, `B:TeamMembership`, `D:local_time`, `H:Comment.parentId`, `H:Issue.parentId`, `R:File.collections`, `R:Folder.created_by_id`, `R:Hub.created_by_id`, `R:HubItem.folder`, `R:IssueRelation.issueId`, `R:Task.created_by_id`, `R:TaskAssignment.assigned_by_id` |
+| + packed plain tests, 3 trials | 94 | 23 | 22 (22) | 276/282 | `A:Calendar.data_owner`, `A:CalendarListEntry.summary_override`, `A:Event.creator_email`, `A:Event.summary`, `A:File.uploader_display_name`, `A:Issue.priority`, `A:Issue.title`, `A:TaskAssignment.resolution_state`, `A:TeamMembership.owner`, `A:User.displayName`, `B:HubItem.hub_id`, `B:TeamMembership`, `D:local_time`, `H:Comment.parentId`, `H:Issue.parentId`, `R:File.collections`, `R:Folder.created_by_id`, `R:Hub.created_by_id`, `R:HubItem.folder`, `R:IssueRelation.issueId`, `R:Task.created_by_id`, `R:TaskAssignment.assigned_by_id` |
+| all probes (F0 one by one), 3 trials | 125 | 26 | 25 (25) | 369/375 | `A:Calendar.data_owner`, `A:CalendarListEntry.summary_override`, `A:Event.creator_email`, `A:Event.summary`, `A:Event.visibility`, `A:File.uploader_display_name`, `A:Folder.tags`, `A:Issue.priority`, `A:Issue.title`, `A:Task.action`, `A:TaskAssignment.resolution_state`, `A:TeamMembership.owner`, `A:User.displayName`, `B:HubItem.hub_id`, `B:TeamMembership`, `D:local_time`, `H:Comment.parentId`, `H:Issue.parentId`, `R:File.collections`, `R:Folder.created_by_id`, `R:Hub.created_by_id`, `R:HubItem.folder`, `R:IssueRelation.issueId`, `R:Task.created_by_id`, `R:TaskAssignment.assigned_by_id` |
+| all probes + packed + layer, 3 trials | 139 | 30 | 25 (25) | 411/417 | `A:Calendar.data_owner`, `A:CalendarListEntry.summary_override`, `A:Event.creator_email`, `A:Event.summary`, `A:Event.visibility`, `A:File.uploader_display_name`, `A:Folder.tags`, `A:Issue.priority`, `A:Issue.title`, `A:Task.action`, `A:TaskAssignment.resolution_state`, `A:TeamMembership.owner`, `A:User.displayName`, `B:HubItem.hub_id`, `B:TeamMembership`, `D:local_time`, `H:Comment.parentId`, `H:Issue.parentId`, `R:File.collections`, `R:Folder.created_by_id`, `R:Hub.created_by_id`, `R:HubItem.folder`, `R:IssueRelation.issueId`, `R:Task.created_by_id`, `R:TaskAssignment.assigned_by_id` |
+| all probes + packed + layer, trial 1 | 139 | 20 | 17 (17) | 137/139 | `A:Calendar.data_owner`, `A:CalendarListEntry.summary_override`, `A:Event.creator_email`, `A:Event.visibility`, `A:File.uploader_display_name`, `A:Folder.tags`, `A:Issue.priority`, `A:TaskAssignment.resolution_state`, `A:TeamMembership.owner`, `B:TeamMembership`, `D:local_time`, `H:Issue.parentId`, `R:File.collections`, `R:Folder.created_by_id`, `R:HubItem.folder`, `R:IssueRelation.issueId`, `R:TaskAssignment.assigned_by_id` |
+| B1 + substitute probes, 3 trials | 115 | 26 | 23 (23) | 335/345 | `A:Calendar.data_owner`, `A:CalendarListEntry.summary_override`, `A:Event.creator_email`, `A:Event.summary`, `A:File.uploader_display_name`, `A:Issue.priority`, `A:Issue.title`, `A:TeamMembership.owner`, `A:User.displayName`, `B:HubItem.hub_id`, `B:TeamMembership`, `D:local_time`, `H:Comment.parentId`, `H:Issue.parentId`, `R:File.collections`, `R:File.created_by_id`, `R:Folder.created_by_id`, `R:Hub.created_by_id`, `R:HubItem.folder`, `R:IssueRelation.issueId`, `R:Task.created_by_id`, `R:TaskAssignment.assigned_by_id`, `R:TeamMembership` |
 
 Pilot bugs (16) found again: `A:Event.creator_email`, `R:Folder.created_by_id`, `R:TaskAssignment.assigned_by_id`, `R:HubItem.folder`, `R:File.collections`, `R:IssueRelation.issueId`, `D:local_time`, `A:CalendarListEntry.summary_override`, `A:User.displayName`, `A:TeamMembership.owner`, `B:TeamMembership`.
 Pilot bugs not found: `R:File.modified_by_id`, `R:issue_label_issue_association`, `R:Document.initiativeId`, `D:all_day`, `A:File.version_number`.
-Facts not among the pilot's 16: `A:Calendar.data_owner`, `A:Event.summary`, `A:Event.visibility`, `A:File.uploader_display_name`, `A:Folder.tags`, `A:Issue.priority`, `A:Issue.title`, `A:Task.action`, `A:TaskAssignment.resolution_state`, `B:HubItem.hub_id`, `H:Comment.parentId`, `H:Issue.parentId`, `R:File.created_by_id`, `R:Hub.created_by_id`, `R:Project.leadId`, `R:Task.created_by_id`, `R:TeamMembership`.
+Facts not among the pilot's 16: `A:Calendar.data_owner`, `A:Event.summary`, `A:Event.visibility`, `A:File.uploader_display_name`, `A:Folder.tags`, `A:Issue.priority`, `A:Issue.title`, `A:Task.action`, `A:TaskAssignment.resolution_state`, `B:HubItem.hub_id`, `H:Comment.parentId`, `H:Issue.parentId`, `R:File.created_by_id`, `R:Hub.created_by_id`, `R:Task.created_by_id`, `R:TeamMembership`.
 
 ## Yield by family: pilot facts
 
 | Family | Probes | Exposing | Share | Distinct facts | Found by no other family |
 |---|---:|---:|---:|---:|---|
 | F0 | 41 | 6 | 15% | 6 | 5: `A:Event.visibility`, `A:Folder.tags`, `A:Task.action`, `A:TaskAssignment.resolution_state`, `A:TeamMembership.owner` |
-| F1 | 26 | 9 | 35% | 9 | 9: `A:Calendar.data_owner`, `A:Event.creator_email`, `A:File.uploader_display_name`, `A:User.displayName`, `R:Folder.created_by_id`, `R:Hub.created_by_id`, `R:Project.leadId`, `R:Task.created_by_id`, `R:TaskAssignment.assigned_by_id` |
+| F1 | 26 | 8 | 31% | 8 | 8: `A:Calendar.data_owner`, `A:Event.creator_email`, `A:File.uploader_display_name`, `A:User.displayName`, `R:Folder.created_by_id`, `R:Hub.created_by_id`, `R:Task.created_by_id`, `R:TaskAssignment.assigned_by_id` |
 | F2 | 10 | 2 | 20% | 2 | 2: `R:File.collections`, `R:HubItem.folder` |
 | F3 | 1 | 1 | 100% | 1 | 1: `R:IssueRelation.issueId` |
 | F4 | 7 | 2 | 29% | 2 | 2: `H:Comment.parentId`, `H:Issue.parentId` |
@@ -66,7 +66,7 @@ Facts not among the pilot's 16: `A:Calendar.data_owner`, `A:Event.summary`, `A:E
 | Family | Probes | Exposing | Share | Distinct facts | Found by no other family |
 |---|---:|---:|---:|---:|---|
 | F0 | 56 | 9 | 16% | 9 | 7: `A:Channel.is_private`, `A:Event.visibility`, `A:EventAttendee.optional`, `A:Folder.tags`, `A:Task.action`, `A:TaskAssignment.resolution_state`, `A:TeamMembership.owner` |
-| F1 | 45 | 12 | 27% | 12 | 11: `A:Calendar.data_owner`, `A:Calendar.location`, `A:Event.creator_email`, `A:Event.description`, `A:File.uploader_display_name`, `A:User.displayName`, `R:Folder.created_by_id`, `R:Hub.created_by_id`, `R:Project.leadId`, `R:Task.created_by_id`, `R:TaskAssignment.assigned_by_id` |
+| F1 | 45 | 11 | 24% | 11 | 10: `A:Calendar.data_owner`, `A:Calendar.location`, `A:Event.creator_email`, `A:Event.description`, `A:File.uploader_display_name`, `A:User.displayName`, `R:Folder.created_by_id`, `R:Hub.created_by_id`, `R:Task.created_by_id`, `R:TaskAssignment.assigned_by_id` |
 | F2 | 14 | 3 | 21% | 3 | 3: `R:File.collections`, `R:HubItem.file`, `R:HubItem.folder` |
 | F3 | 1 | 1 | 100% | 1 | 1: `R:IssueRelation.issueId` |
 | F4 | 9 | 2 | 22% | 2 | 2: `H:Comment.parentId`, `H:Issue.parentId` |
@@ -126,18 +126,28 @@ Facts not among the pilot's 16: `A:Calendar.data_owner`, `A:Event.summary`, `A:E
 | `A:Issue.createdAt` | linear |  | P-LIN-21-I12 (F7) 1/3 | method_new/t2/P-LIN-21-I12: Confirmed: its date filters used the wrong years and returned nothing. It then listed the Web issues and assigned i-23, whose createdAt 2026-09-11 was in the response. |
 | `A:Issue.priority` | linear |  | P-LIN-01-I12 (F0) 1/3, PB-LIN-01-I12 (F7) 2/3, PP-LIN-01 (F0) 1/3, LIN-01 (, B1) 1/3 | method_pilot/t1/P-LIN-01-I12: Confirmed: moved MOB-3 (priority 4, Low) and described it as 'priority 4.0/Urgent': Linear's scale read backwards. |
 | `A:Issue.title` | linear |  | P-LIN-10-I13 (F8) 1/3 | method_pilot/t2/P-LIN-10-I13: Confirmed: marked 'Funnel dashboard' Done; it is Sam's sub-issue of 'Checkout analytics', not 'Checkout revamp'. |
-| `A:TeamMembership.owner` | linear | 14 | P-LIN-06-I13 (F0) 2/2, PP-LIN-06 (F0) 1/3, LIN-06 (, B1) 3/3 | method_pilot/t1/P-LIN-06-I13: Confirmed: answered 'Mia Wong', a Design member who is not an owner (bug #14). |
+| `A:TeamMembership.owner` | linear | 14 | P-LIN-06-I13 (F0) 2/3, PP-LIN-06 (F0) 1/3, LIN-06 (, B1) 3/3 | method_pilot/t1/P-LIN-06-I13: Confirmed: answered 'Mia Wong', a Design member who is not an owner (bug #14). |
 | `A:User.displayName` | linear | 12 | P-LIN-11-I11 (F1) 1/3 | method_pilot/t3/P-LIN-11-I11: Confirmed: assigned ENG-5 to Maya Chen (handle mchen) for '@maya'. No user has that handle: the name was read as the handle (bug #12). Maya Chen is not the claimed decoy (Maya Lopez), but the fact is the same. |
-| `B:TeamMembership` | linear | 15 | P-LIN-06-I14 (F5) 1/2, LIN-06 (, B1) 3/3 | method_pilot/t1/P-LIN-06-I14: Confirmed: answered Ethan Cole, who owns Web and is a plain member of Design; the answer even switches to 'member' (bug #15). |
+| `B:TeamMembership` | linear | 15 | P-LIN-06-I14 (F5) 2/3, LIN-06 (, B1) 3/3 | method_pilot/t1/P-LIN-06-I14: Confirmed: answered Ethan Cole, who owns Web and is a plain member of Design; the answer even switches to 'member' (bug #15). |
 | `H:Comment.parentId` | linear |  | P-LIN-12-I11 (F4) 2/3 | method_pilot/t2/P-LIN-12-I11: Confirmed: set resolving fields on c-2, Priya's reply in Omar's thread, and posted a reply: a reply taken for the thread she started. |
 | `H:Issue.parentId` | linear |  | P-LIN-10-I11 (F4) 3/3 | method_pilot/t1/P-LIN-10-I11: Confirmed: marked WEB-4 Done; it is a sub-issue of Payment form, i.e. the epic's grandchild, taken as a sub-issue of Checkout revamp. |
 | `H:IssueLabel.parentId` | linear |  | P-LIN-25-I12 (F8) 2/3 | method_new_lin25/t1/P-LIN-25-I12: Confirmed: added the Regression label whose group is 'Bug triage' and reported success without naming its group. |
 | `R:Comment.resolvingUserId` | linear |  | P-LIN-23-I11 (F1) 2/3, P-LIN-23-I12 (F0) 1/3 | method_new/t2/P-LIN-23-I11: Confirmed: 'reopened' c-22, Maya's own comment resolved by Dana, and claimed Maya resolved it: author taken for resolver. |
 | `R:IssueRelation.issueId` | linear | 9 | P-LIN-04-I11 (F3) 3/3, LIN-04-TOLD (, B1) 3/3 | method_pilot/t1/P-LIN-04-I11: Confirmed: deleted 'ENG-7 blocks ENG-9' for 'ENG-7 is blocked by' (bug #9, 3/3). |
-| `R:Project.leadId` | linear |  | P-LIN-03-I12 (F1) 1/2 |  |
 | `R:TeamMembership` | linear |  | LIN-15 (, B1) 1/3 | b1/t3/LIN-15: Confirmed: took i-d1, a Design-team issue whose assignee (Leo) is not a Design member. It also wrote priority 3.0 (Medium) for 'High', the same priority-scale error as b1/t2/LIN-01. |
 | `A:Channel.is_private` | slack |  | P-SLK-23-I13 (F0) 1/3 | method_new/t3/P-SLK-23-I13: Confirmed: set the topic of the public #contracts-team. It noticed and said the channel is public and that no private channel matches, but acted anyway. |
 | `A:Message.created_at` | slack |  | P-SLK-21-I12 (F7) 3/3 | method_new_slk21/t1/P-SLK-21-I12: Confirmed: a search with no date filter returned Priya's #deploys rollback message of September 22 (ts 1790078400). It reacted without converting the ts to a date. |
+
+## Trials without a result
+
+| Run | Trials | Established | Timeout | Infrastructure | Replica or seed artifact | Other |
+|---|---:|---:|---:|---:|---:|---:|
+| b1 | 93 | 89 | 0 | 1 | 2 | 1 |
+| method_new | 207 | 205 | 0 | 0 | 2 | 0 |
+| method_new_lin25 | 9 | 9 | 0 | 0 | 0 | 0 |
+| method_new_slk21 | 21 | 21 | 0 | 0 | 0 | 0 |
+| method_pilot | 417 | 411 | 0 | 0 | 4 | 2 |
+| method_pilot_panel | 15 | 15 | 0 | 0 | 0 | 0 |
 
 ## Usage (all attempts)
 
@@ -147,8 +157,43 @@ Facts not among the pilot's 16: `A:Calendar.data_owner`, `A:Event.summary`, `A:E
 | method_new | 79 | 237 | 1,681 | 8,717,184 | 472,973 | 0 |
 | method_new_lin25 | 3 | 9 | 88 | 176,101 | 22,842 | 0 |
 | method_new_slk21 | 7 | 22 | 174 | 1,035,910 | 68,369 | 0 |
-| method_pilot | 139 | 434 | 3,284 | 16,393,930 | 862,657 | 0 |
+| method_pilot | 139 | 434 | 3,621 | 18,997,996 | 940,792 | 0 |
 | method_pilot_panel | 5 | 15 | 149 | 751,370 | 54,138 | 0 |
-| **total** | | 817 | 6,287 | 31,815,879 | 1,723,053 | 0 |
+| **total** | | 817 | 6,624 | 34,419,945 | 1,801,188 | 0 |
 
 Exploration runs (`smoke_slack`) and no-model preflights (`prepare_*`) are not counted.
+## Report rows
+
+### §5.1
+
+| Arm | Tests | Tests exposing | Distinct facts | Trials established |
+|---|---:|---:|---:|---:|
+| B1 cover cases, trial 1 | 31 | 3 | 4 | 30/31 |
+| B1 cover cases, 3 trials | 31 | 6 | 7 | 89/93 |
+| B2, the pilot's fact-sensitive cases (mostly 1 trial) | 125 | | 16 | |
+| Method: substitute probes (F1–F8) | 84 | 20 | 20 | 246/252 |
+| … plus packed plain tests | 94 | 23 | 22 | 276/282 |
+| … F0 decoys one by one instead | 125 | 26 | 25 | 369/375 |
+| … plus packed and layer tests | 139 | 30 | 25 | 411/417 |
+| Method (all but the panel), trial 1 | 139 | 20 | 17 | 137/139 |
+| B1 plus substitute probes | 115 | 26 | 23 | 335/345 |
+| **Everything on the pilot's facts (B1 and method)** | 166 | 35 | **27** | 488/498 |
+
+Nearest-value (PB-*) probes: 4 tests, facts ['A:Issue.priority'].
+
+### §6
+
+| Arm | Tests | Tests exposing | Distinct facts | Trials established |
+|---|---:|---:|---:|---:|
+| Box control | 4 | 1 | 1 | 12/12 |
+| Box probes | 16 | 4 | 4 (3) | 48/48 |
+| Calendar control | 4 | 1 | 1 | 12/12 |
+| Calendar probes | 13 | 4 | 4 | 39/39 |
+| Linear control | 6 | 0 | 0 | 18/18 |
+| Linear probes | 16 | 4 | 3 | 46/48 |
+| Slack control | 4 | 0 | 0 | 12/12 |
+| Slack probes | 13 | 2 | 2 | 39/39 |
+| **All controls** | 18 | 2 | **2** | 54/54 |
+| **All probes** | 58 | 14 | **13 (12)** | 172/174 |
+| **Both** | 76 | 16 | **14 (13)** | 226/228 |
+

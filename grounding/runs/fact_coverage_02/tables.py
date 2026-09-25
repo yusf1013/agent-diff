@@ -194,6 +194,80 @@ def usage(runs):
     return out + ["", "Exploration runs (`smoke_slack`) and no-model preflights (`prepare_*`) are not counted."]
 
 
+def denominators(runs):
+    """Trials per run (latest attempt of each trial; superseded v1 tests excluded) and why any lack a result."""
+    out = ["## Trials without a result", "",
+           "| Run | Trials | Established | Timeout | Infrastructure | Replica or seed artifact | Other |",
+           "|---|---:|---:|---:|---:|---:|---:|"]
+    for r in runs:
+        ts = load([r])
+        if not ts:
+            continue
+        counts = defaultdict(int)
+        for t in ts:
+            for trial, res in t["trials"].items():
+                counts["trials"] += 1
+                if res["outcome"] not in ("not_established", "artifact"):
+                    counts["established"] += 1
+                    continue
+                if res["outcome"] == "artifact":
+                    counts["artifact"] += 1
+                    continue
+                attempt = sorted((RUNS / r / trial / t["case_id"]).glob("attempt-*"))[-1]
+                s = json.loads((attempt / "execution_summary.json").read_text())
+                kind = ("infra" if s.get("status") == "infrastructure_error" else
+                        "timeout" if s.get("termination") == "timeout" else "other")
+                counts[kind] += 1
+        out.append(f"| {r} | {counts['trials']} | {counts['established']} | {counts['timeout']} | {counts['infra']} | "
+                   f"{counts['artifact']} | {counts['other']} |")
+    return out + [""]
+
+
+def compact(label, tests, bold=False):
+    exposing = sum(1 for t in tests if t["failures"])
+    fs, strict = facts(tests), facts(tests, strict=True)
+    trials = sum(len(t["trials"]) for t in tests)
+    est = sum(t["established"] for t in tests)
+    cell = f"{len(fs)}" if fs == strict else f"{len(fs)} ({len(strict)})"
+    b = "**" if bold else ""
+    return f"| {b}{label}{b} | {len(tests)} | {exposing} | {b}{cell}{b} | {est}/{trials} |"
+
+
+def report_tables():
+    """The exact rows of report.md §5.1, §6 and §7 (paste, do not retype)."""
+    head = "| Arm | Tests | Tests exposing | Distinct facts | Trials established |\n|---|---:|---:|---:|---:|"
+    b1, b1_t1 = load(["b1"]), load(["b1"], only=["t1"])
+    m, m_t1 = load(["method_pilot"]), load(["method_pilot"], only=["t1"])
+    layer = [t for t in b1 if t["form"] == "target-present layer"]
+    layer_t1 = [t for t in b1_t1 if t["form"] == "target-present layer"]
+    sub = [t for t in m if t["form"] == "probe" and t["family"] not in (None, "F0")]
+    probes = [t for t in m if t["form"] == "probe"]
+    packed = [t for t in m if t["form"] == "packed plain"]
+    nearest = [t for t in m if t["case_id"].startswith("PB-")]
+    out = ["### §5.1", "", head,
+           compact("B1 cover cases, trial 1", b1_t1), compact("B1 cover cases, 3 trials", b1),
+           "| B2, the pilot's fact-sensitive cases (mostly 1 trial) | 125 | | 16 | |",
+           compact("Method: substitute probes (F1–F8)", sub),
+           compact("… plus packed plain tests", sub + packed),
+           compact("… F0 decoys one by one instead", probes),
+           compact("… plus packed and layer tests", probes + packed + layer),
+           compact("Method (all but the panel), trial 1",
+                   [t for t in m_t1 if t["form"] in ("probe", "packed plain")] + layer_t1),
+           compact("B1 plus substitute probes", b1 + sub),
+           compact("Everything on the pilot's facts (B1 and method)", b1 + probes + packed, bold=True),
+           "", f"Nearest-value (PB-*) probes: {len(nearest)} tests, facts {sorted(facts(nearest))}.", ""]
+    new = load(["method_new", "method_new_lin25", "method_new_slk21"])
+    out += ["### §6", "", head]
+    for domain in ("box", "calendar", "linear", "slack"):
+        ds = [t for t in new if t["domain"] == domain]
+        out.append(compact(f"{domain.capitalize()} control", [t for t in ds if t["form"] == "cover control"]))
+        out.append(compact(f"{domain.capitalize()} probes", [t for t in ds if t["form"] in ("probe", "packed plain")]))
+    out.append(compact("All controls", [t for t in new if t["form"] == "cover control"], bold=True))
+    out.append(compact("All probes", [t for t in new if t["form"] in ("probe", "packed plain")], bold=True))
+    out.append(compact("Both", [t for t in new if t["form"] in ("cover control", "probe", "packed plain")], bold=True))
+    return out + [""]
+
+
 def main():
     lines, new = new_facts()
     lines += families(new, "new facts")
@@ -203,7 +277,10 @@ def main():
     lines += panel(new + pilot)
     manual = json.loads((HERE / "manual_labels.json").read_text())
     lines += bug_list([t for t in new + pilot if t["form"] != "policy panel"], manual)
-    lines += usage(["b1", "method_new", "method_new_lin25", "method_new_slk21", "method_pilot", "method_pilot_panel"])
+    runs = ["b1", "method_new", "method_new_lin25", "method_new_slk21", "method_pilot", "method_pilot_panel"]
+    lines += denominators(runs)
+    lines += usage(runs)
+    lines += ["## Report rows", ""] + report_tables()
     print("\n".join(lines))
 
 

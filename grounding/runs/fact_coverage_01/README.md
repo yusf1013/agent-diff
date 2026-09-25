@@ -4,6 +4,10 @@ Start with [report.md](report.md) (the answer and the main tables), then [criter
 definition) and [findings.md](findings.md) (every reviewed run, with links). Manual research work; no automated
 test-generation claim.
 
+Follow-up: [fact_coverage_02](../fact_coverage_02/README.md) turns the pilot into a test-design method. It runs the
+method at 3 trials on the pilot's facts and on new facts in all four domains, and reruns this pilot's cover cases at
+3 trials.
+
 | Path | Contents |
 |---|---|
 | [catalog/](catalog/) | Curated fact inventories ([facts.py](catalog/facts.py)), builder with full column/relationship accounting ([build.py](catalog/build.py)), per-domain requirement catalogs (`<domain>.json`), [counts.md](catalog/counts.md) |
