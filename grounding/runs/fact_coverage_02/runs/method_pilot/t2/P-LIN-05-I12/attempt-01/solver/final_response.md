@@ -1,0 +1,1 @@
+There are no open issues to move. The Platform team currently has **no active cycle** and **zero issues** in its backlog. Since there are no issues at all in the Platform team — let alone ones estimated at 5 points or more that are past their due date — no action was needed.

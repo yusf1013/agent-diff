@@ -1,0 +1,1 @@
+Successfully added the "Discount policy.pdf" file to the "Sales hub". This hub was last updated by Dana Whitfield and already included "Pricing sheet" files (both "Pricing sheet.xlsx" and "Pricing sheet 2025.xlsx"). The file was added via the manage_items API and the operation returned a success status.

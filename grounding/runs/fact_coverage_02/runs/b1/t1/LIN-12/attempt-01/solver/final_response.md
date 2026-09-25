@@ -1,0 +1,1 @@
+Successfully resolved the comment thread on WEB-12 ("Stabilize the CI pipeline") that Priya Nair started about flaky tests. The thread (comment "Flaky tests: I quarantined the worst offenders.") has been marked as resolved with Priya Nair as the resolving user via the `commentUpdate` mutation using `resolvingCommentId` and `resolvingUserId`.

@@ -1,0 +1,1 @@
+Successfully added a check mark reaction to Priya Sharma's message in #deploys on September 23 about the payments-api rollback. The message "Rollback of payments-api finished; error rates are back to normal." now has the :check: reaction applied.

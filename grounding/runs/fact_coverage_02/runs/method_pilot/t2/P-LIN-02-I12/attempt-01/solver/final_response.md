@@ -1,0 +1,1 @@
+I looked at the comments on ENG-42 ("Release 2.3 checklist") and there is no comment by Leo Park asking to postpone the release. The only comment on that issue is from **Sam Rivera**, who wrote: *"Can we postpone the release to next week?"* (dated 2026-06-01). No deletion was performed since the specific comment you described doesn't exist.

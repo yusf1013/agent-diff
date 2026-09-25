@@ -1,0 +1,1 @@
+I found one locked spreadsheet in your Favorites collection: **"Pack summary.xlsx"** (in the "Budget pack" folder). It had a shared link, and I've successfully removed it. The shared link is now disabled.

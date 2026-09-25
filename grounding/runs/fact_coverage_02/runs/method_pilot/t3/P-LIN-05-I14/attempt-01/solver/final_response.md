@@ -1,0 +1,1 @@
+There are no open issues in the Platform team's current cycle (Cycle 14, Sept 14–27, 2026) that are estimated at 5+ points and past their due date. The only issue in the current cycle is PLT-5 "Remove legacy queue" (5 points, due Sept 10), but it's already marked as **Done**, so there's nothing to move into the next cycle.

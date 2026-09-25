@@ -1,0 +1,1 @@
+There is no calendar whose **description** says it is for the London office. The only non-primary calendar ("UK sites", `uk-sites@northwind.example`) has a location set to "London," but its **description** reads "Calendar for the Berlin office." Since no calendar matches the stated criterion, no ACL change was made for Sam Rivera.

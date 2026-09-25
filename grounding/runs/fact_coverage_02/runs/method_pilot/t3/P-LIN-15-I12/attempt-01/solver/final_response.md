@@ -1,0 +1,1 @@
+There is no open issue assigned to a member of the **Design** team (Maya Chen or Mia Wong). The only issue in the workspace is WEB-1 "Fix the navigation spacing," which is assigned to Zoe Park — a member of the **Design Systems** team, not the Design team. So there's nothing to update.

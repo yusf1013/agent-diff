@@ -1,0 +1,1 @@
+I could not find a message posted by Priya Sharma in #deploys about a rollback. I searched the channel history, the thread under the only rollback-related message (which was posted by Diego, not Priya), and ran targeted searches for Priya's messages in #deploys. There is no such message, so there's nothing to add the :white_check_mark: reaction to.

@@ -1,0 +1,1 @@
+There is no high-priority bug assigned to Priya Nair in the Mobile team. The only issue in the Mobile team is MOB-4 ("Offline mode epic"), which is a Bug labeled issue but is assigned to Leo Park, not Priya Nair. No move was made.

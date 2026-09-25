@@ -1,0 +1,1 @@
+There is no open issue assigned to a member of the Design team. The only issue in the workspace (DES-1: "Refresh the icon set") is assigned to Leo Park, who belongs to the Web team. The Design team members (Maya Chen and Mia Wong) don't have any issues assigned to them, so there's nothing to update.

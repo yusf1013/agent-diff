@@ -1,0 +1,1 @@
+I looked through the #deploys channel and there is no message from Priya Sharma about a rollback. The channel only contains a single message from Leo Park saying "Deploying web 4.12 to production." Priya Sharma is a member of the workspace, but she has no posts in #deploys. There's nothing to add a :thumbsup: reaction to.

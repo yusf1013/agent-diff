@@ -1,0 +1,1 @@
+There is no PDF file directly in the Finance Reports folder. The folder only contains a subfolder ("Drafts"), a .docx file ("Board notes.docx"), and an .xlsx file ("Q3 revenue summary.xlsx"). No PDF matching the criteria exists in that folder, so no tag was added.

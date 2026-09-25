@@ -1,0 +1,1 @@
+There isn't a design review on Thursday that Priya Nair declined. The only design review where Priya Nair declined is "Design review: Payments" on **Wednesday, June 20** (10:00–11:00 AM). No design review events were found on Thursday (either last Thursday June 14 or this coming Thursday June 21). If you'd like, I can move the Wednesday one to Room 5B instead — just let me know.

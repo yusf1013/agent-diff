@@ -1,0 +1,1 @@
+Successfully cancelled just this Tuesday's (June 19, 2018) session of the weekly "Platform sync" event organized by Omar Haddad. I deleted the specific instance (ev_psync_20180619T100000Z), which is now marked as "cancelled." The rest of the weekly recurring series remains untouched.

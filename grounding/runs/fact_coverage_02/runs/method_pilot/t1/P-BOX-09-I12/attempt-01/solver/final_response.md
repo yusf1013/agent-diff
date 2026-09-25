@@ -1,0 +1,1 @@
+The **Finance Reports** folder is owned by **Maya Chen**, but there is no PDF file created by her in the workspace. The Finance Reports folder itself is empty, and the only PDF in the entire workspace ("Headcount forecast.pdf") was created by a different user (Leo Park). I was unable to add the `owner-draft` tag because no matching PDF exists.

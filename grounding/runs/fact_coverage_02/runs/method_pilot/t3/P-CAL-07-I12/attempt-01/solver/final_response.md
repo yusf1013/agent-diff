@@ -1,0 +1,1 @@
+There is no Kenji Sato Tokyo-time calendar in the current calendar list. The only calendar associated with Kenji Sato is "Kenji planning" (kenji-home@northwind.example), but it has the timezone set to **America/Los_Angeles**, not a Tokyo timezone. Since no Tokyo-time calendar exists, no change was made.

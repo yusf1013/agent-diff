@@ -1,0 +1,1 @@
+There isn't a document created by Maya Chen for the "Growth" initiative. The only document in the workspace is "Retention ideas" (created by Maya Chen), and it's associated with the **Retention** initiative, not Growth. So there's nothing to rename.

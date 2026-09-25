@@ -1,0 +1,1 @@
+I searched for architecture review events on the upcoming Friday (June 22) and found one: **"Architecture review: storage"** at 1:00–2:00 PM. However, Kenji Sato is listed as a **required** attendee (response: accepted) on that event, not as an optional guest. There is no Friday architecture review where Kenji Sato attends as an optional guest, so nothing was deleted.

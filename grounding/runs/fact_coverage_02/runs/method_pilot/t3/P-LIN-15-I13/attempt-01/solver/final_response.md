@@ -1,0 +1,1 @@
+There is no open issue assigned to a member of the Design team, so there's nothing to update. The only issue in the workspace ("Clean up the footer links") is assigned to Sam Rivera, who is not on the Design team. No action was taken.

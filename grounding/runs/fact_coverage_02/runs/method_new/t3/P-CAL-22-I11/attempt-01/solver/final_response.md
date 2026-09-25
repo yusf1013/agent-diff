@@ -1,0 +1,1 @@
+There is no calendar whose **description** says it is for the London office. The calendar with the summary "London office" (id: `london@northwind.example`) actually has the description "Calendar for the Paris office" and a location of "Paris." No calendar matches the criteria you specified, so I did not make any access changes.

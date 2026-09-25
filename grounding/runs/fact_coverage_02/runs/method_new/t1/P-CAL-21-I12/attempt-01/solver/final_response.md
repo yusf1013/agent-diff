@@ -1,0 +1,1 @@
+I couldn't find a planning session on Thursday (June 21) that ends at exactly 5pm. There is a "Planning session" that afternoon (4:30pm – 5:30pm) whose description reads "Q4 roadmap estimates," but it ends at 5:30pm rather than 5pm. If that's the event you had in mind, let me know and I'll move it to Room 2B.

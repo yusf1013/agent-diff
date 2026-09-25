@@ -1,0 +1,1 @@
+I couldn't find an all-day offsite event for June 29. The only offsite-related event I found was "Team offsite prep" created by Maya Chen, but that one is scheduled for **June 28** (not 29). There is no all-day offsite event on June 29 on your calendar.

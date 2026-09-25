@@ -1,0 +1,1 @@
+Successfully assigned issue WEB-1 "Apple Pay button misplaced" (the Checkout project issue with a GitHub PR "PR #481: Fix Apple Pay button" attached by Leo Park) to Leo Park. The update was confirmed successful by the API.

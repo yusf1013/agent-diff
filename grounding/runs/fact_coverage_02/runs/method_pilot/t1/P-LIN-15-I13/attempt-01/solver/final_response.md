@@ -1,0 +1,1 @@
+There is no open issue assigned to a member of the Design team. The only issue in the workspace (WEB-2: "Clean up the footer links") is assigned to Sam Rivera, who is a member of the Web team — not Design. The Design team members (Maya Chen and Mia Wong) currently have no assigned issues.

@@ -1,0 +1,1 @@
+There is no Checkout project issue that has a GitHub pull request Leo Park attached. The only PR Leo has attached ("PR #484: Lazy-load icons") is on the issue "WEB-6: Lazy-load payment icons," which is not part of the Checkout project. The sole Checkout project issue ("WEB-5: Checkout performance epic") has no PRs attached.

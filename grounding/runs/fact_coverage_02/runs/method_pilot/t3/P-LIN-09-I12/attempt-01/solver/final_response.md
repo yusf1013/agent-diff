@@ -1,0 +1,1 @@
+There is no Checkout project issue that has a GitHub pull request Leo Park attached. I checked both issues in the Checkout project — **WEB-3** ("Coupon field redesign") and **WEB-5** ("Checkout performance epic") — and neither has a GitHub PR linked via `syncedWith`, comments, or attachments. So there's no issue to assign to Leo Park.

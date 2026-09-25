@@ -1,0 +1,1 @@
+I checked your calendar list and found two calendars: one is "jordan.lee@northwind.example" (no location) and the other is "Japan team" (located in Osaka). There is no calendar located in Tokyo, so I was unable to update its description.

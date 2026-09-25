@@ -1,0 +1,1 @@
+There is no meeting organized by Priya Nair on any Thursday (I checked both the past Thursday, June 14, and the upcoming Thursday, June 21, 2018). The calendar has no events on either of those days, so there's nothing to move.

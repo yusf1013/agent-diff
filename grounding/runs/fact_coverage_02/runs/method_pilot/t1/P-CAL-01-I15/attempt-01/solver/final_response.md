@@ -1,0 +1,1 @@
+I couldn't find a "design review" on Thursday, June 21. The only design-related event that day is a **"Design sync"** (9:00–9:30 AM), in which Priya Nair has declined. No event specifically named "design review" exists on Thursday, so there's nothing to move to Room 5B. If "Design sync" is the event you had in mind, let me know and I'll update its location.

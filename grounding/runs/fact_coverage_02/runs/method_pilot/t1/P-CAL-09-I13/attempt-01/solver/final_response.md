@@ -1,0 +1,1 @@
+I couldn't find a meeting organized by Priya Nair on Thursday (June 21, 2018). I checked both your primary calendar and Priya's shared calendar (priya-team@northwind.example), and there are no events on that Thursday — nor on the previous Thursday (June 14) or any other Thursday in the coming month. There's no Priya-organized Thursday meeting to move to 3pm.

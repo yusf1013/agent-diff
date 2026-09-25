@@ -1,0 +1,1 @@
+Cancelled just the June 19 (this Tuesday) instance of the weekly "Platform sync" event organized by Omar Haddad. The recurring series itself is unchanged — all other Tuesday instances (e.g., June 26) remain confirmed.

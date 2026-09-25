@@ -1,0 +1,1 @@
+There is no "Checkout Redesign" project (nor a "Beta" milestone) in this Linear workspace. The workspace only contains one team ("Web") with no issues or projects. While Maya Chen is a user in this workspace, she doesn't lead a "Checkout Redesign" project here, so there is no Beta milestone target date to set.

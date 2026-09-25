@@ -1,0 +1,1 @@
+There are two projects named "Checkout Redesign" in the workspace, but **neither one is led by Maya Chen** — both have no lead assigned. Since no "Checkout Redesign" project is led by Maya Chen, there is no "Beta" milestone to update. If you'd like, I can set a lead on one of the existing projects or look for the project under a different name.

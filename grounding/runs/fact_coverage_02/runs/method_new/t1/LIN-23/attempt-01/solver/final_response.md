@@ -1,0 +1,1 @@
+Successfully reopened the comment thread on WEB-5 that Maya Chen had resolved. The comment c-21 ("The retry wrapper hides the real failure.") was resolved by Maya Chen. I used the `commentUpdate` mutation to set `resolvingUserId: null`, which cleared Maya Chen's resolution from the thread. The comment now shows `resolvingUser: null`, confirming the thread is reopened.

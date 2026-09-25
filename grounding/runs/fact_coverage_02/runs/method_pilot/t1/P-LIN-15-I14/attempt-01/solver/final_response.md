@@ -1,0 +1,1 @@
+There is no open issue assigned to a member of the Design team. The Design team has two members (Maya Chen and Mia Wong), and the only issue assigned to either of them is **WEB-3: "Archive old landing pages"**, which is already in the **Done** state. Since there's no open issue to update, I didn't make any changes.

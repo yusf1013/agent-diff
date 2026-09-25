@@ -1,0 +1,1 @@
+I couldn't find a planning session that ends at exactly 5 PM on Thursday (June 21) with a description mentioning the Q4 roadmap. The only matching event is a "Planning session" with the description "Q4 roadmap estimates," but it runs from 4:30 PM to **5:30 PM**, not ending at 5 PM. Let me know if you'd like me to move that one to Room 2B anyway!

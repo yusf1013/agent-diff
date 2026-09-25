@@ -1,0 +1,1 @@
+There is no high-priority bug assigned to Priya Nair in the Mobile team. The Mobile team has only one issue (MOB-4: "Offline mode epic"), and it's assigned to Leo Park, not Priya Nair. Priya Nair currently has no issues in the Mobile team, so there's nothing to move to In Review.

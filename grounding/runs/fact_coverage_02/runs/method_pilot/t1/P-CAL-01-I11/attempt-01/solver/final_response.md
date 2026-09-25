@@ -1,0 +1,1 @@
+There isn't a design review on Thursday (June 21) that Priya Nair declined. I found one design review that day — "Design review: Search" at 2:00–3:00 PM — but Priya Nair's status is **accepted** on that event. The person who declined it is **Omar Haddad**. If you'd like me to move that event to Room 5B anyway, just let me know.

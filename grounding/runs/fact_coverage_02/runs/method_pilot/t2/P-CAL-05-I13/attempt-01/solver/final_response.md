@@ -1,0 +1,1 @@
+I found a focus-time block this Friday (June 22) in the Library — "Deep work" from 3:00–4:00 PM (private) — but it blocks your time (shows you as **busy**), not free. There is no focus-time block in the Library this Friday that shows you as available/free, so there's nothing to delete.

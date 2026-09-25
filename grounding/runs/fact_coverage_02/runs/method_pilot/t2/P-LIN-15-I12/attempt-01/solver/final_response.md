@@ -1,0 +1,1 @@
+There isn't an open issue assigned to a member of the Design team. The Design team has two members (Maya Chen and Mia Wong), but neither has any issues assigned. The only issue in the system ("Fix the navigation spacing") is assigned to Zoe Park on the Web team.

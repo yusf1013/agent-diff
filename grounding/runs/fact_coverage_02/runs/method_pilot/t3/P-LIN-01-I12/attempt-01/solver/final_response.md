@@ -1,0 +1,1 @@
+There isn't a high-priority bug assigned to Priya Nair in the Mobile team. The only issue she has in that team is **"Settings toggle misaligned on tablets"** (i-mob-14), which is **Critical** priority (not High) and is currently in the **Todo** state. No action was taken.

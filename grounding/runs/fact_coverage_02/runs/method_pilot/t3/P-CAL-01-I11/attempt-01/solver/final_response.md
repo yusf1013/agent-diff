@@ -1,0 +1,1 @@
+I searched for "design review" events on your calendar and found one: **"Design review: Search"** on Thursday, June 21 from 2:00–3:00 PM. However, Priya Nair **accepted** that invitation — it was actually **Omar Haddad** who declined it. There is no design review on Thursday that Priya Nair declined, so there's nothing to move to Room 5B.

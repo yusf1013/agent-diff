@@ -1,0 +1,1 @@
+There is no message from Priya Sharma about a rollback on September 23 in #deploys. The channel only contains one message (from a user about "Deploying web 4.12 to production"), and a search for "rollback" in that channel returned zero results. So there's nothing to react to.

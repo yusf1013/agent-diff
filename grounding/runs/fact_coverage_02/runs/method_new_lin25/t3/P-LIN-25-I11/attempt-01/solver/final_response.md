@@ -1,0 +1,1 @@
+There isn't a "Regression" label in the Bug group. While a "Regression" label does exist in your workspace, its parent group is null (it's not nested under the "Bug" group), so it doesn't match the criteria of being "from the Bug group." No changes were made to MOB-3.

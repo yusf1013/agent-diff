@@ -1,0 +1,1 @@
+There is no "Regression" label in the "Bug" group. While a "Regression" label does exist, it is not associated with the "Bug" group (its parent is null, not the "Bug" group label). I was unable to add it to MOB-3 as requested.

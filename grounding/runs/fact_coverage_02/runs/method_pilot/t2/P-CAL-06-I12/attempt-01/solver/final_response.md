@@ -1,0 +1,1 @@
+Omar Haddad has been set as an optional attendee on the all-day "Offsite" event organized by Maya Chen on June 29, 2018. The event was found and updated successfully — his attendee status now shows `"optional": true`.

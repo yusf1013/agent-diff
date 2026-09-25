@@ -1,0 +1,1 @@
+There are no active admins who are owners of the Design team itself. The only team ownership found in the workspace is Zoe Park (active admin) who owns the "Design Systems" sub-team, not the Design team directly.

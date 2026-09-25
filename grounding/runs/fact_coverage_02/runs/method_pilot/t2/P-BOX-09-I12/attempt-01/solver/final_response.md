@@ -1,0 +1,1 @@
+There is no PDF file created by the owner of the Finance Reports folder. The folder's owner is **Maya Chen** (maya.chen@northwind.example), but the only PDF in the workspace is "Headcount forecast.pdf", which was created by **Leo Park** (leo.park@northwind.example). Additionally, the Finance Reports folder itself is empty. Therefore, I could not apply the "owner-draft" tag.

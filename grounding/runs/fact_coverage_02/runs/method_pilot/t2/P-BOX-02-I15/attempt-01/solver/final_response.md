@@ -1,0 +1,1 @@
+The **Finance Reports** folder (ID 100) is empty — it contains no files or subfolders at all. Therefore, there is no spreadsheet in that folder that Priya Nair commented on about travel costs, and no rename was needed.

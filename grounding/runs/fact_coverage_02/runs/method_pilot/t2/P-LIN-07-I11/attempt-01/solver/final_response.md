@@ -1,0 +1,1 @@
+There isn't one. Linear is an issue/project management tool and doesn't have a "documents" entity in its API. I also checked for any issues Maya Chen created or any issues with "Growth" in the title — none exist. So there's no document (or issue) to rename to "Growth Q4 plan."

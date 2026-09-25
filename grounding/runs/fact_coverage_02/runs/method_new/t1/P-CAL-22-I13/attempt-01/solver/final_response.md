@@ -1,0 +1,1 @@
+There is no calendar in your calendar list whose description says it is for the London office. The only secondary calendar you have is "Iberia team" (madrid@northwind.example), which is for the **Madrid** office. So there's no London office calendar to share with Sam Rivera.

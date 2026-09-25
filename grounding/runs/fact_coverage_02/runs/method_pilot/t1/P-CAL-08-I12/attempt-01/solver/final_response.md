@@ -1,0 +1,1 @@
+There is no dentist appointment scheduled on **Wednesday, June 20, 2018** on your primary calendar. The only dentist appointment I found is on **Thursday, June 21, 2018 at 9:00 AM – 10:00 AM** (PT). No deletion was performed.

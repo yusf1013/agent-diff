@@ -1,0 +1,1 @@
+There is no message from Priya Sharma about a rollback in the #deploys channel. I searched the full history of #deploys and found only one message (from Leo Park about a web deployment). Priya did post a rollback-related message ("FYI: the billing rollback is complete.") on September 23, but it was in **#general**, not #deploys. So there's no matching message to react to.

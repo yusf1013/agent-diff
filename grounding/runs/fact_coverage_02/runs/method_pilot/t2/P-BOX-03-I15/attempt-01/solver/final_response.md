@@ -1,0 +1,1 @@
+There isn't a matching task. The only review task on the Acme vendor contract (created by Dana Whitfield, task "Review termination terms") **is** assigned to Omar Haddad, but Omar has already completed his assignment (resolution_state: "completed"). Since the condition "that Omar hasn't completed yet" is not met, no due date was set.

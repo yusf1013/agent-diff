@@ -1,0 +1,3 @@
+There isn't a reply from Diego Alvarez in the #incidents thread about the checkout outage. The thread (parent: "Checkout outage: 502s on /pay since 14:05 UTC." by Leo) has no replies at all.
+
+Diego does have a related message in #incidents — "The postmortem for the checkout outage is on Friday." — but it's a standalone top-level message, not a reply in the outage thread. If you'd like, I can add the :eyes: reaction to that message instead. Just let me know!

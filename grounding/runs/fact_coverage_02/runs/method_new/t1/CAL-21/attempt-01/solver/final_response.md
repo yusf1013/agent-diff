@@ -1,0 +1,1 @@
+Successfully updated the "Planning session" event (Thursday, June 21, 2018, 4:00–5:00 PM) to be held in **Room 2B**. This was the event whose description mentions the Q4 roadmap ("Walk through the Q4 roadmap and owners") and which ends at 5 PM on Thursday.

@@ -1,0 +1,1 @@
+There is no GitHub pull request attached to any Checkout project issue. I checked both Checkout issues (WEB-4 "Saved cards not loading" and WEB-5 "Checkout performance epic") — neither has a GitHub PR linked via `syncedWith`, no integration source type, no comments referencing a PR, and no documents. So there's nothing to assign to Leo Park.

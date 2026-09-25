@@ -1,0 +1,1 @@
+There is no calendar whose **description** mentions the London office. The closest match is the **"UK sites"** calendar (uk-sites@northwind.example), but its description reads *"Calendar for the Berlin office"* (the location field is set to "London", but the description says Berlin). No calendar was found that matches your criteria, so no access change was made.

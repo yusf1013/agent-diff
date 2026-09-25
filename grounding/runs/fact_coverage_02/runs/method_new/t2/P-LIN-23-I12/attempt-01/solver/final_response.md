@@ -1,0 +1,1 @@
+There is no comment thread on WEB-5 ("Flaky checkout test") that was resolved by Maya Chen. The only comment on that issue (about CI timeouts being too short) was resolved by Sam Rivera on 2026-06-01. No action was taken.

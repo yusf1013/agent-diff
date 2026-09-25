@@ -1,0 +1,1 @@
+There isn't one. Linear's API doesn't include a documents resource — it's a project management and issue tracking tool with no document management feature exposed through its GraphQL API. I'm unable to find or rename any document in the Checkout Redesign project.

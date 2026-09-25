@@ -1,0 +1,1 @@
+Deleted the event "Focus time" from your primary calendar — it was scheduled for this Friday (June 22) from 9:00–11:00 AM in the Library, set to private and transparent (showing you as free). It's now removed.

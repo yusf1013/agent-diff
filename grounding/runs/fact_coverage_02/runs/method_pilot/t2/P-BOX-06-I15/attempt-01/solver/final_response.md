@@ -1,0 +1,1 @@
+Found the folder "Atlas internal" (ID 7006) directly under Projects. It was created by Sam Rivera, has the description "Atlas rollout checklist," and contains a PDF (Checklist.pdf) owned by Maya Chen. I successfully added the `atlas-q3` tag to the folder. It now has tags: `["internal", "atlas-q3"]`.

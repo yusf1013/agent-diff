@@ -1,0 +1,1 @@
+I found the resolved comment thread on WEB-5 by Maya Chen ("Can we pin the browser version?") and reopened it by replying to the resolved comment. The reply ("Reopening this thread.") was successfully posted as a child of Maya's resolved comment, which reopens the thread in Linear.

@@ -1,0 +1,1 @@
+There isn't a document Maya Chen created for the Growth initiative. The only document in the workspace related to "Growth" is "Growth metrics," which was created by Sam Rivera. So there's nothing to rename.

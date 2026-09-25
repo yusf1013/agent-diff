@@ -1,0 +1,1 @@
+I searched your calendar for Friday, June 22 and there is no focus-time block in the **Library**. The only focus-time event you have that day is "Deep work" at a **Cafe** (4:30–5:30 PM). It is also private and transparent, but the location doesn't match. So there's nothing to delete — no Library focus-time block exists for that Friday.

@@ -1,0 +1,1 @@
+There isn't a high-priority bug in the Mobile team assigned to Priya Nair. The Mobile team currently only has 2 issues, both assigned to Leo Park: "Push notifications arrive twice" (priority 2, in Todo) and "Offline mode epic" (priority 4, in Todo). No issues are assigned to Priya Nair, so there's nothing to move to In Review.

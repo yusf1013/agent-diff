@@ -1,0 +1,1 @@
+There are no open issues to move. The only issue in the Platform team's current cycle (Cycle 14, Sept 14–27, 2026) is "Remove legacy queue," but it's already in the **Done** (completed) state — so it's not open. No action was needed.

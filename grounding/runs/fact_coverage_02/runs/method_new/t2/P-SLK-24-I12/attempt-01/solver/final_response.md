@@ -1,0 +1,1 @@
+There is no private channel that both Priya Sharma and Leo Park are members of. The workspace has only one private channel ("budget-review"), which contains Priya Sharma and **Leo Parker** (a different person, leo.parker) — not Leo Park (leo.park). So there's no qualifying private channel to post the reminder in.

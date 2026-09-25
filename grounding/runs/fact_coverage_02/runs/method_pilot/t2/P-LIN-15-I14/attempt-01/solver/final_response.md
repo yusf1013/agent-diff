@@ -1,0 +1,1 @@
+There isn't an open issue assigned to a member of the Design team. The only issue found for a Design team member is WEB-3 ("Archive old landing pages") assigned to Maya Chen, but it's already in the "Done" state. No action was taken.

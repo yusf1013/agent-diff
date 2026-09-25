@@ -1,0 +1,3 @@
+There isn't a folder matching all your criteria. The closest candidate is the **"Atlas launch"** folder (id: 7002) directly under Projects — it's client-tagged, its description reads "Atlas rollout workspace," and Sam Rivera owns it. However, it was **created by Dana Whitfield**, not Sam Rivera, so it doesn't satisfy the "created by Sam Rivera" requirement. The only other folder under Projects is "Archive," which doesn't match at all.
+
+If the "Atlas launch" folder is the one you meant (perhaps you were thinking of the owner rather than the creator), let me know and I can go ahead and add the `atlas-q3` tag to it.

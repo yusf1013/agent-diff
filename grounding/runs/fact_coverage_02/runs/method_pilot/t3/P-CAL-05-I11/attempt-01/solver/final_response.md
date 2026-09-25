@@ -1,0 +1,1 @@
+Done! I found and deleted your private focus-time block titled "Focus time" in the Library this Friday (June 22), which was scheduled from 9:00 AM to 11:00 AM and had transparent visibility (showing you as free). It has been removed from your calendar.

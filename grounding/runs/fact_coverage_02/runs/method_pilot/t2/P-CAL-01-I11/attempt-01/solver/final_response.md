@@ -1,0 +1,1 @@
+There isn't a design review that Priya Nair declined on Thursday. The only Thursday design review I found is "Design review: Search" (Thursday, June 21 at 2:00 PM), and Priya Nair **accepted** that one — it was Omar Haddad who declined. Since no matching event exists, I didn't make any changes.

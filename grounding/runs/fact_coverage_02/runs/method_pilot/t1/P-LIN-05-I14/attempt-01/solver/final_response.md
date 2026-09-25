@@ -1,0 +1,1 @@
+There aren't any to move. The Platform team has only one issue in total — PLT-5 "Remove legacy queue" (estimated 5 points, due 2026-09-10, currently in Cycle 14) — and it is already in the "Done" state. Since it isn't open, no issue meets all of your criteria (open, in the current cycle, estimated ≥ 5 points, and past due date), so no issues were moved to the next cycle.

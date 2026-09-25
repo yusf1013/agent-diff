@@ -1,0 +1,1 @@
+I couldn't find a "Platform sync" event organized by Omar Haddad on your calendar. I searched for "Platform sync", "sync", "Omar Haddad", and "platform" — no matching events came up. Your calendar list also only has your primary calendar, so there are no other calendars to check. There's no Tuesday session to cancel.

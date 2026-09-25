@@ -1,0 +1,1 @@
+There is no "Platform sync" event on your calendar. I searched the primary calendar (which is the only calendar in your calendar list) for "Platform sync," "Platform," "sync," and also listed all events (including deleted/cancelled ones) — the calendar is completely empty. There's no weekly Platform sync organized by Omar Haddad to cancel.

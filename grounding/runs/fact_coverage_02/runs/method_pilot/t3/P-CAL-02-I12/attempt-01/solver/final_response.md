@@ -1,0 +1,1 @@
+I couldn't find a "Platform sync" event organized by Omar Haddad on your calendar. I searched for "Platform sync", "Platform", "Omar Haddad", and "sync" across your primary calendar (the only calendar you have access to) and got no results. There's no Tuesday instance to cancel.

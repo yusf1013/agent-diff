@@ -1,0 +1,1 @@
+There is no comment thread on WEB-12 that Priya Nair started. The flaky tests discussion on that issue was actually **started by Omar Haddad** ("Tests are flaky on CI again - three reruns today."), and Priya Nair only **replied** to his comment ("Agreed, the flaky tests are blocking merges."). Since Priya didn't start a thread, there's nothing for me to resolve.

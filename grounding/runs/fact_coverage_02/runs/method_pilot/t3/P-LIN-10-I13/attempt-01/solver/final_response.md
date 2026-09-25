@@ -1,0 +1,1 @@
+There isn't a sub-issue of "Checkout revamp" (WEB-1) that's assigned to Sam Rivera. The two sub-issues under it — "Tax rules engine" (WEB-2) and "Payment form" (WEB-3) — are both assigned to Leo Park. Sam Rivera is assigned to "Funnel dashboard" (WEB-6), but that's a sub-issue of "Checkout analytics" (WEB-5), not directly under "Checkout revamp."

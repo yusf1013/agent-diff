@@ -1,0 +1,1 @@
+There is no document in the **Checkout Redesign** project that Leo Park last edited (or any other document at all in that project). The only document in the workspace is "Commerce QA overview," but it is not associated with the Checkout Redesign project. Therefore, there is nothing to rename.

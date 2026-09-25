@@ -1,0 +1,1 @@
+There is no PDF file directly in the Finance Reports folder. The folder only contains a "Drafts" subfolder, a "Board notes.docx" file, and a "Q3 revenue summary.xlsx" file — none of which are PDFs. Therefore, there is no PDF owned by Maya Chen and last modified by Leo Park to tag with "q3-close".

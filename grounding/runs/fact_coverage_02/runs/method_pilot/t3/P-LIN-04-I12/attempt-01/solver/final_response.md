@@ -1,0 +1,1 @@
+There is no blocking relation on ENG-7 ("Upgrade auth library"). The only relation I found involving ENG-7 and the database migration issue (ENG-9: "Run database migration for the v2 schema") is a **"related"** relation (id: r-2), not a blocking one. Since no blocking relation exists, there's nothing to remove.

@@ -1,0 +1,1 @@
+There is no PDF file directly in the "Finance Reports" folder. The folder contains only a subfolder called "Drafts" and a single file called "Board notes.docx" (a Word document, not a PDF). Since the task specified the PDF must be in the folder itself (not in subfolders), no qualifying PDF exists, and no tag has been added.

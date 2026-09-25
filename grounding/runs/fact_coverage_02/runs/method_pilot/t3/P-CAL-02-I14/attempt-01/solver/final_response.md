@@ -1,0 +1,1 @@
+There's no weekly "Platform sync" event organized by Omar Haddad on your calendar. I searched for "Platform sync," "Platform," "sync," and "Omar" across your entire primary calendar (which is your only calendar), and it's currently empty — no events of any kind exist. So there's nothing to cancel for this Tuesday (June 19).

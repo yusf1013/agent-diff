@@ -1,0 +1,1 @@
+There is no PDF file directly in the Finance Reports folder. The folder contains only a subfolder ("Drafts") and a .docx file ("Board notes.docx"). Since no PDF exists at that level, there is no file to tag with "q3-close".

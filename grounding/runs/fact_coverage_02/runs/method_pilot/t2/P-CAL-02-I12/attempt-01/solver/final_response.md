@@ -1,0 +1,1 @@
+There is no weekly "Platform sync" organized by Omar Haddad on your calendar. Your primary calendar (jordan.lee@northwind.example) is currently empty — it has no events at all. I also searched for variations ("Platform", "sync", "Omar") and found nothing. So there's nothing to cancel for this Tuesday (June 19) or any other day in the series.

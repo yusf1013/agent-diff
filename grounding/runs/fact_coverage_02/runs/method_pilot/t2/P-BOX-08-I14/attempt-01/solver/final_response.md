@@ -1,0 +1,1 @@
+There isn't a file that matches all the criteria. The only file with an open review task due before October 1, 2026 created by Dana Whitfield is "Nonprofit pricing.xlsx" (file ID 9005), but it is assigned to only **one** person (Omar Haddad), not two or more. Since it doesn't meet the "two or more people" requirement, no file qualifies.

@@ -1,0 +1,1 @@
+Dana Whitfield (dana.whitfield@northwind.example) does not have write access to the Marketing calendar. The only user with access to that calendar is jordan.lee@northwind.example (owner). There's nothing to remove.

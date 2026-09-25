@@ -1,0 +1,1 @@
+The **Finance Reports** folder (ID: 100) is owned by **Maya Chen** (maya.chen@northwind.example), but the folder is **empty** — it contains no files or subfolders. Therefore, there is no PDF in that folder that Maya Chen created, and no file to which I can add the `owner-draft` tag.

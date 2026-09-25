@@ -1,0 +1,1 @@
+I couldn't find a planning session on Thursday (June 21) that ends at 5pm with a description mentioning the Q4 roadmap. There is a "Planning session" on Thursday from 3:30pm–5:00pm, but its description says "Hiring plan for the autumn" — not the Q4 roadmap. No event on that day mentions the Q4 roadmap at all, so there's nothing to move to Room 2B.

@@ -1,0 +1,1 @@
+Successfully granted Sam Rivera (sam.rivera@northwind.example) read access to the calendar "EMEAM team" (emea@northwind.example), whose description is "Calendar for the London office". The ACL rule was created with the role "reader".

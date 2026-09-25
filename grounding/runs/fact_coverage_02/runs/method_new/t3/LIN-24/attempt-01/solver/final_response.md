@@ -1,0 +1,1 @@
+Successfully moved issue ENG-9 ("Rotate the signing keys") into Cycle 15 of the Engineering team. The `issueUpdate` mutation with `cycleId: "cy-15"` was applied to issue ID "i-e9" and the API confirmed the change with success: true.

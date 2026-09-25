@@ -1,0 +1,1 @@
+There are no issues to move. The Platform team has one issue in its current cycle (Cycle 14) — PLT-4 "Tune database pool sizes" — but it's estimated at only 4 points, which is below the 5-point threshold. No issues in the current cycle meet all the criteria (open, estimated at 5+ points, and past their due date), so nothing was moved to the next cycle.

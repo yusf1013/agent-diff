@@ -1,0 +1,1 @@
+I couldn't find a message from Priya Sharma in #deploys about a rollback. The only rollback-related message in that channel was posted by Diego Alvarez ("the search-api rollback is done on my side"), and Priya hasn't posted any messages in that channel (or anywhere in the workspace) that I can find. No :thumbsup: reaction was added since the target message doesn't exist.

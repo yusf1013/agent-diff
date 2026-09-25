@@ -1,0 +1,1 @@
+There isn't a task created by pat.kim@northwind.example on September 14 that asks to check the indemnity clause. The only task by Pat Kim on that date (created 2026-09-14) is on the file "Indemnity clause review.pdf" but its message is "Please check the payment terms" — not about the indemnity clause. Since the task you described doesn't exist, I haven't changed any due dates.

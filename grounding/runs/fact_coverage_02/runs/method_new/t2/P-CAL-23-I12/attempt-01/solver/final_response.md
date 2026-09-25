@@ -1,0 +1,3 @@
+I searched Friday, June 22 for architecture review events. There is one — **"Architecture review: search"** (3:00–4:00 PM, America/Los_Angeles) — but the optional guest listed is **Kenji Satou (kenji.satou@northwind.example)**, not Kenji Sato (kenji.sato@northwind.example) as you specified. These are different email addresses (though "Sato" and "Satou" are both romanizations of the same Japanese name 佐藤).
+
+There is no Friday architecture review with **kenji.sato@northwind.example** as an attendee. If you meant Kenji Satou (kenji.satou@northwind.example), let me know and I'll delete that event.

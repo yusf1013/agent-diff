@@ -1,0 +1,1 @@
+The only PDF in the "Finance Reports" folder is "Q3 summary.pdf", but it was created by **Dana Whitfield**, not by the folder owner **Maya Chen**. There is no PDF in that folder that was created by the folder owner, so no tag was added.

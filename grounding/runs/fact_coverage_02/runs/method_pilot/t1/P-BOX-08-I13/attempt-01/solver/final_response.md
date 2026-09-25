@@ -1,0 +1,1 @@
+There is no file that meets all the specified criteria. The only file in the workspace, "Education pricing.xlsx," has an open review task created by Dana Whitfield and assigned to two people (Omar Haddad and Sam Rivera), but its due date is October 15, 2026, which is after October 1, 2026. Therefore, no file qualifies for the "escalate" tag.

@@ -1,0 +1,1 @@
+There are no spreadsheets in your Favorites collection. It only contains a PDF file ("Pricing.pdf") and an empty folder ("Budget pack"). Since there are no spreadsheets at all, there are no locked spreadsheets from which to remove shared links.

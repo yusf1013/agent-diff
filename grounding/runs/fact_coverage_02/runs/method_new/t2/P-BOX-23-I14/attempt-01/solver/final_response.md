@@ -1,0 +1,1 @@
+There is no contract PDF in your Box workspace that meets all the criteria. The only file whose description mentions the Initech renewal is **"Initech pricing.docx"** (in the "Contracts" folder), and while it is larger than 2 MB (~2.9 MB), it is a **Word document (.docx)**, not a PDF. No PDF files exist in the workspace at all, so the "renewal" tag was not added.

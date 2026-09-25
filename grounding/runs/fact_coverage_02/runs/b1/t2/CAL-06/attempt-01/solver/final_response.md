@@ -1,0 +1,1 @@
+Successfully made Omar Haddad an optional attendee on the "Team offsite" all-day event (June 29) created by Maya Chen. The attendee was updated via a PATCH request, and the response confirms `"optional": true` is now set on Omar's attendee entry.

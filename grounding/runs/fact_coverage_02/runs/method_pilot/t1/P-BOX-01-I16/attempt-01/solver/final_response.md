@@ -1,0 +1,1 @@
+There is no PDF in the Finance Reports folder (not in subfolders) that matches all the criteria. The only PDF directly in that folder is **"Q3 travel summary.pdf"**, and while it was last modified by Leo Park, it is owned by **Maya Lopez**, not Maya Chen. Since no PDF is owned by Maya Chen in that folder, there is no file to tag with `q3-close`.

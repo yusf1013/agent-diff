@@ -1,0 +1,1 @@
+There are no issues in the Platform team's current cycle (Cycle 14, running Sept 14–27, 2026) that meet all the criteria. The only issue in the current cycle is **PLT-4 – "Tune database pool sizes"**, which is open and past due (Sept 15), but it's estimated at only **4 points**, below the 5-point threshold. No action was needed.

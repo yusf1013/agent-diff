@@ -1,0 +1,1 @@
+There isn't a contract PDF that meets all three criteria. The only file with "Initech renewal" in its description is **"Initech SOW.pdf"** (ID 8103), but its size is ~1.86 MB (1,950,000 bytes), which is below the 2 MB threshold. No other matching files exist in the workspace.

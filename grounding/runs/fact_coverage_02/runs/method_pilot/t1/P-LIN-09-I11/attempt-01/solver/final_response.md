@@ -1,0 +1,1 @@
+There is no Checkout project issue with a GitHub pull request attached by Leo Park. The GitHub PR ("PR #482: Round tax totals") on the issue "Tax total rounding error" (WEB-2) was attached by Sam Rivera, not Leo Park. Leo Park only attached a Slack thread ("Thread: rounding complaints") to that issue, not a GitHub PR.

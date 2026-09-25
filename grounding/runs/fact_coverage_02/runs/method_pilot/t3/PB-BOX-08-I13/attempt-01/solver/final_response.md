@@ -1,0 +1,1 @@
+There isn't one. The only file with a review task (Education pricing.xlsx) has a due date of **October 1, 2026** — it is due *on* October 1, not *before* October 1, so it doesn't satisfy all of the stated criteria. No file meets the full set of requirements (open review task, due **before** Oct 1 2026, assigned by Dana Whitfield to 2+ people).

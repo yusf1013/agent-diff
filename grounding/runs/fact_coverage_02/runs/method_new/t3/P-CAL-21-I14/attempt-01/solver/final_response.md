@@ -1,0 +1,1 @@
+I couldn't find a matching event. The only "Planning session" ending at 5pm on Thursday (June 21) has the description "Hiring plan for the autumn" — it doesn't mention a Q4 roadmap. I also searched all events on your calendar for "Q4 roadmap" and found no results. So there's no planning session meeting all your criteria (ends at 5pm on Thursday + Q4 roadmap in the description).

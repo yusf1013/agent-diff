@@ -1,0 +1,1 @@
+There isn't a design review on Thursday that Priya Nair declined. The only design review that day is "Design review: Onboarding" (4:00–4:30 PM on June 21), but Priya Nair's response is **tentative**, not declined. So there's nothing to move to Room 5B. Let me know if you'd like me to update that event or look for something else!

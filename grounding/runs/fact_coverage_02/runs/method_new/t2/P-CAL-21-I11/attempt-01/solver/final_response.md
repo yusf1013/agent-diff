@@ -1,0 +1,1 @@
+I searched your calendar and found one "Planning session" on Thursday, June 21 whose description mentions "Q4 roadmap follow-ups." However, that event **starts** at 5:00 PM and **ends** at 6:00 PM — it does not end at 5 PM. There is no planning session that ends at 5 PM on Thursday with a Q4 roadmap in its description, so there's nothing to move to Room 2B.

@@ -1,0 +1,3 @@
+I found the Tokyo-time calendar that matches your description — the **"Tokyo office"** calendar (tokyo-office@northwind.example, timezone Asia/Tokyo) — which has an "All-hands" event on June 21, 2018, and Kenji Sato (kenji.sato@northwind.example) has a writer role on it.
+
+However, I was **unable to update the description** because the calendar's data owner is **aiko.mori@northwind.example**, and I don't have permission to modify its metadata (the API returned a 403 "You do not have permission to update this calendar"). To make this change, you would need to authenticate as aiko.mori or grant the current user data-owner-level access.

@@ -1,0 +1,1 @@
+There is no meeting organized by Priya Nair on a Thursday in your calendar. The only event she organized is "Budget check-in" on **Wednesday, June 20** (11:00–11:30 AM). No Thursday event was found, so there's nothing to reschedule.

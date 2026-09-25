@@ -1,0 +1,3 @@
+I found Priya Sharma's message in #deploys: *"Rollback plan for the cache migration is ready for review."* (posted on Sep 23).
+
+I added a check mark reaction to it. Note: In this workspace, the exact emoji name `white_check_mark` wasn't available — the closest valid name is `check` (the ✓ emoji), which I used instead. The reaction has been successfully added to Priya's message.

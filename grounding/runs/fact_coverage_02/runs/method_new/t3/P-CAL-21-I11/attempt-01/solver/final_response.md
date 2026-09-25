@@ -1,0 +1,1 @@
+There isn't a planning session that matches all of your criteria. The closest match is a "Planning session" on Thursday, June 21, with the description "Q4 roadmap follow-ups," but it runs from 5pm to 6pm (it *starts* at 5pm, not ends). No event on your calendar ends at 5pm on a Thursday with "Q4 roadmap" in the description.

@@ -1,0 +1,1 @@
+There isn't a PDF that matches all the criteria. The only PDF directly in the Finance Reports folder is "Q3 payroll summary.pdf," which is owned by Maya Chen but was last modified by Maya Chen herself — not Leo Park. Leo Park *created* the file, but didn't modify it last. So there's no PDF to tag with "q3-close."

@@ -1,0 +1,1 @@
+I found Kenji Sato's Tokyo-time calendar ("Kenji team", timezone Asia/Tokyo), but it does not have an all-hands meeting on June 21. The only event scheduled that day is a "Standup" at 9:00–9:15 AM Pacific. Since there is no all-hands event, I did not change the calendar's description.

@@ -1,0 +1,1 @@
+Successfully made Omar Haddad an optional attendee on the all-day "Offsite" event (June 29) organized by Maya Chen. Used a PATCH request to update the attendees list, setting `optional: true` for Omar Haddad. The API confirmed the change with his attendee entry now showing `"optional": true`.

@@ -1,0 +1,1 @@
+The **Finance Reports** folder (owned by **Maya Chen**, login: maya.chen@northwind.example) is completely empty — it contains no files or subfolders. Therefore, there is no PDF in that folder to tag with "owner-draft."

@@ -1,0 +1,1 @@
+I found one locked spreadsheet in your Favorites collection: **"Pack summary.xlsx"** (in the "Budget pack" folder). It had a company-wide shared link, which I've now removed. The file is no longer shared.

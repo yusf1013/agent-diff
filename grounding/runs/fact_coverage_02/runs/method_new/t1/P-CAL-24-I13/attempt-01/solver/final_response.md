@@ -1,0 +1,1 @@
+I couldn't find a calendar located in Tokyo. Your calendar list only contains two calendars: "jordan.lee@northwind.example" (no location set) and "Korea team" (located in Seoul). There is no calendar with a Tokyo location to update.
