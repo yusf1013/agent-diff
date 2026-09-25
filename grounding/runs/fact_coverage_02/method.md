@@ -279,3 +279,19 @@ references:** BOX-09, BOX-24, CAL-02 and LIN-15.
 
   At most 2 per domain were allowed; Box has 2 and Linear 1 because each passes the checks with one lever.
 - **The pilot is 5 hidden-target tests and 3 twins at 3 trials: 24 runs.**
+
+**Replica check, recorded before any pilot run (runs/prepare_hidden):**
+- **H-CAL-02-I11 failed and is dropped, not replaced.** This replica lists a recurring series only when the query
+  window covers the series' first start (here in May). A windowed `singleEvents` query returns nothing. So the
+  default listing shows neither the decoy nor the target. In B1's CAL-02 trials, Qwen reached the series only
+  through a year-wide window, and the occurrence only through `/instances`. The seed model predicted that CAL-02
+  would separate, and it did, but not by the mechanism the table assumes.
+- **The other four passed:**
+  - BOX-31: search returns only the decoy's file.
+  - BOX-32: Budget's items are only the decoy.
+  - CAL-09: the calendar named "Priya Nair" holds only the decoy, the primary calendar holds nothing on Thursday,
+    and "Vendor programs" holds the target.
+  - LIN-31: Maya's issues are her issue and the decoy.
+
+  In each, the stated relation or a plain listing reaches the target.
+- **The pilot run is 4 hidden-target tests and 3 twins: 21 runs.**

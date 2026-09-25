@@ -5,6 +5,9 @@
 - Wording check (WC-*): the three covers whose failures happened with the target out of sight (BOX-09 and LIN-15
   as the pilot ran them in B1, BOX-24 as run in method_new), unchanged except for "If there isn't one, just tell
   me." The target and every decoy stay.
+- Hidden-target pilot (H-*): the scenarios of scenarios_hidden.py, target present, presupposing wording. Each must
+  pass hiding.hiding_errors (one decoy on the easy paths, no target). Arm B scenarios also get a probe twin (P-*):
+  the same decoy alone, no target, "If there isn't one, just tell me"; Arm A decoys already have their probes.
 Writes cases_hidden/<domain>/<case_id>.json and suite_hidden.json.
 """
 from __future__ import annotations
@@ -15,8 +18,11 @@ import json
 from pathlib import Path
 
 from grounding.runs.fact_coverage_01.pilot.common import finish
+from grounding.runs.fact_coverage_01.pilot.variants import isolate
 from grounding.runs.fact_coverage_02.anchors import missing_anchors
-from grounding.runs.fact_coverage_02.suite_pilot import digest, rename, told
+from grounding.runs.fact_coverage_02.hiding import hiding_errors
+from grounding.runs.fact_coverage_02.scenarios_hidden import ARM_A, ARM_B
+from grounding.runs.fact_coverage_02.suite_pilot import FAMILY, digest, rename, told
 
 HERE = Path(__file__).resolve().parent
 PILOT = HERE.parent / "fact_coverage_01/pilot/cases"
@@ -38,6 +44,8 @@ def build():
     def add(case, form, scenario, note="", **extra):
         case, results, errs = finish(case)
         errs += missing_anchors(case)
+        if form == "hidden target":
+            errs += hiding_errors(case)  # one decoy on the easy paths, and no target on any of them
         if errs:
             raise SystemExit(f"{case['case_id']}: {errs}")
         case["coverage_claims"] = sorted({c["requirement"] for r in results for c in r["claims"] if c["credited"]})
@@ -51,6 +59,22 @@ def build():
         case = told(rename(copy.deepcopy(base), f"WC-{base['case_id']}"), plural=False)
         add(case, "wording check", base["case_id"], note=f"the cover as run in {run}, plus the escape clause",
             cover_run=run)
+    for builder, ci, scenario in ARM_A:
+        case = builder()
+        hidden = case["references"][0]["claims"][ci]
+        add(rename(case, f"H-{scenario}-I1{ci + 1}"), "hidden target", scenario, arm="A", fact=hidden["requirement"],
+            family=FAMILY[scenario][f"I1{ci + 1}"], probe=f"P-{scenario}-I1{ci + 1}",
+            note="pilot scenario; other decoys removed" + ("; lures " + json.dumps(case["lures"]) if case.get("lures") else ""))
+    for builder in ARM_B:
+        base = builder()
+        scenario = base["case_id"]
+        hidden = base["references"][0]["claims"][0]
+        add(rename(copy.deepcopy(base), f"H-{scenario}-I11"), "hidden target", scenario, arm="B",
+            fact=hidden["requirement"], family=hidden.get("family"), probe=f"P-{scenario}-I11",
+            note="constructed scenario")
+        twin = told(rename(isolate(base, 0, 0), f"P-{scenario}-I11"), plural=False)
+        add(twin, "probe twin", scenario, arm="B", fact=hidden["requirement"], family=hidden.get("family"),
+            note="the hidden test's decoy alone")
     return tests, cases
 
 
