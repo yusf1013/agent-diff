@@ -316,12 +316,13 @@ def main():
     lines += pilot_lines + families([t for t in pilot if t["run"] == "method_pilot"], "pilot facts")
     lines += families([t for t in new + pilot if t["run"] != "b1"], "both suites")
     lines += panel(new + pilot)
-    from grounding.runs.fact_coverage_02.followups import packed_vs_alone, run_budget
+    from grounding.runs.fact_coverage_02.followups import fact_probes_equal_runs, packed_vs_alone, run_budget
     lines += packed_vs_alone(load) + run_budget(load)
-    lines += fact_probes()
+    lines += fact_probes() + fact_probes_equal_runs(load)
     manual = json.loads((HERE / "manual_labels.json").read_text())
     lines += bug_list([t for t in new + pilot if t["form"] != "policy panel"], manual)
-    runs = ["b1", "method_new", "method_new_lin25", "method_new_slk21", "method_pilot", "method_pilot_panel", "factprobe"]
+    runs = ["b1", "method_new", "method_new_lin25", "method_new_slk21", "method_pilot", "method_pilot_panel", "factprobe",
+            "factprobe_extra"]
     lines += denominators(runs)
     lines += usage(runs)
     lines += ["## Report rows", ""] + report_tables()

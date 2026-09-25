@@ -1,0 +1,1 @@
+There is no private channel that both Priya Sharma and Leo Park are members of. Priya Sharma is a member of three private channels (#budget-review, #hr-partners, #ops-leads), but Leo Park is not a member of any private channels. I was unable to post the message because no shared private channel exists.

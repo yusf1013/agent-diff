@@ -1,0 +1,1 @@
+I found Maya Chen's resolved comment thread on WEB-5 ("Can we pin the browser version?", comment ID c-22) and reopened it by replying with "Reopening this thread." In Linear, replying to a resolved thread reopens it. The reply was successfully posted to the thread.

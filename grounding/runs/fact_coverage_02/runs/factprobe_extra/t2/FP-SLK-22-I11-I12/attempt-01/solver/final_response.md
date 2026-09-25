@@ -1,0 +1,1 @@
+Added an :eyes: reaction to Diego Alvarez's reply ("Might be the same config push as the checkout outage.") in the #incidents channel thread about the search latency spike, which references the checkout outage.

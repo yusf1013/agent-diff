@@ -145,6 +145,32 @@ Probes are ordered by family yield (F8, F1, F6, …), itself measured on these r
 
 Facts exposed with all decoys together: 6 of 19 facts (19 tests). Exposed by some single-decoy probe: 5 (44 tests). Only together: ['A:Channel.purpose_text', 'A:Task.message', 'H:Message.parent_id']. Only alone: ['A:Calendar.location', 'H:IssueLabel.parentId'].
 
+## Fact probes at equal runs per fact
+
+| Fact probe | Fact | Together: failing/established runs | Alone: failing/established runs | p (together more) | p (alone more) |
+|---|---|---:|---:|---:|---:|
+| FP-BOX-21-I13-I15 | `A:Folder.created_at` | 0/6 | 0/6 | 1.000 | 1.000 |
+| FP-BOX-24-I13-I14 | `A:Task.message` | 2/6 | 0/6 | 0.227 | 1.000 |
+| FP-CAL-21-I11-I12 | `A:Event.end` | 0/6 | 0/6 | 1.000 | 1.000 |
+| FP-CAL-21-I13-I14 | `A:Event.description` | 2/6 | 3/6 | 0.879 | 0.500 |
+| FP-CAL-22-I11-I12-I13 | `A:Calendar.description` | 0/9 | 0/9 | 1.000 | 1.000 |
+| FP-CAL-24-I11-I12-I13-I14 | `A:Calendar.location` | 1/12 | 3/12 | 0.953 | 0.295 |
+| FP-LIN-21-I13-I14 | `R:Issue.teamId` | 0/6 | 0/6 | 1.000 | 1.000 |
+| FP-LIN-22-I12-I13-I14 | `R:Document.projectId` | 0/7 | 0/9 | 1.000 | 1.000 |
+| FP-LIN-23-I11-I12 | `R:Comment.resolvingUserId` | 4/6 | 3/6 | 0.500 | 0.879 |
+| FP-LIN-25-I11-I12 | `H:IssueLabel.parentId` | 0/6 | 2/6 | 1.000 | 0.227 |
+| FP-LIN-26-I11-I12-I13 | `R:issue_subscriber_user_association` | 0/8 | 0/7 | 1.000 | 1.000 |
+| FP-SLK-21-I13-I14 | `R:Message.channel_id` | 0/6 | 0/6 | 1.000 | 1.000 |
+| FP-SLK-22-I11-I12 | `H:Message.parent_id` | 5/6 | 0/6 | 0.008 | 1.000 |
+| FP-SLK-23-I11-I12 | `A:Channel.purpose_text` | 3/6 | 0/6 | 0.091 | 1.000 |
+| FP-SLK-24-I11-I12-I13 | `R:channel_members` | 0/9 | 0/9 | 1.000 | 1.000 |
+| FP-BOX-08-I13-N | `A:Task.due_at` | 0/6 | 0/6 | 1.000 | 1.000 |
+| FP-LIN-01-I12-N | `A:Issue.priority` | 4/6 | 3/6 | 0.500 | 0.879 |
+| FP-LIN-05-I13-N | `A:Issue.estimate` | 0/6 | 0/6 | 1.000 | 1.000 |
+| FP-LIN-05-I15-N | `A:Issue.dueDate` | 0/6 | 0/6 | 1.000 | 1.000 |
+
+Facts exposed together: 7; alone: 5; only together: ['A:Channel.purpose_text', 'A:Task.message', 'H:Message.parent_id']; only alone: ['H:IssueLabel.parentId'].
+
 ## Distinct facts exposed
 
 | Fact | Domain | Pilot bug | Tests (failing/established trials) | One reviewed trial |
@@ -202,6 +228,7 @@ Facts exposed with all decoys together: 6 of 19 facts (19 tests). Exposed by som
 | method_pilot | 417 | 411 | 0 | 0 | 4 | 2 |
 | method_pilot_panel | 15 | 15 | 0 | 0 | 0 | 0 |
 | factprobe | 57 | 56 | 0 | 0 | 0 | 1 |
+| factprobe_extra | 75 | 73 | 0 | 0 | 1 | 1 |
 
 ## Usage (all attempts)
 
@@ -214,7 +241,8 @@ Facts exposed with all decoys together: 6 of 19 facts (19 tests). Exposed by som
 | method_pilot | 139 | 434 | 3,621 | 18,997,996 | 940,792 | 0 |
 | method_pilot_panel | 5 | 15 | 149 | 751,370 | 54,138 | 0 |
 | factprobe | 19 | 57 | 415 | 1,601,998 | 131,751 | 0 |
-| **total** | | 874 | 7,039 | 36,021,943 | 1,932,939 | 0 |
+| factprobe_extra | 19 | 75 | 515 | 2,328,625 | 151,190 | 0 |
+| **total** | | 949 | 7,554 | 38,350,568 | 2,084,129 | 0 |
 
 Exploration runs (`smoke_slack`) and no-model preflights (`prepare_*`) are not counted.
 ## Report rows

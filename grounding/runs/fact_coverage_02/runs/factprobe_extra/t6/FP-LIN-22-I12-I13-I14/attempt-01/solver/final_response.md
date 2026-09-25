@@ -1,0 +1,1 @@
+There isn't a document in the "Checkout Redesign" project that was last edited by Leo Park. The only document Leo edited that's close in name is "Checkout v2 test notes", but that belongs to a different project called "Checkout Redesign v2" — not "Checkout Redesign". So no rename was performed.

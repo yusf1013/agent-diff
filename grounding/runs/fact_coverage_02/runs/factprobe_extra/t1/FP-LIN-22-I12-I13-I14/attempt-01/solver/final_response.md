@@ -1,0 +1,1 @@
+There is no document in the "Checkout Redesign" project that Leo Park last edited. The only "Checkout" related document Leo Park has updated is "Checkout v2 test notes", but that belongs to the separate "Checkout Redesign v2" project, not "Checkout Redesign".

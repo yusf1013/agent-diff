@@ -57,6 +57,47 @@ def packed_vs_alone(load):
             f"Only packed: {sorted(packed_facts - alone_facts) or 'none'}. Only alone: {sorted(alone_facts - packed_facts)}.", ""]
 
 
+def _fisher_ge(a, n1, b, n2):
+    """One-sided hypergeometric P(first group gets >= a of the a+b failures | equal per-run rates)."""
+    from math import comb
+    k, n = a + b, n1 + n2
+    if k == 0:
+        return 1.0
+    return sum(comb(n1, i) * comb(n2, k - i) for i in range(a, min(k, n1) + 1) if k - i <= n2) / comb(n, k)
+
+
+def fact_probes_equal_runs(load):
+    """Each fact probe given as many runs as its single-decoy probes had in total (3 per decoy): the original
+    factprobe trials plus factprobe_extra, against the singles; per fact and in total."""
+    suite = json.loads((HERE / "suite_factprobe.json").read_text())
+    if not (HERE / "runs/factprobe_extra").exists():
+        return []
+    together = defaultdict(lambda: [0, 0, set()])
+    for t in load(["factprobe", "factprobe_extra"]):
+        c = together[t["case_id"]]
+        c[0] += t["failures"]
+        c[1] += t["established"]
+        c[2] |= set(t["exposed"])
+    singles = {t["case_id"]: t for t in load(["method_new", "method_new_lin25", "method_new_slk21", "method_pilot"])}
+    out = ["## Fact probes at equal runs per fact", "",
+           "| Fact probe | Fact | Together: failing/established runs | Alone: failing/established runs | "
+           "p (together more) | p (alone more) |", "|---|---|---:|---:|---:|---:|"]
+    f_t, f_a = set(), set()
+    for s in suite:
+        a, n1, _ = together[s["case_id"]]
+        b = sum(singles[x]["failures"] for x in s["singles"])
+        n2 = sum(singles[x]["established"] for x in s["singles"])
+        if a:
+            f_t.add(s["fact"])
+        if b:
+            f_a.add(s["fact"])
+        out.append(f"| {s['case_id']} | `{s['fact']}` | {a}/{n1} | {b}/{n2} | {_fisher_ge(a, n1, b, n2):.3f} | "
+                   f"{_fisher_ge(b, n2, a, n1):.3f} |")
+    out += ["", f"Facts exposed together: {len(f_t)}; alone: {len(f_a)}; only together: {sorted(f_t - f_a) or 'none'}; "
+                f"only alone: {sorted(f_a - f_t) or 'none'}.", ""]
+    return out
+
+
 def run_budget(load):
     sets = {
         "Pilot facts": ([t for t in load(["b1"]) if t["form"] in (None, "target-present layer")],

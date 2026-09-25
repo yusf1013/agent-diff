@@ -1,0 +1,1 @@
+I found and reopened the comment thread on WEB-5 that Maya Chen had resolved. Her comment "Can we pin the browser version?" (comment ID c-22) was the resolved thread. I cleared its resolution by setting `resolvingCommentId` and `resolvingUserId` to null, and the API confirmed the update was successful.
