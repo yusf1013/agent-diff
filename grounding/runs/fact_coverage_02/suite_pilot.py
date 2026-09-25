@@ -20,6 +20,7 @@ from grounding.runs.fact_coverage_01.pilot import cases_linear as L
 from grounding.runs.fact_coverage_01.pilot.cases_told import BOX, CALENDAR, LINEAR
 from grounding.runs.fact_coverage_01.pilot.common import finish
 from grounding.runs.fact_coverage_01.pilot.variants import absent_of, cascade_remove, isolate
+from grounding.runs.fact_coverage_02.anchors import missing_anchors
 
 HERE = Path(__file__).resolve().parent
 PILOT_CASES = HERE.parent / "fact_coverage_01" / "pilot" / "cases"
@@ -154,6 +155,7 @@ def build():
 
     def add(case, form, scenario, fact=None, family=None, note=""):
         case, results, errs = finish(case)
+        errs += missing_anchors(case)  # the request's other named entities must survive target removal
         if errs:
             raise SystemExit(f"{case['case_id']}: {errs}")
         case["coverage_claims"] = sorted({c["requirement"] for r in results for c in r["claims"] if c["credited"]})

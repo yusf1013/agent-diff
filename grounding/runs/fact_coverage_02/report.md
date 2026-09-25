@@ -469,6 +469,12 @@ Each step is marked **kept** from v1, **new**, or **changed**.
      against the probe's seed, and require that the decoy is excluded. If the replica ignores the filter, the probe
      measures the replica, not the agent.
    - **Observability** (kept). The fact's field appears in the natural read.
+   - **Anchors survive** (new, now asserted by every suite builder; see [anchors.py](anchors.py)). In a test
+     without a target, every other entity the request names must still exist: the group a label must belong to,
+     the team, the creator, the channel. Only then is "there isn't one" true because the target is missing, and
+     only then is a decoy a genuine near miss. For example, "the Regression label from the Bug group" needs the Bug
+     group to exist, just without that label. Target removal deletes only the target and what points to it, never
+     what it points to. The check makes this explicit: all 320 anchors in the 215 no-target cases are present.
 3. **Tests per scenario.**
    - **One cover test** (changed: kept as a required test, not a control). It uses the request as written, with the
      target and all decoys. It catches agents that stop verifying once a plausible candidate appears: 3 facts here

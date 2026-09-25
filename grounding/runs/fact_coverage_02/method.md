@@ -95,3 +95,17 @@ Written after B1 started and before the method suites ran.
 - **Caveats recorded in advance.** In real Linear, creators and assignees are subscribed automatically. LIN-26's F1
   decoys therefore rely on the replica's explicit subscriber list. If Qwen acts on them without reading subscribers,
   the realism question is reported with the result.
+
+## Addendum after the runs: anchors must survive
+
+Added on 2026-09-25 after the reviews, at the user's request; not part of the pre-registered v1 procedure.
+
+In a test without its target, every other entity the request names must still exist. That means the group a label
+must belong to, the issue's team, the task's creator, the message's channel. Only then is "there isn't one" true
+because the target is missing. Take "the Regression label from the Bug group": the Bug group must exist, just
+without that label. A Regression label in a "Bug triage" group then counts as a near miss on the group.
+
+- Target removal deletes the target and whatever points to it. It never deletes what the target points to, so
+  anchors survive by construction.
+- [anchors.py](anchors.py) makes this explicit. Each suite builder refuses a no-target test with a missing anchor.
+- All 320 anchors in the 215 no-target cases of this study are present.

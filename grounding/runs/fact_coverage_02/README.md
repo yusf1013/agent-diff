@@ -12,6 +12,7 @@ hand-made, and nothing here claims automated test generation.
 | [scenarios_box.py](scenarios_box.py), [scenarios_calendar.py](scenarios_calendar.py), [scenarios_linear.py](scenarios_linear.py), [scenarios_slack.py](scenarios_slack.py) | 18 new scenarios (facts the pilot never tested), with each decoy's family |
 | [suite_new.py](suite_new.py), [suite_new.json](suite_new.json), [cases_new/](cases_new/) | Cover-style controls, probes and the Slack policy panel for the new scenarios (79 tests) |
 | [suite_factprobe.py](suite_factprobe.py), [suite_factprobe.json](suite_factprobe.json), [cases_factprobe/](cases_factprobe/) | Follow-up: one probe per fact with several decoys, holding all of them (19 tests) |
+| [anchors.py](anchors.py) | Check that every entity the request names besides the target survives in each no-target test; the suite builders enforce it |
 | [followups.py](followups.py) | Follow-up analyses of the recorded trials: packed vs one decoy at a time, and budgets counted in runs |
 | [run.py](run.py) | Runs cases at 3 trials into `runs/<run>/t<k>/<case>/attempt-XX` (the pilot's episode); `--pairs` retries single trials |
 | [analyze.py](analyze.py), [score.py](score.py) | Attribution per trial (state diff, write attempts, answer triage, priority values) and per-test outcomes |
