@@ -1,0 +1,1 @@
+Successfully set the priority to **High** on the open issue **WEB-1: "Update the pricing page illustrations"**, which is assigned to **Mia Wong** (a member of the Design team). The priority was updated from None (0) to High (3).

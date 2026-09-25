@@ -1,0 +1,1 @@
+Set the priority to High on the open issue "Update the pricing page illustrations" (i-w1), which is assigned to Mia Wong, a member of the Design team. The issue is in the "Todo" state and its priority is now 3 (High).
