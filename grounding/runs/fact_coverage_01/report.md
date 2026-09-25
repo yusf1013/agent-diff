@@ -137,8 +137,7 @@ cases: 10 single, 10 multiple, 11 absent and 26 underspecified. It was run once 
 Qwen 3.6 27B ([Claude comparison](../manual_comparison_01/report.md), [Qwen comparison](../purdue_comparison_01/report.md)).
 
 **Codex's secondary analysis**
-([manual_findings.md](../../../../agent-diff-coverage-codex/grounding/campaigns/coverage_codex_01/manual_findings.md),
-in the `agent-diff-coverage-codex` worktree) found:
+([manual_findings.md](../../campaigns/coverage_codex_01/manual_findings.md)) found:
 
 - **98 demonstrated grounding errors in 171 episodes.** 75 of them (76.5%) were on underspecified cases, which fail
   almost always.
@@ -521,6 +520,10 @@ each failure, the answer restates the alternative as if it satisfied the request
 | label, via the parent issue | 1/2 | moved "Cache images for offline mode", a sub-issue whose parent epic carries the Bug label ([ALT-LIN-01-A-I13](pilot/runs/qwen_altsweep_t2/ALT-LIN-01-A-I13/attempt-01/solver/final_response.md)) |
 | initiative, via its project | 1/2 | renamed Maya's doc for the Referral program project inside the Growth initiative: *"Found the document "Referral launch plan" (created by Maya Chen) associated with the Growth team"* ([ALT-LIN-07-A-I12](pilot/runs/qwen_altsweep_t2/ALT-LIN-07-A-I12/attempt-01/solver/final_response.md)) |
 
+*Correction ([bugs.md](bugs.md#corrections-to-reportmd)): the label and initiative failures are not containment
+confusions. In both runs Qwen never looked at the parent's label or the document's initiative; it dropped the
+condition.*
+
 **Representation misread.**
 
 | Fact (designated alternative) | Failed / runs | Qwen's words (link) |
@@ -604,9 +607,10 @@ wording is the stronger finding.
   [CAL-10](pilot/runs/qwen_w08_t1/CAL-10/attempt-01/solver/final_response.md) and
   [LIN-16](pilot/runs/qwen_w08_t1/LIN-16/attempt-02/solver/final_response.md).
 - **Caveat.** A target-present pass is weak evidence when the agent never inspected the near-miss.
-  - Box folder listings show creator and last modifier but not owner
-    ([serializer](../../../backend/src/services/box/database/schema.py#L794)), so an owner near-miss is examined only
-    if the agent fetches that item.
+  - Box folder listings return only names and ids
+    ([listing](../../../backend/src/services/box/database/operations.py#L738)), so an owner, creator or modifier
+    near-miss is examined only if the agent fetches that item. (An earlier version said listings show the creator and
+    last modifier; see [bugs.md](bugs.md#corrections-to-reportmd).)
   - An audit of Box runs ([audit_present.py](pilot/audit_present.py)) found several passes of this kind.
   - That is why §7.4 and Appendix C use the strict count.
 
@@ -631,6 +635,12 @@ read as a statement about location. Its analogues with unambiguous wording passe
 rather than a model fact.
 
 ### 7.8 Distinct test cases and distinct bugs
+
+*Each of the 16 bugs is examined, with its evidence, in [bugs.md](bugs.md). That review corrects three statements in
+this section ([details](bugs.md#corrections-to-reportmd)):*
+- *the 179 case IDs are 168 distinct inputs;*
+- *the 25 failing cases are 21 distinct inputs;*
+- *3 bugs, not 4, recurred across different inputs, because hub inclusion's failures all come from one input.*
 
 **Distinct test cases.** The 327 scored episodes are **179 distinct test cases**, derived from **37 scenarios**. A
 scenario is a seed plus a request: the 31 runnable cover cases and the 6 arrangement cases.
@@ -1008,6 +1018,7 @@ meaningful facts.
 |---|---|
 | Criterion (one page) | [criterion.md](criterion.md) |
 | Run-by-run log | [findings.md](findings.md) |
+| Review of the 16 bugs, with corrections to this report | [bugs.md](bugs.md) |
 | Catalog curation and builder | [catalog/facts.py](catalog/facts.py), [catalog/build.py](catalog/build.py), [catalog/counts.md](catalog/counts.md) |
 | Credit checker | [fdc.py](fdc.py) |
 | Cases | [pilot/](pilot/): designs in `cases_*.py`, [variants.py](pilot/variants.py); built JSON in [cases/](pilot/cases/) |
@@ -1045,10 +1056,10 @@ python3 -m grounding.runs.fact_coverage_01.pilot.show <attempt dir>      # read 
 - The manual suite and its comparisons: [manual_exemplars_01](../manual_exemplars_01/README.md),
   [manual_comparison_01](../manual_comparison_01/report.md), [purdue_comparison_01](../purdue_comparison_01/report.md).
 - Codex's secondary analysis:
-  [manual_findings.md](../../../../agent-diff-coverage-codex/grounding/campaigns/coverage_codex_01/manual_findings.md).
+  [manual_findings.md](../../campaigns/coverage_codex_01/manual_findings.md).
 - Replica source, for observability:
-  - Box: [listing serializer](../../../backend/src/services/box/database/schema.py#L794) (creator and modifier, no
-    owner), [search excludes trashed items](../../../backend/src/services/box/database/operations.py#L1819),
+  - Box: [folder listings](../../../backend/src/services/box/database/operations.py#L738) (names and ids only, no
+    people fields), [search excludes trashed items](../../../backend/src/services/box/database/operations.py#L1819),
     [favorites-only collections](../../../backend/src/services/box/database/operations.py#L1935);
   - Linear: [`inverseRelations`](../../../backend/src/services/linear/api/schema/Linear-API.graphql#L8289) and
     [`relations`](../../../backend/src/services/linear/api/schema/Linear-API.graphql#L8419).
