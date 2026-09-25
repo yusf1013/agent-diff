@@ -6,11 +6,13 @@
   run budgets replayed on the recorded trials in order (t1, t2, t3).
 - hidden_targets: what each target-present trial saw first, the backtest of the hiding rule, the wording check
   and the hidden-target pilot (method.md, "hidden-target tests").
+- request_size: how many conditions each scenario's request checks, how many facts its decoys test and how many
+  decoys it has, and single-decoy probe failure by the number of conditions (a note for future study, report §12.4).
 """
 from __future__ import annotations
 
 import json
-from collections import defaultdict
+from collections import Counter, defaultdict
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
@@ -220,4 +222,63 @@ def hidden_targets(load):
         probe_cell = f"{probe['case_id']}: {probe['failures']}/{probe['established']} acted" if probe else "none"
         out.append(f"| {cid} | `{t.get('fact') or ''}` | " + " | ".join(_cell(t, k, manual) for k in ("t1", "t2", "t3"))
                    + f" | {probe_cell} |")
+    return out + [""]
+
+
+def _conditions(node):
+    """The checks a reference query asks for: each filter, and each edge with its node's own checks."""
+    n = len(node.get("filters", []))
+    for edge in node.get("edges", []):
+        child = edge["node"]
+        n += 1 + (_conditions(child) if child.get("filters") or child.get("edges") else 0)
+    return n
+
+
+def _case(case_id, domain):
+    for root in (HERE / "cases_new", HERE / "cases_pilot", PILOT):
+        path = root / domain / f"{case_id}.json"
+        if path.exists():
+            return json.loads(path.read_text())
+    return None
+
+
+def request_size(load):
+    sizes = []
+    for t in load(["b1", "method_new", "method_new_lin25", "method_new_slk21"]):
+        if t["run"] != "b1" and t["form"] != "cover control":
+            continue
+        case = _case(t["case_id"], t["domain"])
+        if not case or "just tell me" in case["prompt"]:
+            continue
+        for r in case["references"]:
+            if r.get("claims") and r.get("expected"):
+                sizes.append((_conditions(r["query"]), len({c["requirement"] for c in r["claims"]}), len(r["claims"])))
+
+    def summary(i):
+        v = sorted(s[i] for s in sizes)
+        return f"{v[len(v) // 2]} | {v[0]}–{v[-1]} | " + ", ".join(f"{k}: {n}" for k, n in sorted(Counter(v).items()))
+
+    out = ["## Request size (scenario requests with a target)", "",
+           f"{len(sizes)} references. Nothing forced these counts; they vary with the scenario.", "",
+           "| Count | Median | Range | Distribution (value: references) |", "|---|---:|---|---|",
+           f"| Conditions the request checks | {summary(0)} |", f"| Distinct facts with a decoy | {summary(1)} |",
+           f"| Decoys | {summary(2)} |", ""]
+    buckets = [(1, 2), (3, 4), (5, 6), (7, 8), (9, 10)]
+    rows = defaultdict(lambda: [0, 0, 0, 0])  # probes, probes exposing, failing trials, established trials
+    for t in load(["method_new", "method_new_lin25", "method_new_slk21", "method_pilot"]):
+        if t["form"] != "probe":
+            continue
+        ref = next(r for r in _case(t["case_id"], t["domain"])["references"] if r.get("claims"))
+        k = _conditions(ref["query"])
+        row = rows[next(b for b in buckets if b[0] <= k <= b[1])]
+        row[0] += 1
+        row[1] += bool(t["failures"])
+        row[2] += t["failures"]
+        row[3] += t["established"]
+    out += ["Single-decoy probes by the number of conditions in their request:", "",
+            "| Conditions | Probes | Exposing | Failing / established trials |", "|---|---:|---:|---:|"]
+    for b in buckets:
+        n, x, f, e = rows[b]
+        if n:
+            out.append(f"| {b[0]}–{b[1]} | {n} | {x} | {f}/{e} ({f / e:.0%}) |")
     return out + [""]

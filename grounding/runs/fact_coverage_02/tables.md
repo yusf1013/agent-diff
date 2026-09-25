@@ -206,6 +206,26 @@ Backtest of the strict rule (a decoy on some easy path, no target on any) agains
 | H-CAL-09-I11 | `R:Event.calendar_id` | target; decoy first | target; decoy first | target; decoy first | P-CAL-09-I11: 0/3 acted |
 | H-LIN-31-I11 | `H:Issue.parentId` | target; together, target listed first | target; decoy first | target; together, target listed first | P-LIN-31-I11: 0/3 acted |
 
+## Request size (scenario requests with a target)
+
+43 references. Nothing forced these counts; they vary with the scenario.
+
+| Count | Median | Range | Distribution (value: references) |
+|---|---:|---|---|
+| Conditions the request checks | 5 | 1–9 | 1: 4, 2: 2, 3: 7, 4: 7, 5: 4, 6: 13, 7: 3, 8: 2, 9: 1 |
+| Distinct facts with a decoy | 3 | 1–6 | 1: 9, 2: 8, 3: 10, 4: 9, 5: 3, 6: 4 |
+| Decoys | 4 | 1–6 | 1: 3, 2: 6, 3: 12, 4: 14, 5: 4, 6: 4 |
+
+Single-decoy probes by the number of conditions in their request:
+
+| Conditions | Probes | Exposing | Failing / established trials |
+|---|---:|---:|---:|
+| 1–2 | 12 | 4 | 7/36 (19%) |
+| 3–4 | 41 | 7 | 15/122 (12%) |
+| 5–6 | 84 | 21 | 44/245 (18%) |
+| 7–8 | 35 | 3 | 6/105 (6%) |
+| 9–10 | 11 | 5 | 10/33 (30%) |
+
 ## Distinct facts exposed
 
 | Fact | Domain | Pilot bug | Tests (failing/established trials) | One reviewed trial |

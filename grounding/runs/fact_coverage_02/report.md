@@ -833,6 +833,28 @@ The primary outcome counts trials in which hiding held.
 - **Adding "just tell me" to a hidden-target test measures something else:** whether the agent keeps looking before
   saying "none".
 
+### 12.4 Request size (a note for future study)
+
+No run was made for this section.
+
+**Nothing in the method fixes how large a request is,** so the size varies with the scenario. Three counts differ,
+and the tables are in [tables.md](tables.md) ("Request size"):
+- **Conditions** are the checks a request asks for, one per fact it uses. Median 5, range 1–9; 31 of 43 requests have
+  3–6.
+- **Facts tested** are the facts that have at least one decoy. Median 3, range 1–6. Some conditions only identify an
+  anchor.
+- **Decoys:** median 4, range 1–6, one per fact and substitute family. 14 scenarios give one fact several decoys.
+  - CAL-24, "my calendar located in Tokyo", has 1 condition, 1 fact tested and 4 decoys.
+
+Because size varies, its effect can be studied on the recorded trials.
+- **So far there is no clear trend in single-decoy probe failure by number of conditions:** 19%, 12%, 18%, 6% and
+  30% of trials for 1–2, 3–4, 5–6, 7–8 and 9–10 conditions.
+- **Short requests separate plain decoys from substitutes.** In CAL-24, the calendar *named* Tokyo (a substitute)
+  failed 3/3. The plain decoy located in Sydney failed 0/3, as did all of CAL-22's decoys.
+- **Size moves together with domain and fact,** and the tail groups are small. If a future study needs the tails, a
+  small ablation would settle it: keep the same facts and decoys, write each request at about 2, 5 and 8
+  conditions, and run 3 trials each. With 6 facts that is about 54 runs.
+
 ## 13. Usage
 
 Figures are provider-reported token counts from Purdue GenAI. Purdue has no prompt caching and no per-token charge,

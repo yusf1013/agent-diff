@@ -317,10 +317,10 @@ def main():
     lines += families([t for t in new + pilot if t["run"] != "b1"], "both suites")
     lines += panel(new + pilot)
     from grounding.runs.fact_coverage_02.followups import (fact_probes_equal_runs, hidden_targets, packed_vs_alone,
-                                                           run_budget)
+                                                           request_size, run_budget)
     lines += packed_vs_alone(load) + run_budget(load)
     lines += fact_probes() + fact_probes_equal_runs(load)
-    lines += hidden_targets(load)
+    lines += hidden_targets(load) + request_size(load)
     manual = json.loads((HERE / "manual_labels.json").read_text())
     followup = load(["factprobe", "factprobe_extra"]) + [t for t in load(["hidden_pilot"]) if t["form"] == "hidden target"]
     lines += bug_list([t for t in new + pilot if t["form"] != "policy panel"] + followup, manual)
