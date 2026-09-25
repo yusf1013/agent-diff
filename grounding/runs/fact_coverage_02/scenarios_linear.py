@@ -4,6 +4,8 @@ Every claim carries its substitute family (method.md). Seeds reuse the pilot's L
 """
 from __future__ import annotations
 
+import uuid
+
 from grounding.runs.fact_coverage_01.pilot.cases_linear import ACTOR, Seed, gql, user_named
 from grounding.runs.fact_coverage_01.pilot.common import DROP, REPLACE, SUB, claim, e, f, n, q, ref
 from grounding.runs.fact_coverage_02.scenarios_box import fam
@@ -149,30 +151,35 @@ def lin_24():
 
 
 # ---------------------------------------------------------------------------
+def label_id(key):
+    """Label ids are UUIDs: the replica's issueUpdate rejects label ids that are not (v1 used 'lab-reg' and timed out)."""
+    return str(uuid.uuid5(uuid.NAMESPACE_URL, f"northwind/issue-labels/{key}"))
+
+
 def lin_25():
     """A label's group (a top-level label and a similarly named group are the substitutes)."""
     s = Seed()
     s.team("t-mob", "Mobile", "MOB")
-    bug = s.label("lab-bug", "Bug", group=True)
-    triage = s.label("lab-bt", "Bug triage", group=True)
-    s.label("lab-reg", "Regression", parent=bug)                 # target
-    s.label("lab-reg-top", "Regression")                          # top-level
-    s.label("lab-reg-bt", "Regression", parent=triage)            # in Bug triage
+    bug = s.label(label_id("bug"), "Bug", group=True)
+    triage = s.label(label_id("bug-triage"), "Bug triage", group=True)
+    target = s.label(label_id("regression"), "Regression", parent=bug)
+    top = s.label(label_id("regression-top"), "Regression")                      # top-level
+    in_triage = s.label(label_id("regression-triage"), "Regression", parent=triage)  # in Bug triage
     s.issue(("i-m3", 3), "t-mob", "Crash on resume from background")
     query = q("issue_labels", [f("f_name", "name", "eq", "Regression", "A:IssueLabel.name")], [
         e("e_parent", "parentId", "id", n("issue_labels", [f("f_group", "name", "eq", "Bug")]), "H:IssueLabel.parentId")])
     near_group = q("issue_labels", [f("f_name", "name", "eq", "Regression")], [
         e("e_parent", "parentId", "id", n("issue_labels", [f("f_group", "name", "contains_ci", "bug")]))])
     claims = [
-        fam(claim("H:IssueLabel.parentId", "lab-reg-top", DROP("e_parent"), "A top-level Regression label, in no group.",
+        fam(claim("H:IssueLabel.parentId", top, DROP("e_parent"), "A top-level Regression label, in no group.",
                   alternative="label outside the group"), "F4"),
-        fam(claim("H:IssueLabel.parentId", "lab-reg-bt", REPLACE(near_group, "group name loosened"),
+        fam(claim("H:IssueLabel.parentId", in_triage, REPLACE(near_group, "group name loosened"),
                   "The Regression label in the Bug triage group.", alternative="similarly named group"), "F8"),
     ]
     issue_query = q("issues", [f("f_i", "identifier", "eq", "MOB-3")])
     return case("LIN-25", s, "Add the Regression label from the Bug group to MOB-3.",
-                [ref("LIN-25.r1", "Resolve the label", "The Regression label inside the Bug group; only lab-reg.", "target",
-                     query, ["lab-reg"], claims,
+                [ref("LIN-25.r1", "Resolve the label", "The Regression label inside the Bug group; only that label.",
+                     "target", query, [target], claims,
                      paths=[{"entities": ["issue_labels"], "relationships": ["issue_labels.parentId"]}],
                      identifying=["issue_labels.name", "issue_labels.parentId"],
                      written=["issue_label_issue_association"],

@@ -115,14 +115,17 @@ def classify(row, case, manual, attempt):
     if label:
         outcome, exposed = label["outcome"], label.get("exposed", exposed)
     return {"outcome": outcome, "exposed": sorted(set(exposed)), "other": sorted(set(other)), "manual": bool(label),
-            "value_errors": value_errors(case, attempt), "final": final[:500]}
+            "contestable": bool(label and label.get("contestable")), "value_errors": value_errors(case, attempt),
+            "final": final[:500]}
 
 
-def collect(runs, manual):
+def collect(runs, manual, only=None):
     meta = suites()
     tests = {}
     for run in runs:
         for row in trial_rows(Path(run)):
+            if only and row["trial"] not in only:
+                continue
             case_path = Path(run) / row["trial"] / row["case_id"]
             attempt = sorted(case_path.glob("attempt-*"))[-1]
             case = json.loads((attempt / "case.json").read_text())
@@ -144,6 +147,8 @@ def collect(runs, manual):
         t["failures"] = sum(r["outcome"] in FAILED for r in trials)
         t["to_review"] = sum(r["outcome"] in ("attempted?", "presented?", "absent_unclear") for r in trials)
         t["exposed"] = sorted({x for r in trials if r["outcome"] in FAILED for x in r["exposed"]})
+        t["exposed_strict"] = sorted({x for r in trials if r["outcome"] in FAILED and not r["contestable"]
+                                      for x in r["exposed"]})
         t["value_failures"] = sum(bool(r.get("value_errors")) for r in trials)
     return sorted(tests.values(), key=lambda t: (t["run"], t["case_id"]))
 
@@ -163,8 +168,9 @@ def summary(tests):
         out[run] = {
             "tests": len(rows), "tests_exposing": sum(t["failures"] > 0 for t in rows),
             "facts_exposed": sorted({x for t in rows for x in t["exposed"]}),
+            "facts_exposed_uncontested": sorted({x for t in rows for x in t["exposed_strict"]}),
             "value_failures": {t["case_id"]: t["value_failures"] for t in rows if t["value_failures"]},
-            "trials_not_established": sum(3 - t["established"] for t in rows if t["established"] < 3),
+            "trials_not_established": sum(len(t["trials"]) - t["established"] for t in rows),
             "trials_to_review": sum(t["to_review"] for t in rows),
             "by_form": {k: {"tests": v[0], "exposing": v[1]} for k, v in sorted(form.items())},
             "by_family": {k: {"probes": v[0], "exposing": v[1]} for k, v in sorted(fam.items())},
@@ -179,10 +185,11 @@ def main():
     parser.add_argument("runs", nargs="+")
     parser.add_argument("--json")
     parser.add_argument("--review", action="store_true", help="print trials whose label needs manual confirmation")
+    parser.add_argument("--only", nargs="*", help="score only these trials, e.g. t1 (the one-trial view)")
     args = parser.parse_args()
     path = HERE / "manual_labels.json"
     manual = json.loads(path.read_text()) if path.exists() else {}
-    tests = collect(args.runs, manual)
+    tests = collect(args.runs, manual, args.only)
     for t in tests:
         marks = "".join({"incorrect": "X", "presented": "P", "presented?": "?", "attempted?": "a", "absent_unclear": "u",
                          "correct_absent": ".", "correct": ".", "incomplete": "i", "not_established": "-",

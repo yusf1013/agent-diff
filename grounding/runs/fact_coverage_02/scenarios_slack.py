@@ -111,7 +111,8 @@ def slk_21():
                   alternative="similarly named channel"), "F8"),
         fam(claim("R:Message.channel_id", gen, DROP("f_chan"), "Posted in #general."), "F0"),
     ]
-    return case("SLK-21", s, "Add a :white_check_mark: reaction to the message Priya Sharma posted in #deploys on "
+    # v1 asked for :white_check_mark:, which the replica's reaction list rejects; v2 uses a listed reaction.
+    return case("SLK-21", s, "Add a :thumbsup: reaction to the message Priya Sharma posted in #deploys on "
                              "September 23 about the rollback.",
                 [ref("SLK-21.r1", "Resolve the message", "Priya Sharma's #deploys message of 2026-09-23 about the "
                      "rollback; only the payments-api rollback message.", "target", query, [t], claims,
