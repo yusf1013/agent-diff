@@ -1,0 +1,71 @@
+{
+ "scenario_id": "DV-CAL-01",
+ "domain": "calendar",
+ "request": "Cancel the confirmed product demo dry run that has a Meet link and has the Bridgewater room booked.",
+ "answer": "one",
+ "seed": [
+  ["event", {"id": "ev_demo_confirmed", "calendar": "primary", "summary": "Product demo dry run",
+             "start": "2018-06-19T14:00:00", "end": "2018-06-19T15:00:00", "status": "confirmed", "hangout": true,
+             "attendees": [["priya", "accepted"], ["sam", "accepted"],
+                           {"email": "bridgewater.room@northwind.example", "name": "Bridgewater Room", "resource": true, "status": "accepted"}]}],
+  ["event", {"id": "ev_demo_tentative", "calendar": "primary", "summary": "Product demo dry run",
+             "start": "2018-06-20T10:00:00", "end": "2018-06-20T11:00:00", "status": "tentative", "hangout": true,
+             "attendees": [["priya", "accepted"],
+                           {"email": "bridgewater.room@northwind.example", "name": "Bridgewater Room", "resource": true, "status": "accepted"}]}],
+  ["event", {"id": "ev_demo_nolink", "calendar": "primary", "summary": "Product demo dry run",
+             "start": "2018-06-21T09:00:00", "end": "2018-06-21T10:00:00", "status": "confirmed", "hangout": false,
+             "description": "Dial in at meet.google.com/xyz-abcd if you can't join in person.",
+             "attendees": [["sam", "accepted"],
+                           {"email": "bridgewater.room@northwind.example", "name": "Bridgewater Room", "resource": true, "status": "accepted"}]}],
+  ["event", {"id": "ev_demo_guestroom", "calendar": "primary", "summary": "Product demo dry run",
+             "start": "2018-06-22T13:00:00", "end": "2018-06-22T14:00:00", "status": "confirmed", "hangout": true,
+             "attendees": [["priya", "accepted"],
+                           {"email": "bridgewater.room@northwind.example", "name": "Bridgewater Room", "resource": false, "status": "accepted"}]}],
+  ["event", {"id": "ev_standup", "calendar": "primary", "summary": "Weekly team standup",
+             "start": "2018-06-19T09:00:00", "end": "2018-06-19T09:30:00", "status": "confirmed", "hangout": true,
+             "attendees": [["priya", "accepted"], ["sam", "accepted"], ["dana", "accepted"]]}],
+  ["event", {"id": "ev_marketing", "calendar": "primary", "summary": "Marketing sync",
+             "start": "2018-06-20T15:00:00", "end": "2018-06-20T15:30:00", "status": "confirmed", "hangout": false,
+             "attendees": [["omar", "accepted"], ["kenji", "accepted"]]}]
+ ],
+ "conditions": [
+  {"id": "c1", "text": "the product demo dry run", "facts": ["A:Event.summary"]},
+  {"id": "c2", "text": "confirmed", "facts": ["A:Event.status"]},
+  {"id": "c3", "text": "that has a Meet link", "facts": ["A:Event.hangout_link"]},
+  {"id": "c4", "text": "and has the Bridgewater room booked", "facts": ["A:EventAttendee.resource", "A:EventAttendee.email"]}
+ ],
+ "reference": {
+  "name": "the product demo dry run to cancel",
+  "target": ["ev_demo_confirmed"],
+  "query": {
+   "table": "calendar_events",
+   "key": ["id"],
+   "filters": [
+    {"key": "f_title", "field": "summary", "op": "contains_ci", "value": "product demo dry run", "fact": "A:Event.summary"},
+    {"key": "f_status", "field": "status", "op": "eq", "value": "confirmed", "fact": "A:Event.status"},
+    {"key": "f_hangout", "field": "hangout_link", "op": "not_null", "fact": "A:Event.hangout_link"}
+   ],
+   "edges": [
+    {"key": "e_room", "join": {"parent": "id", "child": "event_id", "op": "eq"},
+     "node": {"table": "calendar_event_attendees", "filters": [
+       {"key": "f_room_email", "field": "email", "op": "eq", "value": "bridgewater.room@northwind.example", "fact": "A:EventAttendee.email"},
+       {"key": "f_resource", "field": "resource", "op": "eq", "value": true, "fact": "A:EventAttendee.resource"}
+     ], "edges": []}}
+   ]
+  },
+  "decoys": [
+   {"witness": "ev_demo_tentative", "fact": "A:Event.status", "family": "F7", "substitute": "the adjacent status value",
+    "mutation": {"type": "DROP", "target": "f_status"},
+    "explanation": "This dry run is still tentative, not confirmed."},
+   {"witness": "ev_demo_nolink", "fact": "A:Event.hangout_link", "family": "F1", "substitute": "Event.description",
+    "mutation": {"type": "DROP", "target": "f_hangout"},
+    "explanation": "The Meet link is only typed into the description; the event itself has no hangout link."},
+   {"witness": "ev_demo_guestroom", "fact": "A:EventAttendee.resource", "family": "F7", "substitute": "the same attendee with resource false",
+    "mutation": {"type": "DROP", "target": "f_resource"},
+    "explanation": "Bridgewater is invited as an ordinary guest, not booked as a resource."}
+  ],
+  "effect": {"table": "calendar_events", "changes": ["update"]},
+  "written": ["calendar_events.status"]
+ },
+ "write": {"method": "PATCH", "path": "/calendars/jordan.lee@northwind.example/events/ev_demo_confirmed", "body": {"status": "cancelled"}}
+}

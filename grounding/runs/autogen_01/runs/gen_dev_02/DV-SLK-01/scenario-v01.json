@@ -1,0 +1,63 @@
+{
+ "scenario_id": "DV-SLK-01",
+ "domain": "slack",
+ "request": "Invite the support engineer on Pacific time whose account hasn't been deactivated to the #incident-response channel.",
+ "answer": "one",
+ "seed": [
+  ["channel", {"id": "C_INC", "name": "incident-response", "members": ["diego", "leo"]}],
+  ["person", {"key": "jordan", "name": "Jordan Kim", "set": {"title": "Support Engineer", "timezone": "America/Los_Angeles", "is_active": true}}],
+  ["person", {"key": "casey", "name": "Casey Nolan", "display": "Casey | Support Eng", "set": {"title": "Customer Success Manager", "timezone": "America/Los_Angeles", "is_active": true}}],
+  ["person", {"key": "robin", "name": "Robin Chao", "set": {"title": "Product Designer", "timezone": "America/Los_Angeles", "is_active": true}}],
+  ["person", {"key": "taylor", "name": "Taylor Brooks", "set": {"title": "Support Engineer", "timezone": "America/Denver", "is_active": true}}],
+  ["person", {"key": "morgan", "name": "Morgan Reyes", "set": {"title": "Support Engineer", "timezone": "Europe/London", "is_active": true}}],
+  ["person", {"key": "sam", "name": "Sam Ibarra", "set": {"title": "Support Engineer", "timezone": "America/Los_Angeles", "is_active": false}}],
+  ["person", {"key": "nina", "name": "Nina Osei", "set": {"title": "Data Analyst", "timezone": "Europe/London", "is_active": false}}]
+ ],
+ "conditions": [
+  {"id": "c1", "text": "the support engineer", "facts": ["A:User.title"]},
+  {"id": "c2", "text": "on Pacific time", "facts": ["A:User.timezone"]},
+  {"id": "c3", "text": "whose account hasn't been deactivated", "facts": ["A:User.is_active"]},
+  {"id": "c4", "text": "to the #incident-response channel", "facts": ["A:Conversation.channel_name"]}
+ ],
+ "reference": {
+  "name": "the support engineer to invite",
+  "target": ["U_JORDAN"],
+  "query": {
+   "table": "users",
+   "key": ["id"],
+   "filters": [
+    {"key": "f_title", "field": "title", "op": "eq", "value": "Support Engineer", "fact": "A:User.title"},
+    {"key": "f_tz", "field": "timezone", "op": "eq", "value": "America/Los_Angeles", "fact": "A:User.timezone"},
+    {"key": "f_active", "field": "is_active", "op": "eq", "value": true, "fact": "A:User.is_active"}
+   ],
+   "edges": []
+  },
+  "decoys": [
+   {"witness": "U_CASEY", "fact": "A:User.title", "family": "F1", "substitute": "the display name names the role, but the title field itself holds a different job title",
+    "mutation": {"type": "DROP", "target": "f_title"},
+    "explanation": "Casey's display name reads 'Casey | Support Eng', but the profile title field says Customer Success Manager, not Support Engineer."},
+   {"witness": "U_ROBIN", "fact": "A:User.title", "family": "F0", "substitute": "an unrelated job title",
+    "mutation": {"type": "DROP", "target": "f_title"},
+    "explanation": "Same time zone and active status, but Robin's title is Product Designer, not Support Engineer."},
+   {"witness": "U_TAYLOR", "fact": "A:User.timezone", "family": "F7", "substitute": "the neighbouring time zone",
+    "mutation": {"type": "DROP", "target": "f_tz"},
+    "explanation": "Taylor is an active Support Engineer, but is on Mountain time (America/Denver), one zone east of Pacific."},
+   {"witness": "U_MORGAN", "fact": "A:User.timezone", "family": "F0", "substitute": "an unrelated time zone",
+    "mutation": {"type": "DROP", "target": "f_tz"},
+    "explanation": "Same title and active status, but Morgan is on London time, not Pacific."},
+   {"witness": "U_SAM", "fact": "A:User.is_active", "family": "F7", "substitute": "the deactivated account, the only other state",
+    "mutation": {"type": "DROP", "target": "f_active"},
+    "explanation": "Sam matches the title and time zone, but their account has been deactivated."}
+  ],
+  "effect": {"table": "channel_members", "changes": ["insert"], "key": ["user_id", "channel_id"], "field": "user_id"},
+  "written": ["channel_members.user_id", "channel_members.channel_id"]
+ },
+ "other_references": [
+  {"name": "the channel to invite them to", "target": ["C_INC"],
+   "query": {"table": "channels", "key": ["id"],
+    "filters": [{"key": "f_chan", "field": "channel_name", "op": "eq", "value": "incident-response", "fact": "A:Conversation.channel_name"}],
+    "edges": []}}
+ ],
+ "write": {"slack": "conversations.invite", "params": {"channel": "C_INC", "users": "U_JORDAN"}},
+ "probes": []
+}

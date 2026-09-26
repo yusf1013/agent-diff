@@ -24,7 +24,51 @@ def digest(value):
     return hashlib.sha256(json.dumps(value, sort_keys=True).encode()).hexdigest()
 
 
+def _foreign_keys(domain):
+    """(table, column, referenced table, referenced column) from the replica's own schema."""
+    from grounding.runs.autogen_01.kit.seedops import _metadata
+    out = []
+    for table in _metadata(domain).tables.values():
+        for fk in table.foreign_keys:
+            out.append((table.name, fk.parent.name, fk.column.table.name, fk.column.name))
+    return out
+
+
+def prune_orphans(case):
+    """Remove rows whose foreign keys point at removed rows, until none do. Target removal must take whatever
+    points to the target with it (method.md, "anchors must survive"); the shared cascade does not know every
+    replica foreign key (for example Slack's memberships of a removed user)."""
+    seed = case["seed"]
+    # Self-references (a sub-issue's parent, a reply's root) are left to the shared cascade, which already
+    # decides them for the hand-built suites.
+    fks = [fk for fk in _foreign_keys(case["domain"]) if fk[0] in seed and fk[0] != fk[2]]
+    while True:
+        removed = 0
+        for table, col, ref_table, ref_col in fks:
+            present = {r.get(ref_col) for r in seed.get(ref_table, [])}
+            keep = [r for r in seed[table] if r.get(col) is None or r.get(col) in present]
+            removed += len(seed[table]) - len(keep)
+            seed[table] = keep
+        if not removed:
+            return case
+
+
+def dangling(case) -> list[str]:
+    """Foreign keys (self-references included) that point at no row: the test's seed would not install."""
+    seed = case["seed"]
+    out = []
+    for table, col, ref_table, ref_col in _foreign_keys(case["domain"]):
+        if table not in seed:
+            continue
+        present = {r.get(ref_col) for r in seed.get(ref_table, [])}
+        for r in seed[table]:
+            if r.get(col) is not None and r.get(col) not in present:
+                out.append(f"{table}.{col}={r.get(col)!r} has no {ref_table} row")
+    return sorted(set(out))
+
+
 def _finish(case):
+    prune_orphans(case)
     case, _results, errors = finish(case)
     case["coverage_claims"] = sorted({c["requirement"] for r in case["references"] for c in r["claims"]})
     case["case_sha256"] = digest({k: v for k, v in case.items() if k != "case_sha256"})

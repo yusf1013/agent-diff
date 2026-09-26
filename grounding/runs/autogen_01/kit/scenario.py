@@ -226,8 +226,11 @@ def build(s: dict, brief: dict):
         problems.append(f"The request contains internal ids {ids}; name records as a user would.")
     problems += _replica_rules(s, case)
     if not errors:
+        problems += [f"Seed: {m}" for m in derive.dangling(case)]
         for test, meta in derive.suite(case):
             if meta["form"] in ("probe", "fact probe"):
                 problems += [f"{test['case_id']}: {m} (an entity the request names must still exist when the "
                              "target is removed)" for m in missing_anchors(test)]
+                problems += [f"{test['case_id']}: removing the target leaves {m}; the test would not install"
+                             for m in derive.dangling(test)]
     return case, problems

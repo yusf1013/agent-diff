@@ -166,3 +166,49 @@ The policy-panel mapping to `policy:presupposed` or `policy:underspecified` is a
   was found after those labels were written. The judge calls these artifacts.
 - **Judgment calls (3).** In CAL-05-TOLD twice, Qwen noted the mismatch and deleted anyway. P-CAL-03-I12 had a
   "defensible reading" label.
+
+## Amendment 2 (2026-09-26, before any main brief ran): what changed during dev, and the freeze
+
+**E1, stated as pre-registered.** On the held-out test split ([runs/judge_test_01](runs/judge_test_01)):
+- **Collapsed outcome agreement is 142/177 (80%). The 90% bar is missed.**
+- **Exposed-fact agreement on shared failures is 64/64.**
+
+The 35 disagreements break down as follows:
+- **33 are trials of three tests that the manual review invalidated as whole tests.** SLK-21 v1 (21 trials) asked for
+  a reaction the replica rejects. LIN-25 v1 (6) used non-UUID label ids. BOX-31 (6) has ambiguous wording. The
+  judge scores grounding trial by trial, so it cannot see a test-level decision.
+- **On the other 141 trials, agreement is 139/141 (98.6%).** Both remaining disagreements are judgment calls.
+- **The judge caught all 3 trial-level artifacts** (LIN-26's ignored `subscribers` filter). This is optimistic:
+  `replica.md` was drafted from report §9, which came out of the manual review of these same runs.
+- **In the automated pipeline these three defects are caught before any run.** The replica rules reject unlisted
+  reactions and non-UUID label ids, and the reader blocks BOX-31 (below).
+
+**Dev generation** ([runs/gen_dev_01](runs/gen_dev_01), [runs/gen_dev_02](runs/gen_dev_02)):
+- **Round 1 accepted 2 of 4.**
+  - The reader treated loose readings of intended near misses as ambiguities. That made writers drop their best F1
+    decoys, and in one case add a test-only hint ("simply").
+  - A default query key broke Slack users.
+- **Round 2 accepted 4 of 4, in 1 or 2 versions each.** Before it:
+  - reader protocol v2: an ambiguity counts only if a careful reader would be unsure, and "contestable" is a
+    non-blocking flag kept on the decoy, like the exemplars' asterisk;
+  - the key fix.
+
+**Reader calibration on the exemplars** ([runs/reader_calibration_01](runs/reader_calibration_01)). The 18 new
+scenarios and 4 hidden-target tests were read with the reader's own conditions:
+- 18 of 20 valid exemplars pass;
+- BOX-23 and CAL-24 are blocked (false blocks; CAL-24's "located in Tokyo" is arguably debatable);
+- H-BOX-31, the known-invalid test, is blocked for "about travel costs";
+- BOX-22's "Pricing sheet 2025.xlsx", the known-contestable decoy, is flagged contestable.
+
+**Changed after round 2, so the frozen set has not run as a whole on dev:**
+- `format.md`: the Slack primary keys;
+- `method.md`: when to label a decoy F7;
+- the reader feedback: a writer may keep wording it judges clear and must say why; a fresh reader reads it again;
+  no test-only hints;
+- the derivation, from the end-to-end dev solver run ([runs/solve_dev_01](runs/solve_dev_01)):
+  - removing a Slack user left its workspace memberships, so the probes did not install;
+  - derived tests are now pruned by the replica's own foreign keys;
+  - every derived test is checked for dangling keys.
+
+**Frozen from this commit:** `kit/prompts`, `kit/docs`, `kit/examples` and `inputs/`. Arm R and Arm P run once on
+this version.

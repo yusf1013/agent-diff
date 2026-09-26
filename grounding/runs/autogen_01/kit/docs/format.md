@@ -75,7 +75,8 @@ of one node all apply to the same row.
                      "edges": []}}]}
 ```
 
-- **`key`**: the column that identifies the root record, `["id"]` by default. Slack messages use `["message_id"]`.
+- **`key`**: the root table's primary key; you may omit it. It is `["id"]` for Box, Calendar and Linear tables.
+  Slack tables use their own keys: `user_id` for users, `channel_id` for channels, `message_id` for messages.
 - **Filter**: `{"key", "field", "op", "value", "fact"?}`.
   - `key` must be unique in the query; mutations refer to it.
   - `field` is a column; a dotted path reads into a JSON column (`"start.dateTime"`).

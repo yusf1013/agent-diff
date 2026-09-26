@@ -48,7 +48,10 @@ substitute.
 | F0 plain | simply another value | a spreadsheet for "the PDF"; another folder |
 
 `facts.json` lists, for each fact, the catalog's **designated substitutes** and the **suggested families**. Use
-them as a menu: pick what makes the most tempting near miss for this request.
+them as a menu: pick what makes the most tempting near miss for this request. Label each decoy with the family that
+describes what it offers:
+- F7 only for ordered values (numbers, dates, times, scales, ordered states);
+- a flipped flag or a missing relation is F0 unless it offers a substitute.
 
 ## Rules
 1. **One decoy per (fact, substitute).** Every fact in your brief gets at least one decoy. Where the model offers a

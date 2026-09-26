@@ -1,0 +1,39 @@
+Step 2. These are all the records in the service:
+
+### box_file_versions (2)
+{"id": "992020", "file_id": "92020", "name": "Renewal Tracker.xlsx", "size": 48213, "version_number": "1", "created_at": "2026-06-01T09:00:00+00:00", "modified_at": "2026-06-01T09:00:00+00:00", "modified_by_id": "30000000001"}
+{"id": "992060", "file_id": "92060", "name": "EMEA Rollout Notes.pdf", "size": 48213, "version_number": "1", "created_at": "2026-06-01T09:00:00+00:00", "modified_at": "2026-06-01T09:00:00+00:00", "modified_by_id": "30000000001"}
+### box_files (2)
+{"id": "92020", "name": "Renewal Tracker.xlsx", "parent_id": "0", "owned_by_id": "30000000001", "created_by_id": "30000000001", "modified_by_id": "30000000001", "size": 48213, "extension": "xlsx", "version_number": "1", "comment_count": 0, "created_at": "2026-06-01T09:00:00+00:00", "modified_at": "2026-06-01T09:00:00+00:00"}
+{"id": "92060", "name": "EMEA Rollout Notes.pdf", "parent_id": "0", "owned_by_id": "30000000001", "created_by_id": "30000000001", "modified_by_id": "30000000001", "description": "EMEA rollout planning notes for APAC alignment.", "size": 48213, "extension": "pdf", "version_number": "1", "comment_count": 0, "created_at": "2026-06-01T09:00:00+00:00", "modified_at": "2026-06-01T09:00:00+00:00"}
+### box_folders (1)
+{"id": "0", "name": "All Files", "owned_by_id": "30000000001", "size": 0}
+### box_hub_items (1)
+{"id": "920601", "added_at": "2026-06-01T09:00:00+00:00", "added_by_id": "30000000001", "hub_id": "9206", "item_id": "92060", "item_type": "file", "item_name": "EMEA Rollout Notes.pdf", "position": 1}
+### box_hubs (9)
+{"id": "9201", "title": "Q3 Sales Playbook", "description": "Materials for the EMEA rollout planning sessions.", "created_by_id": "30000000001", "updated_by_id": "30000000001", "created_at": "2026-06-03T10:00:00+00:00", "updated_at": "2026-06-03T10:00:00+00:00", "is_ai_enabled": false, "is_collaboration_restricted_to_enterprise": false, "can_non_owners_invite": true, "can_shared_link_be_created": true, "view_count": 0}
+{"id": "9202", "title": "Q3 Sales Enablement", "description": "Materials for the EMEA rollout planning sessions.", "created_by_id": "30000000001", "updated_by_id": "30000000001", "created_at": "2026-06-04T10:00:00+00:00", "updated_at": "2026-06-04T10:00:00+00:00", "is_ai_enabled": false, "is_collaboration_restricted_to_enterprise": false, "can_non_owners_invite": true, "can_shared_link_be_created": true, "view_count": 0}
+{"id": "9203", "title": "Support Runbook", "description": "Materials for the EMEA rollout planning sessions.", "created_by_id": "30000000001", "updated_by_id": "30000000001", "created_at": "2026-06-05T09:00:00+00:00", "updated_at": "2026-06-05T09:00:00+00:00", "is_ai_enabled": false, "is_collaboration_restricted_to_enterprise": false, "can_non_owners_invite": true, "can_shared_link_be_created": true, "view_count": 0}
+{"id": "9204", "title": "Q3 Sales Playbook", "description": "Materials for the EMEA rollout planning sessions.", "created_by_id": "30000000001", "updated_by_id": "30000000001", "created_at": "2026-06-08T09:00:00+00:00", "updated_at": "2026-06-08T09:00:00+00:00", "is_ai_enabled": false, "is_collaboration_restricted_to_enterprise": false, "can_non_owners_invite": true, "can_shared_link_be_created": true, "view_count": 0}
+{"id": "9205", "title": "Q3 Sales Playbook", "description": "Materials for the EMEA rollout planning sessions.", "created_by_id": "30000000001", "updated_by_id": "30000000001", "created_at": "2026-05-15T09:00:00+00:00", "updated_at": "2026-06-05T09:00:00+00:00", "is_ai_enabled": false, "is_collaboration_restricted_to_enterprise": false, "can_non_owners_invite": true, "can_shared_link_be_created": true, "view_count": 0}
+{"id": "9206", "title": "Q3 Sales Playbook", "description": "Q3 Sales Playbook materials.", "created_by_id": "30000000001", "updated_by_id": "30000000001", "created_at": "2026-06-06T09:00:00+00:00", "updated_at": "2026-06-06T09:00:00+00:00", "is_ai_enabled": false, "is_collaboration_restricted_to_enterprise": false, "can_non_owners_invite": true, "can_shared_link_be_created": true, "view_count": 0}
+{"id": "9207", "title": "Q3 Sales Playbook", "description": "Materials for the North America renewal push.", "created_by_id": "30000000001", "updated_by_id": "30000000001", "created_at": "2026-06-07T09:00:00+00:00", "updated_at": "2026-06-07T09:00:00+00:00", "is_ai_enabled": false, "is_collaboration_restricted_to_enterprise": false, "can_non_owners_invite": true, "can_shared_link_be_created": true, "view_count": 0}
+{"id": "9210", "title": "Marketing Analytics", "description": "General marketing analytics dashboard.", "created_by_id": "30000000001", "updated_by_id": "30000000001", "created_at": "2026-01-10T09:00:00+00:00", "updated_at": "2026-01-10T09:00:00+00:00", "is_ai_enabled": false, "is_collaboration_restricted_to_enterprise": false, "can_non_owners_invite": true, "can_shared_link_be_created": true, "view_count": 0}
+{"id": "9211", "title": "IT Onboarding", "description": "Employee onboarding checklist and resources.", "created_by_id": "30000000001", "updated_by_id": "30000000001", "created_at": "2026-07-01T09:00:00+00:00", "updated_at": "2026-07-01T09:00:00+00:00", "is_ai_enabled": false, "is_collaboration_restricted_to_enterprise": false, "can_non_owners_invite": true, "can_shared_link_be_created": true, "view_count": 0}
+### box_users (8)
+{"id": "30000000001", "name": "Jordan Lee", "login": "jordan.lee@northwind.example", "status": "active", "role": "admin", "created_at": "2025-01-10T00:00:00Z", "modified_at": "2025-01-10T00:00:00Z"}
+{"id": "30000000002", "name": "Maya Chen", "login": "maya.chen@northwind.example", "status": "active", "role": "user", "created_at": "2025-01-10T00:00:00Z", "modified_at": "2025-01-10T00:00:00Z"}
+{"id": "30000000003", "name": "Maya Lopez", "login": "maya.lopez@northwind.example", "status": "active", "role": "user", "created_at": "2025-01-10T00:00:00Z", "modified_at": "2025-01-10T00:00:00Z"}
+{"id": "30000000004", "name": "Leo Park", "login": "leo.park@northwind.example", "status": "active", "role": "user", "created_at": "2025-01-10T00:00:00Z", "modified_at": "2025-01-10T00:00:00Z"}
+{"id": "30000000005", "name": "Dana Whitfield", "login": "dana.whitfield@northwind.example", "status": "active", "role": "user", "created_at": "2025-01-10T00:00:00Z", "modified_at": "2025-01-10T00:00:00Z"}
+{"id": "30000000006", "name": "Priya Nair", "login": "priya.nair@northwind.example", "status": "active", "role": "user", "created_at": "2025-01-10T00:00:00Z", "modified_at": "2025-01-10T00:00:00Z"}
+{"id": "30000000007", "name": "Omar Haddad", "login": "omar.haddad@northwind.example", "status": "active", "role": "user", "created_at": "2025-01-10T00:00:00Z", "modified_at": "2025-01-10T00:00:00Z"}
+{"id": "30000000008", "name": "Sam Rivera", "login": "sam.rivera@northwind.example", "status": "active", "role": "user", "created_at": "2025-01-10T00:00:00Z", "modified_at": "2025-01-10T00:00:00Z"}
+
+The author lists these conditions of the request:
+- c1: the hub called 'Q3 Sales Playbook'
+- c2: that was created in the first week of June 2026
+- c3: whose description mentions the EMEA rollout
+
+The candidate records are the rows of `box_hubs`: 9201, 9202, 9203, 9204, 9205, 9206, 9207, 9210, 9211.
+For every candidate, give the ids of the author's conditions it fails under the careful reading (an empty list if it meets all of them), whether a careful colleague could still argue that it meets the request (contestable), and a short note. Then say whether the author's conditions faithfully capture the request as you read it in step 1 (and what differs). For each ambiguity you listed, say whether a careful reader would genuinely be unsure which reading was meant, and whether the readings select different candidates. Finally, say whether the request reads like something a real user would write, without hints that only a test would contain.
