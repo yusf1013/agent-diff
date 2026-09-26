@@ -1,0 +1,4 @@
+A cold reader, who saw only the request and then the records, reports:
+- The reader says the decoy `8214` (for D:File.comment_count, conditions ['c5']) fails ['c1', 'c2', 'c3', 'c4', 'c5']: it fails more than its own fact (No box_files row exists for this id, only a versions entry, so no conditions are verifiable.).
+
+Fix scenario.json (edit it in place) where the reader is right. If you judge that a reading the reader raises is one a careful colleague would not take, you may keep your wording; say why in your reply. A fresh reader will read the scenario again either way. Do not add hints that only a test would contain (such as "simply" or "not the one that…") just to rule out a reading. Then reply with a short summary of what you changed or kept.

@@ -1,0 +1,78 @@
+{
+ "scenario_id": "AR-CAL-23",
+ "domain": "calendar",
+ "request": "Move the vendor sync on Thursday that has Dana Whitfield as an optional attendee to Room 2C.",
+ "answer": "one",
+ "seed": [
+  ["person", {"key": "dana_white", "name": "Dana White"}],
+  ["event", {"id": "ev_vendor_target", "calendar": "primary", "summary": "Vendor sync: Packaging",
+             "start": "2018-06-21T09:00:00", "end": "2018-06-21T09:30:00",
+             "attendees": [["dana", "accepted", "optional"], ["sam", "accepted"]]}],
+  ["event", {"id": "ev_vendor_organizer", "calendar": "primary", "summary": "Vendor sync: Freight",
+             "start": "2018-06-21T10:30:00", "end": "2018-06-21T11:00:00", "organizer": "dana",
+             "attendees": [["kenji", "accepted", "optional"], ["sam", "accepted"]]}],
+  ["event", {"id": "ev_vendor_white", "calendar": "primary", "summary": "Vendor sync: Printing",
+             "start": "2018-06-21T12:00:00", "end": "2018-06-21T12:30:00",
+             "attendees": [["dana_white", "accepted", "optional"], ["sam", "accepted"]]}],
+  ["event", {"id": "ev_vendor_required", "calendar": "primary", "summary": "Vendor sync: Labeling",
+             "start": "2018-06-21T13:30:00", "end": "2018-06-21T14:00:00",
+             "attendees": [["dana", "accepted"], ["sam", "accepted"]]}],
+  ["event", {"id": "ev_vendor_split", "calendar": "primary", "summary": "Vendor sync: Ingredients",
+             "start": "2018-06-21T15:00:00", "end": "2018-06-21T15:30:00",
+             "attendees": [["dana", "accepted"], ["leo", "accepted", "optional"]]}],
+  ["event", {"id": "ev_budget_review", "calendar": "primary", "summary": "Budget review",
+             "start": "2018-06-20T09:00:00", "end": "2018-06-20T09:30:00",
+             "attendees": [["dana", "accepted"]]}],
+  ["event", {"id": "ev_vendor_nextweek", "calendar": "primary", "summary": "Vendor sync: Freight",
+             "start": "2018-06-28T09:00:00", "end": "2018-06-28T09:30:00",
+             "attendees": [["kenji", "accepted"], ["sam", "accepted", "optional"]]}]
+ ],
+ "conditions": [
+  {"id": "c1", "text": "the vendor sync", "facts": ["A:Event.summary"]},
+  {"id": "c2", "text": "on Thursday", "facts": ["A:Event.start", "D:local_time"]},
+  {"id": "c3", "text": "that has Dana Whitfield as an optional attendee", "facts": ["B:EventAttendee.event_id", "A:EventAttendee.email", "A:EventAttendee.optional"]}
+ ],
+ "reference": {
+  "name": "the vendor sync to move",
+  "target": ["ev_vendor_target"],
+  "query": {
+   "table": "calendar_events",
+   "filters": [
+    {"key": "f_title", "field": "summary", "op": "contains_ci", "value": "vendor sync", "fact": "A:Event.summary"},
+    {"key": "f_from", "field": "start_datetime", "op": "ge", "value": "2018-06-21T00:00:00", "fact": "A:Event.start"},
+    {"key": "f_to", "field": "start_datetime", "op": "lt", "value": "2018-06-22T00:00:00"}
+   ],
+   "edges": [
+    {"key": "e_att", "join": {"parent": "id", "child": "event_id", "op": "eq"}, "fact": "B:EventAttendee.event_id",
+     "node": {"table": "calendar_event_attendees", "filters": [
+       {"key": "f_email", "field": "email", "op": "eq", "value": "dana.whitfield@northwind.example", "fact": "A:EventAttendee.email"},
+       {"key": "f_opt", "field": "optional", "op": "eq", "value": true, "fact": "A:EventAttendee.optional"}], "edges": []}}
+   ]
+  },
+  "decoys": [
+   {"witness": "ev_vendor_organizer", "fact": "A:EventAttendee.email", "family": "F1", "substitute": "Event.organizer_email",
+    "mutation": {"type": "REPLACE", "note": "attendee identity check replaced by the organizer field; attendee edge keeps only the optional check", "query": {
+      "table": "calendar_events", "key": ["id"],
+      "filters": [
+       {"key": "f_title", "field": "summary", "op": "contains_ci", "value": "vendor sync"},
+       {"key": "f_org", "field": "organizer_email", "op": "eq", "value": "dana.whitfield@northwind.example"},
+       {"key": "f_from", "field": "start_datetime", "op": "ge", "value": "2018-06-21T00:00:00"},
+       {"key": "f_to", "field": "start_datetime", "op": "lt", "value": "2018-06-22T00:00:00"}],
+      "edges": [{"key": "e_any", "join": {"parent": "id", "child": "event_id", "op": "eq"},
+                 "node": {"table": "calendar_event_attendees", "filters": [{"key": "x", "field": "optional", "op": "eq", "value": true}], "edges": []}}]}},
+    "explanation": "Dana Whitfield organizes this vendor sync but is not on the attendee list; Kenji Sato is the optional attendee."},
+   {"witness": "ev_vendor_white", "fact": "A:EventAttendee.email", "family": "F8", "substitute": "a similarly named attendee",
+    "mutation": {"type": "DROP", "target": "f_email"},
+    "explanation": "The optional attendee is Dana White, not Dana Whitfield."},
+   {"witness": "ev_vendor_required", "fact": "A:EventAttendee.optional", "family": "F0",
+    "mutation": {"type": "DROP", "target": "f_opt"},
+    "explanation": "Dana Whitfield attends, but as a required attendee, not optional."},
+   {"witness": "ev_vendor_split", "fact": "B:EventAttendee.event_id", "family": "F5", "substitute": "the two conditions met by different attendees",
+    "mutation": {"type": "SPLIT", "target": "e_att", "groups": [["f_email"], ["f_opt"]]},
+    "explanation": "Dana Whitfield attends but as required; Leo Park is the one marked optional."}
+  ],
+  "effect": {"table": "calendar_events", "changes": ["update"]},
+  "written": ["calendar_events.location"]
+ },
+ "write": {"method": "PATCH", "path": "/calendars/jordan.lee@northwind.example/events/ev_vendor_target", "body": {"location": "Room 2C"}}
+}

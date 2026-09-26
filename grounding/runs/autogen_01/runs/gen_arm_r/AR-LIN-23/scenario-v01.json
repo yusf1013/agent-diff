@@ -1,0 +1,82 @@
+{
+ "scenario_id": "AR-LIN-23",
+ "domain": "linear",
+ "request": "Reopen the comment thread on WEB-7 about payment retries timing out that Sam Rivera resolved.",
+ "answer": "one",
+ "seed": [
+  ["team", {"id": "t-web", "name": "Web", "key": "WEB"}],
+  ["person", {"key": "samp", "name": "Sam Patel"}],
+
+  ["issue", {"id": "i-web-7", "team": "t-web", "title": "Investigate flaky checkout tests", "assignee": "priya", "creator": "actor", "number": 7, "ref": "issue_target"}],
+  ["issue", {"id": "i-web-3", "team": "t-web", "title": "Polish settings page layout", "assignee": "dana", "creator": "actor", "number": 3, "ref": "issue_bg"}],
+
+  ["comment", {"id": "c-target", "issue": "i-web-7", "author": "maya", "body": "The payment retry logic times out under load and needs a backoff.", "resolver": "sam", "created": "2026-08-01T10:00:00", "resolved": "2026-08-02T09:00:00", "ref": "target"}],
+
+  ["comment", {"id": "c-f1", "issue": "i-web-7", "author": "sam", "body": "Payment retry attempts still time out under load; can we add a backoff?", "resolver": "priya", "created": "2026-08-03T10:00:00", "resolved": "2026-08-04T09:00:00"}],
+
+  ["comment", {"id": "c-f8", "issue": "i-web-7", "author": "dana", "body": "Confirmed: payment retry attempts time out under load.", "resolver": "samp", "created": "2026-08-05T10:00:00", "resolved": "2026-08-06T09:00:00"}],
+
+  ["comment", {"id": "c-bg1", "issue": "i-web-7", "author": "leo", "body": "The loading spinner flickers on slow connections.", "created": "2026-08-01T11:00:00"}],
+
+  ["comment", {"id": "c-bg2", "issue": "i-web-3", "author": "maya", "body": "The settings page needs more padding around the save button.", "resolver": "sam", "created": "2026-07-20T10:00:00", "resolved": "2026-07-21T09:00:00"}]
+ ],
+ "conditions": [
+  {"id": "c1", "text": "the comment thread on WEB-7", "facts": ["R:Comment.issueId", "A:Issue.identifier"]},
+  {"id": "c2", "text": "about payment retries timing out", "facts": ["A:Comment.body"]},
+  {"id": "c3", "text": "that Sam Rivera resolved", "facts": ["R:Comment.resolvingUserId", "A:User.name"]}
+ ],
+ "reference": {
+  "name": "the comment thread to reopen",
+  "target": ["c-target"],
+  "query": {
+   "table": "comments",
+   "key": ["id"],
+   "filters": [
+    {"key": "f_topic", "field": "body", "op": "contains_ci", "value": "payment retry", "fact": "A:Comment.body"}
+   ],
+   "edges": [
+    {"key": "e_issue", "join": {"parent": "issueId", "child": "id", "op": "eq"}, "fact": "R:Comment.issueId",
+     "node": {"table": "issues", "filters": [
+       {"key": "f_issue", "field": "identifier", "op": "eq", "value": "WEB-7", "fact": "A:Issue.identifier"}
+      ], "edges": []}},
+    {"key": "e_resolver", "join": {"parent": "resolvingUserId", "child": "id", "op": "eq"}, "fact": "R:Comment.resolvingUserId",
+     "node": {"table": "users", "filters": [
+       {"key": "f_resolver_name", "field": "name", "op": "eq", "value": "Sam Rivera", "fact": "A:User.name"}
+      ], "edges": []}}
+   ]
+  },
+  "decoys": [
+   {
+    "witness": "c-f1",
+    "fact": "R:Comment.resolvingUserId",
+    "family": "F1",
+    "substitute": "Comment.userId (comment author) in place of resolvingUserId",
+    "mutation": {
+     "type": "SUB",
+     "target": "e_resolver",
+     "replacement": {
+      "key": "e_resolver",
+      "join": {"parent": "userId", "child": "id", "op": "eq"},
+      "node": {"table": "users", "filters": [
+        {"key": "x", "field": "name", "op": "eq", "value": "Sam Rivera"}
+       ], "edges": []}
+     }
+    },
+    "explanation": "Sam Rivera wrote this comment, but Priya Nair is the one who resolved the thread."
+   },
+   {
+    "witness": "c-f8",
+    "fact": "A:User.name",
+    "family": "F8",
+    "substitute": "Sam Patel for Sam Rivera",
+    "mutation": {"type": "DROP", "target": "f_resolver_name"},
+    "explanation": "The thread was resolved by Sam Patel, not Sam Rivera; only the resolving user's full name tells them apart."
+   }
+  ],
+  "effect": {"table": "comments", "changes": ["update"]},
+  "written": ["comments.resolvedAt", "comments.resolvingUserId"]
+ },
+ "write": {
+  "graphql": "mutation { commentUnresolve(id: \"c-target\") { comment { id resolvedAt } } }"
+ }
+}

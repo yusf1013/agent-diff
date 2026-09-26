@@ -1,0 +1,101 @@
+{
+ "scenario_id": "AR-SLK-24",
+ "domain": "slack",
+ "request": "Add an eyes reaction to the outage update in #incidents posted by whoever is a member of #oncall-eng.",
+ "answer": "one",
+ "seed": [
+  ["channel", {"id": "C_INC", "name": "incidents", "members": ["diego", "leo", "omar", "priya"]}],
+  ["channel", {"id": "C_ONCALL", "name": "oncall-eng", "members": ["diego", "aisha"]}],
+  ["channel", {"id": "C_WATER", "name": "watercooler", "members": ["maya", "priya"]}],
+
+  ["message", {"channel": "C_INC", "author": "diego", "text": "Reporting a checkout outage: 502s on /pay since 14:05 UTC.", "at": "2026-09-21T14:06:00Z", "ref": "target"}],
+
+  ["message", {"channel": "C_ONCALL", "author": "leo", "text": "Handing the pager off after last night's deploy.", "at": "2026-09-20T09:00:00Z", "ref": "leo_oncall_msg"}],
+  ["message", {"channel": "C_INC", "author": "leo", "text": "Following up on the outage - checkout looks stable again.", "at": "2026-09-21T14:20:00Z", "ref": "leo_incidents_outage"}],
+
+  ["message", {"channel": "C_ONCALL", "author": "aisha", "text": "Rotation swap approved for next week.", "at": "2026-09-19T10:00:00Z", "ref": "oncall_msg_for_reaction"}],
+  ["reaction", {"message": "@oncall_msg_for_reaction", "person": "omar", "name": "thumbsup", "at": "2026-09-19T10:05:00Z"}],
+  ["message", {"channel": "C_INC", "author": "omar", "text": "Outage impact looks contained, still watching the dashboards.", "at": "2026-09-21T14:35:00Z", "ref": "omar_incidents_outage"}],
+
+  ["message", {"channel": "C_INC", "author": "priya", "text": "Can someone review the postmortem doc from last week?", "at": "2026-09-21T15:00:00Z", "ref": "bg_priya"}],
+  ["message", {"channel": "C_WATER", "author": "maya", "text": "Coffee machine on the 4th floor is fixed!", "at": "2026-09-21T09:00:00Z", "ref": "bg_maya"}]
+ ],
+ "conditions": [
+  {"id": "c1", "text": "the outage update", "facts": ["A:Message.message_text"]},
+  {"id": "c2", "text": "in #incidents", "facts": ["R:messages.channel_id"]},
+  {"id": "c3", "text": "posted by whoever is a member of #oncall-eng", "facts": ["R:channel_members"]}
+ ],
+ "reference": {
+  "name": "the outage update to react to",
+  "target": ["@target"],
+  "query": {
+   "table": "messages",
+   "key": ["message_id"],
+   "filters": [
+    {"key": "f_text", "field": "message_text", "op": "contains_ci", "value": "outage", "fact": "A:Message.message_text"}
+   ],
+   "edges": [
+    {"key": "e_chan", "join": {"parent": "channel_id", "child": "channel_id", "op": "eq"}, "fact": "R:messages.channel_id",
+     "node": {"table": "channels", "filters": [
+       {"key": "f_chan", "field": "channel_name", "op": "eq", "value": "incidents"}
+      ], "edges": []}},
+    {"key": "e_author", "join": {"parent": "user_id", "child": "user_id", "op": "eq"}, "fact": "R:messages.user_id",
+     "node": {"table": "users", "filters": [], "edges": [
+       {"key": "e_member", "join": {"parent": "user_id", "child": "user_id", "op": "eq"}, "fact": "R:channel_members",
+        "node": {"table": "channel_members", "filters": [
+          {"key": "f_member_chan", "field": "channel_id", "op": "eq", "value": "C_ONCALL"}
+         ], "edges": []}}
+      ]}}
+   ]
+  },
+  "decoys": [
+   {
+    "witness": "@leo_incidents_outage",
+    "fact": "R:channel_members",
+    "family": "F1",
+    "substitute": "posted in the channel (location of authored message)",
+    "mutation": {
+     "type": "SUB",
+     "target": "e_member",
+     "replacement": {
+      "key": "e_member",
+      "join": {"parent": "user_id", "child": "user_id", "op": "eq"},
+      "node": {"table": "messages", "filters": [
+        {"key": "x", "field": "channel_id", "op": "eq", "value": "C_ONCALL"}
+       ], "edges": []}
+     }
+    },
+    "explanation": "Leo once posted a message in #oncall-eng, but he was never added as a member there; Diego is the actual member who reported the outage."
+   },
+   {
+    "witness": "@omar_incidents_outage",
+    "fact": "R:channel_members",
+    "family": "F2",
+    "substitute": "reacted in the channel",
+    "mutation": {
+     "type": "SUB",
+     "target": "e_member",
+     "replacement": {
+      "key": "e_member",
+      "join": {"parent": "user_id", "child": "user_id", "op": "eq"},
+      "node": {"table": "message_reactions", "filters": [], "edges": [
+        {"key": "e_rmsg", "join": {"parent": "message_id", "child": "message_id", "op": "eq"},
+         "node": {"table": "messages", "filters": [], "edges": [
+           {"key": "e_rchan", "join": {"parent": "channel_id", "child": "channel_id", "op": "eq"},
+            "node": {"table": "channels", "filters": [
+              {"key": "x2", "field": "channel_name", "op": "eq", "value": "oncall-eng"}
+             ], "edges": []}}
+          ]}}
+       ]}
+     }
+    },
+    "explanation": "Omar reacted to a message in #oncall-eng, but he never joined that channel; Diego is the member who reported the outage."
+   }
+  ],
+  "effect": {"table": "message_reactions", "changes": ["insert"], "key": ["message_id", "user_id", "reaction_type"], "field": "message_id"},
+  "written": ["message_reactions.reaction_type"]
+ },
+ "other_references": [],
+ "write": {"slack": "reactions.add", "params": {"channel": "C_INC", "timestamp": "@target", "name": "eyes"}},
+ "probes": []
+}

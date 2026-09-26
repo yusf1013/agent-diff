@@ -1,0 +1,138 @@
+{
+ "scenario_id": "AR-SLK-22",
+ "domain": "slack",
+ "request": "In #incidents, add an eyes reaction to Diego Alvarez's reply in the thread where Leo Park reported the payment gateway outage.",
+ "answer": "one",
+ "seed": [
+  ["person", {"key": "diegof", "name": "Diego Fernandez"}],
+  ["channel", {"id": "C_INC", "name": "incidents", "members": ["diego", "leo", "omar", "aisha", "priya", "diegof"]}],
+  ["channel", {"id": "C_GEN", "name": "general", "members": ["priya", "leo"]}],
+  ["message", {"channel": "C_INC", "author": "leo", "text": "Payment gateway is throwing 502s on checkout since 14:05 UTC.", "at": "2026-09-21T14:06:00Z", "ref": "root_outage"}],
+  ["message", {"channel": "C_INC", "author": "diego", "text": "Rolled back the gateway config, should be resolved now.", "at": "2026-09-21T14:20:00Z", "parent": "@root_outage", "ref": "target"}],
+  ["message", {"channel": "C_INC", "author": "aisha", "text": "Appreciate the quick fix!", "at": "2026-09-21T14:25:00Z", "parent": "@root_outage", "ref": "aisha_reply"}],
+  ["reaction", {"message": "@aisha_reply", "person": "diego", "name": "thumbsup", "at": "2026-09-21T14:26:00Z"}],
+  ["message", {"channel": "C_INC", "author": "diegof", "text": "Rolled back the config change too, should be resolved now.", "at": "2026-09-21T14:30:00Z", "parent": "@root_outage", "ref": "diegof_reply"}],
+  ["message", {"channel": "C_INC", "author": "diego", "text": "Payment gateway is timing out for some users, investigating now.", "at": "2026-09-21T09:00:00Z", "ref": "diego_root_solo"}],
+  ["message", {"channel": "C_INC", "author": "leo", "text": "Yes, seeing intermittent failures on our end too.", "at": "2026-09-21T09:15:00Z", "parent": "@diego_root_solo", "ref": "leo_reply_diego_root"}],
+  ["message", {"channel": "C_INC", "author": "omar", "text": "Database migration in progress, expect brief slowness.", "at": "2026-09-21T10:00:00Z", "ref": "root_other"}],
+  ["message", {"channel": "C_INC", "author": "diego", "text": "Rolled back the migration script, should be resolved now.", "at": "2026-09-21T10:15:00Z", "parent": "@root_other", "ref": "diego_reply_other"}],
+  ["message", {"channel": "C_INC", "author": "priya", "text": "Anyone free to review the postmortem doc?", "at": "2026-09-21T11:00:00Z", "ref": "priya_incidents_msg"}],
+  ["message", {"channel": "C_GEN", "author": "priya", "text": "Standup notes for today.", "at": "2026-09-21T13:00:00Z", "ref": "general_msg1"}],
+  ["message", {"channel": "C_GEN", "author": "leo", "text": "Sounds good.", "at": "2026-09-21T13:05:00Z", "parent": "@general_msg1", "ref": "general_reply1"}]
+ ],
+ "conditions": [
+  {"id": "c1", "text": "In #incidents", "facts": ["A:Conversation.channel_name"]},
+  {"id": "c2", "text": "Diego Alvarez's reply", "facts": ["R:messages.user_id"]},
+  {"id": "c3", "text": "in the thread where Leo Park reported the payment gateway outage", "facts": ["H:messages.parent_id"]}
+ ],
+ "reference": {
+  "name": "the reply to react to",
+  "target": ["@target"],
+  "query": {
+   "table": "messages",
+   "key": ["message_id"],
+   "filters": [],
+   "edges": [
+    {"key": "e_chan", "join": {"parent": "channel_id", "child": "channel_id", "op": "eq"}, "fact": "A:Conversation.channel_name",
+     "node": {"table": "channels", "filters": [{"key": "f_chan", "field": "channel_name", "op": "eq", "value": "incidents", "fact": "A:Conversation.channel_name"}], "edges": []}},
+    {"key": "e_auth", "join": {"parent": "user_id", "child": "user_id", "op": "eq"}, "fact": "R:messages.user_id",
+     "node": {"table": "users", "filters": [{"key": "f_auth", "field": "real_name", "op": "eq", "value": "Diego Alvarez", "fact": "R:messages.user_id"}], "edges": []}},
+    {"key": "e_thread", "join": {"parent": "parent_id", "child": "message_id", "op": "eq"}, "fact": "H:messages.parent_id",
+     "node": {"table": "messages", "filters": [{"key": "f_root_text", "field": "message_text", "op": "contains_ci", "value": "payment gateway"}],
+      "edges": [
+       {"key": "e_root_auth", "join": {"parent": "user_id", "child": "user_id", "op": "eq"},
+        "node": {"table": "users", "filters": [{"key": "f_root_auth", "field": "real_name", "op": "eq", "value": "Leo Park"}], "edges": []}}
+      ]}}
+   ]
+  },
+  "decoys": [
+   {
+    "witness": "@aisha_reply",
+    "fact": "R:messages.user_id",
+    "family": "F1",
+    "substitute": "reactor of the message (message_reactions), not its author",
+    "mutation": {
+     "type": "SUB",
+     "target": "e_auth",
+     "replacement": {
+      "key": "e_auth",
+      "join": {"parent": "message_id", "child": "message_id", "op": "eq"},
+      "node": {
+       "table": "message_reactions",
+       "filters": [],
+       "edges": [
+        {"key": "e_react_auth", "join": {"parent": "user_id", "child": "user_id", "op": "eq"},
+         "node": {"table": "users", "filters": [{"key": "x", "field": "real_name", "op": "eq", "value": "Diego Alvarez"}], "edges": []}}
+       ]
+      }
+     }
+    },
+    "explanation": "Diego Alvarez reacted to Aisha's reply with a thumbsup; Aisha wrote it, not Diego."
+   },
+   {
+    "witness": "@diegof_reply",
+    "fact": "R:messages.user_id",
+    "family": "F8",
+    "substitute": "another person named Diego",
+    "mutation": {"type": "DROP", "target": "f_auth"},
+    "explanation": "Diego Fernandez replied in the same thread; the request means Diego Alvarez, not another Diego."
+   },
+   {
+    "witness": "@diego_root_solo",
+    "fact": "H:messages.parent_id",
+    "family": "F4",
+    "substitute": "a root message mistaken for a reply in the thread",
+    "mutation": {
+     "type": "REPLACE",
+     "note": "the reply-to-root edge is replaced by requiring the message itself be a parentless root mentioning the outage",
+     "query": {
+      "table": "messages",
+      "key": ["message_id"],
+      "filters": [
+       {"key": "f_no_parent", "field": "parent_id", "op": "is_null"},
+       {"key": "f_self_text", "field": "message_text", "op": "contains_ci", "value": "payment gateway"}
+      ],
+      "edges": [
+       {"key": "e_chan", "join": {"parent": "channel_id", "child": "channel_id", "op": "eq"},
+        "node": {"table": "channels", "filters": [{"key": "f_chan", "field": "channel_name", "op": "eq", "value": "incidents"}], "edges": []}},
+       {"key": "e_auth", "join": {"parent": "user_id", "child": "user_id", "op": "eq"},
+        "node": {"table": "users", "filters": [{"key": "f_auth", "field": "real_name", "op": "eq", "value": "Diego Alvarez"}], "edges": []}}
+      ]
+     }
+    },
+    "explanation": "Diego Alvarez posted this himself about the payment gateway; it has no parent, so it is a thread root, not a reply in Leo's thread."
+   },
+   {
+    "witness": "@diego_reply_other",
+    "fact": "H:messages.parent_id",
+    "family": "F2",
+    "substitute": "a reply in a different thread",
+    "mutation": {
+     "type": "REPLACE",
+     "note": "the thread root is swapped from Leo's outage report to Omar's migration note",
+     "query": {
+      "table": "messages",
+      "key": ["message_id"],
+      "filters": [],
+      "edges": [
+       {"key": "e_chan", "join": {"parent": "channel_id", "child": "channel_id", "op": "eq"},
+        "node": {"table": "channels", "filters": [{"key": "f_chan", "field": "channel_name", "op": "eq", "value": "incidents"}], "edges": []}},
+       {"key": "e_auth", "join": {"parent": "user_id", "child": "user_id", "op": "eq"},
+        "node": {"table": "users", "filters": [{"key": "f_auth", "field": "real_name", "op": "eq", "value": "Diego Alvarez"}], "edges": []}},
+       {"key": "e_thread", "join": {"parent": "parent_id", "child": "message_id", "op": "eq"},
+        "node": {"table": "messages", "filters": [{"key": "f_root_text2", "field": "message_text", "op": "contains_ci", "value": "database migration"}],
+         "edges": [
+          {"key": "e_root_auth2", "join": {"parent": "user_id", "child": "user_id", "op": "eq"},
+           "node": {"table": "users", "filters": [{"key": "f_root_auth2", "field": "real_name", "op": "eq", "value": "Omar Haddad"}], "edges": []}}
+         ]}}
+      ]
+     }
+    },
+    "explanation": "Diego's reply here answers Omar's database-migration thread, not Leo's payment-gateway outage thread."
+   }
+  ],
+  "effect": {"table": "message_reactions", "changes": ["insert"], "key": ["message_id", "user_id", "reaction_type"], "field": "message_id"},
+  "written": ["message_reactions.reaction_type"]
+ },
+ "write": {"slack": "reactions.add", "params": {"channel": "C_INC", "timestamp": "@target", "name": "eyes"}}
+}

@@ -1,0 +1,1 @@
+You did not assess these candidates: ev_vendor_organizer, ev_vendor_white, ev_vendor_required, ev_vendor_split, ev_budget_review, ev_vendor_nextweek. Give your complete answer again, covering every candidate.

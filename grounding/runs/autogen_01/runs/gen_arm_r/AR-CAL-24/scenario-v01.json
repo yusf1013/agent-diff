@@ -1,0 +1,56 @@
+{
+ "scenario_id": "AR-CAL-24",
+ "domain": "calendar",
+ "request": "Update the description of the Front Desk calendar located at Building 4, 3rd Floor to say that badge access is required after 6 pm.",
+ "answer": "one",
+ "seed": [
+  ["calendar", {"id": "cal_front_b4", "summary": "Front Desk", "owner": "actor", "access": "owner", "location": "Building 4, 3rd Floor", "description": "Reserve front desk coverage for shift scheduling."}],
+  ["calendar", {"id": "cal_front_b2", "summary": "Front Desk", "owner": "actor", "access": "owner", "location": "Building 2, 1st Floor", "description": "Note: while Building 4, 3rd Floor is being repainted, route overflow front desk shifts here."}],
+  ["calendar", {"id": "cal_front_b7", "summary": "Front Desk", "owner": "actor", "access": "owner", "location": "Building 7, Ground Floor", "description": "Reserve front desk coverage for shift scheduling."}],
+  ["event", {"id": "ev_townhall", "calendar": "cal_front_b7", "summary": "Quarterly Town Hall", "start": "2018-06-19T09:00:00", "end": "2018-06-19T10:00:00", "location": "Building 4, 3rd Floor"}],
+  ["calendar", {"id": "cal_front_b9", "summary": "Front Desk", "owner": "actor", "access": "owner", "location": "Building 9, 2nd Floor", "description": "Reserve front desk coverage for shift scheduling."}],
+  ["calendar", {"id": "cal_eng_team", "summary": "Engineering Team", "owner": "actor", "access": "owner", "location": "Building 12, Annex", "description": "Team calendar for engineering standups and reviews."}],
+  ["calendar", {"id": "cal_apac", "summary": "APAC Team", "owner": "kenji", "access": "writer", "location": "Tokyo Office, 5F", "description": "APAC team meetings and holidays."}]
+ ],
+ "conditions": [
+  {"id": "c1", "text": "the Front Desk calendar", "facts": ["A:Calendar.summary"]},
+  {"id": "c2", "text": "located at Building 4, 3rd Floor", "facts": ["A:Calendar.location"]}
+ ],
+ "reference": {
+  "name": "the Front Desk calendar to update",
+  "target": ["cal_front_b4"],
+  "query": {
+   "table": "calendars",
+   "key": ["id"],
+   "filters": [
+    {"key": "f_summary", "field": "summary", "op": "eq", "value": "Front Desk", "fact": "A:Calendar.summary"},
+    {"key": "f_loc", "field": "location", "op": "eq", "value": "Building 4, 3rd Floor", "fact": "A:Calendar.location"}
+   ],
+   "edges": []
+  },
+  "decoys": [
+   {"witness": "cal_front_b2", "fact": "A:Calendar.location", "family": "F1", "substitute": "Calendar.description",
+    "mutation": {"type": "REPLACE", "note": "location filter replaced by a description filter", "query": {
+      "table": "calendars", "key": ["id"],
+      "filters": [
+       {"key": "f_summary", "field": "summary", "op": "eq", "value": "Front Desk"},
+       {"key": "f_desc", "field": "description", "op": "contains_ci", "value": "Building 4, 3rd Floor"}],
+      "edges": []}},
+    "explanation": "Its own location is Building 2, 1st Floor; the description just mentions Building 4, 3rd Floor as the building being repainted."},
+   {"witness": "cal_front_b7", "fact": "A:Calendar.location", "family": "F2", "substitute": "an event on the calendar has that location, not the calendar itself",
+    "mutation": {"type": "REPLACE", "note": "calendar's own location replaced by an event's location", "query": {
+      "table": "calendars", "key": ["id"],
+      "filters": [{"key": "f_summary", "field": "summary", "op": "eq", "value": "Front Desk"}],
+      "edges": [{"key": "e_evt", "join": {"parent": "id", "child": "calendar_id", "op": "eq"}, "fact": "A:Event.location",
+                 "node": {"table": "calendar_events", "filters": [
+                   {"key": "f_evt_loc", "field": "location", "op": "eq", "value": "Building 4, 3rd Floor"}], "edges": []}}]}},
+    "explanation": "The calendar itself is at Building 7, Ground Floor; only its Quarterly Town Hall event is held at Building 4, 3rd Floor."},
+   {"witness": "cal_front_b9", "fact": "A:Calendar.location", "family": "F0", "substitute": "a different building entirely",
+    "mutation": {"type": "DROP", "target": "f_loc"},
+    "explanation": "It's the Front Desk calendar for Building 9, 2nd Floor, not Building 4."}
+  ],
+  "effect": {"table": "calendars", "changes": ["update"]},
+  "written": ["calendars.description"]
+ },
+ "write": {"method": "PATCH", "path": "/calendars/cal_front_b4", "body": {"description": "Badge access is required after 6 pm."}}
+}

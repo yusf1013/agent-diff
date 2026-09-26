@@ -1,0 +1,73 @@
+{
+ "scenario_id": "AP-CAL-02",
+ "domain": "calendar",
+ "request": "On the calendar in my calendar list where Kenji Sato has writer access, change Maya Chen's role from writer to reader.",
+ "answer": "one",
+ "seed": [
+  ["calendar", {"id": "team-roadmap@northwind.example", "summary": "Team Roadmap", "owner": "actor", "access": "owner", "in_list": true}],
+  ["acl", {"id": "user:jordan.lee@northwind.example", "calendar": "team-roadmap@northwind.example", "role": "owner", "scope_type": "user", "scope_value": "jordan.lee@northwind.example"}],
+  ["acl", {"id": "user:kenji.sato@northwind.example", "calendar": "team-roadmap@northwind.example", "role": "writer", "scope_type": "user", "scope_value": "kenji.sato@northwind.example"}],
+  ["acl", {"id": "user:maya.chen@northwind.example", "calendar": "team-roadmap@northwind.example", "role": "writer", "scope_type": "user", "scope_value": "maya.chen@northwind.example", "ref": "acl_target"}],
+
+  ["calendar", {"id": "kenji-notes@northwind.example", "summary": "Kenji Sato's Personal Calendar", "owner": "kenji", "in_list": false}],
+  ["acl", {"id": "user:kenji.sato@northwind.example", "calendar": "kenji-notes@northwind.example", "role": "owner", "scope_type": "user", "scope_value": "kenji.sato@northwind.example"}],
+  ["acl", {"id": "user:jordan.lee@northwind.example", "calendar": "kenji-notes@northwind.example", "role": "reader", "scope_type": "user", "scope_value": "jordan.lee@northwind.example"}],
+  ["acl", {"id": "user:maya.chen@northwind.example", "calendar": "kenji-notes@northwind.example", "role": "writer", "scope_type": "user", "scope_value": "maya.chen@northwind.example", "ref": "acl_maya_notes"}],
+
+  ["calendar", {"id": "marketing-sync@northwind.example", "summary": "Marketing Sync", "owner": "sam", "access": "writer", "in_list": true}],
+  ["acl", {"id": "user:sam.rivera@northwind.example", "calendar": "marketing-sync@northwind.example", "role": "owner", "scope_type": "user", "scope_value": "sam.rivera@northwind.example"}],
+  ["acl", {"id": "user:kenji.sato@northwind.example", "calendar": "marketing-sync@northwind.example", "role": "reader", "scope_type": "user", "scope_value": "kenji.sato@northwind.example"}],
+  ["acl", {"id": "user:jordan.lee@northwind.example", "calendar": "marketing-sync@northwind.example", "role": "writer", "scope_type": "user", "scope_value": "jordan.lee@northwind.example"}],
+  ["acl", {"id": "user:maya.chen@northwind.example", "calendar": "marketing-sync@northwind.example", "role": "writer", "scope_type": "user", "scope_value": "maya.chen@northwind.example", "ref": "acl_maya_marketing"}],
+
+  ["calendar", {"id": "design-team@northwind.example", "summary": "Design Team", "owner": "dana", "access": "reader", "in_list": true}],
+  ["acl", {"id": "user:dana.whitfield@northwind.example", "calendar": "design-team@northwind.example", "role": "owner", "scope_type": "user", "scope_value": "dana.whitfield@northwind.example"}],
+  ["acl", {"id": "user:jordan.lee@northwind.example", "calendar": "design-team@northwind.example", "role": "reader", "scope_type": "user", "scope_value": "jordan.lee@northwind.example"}],
+  ["acl", {"id": "user:priya.nair@northwind.example", "calendar": "design-team@northwind.example", "role": "writer", "scope_type": "user", "scope_value": "priya.nair@northwind.example"}]
+ ],
+ "conditions": [
+  {"id": "c1", "text": "where Kenji Sato has writer access", "facts": ["B:AclRule.calendar_id"]},
+  {"id": "c2", "text": "the calendar in my calendar list", "facts": ["R:CalendarListEntry.calendar_id"]},
+  {"id": "c3", "text": "Maya Chen's role from writer to reader", "facts": ["A:AclRule.scope_value", "A:AclRule.role"]}
+ ],
+ "reference": {
+  "name": "Maya Chen's access grant to change",
+  "target": ["@acl_target"],
+  "query": {
+   "table": "calendar_acl_rules", "key": ["id"],
+   "filters": [
+    {"key": "f_scope", "field": "scope_value", "op": "eq", "value": "maya.chen@northwind.example", "fact": "A:AclRule.scope_value"},
+    {"key": "f_role", "field": "role", "op": "eq", "value": "writer", "fact": "A:AclRule.role"}
+   ],
+   "edges": [
+    {"key": "e_cal", "join": {"parent": "calendar_id", "child": "id", "op": "eq"},
+     "node": {
+      "table": "calendars",
+      "filters": [],
+      "edges": [
+       {"key": "e_kenji", "join": {"parent": "id", "child": "calendar_id", "op": "eq"}, "fact": "B:AclRule.calendar_id",
+        "node": {"table": "calendar_acl_rules", "filters": [
+          {"key": "f_k_scope", "field": "scope_value", "op": "eq", "value": "kenji.sato@northwind.example"},
+          {"key": "f_k_role", "field": "role", "op": "eq", "value": "writer", "fact": "A:AclRule.role"}
+         ], "edges": []}},
+       {"key": "e_list", "join": {"parent": "id", "child": "calendar_id", "op": "eq"}, "fact": "R:CalendarListEntry.calendar_id",
+        "node": {"table": "calendar_list_entries", "filters": [], "edges": []}}
+      ]
+     }}
+   ]
+  },
+  "decoys": [
+   {"witness": "@acl_maya_notes", "fact": "R:CalendarListEntry.calendar_id", "family": "F1",
+    "substitute": "an ACL grant that gives Jordan access, instead of an entry on his calendar list",
+    "mutation": {"type": "DROP", "target": "e_list"},
+    "explanation": "Kenji Sato has writer access on this calendar too, and Maya Chen also has writer access here, but Jordan never added this calendar to his own calendar list; he can only reach it because Kenji separately gave him reader access on it."},
+   {"witness": "@acl_maya_marketing", "fact": "B:AclRule.calendar_id", "family": "F5",
+    "substitute": "the person and the writer role held by different grants",
+    "mutation": {"type": "SPLIT", "target": "e_kenji", "groups": [["f_k_scope"], ["f_k_role"]]},
+    "explanation": "On this calendar Kenji Sato only has reader access; Jordan and Maya are the writers. Kenji does not actually hold writer access here, even though a writer role and Kenji's name both appear in its sharing settings."}
+  ],
+  "effect": {"table": "calendar_acl_rules", "changes": ["update"]},
+  "written": ["calendar_acl_rules.role"]
+ },
+ "write": {"method": "PATCH", "path": "/calendars/team-roadmap@northwind.example/acl/user:maya.chen@northwind.example", "body": {"role": "reader"}}
+}

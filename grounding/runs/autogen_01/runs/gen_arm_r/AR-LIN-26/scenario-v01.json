@@ -1,0 +1,79 @@
+{
+ "scenario_id": "AR-LIN-26",
+ "domain": "linear",
+ "request": "In the Web team, set the priority to Urgent for the Design system audit issue that Sam Rivera is subscribed to.",
+ "answer": "one",
+ "seed": [
+  ["team", {"id": "t-web", "name": "Web", "key": "WEB"}],
+  ["team", {"id": "t-mob", "name": "Mobile", "key": "MOB"}],
+  ["member", {"team": "t-web", "person": "actor"}],
+  ["member", {"team": "t-web", "person": "maya"}],
+  ["member", {"team": "t-web", "person": "leo"}],
+  ["member", {"team": "t-web", "person": "sam"}],
+  ["member", {"team": "t-web", "person": "dana"}],
+  ["member", {"team": "t-web", "person": "priya"}],
+  ["member", {"team": "t-mob", "person": "omar"}],
+  ["member", {"team": "t-mob", "person": "dana"}],
+  ["member", {"team": "t-mob", "person": "priya"}],
+
+  ["issue", {"id": "i-web-1", "team": "t-web", "title": "Design system audit", "assignee": "maya", "creator": "leo", "subscribers": ["sam"], "ref": "target"}],
+  ["issue", {"id": "i-web-2", "team": "t-web", "title": "Design system audit", "assignee": "sam", "creator": "leo", "subscribers": [], "ref": "d_assignee"}],
+  ["issue", {"id": "i-web-3", "team": "t-web", "title": "Design system audit", "assignee": "maya", "creator": "sam", "subscribers": [], "ref": "d_creator"}],
+  ["issue", {"id": "i-web-4", "team": "t-web", "title": "Design system audit", "assignee": "maya", "creator": "leo", "subscribers": ["dana"], "ref": "d_plain"}],
+  ["issue", {"id": "i-web-5", "team": "t-web", "title": "Refactor design tokens", "assignee": "priya", "creator": "leo", "subscribers": []}],
+  ["issue", {"id": "i-mob-1", "team": "t-mob", "title": "Design system audit", "assignee": "omar", "creator": "dana", "subscribers": ["priya"]}]
+ ],
+ "conditions": [
+  {"id": "c1", "text": "the Design system audit issue", "facts": ["A:Issue.title"]},
+  {"id": "c2", "text": "in the Web team", "facts": ["R:Issue.teamId"]},
+  {"id": "c3", "text": "that Sam Rivera is subscribed to", "facts": ["R:issue_subscriber_user_association"]}
+ ],
+ "reference": {
+  "name": "the issue to reprioritize",
+  "target": ["@target"],
+  "query": {
+   "table": "issues",
+   "key": ["id"],
+   "filters": [
+    {"key": "f_title", "field": "title", "op": "eq", "value": "Design system audit", "fact": "A:Issue.title"}
+   ],
+   "edges": [
+    {"key": "e_team", "join": {"parent": "teamId", "child": "id", "op": "eq"}, "fact": "R:Issue.teamId",
+     "node": {"table": "teams", "filters": [
+       {"key": "f_team", "field": "name", "op": "eq", "value": "Web"}
+      ], "edges": []}},
+    {"key": "e_sub", "join": {"parent": "id", "child": "issue_id", "op": "eq"}, "fact": "R:issue_subscriber_user_association",
+     "node": {"table": "issue_subscriber_user_association", "filters": [], "edges": [
+       {"key": "e_sub_user", "join": {"parent": "user_id", "child": "id", "op": "eq"},
+        "node": {"table": "users", "filters": [
+          {"key": "f_sub", "field": "name", "op": "eq", "value": "Sam Rivera"}
+         ], "edges": []}}
+      ]}}
+   ]
+  },
+  "decoys": [
+   {"witness": "@d_assignee", "fact": "R:issue_subscriber_user_association", "family": "F1", "substitute": "Issue.assigneeId",
+    "mutation": {"type": "SUB", "target": "e_sub", "replacement": {
+      "key": "e_sub", "join": {"parent": "assigneeId", "child": "id", "op": "eq"},
+      "node": {"table": "users", "filters": [
+        {"key": "x", "field": "name", "op": "eq", "value": "Sam Rivera"}
+       ], "edges": []}}},
+    "explanation": "Sam Rivera is the assignee of this issue, not a subscriber; he never subscribed to it."},
+   {"witness": "@d_creator", "fact": "R:issue_subscriber_user_association", "family": "F1", "substitute": "Issue.creatorId",
+    "mutation": {"type": "SUB", "target": "e_sub", "replacement": {
+      "key": "e_sub", "join": {"parent": "creatorId", "child": "id", "op": "eq"},
+      "node": {"table": "users", "filters": [
+        {"key": "x", "field": "name", "op": "eq", "value": "Sam Rivera"}
+       ], "edges": []}}},
+    "explanation": "Sam Rivera created this issue but did not subscribe to it."},
+   {"witness": "@d_plain", "fact": "R:issue_subscriber_user_association", "family": "F0",
+    "mutation": {"type": "DROP", "target": "f_sub"},
+    "explanation": "Dana Whitfield is the subscriber on this issue, not Sam Rivera."}
+  ],
+  "effect": {"table": "issues", "changes": ["update"]},
+  "written": ["issues.priority"]
+ },
+ "other_references": [],
+ "write": {"graphql": "mutation { issueUpdate(id: \"i-web-1\", input: {priority: 1}) { issue { id priority } } }"},
+ "probes": []
+}
