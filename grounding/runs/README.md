@@ -8,6 +8,8 @@ All tracked historical experiments moved here intact internally:
 
 The [manual Slack comparison](manual_comparison_01/report.md) runs all 57 [manual exemplars](manual_exemplars_01/story3.md) on Sonnet 5 and Haiku 4.5, with per-case manual judgments, full trajectories/state evidence, and cache/cost accounting.
 
+[autogen_01](autogen_01/README.md) generates and judges fact-discrimination tests with Claude Code Sonnet agents, and compares them with fact_coverage_02's hand-built exemplars on Qwen ([report](autogen_01/report.md)).
+
 Historical paths inside JSON and provider transcripts were not rewritten. Human review links were updated where their targets moved. Use `python -m grounding.paths OLD_PATH` to locate recorded paths. A folder name or a recorded `review_pass` is not a new validity claim; retain the associated manual review and failed attempts.
 
 New writer and compilation batches use:

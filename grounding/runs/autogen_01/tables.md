@@ -68,6 +68,8 @@ Exemplar reference (fact_coverage_02, 21 new scenarios): 2 had to be fixed after
 | Control (exemplars today) | cover+probe | 76 | 18 | 11 | 15 | 12 | 0.16 |
 | Control (exemplars today) | **all** | 76 | 18 | 11 | 15 | 12 | 0.16 |
 
+Tests are every derived test that ran; a test I judged invalid (P-AP-SLK-05-I12) counts and exposes nothing after adjudication.
+
 Exemplar reference (fact_coverage_02 §6, the same 36 facts as Arm R): 76 tests (18 covers, 58 probes), 14 facts at detect@3 (13 uncontested), 0.18 per test; probes 13 facts (0.22 per probe), covers 2 (0.11).
 
 Arm R, facts exposed (adjudicated): `A:Calendar.description`, `A:Conversation.purpose_text`, `A:Cycle.number`, `A:Event.description`, `A:Task.created_at`, `A:User.name`, `R:Comment.resolvingUserId`, `R:HubItem.file`, `R:Issue.creatorId`
@@ -185,7 +187,7 @@ Brief facts exposed: recorded exemplar runs 14; exemplars today 12; generated 8;
 | AP-SLK-05 | `A:Conversation.created_at` | accepted |  | accepted |  |
 | AP-SLK-05 | `A:WorkspaceMembership.role` | accepted |  | accepted |  |
 
-v1: brief facts exposed 13; all tests 84, facts 13 (0.15 per test); covers and probes 70, facts 13 (0.19 per test).
+v1: brief facts exposed 13; all tests 84, facts 13 (0.15 per test); covers and probes 71, facts 13 (0.18 per test).
 
 v2: brief facts exposed 11; all tests 93, facts 11 (0.12 per test); covers and probes 78, facts 9 (0.12 per test).
 
@@ -244,4 +246,14 @@ Total list-price estimate: $208.02 for completed calls, $13.61 for failed ones.
 | Arm P | 82.05 | 15 | 5.47 | 2.91 | 98 | 0.030 |
 | Arm P, method v2 | 49.08 | 16 | 3.07 | 2.49 | 104 | 0.024 |
 | Control (exemplars today) | 0.00 | - | - | 2.84 | 84 | 0.034 |
+
+## Solver tokens (Qwen `qwen3.8:27b` on Purdue GenAI Studio; every attempt, retries included)
+
+| Run | Attempts | Requests | Failed requests | Input tokens | Output tokens |
+|---|---:|---:|---:|---:|---:|
+| solve_dev_01 | 43 | 219 | 0 | 922,583 | 53,042 |
+| solve_arm_r | 325 | 1,755 | 0 | 7,905,028 | 516,797 |
+| solve_arm_p | 253 | 1,552 | 0 | 7,151,761 | 439,710 |
+| solve_arm_p_v2 | 281 | 1,764 | 0 | 8,032,017 | 518,501 |
+| solve_control | 230 | 1,446 | 0 | 7,312,173 | 388,102 |
 
