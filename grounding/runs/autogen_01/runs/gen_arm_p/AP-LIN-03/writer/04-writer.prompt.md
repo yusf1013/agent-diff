@@ -1,0 +1,5 @@
+A cold reader, who saw only the request and then the records, reports:
+- The reader says the decoy `t-ds-guild` (for A:Team.description, conditions ['c3']) fails ['c1', 'c3']: it fails more than its own fact (Key is ENGOPS and description does not mention distributed systems, only the team name does.).
+- The reader says the decoy `t-eng-public` (for A:Team.private, conditions ['c2']) fails ['c1', 'c2']: it fails more than its own fact (Key is ENGQA and the name and id suggest it is the public team, not private.).
+
+Fix scenario.json (edit it in place) where the reader is right. If you judge that a reading the reader raises is one a careful colleague would not take, you may keep your wording; say why in your reply. A fresh reader will read the scenario again either way. Do not add hints that only a test would contain (such as "simply" or "not the one that…") just to rule out a reading. Then reply with a short summary of what you changed or kept.

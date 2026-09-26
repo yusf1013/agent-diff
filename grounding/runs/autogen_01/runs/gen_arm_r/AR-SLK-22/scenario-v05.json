@@ -1,0 +1,66 @@
+{
+ "scenario_id": "AR-SLK-22",
+ "domain": "slack",
+ "request": "In #launch-prep, add a rocket reaction to Leo Park's reply in the thread about tonight's payments launch checklist.",
+ "answer": "one",
+ "seed": [
+  ["channel", {"id": "C_LAUNCH", "name": "launch-prep", "members": ["leo", "diego", "omar", "aisha"]}],
+  ["message", {"channel": "C_LAUNCH", "author": "diego", "text": "Anyone want tacos for lunch?", "at": "2026-09-22T11:50:00Z"}],
+  ["message", {"channel": "C_LAUNCH", "author": "diego", "text": "Reply here once you've signed off on tonight's payments launch checklist.", "at": "2026-09-22T12:05:00Z", "ref": "root1"}],
+  ["message", {"channel": "C_LAUNCH", "author": "leo", "text": "Reminder: payments launch checklist review starts at 6pm tonight.", "at": "2026-09-22T12:06:00Z", "ref": "leo_reminder"}],
+  ["message", {"channel": "C_LAUNCH", "author": "omar", "text": "Signed off on my end, checklist looks good.", "at": "2026-09-22T12:08:00Z", "parent": "@root1", "ref": "reply_omar"}],
+  ["reaction", {"message": "@reply_omar", "person": "leo", "name": "clap", "at": "2026-09-22T12:09:00Z"}],
+  ["message", {"channel": "C_LAUNCH", "author": "leo", "text": "All checklists are in, we're clear to ship.", "at": "2026-09-22T12:12:00Z", "parent": "@root1", "ref": "target"}]
+ ],
+ "conditions": [
+  {"id": "c1", "text": "In #launch-prep", "facts": ["R:messages.channel_id"]},
+  {"id": "c2", "text": "the reply", "facts": ["H:messages.parent_id"]},
+  {"id": "c3", "text": "Leo Park's", "facts": ["R:messages.user_id"]},
+  {"id": "c4", "text": "in the thread about tonight's payments launch checklist", "facts": ["H:messages.parent_id", "A:Message.message_text"]}
+ ],
+ "reference": {
+  "name": "the reply to add the reaction to",
+  "target": ["@target"],
+  "query": {
+   "table": "messages", "key": ["message_id"],
+   "filters": [
+    {"key": "f_channel", "field": "channel_id", "op": "eq", "value": "C_LAUNCH", "fact": "R:messages.channel_id"}
+   ],
+   "edges": [
+    {"key": "e_author", "join": {"parent": "user_id", "child": "user_id", "op": "eq"}, "fact": "R:messages.user_id",
+     "node": {"table": "users", "filters": [{"key": "f_author", "field": "real_name", "op": "eq", "value": "Leo Park"}], "edges": []}},
+    {"key": "e_root", "join": {"parent": "parent_id", "child": "message_id", "op": "eq"}, "fact": "H:messages.parent_id",
+     "node": {"table": "messages", "filters": [{"key": "f_root_text", "field": "message_text", "op": "contains_ci", "value": "payments launch checklist", "fact": "A:Message.message_text"}], "edges": []}}
+   ]
+  },
+  "decoys": [
+   {"witness": "@reply_omar", "fact": "R:messages.user_id", "family": "F1", "substitute": "reactor of the message (message_reactions)",
+    "mutation": {"type": "SUB", "target": "e_author", "replacement": {
+      "key": "e_author", "join": {"parent": "message_id", "child": "message_id", "op": "eq"},
+      "node": {"table": "message_reactions", "filters": [], "edges": [
+        {"key": "e_react_user", "join": {"parent": "user_id", "child": "user_id", "op": "eq"},
+         "node": {"table": "users", "filters": [{"key": "x", "field": "real_name", "op": "eq", "value": "Leo Park"}], "edges": []}}
+      ]}
+    }},
+    "explanation": "Omar signed off in this same thread; Leo Park only reacted to Omar's message with :clap:, he didn't author it."},
+   {"witness": "@leo_reminder", "fact": "H:messages.parent_id", "family": "F4", "substitute": "a standalone root message taken for a reply",
+    "mutation": {"type": "REPLACE", "note": "the edge to a matching parent replaced by the row's own text matching directly", "query": {
+      "table": "messages", "key": ["message_id"],
+      "filters": [
+       {"key": "f_channel", "field": "channel_id", "op": "eq", "value": "C_LAUNCH"},
+       {"key": "f_self_text", "field": "message_text", "op": "contains_ci", "value": "payments launch checklist"}
+      ],
+      "edges": [
+       {"key": "e_author", "join": {"parent": "user_id", "child": "user_id", "op": "eq"},
+        "node": {"table": "users", "filters": [{"key": "x", "field": "real_name", "op": "eq", "value": "Leo Park"}], "edges": []}}
+      ]
+    }},
+    "explanation": "Leo Park posted this reminder about the checklist as a standalone message, not as a reply in the thread."}
+  ],
+  "effect": {"table": "message_reactions", "changes": ["insert"], "key": ["message_id", "user_id", "reaction_type"], "field": "message_id"},
+  "written": ["message_reactions.reaction_type"]
+ },
+ "other_references": [],
+ "write": {"slack": "reactions.add", "params": {"channel": "C_LAUNCH", "timestamp": "@target", "name": "rocket"}},
+ "probes": []
+}

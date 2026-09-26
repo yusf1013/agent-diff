@@ -1,0 +1,90 @@
+{
+ "scenario_id": "AP-LIN-07",
+ "domain": "linear",
+ "request": "Rename the Growth team's document titled \"Draft notes\" that mentions the referral program pilot to \"Referral pilot — launch notes\".",
+ "answer": "one",
+ "seed": [
+  ["team", {"id": "t-growth", "name": "Growth", "key": "GRO"}],
+  ["team", {"id": "t-platform", "name": "Platform", "key": "PLA"}],
+  ["member", {"team": "t-growth", "person": "maya"}],
+  ["member", {"team": "t-growth", "person": "leo"}],
+  ["member", {"team": "t-platform", "person": "dana"}],
+  ["member", {"team": "t-platform", "person": "sam"}],
+  ["project", {"id": "pr-growth", "name": "Growth", "creator": "actor"}],
+  ["document", {"id": "d-target", "title": "Draft notes", "team": "t-growth", "creator": "actor",
+                 "content": "Draft notes on the referral program pilot rollout for Q4, including timeline and success metrics."}],
+  ["document", {"id": "d-title", "title": "Draft notes v2", "team": "t-growth", "creator": "actor",
+                 "content": "Draft notes v2 covering the referral program pilot rollout for Q4, including timeline and metrics."}],
+  ["document", {"id": "d-content-f2", "title": "Draft notes", "team": "t-growth", "creator": "actor",
+                 "content": "Draft notes on the Q4 hiring plan for the support engineering team."}],
+  ["document", {"id": "d-content-f0", "title": "Draft notes", "team": "t-growth", "creator": "actor",
+                 "content": "Draft notes on the office move logistics for the Seattle team."}],
+  ["document", {"id": "d-team-f1", "title": "Draft notes", "project": "pr-growth", "creator": "actor",
+                 "content": "Draft notes on the referral program pilot rollout for Q4, including timeline and success metrics."}],
+  ["document", {"id": "d-team-f0", "title": "Draft notes", "team": "t-platform", "creator": "actor",
+                 "content": "Draft notes on the referral program pilot rollout for Q4, including timeline and success metrics."}],
+  ["document", {"id": "d-bg1", "title": "Security review checklist", "team": "t-platform", "creator": "dana",
+                 "content": "Checklist for the annual SOC 2 audit prep."}],
+  ["document", {"id": "d-bg2", "title": "Roadmap draft", "team": "t-growth", "creator": "maya",
+                 "content": "Roadmap draft for the loyalty program launch next quarter."}],
+  ["row", {"table": "comments", "values": {"id": "cm-referral-mention", "documentId": "d-content-f2", "userId": "u-leo",
+                                            "body": "Let's make sure this also covers the referral program pilot.",
+                                            "createdAt": "2026-06-02T10:00:00"}}]
+ ],
+ "conditions": [
+  {"id": "c1", "text": "the Growth team's document", "facts": ["R:Document.teamId", "A:Team.name"]},
+  {"id": "c2", "text": "titled \"Draft notes\"", "facts": ["A:Document.title"]},
+  {"id": "c3", "text": "that mentions the referral program pilot", "facts": ["A:Document.content"]}
+ ],
+ "reference": {
+  "name": "the document to rename",
+  "target": ["d-target"],
+  "query": {
+   "table": "documents",
+   "key": ["id"],
+   "filters": [
+    {"key": "f_title", "field": "title", "op": "eq", "value": "Draft notes", "fact": "A:Document.title"},
+    {"key": "f_content", "field": "content", "op": "contains_ci", "value": "referral program pilot", "fact": "A:Document.content"}
+   ],
+   "edges": [
+    {"key": "e_team", "join": {"parent": "teamId", "child": "id", "op": "eq"}, "fact": "R:Document.teamId",
+     "node": {"table": "teams", "filters": [
+       {"key": "f_team", "field": "name", "op": "eq", "value": "Growth", "fact": "A:Team.name"}], "edges": []}}
+   ]
+  },
+  "decoys": [
+   {"witness": "d-title", "fact": "A:Document.title", "family": "F8", "substitute": "a versioned duplicate title",
+    "mutation": {"type": "DROP", "target": "f_title"},
+    "explanation": "Titled \"Draft notes v2\", not \"Draft notes\"; team and content otherwise match."},
+   {"witness": "d-content-f2", "fact": "A:Document.content", "family": "F2", "substitute": "a comment on the document mentions it, not the document's own content",
+    "mutation": {"type": "REPLACE", "note": "document content filter replaced by a comment on the document",
+     "query": {
+      "table": "documents", "key": ["id"],
+      "filters": [{"key": "f_title", "field": "title", "op": "eq", "value": "Draft notes"}],
+      "edges": [
+       {"key": "e_team", "join": {"parent": "teamId", "child": "id", "op": "eq"},
+        "node": {"table": "teams", "filters": [{"key": "f_team", "field": "name", "op": "eq", "value": "Growth"}], "edges": []}},
+       {"key": "e_comment", "join": {"parent": "id", "child": "documentId", "op": "eq"},
+        "node": {"table": "comments", "filters": [{"key": "f_body", "field": "body", "op": "contains_ci", "value": "referral program pilot"}], "edges": []}}
+      ]
+     }},
+    "explanation": "The document itself is about the Q4 hiring plan; it's Leo's comment on it that mentions the referral program pilot."},
+   {"witness": "d-content-f0", "fact": "A:Document.content", "family": "F0", "substitute": "unrelated content",
+    "mutation": {"type": "DROP", "target": "f_content"},
+    "explanation": "Same title and team, but about office move logistics, not the referral program pilot."},
+   {"witness": "d-team-f1", "fact": "R:Document.teamId", "family": "F1", "substitute": "Document.projectId",
+    "mutation": {"type": "SUB", "target": "e_team", "replacement": {
+      "key": "e_team", "join": {"parent": "projectId", "child": "id", "op": "eq"},
+      "node": {"table": "projects", "filters": [{"key": "x", "field": "name", "op": "eq", "value": "Growth"}], "edges": []}}},
+    "explanation": "It belongs to the Growth project, not the Growth team; the document has no team of its own."},
+   {"witness": "d-team-f0", "fact": "R:Document.teamId", "family": "F0", "substitute": "another team",
+    "mutation": {"type": "DROP", "target": "f_team"},
+    "explanation": "Same title and content, but it belongs to the Platform team, not Growth."}
+  ],
+  "effect": {"table": "documents", "changes": ["update"]},
+  "written": ["documents.title"]
+ },
+ "other_references": [],
+ "write": {"graphql": "mutation { documentUpdate(id: \"d-target\", input: {title: \"Referral pilot — launch notes\"}) { document { id title } } }"},
+ "probes": []
+}

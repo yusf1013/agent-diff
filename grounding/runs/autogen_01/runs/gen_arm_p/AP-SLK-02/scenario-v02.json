@@ -1,0 +1,98 @@
+{
+ "scenario_id": "AP-SLK-02",
+ "domain": "slack",
+ "request": "Unarchive the incidents channel about the checkout outage.",
+ "answer": "one",
+ "seed": [
+  ["channel", {"id": "C_CHECKOUT", "name": "incidents-checkout", "members": ["diego", "leo"],
+               "topic": "Checkout outage: 502s during payment retries, resolved and archived for reference.",
+               "purpose": "Coordination channel for checkout payment incidents.",
+               "set": {"is_archived": true}}],
+  ["channel", {"id": "C_CHECKOUT_TYPO", "name": "incident-checkout", "members": ["omar"],
+               "topic": "Checkout outage retro notes and resolution timeline.",
+               "purpose": "Backup coordination channel, rarely used.",
+               "set": {"is_archived": true}}],
+  ["channel", {"id": "C_BILLING", "name": "incidents-billing", "members": ["aisha"],
+               "topic": "Billing reconciliation queue and invoice retries.",
+               "purpose": "Also holds the checkout outage postmortem thread for reference.",
+               "set": {"is_archived": true}}],
+  ["channel", {"id": "C_SHIPPING", "name": "incidents-shipping", "members": ["maya"],
+               "topic": "Shipping carrier delays and SLA tracking.",
+               "purpose": "Logistics incident coordination.",
+               "set": {"is_archived": true}}],
+  ["message", {"channel": "C_SHIPPING", "author": "maya",
+               "text": "FYI this channel picked up checkout outage triage overflow since #incidents-checkout filled up.",
+               "at": "2026-03-12T15:00:00Z", "ref": "m_shipping"}],
+  ["channel", {"id": "C_CHECKOUT_LIVE", "name": "incidents-checkout-live", "members": ["priya"],
+               "topic": "Live checkout outage monitoring - please post updates here.",
+               "purpose": "Active watch channel while checkout issues persist."}],
+  ["channel", {"id": "C_AUTH", "name": "incidents-auth", "members": ["omar"],
+               "topic": "Login rate-limiting incident, unrelated to checkout.",
+               "purpose": "Auth service incident coordination."}],
+  ["channel", {"id": "C_ENG_GENERAL", "name": "engineering-general", "members": ["diego", "priya", "leo", "aisha", "maya"],
+               "topic": "General engineering chatter and announcements.",
+               "purpose": "Company-wide engineering updates."}]
+ ],
+ "conditions": [
+  {"id": "c1", "text": "incidents channel", "facts": ["A:Conversation.channel_name"]},
+  {"id": "c2", "text": "about the checkout outage", "facts": ["A:Conversation.topic_text"]},
+  {"id": "c3", "text": "Unarchive", "facts": ["A:Conversation.is_archived"]}
+ ],
+ "reference": {
+  "name": "the channel to rename",
+  "target": ["C_CHECKOUT"],
+  "query": {
+   "table": "channels",
+   "key": ["channel_id"],
+   "filters": [
+    {"key": "f_name", "field": "channel_name", "op": "contains_ci", "value": "incidents", "fact": "A:Conversation.channel_name"},
+    {"key": "f_topic", "field": "topic_text", "op": "contains_ci", "value": "checkout outage", "fact": "A:Conversation.topic_text"},
+    {"key": "f_archived", "field": "is_archived", "op": "eq", "value": true, "fact": "A:Conversation.is_archived"}
+   ],
+   "edges": []
+  },
+  "decoys": [
+   {"witness": "C_CHECKOUT_TYPO", "fact": "A:Conversation.channel_name", "family": "F8",
+    "substitute": "a channel name missing the trailing 's' (incident-checkout for incidents-checkout)",
+    "mutation": {"type": "DROP", "target": "f_name"},
+    "explanation": "Named incident-checkout, not incidents-checkout; its topic and archived state otherwise match."},
+   {"witness": "C_BILLING", "fact": "A:Conversation.topic_text", "family": "F1",
+    "substitute": "Conversation.purpose_text carries the phrase instead of topic_text",
+    "mutation": {"type": "REPLACE", "note": "topic_text filter replaced by purpose_text", "query": {
+     "table": "channels", "key": ["channel_id"],
+     "filters": [
+      {"key": "f_name", "field": "channel_name", "op": "contains_ci", "value": "incidents"},
+      {"key": "f_purpose", "field": "purpose_text", "op": "contains_ci", "value": "checkout outage"},
+      {"key": "f_archived", "field": "is_archived", "op": "eq", "value": true}
+     ],
+     "edges": []
+    }},
+    "explanation": "Its purpose says it also holds the checkout outage postmortem, but the topic itself is about billing reconciliation."},
+   {"witness": "C_SHIPPING", "fact": "A:Conversation.topic_text", "family": "F2",
+    "substitute": "the phrase appears in a message posted in the channel, not in its topic",
+    "mutation": {"type": "REPLACE", "note": "topic filter replaced by an edge into the channel's messages", "query": {
+     "table": "channels", "key": ["channel_id"],
+     "filters": [
+      {"key": "f_name", "field": "channel_name", "op": "contains_ci", "value": "incidents"},
+      {"key": "f_archived", "field": "is_archived", "op": "eq", "value": true}
+     ],
+     "edges": [
+      {"key": "e_msg", "join": {"parent": "channel_id", "child": "channel_id", "op": "eq"},
+       "node": {"table": "messages", "filters": [
+        {"key": "f_msg_text", "field": "message_text", "op": "contains_ci", "value": "checkout outage"}
+       ], "edges": []}}
+     ]
+    }},
+    "explanation": "Its own topic is about shipping delays; the mention of the checkout outage only appears in a message posted there."},
+   {"witness": "C_CHECKOUT_LIVE", "fact": "A:Conversation.is_archived", "family": "F0",
+    "mutation": {"type": "DROP", "target": "f_archived"},
+    "explanation": "This is a still-active live-monitoring channel for the same outage; it hasn't been archived."}
+  ],
+  "effect": {"table": "channels", "changes": ["update"]},
+  "written": ["channels.is_archived"]
+ },
+ "write": {"slack": "conversations.unarchive", "params": {"channel": "C_CHECKOUT"}},
+ "probes": [
+  ["POST", "/conversations.history", {"channel": "C_SHIPPING"}]
+ ]
+}
