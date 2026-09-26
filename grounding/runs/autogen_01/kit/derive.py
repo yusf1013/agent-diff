@@ -46,7 +46,7 @@ def suite(case: dict):
         probe = told(rename(isolate(base, 0, ci, claim.get("keep", ())), f"P-{sid}-{key}"), plural)
         probe, _ = _finish(probe)
         out.append((probe, {"form": "probe", "scenario": sid, "fact": claim["requirement"],
-                            "family": claim.get("family")}))
+                            "family": claim.get("family"), "contestable": bool(claim.get("contestable"))}))
         by_fact[claim["requirement"]].append((ci, key))
     for fact, items in by_fact.items():
         if len(items) < 2:

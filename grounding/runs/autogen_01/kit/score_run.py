@@ -1,0 +1,93 @@
+"""Per-test outcomes and yields of a generated suite's solver run, from the judge's verdicts.
+
+    python -m grounding.runs.autogen_01.kit.score_run --solver-run DIR --suite SUITE.json --judged JUDGE_DIR [--json OUT]
+
+A trial's outcome is the judge's verdict when it was judged, else the scorer's provisional label (only mechanically
+clean trials go unjudged). A test exposes a fact when at least one established trial fails on that fact's decoy
+(detect@3); detect@1 uses trial 1 only. Artifact and not-established trials do not count.
+"""
+from __future__ import annotations
+
+import argparse
+import json
+from collections import defaultdict
+from pathlib import Path
+
+from grounding.runs.autogen_01.kit.judge import COLLAPSE, latest, scored_exposed, triage
+
+
+def trial_outcomes(solver_run: Path, judged: Path) -> dict:
+    out = {}
+    for summary in sorted(solver_run.glob("t*/*/attempt-*/execution_summary.json")):
+        attempt = summary.parent
+        trial, case_id = attempt.parts[-3], attempt.parts[-2]
+        if attempt != latest(solver_run, trial, case_id):
+            continue
+        verdict_path = judged / solver_run.name / trial / case_id / "verdict.json"
+        if verdict_path.exists():
+            v = json.loads(verdict_path.read_text())
+            out[(case_id, trial)] = {"outcome": v["outcome"], "exposed": scored_exposed(v), "judged": True,
+                                     "mechanism": v.get("mechanism"), "note": v.get("note")}
+        else:
+            _, _, tri = triage(solver_run.name, trial, attempt)
+            out[(case_id, trial)] = {"outcome": tri["outcome"], "exposed": tri["exposed"] if COLLAPSE.get(
+                tri["outcome"]) == "fail" else [], "judged": False}
+    return out
+
+
+def score(solver_run: Path, suite: Path, judged: Path) -> dict:
+    meta = {t["case_id"]: t for t in json.loads(suite.read_text())}
+    trials = trial_outcomes(solver_run, judged)
+    tests = {}
+    for (case_id, trial), r in trials.items():
+        t = tests.setdefault(case_id, {**meta.get(case_id, {"case_id": case_id}), "trials": {}})
+        t["trials"][trial] = r
+    for t in tests.values():
+        est = {k: r for k, r in t["trials"].items() if COLLAPSE.get(r["outcome"]) != "void"}
+        t["established"] = len(est)
+        t["failures"] = sum(COLLAPSE.get(r["outcome"]) == "fail" for r in est.values())
+        t["exposed"] = sorted({x for r in est.values() if COLLAPSE.get(r["outcome"]) == "fail" for x in r["exposed"]})
+        t1 = est.get("t1")
+        t["exposed_t1"] = sorted(t1["exposed"]) if t1 and COLLAPSE.get(t1["outcome"]) == "fail" else []
+        t["void"] = len(t["trials"]) - len(est)
+    return summarize(list(tests.values()))
+
+
+def summarize(tests: list) -> dict:
+    def block(rows):
+        facts3 = sorted({x for t in rows for x in t["exposed"]})
+        facts1 = sorted({x for t in rows for x in t["exposed_t1"]})
+        return {"tests": len(rows), "tests_exposing": sum(bool(t["exposed"]) for t in rows),
+                "facts_detect3": facts3, "facts_detect1": facts1,
+                "yield_per_test": round(len(facts3) / len(rows), 3) if rows else None,
+                "trials": sum(len(t["trials"]) for t in rows), "void_trials": sum(t["void"] for t in rows)}
+    by = defaultdict(list)
+    for t in tests:
+        by[("form", t.get("form"))].append(t)
+        by[("domain", t.get("domain"))].append(t)
+        by[("scenario", t.get("scenario"))].append(t)
+        if t.get("form") == "probe":
+            by[("family", t.get("family"))].append(t)
+    return {"all": block(tests),
+            "by": {f"{k[0]}:{k[1]}": block(v) for k, v in sorted(by.items(), key=lambda kv: (kv[0][0], str(kv[0][1])))},
+            "tests": sorted(tests, key=lambda t: t["case_id"])}
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--solver-run", type=Path, required=True)
+    parser.add_argument("--suite", type=Path, required=True)
+    parser.add_argument("--judged", type=Path, required=True)
+    parser.add_argument("--json", type=Path)
+    args = parser.parse_args()
+    result = score(args.solver_run.resolve(), args.suite.resolve(), args.judged.resolve())
+    if args.json:
+        args.json.write_text(json.dumps(result, indent=1, ensure_ascii=False) + "\n")
+    print(json.dumps({"all": result["all"], "by": {k: {x: v[x] for x in ("tests", "tests_exposing", "facts_detect3",
+                                                                          "yield_per_test", "void_trials")}
+                                                   for k, v in result["by"].items() if not k.startswith("scenario")}},
+                     indent=1))
+
+
+if __name__ == "__main__":
+    main()

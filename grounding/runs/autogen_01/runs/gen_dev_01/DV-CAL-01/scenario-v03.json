@@ -1,0 +1,55 @@
+{
+ "scenario_id": "DV-CAL-01",
+ "domain": "calendar",
+ "request": "Move Thursday's vendor demo — the confirmed one with a Google Meet link attached and a conference room on the invite — to 3pm.",
+ "answer": "one",
+ "seed": [
+  ["event", {"id": "ev_demo_target", "calendar": "primary", "summary": "Vendor demo", "start": "2018-06-21T10:00:00", "end": "2018-06-21T10:30:00", "status": "confirmed", "hangout": true, "attendees": [["sam", "accepted"], {"email": "room-2b@northwind.example", "name": "Room 2B", "resource": true, "status": "accepted"}]}],
+  ["event", {"id": "ev_demo_tentative", "calendar": "primary", "summary": "Vendor demo", "start": "2018-06-21T11:00:00", "end": "2018-06-21T11:30:00", "status": "tentative", "hangout": true, "attendees": [["sam", "accepted"], {"email": "room-2b@northwind.example", "name": "Room 2B", "resource": true, "status": "accepted"}]}],
+  ["event", {"id": "ev_demo_no_link", "calendar": "primary", "summary": "Vendor demo", "start": "2018-06-21T13:00:00", "end": "2018-06-21T13:30:00", "status": "confirmed", "hangout": false, "attendees": [["sam", "accepted"], {"email": "room-2b@northwind.example", "name": "Room 2B", "resource": true, "status": "accepted"}]}],
+  ["event", {"id": "ev_demo_no_room", "calendar": "primary", "summary": "Vendor demo", "start": "2018-06-21T14:00:00", "end": "2018-06-21T14:30:00", "status": "confirmed", "hangout": true, "attendees": [["sam", "accepted"]]}],
+  ["event", {"id": "ev_team_sync", "calendar": "primary", "summary": "Team sync", "start": "2018-06-21T09:00:00", "end": "2018-06-21T09:30:00", "status": "tentative", "hangout": false, "attendees": [["sam", "accepted"]]}]
+ ],
+ "conditions": [
+  {"id": "c1", "text": "vendor demo", "facts": ["A:Event.summary"]},
+  {"id": "c2", "text": "Thursday's", "facts": ["A:Event.start", "D:local_time"]},
+  {"id": "c3", "text": "the confirmed one", "facts": ["A:Event.status"]},
+  {"id": "c4", "text": "with a Google Meet link attached", "facts": ["A:Event.hangout_link"]},
+  {"id": "c5", "text": "and a conference room on the invite", "facts": ["A:EventAttendee.resource"]}
+ ],
+ "reference": {
+  "name": "the vendor demo to move",
+  "target": ["ev_demo_target"],
+  "query": {
+   "table": "calendar_events",
+   "key": ["id"],
+   "filters": [
+    {"key": "f_title", "field": "summary", "op": "eq", "value": "Vendor demo", "fact": "A:Event.summary"},
+    {"key": "f_from", "field": "start_datetime", "op": "ge", "value": "2018-06-21T00:00:00"},
+    {"key": "f_to", "field": "start_datetime", "op": "lt", "value": "2018-06-22T00:00:00"},
+    {"key": "f_status", "field": "status", "op": "eq", "value": "confirmed", "fact": "A:Event.status"},
+    {"key": "f_hangout", "field": "hangout_link", "op": "not_null", "fact": "A:Event.hangout_link"}
+   ],
+   "edges": [
+    {"key": "e_resource", "join": {"parent": "id", "child": "event_id", "op": "eq"}, "fact": "A:EventAttendee.resource",
+     "node": {"table": "calendar_event_attendees", "filters": [
+       {"key": "f_resource", "field": "resource", "op": "eq", "value": true, "fact": "A:EventAttendee.resource"}
+      ], "edges": []}}
+   ]
+  },
+  "decoys": [
+   {"witness": "ev_demo_tentative", "fact": "A:Event.status", "family": "F7", "substitute": "the neighbouring status (tentative, not confirmed)",
+    "mutation": {"type": "DROP", "target": "f_status"},
+    "explanation": "It has the Meet link and the room, but it's only tentative, not confirmed."},
+   {"witness": "ev_demo_no_link", "fact": "A:Event.hangout_link", "family": "F0", "substitute": "no video call attached at all",
+    "mutation": {"type": "DROP", "target": "f_hangout"},
+    "explanation": "It's confirmed with the room booked, but there's no Google Meet link on the event."},
+   {"witness": "ev_demo_no_room", "fact": "A:EventAttendee.resource", "family": "F0", "substitute": "no room on the invite at all",
+    "mutation": {"type": "DROP", "target": "f_resource"},
+    "explanation": "It's confirmed with a Meet link, but only Sam is invited; no conference room is on the invite."}
+  ],
+  "effect": {"table": "calendar_events", "changes": ["update"]},
+  "written": ["calendar_events.start_datetime", "calendar_events.end_datetime"]
+ },
+ "write": {"method": "PATCH", "path": "/calendars/primary/events/ev_demo_target", "body": {"start": {"dateTime": "2018-06-21T15:00:00-07:00"}, "end": {"dateTime": "2018-06-21T15:30:00-07:00"}}}
+}

@@ -97,6 +97,27 @@ def select(split: str, clean: int, seed: int = 7) -> list[dict]:
     return chosen + pool[:clean]
 
 
+def select_run(run_dir: Path, suite: Path, clean_share: float = 0.2, seed: int = 7) -> list[dict]:
+    """Trials of a generated suite's solver run: every trial that is not mechanically clean, plus a random share of
+    the clean ones (their provisional label stands unless the judge is asked)."""
+    meta = {t["case_id"]: t for t in json.loads(suite.read_text())}
+    chosen, clean = [], []
+    for summary in sorted(run_dir.glob("t*/*/attempt-*/execution_summary.json")):
+        attempt = summary.parent
+        trial, case_id = attempt.parts[-3], attempt.parts[-2]
+        if attempt != latest(run_dir, trial, case_id):
+            continue
+        _, _, tri = triage(run_dir.name, trial, attempt)
+        item = {"run_dir": str(run_dir), "run": run_dir.name, "trial": trial, "case_id": case_id,
+                "form": meta.get(case_id, {}).get("form"), "provisional": tri["outcome"]}
+        (clean if tri["outcome"] in ("correct", "correct_absent") else chosen).append(item)
+    random.Random(seed).shuffle(clean)
+    k = round(len(clean) * clean_share)
+    for item in clean[:k]:
+        item["clean_sample"] = True
+    return chosen + clean[:k]
+
+
 def forms() -> dict:
     return {k: v.get("form") for k, v in score.suites().items()}
 
@@ -217,6 +238,10 @@ def main():
     s = sub.add_parser("select")
     s.add_argument("--split", choices=["dev", "test"], required=True)
     s.add_argument("--clean", type=int, default=0)
+    sr = sub.add_parser("select-run", help="trials of a generated suite's solver run")
+    sr.add_argument("--run-dir", type=Path, required=True)
+    sr.add_argument("--suite", type=Path, required=True)
+    sr.add_argument("--clean-share", type=float, default=0.2)
     r = sub.add_parser("run")
     r.add_argument("--trials", type=Path, required=True)
     r.add_argument("--out", type=Path, required=True)
@@ -227,6 +252,8 @@ def main():
     args = parser.parse_args()
     if args.cmd == "select":
         print(json.dumps(select(args.split, args.clean), indent=1))
+    elif args.cmd == "select-run":
+        print(json.dumps(select_run(args.run_dir.resolve(), args.suite.resolve(), args.clean_share), indent=1))
     elif args.cmd == "run":
         trials = json.loads(args.trials.read_text())
         run(trials[:args.limit] if args.limit else trials, args.out.resolve(), args.concurrency)

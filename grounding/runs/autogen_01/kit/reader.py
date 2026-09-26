@@ -45,14 +45,17 @@ TURN2 = {
         "records": {"type": "array", "items": {
             "type": "object", "properties": {"id": {"type": "string"},
                                              "fails": {"type": "array", "items": {"type": "string"}},
+                                             "contestable": {"type": "boolean"},
                                              "note": {"type": "string"}},
-            "required": ["id", "fails", "note"]}},
+            "required": ["id", "fails", "contestable", "note"]}},
         "faithful": {"type": "boolean"},
         "differences": {"type": "string"},
         "ambiguity_effects": {"type": "array", "items": {
-            "type": "object", "properties": {"phrase": {"type": "string"}, "changes_matches": {"type": "boolean"},
+            "type": "object", "properties": {"phrase": {"type": "string"},
+                                             "careful_reader_unsure": {"type": "boolean"},
+                                             "changes_matches": {"type": "boolean"},
                                              "explain": {"type": "string"}},
-            "required": ["phrase", "changes_matches", "explain"]}},
+            "required": ["phrase", "careful_reader_unsure", "changes_matches", "explain"]}},
         "natural": {"type": "boolean"},
         "naturalness_note": {"type": "string"},
     },
@@ -77,8 +80,12 @@ def candidates(case) -> tuple[str, list[str]]:
     return table, [str(r.get(key)) for r in case["seed"].get(table, [])]
 
 
-def read(case: dict, workspace: Path, log_dir: Path, calls_log: Path, label: str) -> dict:
-    """Run both turns; returns {"turn1", "turn2"} (structured answers) and session info."""
+def read(case: dict, workspace: Path, log_dir: Path, calls_log: Path, label: str, author_conditions: bool = True
+         ) -> dict:
+    """Run both turns; returns {"turn1", "turn2"} (structured answers) and session info.
+
+    Without author conditions (a scenario written by hand, which has none), turn 2 uses the reader's own conditions
+    from turn 1, numbered r1, r2, ..."""
     system = (KIT / "prompts" / "reader.md").read_text()
     domain = case["domain"]
     first = agent.run(agent.Call(
@@ -88,15 +95,22 @@ def read(case: dict, workspace: Path, log_dir: Path, calls_log: Path, label: str
                f"{CONTEXT[domain]}\n\nStep 1: list the conditions a record must meet for this request to refer "
                "to it, and every phrase that could reasonably be read in more than one way."))
     table, ids = candidates(case)
-    conds = "\n".join(f"- {c['id']}: {c['text']}" for c in case["conditions"])
-    second_prompt = (f"Step 2. These are all the records in the service:\n\n{render_seed(case)}\n\n"
-                     f"The author lists these conditions of the request:\n{conds}\n\n"
+    if author_conditions:
+        conds = "The author lists these conditions of the request:\n" + \
+            "\n".join(f"- {c['id']}: {c['text']}" for c in case["conditions"])
+    else:
+        own = (agent.structured(first) or {}).get("conditions", [])
+        conds = ("Use your own conditions from step 1 as the author's conditions, with these ids:\n" +
+                 "\n".join(f"- r{i + 1}: {c}" for i, c in enumerate(own)))
+    second_prompt = (f"Step 2. These are all the records in the service:\n\n{render_seed(case)}\n\n{conds}\n\n"
                      f"The candidate records are the rows of `{table}`: {', '.join(ids)}.\n"
-                     "For every candidate, give the ids of the author's conditions it fails (an empty list if it "
-                     "meets all of them), with a short note. Then say whether the author's conditions faithfully "
-                     "capture the request as you read it in step 1 (and what differs), whether each ambiguity you "
-                     "listed changes which candidates match, and whether the request reads like something a real "
-                     "user would write.")
+                     "For every candidate, give the ids of the author's conditions it fails under the careful reading "
+                     "(an empty list if it meets all of them), whether a careful colleague could still argue that it "
+                     "meets the request (contestable), and a short note. Then say whether the author's conditions "
+                     "faithfully capture the request as you read it in step 1 (and what differs). For each "
+                     "ambiguity you listed, say whether a careful reader would genuinely be unsure which reading was "
+                     "meant, and whether the readings select different candidates. Finally, say whether the request "
+                     "reads like something a real user would write, without hints that only a test would contain.")
     second = agent.run(agent.Call(
         role="reader", workspace=workspace, log_dir=log_dir, calls_log=calls_log, tools=[], schema=TURN2,
         system_append=system, label=label, resume=first["session_id"], prompt=second_prompt))
@@ -110,6 +124,13 @@ def read(case: dict, workspace: Path, log_dir: Path, calls_log: Path, label: str
                    "covering every candidate."))
         answer2 = agent.structured(third) or answer2
     return {"turn1": agent.structured(first) or {}, "turn2": answer2, "session_id": first.get("session_id")}
+
+
+def contestable(case: dict, verdict: dict) -> dict:
+    """Decoys the reader marks contestable (a careful reader could argue they meet the request): witness -> note."""
+    decoys = {str(c["witness"]) for c in case["references"][0]["claims"]}
+    return {str(r["id"]): r.get("note", "") for r in verdict.get("turn2", {}).get("records", [])
+            if r.get("contestable") and str(r.get("id")) in decoys}
 
 
 def problems(case: dict, verdict: dict) -> list[str]:
@@ -155,9 +176,9 @@ def problems(case: dict, verdict: dict) -> list[str]:
     if t2.get("faithful") is False:
         out.append(f"The reader finds the conditions unfaithful to the request: {t2.get('differences')}")
     for a in t2.get("ambiguity_effects", []):
-        if a.get("changes_matches"):
-            out.append(f"The reader finds the phrase \"{a.get('phrase')}\" ambiguous in a way that changes which "
-                       f"records match: {a.get('explain')}")
+        if a.get("changes_matches") and a.get("careful_reader_unsure"):
+            out.append(f"The reader finds the phrase \"{a.get('phrase')}\" genuinely ambiguous, in a way that "
+                       f"changes which records match: {a.get('explain')}")
     if t2.get("natural") is False:
         out.append(f"The reader finds the request unnatural: {t2.get('naturalness_note')}")
     return out

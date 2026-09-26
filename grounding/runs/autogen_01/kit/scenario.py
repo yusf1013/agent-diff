@@ -24,6 +24,7 @@ from pathlib import Path
 from grounding.runs.autogen_01.kit import derive, seedops
 from grounding.runs.fact_coverage_01 import fdc
 from grounding.runs.fact_coverage_01.pilot.common import finish
+from grounding.runs.fact_coverage_01.pilot.variants import PRIMARY_KEYS
 from grounding.runs.fact_coverage_02.anchors import missing_anchors
 
 STUDY = Path(__file__).resolve().parents[1]
@@ -189,7 +190,7 @@ def build(s: dict, brief: dict):
         claims.append(c)
     paths, identifying = _derived_paths(ref["query"])
     query = copy.deepcopy(ref["query"])
-    query.setdefault("key", ["message_id"] if query.get("table") == "messages" and s["domain"] == "slack" else ["id"])
+    query.setdefault("key", [PRIMARY_KEYS.get(s["domain"], {}).get(query.get("table"), "id")])
     references = [{
         "id": f"{sid}.r1", "name": ref["name"], "description": ref.get("description") or ref["name"], "use": "target",
         "query": query, "expected": ref["target"], "claims": claims, "resolution": "resolved",
@@ -211,6 +212,11 @@ def build(s: dict, brief: dict):
             "conditions": rest["conditions"]}
     try:
         case, _results, errors = finish(case)
+    except KeyError as exc:
+        return None, [f"Reference query or mutation cannot be evaluated: a row has no column {exc}. A query's "
+                      "`key` must be the root table's primary key (for example `user_id` for Slack users, "
+                      "`channel_id` for channels, `message_id` for messages), and every `field` or join column "
+                      "must exist in its table."]
     except Exception as exc:
         return None, [f"Reference query or mutation cannot be evaluated: {type(exc).__name__}: {exc}"]
     problems += [f"Claim check: {e}" for e in errors]

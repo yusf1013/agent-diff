@@ -115,6 +115,13 @@ def generate(brief: dict, run_dir: Path) -> dict:
                 (out / f"reader-v{version:02}" / "verdict.json").write_text(json.dumps(verdict, indent=1))
                 problems = reader.problems(case, verdict)
                 kind = "reader"
+                flagged = reader.contestable(case, verdict)
+                for claim in case["references"][0]["claims"]:  # kept on the accepted case, as an asterisk
+                    if str(claim["witness"]) in flagged:
+                        claim["contestable"] = f"reader: {flagged[str(claim['witness'])]}"
+                if problems and flagged:
+                    problems += [f"(Not blocking) The reader thinks a careful colleague could argue that decoy `{w}` "
+                                 f"meets the request: {n}" for w, n in flagged.items()]
         history.append({"version": version, "stage": kind, "problems": problems})
         if not problems:
             status = "accepted"
