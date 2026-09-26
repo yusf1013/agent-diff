@@ -1,0 +1,1 @@
+There is no message in #incidents about the deploy freeze that has 4 replies. The only deploy-freeze message — "Update: extending the deploy freeze another week." by Maya Chen (U_MAYA) — has only 3 replies. Since no message matches your criteria (deploy freeze + 4 replies), I can't determine who to invite to #incident-response.

@@ -1,0 +1,1 @@
+There isn't a channel that matches your criteria. The workspace owner (Nina Torres) is a member of only one channel — "epsilon-ops" — which currently has 3 members, not 4. So there's no channel with exactly four members that she belongs to to archive.

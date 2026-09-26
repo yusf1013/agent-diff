@@ -1,0 +1,1 @@
+Successfully set the priority to Urgent on issue "Checkout error handling cleanup" (i-web-1). This issue was associated with the resolved comment by Priya Nair about the payment gateway timeout, posted on March 3.

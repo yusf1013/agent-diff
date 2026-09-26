@@ -1,0 +1,1 @@
+Successfully hid the "Team Calendar" (team-design@northwind.example) that you have writer access to on your calendar list. The calendar entry now has `hidden: true` set, which will hide it from your calendar view.

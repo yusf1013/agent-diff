@@ -1,0 +1,1 @@
+I found the "Client Success Renewals" calendar (cs-renewals@northwind.example), which was already unchecked but still visible in your list. I've now set it to **hidden**, so it no longer appears in your calendar list at all.

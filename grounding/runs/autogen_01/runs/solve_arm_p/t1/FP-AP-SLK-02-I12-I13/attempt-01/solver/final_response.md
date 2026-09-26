@@ -1,0 +1,1 @@
+Found it! The **incidents-billing** channel held the checkout outage postmortem thread (its purpose was "Also holds the checkout outage postmortem for reference"). It was archived, but I've successfully unarchived it for you.

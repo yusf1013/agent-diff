@@ -1,0 +1,1 @@
+Successfully moved the end date to October 20 for Cycle 14 (Mobile team, starting September 29, 2026). This was the cycle containing the Urgent issue "Investigate renewal push notification failure" assigned to Priya Nair. The end date was updated from October 13 to October 20, 2026.

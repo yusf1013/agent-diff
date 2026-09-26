@@ -1,0 +1,1 @@
+Successfully bumped the priority of the security review ticket (GRC-1: "Security review: Payments API") assigned to Priya Chen (priya.chen@vendorworks.example, guest reviewer from vendorworks.example) from High (3.0) to Urgent (4.0).

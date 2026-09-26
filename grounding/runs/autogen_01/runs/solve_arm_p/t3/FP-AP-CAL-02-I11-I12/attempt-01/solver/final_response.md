@@ -1,0 +1,1 @@
+I looked through your entire calendar list (including hidden calendars) and found only one calendar named "Team Calendar" (team-sales@northwind.example), but you only have **reader** access to it — not writer. There is no "Team Calendar" on your list where you have writer access and that is shared with the design team as a writer. So there's nothing to hide.

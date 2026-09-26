@@ -1,0 +1,84 @@
+{
+ "scenario_id": "AP2-LIN-04",
+ "domain": "linear",
+ "request": "The Fall Kickoff cycle that starts September 29 and includes the checkout timeout issue assigned to Sam Rivera needs its end date pushed to October 20.",
+ "answer": "one",
+ "seed": [
+  ["team", {"id": "t-web", "name": "Web", "key": "WEB"}],
+  ["team", {"id": "t-growth", "name": "Growth", "key": "GRO"}],
+  ["team", {"id": "t-plat", "name": "Platform", "key": "PLA"}],
+  ["team", {"id": "t-mob", "name": "Mobile", "key": "MOB"}],
+  ["team", {"id": "t-support", "name": "Support", "key": "SUP"}],
+
+  ["member", {"team": "t-web", "person": "sam"}],
+  ["member", {"team": "t-web", "person": "leo"}],
+  ["member", {"team": "t-web", "person": "maya"}],
+  ["member", {"team": "t-growth", "person": "sam"}],
+  ["member", {"team": "t-growth", "person": "leo"}],
+  ["member", {"team": "t-plat", "person": "sam"}],
+  ["member", {"team": "t-mob", "person": "sam"}],
+  ["member", {"team": "t-support", "person": "dana"}],
+
+  ["cycle", {"id": "c-target", "team": "t-web", "number": 14, "starts": "2026-09-29T00:00:00", "ends": "2026-10-13T00:00:00", "set": {"name": "Fall Kickoff"}}],
+  ["cycle", {"id": "c-split", "team": "t-growth", "number": 9, "starts": "2026-09-29T00:00:00", "ends": "2026-10-13T00:00:00", "set": {"name": "Fall Kickoff"}}],
+  ["cycle", {"id": "c-time", "team": "t-plat", "number": 5, "starts": "2026-09-15T00:00:00", "ends": "2026-09-29T00:00:00", "set": {"name": "Fall Kickoff"}}],
+  ["cycle", {"id": "c-name", "team": "t-mob", "number": 7, "starts": "2026-09-29T00:00:00", "ends": "2026-10-13T00:00:00", "set": {"name": "Fall Kickoff Retro"}}],
+  ["cycle", {"id": "c-support", "team": "t-support", "number": 3, "starts": "2026-08-18T00:00:00", "ends": "2026-09-01T00:00:00", "set": {"name": "Winter Wrap"}}],
+
+  ["issue", {"id": "i-web-14", "team": "t-web", "title": "Checkout timeout on payment retry", "assignee": "sam", "cycle": "c-target"}],
+  ["issue", {"id": "i-web-15", "team": "t-web", "title": "Refactor pricing table copy", "assignee": "leo", "cycle": "c-target"}],
+  ["issue", {"id": "i-web-16", "team": "t-web", "title": "Checkout timeout on webhook retries", "assignee": "maya", "cycle": "c-target"}],
+
+  ["issue", {"id": "i-growth-a", "team": "t-growth", "title": "Checkout timeout on refund confirmation", "assignee": "leo", "cycle": "c-split"}],
+  ["issue", {"id": "i-growth-b", "team": "t-growth", "title": "Rewrite onboarding checklist copy", "assignee": "sam", "cycle": "c-split"}],
+
+  ["issue", {"id": "i-plat-a", "team": "t-plat", "title": "Checkout timeout during 3DS redirect", "assignee": "sam", "cycle": "c-time"}],
+
+  ["issue", {"id": "i-mob-a", "team": "t-mob", "title": "Checkout timeout on Apple Pay sheet", "assignee": "sam", "cycle": "c-name"}],
+
+  ["issue", {"id": "i-support-a", "team": "t-support", "title": "Fix typo in changelog", "assignee": "dana", "cycle": "c-support"}]
+ ],
+ "conditions": [
+  {"id": "c1", "text": "The Fall Kickoff cycle", "facts": ["A:Cycle.name"]},
+  {"id": "c2", "text": "that starts September 29", "facts": ["A:Cycle.startsAt"]},
+  {"id": "c3", "text": "includes the checkout timeout issue assigned to Sam Rivera", "facts": ["B:Issue.cycleId", "A:Issue.title", "R:Issue.assigneeId"]}
+ ],
+ "reference": {
+  "name": "the cycle whose end date moves",
+  "target": ["c-target"],
+  "query": {
+   "table": "cycles",
+   "filters": [
+    {"key": "f_name", "field": "name", "op": "eq", "value": "Fall Kickoff", "fact": "A:Cycle.name"},
+    {"key": "f_starts", "field": "startsAt", "op": "eq", "value": "2026-09-29T00:00:00", "fact": "A:Cycle.startsAt"}
+   ],
+   "edges": [
+    {"key": "e_issue", "join": {"parent": "id", "child": "cycleId", "op": "eq"}, "fact": "B:Issue.cycleId",
+     "node": {
+      "table": "issues",
+      "filters": [
+       {"key": "f_title", "field": "title", "op": "contains_ci", "value": "checkout timeout", "fact": "A:Issue.title"}
+      ],
+      "edges": [
+       {"key": "e_assignee", "join": {"parent": "assigneeId", "child": "id", "op": "eq"}, "fact": "R:Issue.assigneeId",
+        "node": {"table": "users", "filters": [{"key": "f_assignee", "field": "name", "op": "eq", "value": "Sam Rivera"}], "edges": []}}
+      ]
+     }}
+   ]
+  },
+  "decoys": [
+   {"witness": "c-name", "fact": "A:Cycle.name", "family": "F8", "substitute": "another team's cycle whose name contains the requested name",
+    "mutation": {"type": "DROP", "target": "f_name"},
+    "explanation": "Mobile's cycle is named Fall Kickoff Retro, not Fall Kickoff; it also starts September 29 and has its own checkout timeout issue assigned to Sam Rivera."},
+   {"witness": "c-time", "fact": "A:Cycle.startsAt", "family": "F7", "substitute": "the previous cycle's start date",
+    "mutation": {"type": "DROP", "target": "f_starts"},
+    "explanation": "Platform also has a cycle named Fall Kickoff with a checkout timeout issue assigned to Sam Rivera, but it starts September 15, the cycle before."},
+   {"witness": "c-split", "fact": "B:Issue.cycleId", "family": "F5", "substitute": "the title and assignee conditions met by different issues",
+    "mutation": {"type": "SPLIT", "target": "e_issue", "groups": [["f_title"], ["e_assignee"]]},
+    "explanation": "Growth's Fall Kickoff cycle also starts September 29, but the checkout timeout issue there is assigned to Leo Park; the issue assigned to Sam Rivera is a different one, about the onboarding checklist."}
+  ],
+  "effect": {"table": "cycles", "changes": ["update"]},
+  "written": ["cycles.endsAt"]
+ },
+ "write": {"graphql": "mutation { cycleUpdate(id: \"c-target\", input: {endsAt: \"2026-10-20T00:00:00\"}) { cycle { id endsAt } } }"}
+}

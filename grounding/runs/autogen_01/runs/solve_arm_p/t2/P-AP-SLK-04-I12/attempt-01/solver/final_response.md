@@ -1,0 +1,1 @@
+There is no message about a "deploy freeze" in #incidents. The only threaded message with 4 replies is U_PRIYA's "Great work everyone on the payments launch!" — that's the payments launch, not a deploy freeze. So there's nobody to invite to #incident-response based on that criterion.

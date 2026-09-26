@@ -1,0 +1,1 @@
+There is no Urgent issue assigned to Priya Nair in Cycle 14. The cycle does contain an issue assigned to Priya Nair ("Investigate renewal push notification failure"), but it has a **Medium** priority, not Urgent. The only Urgent issue in the cycle is assigned to Leo Park. Since the condition isn't met, I have not modified the cycle's end date.

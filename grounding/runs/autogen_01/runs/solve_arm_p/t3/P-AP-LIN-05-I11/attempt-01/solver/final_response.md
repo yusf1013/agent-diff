@@ -1,0 +1,1 @@
+Found the matching comment from Priya Nair: "The payment gateway timeout is still causing failed charges under load; let's extend the retry window." (resolved on March 3) on issue "Improve payment retry logic". Successfully updated the issue's priority to **Urgent**.

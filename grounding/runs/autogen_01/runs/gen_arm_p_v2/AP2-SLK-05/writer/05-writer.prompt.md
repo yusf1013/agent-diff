@@ -1,0 +1,5 @@
+A cold reader, who saw only the request and then the records, reports:
+- The reader finds the phrase "our workspace admin" genuinely ambiguous, in a way that changes which records match: Slack distinguishes Owner, Admin, and Member roles. Strictly, workspace admin means the user with role admin (Amara), distinct from owner (Victor). Loosely, some would call the owner an admin too. Strict reading yields unique match C_ATLAS; loose reading also admits C_OWNER, breaking uniqueness.
+- (Not blocking) The reader thinks a careful colleague could argue that decoy `C_OWNER` meets the request: 5 members, predates March, but has Victor (owner) not Amara (admin). Contestable if owner counts as admin.
+
+Fix scenario.json (edit it in place) where the reader is right. If you judge that a reading the reader raises is one a careful colleague would not take, you may keep your wording; say why in your reply. A fresh reader will read the scenario again either way. Do not add hints that only a test would contain (such as "simply" or "not the one that…") just to rule out a reading. Then reply with a short summary of what you changed or kept.

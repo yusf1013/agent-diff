@@ -1,0 +1,92 @@
+{
+ "scenario_id": "AP2-LIN-06",
+ "domain": "linear",
+ "request": "Rename the attachment titled \"Marketing brief\" on ENG-14 that links to Dropbox to \"Marketing brief (archived)\".",
+ "answer": "one",
+ "seed": [
+  ["team", {"id": "t-eng", "name": "Engineering", "key": "ENG"}],
+  ["team", {"id": "t-mob", "name": "Mobile", "key": "MOB"}],
+  ["issue", {"id": "i-eng-14", "team": "t-eng", "title": "Homepage redesign", "assignee": "sam", "number": 14}],
+  ["issue", {"id": "i-eng-15", "team": "t-eng", "title": "Homepage redesign: marketing copy", "parent": "i-eng-14", "assignee": "dana", "number": 15}],
+  ["issue", {"id": "i-mob-14", "team": "t-mob", "title": "Push notification opt-in copy", "assignee": "leo", "number": 14}],
+  ["attachment", {"id": "att-target", "issue": "i-eng-14", "title": "Marketing brief", "url": "https://www.dropbox.com/s/9f8g7h3s2mv/marketing-brief.pdf", "creator": "dana"}],
+  ["attachment", {"id": "att-title-f8", "issue": "i-eng-14", "title": "Marketing briefing", "url": "https://www.dropbox.com/s/2k3j4l5m6n/marketing-briefing.pdf", "creator": "dana"}],
+  ["attachment", {"id": "att-title-f1", "issue": "i-eng-14", "title": "Vendor contract draft", "url": "https://www.dropbox.com/s/7h8j9k1l2m/marketing-brief-legacy.pdf", "creator": "dana"}],
+  ["attachment", {"id": "att-url-f8", "issue": "i-eng-14", "title": "Marketing brief", "url": "https://files.example.com/vault/dropbox-sync/marketing-brief.pdf", "creator": "dana"}],
+  ["attachment", {"id": "att-issue-f8", "issue": "i-mob-14", "title": "Marketing brief", "url": "https://www.dropbox.com/s/1a2b3c4d5e/marketing-brief.pdf", "creator": "leo"}],
+  ["attachment", {"id": "att-issue-f2", "issue": "i-eng-15", "title": "Marketing brief", "url": "https://www.dropbox.com/s/4d5e6f7g8h/marketing-brief.pdf", "creator": "dana"}],
+  ["attachment", {"id": "att-bg", "issue": "i-eng-14", "title": "Design mockups", "url": "https://www.figma.com/file/abcxyz/homepage", "creator": "maya"}]
+ ],
+ "conditions": [
+  {"id": "c1", "text": "the attachment titled \"Marketing brief\"", "facts": ["A:Attachment.title"]},
+  {"id": "c2", "text": "on ENG-14", "facts": ["R:Attachment.issueId"]},
+  {"id": "c3", "text": "that currently links to Dropbox", "facts": ["A:Attachment.url"]}
+ ],
+ "reference": {
+  "name": "the attachment to update",
+  "target": ["att-target"],
+  "query": {
+   "table": "attachments",
+   "key": ["id"],
+   "filters": [
+    {"key": "f_title", "field": "title", "op": "eq", "value": "Marketing brief", "fact": "A:Attachment.title"},
+    {"key": "f_url", "field": "url", "op": "contains_ci", "value": "dropbox.com", "fact": "A:Attachment.url"}
+   ],
+   "edges": [
+    {"key": "e_issue", "join": {"parent": "issueId", "child": "id", "op": "eq"}, "fact": "R:Attachment.issueId",
+     "node": {"table": "issues", "filters": [
+       {"key": "f_issue", "field": "identifier", "op": "eq", "value": "ENG-14"}
+      ], "edges": []}}
+   ]
+  },
+  "decoys": [
+   {
+    "witness": "att-title-f8",
+    "fact": "A:Attachment.title",
+    "family": "F8",
+    "substitute": "a title that contains the requested title as a substring",
+    "mutation": {"type": "DROP", "target": "f_title"},
+    "explanation": "Titled 'Marketing briefing', not 'Marketing brief'; same Dropbox link and same issue, ENG-14."
+   },
+   {
+    "witness": "att-title-f1",
+    "fact": "A:Attachment.title",
+    "family": "F1",
+    "substitute": "Attachment.url",
+    "mutation": {"type": "DROP", "target": "f_title"},
+    "explanation": "Titled 'Vendor contract draft'; the requested words sit in the Dropbox file name (marketing-brief-legacy.pdf), not in the title, but it is on ENG-14."
+   },
+   {
+    "witness": "att-url-f8",
+    "fact": "A:Attachment.url",
+    "family": "F8",
+    "substitute": "a URL whose path contains the word dropbox but is not hosted on dropbox.com",
+    "mutation": {"type": "DROP", "target": "f_url"},
+    "explanation": "Titled 'Marketing brief' on ENG-14, but hosted at files.example.com; 'dropbox' only appears in the path (dropbox-sync), not the actual Dropbox domain."
+   },
+   {
+    "witness": "att-issue-f8",
+    "fact": "R:Attachment.issueId",
+    "family": "F8",
+    "substitute": "an issue with the same number in another team",
+    "mutation": {"type": "DROP", "target": "e_issue"},
+    "explanation": "Same title and Dropbox link, but attached to MOB-14, the Mobile team's issue 14, not ENG-14."
+   },
+   {
+    "witness": "att-issue-f2",
+    "fact": "R:Attachment.issueId",
+    "family": "F2",
+    "substitute": "the attachment sits on a sub-issue of the named issue",
+    "mutation": {"type": "DROP", "target": "e_issue"},
+    "explanation": "Same title and Dropbox link, but attached to ENG-15, a sub-issue of ENG-14, not to ENG-14 itself."
+   }
+  ],
+  "effect": {"table": "attachments", "changes": ["update"]},
+  "written": ["attachments.title"]
+ },
+ "other_references": [],
+ "write": {
+  "graphql": "mutation { attachmentUpdate(id: \"att-target\", input: {title: \"Marketing brief (archived)\"}) { attachment { id title } } }"
+ },
+ "probes": []
+}

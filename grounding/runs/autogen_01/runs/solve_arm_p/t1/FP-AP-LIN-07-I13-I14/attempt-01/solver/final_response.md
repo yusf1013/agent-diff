@@ -1,0 +1,1 @@
+There isn't a Growth team document titled "Draft notes" that mentions the referral program pilot. The two "Draft notes" documents that do mention the referral program pilot belong to the **Platform** team (id: d-team-f0) and one with no team assigned (id: d-team-f1). The Growth team's only document is "Roadmap draft."

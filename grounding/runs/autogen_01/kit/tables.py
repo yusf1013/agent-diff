@@ -75,7 +75,8 @@ def table_validity():
         sc = {k: x for k, x in v.items() if k.startswith(prefix)}
         verdicts = Counter(x["verdict"] for x in sc.values())
         decoys = [d for x in sc.values() for d in x["decoys"].values()]
-        kinds = Counter(d.split(":")[0].split(";")[0].strip() for d in decoys)
+        kinds = Counter(next(k for k in ("valid", "contestable", "invalid", "other") if d.startswith(k) or k == "other")
+                        for d in decoys)
         rows.append(f"| {arm} | {len(sc)} | {verdicts['valid']} | {verdicts['flawed']} | {verdicts['invalid']} | "
                     f"{len(decoys)} | {kinds['valid']} | {kinds['contestable']} | {kinds['invalid']} |")
     rows += ["", "Exemplar reference (fact_coverage_02, 21 new scenarios): 2 had to be fixed after running (LIN-25 "

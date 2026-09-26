@@ -1,0 +1,152 @@
+{
+ "scenario_id": "AP2-SLK-03",
+ "domain": "slack",
+ "request": "In #incidents, add a rocket reaction to the payment gateway outage message that Diego Alvarez reacted to with fire.",
+ "answer": "one",
+ "seed": [
+  ["channel", {"id": "C_INC", "name": "incidents", "members": ["diego", "leo", "omar", "aisha", "maya", "priya"]}],
+  ["channel", {"id": "C_GEN", "name": "general", "members": ["priya", "maya"]}],
+
+  ["message", {"channel": "C_INC", "author": "leo", "text": "Update: payment gateway outage — rollback deployed, monitoring error rates now.", "at": "2026-09-22T14:10:00Z", "ref": "target"}],
+  ["reaction", {"message": "@target", "person": "diego", "name": "fire", "at": "2026-09-22T14:12:00Z"}],
+
+  ["message", {"channel": "C_INC", "author": "priya", "text": "Payment gateway outage: latency graphs attached, still watching.", "at": "2026-09-22T14:05:00Z", "ref": "message2"}],
+  ["reaction", {"message": "@message2", "person": "diego", "name": "eyes", "at": "2026-09-22T14:06:00Z"}],
+
+  ["message", {"channel": "C_INC", "author": "omar", "text": "Payment gateway outage — CPU spike traced to the retry loop.", "at": "2026-09-22T14:15:00Z", "ref": "message3"}],
+  ["reaction", {"message": "@message3", "person": "diego", "name": "thumbsup", "at": "2026-09-22T14:16:00Z"}],
+  ["reaction", {"message": "@message3", "person": "aisha", "name": "fire", "at": "2026-09-22T14:17:00Z"}],
+
+  ["message", {"channel": "C_INC", "author": "maya", "text": "Payment gateway outage timeline posted in the doc.", "at": "2026-09-22T14:20:00Z", "ref": "message4"}],
+  ["reaction", {"message": "@message4", "person": "leo", "name": "fire", "at": "2026-09-22T14:21:00Z"}],
+
+  ["message", {"channel": "C_INC", "author": "aisha", "text": "Reminder: standup moved to 10am today.", "at": "2026-09-22T13:50:00Z", "ref": "message5"}],
+  ["reaction", {"message": "@message5", "person": "diego", "name": "fire", "at": "2026-09-22T13:52:00Z"}],
+
+  ["message", {"channel": "C_INC", "author": "diego", "text": "Payment gateway outage — I'm starting the rollback now.", "at": "2026-09-22T14:08:00Z", "ref": "message6"}],
+  ["reaction", {"message": "@message6", "person": "omar", "name": "fire", "at": "2026-09-22T14:09:00Z"}],
+
+  ["message", {"channel": "C_INC", "author": "omar", "text": "Can someone update the status page?", "at": "2026-09-22T14:25:00Z", "ref": "bg1"}],
+
+  ["message", {"channel": "C_GEN", "author": "priya", "text": "Welcome new hires!", "at": "2026-09-22T09:00:00Z", "ref": "bg2"}]
+ ],
+ "conditions": [
+  {"id": "c1", "text": "in #incidents", "facts": ["R:messages.channel_id"]},
+  {"id": "c2", "text": "the payment gateway outage message", "facts": ["A:Message.message_text"]},
+  {"id": "c3", "text": "that Diego Alvarez reacted to with fire", "facts": ["B:message_reactions.user", "A:Reaction.reaction_type", "R:message_reactions"]}
+ ],
+ "reference": {
+  "name": "the message to react to",
+  "target": ["@target"],
+  "query": {
+   "table": "messages",
+   "key": ["message_id"],
+   "filters": [
+    {"key": "f_channel", "field": "channel_id", "op": "eq", "value": "C_INC", "fact": "R:messages.channel_id"},
+    {"key": "f_text", "field": "message_text", "op": "contains_ci", "value": "payment gateway outage", "fact": "A:Message.message_text"}
+   ],
+   "edges": [
+    {"key": "e_react", "join": {"parent": "message_id", "child": "message_id", "op": "eq"}, "fact": "B:message_reactions.user",
+     "node": {
+      "table": "message_reactions",
+      "filters": [
+       {"key": "f_emoji", "field": "reaction_type", "op": "eq", "value": "fire", "fact": "A:Reaction.reaction_type"}
+      ],
+      "edges": [
+       {"key": "e_reactor", "join": {"parent": "user_id", "child": "user_id", "op": "eq"}, "fact": "R:message_reactions",
+        "node": {"table": "users", "filters": [{"key": "f_reactor", "field": "real_name", "op": "eq", "value": "Diego Alvarez"}], "edges": []}}
+      ]
+     }}
+   ]
+  },
+  "decoys": [
+   {
+    "witness": "@message2",
+    "fact": "A:Reaction.reaction_type",
+    "family": "F0",
+    "mutation": {"type": "DROP", "target": "f_emoji"},
+    "explanation": "Diego reacted to it, but with eyes, not fire."
+   },
+   {
+    "witness": "@message3",
+    "fact": "B:message_reactions.user",
+    "family": "F5",
+    "substitute": "the reactor and the emoji conditions met by different reactions",
+    "mutation": {"type": "SPLIT", "target": "e_react", "groups": [["e_reactor"], ["f_emoji"]]},
+    "explanation": "Diego reacted with thumbsup; Aisha is the one whose reaction is fire."
+   },
+   {
+    "witness": "@message6",
+    "fact": "R:message_reactions",
+    "family": "F1",
+    "substitute": "authored the message",
+    "mutation": {
+     "type": "REPLACE",
+     "note": "reactor role replaced by author role",
+     "query": {
+      "table": "messages",
+      "key": ["message_id"],
+      "filters": [
+       {"key": "f_channel", "field": "channel_id", "op": "eq", "value": "C_INC"},
+       {"key": "f_text", "field": "message_text", "op": "contains_ci", "value": "payment gateway outage"}
+      ],
+      "edges": [
+       {"key": "e_author", "join": {"parent": "user_id", "child": "user_id", "op": "eq"},
+        "node": {"table": "users", "filters": [{"key": "x", "field": "real_name", "op": "eq", "value": "Diego Alvarez"}], "edges": []}},
+       {"key": "e_react2", "join": {"parent": "message_id", "child": "message_id", "op": "eq"},
+        "node": {"table": "message_reactions", "filters": [{"key": "f_emoji2", "field": "reaction_type", "op": "eq", "value": "fire"}], "edges": []}}
+      ]
+     }
+    },
+    "explanation": "Diego posted this update himself; Omar is the one who reacted with fire."
+   },
+   {
+    "witness": "@message4",
+    "fact": "R:message_reactions",
+    "family": "F2",
+    "substitute": "reacted to another message in the same channel",
+    "mutation": {
+     "type": "REPLACE",
+     "note": "message-level reaction replaced by channel-level indirection",
+     "query": {
+      "table": "messages",
+      "key": ["message_id"],
+      "filters": [
+       {"key": "f_channel", "field": "channel_id", "op": "eq", "value": "C_INC"},
+       {"key": "f_text", "field": "message_text", "op": "contains_ci", "value": "payment gateway outage"}
+      ],
+      "edges": [
+       {"key": "e_sibling", "join": {"parent": "channel_id", "child": "channel_id", "op": "eq"},
+        "node": {
+         "table": "messages",
+         "filters": [],
+         "edges": [
+          {"key": "e_react3", "join": {"parent": "message_id", "child": "message_id", "op": "eq"},
+           "node": {
+            "table": "message_reactions",
+            "filters": [{"key": "f_emoji3", "field": "reaction_type", "op": "eq", "value": "fire"}],
+            "edges": [
+             {"key": "e_reactor3", "join": {"parent": "user_id", "child": "user_id", "op": "eq"},
+              "node": {"table": "users", "filters": [{"key": "x2", "field": "real_name", "op": "eq", "value": "Diego Alvarez"}], "edges": []}}
+            ]
+           }}
+         ]
+        }}
+      ]
+     }
+    },
+    "explanation": "Diego's fire reaction is on a different message in #incidents (the standup reminder); Leo is the one who reacted with fire here."
+   },
+   {
+    "witness": "@message5",
+    "fact": "A:Message.message_text",
+    "family": "F0",
+    "mutation": {"type": "DROP", "target": "f_text"},
+    "explanation": "Diego reacted with fire, but the message is about the standup, not the payment gateway outage."
+   }
+  ],
+  "effect": {"table": "message_reactions", "changes": ["insert"], "key": ["message_id", "user_id", "reaction_type"], "field": "message_id"},
+  "written": ["message_reactions.reaction_type"]
+ },
+ "write": {"slack": "reactions.add", "params": {"channel": "C_INC", "timestamp": "@target", "name": "rocket"}}
+}

@@ -1,0 +1,1 @@
+There is no comment matching all of your criteria. Priya Nair did post a comment about the payment gateway timeout (on issue WEB-3 "Refactor payment gateway adapter"), but it was posted on **January 12**, not March 3. Since no comment was posted on March 3, I have not updated any priority.

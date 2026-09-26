@@ -1,0 +1,146 @@
+{
+ "scenario_id": "AP2-LIN-01",
+ "domain": "linear",
+ "request": "Set the priority to Urgent on the Web team's issue in the Website Redesign project that's marked Done, was completed on August 14, and whose description mentions the pagination fix.",
+ "answer": "one",
+ "seed": [
+  ["team", {"id": "t-web", "name": "Web", "key": "WEB"}],
+  ["team", {"id": "t-mob", "name": "Mobile", "key": "MOB"}],
+  ["project", {"id": "proj-redesign", "name": "Website Redesign"}],
+  ["project", {"id": "proj-other", "name": "Mobile Icon Refresh"}],
+
+  ["issue", {"id": "i-web-checkout", "team": "t-web", "title": "Fix checkout regression", "state": "Done",
+             "project": "proj-redesign", "assignee": "maya",
+             "description": "Ships the backend patch for the pagination fix along with checkout retries.",
+             "created": "2026-07-01T09:00:00", "set": {"completedAt": "2026-08-14T16:00:00"}, "ref": "target"}],
+
+  ["issue", {"id": "i-mob-confirm", "team": "t-mob", "title": "Polish checkout confirmation screen", "state": "Done",
+             "project": "proj-redesign", "assignee": "sam",
+             "description": "Applies the pagination fix to the mobile confirmation list before shipping.",
+             "created": "2026-07-05T09:00:00", "set": {"completedAt": "2026-08-14T11:00:00"}, "ref": "decoyState"}],
+
+  ["issue", {"id": "i-web-summary", "team": "t-web", "title": "Refine checkout summary copy", "state": "Done",
+             "project": "proj-redesign", "assignee": "leo",
+             "description": "Includes the pagination fix for the summary view.",
+             "created": "2026-07-10T09:00:00", "set": {"completedAt": "2026-08-13T16:00:00"}, "ref": "decoyAdjacentDay"}],
+
+  ["issue", {"id": "i-web-spacing", "team": "t-web", "title": "Adjust checkout button spacing", "state": "Done",
+             "project": "proj-redesign", "assignee": "dana",
+             "description": "Ships the pagination fix for spacing adjustments.",
+             "created": "2026-08-14T09:30:00", "set": {"completedAt": "2026-08-20T10:00:00"}, "ref": "decoyCreatedMatch"}],
+
+  ["issue", {"id": "i-web-patch-title", "team": "t-web", "title": "Backend patch for the pagination fix", "state": "Done",
+             "project": "proj-redesign", "assignee": "omar",
+             "description": "Cleans up dead code paths in the checkout flow.",
+             "created": "2026-07-20T09:00:00", "set": {"completedAt": "2026-08-14T13:00:00"}, "ref": "decoyTitleMatch"}],
+
+  ["issue", {"id": "i-web-header", "team": "t-web", "title": "Update checkout header styling", "state": "Todo",
+             "project": "proj-redesign", "assignee": "maya",
+             "description": "Minor styling tweaks; no functional change.",
+             "created": "2026-07-25T09:00:00"}],
+
+  ["issue", {"id": "i-mob-icon", "team": "t-mob", "title": "Improve app icon contrast", "state": "Done",
+             "project": "proj-other", "assignee": "sam",
+             "description": "Sharpens the icon for dark mode.",
+             "created": "2026-06-15T09:00:00", "set": {"completedAt": "2026-08-14T09:00:00"}}]
+ ],
+ "conditions": [
+  {"id": "c1", "text": "the Web team's issue ... that's marked Done", "facts": ["R:Issue.stateId"]},
+  {"id": "c2", "text": "in the Website Redesign project", "facts": ["R:Issue.projectId"]},
+  {"id": "c3", "text": "was completed on August 14", "facts": ["A:Issue.completedAt"]},
+  {"id": "c4", "text": "whose description mentions the pagination fix", "facts": ["A:Issue.description"]}
+ ],
+ "reference": {
+  "name": "the issue to set to Urgent priority",
+  "target": ["i-web-checkout"],
+  "query": {
+   "table": "issues",
+   "key": ["id"],
+   "filters": [
+    {"key": "f_from", "field": "completedAt", "op": "ge", "value": "2026-08-14T00:00:00", "fact": "A:Issue.completedAt"},
+    {"key": "f_to", "field": "completedAt", "op": "lt", "value": "2026-08-15T00:00:00"},
+    {"key": "f_desc", "field": "description", "op": "contains_ci", "value": "pagination fix", "fact": "A:Issue.description"}
+   ],
+   "edges": [
+    {"key": "e_project", "join": {"parent": "projectId", "child": "id", "op": "eq"}, "fact": "R:Issue.projectId",
+     "node": {"table": "projects", "filters": [
+       {"key": "f_proj", "field": "name", "op": "eq", "value": "Website Redesign"}
+      ], "edges": []}},
+    {"key": "e_state", "join": {"parent": "stateId", "child": "id", "op": "eq"}, "fact": "R:Issue.stateId",
+     "node": {"table": "workflow_states", "filters": [
+       {"key": "f_state_name", "field": "name", "op": "eq", "value": "Done"}
+      ], "edges": [
+       {"key": "e_state_team", "join": {"parent": "teamId", "child": "id", "op": "eq"},
+        "node": {"table": "teams", "filters": [
+          {"key": "f_state_team", "field": "name", "op": "eq", "value": "Web"}
+         ], "edges": []}}
+      ]}}
+   ]
+  },
+  "decoys": [
+   {"witness": "i-mob-confirm", "fact": "R:Issue.stateId", "family": "F8",
+    "substitute": "same-named state of another team",
+    "mutation": {"type": "DROP", "target": "e_state_team"},
+    "explanation": "Its status reads Done too, but that Done column belongs to Mobile team's workflow, not Web's."},
+
+   {"witness": "i-web-summary", "fact": "A:Issue.completedAt", "family": "F7", "substitute": "the adjacent day",
+    "mutation": {"type": "DROP", "target": "f_from"},
+    "explanation": "Completed August 13, the day before, not August 14."},
+
+   {"witness": "i-web-spacing", "fact": "A:Issue.completedAt", "family": "F1", "substitute": "Issue.createdAt",
+    "mutation": {"type": "REPLACE", "note": "completedAt filters replaced by createdAt filters", "query": {
+      "table": "issues", "key": ["id"],
+      "filters": [
+       {"key": "f_from2", "field": "createdAt", "op": "ge", "value": "2026-08-14T00:00:00"},
+       {"key": "f_to2", "field": "createdAt", "op": "lt", "value": "2026-08-15T00:00:00"},
+       {"key": "f_desc2", "field": "description", "op": "contains_ci", "value": "pagination fix"}
+      ],
+      "edges": [
+       {"key": "e_project", "join": {"parent": "projectId", "child": "id", "op": "eq"},
+        "node": {"table": "projects", "filters": [
+          {"key": "f_proj", "field": "name", "op": "eq", "value": "Website Redesign"}
+         ], "edges": []}},
+       {"key": "e_state", "join": {"parent": "stateId", "child": "id", "op": "eq"},
+        "node": {"table": "workflow_states", "filters": [
+          {"key": "f_state_name", "field": "name", "op": "eq", "value": "Done"}
+         ], "edges": [
+          {"key": "e_state_team", "join": {"parent": "teamId", "child": "id", "op": "eq"},
+           "node": {"table": "teams", "filters": [
+             {"key": "f_state_team", "field": "name", "op": "eq", "value": "Web"}
+            ], "edges": []}}
+         ]}}
+      ]
+     }},
+    "explanation": "Created on August 14, but not completed until August 20."},
+
+   {"witness": "i-web-patch-title", "fact": "A:Issue.description", "family": "F1", "substitute": "Issue.title",
+    "mutation": {"type": "REPLACE", "note": "description filter replaced by title filter", "query": {
+      "table": "issues", "key": ["id"],
+      "filters": [
+       {"key": "f_from3", "field": "completedAt", "op": "ge", "value": "2026-08-14T00:00:00"},
+       {"key": "f_to3", "field": "completedAt", "op": "lt", "value": "2026-08-15T00:00:00"},
+       {"key": "f_title3", "field": "title", "op": "contains_ci", "value": "pagination fix"}
+      ],
+      "edges": [
+       {"key": "e_project", "join": {"parent": "projectId", "child": "id", "op": "eq"},
+        "node": {"table": "projects", "filters": [
+          {"key": "f_proj", "field": "name", "op": "eq", "value": "Website Redesign"}
+         ], "edges": []}},
+       {"key": "e_state", "join": {"parent": "stateId", "child": "id", "op": "eq"},
+        "node": {"table": "workflow_states", "filters": [
+          {"key": "f_state_name", "field": "name", "op": "eq", "value": "Done"}
+         ], "edges": [
+          {"key": "e_state_team", "join": {"parent": "teamId", "child": "id", "op": "eq"},
+           "node": {"table": "teams", "filters": [
+             {"key": "f_state_team", "field": "name", "op": "eq", "value": "Web"}
+            ], "edges": []}}
+         ]}}
+      ]
+     }},
+    "explanation": "Its title mentions the pagination fix; the description doesn't."}
+  ],
+  "effect": {"table": "issues", "changes": ["update"]},
+  "written": ["issues.priority"]
+ },
+ "write": {"graphql": "mutation { issueUpdate(id: \"i-web-checkout\", input: {priority: 1}) { issue { id priority } } }"}
+}

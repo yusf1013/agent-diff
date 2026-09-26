@@ -1,0 +1,1 @@
+You did not assess these candidates: i-web-checkout, i-mob-confirm, i-web-summary, i-web-spacing, i-web-patch-title, i-web-header, i-mob-icon. Give your complete answer again, covering every candidate.

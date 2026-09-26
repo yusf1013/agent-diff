@@ -1,0 +1,1 @@
+Invited U_DIEGO (diego.alvarez) to #incident-response. Diego posted the message "Are we still under the deploy freeze until Friday?" in #incidents, which had exactly 4 replies in its thread.

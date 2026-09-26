@@ -1,0 +1,1 @@
+I found the "Client Success Renewals" calendar (cs-renewals@northwind.example) which you had already unchecked (selected: false). I've now set it to hidden: true, so it will no longer appear in your calendar list at all.

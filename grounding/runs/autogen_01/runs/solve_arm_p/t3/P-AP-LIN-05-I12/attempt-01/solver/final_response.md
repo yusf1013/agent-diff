@@ -1,0 +1,1 @@
+Found the issue and updated it. The resolved comment from Priya Nair about the payment gateway timeout (resolved March 3) was on issue **WEB-3** ("Refactor payment gateway adapter"). I set its priority to **Urgent** (priority = 4). The update was confirmed successful.

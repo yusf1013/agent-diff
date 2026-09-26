@@ -1,0 +1,1 @@
+Added a 🎉 :tada: reaction to Farhan Malik's (Deebo) message in #launch-planning: "Launch date confirmed — March 3, no changes on our side." — the same message nadia.brooks had already flagged with :eyes:.

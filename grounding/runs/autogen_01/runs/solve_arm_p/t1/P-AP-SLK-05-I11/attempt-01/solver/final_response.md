@@ -1,0 +1,1 @@
+There is no channel that meets both criteria. The workspace owner (Nina Torres) is not a member of any channel that currently has exactly four members. The only 4-member channel is #beta-ops, but it does not include the workspace owner. I will not archive anything.

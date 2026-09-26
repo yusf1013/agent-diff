@@ -1,0 +1,1 @@
+I identified that Diego Alvarez (diego.alvarez, U_DIEGO) posted the deploy freeze message "Are we still under the deploy freeze until Friday?" in #incidents, which had 4 replies. I then successfully invited him to the #incident-response channel.

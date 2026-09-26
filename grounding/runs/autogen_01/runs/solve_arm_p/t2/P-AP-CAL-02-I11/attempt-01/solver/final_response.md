@@ -1,0 +1,1 @@
+I checked your calendar list and found one calendar named "Team Calendar" (team-sales@northwind.example), but you only have **reader** access to it — not writer access. Since the criteria require you to have writer access to the Team Calendar (and that it's shared with the design team as a writer), no calendar matching your description was found, so no changes were made.

@@ -1,0 +1,1 @@
+Successfully added a rocket reaction to the rollout timeline message in #eng-updates. The message was "Rollout timeline: shipping to prod Friday 3pm." posted by Leo, which Priya had reacted to with eyes. The rocket reaction was added without errors.

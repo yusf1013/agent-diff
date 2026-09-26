@@ -1,0 +1,1 @@
+There is no cycle named "Cycle 14" in your Linear workspace. I checked all four teams (Platform, Growth, Mobile, and Web) and none of them have any cycles defined. Therefore, I couldn't find a cycle starting September 29 that includes an Urgent issue assigned to Priya Nair, and no end date was updated.

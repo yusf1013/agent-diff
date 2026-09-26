@@ -1,0 +1,1 @@
+There's no archived incidents channel about the checkout outage. The channel **incidents-checkout-live** (ID: `C_CHECKOUT_LIVE`) already exists and is currently active (not archived). Its topic reads: *"Live checkout outage monitoring - please post updates here."* — so no unarchive action was needed.

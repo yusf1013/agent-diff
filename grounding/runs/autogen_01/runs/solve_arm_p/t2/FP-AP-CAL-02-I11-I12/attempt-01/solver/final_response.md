@@ -1,0 +1,1 @@
+I don't have a "Team Calendar" with **writer** access on my calendar list. The only "Team Calendar" I can see is `team-sales@northwind.example`, but my access role there is **reader** (not writer). Since it doesn't meet the writer-access requirement, there's no matching calendar to hide.

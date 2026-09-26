@@ -1,0 +1,1 @@
+I couldn't find a message about the rollout timeline in #eng-updates. The channel currently only contains two messages: one about lunch at noon and one about a 9am standup. I also searched the entire workspace for "rollout timeline" and got zero results. There's no such message to add a rocket reaction to.

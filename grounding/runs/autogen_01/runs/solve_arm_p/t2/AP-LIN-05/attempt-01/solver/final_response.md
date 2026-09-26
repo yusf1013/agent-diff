@@ -1,0 +1,1 @@
+Successfully set the priority to Urgent on issue "Checkout error handling cleanup" (i-web-1). This is the issue that has the resolved comment (c-1) from Priya Nair about the payment gateway timeout, posted on March 3, 2026. The issue priority was updated to 4 (Urgent).

@@ -1,0 +1,1 @@
+The `incidents-billing` channel has been unarchived. It was the archived incidents channel that held the checkout outage postmortem thread. It's now active again.

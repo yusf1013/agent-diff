@@ -1,0 +1,57 @@
+{
+ "scenario_id": "AP2-CAL-02",
+ "domain": "calendar",
+ "request": "Hide the 'Design Team' calendar in my calendar list that I've shared with Kenji Sato as a writer.",
+ "answer": "one",
+ "seed": [
+  ["calendar", {"id": "design-team@northwind.example", "summary": "Design Team", "owner": "actor", "access": "owner", "in_list": true}],
+  ["acl", {"id": "acl_team_kenji", "calendar": "design-team@northwind.example", "role": "writer", "scope_type": "user", "scope_value": "kenji.sato@northwind.example"}],
+
+  ["calendar", {"id": "design-archive@northwind.example", "summary": "Design Team", "owner": "actor", "in_list": false}],
+  ["acl", {"id": "acl_archive_kenji", "calendar": "design-archive@northwind.example", "role": "writer", "scope_type": "user", "scope_value": "kenji.sato@northwind.example"}],
+
+  ["calendar", {"id": "design-sync@northwind.example", "summary": "Design Team", "owner": "actor", "access": "owner", "in_list": true}],
+  ["acl", {"id": "acl_sync_kenji", "calendar": "design-sync@northwind.example", "role": "reader", "scope_type": "user", "scope_value": "kenji.sato@northwind.example"}],
+  ["acl", {"id": "acl_sync_sam", "calendar": "design-sync@northwind.example", "role": "writer", "scope_type": "user", "scope_value": "sam.rivera@northwind.example"}],
+
+  ["calendar", {"id": "marketing@northwind.example", "summary": "Marketing", "owner": "actor", "in_list": true}]
+ ],
+ "conditions": [
+  {"id": "c1", "text": "the 'Design Team' calendar", "facts": ["A:Calendar.summary"]},
+  {"id": "c2", "text": "in my calendar list", "facts": ["R:CalendarListEntry.calendar_id"]},
+  {"id": "c3", "text": "that I've shared with Kenji Sato as a writer", "facts": ["B:AclRule.calendar_id", "A:AclRule.scope_value", "A:AclRule.role"]}
+ ],
+ "reference": {
+  "name": "the calendar to hide from my list",
+  "target": ["design-team@northwind.example"],
+  "query": {
+   "table": "calendars",
+   "key": ["id"],
+   "filters": [
+    {"key": "f_summary", "field": "summary", "op": "eq", "value": "Design Team", "fact": "A:Calendar.summary"}
+   ],
+   "edges": [
+    {"key": "e_list", "join": {"parent": "id", "child": "calendar_id", "op": "eq"}, "fact": "R:CalendarListEntry.calendar_id",
+     "node": {"table": "calendar_list_entries", "filters": [], "edges": []}},
+    {"key": "e_acl", "join": {"parent": "id", "child": "calendar_id", "op": "eq"}, "fact": "B:AclRule.calendar_id",
+     "node": {"table": "calendar_acl_rules", "filters": [
+       {"key": "f_scope", "field": "scope_value", "op": "eq", "value": "kenji.sato@northwind.example", "fact": "A:AclRule.scope_value"},
+       {"key": "f_role", "field": "role", "op": "eq", "value": "writer", "fact": "A:AclRule.role"}
+      ], "edges": []}}
+   ]
+  },
+  "decoys": [
+   {"witness": "design-archive@northwind.example", "fact": "R:CalendarListEntry.calendar_id", "family": "F8",
+    "substitute": "Calendar.data_owner naming the actor, without a calendar-list entry",
+    "mutation": {"type": "DROP", "target": "e_list"},
+    "explanation": "Jordan owns this calendar and shared it with Kenji as a writer, but it was never added to his own calendar list."},
+   {"witness": "design-sync@northwind.example", "fact": "B:AclRule.calendar_id", "family": "F5",
+    "substitute": "the scope and role conditions met by different ACL rules",
+    "mutation": {"type": "SPLIT", "target": "e_acl", "groups": [["f_scope"], ["f_role"]]},
+    "explanation": "Kenji Sato is only a reader here; Sam Rivera is the one with writer access."}
+  ],
+  "effect": {"table": "calendar_list_entries", "changes": ["update"], "field": "calendar_id"},
+  "written": ["calendar_list_entries.hidden"]
+ },
+ "write": {"method": "PATCH", "path": "/users/me/calendarList/design-team@northwind.example", "body": {"hidden": true}}
+}

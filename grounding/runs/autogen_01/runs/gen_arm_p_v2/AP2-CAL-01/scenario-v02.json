@@ -1,0 +1,49 @@
+{
+ "scenario_id": "AP2-CAL-01",
+ "domain": "calendar",
+ "request": "Rename the 'Product Team' calendar that's currently checked in my calendar list to 'Eng Product Sync'.",
+ "answer": "one",
+ "seed": [
+  ["calendar", {"id": "product_team_eng", "summary": "Product Team", "owner": "priya", "access": "writer", "selected": true, "ref": "target"}],
+  ["calendar", {"id": "product_team_mkt", "summary": "Product Team", "owner": "dana", "access": "reader", "selected": false, "ref": "decoy_selected"}],
+  ["calendar", {"id": "product_team_offsite", "summary": "Product Team Offsite", "owner": "maya", "access": "writer", "selected": true, "ref": "decoy_summary_f8"}],
+  ["calendar", {"id": "eng_roadmap", "summary": "Engineering Roadmap", "owner": "sam", "access": "reader", "selected": true, "ref": "decoy_summary_f0"}],
+  ["calendar", {"id": "us_holidays", "summary": "US Holidays", "owner": "kenji", "access": "reader", "selected": false}],
+  ["calendar", {"id": "design_team", "summary": "Design Team", "owner": "leo", "access": "writer", "selected": false}]
+ ],
+ "conditions": [
+  {"id": "c1", "text": "the 'Product Team' calendar", "facts": ["A:Calendar.summary"]},
+  {"id": "c2", "text": "that's currently checked in my calendar list", "facts": ["A:CalendarListEntry.selected"]}
+ ],
+ "reference": {
+  "name": "the calendar-list entry to rename",
+  "target": ["product_team_eng"],
+  "query": {
+   "table": "calendars",
+   "filters": [
+    {"key": "f_summary", "field": "summary", "op": "eq", "value": "Product Team", "fact": "A:Calendar.summary"}
+   ],
+   "edges": [
+    {"key": "e_entry", "join": {"parent": "id", "child": "calendar_id", "op": "eq"},
+     "node": {"table": "calendar_list_entries", "filters": [
+       {"key": "f_selected", "field": "selected", "op": "eq", "value": true, "fact": "A:CalendarListEntry.selected"}
+      ], "edges": []}}
+   ]
+  },
+  "decoys": [
+   {"witness": "product_team_mkt", "fact": "A:CalendarListEntry.selected", "family": "F0",
+    "mutation": {"type": "DROP", "target": "f_selected"},
+    "explanation": "This second 'Product Team' calendar is on the list but unchecked, so its events aren't currently showing."},
+   {"witness": "product_team_offsite", "fact": "A:Calendar.summary", "family": "F8",
+    "substitute": "a calendar whose name contains 'Product Team'",
+    "mutation": {"type": "DROP", "target": "f_summary"},
+    "explanation": "It is checked, but its name is 'Product Team Offsite', not 'Product Team'."},
+   {"witness": "eng_roadmap", "fact": "A:Calendar.summary", "family": "F0",
+    "mutation": {"type": "DROP", "target": "f_summary"},
+    "explanation": "It is checked, but it is an unrelated calendar named 'Engineering Roadmap'."}
+  ],
+  "effect": {"table": "calendar_list_entries", "changes": ["update"], "field": "calendar_id"},
+  "written": ["calendar_list_entries.summary_override"]
+ },
+ "write": {"method": "PATCH", "path": "/users/me/calendarList/product_team_eng", "body": {"summaryOverride": "Eng Product Sync"}}
+}

@@ -1,0 +1,1 @@
+Successfully updated the end date for the Web team's Cycle 14 (starting September 29, 2026) to October 20, 2026. This cycle contains the Urgent issue "Fix subscription renewal race condition" assigned to Priya Nair. The cycle now runs from September 29 to October 20, 2026.

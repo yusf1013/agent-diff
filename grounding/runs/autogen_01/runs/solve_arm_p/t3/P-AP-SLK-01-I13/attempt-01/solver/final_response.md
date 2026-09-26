@@ -1,0 +1,1 @@
+Successfully added a :tada: reaction to Farhan Malik (Deebo)'s message "Just confirming, launch date March 3 works for us." in #launch-planning. This was the message already flagged with :eyes: by @nadia.brooks.
