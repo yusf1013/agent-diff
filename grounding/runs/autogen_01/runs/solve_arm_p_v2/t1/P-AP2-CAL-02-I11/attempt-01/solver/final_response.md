@@ -1,0 +1,1 @@
+There is no 'Design Team' calendar in your calendar list. Your calendar list only contains your primary calendar and a "Marketing" calendar. If a 'Design Team' calendar was shared with you, it may not currently appear in your calendar list. You could try subscribing to it if you know its calendar ID or email address.

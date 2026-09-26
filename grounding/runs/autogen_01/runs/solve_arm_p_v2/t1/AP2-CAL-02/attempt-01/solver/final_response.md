@@ -1,0 +1,1 @@
+Successfully hid the 'Design Team' calendar (`design-team@northwind.example`) in the calendar list. This was the correct calendar identified by its ACL showing Kenji Sato (kenji.sato@northwind.example) with a "writer" role. The calendar's `hidden` property is now set to `true`.

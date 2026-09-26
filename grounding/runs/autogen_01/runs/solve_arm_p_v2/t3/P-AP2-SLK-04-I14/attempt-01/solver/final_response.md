@@ -1,0 +1,1 @@
+Diego's message in #incidents mentioning the gateway rollback ("Wrapping up the gateway rollback, still watching error rates.") does exist, but it only has **3 replies** in its thread (from Leo, Omar, and Aisha), not 4. Since the message with 4 replies doesn't exist, I did not add the check reaction.

@@ -1,0 +1,1 @@
+There is no issue that matches all your criteria. I found one issue titled "Renew SSO certificate" assigned to Dana Whitfield (guest contractor, dana.whitfield.ext@northwind.example), but it was filed by **Leo Parkinson (leo.parkinson@northwind.example)**, not by leo.park@northwind.example. Since the creator email doesn't match, I did not change the priority.

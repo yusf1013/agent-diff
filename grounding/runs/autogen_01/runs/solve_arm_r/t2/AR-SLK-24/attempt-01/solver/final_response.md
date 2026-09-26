@@ -1,0 +1,1 @@
+Successfully reacted with the 👀 (eyes) emoji on Aisha Khan's message about the payment gateway timeout in #incidents. Aisha (U_AISHA) was confirmed as a member of #payments-oncall, and her message ("Seeing 504s tied to a payment gateway timeout on checkout after the last deploy.") was the matching message.

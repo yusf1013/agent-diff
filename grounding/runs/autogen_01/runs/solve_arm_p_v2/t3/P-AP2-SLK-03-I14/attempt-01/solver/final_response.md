@@ -1,0 +1,1 @@
+There is no payment gateway outage message in #incidents that Diego Alvarez reacted to with fire. The only such message ("Payment gateway outage timeline posted in the doc." by Maya Chen) was reacted to with 🔥 by **Leo Park**, not Diego Alvarez. Since no message matching all your criteria exists, I did not add the rocket reaction.

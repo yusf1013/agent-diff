@@ -26,7 +26,7 @@ In `inputs/<domain>/`:
 - `replica.md`: how the service your agent talks to behaves: reads, writes, values it rejects, known gaps;
 - `seed_ops.md`, and a builder class in [seedops.py](seedops.py): the operations a writer uses to build records;
 - `api.md`: the API documentation your agent under test receives;
-- the domain model (`model.md`).
+- the domain model, read from `grounding/domains/<domain>/model.md`.
 
 Plus a replica or sandbox that can install a seed, answer reads and writes, and export its state for diffs.
 AgentDiff provides this for Box, Calendar, Linear and Slack.
@@ -52,3 +52,12 @@ any repository. So they read no project instructions or memory, and no files but
 - [orchestrate.py](orchestrate.py), [reader.py](reader.py): generation;
 - [judge.py](judge.py), [bundle.py](bundle.py): judging;
 - [selftest.py](selftest.py), [preflight_selftest.py](preflight_selftest.py): tests of the kit itself.
+
+## Known limitations (from autogen_01, [report §7](../report.md))
+- **Observability of flags.** The pre-check verifies that a decoy's deciding *value* appears in some API response. It
+  cannot verify a boolean flag, or that the actor may read the field (a Calendar ACL a writer cannot list passed).
+- **Domain semantics.** No check knows, for example, that a Linear label group is never applied to an issue.
+- **The judge's bundle** truncates long rows and drops URLs (`bundle.compact_row`); the reader's rendering was fixed.
+- **Test-level decisions** (a whole test invalid) are outside the judge, which scores trial by trial.
+- **Replica gaps** must be listed in `replica.md`. A filter the replica ignores makes an artifact, and the judge
+  recognizes it more reliably when the gap is listed.

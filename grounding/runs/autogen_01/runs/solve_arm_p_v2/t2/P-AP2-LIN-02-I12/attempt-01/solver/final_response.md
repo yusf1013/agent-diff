@@ -1,0 +1,1 @@
+There is no issue matching all your criteria. The only "Renew SSO certificate" issue in the workspace is assigned to **Dana Cho** (dana.cho@northwind.example), not to the guest contractor Dana Whitfield (dana.whitfield.ext@northwind.example). The guest Dana Whitfield currently has no issues assigned to her at all, so there's nothing to update to Urgent priority.

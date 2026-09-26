@@ -1,0 +1,1 @@
+I couldn't find a payment gateway outage message in #incidents that Diego Alvarez reacted to with fire. The only payment gateway outage message in that channel (posted by Priya: "Payment gateway outage: latency graphs attached, still watching.") has a single reaction — an "eyes" emoji from Diego — but no "fire" reaction. So the condition for adding the rocket reaction isn't met.

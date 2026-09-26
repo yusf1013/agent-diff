@@ -1,0 +1,1 @@
+There is no such message in #incidents. The only payment gateway outage message ("Payment gateway outage — I'm starting the rollback now.") was **posted by** Diego Alvarez, but it was **Omar** who reacted to it with 🔥 — not Diego himself. Since Diego Alvarez didn't react with fire to any message in the channel, I can't add the rocket reaction. No action was taken.

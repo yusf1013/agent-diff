@@ -1,0 +1,1 @@
+There is no team that matches all the criteria. The only private team whose description mentions the "Q3 OKR pilot rollout" is **Growth Partnerships**, but its key is **PTN** (not starting with "GR"). No team in the workspace has a key starting with "GR", so no rename was performed.

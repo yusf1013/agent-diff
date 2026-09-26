@@ -1,0 +1,3 @@
+I was unable to find a document titled "Retention Playbook" discussing Q3 churn analysis in the Growth team. I searched the issues in the workspace and no matching items were returned. Additionally, the available API endpoints in this session don't include a "documents" query or a "projects" query, so I'm not able to verify the existence of a "Q4 Roadmap" project or move documents between projects. 
+
+If this "Retention Playbook" exists as a Linear document (a collaborative doc rather than an issue), I don't have access to a documents API in this session to locate or move it. You may need to do this manually through the Linear UI (open the document → move to project → select "Q4 Roadmap").

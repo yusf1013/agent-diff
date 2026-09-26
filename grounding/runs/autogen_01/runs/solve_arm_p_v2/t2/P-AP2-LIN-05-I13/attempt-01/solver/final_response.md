@@ -1,0 +1,1 @@
+I found the comment by Priya Nair about the API timeout ("This API timeout also shows up on the staging webhook endpoint.") on the issue "Fix webhook signature verification" (i-web-23), which was in a thread resolved on September 22. I successfully updated that issue's priority to Urgent (priority: 1).

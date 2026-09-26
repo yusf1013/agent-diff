@@ -1,0 +1,1 @@
+Successfully hid the 'Design Team' calendar (design-team@northwind.example) that is shared with Kenji Sato (kenji.sato@northwind.example) as a writer. The calendar now has "hidden" set to true in the calendar list.

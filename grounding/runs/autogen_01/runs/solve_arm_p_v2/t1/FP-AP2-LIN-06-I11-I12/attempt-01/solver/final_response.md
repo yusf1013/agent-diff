@@ -1,0 +1,1 @@
+There is no attachment on issue ENG-14 ("Homepage redesign") to rename. The issue has no attachments at all — no "Marketing brief" linking to Dropbox (or any other attachment) was found. Therefore, there is nothing to rename.

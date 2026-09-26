@@ -1,0 +1,1 @@
+Successfully set the 'Renew SSO certificate' issue (IT-2) to Urgent priority. The issue was confirmed to be assigned to Dana Whitfield and created by leo.park@northwind.example, matching all the specified criteria.

@@ -1,0 +1,6 @@
+There is no channel that meets all the criteria. I found two channels with 'incident' in their name:
+
+1. **"incident-2019-retro"** — Archived. Topic: "Archived project artifacts" (no mention of postmortems).
+2. **"incident-response-archive"** — Archived. Topic: "Postmortems and outage retros for closed incidents" (does mention postmortems).
+
+The only channel with both 'incident' in the name and postmortems in the topic ("incident-response-archive") is **archived**, so I cannot invite Aisha Khan to it. No non-archived channel matching all three conditions (name contains "incident", topic mentions postmortems, not archived) exists in this workspace.

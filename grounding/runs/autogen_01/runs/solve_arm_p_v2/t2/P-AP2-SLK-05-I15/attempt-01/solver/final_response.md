@@ -1,0 +1,1 @@
+There is no channel that matches all the criteria. The only channel with exactly 5 members created before March 2026 is **proj-lyra** (C_PLAIN), but the workspace owner **Victor Reyes** is not a member of it. No other channel meets all three conditions simultaneously.

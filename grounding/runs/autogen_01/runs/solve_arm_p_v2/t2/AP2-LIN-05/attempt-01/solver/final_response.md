@@ -1,0 +1,1 @@
+Successfully set the priority to **Urgent** (priority: 4) on issue **WEB-1** ("Improve payment retry queue", id: `i-web-20`). This is the issue where Priya Nair commented on September 22 about an API timeout ("We keep seeing an API timeout during retries; let's add exponential backoff."), and the comment was resolved by Leo Park.

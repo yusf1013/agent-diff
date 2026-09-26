@@ -55,14 +55,11 @@ def table_generation():
                     f"{statistics.median(versions) if versions else '-'}, {max(versions) if versions else '-'} | "
                     f"{sum(x['check_rounds'] for x in o.values())} | {sum(x['reader_rounds'] for x in o.values())} | "
                     f"{len(attempts_errored(gen))} |")
-    stages = Counter()
+    rows += ["", "Versions sent back, by the stage that found problems:", "",
+             "| Arm | Checks | Replica pre-checks | Reader |", "|---|---:|---:|---:|"]
     for arm, (gen, _) in ARMS.items():
-        for x in outcomes(gen).values():
-            for h in x["history"]:
-                if h["problems"]:
-                    stages[h["stage"]] += 1
-    rows += ["", "Versions sent back, by the stage that found problems: " +
-             ", ".join(f"{k} {v}" for k, v in sorted(stages.items())) + "."]
+        stages = Counter(h["stage"] for x in outcomes(gen).values() for h in x["history"] if h["problems"])
+        rows.append(f"| {arm} | {stages['checks']} | {stages['replica']} | {stages['reader']} |")
     return rows
 
 
@@ -203,20 +200,44 @@ def table_yield():
     for arm, tests in facts_by_arm.items():
         fa = sorted({x for t in tests for x in t["exposed_adjudicated"]})
         rows.append(f"\n{arm}, facts exposed (adjudicated): " + ", ".join(f"`{f}`" for f in fa))
-    fam_rows = ["", "### Probes by family (adjudicated)", "", "| Family | Probes | Exposing | Facts |",
-                "|---|---:|---:|---|"]
-    fam = defaultdict(list)
-    for arm, tests in facts_by_arm.items():
-        if arm not in ARMS:
-            continue  # families of the generated suites only
-        for t in tests:
+    generated = [arm for arm in facts_by_arm if arm in ARMS]  # families are labelled in the generated suites only
+    fam_rows = ["", "### Probes by family (adjudicated): exposing probes / probes", "",
+                "| Family | " + " | ".join(generated) + " | Facts (all generated arms) |",
+                "|---|" + "---:|" * len(generated) + "---|"]
+    fam = defaultdict(lambda: defaultdict(list))
+    for arm in generated:
+        for t in facts_by_arm[arm]:
             if t.get("form") == "probe":
-                fam[t.get("family")].append(t)
+                fam[t.get("family")][arm].append(t)
     for f in sorted(fam, key=str):
-        ts = fam[f]
-        fam_rows.append(f"| {f} | {len(ts)} | {sum(bool(t['exposed_adjudicated']) for t in ts)} | "
-                        + ", ".join(sorted({x for t in ts for x in t['exposed_adjudicated']})) + " |")
+        cells = [f"{sum(bool(t['exposed_adjudicated']) for t in fam[f][arm])}/{len(fam[f][arm])}" for arm in generated]
+        facts = sorted({x for arm in generated for t in fam[f][arm] for x in t["exposed_adjudicated"]})
+        fam_rows.append(f"| {f} | " + " | ".join(cells) + " | " + ", ".join(facts) + " |")
     return rows + fam_rows
+
+
+def table_runtime():
+    """Trial outcomes per arm: the judge's (automated) and after my overrides (adjudicated)."""
+    review = load(EVAL / "judge_review.json", {})
+    rows = ["## Trial outcomes (runtime validity)", "",
+            "| Arm | Trials | Pass | Fail | Artifact | Not established | Incomplete or false absence | "
+            "Artifacts after review |", "|---|---:|---:|---:|---:|---:|---:|---:|"]
+    for arm, (_, solve) in YIELD_ARMS.items():
+        score = load(RUNS / f"{solve}.score.json")
+        if not score:
+            continue
+        auto, adj = Counter(), Counter()
+        for t in score["tests"]:
+            for trial, r in t["trials"].items():
+                auto[r["outcome"]] += 1
+                rv = review.get(f"{solve}/{trial}/{t['case_id']}", {})
+                adj[rv.get("outcome", r["outcome"]) if rv.get("review") == "override" else r["outcome"]] += 1
+        c = Counter()
+        for k, n in auto.items():
+            c[COLLAPSE.get(k, k)] += n
+        rows.append(f"| {arm} | {sum(auto.values())} | {c['pass']} | {c['fail']} | {auto['artifact']} | "
+                    f"{auto['not_established']} | {c['incomplete'] + c['false_absence']} | {adj['artifact']} |")
+    return rows
 
 
 def table_reproduction():
@@ -348,12 +369,27 @@ def table_tokens():
         rows.append(f"| {run} | {f['calls']} | {f['calls_without_usage']} | {f['output_tokens']:,} | "
                     f"{f['cache_creation']:,} | {f['cache_read']:,} | {f['usd']:.2f} |")
     rows += ["", f"Total list-price estimate: ${total:.2f} for completed calls, ${failed_usd:.2f} for failed ones."]
+
+    def usd(run):
+        path = RUNS / run / "calls.jsonl"
+        lines = path.read_text().splitlines() if path.exists() else []
+        return sum(json.loads(x).get("cost_usd_list_price") or 0 for x in lines), len(lines)
+
+    rows += ["", "| Arm | Generation USD (writer and reader, completed + failed calls) | Accepted | Per accepted scenario | "
+             "Judge USD | Judge calls | Per judged trial |", "|---|---:|---:|---:|---:|---:|---:|"]
+    for arm, (gen, solve) in YIELD_ARMS.items():
+        g, _ = usd(gen)
+        g += failed[gen]["usd"]
+        j, calls = usd(f"{solve}_judged")
+        acc = sum(x["status"] == "accepted" for x in outcomes(gen).values())
+        rows.append(f"| {arm} | {g:.2f} | {acc or '-'} | {f'{g / acc:.2f}' if acc else '-'} | {j:.2f} | {calls} | "
+                    f"{j / max(1, calls):.3f} |")
     return rows
 
 
 def main():
-    parts = [table_generation(), table_validity(), table_design(), table_yield(), table_reproduction(), table_v1_v2(),
-             table_judge(), table_tokens()]
+    parts = [table_generation(), table_validity(), table_design(), table_runtime(), table_yield(), table_reproduction(),
+             table_v1_v2(), table_judge(), table_tokens()]
     print("# Tables for report.md (generated by kit/tables.py)\n")
     for p in parts:
         print("\n".join(p) + "\n")

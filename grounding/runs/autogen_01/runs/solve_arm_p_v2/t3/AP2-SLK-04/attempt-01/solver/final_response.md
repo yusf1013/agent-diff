@@ -1,0 +1,1 @@
+Successfully added a ✅ (check) reaction to Diego's message "Posted the gateway rollback notes for the postmortem." in #incidents. That message (ts=1786356600.000002) is the one mentioning the gateway rollback with exactly 4 thread replies.

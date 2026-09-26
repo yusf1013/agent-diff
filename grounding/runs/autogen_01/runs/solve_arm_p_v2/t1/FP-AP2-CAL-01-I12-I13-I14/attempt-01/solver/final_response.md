@@ -1,0 +1,1 @@
+There is no calendar named "Product Team" in your calendar list. The closest match is a checked calendar called **"Product Team Offsite"** (owned by maya.chen@northwind.example). If that's the one you meant, let me know and I'll rename it to "Eng Product Sync" — but I didn't want to assume since the names don't exactly match.

@@ -1,0 +1,1 @@
+Found the issue **"Renew SSO certificate"** (IT-2) — assigned to Dana Whitfield and created by leo.park@northwind.example. I successfully updated its priority to **Urgent**. (Note: I initially set priority 4 which mapped to "Low" on Linear's scale, then corrected it to priority 1 which is "Urgent".)

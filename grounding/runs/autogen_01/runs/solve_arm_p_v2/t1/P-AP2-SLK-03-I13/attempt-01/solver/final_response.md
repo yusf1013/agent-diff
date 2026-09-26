@@ -1,0 +1,1 @@
+There isn't a payment gateway outage message in #incidents that Diego Alvarez reacted to with fire. The only payment gateway outage message ("Payment gateway outage — I'm starting the rollback now.") was **posted** by Diego Alvarez, but the fire 🔥 reaction on it was added by **U_Omar**, not Diego. So the criteria you described doesn't match any existing message.

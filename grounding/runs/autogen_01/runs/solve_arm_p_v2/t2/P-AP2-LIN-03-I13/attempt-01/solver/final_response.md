@@ -1,0 +1,1 @@
+There is no private team matching all the criteria. The team **"Growth Analytics"** (key: GRA) does have a description that mentions the "Q3 OKR pilot rollout" and its key starts with "GR," but it is a **public** team, not a private one. No other team matches both the key prefix and the description. So there is no team to rename.

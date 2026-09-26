@@ -1,0 +1,1 @@
+I couldn't find a team that meets both criteria. The only private team with a description mentioning "Q3 OKR pilot rollout" is **Growth Partnerships** (key: `PTN`), but its key does not start with "GR". No team in the workspace has a key starting with "GR". So there's no matching team to rename.

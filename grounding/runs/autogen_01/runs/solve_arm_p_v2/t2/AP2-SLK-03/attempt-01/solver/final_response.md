@@ -1,0 +1,1 @@
+Successfully added a rocket reaction to the payment gateway outage message ("Update: payment gateway outage — rollback deployed, monitoring error rates now.") in #incidents. This was the message that Diego Alvarez had reacted to with fire.

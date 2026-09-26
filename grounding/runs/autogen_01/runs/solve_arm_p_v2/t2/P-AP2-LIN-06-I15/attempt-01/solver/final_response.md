@@ -1,0 +1,1 @@
+There is no attachment titled "Marketing brief" (or any attachment at all) on issue ENG-14 ("Homepage redesign"). The issue has no attachments, no documents, and an empty description. There's nothing to rename.

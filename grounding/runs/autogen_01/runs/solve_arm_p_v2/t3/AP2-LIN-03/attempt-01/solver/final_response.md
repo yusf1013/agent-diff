@@ -1,0 +1,1 @@
+Successfully renamed the private team "Growth" (key: GRW, which starts with GR and has a description mentioning the Q3 OKR pilot rollout) to "Growth Pod". The API confirmed the update with `success: true`.

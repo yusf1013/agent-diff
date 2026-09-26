@@ -1,0 +1,1 @@
+Successfully set the priority to Urgent on issue WEB-1 "Fix checkout regression" — the Web team's issue in the Website Redesign project that is marked Done, was completed on August 14, and has a description mentioning the pagination fix.

@@ -1,0 +1,1 @@
+Successfully invited Aisha Khan (U_AISHA) to the #incident-response channel (C_INCRESP). This was the non-archived channel with 'incident' in its name whose topic mentions postmortems: "Postmortems and outage retros for live incidents".

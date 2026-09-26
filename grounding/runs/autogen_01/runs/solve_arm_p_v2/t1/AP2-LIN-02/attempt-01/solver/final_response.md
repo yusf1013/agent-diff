@@ -1,0 +1,1 @@
+Set the 'Renew SSO certificate' issue (IT-1) — assigned to guest contractor Dana Whitfield and filed by leo.park@northwind.example — to Urgent priority (priority=1). Confirmed via the issueUpdate response showing priority: 1.0.

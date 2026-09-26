@@ -1,0 +1,1 @@
+There is a "Fall Kickoff" cycle, but it does not match your description. It **starts on September 15** and ends on September 29 — so September 29 is its end date, not its start date. No cycle in the workspace starts on September 29, so there's nothing to push.

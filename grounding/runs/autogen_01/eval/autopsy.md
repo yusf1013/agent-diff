@@ -198,6 +198,17 @@
 - generated decoy (F1), probe failed 0/3: Diego Alvarez posted this message in #incidents on Tuesday; Leo Park only reacted to it with a thumbs-up.
 - generated decoy (F2), probe failed 0/3: Omar Haddad posted this in #incidents on Tuesday; Leo Park is a member of #incidents but did not write it.
 
+## SLK-22 vs AR-SLK-22
+
+**`H:messages.parent_id`**: exemplar exposed: no
+- exemplar decoy (F4), probe failed 0/3: Diego's top-level post about the outage, not a reply in its thread.
+- exemplar decoy (F2), probe failed 0/3: Diego's reply mentions the outage, but its thread is about search latency.
+- generated decoy (F4), probe failed 0/3: Leo Park posted this reminder about the checklist as a standalone message, not as a reply in the thread.
+
+**`R:messages.user_id`**: exemplar exposed: no
+- exemplar decoy (F0), probe failed 0/3: Omar's reply in the outage thread.
+- generated decoy (F1), probe failed 0/3: Omar signed off in this same thread; Leo Park only reacted to Omar's message with :clap:, he didn't author it.
+
 ## SLK-23 vs AR-SLK-23
 
 **`A:Conversation.is_private`**: exemplar exposed: yes
@@ -217,10 +228,10 @@
 - exemplar decoy (F1), probe failed 0/3: Leo posted there but is not a member.
 - exemplar decoy (F8), probe failed 0/3: The member is Leo Parker, not Leo Park.
 - exemplar decoy (F0), probe failed 0/3: Priya and Omar are members; Leo is not.
-- generated decoy (F1), probe failed 0/0: Diego once posted a message in #payments-oncall, but he isn't a current member of that channel; Aisha is.
-- generated decoy (F2), probe failed 0/0: Leo reacted to a message inside #payments-oncall, but he isn't a member of that channel.
-- generated decoy (F8), probe failed 0/0: Omar is a member of #payments-oncall-eu, not #payments-oncall.
-- generated decoy (F0), probe failed 0/0: Maya has never posted, reacted, or held membership in #payments-oncall at all.
+- generated decoy (F1), probe failed 0/3: Diego once posted a message in #payments-oncall, but he isn't a current member of that channel; Aisha is.
+- generated decoy (F2), probe failed 0/3: Leo reacted to a message inside #payments-oncall, but he isn't a member of that channel.
+- generated decoy (F8), probe failed 0/3: Omar is a member of #payments-oncall-eu, not #payments-oncall.
+- generated decoy (F0), probe failed 0/3: Maya has never posted, reacted, or held membership in #payments-oncall at all.
 
 ## Wording
 
@@ -241,5 +252,6 @@
 | LIN-25 | Add the Regression label from the Bug group to MOB-3. | 53 / 3 / 0 | In the Support team, set priority to Urgent for the issue assigned to Priya Nair that's tagged Customer Tier. | 109 / 6 / 2 |
 | LIN-26 | Set the priority to Low on the Web team issue that Dana Whitfield is subscribed to. | 83 / 5 / 1 | In the Web team, set the priority to Urgent for the Design system audit issue that Sam Rivera is subscribed to. | 111 / 6 / 1 |
 | SLK-21 | Add a :thumbsup: reaction to the message Priya Sharma posted in #deploys on September 23 about the rollback. | 108 / 6 / 0 | React with :eyes: to the message Leo Park posted in #incidents on Tuesday. | 74 / 6 / 0 |
+| SLK-22 | Add an :eyes: reaction to Diego Alvarez's reply in the #incidents thread about the checkout outage. | 99 / 6 / 0 | In #launch-prep, add a rocket reaction to Leo Park's reply in the thread about tonight's payments launch checklist. | 115 / 5 / 0 |
 | SLK-23 | Set the topic of the private channel whose purpose is coordinating vendor contracts to "Renewals due Oct 31". | 109 / 2 / 4 | Archive the private channel whose purpose mentions onboarding new hires and that has Diego Alvarez as a member. | 111 / 5 / 2 |
 | SLK-24 | Post "Reminder: expense reports are due Friday" in the private channel that both Priya Sharma and Leo Park are members of. | 122 / 7 / 1 | React with the eyes emoji on the message in #incidents about the payment gateway timeout that was posted by someone who's a member of #payments-oncall. | 151 / 6 / 0 |

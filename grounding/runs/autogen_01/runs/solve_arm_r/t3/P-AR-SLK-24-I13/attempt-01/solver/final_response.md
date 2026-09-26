@@ -1,0 +1,1 @@
+The message about the "payment gateway timeout" in #incidents was posted by **U_OMAR**, but U_OMAR is **not** a member of #payments-oncall (whose members are U_AISHA and U_PRIYA). Since the poster isn't a member of #payments-oncall, I did not add the eyes emoji reaction.

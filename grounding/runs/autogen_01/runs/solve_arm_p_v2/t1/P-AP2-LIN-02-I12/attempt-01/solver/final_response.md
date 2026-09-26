@@ -1,0 +1,1 @@
+There is no issue matching all the criteria. The only "Renew SSO certificate" issue (filed by leo.park@northwind.example) is assigned to **Dana Cho** (dana.cho@northwind.example), not to the guest contractor Dana Whitfield (dana.whitfield.ext@northwind.example). The guest Dana Whitfield currently has no issues assigned to her at all. No changes were made.

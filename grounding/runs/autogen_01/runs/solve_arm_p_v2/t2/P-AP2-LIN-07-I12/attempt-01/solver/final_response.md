@@ -1,0 +1,3 @@
+I'm unable to complete this task. The Linear API available in this session does not include any document management endpoints (such as searching for, retrieving, or moving documents). The available API surface covers issues, teams, workflow states, users, comments, labels, and issue relations — but not documents.
+
+If you need to move the "Retention Playbook" document into the Q4 Roadmap project, you would need to do this through the Linear UI or via a Linear API version that supports document operations (e.g., the `document`, `documents`, or `documentArchive` GraphQL endpoints, which are not exposed in this session's toolset).

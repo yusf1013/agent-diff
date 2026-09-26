@@ -1,0 +1,1 @@
+Successfully invited Aisha Khan (U_AISHA) to the `incident-response` channel (C_INCRESP). This channel matched all criteria: it has 'incident' in its name, its topic is "Postmortems and outage retros for live incidents" (mentions postmortems), and it is not archived. The channel's member count increased from 3 to 4, confirming the invitation was successful.

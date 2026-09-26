@@ -1,0 +1,1 @@
+I found the 'Product Team Offsite' calendar (which was checked/selected in your calendar list). Since I don't have direct edit permission on the calendar itself (it's owned by maya.chen@northwind.example), I set a personal display name override to **"Eng Product Sync"**. It will now appear as "Eng Product Sync" in your calendar view.

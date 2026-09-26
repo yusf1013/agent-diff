@@ -1,0 +1,1 @@
+Updated the priority to **Urgent** on issue **WEB-2 "Investigate flaky checkout tests"**. This is the issue with the September 22 comment thread where Priya Nair commented and Leo Park addressed the API timeout (noting he was "seeing the same API timeout in the staging logs too"). The priority was changed from Medium (2) to Urgent (4) successfully.

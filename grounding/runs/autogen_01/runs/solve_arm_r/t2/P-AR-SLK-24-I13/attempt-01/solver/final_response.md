@@ -1,0 +1,1 @@
+There isn't a message in #incidents about a payment gateway timeout posted by a member of #payments-oncall. The only such message was posted by U_OMAR, who is not a member of #payments-oncall (its members are U01AGENBOT9, U_AISHA, and U_PRIYA). No reaction was added.
