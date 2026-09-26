@@ -1,0 +1,275 @@
+"""Every table of report.md, from the runs, the review files and the exemplars' outcomes. No service calls.
+
+    python grounding/runs/fact_coverage_02/launch.py grounding.runs.autogen_01.kit.tables > grounding/runs/autogen_01/tables.md
+
+Yields are given two ways:
+- **automated:** the judge's verdicts as they are;
+- **adjudicated:** my reading of every failing verdict (eval/judge_review.json) applied. Exposures that rest only on a
+  decoy I judged contestable or invalid (eval/validity.json) are then left out of the "valid" column.
+"""
+from __future__ import annotations
+
+import json
+import statistics
+from collections import Counter, defaultdict
+from pathlib import Path
+
+from grounding.runs.autogen_01.inputs.make_briefs import SLACK_ALIASES
+from grounding.runs.autogen_01.kit.judge import COLLAPSE
+from grounding.runs.fact_coverage_02.followups import _conditions
+
+STUDY = Path(__file__).resolve().parents[1]
+RUNS = STUDY / "runs"
+EVAL = STUDY / "eval"
+FC2 = STUDY.parent / "fact_coverage_02"
+ARMS = {"Arm R": ("gen_arm_r", "solve_arm_r"), "Arm P": ("gen_arm_p", "solve_arm_p")}
+
+
+def load(path, default=None):
+    return json.loads(path.read_text()) if path.exists() else default
+
+
+def outcomes(gen):
+    out = {}
+    for p in sorted((RUNS / gen).glob("*/outcome.json")):
+        o = json.loads(p.read_text())
+        out[o["scenario_id"]] = o
+    return out
+
+
+def attempts_errored(gen):
+    return sorted(p.name.split(".")[0] for p in (RUNS / gen).glob("*.attempt1-http429"))
+
+
+def table_generation():
+    rows = ["## Generation", "",
+            "| Arm | Briefs | Accepted | Rejected | Versions (median, max) | Check rounds | Reader rounds | "
+            "Briefs rerun after HTTP 429 |", "|---|---:|---:|---:|---|---:|---:|---:|"]
+    for arm, (gen, _) in ARMS.items():
+        o = outcomes(gen)
+        acc = [x for x in o.values() if x["status"] == "accepted"]
+        versions = [x["versions"] for x in o.values()]
+        rows.append(f"| {arm} | {len(o)} | {len(acc)} | {len(o) - len(acc)} | "
+                    f"{statistics.median(versions) if versions else '-'}, {max(versions) if versions else '-'} | "
+                    f"{sum(x['check_rounds'] for x in o.values())} | {sum(x['reader_rounds'] for x in o.values())} | "
+                    f"{len(attempts_errored(gen))} |")
+    stages = Counter()
+    for arm, (gen, _) in ARMS.items():
+        for x in outcomes(gen).values():
+            for h in x["history"]:
+                if h["problems"]:
+                    stages[h["stage"]] += 1
+    rows += ["", "Versions sent back, by the stage that found problems: " +
+             ", ".join(f"{k} {v}" for k, v in sorted(stages.items())) + "."]
+    return rows
+
+
+def table_validity():
+    v = load(EVAL / "validity.json", {})
+    rows = ["## Manual validity review", "",
+            "| Arm | Scenarios reviewed | Valid | Flawed | Invalid | Decoys | Valid decoys | Contestable | Invalid |",
+            "|---|---:|---:|---:|---:|---:|---:|---:|---:|"]
+    for arm, prefix in (("Arm R", "AR-"), ("Arm P", "AP-")):
+        sc = {k: x for k, x in v.items() if k.startswith(prefix)}
+        verdicts = Counter(x["verdict"] for x in sc.values())
+        decoys = [d for x in sc.values() for d in x["decoys"].values()]
+        kinds = Counter(d.split(":")[0].split(";")[0].strip() for d in decoys)
+        rows.append(f"| {arm} | {len(sc)} | {verdicts['valid']} | {verdicts['flawed']} | {verdicts['invalid']} | "
+                    f"{len(decoys)} | {kinds['valid']} | {kinds['contestable']} | {kinds['invalid']} |")
+    rows += ["", "Exemplar reference (fact_coverage_02, 21 new scenarios): 2 had to be fixed after running (LIN-25 "
+             "label ids, SLK-21 reaction name), 1 test is invalid (BOX-31), 1 decoy is contestable (BOX-22)."]
+    return rows
+
+
+def design(case):
+    ref = case["references"][0]
+    claims = ref["claims"]
+    return {"conditions": _conditions(ref["query"]), "facts": len({c["requirement"] for c in claims}),
+            "decoys": len(claims), "families": Counter(c.get("family") for c in claims)}
+
+
+def table_design():
+    rows = ["## Request size and families", "",
+            "| Set | Scenarios | Conditions median (range) | Facts tested median (range) | Decoys median (range) | "
+            "Families |", "|---|---:|---|---|---|---|"]
+
+    def line(label, cases):
+        ds = [design(c) for c in cases]
+        if not ds:
+            return
+        fam = Counter()
+        for d in ds:
+            fam.update(d["families"])
+
+        def mr(key):
+            vals = [d[key] for d in ds]
+            return f"{statistics.median(vals)} ({min(vals)}-{max(vals)})"
+        rows.append(f"| {label} | {len(ds)} | {mr('conditions')} | {mr('facts')} | {mr('decoys')} | "
+                    + ", ".join(f"{k} {n}" for k, n in sorted(fam.items())) + " |")
+    ex = []
+    for p in sorted((FC2 / "cases_new").glob("*/*.json")):
+        c = json.loads(p.read_text())
+        if not c["case_id"].startswith(("P-", "PP-")) and "-A" not in c["case_id"] and "TWIN" not in c["case_id"]:
+            if not c["case_id"].startswith(("P-", "FP-")):
+                for r in c["references"]:
+                    for cl in r["claims"]:
+                        cl.setdefault("family", None)
+                ex.append(c)
+    fam_ex = load(FC2 / "suite_new.json", [])
+    by_scen = defaultdict(list)
+    for t in fam_ex:
+        if t["form"] == "probe":
+            by_scen[t["scenario"]].append(t["family"])
+    for c in ex:
+        fams = by_scen.get(c["case_id"], [])
+        for cl, f in zip(c["references"][0]["claims"], fams):
+            cl["family"] = f
+    line("Exemplars (fact_coverage_02 new scenarios)", ex)
+    for arm, (gen, _) in ARMS.items():
+        cases = [load(RUNS / gen / sid / "case.json") for sid, o in outcomes(gen).items() if o["status"] == "accepted"]
+        line(f"Generated, {arm}", [c for c in cases if c])
+    return rows
+
+
+def adjudicated(score, review, validity):
+    """Per test: exposed facts after my review (overrides applied) and without contestable or invalid decoys."""
+    bad = {}
+    for sid, v in validity.items():
+        if sid.startswith("_"):
+            continue
+        for witness, verdict in v["decoys"].items():
+            kind = verdict.split(":")[0].split(";")[0].strip()
+            if kind in ("contestable", "invalid"):
+                bad[(sid, witness)] = kind
+    out = []
+    for t in score["tests"]:
+        exposed = set()
+        for trial, r in t["trials"].items():
+            key = f"{score.get('_run')}/{trial}/{t['case_id']}"
+            rv = review.get(key, {})
+            outcome = rv.get("outcome", r["outcome"]) if rv.get("review") == "override" else r["outcome"]
+            facts = rv.get("exposed", r["exposed"]) if rv.get("review") == "override" else r["exposed"]
+            if COLLAPSE.get(outcome) == "fail" and not rv.get("contestable"):
+                exposed |= set(facts)
+        out.append({**t, "exposed_adjudicated": sorted(exposed)})
+    return out, bad
+
+
+def table_yield():
+    review = load(EVAL / "judge_review.json", {})
+    validity = load(EVAL / "validity.json", {})
+    rows = ["## Yield on Qwen (3 trials)", "",
+            "| Arm | Form | Tests | Tests exposing | Facts, detect@1 | Facts, detect@3 (automated) | "
+            "Facts, detect@3 (adjudicated) | Facts per test (adjudicated) |", "|---|---|---:|---:|---:|---:|---:|---:|"]
+    facts_by_arm = {}
+    for arm, (gen, solve) in ARMS.items():
+        score = load(RUNS / f"{solve}.score.json")
+        if not score:
+            continue
+        score["_run"] = solve
+        tests, _ = adjudicated(score, review, validity)
+        facts_by_arm[arm] = tests
+        for form in ("probe", "fact probe", "cover", None):
+            ts = [t for t in tests if form is None or t.get("form") == form]
+            if not ts:
+                continue
+            f1 = {x for t in ts for x in t["exposed_t1"]}
+            f3 = {x for t in ts for x in t["exposed"]}
+            fa = {x for t in ts for x in t["exposed_adjudicated"]}
+            rows.append(f"| {arm} | {form or '**all**'} | {len(ts)} | {sum(bool(t['exposed']) for t in ts)} | "
+                        f"{len(f1)} | {len(f3)} | {len(fa)} | {len(fa) / len(ts):.2f} |")
+    rows += ["", "Exemplar reference (fact_coverage_02 §6, the same 36 facts as Arm R): 76 tests (18 covers, 58 "
+             "probes), 14 facts at detect@3 (13 uncontested), 0.18 per test; probes 13 facts (0.22 per probe), "
+             "covers 2 (0.11)."]
+    for arm, tests in facts_by_arm.items():
+        fa = sorted({x for t in tests for x in t["exposed_adjudicated"]})
+        rows.append(f"\n{arm}, facts exposed (adjudicated): " + ", ".join(f"`{f}`" for f in fa))
+    fam_rows = ["", "### Probes by family (adjudicated)", "", "| Family | Probes | Exposing | Facts |",
+                "|---|---:|---:|---|"]
+    fam = defaultdict(list)
+    for tests in facts_by_arm.values():
+        for t in tests:
+            if t.get("form") == "probe":
+                fam[t.get("family")].append(t)
+    for f in sorted(fam, key=str):
+        ts = fam[f]
+        fam_rows.append(f"| {f} | {len(ts)} | {sum(bool(t['exposed_adjudicated']) for t in ts)} | "
+                        + ", ".join(sorted({x for t in ts for x in t['exposed_adjudicated']})) + " |")
+    return rows + fam_rows
+
+
+def table_reproduction():
+    ex = load(EVAL / "exemplar_outcomes.json", {})
+    score = load(RUNS / "solve_arm_r.score.json")
+    if not score:
+        return []
+    score["_run"] = "solve_arm_r"
+    tests, _ = adjudicated(score, load(EVAL / "judge_review.json", {}), load(EVAL / "validity.json", {}))
+    rows = ["## Arm R, fact by fact", "", "| Exemplar | Fact | Exemplar exposed | Generated exposed (adjudicated) |",
+            "|---|---|---|---|"]
+    both = only_ex = only_gen = 0
+    for sid, o in sorted(outcomes("gen_arm_r").items()):
+        ex_id = o["brief"].get("exemplar")
+        mine = [t for t in tests if t.get("scenario") == sid]
+        got = {x for t in mine for x in t["exposed_adjudicated"]}
+        for fact in o["brief"]["facts"]:
+            e = fact in ex.get(ex_id, {}).get("exposed", [])
+            g = fact in got if o["status"] == "accepted" else None
+            both += bool(e and g)
+            only_ex += bool(e and not g)
+            only_gen += bool(g and not e)
+            rows.append(f"| {ex_id} | `{fact}` | {'yes' if e else ''} | "
+                        f"{'yes' if g else ('not run' if g is None or not mine else '')} |")
+    rows += ["", f"Exposed by both: {both}; only by the exemplars: {only_ex}; only by the generated suites: {only_gen}."]
+    return rows
+
+
+def table_judge():
+    rows = ["## Judge", "", "| Split | Trials | Collapsed agreement | Exposed-fact agreement | Artifacts caught |",
+            "|---|---:|---:|---:|---:|"]
+    for name in ("judge_dev_01", "judge_dev_02", "judge_test_01"):
+        c = load(RUNS / name / "comparison.json")
+        if c:
+            rows.append(f"| {name} | {c['trials']} | {c['collapsed_agreement']} | "
+                        f"{c['exposed_agreement_on_shared_fails']} | {c['artifact_recall']} |")
+    review = load(EVAL / "judge_review.json", {})
+    marks = Counter(v.get("review") for k, v in review.items() if not k.startswith("_"))
+    rows += ["", f"On the generated runs, I read every failing, void or unclear verdict: {marks['agree']} agree, "
+                 f"{marks['override']} overridden."]
+    return rows
+
+
+def table_tokens():
+    rows = ["## Tokens (Claude Code Sonnet agents; list-price estimate, billed to the subscription)", "",
+            "| Run | Role | Calls | Output tokens | Cache writes | Cache reads | Uncached input | List-price USD |",
+            "|---|---|---:|---:|---:|---:|---:|---:|"]
+    total = 0.0
+    for calls in sorted(RUNS.glob("*/calls.jsonl")):
+        agg = defaultdict(Counter)
+        for line in calls.read_text().splitlines():
+            r = json.loads(line)
+            a = agg[r["role"]]
+            a["calls"] += 1
+            for k in ("output_tokens", "cache_creation_input_tokens", "cache_read_input_tokens", "input_tokens"):
+                a[k] += r.get(k) or 0
+            a["usd"] += r.get("cost_usd_list_price") or 0
+        for role, a in sorted(agg.items()):
+            total += a["usd"]
+            rows.append(f"| {calls.parent.name} | {role} | {a['calls']} | {a['output_tokens']:,} | "
+                        f"{a['cache_creation_input_tokens']:,} | {a['cache_read_input_tokens']:,} | "
+                        f"{a['input_tokens']:,} | {a['usd']:.2f} |")
+    rows += ["", f"Total list-price estimate: ${total:.2f}. Calls that failed (HTTP 429) are not in these logs; their "
+                 "responses are kept as *.failed.json next to the other evidence."]
+    return rows
+
+
+def main():
+    parts = [table_generation(), table_validity(), table_design(), table_yield(), table_reproduction(), table_judge(),
+             table_tokens()]
+    print("# Tables for report.md (generated by kit/tables.py)\n")
+    for p in parts:
+        print("\n".join(p) + "\n")
+
+
+if __name__ == "__main__":
+    main()

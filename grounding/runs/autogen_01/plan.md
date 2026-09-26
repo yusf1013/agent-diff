@@ -212,3 +212,28 @@ scenarios and 4 hidden-target tests were read with the reader's own conditions:
 
 **Frozen from this commit:** `kit/prompts`, `kit/docs`, `kit/examples` and `inputs/`. Arm R and Arm P run once on
 this version.
+
+## Amendment 3 (2026-09-26, 07:40, before any control trial ran): a same-day control
+
+**Why.** Arm R's first scored run exposes fewer facts per test than the exemplars' recorded runs of 2026-09-24 and
+2026-09-25, although the generated scenarios passed review. Two explanations cannot be told apart with the recorded
+numbers alone:
+- the scenarios themselves (for example, more explicit wording);
+- the solver on another day (Qwen variance or an update of the served model).
+
+**The control.** The exemplars' 76 tests of the 18 new scenarios (18 covers, 58 probes; reruns for LIN-25 and
+SLK-21) run again today:
+- with the same runner, 3 trials, and the same limiter;
+- judged by the same frozen judge;
+- scored like the generated runs, into [runs/solve_control](runs/solve_control).
+
+**The comparison.** Arm R against the control is the main comparison of yield. The recorded exemplar numbers are
+reported next to both.
+
+**Order.** It runs after Arm P's solver runs, on the shared 19-per-minute limit.
+
+**Also recorded.**
+- **Usage limit.** The Claude Code session limit (HTTP 429) stopped 13 briefs at about 00:40. They were regenerated
+  from scratch after the reset (07:15). The first attempts are kept as `<id>.attempt1-http429`.
+- **Effect locators.** They are now keyed by each table's real primary key: AR-SLK-23's key was missing, and the
+  scorer defaulted to `id`. This changed no test the solver saw.
