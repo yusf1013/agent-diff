@@ -139,9 +139,15 @@ fix changes what later readers see:
 - **The derivation left orphaned rows** when the removed target was a Slack user. It was found by the end-to-end dev
   run and fixed before the main runs.
 
-**In the replica: a new gap found by the runs.** Slack's `users.conversations` ignores `types`. A solver asking for
-private channels gets public ones too. One trial (P-AR-SLK-23-I13) acted on the public decoy that came back, which
-makes it an artifact. The replica profile did not list this gap, so the judge could not know it.
+**In the replica: two new gaps found by the runs.** Neither was in the replica profile, so the judge could not know
+them. I verified both in the replica code:
+- **Slack's `users.conversations` ignores `types`.** A solver asking for private channels gets public ones too. One
+  Arm R trial and one control trial acted on the public decoy that came back.
+- **Linear's `documents(filter: {project: …})` honours only `project.id`.** A filter on the project's name is
+  ignored. One control trial took the unfiltered result as a match.
+
+Both are artifacts under the method's rule, overridden alike in both arms. They join the ignored `eventTypes`,
+`subscribers` and `parent` filters in the list of replica paths that a probe must not rely on.
 
 **In the judge**, on the generated runs:
 - I read every failing, void or unclear verdict and overrode 2. Both were ignored-filter artifacts: the new Slack
