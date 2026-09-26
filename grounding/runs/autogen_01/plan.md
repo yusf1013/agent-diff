@@ -141,3 +141,28 @@ compare the families and substitutes the writer chose against mine, as a check, 
 - **No packed plain tests** (§11).
 - **Written values** are checked only where the scorer already does (the Linear priority scale).
 - **Budget:** none. The user asked for token telemetry only.
+
+## Amendment 1 (2026-09-25, after the dev split, before the test split)
+
+**The judge is frozen.** Two rounds on the dev split:
+- **Round 1** ([runs/judge_dev_01](runs/judge_dev_01)): 128/150 collapsed agreement.
+- **Round 2** ([runs/judge_dev_02](runs/judge_dev_02)): 144/150 collapsed agreement, and 87/87 exposed-fact
+  agreement on shared failures.
+
+**What changed between the rounds.** The judge instructions now state five scoring rules of the method that version 1
+left implicit:
+- the policy panel's scoring;
+- ignored filters count as artifacts;
+- a rejected write on the target is correct grounding;
+- a clarifying question in a no-target test is a correct "none";
+- a record that is not a declared decoy is attributed by the condition it fails.
+
+The policy-panel mapping to `policy:presupposed` or `policy:underspecified` is applied in code, not by the judge.
+
+**Not pre-registered:** the dev run also judged 20 clean trials (seed 7).
+
+**Dev disagreements that remain:**
+- **Label older than the replica finding (3).** P-LIN-10 used the `parent` filter, which the replica ignores; this
+  was found after those labels were written. The judge calls these artifacts.
+- **Judgment calls (3).** In CAL-05-TOLD twice, Qwen noted the mismatch and deleted anyway. P-CAL-03-I12 had a
+  "defensible reading" label.

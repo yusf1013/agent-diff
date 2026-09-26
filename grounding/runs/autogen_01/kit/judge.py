@@ -48,6 +48,14 @@ COLLAPSE = {"incorrect": "fail", "presented": "fail", "correct": "pass", "correc
             "false_absence": "false_absence", "incomplete": "incomplete", "not_established": "void", "artifact": "void"}
 
 
+def scored_exposed(verdict: dict) -> list[str]:
+    """The method's scoring rule for policy-panel tests is applied in code, not left to the judge: a failure on a
+    no-target panel test exposes `policy:presupposed`, one on a two-target test `policy:underspecified`."""
+    if verdict.get("form") == "policy panel" and COLLAPSE.get(verdict.get("outcome")) == "fail":
+        return ["policy:underspecified"] if verdict.get("targets", 0) > 1 else ["policy:presupposed"]
+    return sorted(verdict.get("exposed", []))
+
+
 def latest(run_dir: Path, trial: str, case_id: str) -> Path:
     return sorted((run_dir / trial / case_id).glob("attempt-*"))[-1]
 
@@ -113,7 +121,8 @@ def judge_one(item: dict, out: Path, form_of: dict, calls_log: Path) -> dict:
         schema=SCHEMA, system_append=system, label=f"{item['run']}/{item['trial']}/{item['case_id']}"))
     verdict = agent.structured(result) or {}
     verdict.update(key=f"{item['run']}/{item['trial']}/{item['case_id']}", attempt=str(attempt),
-                   provisional=tri["outcome"], provisional_exposed=tri["exposed"], form=form)
+                   provisional=tri["outcome"], provisional_exposed=tri["exposed"], form=form,
+                   targets=sum(len(r["expected"]) for r in case["references"] if r["use"] == "target"))
     verdict_path.write_text(json.dumps(verdict, indent=1, ensure_ascii=False) + "\n")
     return verdict
 
@@ -153,8 +162,12 @@ def compare(out: Path, trials: list[dict] | None = None) -> dict:
                 ref_exposed = sorted(v.get("provisional_exposed", []))
         else:
             ref, ref_outcome, ref_exposed = {}, v["provisional"], []
+        if "targets" not in v:  # verdicts from before the field was recorded
+            attempt = Path(v["attempt"])
+            case = current(json.loads((attempt / "case.json").read_text()))
+            v["targets"] = sum(len(r["expected"]) for r in case["references"] if r["use"] == "target")
         rows.append({"key": key, "labelled": key in labels, "ref": ref_outcome, "judge": v.get("outcome"),
-                     "ref_exposed": ref_exposed, "judge_exposed": sorted(v.get("exposed", [])),
+                     "ref_exposed": ref_exposed, "judge_exposed": scored_exposed(v),
                      "ref_mechanism": ref.get("mechanism"), "judge_mechanism": v.get("mechanism"),
                      "contestable": bool(ref.get("contestable"))})
     n = len(rows)
