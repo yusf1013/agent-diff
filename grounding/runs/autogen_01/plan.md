@@ -237,3 +237,38 @@ reported next to both.
   from scratch after the reset (07:15). The first attempts are kept as `<id>.attempt1-http429`.
 - **Effect locators.** They are now keyed by each table's real primary key: AR-SLK-23's key was missing, and the
   scorer defaulted to `id`. This changed no test the solver saw.
+
+## Amendment 4 (2026-09-26, about 09:00, before any v2 scenario was generated): one iteration, method v2
+
+**What prompted it.** Arm R, judged and read, exposes fewer facts than the exemplars on the same fact sets. A
+mechanical look at 177 of the control's 228 trials shows today's Qwen still failing the exemplars' decoys at about
+their recorded rate (13 facts so far). So the gap is in the generated scenarios, not the solver.
+
+The autopsy ([eval/autopsy.md](eval/autopsy.md)) points to salience. The exemplars' most effective decoys placed
+the requested value where the agent looks first:
+- a calendar named "Tokyo";
+- a title that mentions the topic;
+- a login that contains the requested one (`pat.kimura` for `pat.kim`).
+
+The generated decoys put it in less-read fields, or the other way round (`dana.white` for `dana.whitfield`). The
+generated requests are also longer.
+
+**What changes (method v2).**
+- **The guidance.** `kit/docs/method.md` gains the section "Make the near miss tempting" (three generic rules). No
+  fact- or scenario-specific content is added.
+- **The kit fixes made after the main runs** (report §7) also apply:
+  - the reader sees every record in full;
+  - derived tests are re-checked for a match;
+  - replacement-query decoys get value observability.
+
+  They change what the checks and the reader see, not what the writer is told.
+
+**The test.** The 16 Arm P briefs are generated again with v2 (ids `AP2-…`,
+[inputs/briefs_arm_p_v2.json](inputs/briefs_arm_p_v2.json)). They are run and judged exactly like v1. The guidance
+was derived from Arm R, so Arm P, whose facts played no part in it, is the fair test. Reported side by side, v1 vs
+v2 on the same facts:
+- acceptance;
+- my validity verdicts;
+- facts exposed (automated and adjudicated), per test, with and without fact probes.
+
+Arm R is not regenerated, because v2 on Arm R would be judged on the facts that shaped it.

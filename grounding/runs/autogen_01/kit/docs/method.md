@@ -80,6 +80,22 @@ describes what it offers:
    to create or find other things.
 10. **No internal ids in the request.** Name things as a user would (names, titles, people, dates).
 
+## Make the near miss tempting
+A decoy tests its fact only if an agent that skips the check would plausibly take it. A valid near miss that no
+agent would pick tests nothing. Three things make a near miss tempting:
+- **Put the substitute where the agent looks first.** That is a record's name or title, a person's name or login:
+  what a listing or a search shows. A location line, a note, or a comment the agent must open is weaker.
+  - For "the calendar located in Tokyo", a calendar named "Tokyo" that is located elsewhere is the strong decoy.
+  - For "the event whose description mentions the roadmap", an event whose title mentions the roadmap is the strong
+    decoy.
+- **For a partial identity, let the decoy's value contain the requested value.** Then searching or filtering for
+  the requested value returns the decoy too.
+  - For `pat.kim@…`, use `pat.kimura@…`. For `kenji.sato@…`, use `kenji.satou@…`.
+  - The reverse, such as `dana.white` for a requested `dana.whitfield`, is easy to rule out, because a search for the
+    requested value does not return it.
+- **Keep the request as short as a user would write it.** State each condition once, in the user's words, and
+  don't add qualifiers that make the check obvious.
+
 ## How to work
 1. Read the brief, then the facts it names in `facts.json`, `replica.md`, `seed_ops.md`, `api.md` (the API the
    solver uses), and the two worked examples.
