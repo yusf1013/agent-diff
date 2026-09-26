@@ -1,0 +1,1 @@
+Successfully added the tag 'renewed' to the file 'Vendor Agreement.pdf' (ID 9101) in the Client Docs hub (ID 9001) that was last updated by Dana Whitfield. The API confirmed the tag was applied as shown in the response with `"tags":["renewed"]`.

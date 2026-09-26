@@ -1,0 +1,1 @@
+There isn't a message from Leo Park in #incidents — I searched the channel history and ran targeted Slack searches (`from:leo.park in:#incidents`), and both came back empty. Leo Park (leo.park) has only one message in the workspace, and it's in #eng-standup, not #incidents. So there's nothing to react to.

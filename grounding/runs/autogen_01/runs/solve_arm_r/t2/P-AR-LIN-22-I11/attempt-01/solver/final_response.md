@@ -1,0 +1,1 @@
+There isn't a roadmap document in a "Mobile Redesign" project to update. In fact, the workspace contains no teams at all, and Linear doesn't have a "document" concept — it works with Teams, Issues, Labels, and Workflow States. So there's nothing to update.

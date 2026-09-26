@@ -1,0 +1,1 @@
+The private channel `hr-general` (C_HRGEN) has been successfully archived. It was the channel with "Onboarding new hires" in its topic, and Diego Alvarez was confirmed as a member.

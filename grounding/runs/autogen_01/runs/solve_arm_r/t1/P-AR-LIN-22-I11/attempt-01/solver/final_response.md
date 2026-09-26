@@ -1,0 +1,3 @@
+Linear is a project management and issue tracking tool — it doesn't have a concept of "documents." The entities available in the Linear API are **teams, issues, workflow states, labels, comments, and users**. There is no "roadmap document" entity, no "projects" (in the document/wiki sense), and no "last edited by" metadata on content like you'd find in Notion, Confluence, or Google Docs.
+
+If you're looking for a document that Leo Park edited, it may live in a different tool (e.g., Notion, Confluence, Google Docs, or an internal wiki). If you'd like, I can search Linear for a **team or issue** related to "Mobile Redesign" or look up **Leo Park** as a user — just let me know and I'll dig in.

@@ -1,0 +1,1 @@
+There is no "Design system audit" issue in the Web team that Sam Rivera is subscribed to. The Web team does have a "Design system audit" issue (ID: i-web-3), but it currently has no subscribers. Since Sam Rivera is not a subscriber to it, the condition for the task isn't met, so no priority change was made.

@@ -1,0 +1,1 @@
+Successfully moved the "Vendor sync: Packaging" event (Thursday, June 21 at 9:00 AM) to Room 2C. This was the correct event — it had Dana Whitfield as an optional attendee, distinguishing it from the other Thursday vendor sync events where she was either the organizer, a required attendee, or not present at all (Dana White in the Printing sync).

@@ -1,0 +1,1 @@
+There is no folder that matches all the criteria. The only folder in the Legal Hold collection is "Vendor Filings" (ID: 9507), which was created on June 3, 2026 and last modified by Priya Nair, but it contains only 1 item directly in it (the subfolder "Vendor Filings 2023"), not exactly 3. No tag was added.

@@ -1,0 +1,1 @@
+Found the "Client sync" event about finalizing the Meridian contract (ending at 3:30 PM on June 21, 2018) and successfully moved its location to **Room 4C**. The previous location was "Meridian contract signing suite."

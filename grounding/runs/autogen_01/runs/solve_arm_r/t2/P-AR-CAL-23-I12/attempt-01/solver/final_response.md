@@ -1,0 +1,1 @@
+There is no vendor sync on Thursday (June 21) with **Dana Whitfield** as an optional attendee. The only vendor sync that day is "Vendor sync: Printing" (12:00 PM), and its optional attendee is **Dana White**, not Dana Whitfield. If you meant Dana White, just let me know and I'll move that event to Room 2C.

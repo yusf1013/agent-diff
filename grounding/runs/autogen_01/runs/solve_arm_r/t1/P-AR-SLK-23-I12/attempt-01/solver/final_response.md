@@ -1,0 +1,1 @@
+There is no private channel whose purpose mentions "onboarding new hires." The workspace only has two private channels — **budget-planning** (purpose: "Quarterly budget planning and forecast reviews") and **hr-benefits** (purpose: "Benefits enrollment and 401k questions") — neither of which matches the description you gave.

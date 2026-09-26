@@ -1,0 +1,1 @@
+There isn't a PDF in the Product Specs folder that meets all the criteria. The only PDF whose description mentions "mobile redesign" is **"Mobile Redesign Spec v2.pdf"**, but its size is 2,100,000 bytes (~2.1 MB), which exceeds the 2 MB limit. The other PDF, "Payment Redesign Spec.pdf," is about the *payment* redesign, not the mobile redesign, and is 3 MB in size.

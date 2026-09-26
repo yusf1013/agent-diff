@@ -1,0 +1,1 @@
+Leo Park hasn't posted any messages in #incidents. The only message in that channel was from Diego Alvarez asking about elevated latency on checkout. There's nothing from Leo Park to react to, so no :eyes: reaction was added.

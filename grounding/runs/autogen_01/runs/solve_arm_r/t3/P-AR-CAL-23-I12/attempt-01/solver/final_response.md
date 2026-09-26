@@ -1,0 +1,1 @@
+There isn't a vendor sync on Thursday (June 21) with Dana Whitfield as an optional attendee. The only Thursday vendor sync is "Vendor sync: Printing" at noon, but its optional attendee is **Dana White** (dana.white@northwind.example), not Dana Whitfield. No changes were made.

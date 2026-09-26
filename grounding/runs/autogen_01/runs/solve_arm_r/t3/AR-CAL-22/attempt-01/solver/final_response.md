@@ -1,0 +1,1 @@
+Successfully changed the time zone of the "Ops Rotation – NORAM" calendar (ops-noram@northwind.example) from America/Los_Angeles to America/New_York. This is the Ops Rotation calendar the user owns whose description mentions "weekend on-call coverage."

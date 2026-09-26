@@ -1,0 +1,1 @@
+There is no Web team issue about login timeout created by Maya Chen on June 3rd. Maya Chen has only one issue in the workspace — "Login page redesign for SSO" on the API team. The two login timeout issues on the Web team (both dated June 3rd) were created by Leo Park and Priya Nair, not Maya Chen. So there's nothing to update.

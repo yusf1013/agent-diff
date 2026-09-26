@@ -1,0 +1,1 @@
+There is no private channel in this workspace whose purpose mentions onboarding new hires. The only private channel that exists is #budget-planning, with the purpose "Quarterly budget planning and forecast reviews." No channel matching your criteria was found, so nothing was archived.

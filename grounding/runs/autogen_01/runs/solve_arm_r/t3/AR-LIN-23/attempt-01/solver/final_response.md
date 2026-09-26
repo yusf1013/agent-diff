@@ -1,0 +1,1 @@
+Successfully reopened the resolved comment thread on WEB-7. The comment "The payment retry logic times out under load and needs a backoff." (posted by Maya Chen, previously resolved by Sam Rivera) has been reopened by clearing its resolvingUser.

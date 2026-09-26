@@ -1,0 +1,1 @@
+There isn't a vendor sync on Thursday with Dana Whitfield as an optional attendee. The only vendor sync on Thursday is **"Vendor sync: Freight"** at 10:30 AM, but in that event Dana Whitfield is the **organizer**, not an optional attendee (the optional attendee is Kenji Sato). So there's no matching event to move to Room 2C.

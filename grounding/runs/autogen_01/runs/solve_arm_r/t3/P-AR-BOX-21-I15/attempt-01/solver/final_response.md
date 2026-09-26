@@ -1,0 +1,1 @@
+There is no folder in the "Legal Hold" collection that matches the specified criteria. The Legal Hold collection contains only a single item — a file called "Insurance A.pdf" — with no folders present. Therefore, I could not add the "archive-ready" tag to any folder.

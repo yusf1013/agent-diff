@@ -1,0 +1,1 @@
+I couldn't find a client sync event about finalizing the Meridian contract. The only "Client sync" on the calendar is on June 21 (3:00–3:30 PM), but it's about reviewing an onboarding checklist for interns, not the Meridian contract. No matching event exists to update.

@@ -1,0 +1,1 @@
+There isn't a vendor sync on Thursday (June 21) that has Dana Whitfield as an optional attendee. There is one "Vendor sync: Freight" on Thursday at 10:30–11:00 AM, but in that event Dana Whitfield is the **organizer**, not an optional attendee. The optional attendee on that event is Kenji Sato.

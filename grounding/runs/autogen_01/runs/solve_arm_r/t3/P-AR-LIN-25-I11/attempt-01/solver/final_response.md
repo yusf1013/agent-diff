@@ -1,0 +1,1 @@
+There is no issue in the Support team that is both assigned to Priya Nair and tagged with "Customer Tier." The only issue assigned to Priya Nair in that team (SUP-2: "Support escalation for Atlas Freight") is labeled "Enterprise," not "Customer Tier." No action was taken.

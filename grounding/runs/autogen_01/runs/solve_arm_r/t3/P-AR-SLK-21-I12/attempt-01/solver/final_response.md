@@ -1,0 +1,1 @@
+There's no message from Leo Park in #incidents. The only message in that channel was posted by Omar on Tuesday ("I'm looking into the DB connection pool now."). So there's nothing to react to — Leo Park hasn't posted in #incidents.

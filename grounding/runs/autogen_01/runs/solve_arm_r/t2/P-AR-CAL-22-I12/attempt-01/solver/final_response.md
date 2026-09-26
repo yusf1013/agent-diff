@@ -1,0 +1,1 @@
+I couldn't find an "Ops Rotation" calendar with a description that mentions weekend on-call coverage. The only "Ops Rotation" calendar you own is **"Ops Rotation – APAC"**, and its description reads: *"Handles daytime shift scheduling for the APAC ops team."* — no mention of weekend on-call coverage. So I did not make any changes.

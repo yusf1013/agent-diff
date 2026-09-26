@@ -1,0 +1,1 @@
+Found and reopened the comment thread on WEB-7 about payment retries timing out. The comment by Sam Rivera — "Confirmed: payment retry attempts time out under load." (previously resolved on 2026-08-06) — has been successfully reopened using the `commentUnresolve` mutation.
