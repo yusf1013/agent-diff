@@ -237,4 +237,12 @@ def build(s: dict, brief: dict):
                              "target is removed)" for m in missing_anchors(test)]
                 problems += [f"{test['case_id']}: removing the target leaves {m}; the test would not install"
                              for m in derive.dangling(test)]
+                # Added after the main runs (report §7): a no-target test must have no match. A superlative
+                # ("the most recent") promotes the next candidate to the answer once the target is removed.
+                check_seed = dict(test["seed"])
+                check_seed.update(test.get("derived_rows", {}))
+                _, test_errors = fdc.check_reference(check_seed, test["references"][0])
+                problems += [f"{test['case_id']}: with the target removed, {e.split(': ', 1)[-1]}. A condition relative "
+                             "to other records (such as 'the most recent') makes the next candidate the answer; "
+                             "state the condition absolutely." for e in test_errors if "but query selects" in e]
     return case, problems

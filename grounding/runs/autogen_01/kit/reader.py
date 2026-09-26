@@ -63,14 +63,22 @@ TURN2 = {
 }
 
 
+READER_NOISE = {"etag", "sequence_id", "sha1", "sha_1", "bodyData", "reactionData", "currentProgress",
+                "progressHistory", "completedIssueCountHistory", "completedScopeHistory", "inProgressScopeHistory",
+                "issueCountHistory", "scopeHistory", "inviteHash"}
+
+
 def render_seed(case) -> str:
+    """Every record in full, minus a few bookkeeping columns. (Until the main runs finished, the reader saw
+    compact_row output, which drops `url` fields and cuts rows at 900 characters; see report §7.)"""
     lines = []
     for table in sorted(case["seed"]):
         rows = case["seed"][table]
         if not rows:
             continue
         lines.append(f"### {table} ({len(rows)})")
-        lines += [compact_row(r, limit=900) for r in rows]
+        lines += [json.dumps({k: v for k, v in r.items() if k not in READER_NOISE and v not in (None, "", [], {})},
+                             ensure_ascii=False, default=str) for r in rows]
     return "\n".join(lines)
 
 

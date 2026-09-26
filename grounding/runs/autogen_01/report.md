@@ -59,3 +59,40 @@ meaning was intended) from a contestable decoy (a careful reader could argue it 
 and flagged on the decoy, like the exemplars' asterisk.
 
 <!-- GENERATION, YIELD, REPRODUCTION, SHORTCOMINGS, USAGE: filled when the runs finish -->
+
+## 8. Manual decisions and interventions
+
+All are recorded in the plan's amendments and in git.
+
+**Before any main brief ran (setup and dev):**
+- **Inputs, drafted by hand** (`inputs/`):
+  - facts with substitute menus (derived by rule from the catalog);
+  - replica profiles (from fact_coverage_02 §9 and the replica code);
+  - seed vocabularies;
+  - the solver's own API docs, extracted verbatim.
+- **Two worked examples:** the pilot's BOX-01 and CAL-01, rewritten in the new format. The self-test shows that their
+  seeds expand to exactly the pilot's rows.
+- **Judge, round 2.** Five method rules the first version left implicit were written into the judge's prompt:
+  - policy-panel scoring;
+  - ignored filters are artifacts;
+  - a rejected write on the target is correct grounding;
+  - a clarifying question is a correct "none";
+  - a record that is not a declared decoy is attributed by the condition it fails.
+
+  The policy-panel mapping moved into code. The judge was frozen before the test split.
+- **Reader, v2.** A genuine ambiguity is now told apart from a contestable decoy. Contestable decoys are flagged
+  and kept.
+- **Fixes after dev round 2**, frozen before the main runs:
+  - the writer docs got Slack's primary keys and when to label a decoy F7;
+  - the reader feedback lets a writer keep wording it judges clear, and asks it not to add hints;
+  - the derivation prunes rows by the replica's own foreign keys. Removing a Slack user had left its memberships
+    behind, so the probes did not install.
+
+**During the main runs** (none changed a prompt or a test the solver saw):
+- **The usage limit.** The session limit (HTTP 429) stopped 13 briefs. They were regenerated from scratch after the
+  reset, and the first attempts are kept.
+- **A cached-verdict bug.** A verdict was reused across a retried attempt; verdicts are now keyed by attempt.
+- **Effect locators.** They are keyed by the table's real primary key: a missing key had made the scorer fail on
+  AR-SLK-23.
+- **The same-day control** (amendment 3), added after Arm R's first scores and before any control trial.
+- **My reading of every failing verdict** on the generated runs. Two overrides so far (below), both ignored filters.

@@ -176,6 +176,17 @@ def deciding_values(case: dict, claim: dict) -> list[list[str]]:
     root = [r for r in seed.get(table, []) if str(r.get(key)) == str(claim["witness"])]
     groups = [[str(claim["witness"])] + [str(root[0][f]) for f in ("identifier", "ts") if root and root[0].get(f)]]
     mutation = claim["mutation"]
+    if mutation["type"] == "REPLACE" and root:
+        # Added after the main runs (report §7): the root filters of the original query that the decoy fails
+        # hold its deciding values. The check is a text search over every response, so it cannot verify flags
+        # (true/false appear everywhere); a flag the API reports differently (a group DM shown as private) still
+        # needs a per-record check.
+        for f in query.get("filters", []):
+            if not fdc.compare(fdc.get_field(root[0], f["field"]), f["op"], f.get("value")):
+                vals = _render(fdc.get_field(root[0], f["field"]), f["field"])
+                if vals:
+                    groups.append(vals)
+        return groups
     if mutation["type"] not in ("DROP", "SUB", "SPLIT") or not root:
         return groups
     found = _path_to(query, mutation["target"])
