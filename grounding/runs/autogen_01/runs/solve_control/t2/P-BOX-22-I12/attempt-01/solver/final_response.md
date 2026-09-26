@@ -1,0 +1,1 @@
+Successfully added the "Discount policy.pdf" file to the "Sales hub" (last updated by Dana Whitfield). The hub already contained the "Pricing sheet" file (via the Sales folder), so the condition was met. The file has been added to the hub as a direct item.

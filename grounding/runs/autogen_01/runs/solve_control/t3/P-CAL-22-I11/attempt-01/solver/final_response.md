@@ -1,0 +1,1 @@
+There is no calendar whose description says it is for the London office. The only London-named calendar (`london@northwind.example`, titled "London office") actually has a description that reads "Calendar for the **Paris** office." No other calendar on your list references the London office in its description either, so I've made no changes.

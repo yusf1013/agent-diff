@@ -1,0 +1,1 @@
+I couldn't find a planning session that meets all your criteria. There is a "Planning session" on Thursday, June 21 that ends at 5 PM, but its description is "Hiring plan for the autumn" — it doesn't mention a Q4 roadmap. No other planning sessions exist that day either. If you'd like, I can move that hiring-related planning session to Room 2B instead — just let me know.

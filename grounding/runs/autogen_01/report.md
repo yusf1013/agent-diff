@@ -60,6 +60,64 @@ and flagged on the decoy, like the exemplars' asterisk.
 
 <!-- GENERATION, YIELD, REPRODUCTION, SHORTCOMINGS, USAGE: filled when the runs finish -->
 
+## 7. Shortcomings and problems
+
+**In the generated scenarios** (my review, [eval/validity.json](eval/validity.json)):
+- **Valid but less tempting decoys.** This is the main shortfall, and it is about quality, not validity. On the same
+  facts, the exemplars' decoys that failed Qwen put the requested value where the agent looks first:
+  - a calendar named "Tokyo" (3/3);
+  - a title that mentions the topic (3/3);
+  - a login containing the requested one, `pat.kimura` for `pat.kim` (3/3).
+
+  The generated decoys more often put it in a location line, a description or a comment. Their partial identities
+  also ran the other way (`dana.white` for `dana.whitfield`, which a search for the requested value does not
+  return). See [eval/autopsy.md](eval/autopsy.md). Method v2 targets this.
+- **A domain-semantics error no check caught.** AR-LIN-25 tags an issue with a label *group* itself, which Linear
+  does not allow. Its only decoy carries a label from that group, and that is exactly what "tagged Customer Tier"
+  naturally means. The reader only marked the decoy contestable.
+- **A structural error the checks missed.** AP-SLK-05 asks for "the most recently created channel …". Removing the
+  target promotes an older candidate to the answer, so one probe has a correct answer while being scored as a
+  failure. The checks ran fdc on the cover only. The kit now re-checks every derived test; exactly one test, across
+  every suite, was affected.
+- **Contrived or awkward requests.** AP-SLK-01 has two people named Farhan Malik and two called "Deebo". AP-CAL-02
+  says "the Team Calendar that I have writer access to on my calendar list". The reader judged both natural.
+- **Family labels** are sometimes not the ones I would choose:
+  - a sub-team labelled F2 rather than F4;
+  - a subscriber-not-creator decoy labelled F2 rather than F1;
+  - a due date for a created date labelled F6 rather than F1.
+
+  This does not affect validity. It affects the per-family tables.
+- **A few near-duplicate records** (four calendars named "Front Desk", four issues titled "Design system audit") are
+  valid but less realistic than the exemplars' distinct names.
+
+**In the kit**, found by the runs and fixed afterwards. The fixes did not change what the solver saw; the reader's
+fix changes what later readers see:
+- **The reader's record rendering was lossy.** It dropped `url` fields and cut rows at 900 characters. That hid
+  `Attachment.url` in AP-LIN-06 and a Linear team's `private` flag in AP-LIN-03, whose rejection this contributed to.
+- **The observability check covered only decoys defined by a dropped or substituted condition.** For AR-SLK-23, the
+  replica reports a group DM as private (as Slack does), so the "not private" decoy was invalid, and nothing flagged
+  it. A text search cannot verify flags, so this needs a per-record check.
+- **The effect locator's key** defaulted to `id` in the scorer, while the pre-check used the table's key. AR-SLK-23
+  stopped the scoring step until it was fixed.
+- **The derivation left orphaned rows** when the removed target was a Slack user. It was found by the end-to-end dev
+  run and fixed before the main runs.
+
+**In the replica: a new gap found by the runs.** Slack's `users.conversations` ignores `types`. A solver asking for
+private channels gets public ones too. One trial (P-AR-SLK-23-I13) acted on the public decoy that came back, which
+makes it an artifact. The replica profile did not list this gap, so the judge could not know it.
+
+**In the judge**, on the generated runs:
+- I read every failing, void or unclear verdict and overrode 2. Both were ignored-filter artifacts: the new Slack
+  gap, and a trial where Qwen read the right field, then trusted the ignored `subscribers` filter. The judge's own
+  rule covers the second case, but it applied it inconsistently, as it did on CAL-05 in the dev split.
+- **Per-trial verdicts cannot express test-level decisions** (a superseded first version, an invalid test). That
+  cost it the held-out bar (§2).
+
+**In the operation:**
+- **The usage limit.** The Claude Code session limit (HTTP 429) stopped 13 briefs at about 00:40. They waited until
+  the reset and were then regenerated from scratch (about 07:15).
+- **Evidence and telemetry.** Failed calls are kept, and their partial usage is counted in the telemetry.
+
 ## 8. Manual decisions and interventions
 
 All are recorded in the plan's amendments and in git.

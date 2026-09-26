@@ -1,0 +1,56 @@
+# Trial of test `CAL-24` (calendar)
+
+Test form: cover. Target present: yes.
+
+## Request given to the solver
+Set the description of my calendar located in Tokyo to "APAC offsite planning".
+
+## Candidates
+### Reference r1 (what the request asks to act on); records live in `calendars`
+- TARGET `apac@northwind.example`: {"id": "apac@northwind.example", "summary": "APAC events", "description": "Regional events", "time_zone": "Asia/Tokyo", "owner_id": "u_actor", "data_owner": "jordan.lee@northwind.example", "deleted": false, "created_at": "2018-01-01T00:00:00", "updated_at": "2018-01-01T00:00:00", "location": "Tokyo"}
+- DECOY `jp-team@northwind.example` (fact `A:Calendar.location`, family F1): Its description says Tokyo; it is located in Osaka.
+  record: {"id": "jp-team@northwind.example", "summary": "Japan team", "description": "Tokyo team calendar", "time_zone": "Asia/Tokyo", "owner_id": "u_actor", "data_owner": "jordan.lee@northwind.example", "deleted": false, "created_at": "2018-01-01T00:00:00", "updated_at": "2018-01-01T00:00:00", "location": "Osaka"}
+- DECOY `tokyo@northwind.example` (fact `A:Calendar.location`, family F1): Named Tokyo; located in Singapore.
+  record: {"id": "tokyo@northwind.example", "summary": "Tokyo", "description": "Office calendar", "time_zone": "Asia/Singapore", "owner_id": "u_actor", "data_owner": "jordan.lee@northwind.example", "deleted": false, "created_at": "2018-01-01T00:00:00", "updated_at": "2018-01-01T00:00:00", "location": "Singapore"}
+- DECOY `kr-team@northwind.example` (fact `A:Calendar.location`, family F6): Uses Tokyo time; located in Seoul.
+  record: {"id": "kr-team@northwind.example", "summary": "Korea team", "description": "Seoul team", "time_zone": "Asia/Tokyo", "owner_id": "u_actor", "data_owner": "jordan.lee@northwind.example", "deleted": false, "created_at": "2018-01-01T00:00:00", "updated_at": "2018-01-01T00:00:00", "location": "Seoul"}
+- DECOY `anz@northwind.example` (fact `A:Calendar.location`, family F0): Located in Sydney.
+  record: {"id": "anz@northwind.example", "summary": "ANZ events", "description": "Regional events", "time_zone": "Australia/Sydney", "owner_id": "u_actor", "data_owner": "jordan.lee@northwind.example", "deleted": false, "created_at": "2018-01-01T00:00:00", "updated_at": "2018-01-01T00:00:00", "location": "Sydney"}
+
+## Solver steps
+Run status: completed; termination: done; steps: 3.
+
+#### Step 1
+Reasoning: I need to find the calendar located in Tokyo first. Let me list the user's calendars to identify it.
+Command: curl -s -X GET "https://www.googleapis.com/calendar/v3/users/me/calendarList" -H "Authorization: Bearer <TOKEN>" | python3 -m json.tool
+Response: {"status": "success", "stdout": "{\n    \"kind\": \"calendar#calendarList\",\n    \"items\": [\n        {\n            \"kind\": \"calendar#calendarListEntry\",\n            \"etag\": \"\\\"etag_cle_anz@northwind.example\\\"\",\n            \"id\": \"anz@northwind.example\",\n            \"accessRole\": \"owner\",\n            \"summary\": \"ANZ events\",\n            \"description\": \"Regional events\",\n            \"location\": \"Sydney\",\n            \"timeZone\": \"Australia/Sydney\",\n            \"conferenceProperties\": {\n                \"allowedConferenceSolutionTypes\": [\n                    \"hangoutsMeet\"\n                ]\n            },\n            \"dataOwner\": \"jordan.lee@northwind.example\",\n            \"backgroundColor\": \"#9fc6e7\",\n            \"foregroundColor\": \"#000000\",\n            \"hidden\": false,\n            \"selected\": true,\n            \"defaultReminders\": []\n        },\n        {\n            \"kind\": \"calendar#calendarListEntry\",\n            \"etag\": \"\\\"etag_cle_apac@northwind.example\\\"\",\n            \"id\": \"apac@northwind.example\",\n            \"accessRole\": \"owner\",\n            \"summary\": \"APAC events\",\n            \"description\": \"Regional events\",\n            \"location\": \"Tokyo\",\n            \"timeZone\": \"Asia/Tokyo\",\n            \"conferenceProperties\": {\n                \"allowedConferenceSolutionTypes\": [\n                    \"hangoutsMeet\"\n                ]\n            },\n            \"dataOwner\": \"jordan.lee@northwind.example\",\n            \"backgroundColor\": \"#9fc6e7\",\n            \"foregroundColor\": \"#000000\",\n            \"hidden\": false,\n            \"selected\": true,\n            \"defaultReminders\": []\n        },\n        {\n            \"kind\": \"calendar#calendarListEntry\",\n            \"etag\": \"\\\"etag_cle_jordan.lee@northwind.example\\\"\",\n            \"id\": \"jordan.lee@northwind.example\",\n            \"accessRole\": \"owner\",\n            \"summary\": \"jordan.lee@northwind.example\",\n            \"description\": \"Primary calendar\",\n            \"timeZone\": \"America/Los_Angeles\",\n            \"conferenceProperties\": {\n                \"allowedConferenceSolutionTypes\": [\n                    \"hangoutsMeet\"\n                ]\n            },\n            \"dataOwner\": \"jordan.lee@northwind.example\",\n            \"backgroundColor\": \"#9fc6e7\",\n            \"foregroundColor\": \"#000000\",\n            \"hidden\": false,\n            \"selected\": true,\n            \"primary\": true,\n            \"defaultReminders\": [],\n            \"notificationSettings\": {\n                \"notifications\": [\n                    {\n                        \"type\": \"eventCreation\",\n                        \"method\": \"email\"\n                    },\n                    {\n                        \"type\": \"eventChange\",\n                        \"method\": \"email\"\n                […57 chars omitted…] "type\": \"eventCancellation\",\n                        \"method\": \"email\"\n                    },\n                    {\n                        \"type\": \"eventResponse\",\n                        \"method\": \"email\"\n                    }\n                ]\n            }\n        },\n        {\n            \"kind\": \"calendar#calendarListEntry\",\n            \"etag\": \"\\\"etag_cle_jp-team@northwind.example\\\"\",\n            \"id\": \"jp-team@northwind.example\",\n            \"accessRole\": \"owner\",\n            \"summary\": \"Japan team\",\n            \"description\": \"Tokyo team calendar\",\n            \"location\": \"Osaka\",\n            \"timeZone\": \"Asia/Tokyo\",\n            \"conferenceProperties\": {\n                \"allowedConferenceSolutionTypes\": [\n                    \"hangoutsMeet\"\n                ]\n            },\n            \"dataOwner\": \"jordan.lee@northwind.example\",\n            \"backgroundColor\": \"#9fc6e7\",\n            \"foregroundColor\": \"#000000\",\n            \"hidden\": false,\n            \"selected\": true,\n            \"defaultReminders\": []\n        },\n        {\n            \"kind\": \"calendar#calendarListEntry\",\n            \"etag\": \"\\\"etag_cle_kr-team@northwind.example\\\"\",\n            \"id\": \"kr-team@northwind.example\",\n            \"accessRole\": \"owner\",\n            \"summary\": \"Korea team\",\n            \"description\": \"Seoul team\",\n            \"location\": \"Seoul\",\n            \"timeZone\": \"Asia/Tokyo\",\n            \"conferenceProperties\": {\n                \"allowedConferenceSolutionTypes\": [\n                    \"hangoutsMeet\"\n                ]\n            },\n            \"dataOwner\": \"jordan.lee@northwind.example\",\n            \"backgroundColor\": \"#9fc6e7\",\n            \"foregroundColor\": \"#000000\",\n            \"hidden\": false,\n            \"selected\": true,\n            \"defaultReminders\": []\n        },\n        {\n            \"kind\": \"calendar#calendarListEntry\",\n            \"etag\": \"\\\"etag_cle_tokyo@northwind.example\\\"\",\n            \"id\": \"tokyo@northwind.example\",\n            \"accessRole\": \"owner\",\n            \"summary\": \"Tokyo\",\n            \"description\": \"Office calendar\",\n            \"location\": \"Singapore\",\n            \"timeZone\": \"Asia/Singapore\",\n            \"conferenceProperties\": {\n                \"allowedConferenceSolutionTypes\": [\n                    \"hangoutsMeet\"\n                ]\n            },\n            \"dataOwner\": \"jordan.lee@northwind.example\",\n            \"backgroundColor\": \"#9fc6e7\",\n            \"foregroundColor\": \"#000000\",\n            \"hidden\": false,\n            \"selected\": true,\n            \"defaultReminders\": []\n        }\n    ],\n    \"etag\": \"\\\"4570b816b456e851\\\"\",\n    \"nextSyncToken\": \"sync_20180617000000000000_0tCuz6WkyEJ5KZEOJeLivg\"\n}\n", "stderr": "", "exit_code": 0, "workspace_path": "/tmp/agent_diff_3a81898cb9924170a7667b4c0e7469c3_yyjrc7fy"}
+
+#### Step 2
+Reasoning: Looking at the calendar list, I can identify the calendar located in Tokyo:
+- `apac@northwind.example` - summary "APAC events", location "Tokyo", timeZone "Asia/Tokyo"
+
+This is the one with location "Tokyo". I need to update its description to "APAC offsite planning" using PATCH /calendars/{calendarId}.
+Command: curl -s -X PATCH "https://www.googleapis.com/calendar/v3/calendars/apac%40northwind.example" -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/json" -d '{"description": "APAC offsite planning"}' | python3 -m json.tool
+Response: {"status": "success", "stdout": "{\n    \"kind\": \"calendar#calendar\",\n    \"etag\": \"\\\"afd96426781b0499\\\"\",\n    \"id\": \"apac@northwind.example\",\n    \"summary\": \"APAC events\",\n    \"description\": \"APAC offsite planning\",\n    \"location\": \"Tokyo\",\n    \"timeZone\": \"Asia/Tokyo\",\n    \"conferenceProperties\": {\n        \"allowedConferenceSolutionTypes\": [\n            \"hangoutsMeet\"\n        ]\n    },\n    \"dataOwner\": \"jordan.lee@northwind.example\"\n}\n", "stderr": "", "exit_code": 0, "workspace_path": "/tmp/agent_diff_3a81898cb9924170a7667b4c0e7469c3_yyjrc7fy"}
+
+#### Step 3
+Reasoning: The PATCH request was successful. The response shows the calendar `apac@northwind.example` (located in Tokyo) now has its description set to "APAC offsite planning". The task is complete.
+
+
+<done>
+Updated the description of the calendar located in Tokyo (apac@northwind.example, "APAC events") to "APAC offsite planning". The change was confirmed by the API response.
+</done>
+Command: 
+Response: null
+
+## Final answer
+Updated the description of the calendar located in Tokyo (apac@northwind.example, "APAC events") to "APAC offsite planning". The change was confirmed by the API response.
+
+## State diff
+- INSERT calendar_sync_tokens: {"id": 1, "token": "sync_20180617000000000000_0tCuz6WkyEJ5KZEOJeLivg", "user_id": "u_actor", "resource_type": "calendarList", "snapshot_time": "2018-06-17T07:00:00", "expires_at": "2018-06-24T07:00:00", "created_at": "2026-09-26T12:04:55.547410"}
+- UPDATE calendars `apac@northwind.example`: {"description": ["Regional events", "APAC offsite planning"]}
+
+## Mechanical attribution (from the diff and write commands; may be wrong)
+Acted-on records per reference: {"r1": ["apac@northwind.example"]}. Provisional outcome: correct. Provisional exposed facts: [].
+
+Give your verdict for this trial.

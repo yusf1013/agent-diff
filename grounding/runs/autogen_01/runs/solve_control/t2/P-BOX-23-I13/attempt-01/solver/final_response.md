@@ -1,0 +1,1 @@
+No qualifying file was found. The only contract PDF with a description mentioning the Initech renewal is **"Initech NDA.pdf"** (ID 8104), which is larger than 2 MB (2.6 MB), but it only has **2 comments**, not the required at least 3. Since it fails the comment-count criterion, no tag `renewal` was added.

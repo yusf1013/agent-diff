@@ -1,0 +1,1 @@
+Successfully added the "Discount policy.pdf" file to the "Sales hub" (the hub last updated by Dana Whitfield). The hub already contained the "Pricing sheet.xlsx" file through the "Sales" folder it includes.

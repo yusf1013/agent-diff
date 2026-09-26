@@ -1,0 +1,1 @@
+I found the comment on WEB-5 ("Flaky checkout test") by Maya Chen ("Can we pin the browser version?") that was previously resolved. I reopened the comment thread by updating the comment and clearing the `resolvingCommentId` and `resolvingUserId`. The thread is now back in an unresolved state.

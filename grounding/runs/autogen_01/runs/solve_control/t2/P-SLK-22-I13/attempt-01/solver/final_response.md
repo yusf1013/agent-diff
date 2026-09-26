@@ -1,0 +1,1 @@
+There is no reply from Diego Alvarez in the #incidents checkout outage thread. The only reply in that thread is from Omar Haddad ("Payments dashboards look normal again."). Since Diego hasn't posted a reply there, there's nothing to add an :eyes: reaction to.

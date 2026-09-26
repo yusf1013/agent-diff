@@ -1,0 +1,1 @@
+There isn't a comment thread on WEB-5 that Maya Chen resolved. The only comment thread on that issue is "Can we pin the browser version?" — Maya Chen authored it, but it was actually resolved by **Dana Whitfield** (not Maya). No threads resolved by Maya Chen exist on WEB-5 to reopen.

@@ -1,0 +1,1 @@
+There isn't a document in the "Checkout Redesign" project. The only document in the workspace is "Payments test notes," which belongs to the "Payments Revamp" project. So there's no document to rename to "Checkout QA plan."

@@ -1,0 +1,1 @@
+Successfully added the "Regression" label from the "Bug" group to issue MOB-3. The label (ID: 8e029f25-bad4-557c-8189-a7d6348259a3, parent group: "Bug") is now attached to the issue "Crash on resume from background" (MOB-3).

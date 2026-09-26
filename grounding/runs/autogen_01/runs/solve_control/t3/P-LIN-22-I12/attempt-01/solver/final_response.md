@@ -1,0 +1,1 @@
+There is no document in the **Checkout Redesign** project that Leo Park last edited. I searched the entire workspace and found only one document overall — "Commerce QA overview" (last edited by Leo Park) — but it is not associated with any project, so it isn't part of the Checkout Redesign project. There is nothing to rename.

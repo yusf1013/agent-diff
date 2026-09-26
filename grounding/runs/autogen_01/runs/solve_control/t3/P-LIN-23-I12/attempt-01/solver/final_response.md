@@ -1,0 +1,1 @@
+There is no comment thread on WEB-5 ("Flaky checkout test") that was resolved by Maya Chen. The only resolved comment on that issue was resolved by **Dana Whitfield** on June 1, 2026. So there is nothing to reopen.

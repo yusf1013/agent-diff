@@ -1,0 +1,1 @@
+Successfully added an :eyes: reaction to Diego Alvarez's reply in the #incidents thread about the checkout outage. His reply was "Might be the same config push as the checkout outage." and the reaction was added without any pre-existing reaction being present.

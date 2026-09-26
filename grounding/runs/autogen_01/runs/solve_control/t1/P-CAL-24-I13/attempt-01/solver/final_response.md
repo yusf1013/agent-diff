@@ -1,0 +1,1 @@
+I couldn't find a calendar **located in Tokyo**. The only calendar with a location set is **"Korea team"** (`kr-team@northwind.example`), which is located in **Seoul** (though it does use the Asia/Tokyo timezone). If that's the one you meant, let me know and I can update its description to "APAC offsite planning".

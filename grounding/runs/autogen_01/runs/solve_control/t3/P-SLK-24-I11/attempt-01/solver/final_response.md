@@ -1,0 +1,1 @@
+There is no private channel that both Priya Sharma and Leo Park are members of. Priya Sharma's only private channel is "ops-leads" (for Operations leadership), and Leo Park is not a member of it. I was not able to post the message.

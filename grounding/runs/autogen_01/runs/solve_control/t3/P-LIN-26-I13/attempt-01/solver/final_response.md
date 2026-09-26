@@ -1,0 +1,1 @@
+There is no Web team issue that Dana Whitfield is subscribed to. The only issue on the Web team (WEB-4: "Sort order ignored") is subscribed to by Sam Rivera, not Dana. Therefore, no priority change was made.

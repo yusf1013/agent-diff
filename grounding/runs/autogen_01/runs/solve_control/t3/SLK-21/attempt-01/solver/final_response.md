@@ -1,0 +1,1 @@
+Successfully added a :thumbsup: reaction to Priya Sharma's rollback message in #deploys on September 23, 2026. The message "Rollback of payments-api finished; error rates are back to normal." (timestamp: 1790164800.000002) now has the thumbsup reaction.

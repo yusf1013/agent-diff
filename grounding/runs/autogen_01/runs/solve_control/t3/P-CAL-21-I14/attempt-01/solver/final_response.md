@@ -1,0 +1,1 @@
+I couldn't find a planning session that matches all your criteria. There is a "Planning session" on Thursday, June 21 that ends at 5:00 PM, but its description is "Hiring plan for the autumn" — it does not mention a Q4 roadmap. I also searched more broadly for any events referencing "Q4" or "roadmap" and found none. So there's no matching event to move to Room 2B.

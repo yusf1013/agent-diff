@@ -1,0 +1,1 @@
+I could not find a task on any file asking to "check the indemnity clause" that was created by pat.kim@northwind.example on September 14. The only task Pat Kim created on that date is on "Acme MSA.pdf" and its message is "Please approve the invoice" (task ID 8305, due 2026-10-05). No matching task exists to update.

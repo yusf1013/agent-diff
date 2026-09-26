@@ -1,0 +1,1 @@
+Successfully added a :thumbsup: reaction to Priya Sharma's message in #deploys about the rollback ("Rollback of payments-api finished; error rates are back to normal."). The message timestamp was 1790164800.000002 in channel C_DEPLOYS.

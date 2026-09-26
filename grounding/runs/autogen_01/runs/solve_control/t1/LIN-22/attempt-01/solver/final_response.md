@@ -1,0 +1,1 @@
+The document Leo Park last edited in the Checkout Redesign project has been successfully renamed from "Checkout test notes" to "Checkout QA plan". The document ID is `d-21`, and its title was updated via the `documentUpdate` mutation.

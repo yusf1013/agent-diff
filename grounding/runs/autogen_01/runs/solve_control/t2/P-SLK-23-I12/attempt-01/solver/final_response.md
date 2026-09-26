@@ -1,0 +1,1 @@
+There isn't a private channel whose purpose is "coordinating vendor contracts." The only private channel in the workspace is **vendor-contracts** (`C_VENDOR`), but its purpose is set to "Archive of signed agreements," not coordinating vendor contracts. No action was taken.

@@ -22,7 +22,8 @@ STUDY = Path(__file__).resolve().parents[1]
 RUNS = STUDY / "runs"
 EVAL = STUDY / "eval"
 FC2 = STUDY.parent / "fact_coverage_02"
-ARMS = {"Arm R": ("gen_arm_r", "solve_arm_r"), "Arm P": ("gen_arm_p", "solve_arm_p")}
+ARMS = {"Arm R": ("gen_arm_r", "solve_arm_r"), "Arm P": ("gen_arm_p", "solve_arm_p"),
+        "Arm P, method v2": ("gen_arm_p_v2", "solve_arm_p_v2")}
 YIELD_ARMS = {**ARMS, "Control (exemplars today)": ("control", "solve_control")}
 
 
@@ -70,7 +71,7 @@ def table_validity():
     rows = ["## Manual validity review", "",
             "| Arm | Scenarios reviewed | Valid | Flawed | Invalid | Decoys | Valid decoys | Contestable | Invalid |",
             "|---|---:|---:|---:|---:|---:|---:|---:|---:|"]
-    for arm, prefix in (("Arm R", "AR-"), ("Arm P", "AP-")):
+    for arm, prefix in (("Arm R", "AR-"), ("Arm P", "AP-"), ("Arm P, method v2", "AP2-")):
         sc = {k: x for k, x in v.items() if k.startswith(prefix)}
         verdicts = Counter(x["verdict"] for x in sc.values())
         decoys = [d for x in sc.values() for d in x["decoys"].values()]
@@ -223,23 +224,71 @@ def table_reproduction():
     if not score:
         return []
     score["_run"] = "solve_arm_r"
-    tests, _ = adjudicated(score, load(EVAL / "judge_review.json", {}), load(EVAL / "validity.json", {}))
-    rows = ["## Arm R, fact by fact", "", "| Exemplar | Fact | Exemplar exposed | Generated exposed (adjudicated) |",
-            "|---|---|---|---|"]
-    both = only_ex = only_gen = 0
+    review, validity = load(EVAL / "judge_review.json", {}), load(EVAL / "validity.json", {})
+    tests, _ = adjudicated(score, review, validity)
+    control = load(RUNS / "solve_control.score.json")
+    ctests = []
+    if control:
+        control["_run"] = "solve_control"
+        ctests, _ = adjudicated(control, review, validity)
+    rows = ["## Arm R, fact by fact", "",
+            "| Exemplar | Fact | Exemplar exposed (recorded) | Exemplar exposed today (control, adjudicated) | "
+            "Generated exposed (adjudicated) |", "|---|---|---|---|---|"]
+    counts = Counter()
     for sid, o in sorted(outcomes("gen_arm_r").items()):
         ex_id = o["brief"].get("exemplar")
         mine = [t for t in tests if t.get("scenario") == sid]
         got = {x for t in mine for x in t["exposed_adjudicated"]}
+        today = {SLACK_ALIASES.get(x, x) for t in ctests if t.get("scenario") == ex_id for x in t["exposed_adjudicated"]}
         for fact in o["brief"]["facts"]:
             e = fact in ex.get(ex_id, {}).get("exposed", [])
-            g = fact in got if o["status"] == "accepted" else None
-            both += bool(e and g)
-            only_ex += bool(e and not g)
-            only_gen += bool(g and not e)
-            rows.append(f"| {ex_id} | `{fact}` | {'yes' if e else ''} | "
-                        f"{'yes' if g else ('not run' if g is None or not mine else '')} |")
-    rows += ["", f"Exposed by both: {both}; only by the exemplars: {only_ex}; only by the generated suites: {only_gen}."]
+            c = fact in today
+            g = fact in got
+            counts["recorded"] += e
+            counts["control"] += c
+            counts["generated"] += g
+            counts["control_and_generated"] += c and g
+            rows.append(f"| {ex_id} | `{fact}` | {'yes' if e else ''} | {'yes' if c else ''} | "
+                        f"{'yes' if g else ('not run' if not mine else '')} |")
+    rows += ["", f"Brief facts exposed: recorded exemplar runs {counts['recorded']}; exemplars today {counts['control']}; "
+                 f"generated {counts['generated']}; both today's exemplars and the generated suites "
+                 f"{counts['control_and_generated']}."]
+    return rows
+
+
+def table_v1_v2():
+    """Arm P, the same briefs under method v1 and v2 (amendment 4): facts exposed, adjudicated."""
+    review, validity = load(EVAL / "judge_review.json", {}), load(EVAL / "validity.json", {})
+    scored = {}
+    for label, solve in (("v1", "solve_arm_p"), ("v2", "solve_arm_p_v2")):
+        score = load(RUNS / f"{solve}.score.json")
+        if not score:
+            return []
+        score["_run"] = solve
+        scored[label], _ = adjudicated(score, review, validity)
+    rows = ["## Arm P: method v1 against v2, same briefs", "",
+            "| Brief | Fact | v1 status | v1 exposed | v2 status | v2 exposed |", "|---|---|---|---|---|---|"]
+    v1_out, v2_out = outcomes("gen_arm_p"), outcomes("gen_arm_p_v2")
+    counts = Counter()
+    for sid, o in sorted(v1_out.items()):
+        sid2 = sid.replace("AP-", "AP2-")
+        o2 = v2_out.get(sid2, {})
+        g1 = {x for t in scored["v1"] if t.get("scenario") == sid for x in t["exposed_adjudicated"]}
+        g2 = {x for t in scored["v2"] if t.get("scenario") == sid2 for x in t["exposed_adjudicated"]}
+        for fact in o["brief"]["facts"]:
+            e1, e2 = fact in g1, fact in g2
+            counts["v1"] += e1
+            counts["v2"] += e2
+            rows.append(f"| {sid} | `{fact}` | {o['status']} | {'yes' if e1 else ''} | {o2.get('status', '-')} | "
+                        f"{'yes' if e2 else ''} |")
+    for label in ("v1", "v2"):
+        tests = scored[label]
+        cp = [t for t in tests if t.get("form") in ("cover", "probe") and not t.get("invalid")]
+        facts_all = {x for t in tests for x in t["exposed_adjudicated"]}
+        facts_cp = {x for t in cp for x in t["exposed_adjudicated"]}
+        rows.append(f"\n{label}: brief facts exposed {counts[label]}; all tests {len(tests)}, facts {len(facts_all)} "
+                    f"({len(facts_all) / max(1, len(tests)):.2f} per test); covers and probes {len(cp)}, facts "
+                    f"{len(facts_cp)} ({len(facts_cp) / max(1, len(cp)):.2f} per test).")
     return rows
 
 
@@ -302,8 +351,8 @@ def table_tokens():
 
 
 def main():
-    parts = [table_generation(), table_validity(), table_design(), table_yield(), table_reproduction(), table_judge(),
-             table_tokens()]
+    parts = [table_generation(), table_validity(), table_design(), table_yield(), table_reproduction(), table_v1_v2(),
+             table_judge(), table_tokens()]
     print("# Tables for report.md (generated by kit/tables.py)\n")
     for p in parts:
         print("\n".join(p) + "\n")

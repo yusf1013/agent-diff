@@ -1,0 +1,1 @@
+Set the topic of the #contracts-team channel (purpose: "Coordinating vendor contracts with legal") to "Renewals due Oct 31".

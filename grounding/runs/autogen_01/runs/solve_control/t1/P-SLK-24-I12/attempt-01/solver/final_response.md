@@ -1,0 +1,6 @@
+There is **no private channel** that both Priya Sharma and Leo Park are members of.
+
+- Priya Sharma is in one private channel, **budget-review**, but its members are Priya Sharma and **Leo Parker** (a different person) — not Leo Park.
+- Leo Park is not a member of any private channels.
+
+So I was unable to post the reminder message. If you meant **Leo Parker** instead of Leo Park, let me know and I can post it in the *budget-review* channel.

@@ -1,0 +1,1 @@
+I don't have a calendar located in Tokyo. The closest match is your "Japan team" calendar (`jp-team@northwind.example`), but its location is set to **Osaka** (though its timezone is Asia/Tokyo). No calendar has a location of Tokyo, so no changes were made.
