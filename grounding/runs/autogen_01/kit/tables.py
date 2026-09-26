@@ -23,6 +23,7 @@ RUNS = STUDY / "runs"
 EVAL = STUDY / "eval"
 FC2 = STUDY.parent / "fact_coverage_02"
 ARMS = {"Arm R": ("gen_arm_r", "solve_arm_r"), "Arm P": ("gen_arm_p", "solve_arm_p")}
+YIELD_ARMS = {**ARMS, "Control (exemplars today)": ("control", "solve_control")}
 
 
 def load(path, default=None):
@@ -162,15 +163,18 @@ def table_yield():
             "| Arm | Form | Tests | Tests exposing | Facts, detect@1 | Facts, detect@3 (automated) | "
             "Facts, detect@3 (adjudicated) | Facts per test (adjudicated) |", "|---|---|---:|---:|---:|---:|---:|---:|"]
     facts_by_arm = {}
-    for arm, (gen, solve) in ARMS.items():
+    for arm, (gen, solve) in YIELD_ARMS.items():
         score = load(RUNS / f"{solve}.score.json")
         if not score:
             continue
         score["_run"] = solve
         tests, _ = adjudicated(score, review, validity)
         facts_by_arm[arm] = tests
-        for form in ("probe", "fact probe", "cover", None):
-            ts = [t for t in tests if form is None or t.get("form") == form]
+        for form in ("probe", "fact probe", "cover", "cover+probe", None):
+            if form == "cover+probe":  # the exemplars' composition (no fact probes)
+                ts = [t for t in tests if t.get("form") in ("cover", "probe")]
+            else:
+                ts = [t for t in tests if form is None or t.get("form") == form]
             if not ts:
                 continue
             f1 = {x for t in ts for x in t["exposed_t1"]}
@@ -187,7 +191,9 @@ def table_yield():
     fam_rows = ["", "### Probes by family (adjudicated)", "", "| Family | Probes | Exposing | Facts |",
                 "|---|---:|---:|---|"]
     fam = defaultdict(list)
-    for tests in facts_by_arm.values():
+    for arm, tests in facts_by_arm.items():
+        if arm not in ARMS:
+            continue  # families of the generated suites only
         for t in tests:
             if t.get("form") == "probe":
                 fam[t.get("family")].append(t)
@@ -258,8 +264,27 @@ def table_tokens():
             rows.append(f"| {calls.parent.name} | {role} | {a['calls']} | {a['output_tokens']:,} | "
                         f"{a['cache_creation_input_tokens']:,} | {a['cache_read_input_tokens']:,} | "
                         f"{a['input_tokens']:,} | {a['usd']:.2f} |")
-    rows += ["", f"Total list-price estimate: ${total:.2f}. Calls that failed (HTTP 429) are not in these logs; their "
-                 "responses are kept as *.failed.json next to the other evidence."]
+    failed = defaultdict(Counter)
+    for path in RUNS.glob("**/*.failed.json"):
+        run = path.relative_to(RUNS).parts[0]
+        result = (load(path, {}) or {}).get("result") or {}
+        for model in (result.get("modelUsage") or {}).values():
+            f = failed[run]
+            f["calls"] += 1
+            f["output_tokens"] += model.get("outputTokens") or 0
+            f["cache_creation"] += model.get("cacheCreationInputTokens") or 0
+            f["cache_read"] += model.get("cacheReadInputTokens") or 0
+            f["usd"] += model.get("costUSD") or 0
+        if not result.get("modelUsage"):
+            failed[run]["calls_without_usage"] += 1
+    failed_usd = sum(f["usd"] for f in failed.values())
+    rows += ["", "Failed calls (mostly HTTP 429 at the session limit), from their *.failed.json records:", "",
+             "| Run | Failed calls with usage | Without usage | Output tokens | Cache writes | Cache reads | "
+             "List-price USD |", "|---|---:|---:|---:|---:|---:|---:|"]
+    for run, f in sorted(failed.items()):
+        rows.append(f"| {run} | {f['calls']} | {f['calls_without_usage']} | {f['output_tokens']:,} | "
+                    f"{f['cache_creation']:,} | {f['cache_read']:,} | {f['usd']:.2f} |")
+    rows += ["", f"Total list-price estimate: ${total:.2f} for completed calls, ${failed_usd:.2f} for failed ones."]
     return rows
 
 
