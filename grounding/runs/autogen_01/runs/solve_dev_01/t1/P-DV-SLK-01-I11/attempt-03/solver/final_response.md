@@ -1,0 +1,1 @@
+There is no active Site Reliability Engineer based in the Europe/Berlin time zone in this workspace. The only user in Europe/Berlin is **Felix Bauer** (felix.bauer), but his title is "Platform Engineer" — not Site Reliability Engineer. No invitation to #incident-482 was made.

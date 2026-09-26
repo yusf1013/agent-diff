@@ -128,7 +128,11 @@ def judge_one(item: dict, out: Path, form_of: dict, calls_log: Path) -> dict:
     dest = out / item["run"] / item["trial"] / item["case_id"]
     verdict_path = dest / "verdict.json"
     if verdict_path.exists():
-        return json.loads(verdict_path.read_text())
+        old = json.loads(verdict_path.read_text())
+        if old.get("attempt") == str(attempt):
+            return old
+        # A newer attempt of this trial exists (a retry): keep the old verdict as evidence and judge again.
+        verdict_path.rename(dest / f"verdict-{Path(old.get('attempt', 'unknown')).name}.json")
     case, summary, tri = triage(item["run"], item["trial"], attempt)
     present = any(r["use"] == "target" and r["expected"] for r in case["references"])
     form = item.get("form") or form_of.get(case["case_id"]) or (

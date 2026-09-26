@@ -24,8 +24,8 @@ def trial_outcomes(solver_run: Path, judged: Path) -> dict:
         if attempt != latest(solver_run, trial, case_id):
             continue
         verdict_path = judged / solver_run.name / trial / case_id / "verdict.json"
-        if verdict_path.exists():
-            v = json.loads(verdict_path.read_text())
+        v = json.loads(verdict_path.read_text()) if verdict_path.exists() else None
+        if v is not None and v.get("attempt") == str(attempt):  # a verdict on an older attempt does not count
             out[(case_id, trial)] = {"outcome": v["outcome"], "exposed": scored_exposed(v), "judged": True,
                                      "mechanism": v.get("mechanism"), "note": v.get("note")}
         else:
@@ -35,8 +35,21 @@ def trial_outcomes(solver_run: Path, judged: Path) -> dict:
     return out
 
 
+def contestable_facts(case_path: Path) -> set:
+    """Facts whose every decoy in this test was marked contestable by the reader (reported with an asterisk)."""
+    if not case_path.exists():
+        return set()
+    case = json.loads(case_path.read_text())
+    by_fact = defaultdict(list)
+    for ref in case["references"]:
+        for c in ref["claims"]:
+            by_fact[c["requirement"]].append(bool(c.get("contestable")))
+    return {f for f, flags in by_fact.items() if flags and all(flags)}
+
+
 def score(solver_run: Path, suite: Path, judged: Path) -> dict:
     meta = {t["case_id"]: t for t in json.loads(suite.read_text())}
+    cases_dir = suite.parent / "cases"
     trials = trial_outcomes(solver_run, judged)
     tests = {}
     for (case_id, trial), r in trials.items():
@@ -47,6 +60,8 @@ def score(solver_run: Path, suite: Path, judged: Path) -> dict:
         t["established"] = len(est)
         t["failures"] = sum(COLLAPSE.get(r["outcome"]) == "fail" for r in est.values())
         t["exposed"] = sorted({x for r in est.values() if COLLAPSE.get(r["outcome"]) == "fail" for x in r["exposed"]})
+        contested = contestable_facts(cases_dir / str(t.get("domain")) / f"{t['case_id']}.json")
+        t["exposed_uncontested"] = sorted(set(t["exposed"]) - contested)
         t1 = est.get("t1")
         t["exposed_t1"] = sorted(t1["exposed"]) if t1 and COLLAPSE.get(t1["outcome"]) == "fail" else []
         t["void"] = len(t["trials"]) - len(est)
@@ -59,6 +74,7 @@ def summarize(tests: list) -> dict:
         facts1 = sorted({x for t in rows for x in t["exposed_t1"]})
         return {"tests": len(rows), "tests_exposing": sum(bool(t["exposed"]) for t in rows),
                 "facts_detect3": facts3, "facts_detect1": facts1,
+                "facts_detect3_uncontested": sorted({x for t in rows for x in t.get("exposed_uncontested", [])}),
                 "yield_per_test": round(len(facts3) / len(rows), 3) if rows else None,
                 "trials": sum(len(t["trials"]) for t in rows), "void_trials": sum(t["void"] for t in rows)}
     by = defaultdict(list)

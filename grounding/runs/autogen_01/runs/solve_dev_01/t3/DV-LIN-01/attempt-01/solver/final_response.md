@@ -1,0 +1,1 @@
+Successfully set the priority to Urgent on issue WEB-1 ("Fix double-charge on retry") in the Checkout Redesign project. This issue's milestone "Payment integration" had status "Done" and target date March 15, 2026. The priority was updated from 3 (Medium) to 1 (Urgent) via the `issueUpdate` mutation.
