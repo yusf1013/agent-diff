@@ -7,7 +7,7 @@ judgment work, and code does everything that can be checked or derived.
 |---|---|---|
 | Brief | code, from your briefs file | a scenario id, a domain, and 2-4 catalog facts to test |
 | Write | **writer agent** (Sonnet; Read, Write, Edit, Glob, Grep; no Bash) | `scenario.json`: request, seed, target, conditions, reference query, decoys with mutations, write call |
-| Check | code ([scenario.py](scenario.py)) | format, seed expansion, `fdc.check_reference` (every decoy fails exactly its fact), anchors survive, no dangling keys, replica rules, request lint |
+| Check | code ([scenario.py](scenario.py)) | format, seed expansion, `fdc.check_reference` (every decoy fails exactly its fact), anchors survive, no dangling keys, every derived test re-checked (nothing matches once the target is removed), replica rules, request lint |
 | Pre-check | code ([preflight.py](preflight.py)) | install on the replica, read every record, **observability** (each decoy's deciding value is visible), **write feasibility** (the action works on the target) |
 | Read | **reader agent** (Sonnet, no tools, fresh session) | the request alone, then the records: which records match, which condition each decoy fails, genuine ambiguity, naturalness |
 | Repair | the same writer session, resumed | every finding goes back to the writer; up to 6 check rounds and 2 reader rounds |
