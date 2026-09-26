@@ -1,0 +1,78 @@
+{
+ "scenario_id": "EX-CAL-01",
+ "domain": "calendar",
+ "request": "Move the design review that Priya Nair declined on Thursday to Room 5B.",
+ "answer": "one",
+ "seed": [
+  ["event", {"id": "ev_dr_checkout", "calendar": "primary", "summary": "Design review: Checkout", "start": "2018-06-21T10:00:00", "end": "2018-06-21T11:00:00", "attendees": [["priya", "declined"], ["omar", "accepted"]]}],
+  ["event", {"id": "ev_dr_search", "calendar": "primary", "summary": "Design review: Search", "start": "2018-06-21T14:00:00", "end": "2018-06-21T15:00:00", "attendees": [["priya", "accepted"], ["omar", "declined"]]}],
+  ["event", {"id": "ev_dr_onboard", "calendar": "primary", "summary": "Design review: Onboarding", "start": "2018-06-21T16:00:00", "end": "2018-06-21T16:30:00", "attendees": [["priya", "tentative"], ["omar", "accepted"]]}],
+  ["event", {"id": "ev_dr_billing", "calendar": "primary", "summary": "Design review: Billing", "start": "2018-06-21T12:00:00", "end": "2018-06-21T12:30:00", "organizer": "priya", "attendees": [["omar", "declined"], ["actor", "accepted"]]}],
+  ["event", {"id": "ev_dr_payments", "calendar": "primary", "summary": "Design review: Payments", "start": "2018-06-20T10:00:00", "end": "2018-06-20T11:00:00", "attendees": [["priya", "declined"], ["omar", "accepted"]]}],
+  ["event", {"id": "ev_ds", "calendar": "primary", "summary": "Design sync", "start": "2018-06-21T09:00:00", "end": "2018-06-21T09:30:00", "attendees": [["priya", "declined"], ["omar", "accepted"]]}],
+  ["event", {"id": "ev_dr_mobile", "calendar": "primary", "summary": "Design review: Mobile", "start": "2018-06-20T20:00:00", "end": "2018-06-20T21:00:00", "utc_start": "2018-06-21T03:00:00Z", "attendees": [["priya", "declined"], ["omar", "accepted"]]}]
+ ],
+ "conditions": [
+  {"id": "c1", "text": "the design review", "facts": ["A:Event.summary"]},
+  {"id": "c2", "text": "that Priya Nair declined", "facts": ["B:EventAttendee.event_id", "A:EventAttendee.response_status", "R:EventAttendee.event_id"]},
+  {"id": "c3", "text": "on Thursday", "facts": ["A:Event.start", "D:local_time"]}
+ ],
+ "reference": {
+  "name": "the design review to move",
+  "target": ["ev_dr_checkout"],
+  "query": {
+   "table": "calendar_events",
+   "filters": [
+    {"key": "f_title", "field": "summary", "op": "contains_ci", "value": "design review", "fact": "A:Event.summary"},
+    {"key": "f_from", "field": "start_datetime", "op": "ge", "value": "2018-06-21T00:00:00", "fact": "A:Event.start"},
+    {"key": "f_to", "field": "start_datetime", "op": "lt", "value": "2018-06-22T00:00:00"}
+   ],
+   "edges": [
+    {"key": "e_att", "join": {"parent": "id", "child": "event_id", "op": "eq"}, "fact": "B:EventAttendee.event_id",
+     "node": {"table": "calendar_event_attendees", "filters": [
+       {"key": "f_att", "field": "email", "op": "eq", "value": "priya.nair@northwind.example"},
+       {"key": "f_rsvp", "field": "response_status", "op": "eq", "value": "declined", "fact": "A:EventAttendee.response_status"}], "edges": []}}
+   ]
+  },
+  "decoys": [
+   {"witness": "ev_dr_search", "fact": "B:EventAttendee.event_id", "family": "F5", "substitute": "the two conditions met by different attendees",
+    "mutation": {"type": "SPLIT", "target": "e_att", "groups": [["f_att"], ["f_rsvp"]]},
+    "explanation": "Priya accepted; Omar is the one who declined."},
+   {"witness": "ev_dr_onboard", "fact": "A:EventAttendee.response_status", "family": "F0",
+    "mutation": {"type": "DROP", "target": "f_rsvp"},
+    "explanation": "Priya is tentative, not declined."},
+   {"witness": "ev_dr_billing", "fact": "R:EventAttendee.event_id", "family": "F1", "substitute": "Event.organizer_email",
+    "mutation": {"type": "REPLACE", "note": "attendee role replaced by organizer role", "query": {
+      "table": "calendar_events", "key": ["id"],
+      "filters": [
+       {"key": "f_title", "field": "summary", "op": "contains_ci", "value": "design review"},
+       {"key": "f_org", "field": "organizer_email", "op": "eq", "value": "priya.nair@northwind.example"},
+       {"key": "f_from", "field": "start_datetime", "op": "ge", "value": "2018-06-21T00:00:00"},
+       {"key": "f_to", "field": "start_datetime", "op": "lt", "value": "2018-06-22T00:00:00"}],
+      "edges": [{"key": "e_any", "join": {"parent": "id", "child": "event_id", "op": "eq"},
+                 "node": {"table": "calendar_event_attendees", "filters": [{"key": "x", "field": "response_status", "op": "eq", "value": "declined"}], "edges": []}}]}},
+    "explanation": "Priya organizes this review and is not an attendee; Omar is the one who declined."},
+   {"witness": "ev_dr_payments", "fact": "A:Event.start", "family": "F7", "substitute": "the adjacent day",
+    "mutation": {"type": "DROP", "target": "f_from"},
+    "explanation": "Priya declined it, but it is on Wednesday, the day before."},
+   {"witness": "ev_ds", "fact": "A:Event.summary", "family": "F8", "substitute": "a similarly named meeting",
+    "mutation": {"type": "DROP", "target": "f_title"},
+    "explanation": "A design sync, not a design review."},
+   {"witness": "ev_dr_mobile", "fact": "D:local_time", "family": "F6", "substitute": "the UTC date",
+    "mutation": {"type": "REPLACE", "note": "local calendar day replaced by the UTC day", "query": {
+      "table": "calendar_events", "key": ["id"],
+      "filters": [
+       {"key": "f_title", "field": "summary", "op": "contains_ci", "value": "design review"},
+       {"key": "u1", "field": "start.dateTime", "op": "ge", "value": "2018-06-21T00:00:00Z"},
+       {"key": "u2", "field": "start.dateTime", "op": "lt", "value": "2018-06-22T00:00:00Z"}],
+      "edges": [{"key": "e_att", "join": {"parent": "id", "child": "event_id", "op": "eq"},
+                 "node": {"table": "calendar_event_attendees", "filters": [
+                   {"key": "f_att", "field": "email", "op": "eq", "value": "priya.nair@northwind.example"},
+                   {"key": "f_rsvp", "field": "response_status", "op": "eq", "value": "declined"}], "edges": []}}]}},
+    "explanation": "It starts at 03:00 UTC on the 21st, which is Wednesday 8 pm in Los Angeles."}
+  ],
+  "effect": {"table": "calendar_events", "changes": ["update", "delete"]},
+  "written": ["calendar_events.location"]
+ },
+ "write": {"method": "PATCH", "path": "/calendars/jordan.lee@northwind.example/events/ev_dr_checkout", "body": {"location": "Room 5B"}}
+}
