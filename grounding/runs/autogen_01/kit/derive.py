@@ -53,6 +53,22 @@ def prune_orphans(case):
             return case
 
 
+def effect_key(domain, table) -> list[str]:
+    """The primary-key columns of a table, from the replica's own schema."""
+    from grounding.runs.autogen_01.kit.seedops import _metadata
+    return [c.name for c in _metadata(domain).tables[table].primary_key.columns]
+
+
+def normalize_effects(case):
+    """Give every effect locator its table's real key. The diff attribution keys rows by it, and a writer who
+    leaves it out gets `id`, which association tables (reactions, memberships, label links) do not have."""
+    for ref in case["references"]:
+        effect = ref.get("effect")
+        if effect and effect.get("table"):
+            effect["key"] = effect_key(case["domain"], effect["table"])
+    return case
+
+
 def dangling(case) -> list[str]:
     """Foreign keys (self-references included) that point at no row: the test's seed would not install."""
     seed = case["seed"]

@@ -18,6 +18,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
 from grounding.runs.autogen_01.kit import agent, bundle
+from grounding.runs.autogen_01.kit.derive import normalize_effects
 from grounding.runs.fact_coverage_01.pilot import analyze as pilot
 from grounding.runs.fact_coverage_02 import score
 from grounding.runs.fact_coverage_02.analyze import current
@@ -64,6 +65,8 @@ def triage(run_name: str, trial: str, attempt: Path) -> tuple[dict, dict, dict]:
     """The scorer's provisional label (no manual labels), with the case refreshed as the scorer does."""
     summary = json.loads((attempt / "execution_summary.json").read_text())
     case = current(json.loads((attempt / "case.json").read_text()))
+    if STUDY in attempt.resolve().parents:
+        normalize_effects(case)  # this study's generated cases: key the diff by the table's real primary key
     row = {"run": run_name, "trial": trial, "case_id": summary["case_id"], "status": summary.get("status")}
     if summary.get("status") == "completed":
         row.update(pilot.attribute(case, attempt))

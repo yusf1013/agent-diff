@@ -211,6 +211,10 @@ def build(s: dict, brief: dict):
             "probes": [list(p) for p in rest.get("probes", []) or []], "write_check": rest["write"],
             "conditions": rest["conditions"]}
     try:
+        derive.normalize_effects(case)
+    except KeyError:
+        return None, [f"`reference.effect.table` names a table the {s['domain']} replica does not have."]
+    try:
         case, _results, errors = finish(case)
     except KeyError as exc:
         return None, [f"Reference query or mutation cannot be evaluated: a row has no column {exc}. A query's "
