@@ -41,7 +41,44 @@ session.
 
 ## 2. The judge
 
-<!-- JUDGE: filled from tables.md -->
+**Setup.**
+- **Input:** one trial at a time, the same evidence a manual reviewer reads ([kit/bundle.py](kit/bundle.py)):
+  - the request;
+  - the target and each decoy, with its fact and the author's explanation;
+  - every step (reasoning, command, response);
+  - the final answer;
+  - the state diff;
+  - the mechanical attribution.
+- **Output:** a structured verdict ([kit/judge.py](kit/judge.py)): outcome, exposed facts, mechanism, and a note.
+- **Split:** the 267 manual labels were divided by run before any change to the judge. Dev is the pilot-fact runs
+  (130 labels, plus 20 clean trials); test is every other run (137 labels, plus 40 clean trials).
+
+| Split | Trials | Outcome agreement | Exposed-fact agreement | Artifacts caught |
+|---|---:|---:|---:|---:|
+| Dev, round 1 | 150 | 128 (85%) | 63/78 | 1/6 |
+| Dev, round 2 (frozen) | 150 | 144 (96%) | 87/87 | 4/6 |
+| **Test (held out, run once)** | **177** | **142 (80%)** | **64/64** | **6/39** |
+
+- **The pre-registered bar of 90% is missed on the test split.**
+- **33 of the 35 misses are trials of three tests invalidated as whole tests.** The manual review invalidated SLK-21's
+  first version (a reaction the replica rejects), LIN-25's first version (non-UUID label ids) and BOX-31 (ambiguous
+  wording) as whole tests. The judge scores grounding trial by trial, so it cannot make those test-level calls.
+- **On the other 141 trials it agrees on 139 (98.6%).** Both remaining disagreements are judgment calls (a rejected
+  write on a decoy followed by a correct "none"; a correct choice never written).
+- **In the automated pipeline the three defects are caught before any run:** the replica rules reject the reaction
+  and the label ids, and the reader blocks BOX-31 (§3).
+- **Where the judge's rules came from.** Between the dev rounds, five method rules that version 1 left implicit were
+  written into its prompt, and the policy-panel mapping moved into code (plan.md amendment 1). Nothing in the
+  prompt refers to a particular test.
+
+**On the generated runs** (no manual labels exist there), I read every failing, void or unclear verdict, as the
+manual process did ([eval/judge_review.json](eval/judge_review.json)):
+- **Overridden: 4 verdicts** (2 in Arm R, 2 in the control), all by the same rule: a filter the replica ignores
+  returned the decoy, which is an artifact. Two of these filters were not in the replica notes (§7). The other two
+  were cases where the judge knew the rule and did not apply it.
+- **On the sampled clean trials:** the judge agreed with the mechanical label on 49 of 52 in Arm R. The other 3 it
+  rated "not established", because the solver reached "none" by wrongly concluding that Linear has no documents.
+  That is how the manual labels treated the same behaviour.
 
 ## 3. The cold reader, calibrated on the exemplars
 
