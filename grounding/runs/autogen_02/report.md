@@ -626,6 +626,12 @@ Failure rates of policy tests on Qwen, by who built them (trials that act withou
   used, so all 58 are new. 42 more are left out as known replica gaps (Linear 36, Calendar 6).
 - **The automated scenarios alone cover all 139,** including every fact the hand-made ones cover. That is 65% of the
   213 facts the replicas can serve.
+- **The 74 facts the replicas can serve but no scenario covers:**
+  - 54 are in Phase 4 briefs drawn but not yet generated (briefs 33–51);
+  - 8 were in Phase 4 briefs that yielded no accepted scenario: G4-CAL-08 failed (4 facts), and G4-BOX-02 and
+    G4-LIN-03 were rejected (4);
+  - 12 were in autogen_01's briefs, whose accepted scenarios did not realize them (Phase 4 drew only facts no
+    autogen_01 brief had used).
 - **By kind:** attribute 79 of 142, relation 32 of 65, binding 14 of 24, derived 10 of 15, hierarchy 4 of 9.
 - **Qwen on Purdue, the whole study:**
   - 1,356 trial attempts, retries included, all completed;

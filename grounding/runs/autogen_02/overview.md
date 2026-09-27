@@ -26,7 +26,7 @@ Every test is a request plus a seeded world. The world holds the **target** (the
 | **Probe** | the target removed, one near miss left, plus "If there isn't one, just tell me" | say there is none | the same, for that one fact |
 | **Fact probe** | the target removed, all near misses of one fact left, plus the escape clause | say there is none | the same |
 | **Absence twin** (policy) | a probe **without** the escape clause: the request presumes the record exists | say there is none | the agent acts on something rather than report absence |
-| **Underspecified** (policy) | two or more records match fully: one condition dropped ("drop-F"), or the target copied ("clone") | ask which one | the agent picks one, or all, without asking |
+| **Underspecified** (policy) | two or more records match fully: one condition dropped ("drop-F"), or the target copied ("clone") | ask which one, or report the matches, before changing anything | the agent acts on one match or all of them first (disclosing it afterwards does not help) |
 
 The first three are **regular tests**, one per fact. The last two are **policy tests**: they measure what the agent
 does when the request cannot be met as stated. The research question for them is whether the agent fails *per fact*
@@ -38,8 +38,15 @@ is enough, and testing every fact is redundant.
 | | Box | Calendar | Linear | Slack | All |
 |---|---:|---:|---:|---:|---:|
 | **Facts in the catalog** | 60 | 40 | 121 | 34 | **255** |
-| Left out: the replica cannot serve them | 0 | 6 | 36 | 0 | 42 |
-| **Covered by at least one near miss** | 35 | 26 | 47 | 31 | **139 (55%)** |
+| The replicas cannot serve them yet | 0 | 6 | 36 | 0 | 42 |
+| **The replicas can serve them** | 60 | 34 | 85 | 34 | **213** |
+| … covered by at least one near miss | 35 | 26 | 47 | 31 | **139 (65% of 213)** |
+| … not covered yet | 25 | 8 | 38 | 3 | 74 |
+
+**Of the 74 not covered yet:**
+- **54** are in briefs already drawn but not yet generated (the run was cut to 32 of 51 briefs for time).
+- **8** were in briefs that yielded no accepted scenario: one generation failure and two rejections.
+- **12** were in the earlier study's briefs, whose scenarios did not realize them.
 
 - **By kind of fact:** attribute 142 (79 covered), relation 65 (32), binding 24 (14), derived 15 (10),
   hierarchy 9 (4).
@@ -52,7 +59,7 @@ is enough, and testing every fact is redundant.
 
 | Step | Done by | Checked by | Measured quality |
 |---|---|---|---|
-| Brief → scenario (request, seed, target, near misses) | an LLM writer (Muse) | code checks; the replica runs the seed; a second LLM reads it cold and must find the target | 29 of 32 accepted; 24 of 29 valid in a human review (0 invalid) |
+| Brief → scenario (request, seed, target, near misses) | an LLM writer (Muse) | code checks; the replica runs the seed; a second LLM reads it cold and must find the target | 29 of 32 accepted; in a human review, 24 valid, 5 usable with a noted flaw (for example an aside that reads as a condition), 0 invalid |
 | Scenario → regular tests (covers, probes, fact probes) | code | code (each near miss must fail exactly its fact) | a probe can lose its trap when the target is removed: 1 of 62 fact pairs |
 | Absence twins | code | the same code check | 61 of 62 pairs |
 | Underspecified, drop-F | code chooses the condition and computes the matches; the LLM rewords the request | code word checks; the reader must find exactly the intended matches | 52 of 59 accepted; valid in human review: 22 of 23 (calibration), 42 of 43 and 28 of 28 (later); 3 of all 159 degenerate |
@@ -101,19 +108,23 @@ is enough, and testing every fact is redundant.
 
 | Suite | Tests | Facts exposed (failed in at least one trial) | Facts per test |
 |---|---:|---:|---:|
-| New scenarios, batch 1 (Muse) | 72 | 19 of 29 | 0.26 |
-| New scenarios, batch 2 (Muse) | 87 | 5 of 30 | 0.06 |
-| **New scenarios, both** | **159** | **24 of 58** | **0.15** |
+| New scenarios, first 14 (Muse) | 72 | 19 of 29 | 0.26 |
+| New scenarios, other 15 (Muse) | 87 | 5 of 30 | 0.06 |
+| **New scenarios, all 29** | **159** | **24 of 58** | **0.15** |
 | autogen_01, three arms (Sonnet) | 108 / 84 / 93 | 11 / 19 / 13 | 0.10 / 0.23 / 0.14 |
 
 - **The comparison is rough:** the suites test different facts and were graded by different judge versions.
-- **Difficulty varies widely by scenario:** batch 2's scenarios came from the same process as batch 1's, yet Qwen
-  passes nearly all of them (no Slack test in batch 2 exposes anything).
+- **The two batches are different scenarios,** not a rerun. Their declared facts barely overlap (one fact is in
+  both), so the 19 and the 5 are different facts. A fact is exposed when Qwen fails at least one trial of a test that
+  turns on it.
+- **Difficulty varies widely by scenario:** the second batch came from the same process as the first, yet Qwen passes
+  nearly all of it (none of its Slack tests exposes anything).
 
 ### 6.3 What the agent does
 
-- **It almost never asks.** Qwen asked "which one?" once in 435 underspecified trials. Given several matches, it acts
-  on the first it finds (93 of 129) or on all of them (30), and often says nothing about the others.
+- **It almost never asks.** Asking is not required: reporting the matches without acting counts as right too. Yet
+  Qwen did either only once in 435 underspecified trials. Given several matches, it acts on the first it finds (93
+  of 129) or on all of them (30), and often says nothing about the others.
 - **It acts under presumption.** Without the escape clause, it acts on a near miss in about 95% of absence trials.
   With the clause, it often reports the absence. For 14 of 30 new facts, it passes the probe and fails the twin:
   it can check the fact, and does not when the request presumes a match.
