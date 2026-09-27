@@ -1,0 +1,5 @@
+A cold reader, who saw only the request and then the records, reports:
+- The reader says the decoy `8103` (for R:TaskAssignment.assigned_to_id, conditions ['c2']) fails ['c2', 'c3']: it fails more than its own fact (assignment 9203 is Leo Park to Omar Haddad approved; not to Maya Chen and not approved by her; created_by Maya Chen is not assigned-to).
+- The reader says the decoy `8104` (for R:TaskAssignment.assigned_to_id, conditions ['c2']) fails ['c2', 'c3']: it fails more than its own fact (assignment 9204 is Leo Park to Maya Lopez approved; wrong Maya and approver is Maya Lopez, not Maya Chen).
+
+Fix scenario.json (edit it in place) where the reader is right. If you judge that a reading the reader raises is one a careful colleague would not take, you may keep your wording; say why in your reply. A fresh reader will read the scenario again either way. Do not add hints that only a test would contain (such as "simply" or "not the one that…") just to rule out a reading. Then reply with a short summary of what you changed or kept.

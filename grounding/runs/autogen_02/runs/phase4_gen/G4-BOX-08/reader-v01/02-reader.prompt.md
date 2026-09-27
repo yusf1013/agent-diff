@@ -1,0 +1,39 @@
+Step 2. These are all the records in the service:
+
+### box_file_versions (2)
+{"id": "98101", "type": "file_version", "file_id": "8101", "name": "Brand guidelines.pdf", "size": 48213, "version_number": "1", "created_at": "2026-06-01T09:00:00+00:00", "modified_at": "2026-06-01T09:00:00+00:00", "modified_by_id": "30000000001"}
+{"id": "98102", "type": "file_version", "file_id": "8102", "name": "Q3 roadmap.pdf", "size": 48213, "version_number": "1", "created_at": "2026-06-01T09:00:00+00:00", "modified_at": "2026-06-01T09:00:00+00:00", "modified_by_id": "30000000001"}
+### box_files (2)
+{"id": "8101", "type": "file", "name": "Brand guidelines.pdf", "parent_id": "8100", "owned_by_id": "30000000001", "created_by_id": "30000000001", "modified_by_id": "30000000001", "description": "Company brand guidelines", "size": 48213, "extension": "pdf", "item_status": "active", "version_number": "1", "comment_count": 0, "tags": "[]", "collections": "[]", "created_at": "2026-06-01T09:00:00+00:00", "modified_at": "2026-06-01T09:00:00+00:00", "uploader_display_name": "Jordan Lee"}
+{"id": "8102", "type": "file", "name": "Q3 roadmap.pdf", "parent_id": "8100", "owned_by_id": "30000000001", "created_by_id": "30000000001", "modified_by_id": "30000000001", "description": "Q3 product roadmap draft", "size": 48213, "extension": "pdf", "item_status": "active", "version_number": "1", "comment_count": 0, "tags": "[]", "collections": "[]", "created_at": "2026-06-01T09:00:00+00:00", "modified_at": "2026-06-01T09:00:00+00:00", "uploader_display_name": "Jordan Lee"}
+### box_folders (2)
+{"id": "0", "type": "folder", "name": "All Files", "owned_by_id": "30000000001", "item_status": "active", "size": 0}
+{"id": "8100", "type": "folder", "name": "Shared Assets", "parent_id": "0", "owned_by_id": "30000000001", "created_by_id": "30000000001", "modified_by_id": "30000000001", "item_status": "active", "size": 0, "tags": "[]", "collections": "[]", "created_at": "2026-06-01T09:00:00+00:00", "modified_at": "2026-06-01T09:00:00+00:00"}
+### box_hub_items (4)
+{"id": "8301", "type": "hub_item", "added_at": "2026-06-01T09:00:00+00:00", "added_by_id": "30000000001", "hub_id": "8201", "item_id": "8101", "item_type": "file", "item_name": "Brand guidelines.pdf", "position": 1}
+{"id": "8302", "type": "hub_item", "added_at": "2026-06-01T09:00:00+00:00", "added_by_id": "30000000001", "hub_id": "8202", "item_id": "8101", "item_type": "file", "item_name": "Brand guidelines.pdf", "position": 1}
+{"id": "8303", "type": "hub_item", "added_at": "2026-06-01T09:00:00+00:00", "added_by_id": "30000000002", "hub_id": "8203", "item_id": "8101", "item_type": "file", "item_name": "Brand guidelines.pdf", "position": 1}
+{"id": "8304", "type": "hub_item", "added_at": "2026-06-01T09:00:00+00:00", "added_by_id": "30000000001", "hub_id": "8204", "item_id": "8101", "item_type": "file", "item_name": "Brand guidelines.pdf", "position": 1}
+### box_hubs (5)
+{"id": "8201", "type": "hubs", "title": "Product launch - Retail", "description": "Product launch materials for the fall rollout", "created_by_id": "30000000002", "updated_by_id": "30000000001", "created_at": "2026-06-01T09:00:00+00:00", "updated_at": "2026-06-01T09:00:00+00:00", "is_ai_enabled": false, "is_collaboration_restricted_to_enterprise": false, "can_non_owners_invite": true, "can_shared_link_be_created": true, "view_count": 0}
+{"id": "8202", "type": "hubs", "title": "Product launch - Web", "description": "Product launch materials for the fall rollout", "created_by_id": "30000000005", "updated_by_id": "30000000002", "created_at": "2026-06-01T09:00:00+00:00", "updated_at": "2026-06-01T09:00:00+00:00", "is_ai_enabled": false, "is_collaboration_restricted_to_enterprise": false, "can_non_owners_invite": true, "can_shared_link_be_created": true, "view_count": 0}
+{"id": "8203", "type": "hubs", "title": "Product launch - Partner", "description": "Product launch materials for the fall rollout", "created_by_id": "30000000004", "updated_by_id": "30000000001", "created_at": "2026-06-01T09:00:00+00:00", "updated_at": "2026-06-01T09:00:00+00:00", "is_ai_enabled": false, "is_collaboration_restricted_to_enterprise": false, "can_non_owners_invite": true, "can_shared_link_be_created": true, "view_count": 0}
+{"id": "8204", "type": "hubs", "title": "Product launch - Field", "description": "Product launch materials for the fall rollout", "created_by_id": "30000000003", "updated_by_id": "30000000001", "created_at": "2026-06-01T09:00:00+00:00", "updated_at": "2026-06-01T09:00:00+00:00", "is_ai_enabled": false, "is_collaboration_restricted_to_enterprise": false, "can_non_owners_invite": true, "can_shared_link_be_created": true, "view_count": 0}
+{"id": "8205", "type": "hubs", "title": "Support rota", "description": "Support rotation and holidays", "created_by_id": "30000000007", "updated_by_id": "30000000007", "created_at": "2026-06-01T09:00:00+00:00", "updated_at": "2026-06-01T09:00:00+00:00", "is_ai_enabled": false, "is_collaboration_restricted_to_enterprise": false, "can_non_owners_invite": true, "can_shared_link_be_created": true, "view_count": 0}
+### box_users (8)
+{"id": "30000000001", "type": "user", "name": "Jordan Lee", "login": "jordan.lee@northwind.example", "status": "active", "role": "admin", "created_at": "2025-01-10T00:00:00Z", "modified_at": "2025-01-10T00:00:00Z"}
+{"id": "30000000002", "type": "user", "name": "Maya Chen", "login": "maya.chen@northwind.example", "status": "active", "role": "user", "created_at": "2025-01-10T00:00:00Z", "modified_at": "2025-01-10T00:00:00Z"}
+{"id": "30000000003", "type": "user", "name": "Maya Lopez", "login": "maya.lopez@northwind.example", "status": "active", "role": "user", "created_at": "2025-01-10T00:00:00Z", "modified_at": "2025-01-10T00:00:00Z"}
+{"id": "30000000004", "type": "user", "name": "Leo Park", "login": "leo.park@northwind.example", "status": "active", "role": "user", "created_at": "2025-01-10T00:00:00Z", "modified_at": "2025-01-10T00:00:00Z"}
+{"id": "30000000005", "type": "user", "name": "Dana Whitfield", "login": "dana.whitfield@northwind.example", "status": "active", "role": "user", "created_at": "2025-01-10T00:00:00Z", "modified_at": "2025-01-10T00:00:00Z"}
+{"id": "30000000006", "type": "user", "name": "Priya Nair", "login": "priya.nair@northwind.example", "status": "active", "role": "user", "created_at": "2025-01-10T00:00:00Z", "modified_at": "2025-01-10T00:00:00Z"}
+{"id": "30000000007", "type": "user", "name": "Omar Haddad", "login": "omar.haddad@northwind.example", "status": "active", "role": "user", "created_at": "2025-01-10T00:00:00Z", "modified_at": "2025-01-10T00:00:00Z"}
+{"id": "30000000008", "type": "user", "name": "Sam Rivera", "login": "sam.rivera@northwind.example", "status": "active", "role": "user", "created_at": "2025-01-10T00:00:00Z", "modified_at": "2025-01-10T00:00:00Z"}
+
+The author lists these conditions of the request:
+- c1: the product launch hub
+- c2: created by Maya Chen
+- c3: that already includes the brand guidelines file
+
+The candidate records are the rows of `box_hubs`: 8201, 8202, 8203, 8204, 8205.
+For every candidate, give the ids of the author's conditions it fails under the careful reading (an empty list if it meets all of them), whether a careful colleague could still argue that it meets the request (contestable), and a short note. Then say whether the author's conditions faithfully capture the request as you read it in step 1 (and what differs). For each ambiguity you listed, say whether a careful reader would genuinely be unsure which reading was meant, and whether the readings select different candidates. Finally, say whether the request reads like something a real user would write, without hints that only a test would contain.

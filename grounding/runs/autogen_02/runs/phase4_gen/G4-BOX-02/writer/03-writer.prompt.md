@@ -1,0 +1,4 @@
+A cold reader, who saw only the request and then the records, reports:
+- The reader finds the phrase "that's in your Favorites collection" genuinely ambiguous, in a way that changes which records match: Under the file reading, folder 9200 matches via file 9300 which is in collection 9100 Favorites. Under the folder reading, no folder matches because all folders 0,9200-9206 have collections [], so zero candidates match.
+
+Fix scenario.json (edit it in place) where the reader is right. If you judge that a reading the reader raises is one a careful colleague would not take, you may keep your wording; say why in your reply. A fresh reader will read the scenario again either way. Do not add hints that only a test would contain (such as "simply" or "not the one that…") just to rule out a reading. Then reply with a short summary of what you changed or kept.

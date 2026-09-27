@@ -1,0 +1,45 @@
+{
+  "scenario_id": "G4-SLK-04",
+  "domain": "slack",
+  "request": "Add an eyes reaction to Maya Chen's launch checklist card in #launch-readiness that lists the rollback steps.",
+  "answer": "one",
+  "seed": [
+    ["channel", {"id": "C_LAUNCH", "name": "launch-readiness", "members": ["maya", "diego", "leo"], "topic": "Q3 launch \u2014 rollback steps draft parked here"}],
+    ["message", {"channel": "C_LAUNCH", "author": "maya", "text": "Launch readiness \u2014 card below with the final sequence.", "at": "2026-09-21T11:10:00Z", "ref": "target", "set": {"blocks": [{"type": "section", "text": {"type": "mrkdwn", "text": "Launch checklist card: rollback steps \u2014 1) halt deploys 2) restore snapshot 3) verify health"}}]}}],
+    ["message", {"channel": "C_LAUNCH", "author": "maya", "text": "Launch checklist: rollback steps \u2014 1) halt deploys 2) restore snapshot 3) verify health", "at": "2026-09-21T11:25:00Z", "ref": "d1"}],
+    ["message", {"channel": "C_LAUNCH", "author": "maya", "text": "Launch readiness \u2014 verification card below.", "at": "2026-09-21T11:40:00Z", "ref": "d2", "set": {"blocks": [{"type": "section", "text": {"type": "mrkdwn", "text": "Follow-up card: verification checklist \u2014 1) confirm monitors 2) note owners"}}]}}],
+    ["message", {"channel": "C_LAUNCH", "author": "maya", "text": "Launch readiness \u2014 card below with the final sequence.", "at": "2026-09-21T12:05:00Z", "ref": "d3", "set": {"blocks": [{"type": "section", "text": {"type": "mrkdwn", "text": "Launch checklist card: rollout steps \u2014 1) open flags 2) ramp traffic 3) monitor errors"}}]}}],
+    ["message", {"channel": "C_LAUNCH", "author": "leo", "text": "Launch readiness \u2014 card below.", "at": "2026-09-21T11:50:00Z", "ref": "b1", "set": {"blocks": [{"type": "section", "text": {"type": "mrkdwn", "text": "Launch checklist card: cleanup steps \u2014 1) close flags 2) file notes"}}]}}],
+    ["message", {"channel": "C_LAUNCH", "author": "diego", "text": "Launch readiness \u2014 card below.", "at": "2026-09-21T11:55:00Z", "ref": "b2", "set": {"blocks": [{"type": "section", "text": {"type": "mrkdwn", "text": "Launch checklist card: handoff notes \u2014 1) page owner 2) link dashboard"}}]}}]
+  ],
+  "conditions": [
+    {"id": "c1", "text": "in #launch-readiness", "facts": ["R:messages.channel_id", "A:Conversation.channel_name"]},
+    {"id": "c2", "text": "Maya Chen's", "facts": ["R:messages.user_id", "A:User.real_name"]},
+    {"id": "c3", "text": "launch checklist card that lists the rollback steps", "facts": ["A:Message.blocks"]}
+  ],
+  "reference": {
+    "name": "the launch checklist card to react to",
+    "target": ["@target"],
+    "query": {
+      "table": "messages",
+      "key": ["message_id"],
+      "filters": [
+        {"key": "f_blocks", "field": "blocks", "op": "contains_ci", "value": "rollback steps", "fact": "A:Message.blocks"}
+      ],
+      "edges": [
+        {"key": "e_channel", "join": {"parent": "channel_id", "child": "channel_id", "op": "eq"}, "fact": "R:messages.channel_id", "node": {"table": "channels", "filters": [{"key": "f_chan", "field": "channel_name", "op": "eq", "value": "launch-readiness", "fact": "A:Conversation.channel_name"}], "edges": []}},
+        {"key": "e_author", "join": {"parent": "user_id", "child": "user_id", "op": "eq"}, "fact": "R:messages.user_id", "node": {"table": "users", "filters": [{"key": "f_auth", "field": "real_name", "op": "eq", "value": "Maya Chen", "fact": "A:User.real_name"}], "edges": []}}
+      ]
+    },
+    "decoys": [
+      {"witness": "@d1", "fact": "A:Message.blocks", "family": "F1", "substitute": "Message.message_text", "mutation": {"type": "DROP", "target": "f_blocks"}, "explanation": "It meets channel and author, but the rollback-steps words are only in its plain text; it has no structured card listing them."},
+      {"witness": "@d2", "fact": "A:Message.blocks", "family": "F2", "substitute": "the rollback-steps words are in the channel topic, not the message's own card", "mutation": {"type": "REPLACE", "note": "blocks condition on the message replaced by a topic condition on its containing channel", "query": {"table": "messages", "key": ["message_id"], "filters": [], "edges": [{"key": "e_channel", "join": {"parent": "channel_id", "child": "channel_id", "op": "eq"}, "node": {"table": "channels", "filters": [{"key": "f_topic", "field": "topic_text", "op": "contains_ci", "value": "rollback steps"}], "edges": []}}, {"key": "e_author", "join": {"parent": "user_id", "child": "user_id", "op": "eq"}, "node": {"table": "users", "filters": [{"key": "f_auth", "field": "real_name", "op": "eq", "value": "Maya Chen"}], "edges": []}}]}}, "explanation": "It meets channel and author, but only the channel topic mentions the rollback steps; its own card is a verification checklist."},
+      {"witness": "@d3", "fact": "A:Message.blocks", "family": "F0", "substitute": "a checklist card with different steps", "mutation": {"type": "DROP", "target": "f_blocks"}, "explanation": "It meets channel and author and has a checklist card, but its card lists the rollout steps, not the rollback steps."}
+    ],
+    "effect": {"table": "message_reactions", "changes": ["insert"], "key": ["message_id", "user_id", "reaction_type"], "field": "message_id"},
+    "written": ["message_reactions.reaction_type"]
+  },
+  "other_references": [],
+  "write": {"slack": "reactions.add", "params": {"channel": "C_LAUNCH", "timestamp": "@target", "name": "eyes"}},
+  "probes": []
+}

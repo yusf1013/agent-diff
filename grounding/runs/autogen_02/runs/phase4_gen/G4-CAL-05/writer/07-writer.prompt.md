@@ -1,0 +1,5 @@
+A cold reader, who saw only the request and then the records, reports:
+- The reader says the undeclared record `jordan.lee@northwind.example` fails only ['c1']: it is a near miss that is not declared as a decoy. Make it fail at least two conditions, or declare it as a decoy (Primary calendar; display is email address, not Team Travel. Shown and owner, so only c1 fails.).
+- The reader finds the request unnatural: Real user would likely say 'Hide my Team Travel calendar'. Explicitly stating 'currently shown in my list' and 'where I'm the owner' uses system-like filters to disambiguate near-misses.
+
+Fix scenario.json (edit it in place) where the reader is right. If you judge that a reading the reader raises is one a careful colleague would not take, you may keep your wording; say why in your reply. A fresh reader will read the scenario again either way. Do not add hints that only a test would contain (such as "simply" or "not the one that…") just to rule out a reading. Then reply with a short summary of what you changed or kept.

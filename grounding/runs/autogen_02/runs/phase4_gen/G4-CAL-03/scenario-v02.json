@@ -1,0 +1,70 @@
+{
+  "scenario_id": "G4-CAL-03",
+  "domain": "calendar",
+  "request": "On my primary calendar, move the Budget review with Maya Chen on Thursday to Room 5B.",
+  "answer": "one",
+  "seed": [
+    ["calendar", {"id": "jordan.travel@northwind.example", "summary": "Jordan Lee Travel"}],
+    ["calendar", {"id": "eng@northwind.example", "summary": "Engineering", "owner": "actor", "access": "owner"}],
+    ["event", {"id": "ev_budget_primary", "calendar": "primary", "summary": "Budget review", "start": "2018-06-21T10:00:00", "end": "2018-06-21T11:00:00", "attendees": [["maya", "accepted"]]}],
+    ["event", {"id": "ev_budget_travel", "calendar": "jordan.travel@northwind.example", "summary": "Budget review", "start": "2018-06-21T10:00:00", "end": "2018-06-21T11:00:00", "attendees": [["maya", "accepted"]]}],
+    ["event", {"id": "ev_budget_eng", "calendar": "eng@northwind.example", "summary": "Budget review", "start": "2018-06-21T10:00:00", "end": "2018-06-21T11:00:00", "attendees": [["maya", "accepted"]]}],
+    ["event", {"id": "ev_roadmap_primary", "calendar": "primary", "summary": "Roadmap sync", "start": "2018-06-21T14:00:00", "end": "2018-06-21T15:00:00", "attendees": [["omar", "accepted"]]}],
+    ["event", {"id": "ev_budget_friday", "calendar": "primary", "summary": "Budget review", "start": "2018-06-22T10:00:00", "end": "2018-06-22T11:00:00", "attendees": [["sam", "accepted"]]}]
+  ],
+  "conditions": [
+    {"id": "c1", "text": "On my primary calendar", "facts": ["D:primary"]},
+    {"id": "c2", "text": "the Budget review", "facts": ["A:Event.summary"]},
+    {"id": "c3", "text": "with Maya Chen", "facts": ["R:EventAttendee.event_id", "A:EventAttendee.email"]},
+    {"id": "c4", "text": "on Thursday", "facts": ["A:Event.start"]}
+  ],
+  "reference": {
+    "name": "the Budget review to move",
+    "target": ["ev_budget_primary"],
+    "query": {
+      "table": "calendar_events",
+      "filters": [
+        {"key": "f_title", "field": "summary", "op": "contains_ci", "value": "Budget review", "fact": "A:Event.summary"},
+        {"key": "f_cal", "field": "calendar_id", "op": "eq", "value": "jordan.lee@northwind.example", "fact": "D:primary"},
+        {"key": "f_from", "field": "start_datetime", "op": "ge", "value": "2018-06-21T00:00:00", "fact": "A:Event.start"},
+        {"key": "f_to", "field": "start_datetime", "op": "lt", "value": "2018-06-22T00:00:00"}
+      ],
+      "edges": [
+        {"key": "e_att", "join": {"parent": "id", "child": "event_id", "op": "eq"}, "fact": "R:EventAttendee.event_id",
+         "node": {"table": "calendar_event_attendees", "filters": [
+           {"key": "f_att", "field": "email", "op": "eq", "value": "maya.chen@northwind.example", "fact": "A:EventAttendee.email"}
+         ], "edges": []}}
+      ]
+    },
+    "decoys": [
+      {"witness": "ev_budget_travel", "fact": "D:primary", "family": "F6",
+       "substitute": "a secondary calendar named Jordan Lee Travel, matching the primary calendar's display name",
+       "mutation": {"type": "REPLACE", "note": "primary-calendar alias replaced by a match on the secondary calendar's similar name", "query": {
+         "table": "calendar_events",
+         "filters": [
+           {"key": "f_title", "field": "summary", "op": "contains_ci", "value": "Budget review"},
+           {"key": "f_from", "field": "start_datetime", "op": "ge", "value": "2018-06-21T00:00:00"},
+           {"key": "f_to", "field": "start_datetime", "op": "lt", "value": "2018-06-22T00:00:00"}
+         ],
+         "edges": [
+           {"key": "e_att", "join": {"parent": "id", "child": "event_id", "op": "eq"},
+            "node": {"table": "calendar_event_attendees", "filters": [
+              {"key": "f_att", "field": "email", "op": "eq", "value": "maya.chen@northwind.example"}
+            ], "edges": []}},
+           {"key": "e_cal", "join": {"parent": "calendar_id", "child": "id", "op": "eq"},
+            "node": {"table": "calendars", "filters": [
+              {"key": "f_cname", "field": "summary", "op": "eq", "value": "Jordan Lee Travel"}
+            ], "edges": []}}
+         ]
+       }},
+       "explanation": "It matches the title, attendee and day, but it sits on the secondary calendar named Jordan Lee Travel, not on the actor's primary calendar."},
+      {"witness": "ev_budget_eng", "fact": "D:primary", "family": "F0",
+       "substitute": "the same meeting on a plain unrelated calendar",
+       "mutation": {"type": "DROP", "target": "f_cal"},
+       "explanation": "It matches the title, attendee and day, but it sits on the Engineering calendar, not on the actor's primary calendar."}
+    ],
+    "effect": {"table": "calendar_events", "changes": ["update"]},
+    "written": ["calendar_events.location"]
+  },
+  "write": {"method": "PATCH", "path": "/calendars/jordan.lee@northwind.example/events/ev_budget_primary", "body": {"location": "Room 5B"}}
+}
