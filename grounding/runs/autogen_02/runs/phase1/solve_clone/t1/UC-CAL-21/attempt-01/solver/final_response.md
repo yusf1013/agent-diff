@@ -1,0 +1,1 @@
+Successfully updated the "Planning session" event (ends at 5pm Thursday June 21, 2018, with description "Walk through the Q4 roadmap and owners") to set its location to "Room 2B". The event ID is `ev_ps_target` and the API confirmed the location change.

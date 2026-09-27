@@ -1,0 +1,1 @@
+Successfully deleted the Friday (June 22) "Architecture review" event (ID: ev_ar_target) from the primary calendar. This was the event where Kenji Sato (kenji.sato@northwind.example) was listed as an optional guest. The API returned HTTP 204 confirming the deletion.

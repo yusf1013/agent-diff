@@ -1,0 +1,1 @@
+Successfully renamed the document "Checkout rollout checklist" (id: d-29) to "Checkout QA plan" in the Checkout Redesign project. This was the document last edited by Leo Park in that project, confirmed via the updatedBy field on the Document type.

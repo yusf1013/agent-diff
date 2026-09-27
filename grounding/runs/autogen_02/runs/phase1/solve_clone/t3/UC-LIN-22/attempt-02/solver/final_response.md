@@ -1,0 +1,1 @@
+The document "Checkout test notes" (d-21) in the Checkout Redesign project, last edited by Leo Park, has been successfully renamed to "Checkout QA plan". This was confirmed by querying the document and seeing its updated title.

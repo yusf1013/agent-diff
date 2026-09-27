@@ -1,0 +1,1 @@
+Successfully reopened the comment thread on WEB-5 ("Flaky checkout test") that Maya Chen had resolved. I identified her comment (c-22, "Can we pin the browser version?"), which had been resolved, and used the `commentUpdate` mutation to clear the `resolvingCommentId` and `resolvingUserId` fields, effectively reopening the thread. The mutation returned success.

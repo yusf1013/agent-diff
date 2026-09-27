@@ -1,0 +1,1 @@
+Added the :eyes: reaction to Diego Alvarez's replies in the #incidents thread about the checkout outage. Both of his thread replies (ts: 1790000400.000002 and ts: 1790000520.000009) now have the :eyes: reaction.

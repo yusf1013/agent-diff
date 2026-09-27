@@ -1,0 +1,1 @@
+Successfully reopened the comment thread on WEB-5 that Maya Chen had resolved. Comment c-21 ("The retry wrapper hides the real failure." by Sam Rivera), which was previously resolved by Maya Chen, has been reopened by clearing the resolving user. The API confirmed the update with `success: true` and `resolvingUser: null`.

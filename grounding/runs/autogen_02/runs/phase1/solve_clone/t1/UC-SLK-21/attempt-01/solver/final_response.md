@@ -1,0 +1,1 @@
+Successfully added a :thumbsup: reaction to Priya Sharma's message in #deploys about the rollback. The message (posted September 23, timestamp 1790078400.000004) read: "Rollback plan for the cache migration is ready for review."
