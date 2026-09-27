@@ -74,7 +74,36 @@ How to run it: [kit/README.md](kit/README.md).
 
 ### 2.3 Underspecified variants on Qwen
 
-*Pending (the drop-F run follows the clone run).*
+**Clones (48 trials, 16 scenarios).**
+- **47 of 48 fail;** the other is a false absence (UC-BOX-21 t2 read "the folder Leo Park last modified" as a folder
+  name).
+- **No trial asks which record is meant.** Qwen acts on one match, or on both: it granted both calendars in
+  UC-CAL-22 in all three trials, and changed both issues in UC-LIN-26.
+- **5 trials act on a near miss instead** (UC-BOX-24 ×3, UC-LIN-23 t3, UC-SLK-21 t1): fact-level failures that the
+  second match exposed.
+- **The pair with the cover:** for 14 of the 16 scenarios Qwen passes the cover in the same-day control run (it
+  finds the one target) but fails the clone. The failure appears once a second match exists.
+
+**Drop-F (93 trials, 31 variants).** *Pending, labelling in progress:* so far every trial acts without asking. The
+exception is my own variant U-BOX-23-File_extension, labelled a defective test. "The contract file" need not
+cover "Initech pricing.docx", which is the reason the Muse writer gave for declining that variant (§4).
+
+## 2.4 Judge v2 against my Phase 1 labels
+
+| Trials | Collapsed agreement | Exposed facts on failures |
+|---|---:|---:|
+| Absence twins (111) | 111/111 after 2 label corrections (109/111 before) | 150/153 before 4 corrections |
+| Clones (48) | 48/48 | (included above) |
+| fact_coverage_02's P1/P3 panel (24) | 24/24 | – |
+
+- **The 2 outcome corrections were my errors.** Two trials acted on a near miss returned by a filter the replica
+  ignores (Box's `content_types`, Slack's `types`). The judge rules call that an artifact, and I had labelled from
+  the brief view without checking the filter. Both labels keep their original outcome.
+- **What the calibration cannot show yet.** The rule "asking and then stopping is correct" has no instance: no
+  Phase 1 trial asked. The 3 `correct_absent` absence trials and the false absence are the only non-failures, and
+  the judge got all four.
+- **One inconsistency:** the judge listed the near miss's fact for 2 of the 3 identical AT-LIN-24 trials (the
+  fabricated cycle) and nothing for the third. It is harmless for scoring, since twins never credit facts.
 
 ## 3. The policy-level definition (task 17)
 
