@@ -43,9 +43,11 @@ def trials(run_dir: Path, only: list[str] | None):
         yield trial, case_id, attempt
 
 
-def show(run_dir: Path, only: list[str] | None, brief: bool = False, skip: set | None = None):
+def show(run_dir: Path, only: list[str] | None, brief: bool = False, skip: set | None = None,
+         keep: set | None = None):
     seen = set()
-    rows = sorted((t for t in trials(run_dir, only) if f"{run_dir.name}/{t[0]}/{t[1]}" not in (skip or set())),
+    rows = sorted((t for t in trials(run_dir, only) if f"{run_dir.name}/{t[0]}/{t[1]}" not in (skip or set())
+                   and (keep is None or f"{run_dir.name}/{t[0]}/{t[1]}" in keep)),
                   key=lambda t: (t[1], t[0]))
     for trial, case_id, attempt in rows:
         case, summary, tri = triage(run_dir.name, trial, attempt)
@@ -88,6 +90,7 @@ def main():
     parser.add_argument("--full")
     parser.add_argument("--brief", action="store_true")
     parser.add_argument("--unlabelled", type=Path, help="a folder of label files: show only trials without a label")
+    parser.add_argument("--keys", type=Path, help="a blind-sample file: show only its trials")
     args = parser.parse_args()
     if args.full:
         full(args.run_dir.resolve(), args.full)
@@ -96,7 +99,8 @@ def main():
         if args.unlabelled:
             for f in args.unlabelled.glob("*.json"):
                 skip.update(k for k in json.loads(f.read_text()) if not k.startswith("_"))
-        show(args.run_dir.resolve(), args.cases, args.brief, skip)
+        keep = set(json.loads(args.keys.read_text())["keys"]) if args.keys else None
+        show(args.run_dir.resolve(), args.cases, args.brief, skip, keep)
 
 
 if __name__ == "__main__":
