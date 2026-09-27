@@ -17,15 +17,26 @@ system** ([plan.md](plan.md), decisions N7–N15 in [decisions.md](decisions.md)
 
 ## Summary
 
-*Draft of 04:47, timing corrected at 05:22. Phase 4's runs on Qwen are still running: batch 1's regular tests until
-about 05:50, then its policy variants (about an hour), the robustness checks and batch 2. Their rows say pending.*
+*Status at 06:57, written for the 07:30 sync. The runs continue after it; rows marked pending wait for them.*
+
+| Part | State | About when |
+|---|---|---|
+| Phase 3: the eight policy decisions | final | – |
+| Phase 4: generation, policy derivation, my reviews | final | – |
+| Phase 4 batch 1: 72 regular tests (216 trials) | run, judged, scored (§6.3) | done |
+| Batch 1's policy run: 67 units, 201 trials (amendment 7) | running: 150 of 201 at 06:57; blind labels 22 of 30 so far | run ends ~07:40, judged ~08:15 |
+| Robustness checks (amendment 6): 17 units, 51 trials | queued | run ~08:15, judged ~08:40 |
+| Batch 2: 87 regular tests (261 trials) | queued | run ~10:00, judged ~10:30 |
+| Questions for the parts left out of scope (task 23) | held until the above are done | after batch 2 |
 
 **What the runs show.**
 - **The system runs end to end, and a person is needed only to review and label.** From a brief to verdicts, every
   step is automated: the scenario (Muse writer, code checks, replica pre-checks, Muse reader), its regular tests,
   its per-fact policy variants (absence twins by code; drop-F variants and clones by Muse, checked by code and a
   cold reader), the sampled policy runs on Qwen, and the judge (Muse, v2). On new briefs: 29 of 32 accepted, 24
-  of 29 valid in my review, $0.62 per accepted scenario at list price ($0.035 billed).
+  of 29 valid in my review, $0.62 per accepted scenario at list price ($0.035 billed). The new suites work: batch
+  1's 72 tests expose 19 of their 29 facts on Qwen (0.26 facts per test; autogen_01's suites 0.10 to 0.23, on other
+  facts).
 - **All eight policy cells are policy-level under the pre-registered definition** (one test on a random fact of the
   cell fails with probability above 0.8, at 90% confidence): absence in Box, Calendar and Linear at the first look
   (11/11), Slack at the third (23/25); underspecified in Box, Calendar and Slack at the first look (11/11), Linear
@@ -45,10 +56,15 @@ about 05:50, then its policy variants (about an hour), the robustness checks and
 - **The judge is precise, and its errors are the tests' errors.** On 93 blind Phase 3 trials, judge v2 agrees with my
   labels in 87. As a detector of failures its precision is 85/86 and its recall 85/85, with the same exposed fact in
   85 of 85. Four of the six disagreements are defective or contestable tests, which the judge cannot flag. The
-  other two are borderline absence reports.
-- **The automation's quality problems are specific and fixable:** 3 of 159 accepted drop-F variants are degenerate
-  in that way (a verb-precondition check would catch them), and the copier cannot clone rows two steps from the
-  target (one clone rejected by the code check).
+  other two are borderline absence reports. On batch 1's 30 blind trials it agrees in all 30.
+- **The automation's quality problems are specific and fixable:**
+  - 3 of 159 accepted drop-F variants are degenerate in that way (a verb-precondition check would catch them);
+  - the copier cannot clone rows two steps from the target (one clone rejected by the code check);
+  - a probe can lose its near miss's trap when its seed drops the target: 1 in Phase 4 (§9), caught for twins by
+    the code check but never run on probes;
+  - "overdue" depends on a run date that nothing sets.
+- **The replica has one new bug and one open fidelity question** (§9): a Box file update unshares the file, and
+  Slack's search does not read card text.
 
 **The plan's bars** (plan, Phase 2 "Calibration bars"; amendment 2 for the policy definition):
 
