@@ -272,6 +272,25 @@ def clone(case: dict, changes: dict, new_key: str, variant_id: str | None = None
                 c[child_pk[0]] = f"{c[child_pk[0]]}_clone" if isinstance(c[child_pk[0]], str) else c[child_pk[0]] + 100000
             base["seed"][child].append(c)
             copied += 1
+    # Polymorphic references, which the schema does not declare as foreign keys: rows with `item_id` = the target and
+    # `item_type` = its kind (Box hub items, tasks and comments on a file or folder).
+    kind = {"box_files": "file", "box_folders": "folder"}.get(table)
+    if kind:
+        for child, rows_ in base["seed"].items():
+            if child == table or child in skip_children or not rows_ or "item_type" not in rows_[0]:
+                continue
+            child_pk = effect_key(base["domain"], child)
+            for r in [r for r in rows_ if str(r.get("item_id")) == target_id and r.get("item_type") == kind
+                      and not any(str(c.get(child_pk[0])) == f"{r.get(child_pk[0])}_clone" for c in rows_)]:
+                c = copy.deepcopy(r)
+                for col_name, value in r.items():
+                    if str(value) == target_id and re.search(r"(_id|Id)$", col_name):
+                        c[col_name] = new_key
+                if len(child_pk) == 1 and c.get(child_pk[0]) is not None:
+                    c[child_pk[0]] = f"{c[child_pk[0]]}_clone" if isinstance(c[child_pk[0]], str) \
+                        else c[child_pk[0]] + 100000
+                rows_.append(c)
+                copied += 1
     seed = _check_seed(base)
     selected = fdc.evaluate(seed, ref["query"])
     want = [ref["expected"][0], new_key]
