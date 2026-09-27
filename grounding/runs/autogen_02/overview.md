@@ -58,7 +58,7 @@ is enough, and testing every fact is redundant.
 | Underspecified, clone | the LLM describes a copy of the target; code builds it | code; the reader | 25 of 29 accepted; 11 of 11 valid in review |
 | Sampling and decisions | code: a random order fixed by a seed, looks at 11/18/25 tests | pre-registered before any run | – |
 | Running the agent | Qwen on Purdue, 3 trials per test | – | 90 to 170 trials an hour (limit: ~20 requests a minute) |
-| Judging | an LLM judge (Muse, "judge v2") | a human grades random trials blind, before seeing the judge | agreement 95% on the first 252 trials; on later blind samples 90/93, then 110/110; precision 88/89 and recall 88/88 in the first 93 |
+| Judging | an LLM judge (Muse, "judge v2") | a human grades random trials blind, before seeing the judge | agreement 95% on the first 252 trials; on later blind samples 87/93 (90/93 after a ruling on one contested test), then 110/110 |
 | People | review scenarios and variants before their runs; grade blind samples; rule on contested tests | – | 455 trials graded by hand |
 
 **Cost:**
@@ -102,7 +102,7 @@ is enough, and testing every fact is redundant.
 |---|---:|---:|---:|
 | New scenarios, batch 1 (Muse) | 72 | 19 of 29 | 0.26 |
 | New scenarios, batch 2 (Muse) | 87 | 5 of 30 | 0.06 |
-| **New scenarios, both** | **159** | **24 of 59** | **0.15** |
+| **New scenarios, both** | **159** | **24 of 58** | **0.15** |
 | autogen_01, three arms (Sonnet) | 108 / 84 / 93 | 11 / 19 / 13 | 0.10 / 0.23 / 0.14 |
 
 - **The comparison is rough:** the suites test different facts and were graded by different judge versions.
@@ -133,24 +133,28 @@ is enough, and testing every fact is redundant.
 
 ### 6.4 The judge
 
-On random trials a person graded before seeing its verdicts, the LLM judge agrees in 90 of 93 (the first policy
-runs), then in 110 of 110. When it says "fail" it is right 88 of 89 times, and it finds every failure the person
-found. Its only systematic weakness is that it cannot tell a flawed test from a failing agent.
+On random trials a person graded before seeing its verdicts, the LLM judge agrees in 87 of 93 on the first policy
+runs, then in 110 of 110.
+- **The disagreements:** in 3 of the 93, the project lead later ruled the judge right and the person wrong: the
+  Slack bot does count as a channel member. That makes 90 of 93.
+- **As a failure detector:** when it says "fail" it is right 88 of 89 times, and it finds every failure the person
+  found.
+- **Its one weakness:** it cannot tell a flawed test from a failing agent.
 
 ## 7. What the automation gets wrong, and the fixes
 
 | Defect | How often | Found by | Fix |
 |---|---|---|---|
 | A drop-F variant whose verb implies the dropped condition ("hide" a calendar not in the list) | 3 of 159 | a person, while grading | derive action preconditions from each service's API, or try the action on each intended match in a replica copy |
-| A probe loses its trap when the target is removed | 1 of 62 new pairs (3 in autogen_01's) | a person, while grading | run the existing witness check on every probe |
+| A probe loses its trap when the target is removed | 1 of 62 new pairs; in autogen_01's, the same check finds 2 more of this kind, and 1 where the near miss becomes a full match | a person, while grading | run the existing witness check on every probe |
 | A fact relative to "today" (overdue) with no date set | 1 scenario | a person | pin the date, or flag such facts |
 | A count that changes with the acting bot ("exactly four members") | 1 test | a person | flag counts the acting account can change |
 | Seed fields that contradict the request (events in LA time on a New-York-time calendar) | 1 scenario | a person | check the seed's other fields against the conditions |
 | A request that parses two ways ("the folder owned by ...") | 1 scenario | a person | a reader question about attachment |
 | The clone copier cannot copy rows two steps from the target | 1 of 29 | code | copy along two-step links |
 
-Every defect above slipped past both the automated checks and the human pre-run review. A person found each one while
-grading trials by hand: human grading is still the system's safety net.
+Every defect but the last slipped past both the automated checks and the human pre-run review. A person found each
+of them while grading trials by hand: human grading is still the system's safety net.
 
 ## 8. The replicas
 
@@ -161,3 +165,16 @@ grading trials by hand: human grading is still the system's safety net.
 - only Calendar has a fixed "today".
 
 Linear's failing `projects` query and nested reads cause every timeout in the new scenarios' runs (21 of 21).
+
+## 9. What these results do not cover
+
+- **One agent.** Every result is for Qwen 3.8 (27B). Another agent may fail differently, or not as a policy.
+- **Three kinds of test left out of scope:**
+  - requests meant to reach several records ("tag all of Maya's PDFs");
+  - requests the service cannot do;
+  - attributing *why* a failure happened. The judge assigns a mechanism, but this is not validated.
+- **42 of the 255 facts** cannot be tested until the replicas serve them (36 in Linear, 6 in Calendar).
+- **The judge cannot tell a flawed test from a failing agent,** so the system still needs a person to review and
+  grade samples.
+- **Scenario difficulty varies widely.** Two batches from the same process exposed 0.26 and 0.06 facts per test.
+  One batch is not enough to rate a writer.

@@ -36,7 +36,7 @@ system** ([plan.md](plan.md), decisions N7–N15 in [decisions.md](decisions.md)
   its per-fact policy variants (absence twins by code; drop-F variants and clones by Muse, checked by code and a
   cold reader), the sampled policy runs on Qwen, and the judge (Muse, v2). On new briefs: 29 of 32 accepted, 24
   of 29 valid in my review, $0.62 per accepted scenario at list price ($0.035 billed). The new suites work. Their
-  159 tests expose 24 of their 59 facts on Qwen, 0.15 facts per test: batch 1 0.26, batch 2 0.06. autogen_01's
+  159 tests expose 24 of their 58 facts on Qwen, 0.15 facts per test: batch 1 0.26, batch 2 0.06. autogen_01's
   suites got 0.10 to 0.23, on other facts.
 - **All eight policy cells are policy-level under the pre-registered definition** (one test on a random fact of the
   cell fails with probability above 0.8, at 90% confidence): absence in Box, Calendar and Linear at the first look
@@ -497,7 +497,7 @@ the same way: 71 trials by autogen_01's selection plus 24 of the blind sample.
 | Suite | Tests | Tests exposing a fact | Facts exposed in 3 trials (trial 1) | Facts per test | Void trials |
 |---|---:|---:|---:|---:|---:|
 | Phase 4 batch 2 | 87 | 10 | 5 of 30 declared (2) | 0.06 | 2 |
-| **Phase 4, both batches** | **159** | **37** | **24 of 59 (15)** | **0.15** | **2** |
+| **Phase 4, both batches** | **159** | **37** | **24 of 58 (15)** | **0.15** | **2** |
 
 - **Batch 2 is much easier for Qwen than batch 1.**
   - By service: Slack 0 of 16 tests exposing, Box 2 of 22, Calendar 4 of 19, Linear 4 of 30.
@@ -511,8 +511,8 @@ the same way: 71 trials by autogen_01's selection plus 24 of the blind sample.
   - which team a label belongs to, and whether one label carries both name and team (G4-LIN-06);
   - an issue's estimate.
 - **Judge v2 on the blind sample** (30 trials, labelled before any verdict): 30/30; precision and recall 1/1.
-- **Both batches together** expose 24 of their 59 facts at 0.15 facts per test, inside autogen_01's range (0.10 to
-  0.23).
+- **Both batches together** expose 24 of their 58 facts at 0.15 facts per test, inside autogen_01's range (0.10 to
+  0.23). One declared fact, Calendar's `A:Event.start`, is in both batches (29 + 30 = 59, but 58 distinct).
 
 ### 6.4 The policy variants of the new scenarios
 
