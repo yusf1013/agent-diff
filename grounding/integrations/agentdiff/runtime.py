@@ -28,6 +28,7 @@ from typing import Callable
 from uuid import UUID, uuid4
 
 from grounding.paths import REPO_ROOT as ROOT
+from grounding.solver.slack.agent_clock import CEILING_SECONDS as CLOCK_CEILING_SECONDS, DESCRIPTION as CLOCK_RULE
 BASELINE = ROOT / "grounding/solver/slack/run.py"
 DOCS = ROOT / "examples/slack/testsuites/slack_docs/slack_api_full_docs.json"
 PREFIX = "slack_campaign_"
@@ -907,6 +908,7 @@ async def run_prepared(case, prepared, out, database_url=None,
               "baseline_runner_sha256": hashlib.sha256(BASELINE.read_bytes()).hexdigest(),
               "prompt_sha256": hashlib.sha256(prompt.encode()).hexdigest(),
               "turn_limit": 40, "timeout_seconds": 480,
+              "ceiling_seconds": CLOCK_CEILING_SECONDS, "clock": CLOCK_RULE,
               "max_output_tokens_per_call": options["max_tokens"],
               "temperature": options.get("temperature", "provider_default"),
               "thinking": options.get("thinking", "provider_default"),

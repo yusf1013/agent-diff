@@ -173,8 +173,10 @@ async def run_custom(case: dict, prepared: dict, out: Path, database_url: str, *
     write(solver_out / "config.json", {
         "service": service, "model": model, "turn_limit": smoke.TURN_LIMIT,
         "timeout_seconds": smoke.EPISODE_TIMEOUT_SECONDS, "max_output_tokens_per_call": max_output_tokens,
+        "ceiling_seconds": smoke.EPISODE_CEILING_SECONDS, "clock": smoke.CLOCK_RULE,
         "prompt_sha256": hashlib.sha256(prompt.encode()).hexdigest(),
-        "episode_loop": "grounding.integrations.agentdiff.smoke_runtime.run_episode (unchanged)",
+        "episode_loop": "grounding.integrations.agentdiff.smoke_runtime.run_episode (unchanged; its clock leaves out "
+                        "Purdue waiting since 2026-09-27)",
         "custom_runtime_sha256": smoke.sha_file(Path(__file__).resolve()),
         "prompt_caching": "none on Purdue GenAI Studio; same prompt bytes, no cache markers",
         "qwen_settings": "Provider defaults; no thinking/temperature overrides",

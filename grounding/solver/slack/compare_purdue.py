@@ -22,6 +22,7 @@ import subprocess
 from grounding.integrations.agentdiff import runtime
 from grounding.generation.validate import validate_case
 from grounding.paths import REPO_ROOT
+from grounding.solver.slack.agent_clock import CEILING_SECONDS, DESCRIPTION as CLOCK_RULE
 from grounding.solver.slack.purdue_client import PurdueClient
 
 MODELS = {
@@ -177,6 +178,7 @@ async def run(args):
             'git_commit': subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip(),
             'models': MODELS, 'cases_per_model': manifest['total'], 'scored_trials_per_case': 1,
             'turn_limit': 40, 'episode_timeout_seconds': 480, 'concurrency': args.concurrency,
+            'episode_ceiling_seconds': CEILING_SECONDS, 'clock': CLOCK_RULE,
             'prompt_sha256': hashlib.sha256(prompt.encode()).hexdigest(),
             'prompt_caching': 'none on Purdue GenAI Studio; same prompt bytes, no cache markers',
             'warmup': 'first pending real case per model completes before remaining cases of that model launch',

@@ -48,6 +48,7 @@ def write_plan(out: Path, args, items, trial: int):
         "git_commit": subprocess.check_output(["git", "rev-parse", "HEAD"], text=True, cwd=REPO_ROOT).strip(),
         "model": args.model, "max_output_tokens": smoke.QWEN_MAX_OUTPUT_TOKENS,
         "turn_limit": smoke.TURN_LIMIT, "timeout_seconds": smoke.EPISODE_TIMEOUT_SECONDS,
+        "ceiling_seconds": smoke.EPISODE_CEILING_SECONDS, "clock": smoke.CLOCK_RULE,
         "trial": trial, "trials_per_case": args.trials, "prepare_only": args.prepare_only,
         "cases_dir": str(args.cases_dir.relative_to(REPO_ROOT)),
         "rate_limit_per_minute": os.getenv("PURDUE_RATE_LIMIT_PER_MINUTE"),
@@ -87,7 +88,9 @@ def main():
     parser.add_argument("--retry-infrastructure", action="store_true",
                         help="Retry attempts that failed for infrastructure reasons or were interrupted")
     parser.add_argument("--retry-timeouts", action="store_true",
-                        help="Retry episodes that hit the 480 s limit")
+                        help="Retry episodes cut by the 480 s budget. Since 2026-09-27 that budget is the agent's own "
+                             "time (Purdue waiting excluded), so such a cut is normally graded, not retried; a cut by "
+                             "the wall ceiling is an infrastructure error (--retry-infrastructure)")
     parser.add_argument("--pairs", nargs="*",
                         help="Run only these trial/case pairs, e.g. t2/LIN-05 (retry just the trials with no result)")
     parser.add_argument("--concurrency", type=int, default=6)

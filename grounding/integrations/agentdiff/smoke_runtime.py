@@ -48,6 +48,7 @@ from grounding.integrations.agentdiff.runtime import (  # noqa: E402
     serialized_ddl,
     write,
 )
+from grounding.solver.slack.agent_clock import CEILING_SECONDS, DESCRIPTION as CLOCK_RULE, AgentClock  # noqa: E402
 from grounding.solver.slack.purdue_client import PurdueClient  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
@@ -66,7 +67,8 @@ QWEN_RATES = {"input_tokens": 0.0, "output_tokens": 0.0,
 COST_SOURCE = ("Purdue GenAI Studio has no per-token charge to this account; "
                "tokens are provider-reported, cost is recorded as 0 (not an invoice)")
 TURN_LIMIT = 40
-EPISODE_TIMEOUT_SECONDS = 480
+EPISODE_TIMEOUT_SECONDS = 480  # the agent's own time; Purdue waiting is off it (agent_clock.py, since 2026-09-27)
+EPISODE_CEILING_SECONDS = CEILING_SECONDS  # wall time, waiting included
 
 # Advisory-lock keys (one per service) for first-use DDL serialization.
 _ADVISORY_LOCKS = {"box": 726411931, "calendar": 726411932, "linear": 726411933}
@@ -306,6 +308,8 @@ async def run_episode(service: str, row: dict, prompt: str, out: Path, *,
               "row_number": row["#"], "question": row["question"], "steps": []}
     path = out / (row["test_id"] + ".json")
     llm = PurdueClient(model_id=model, timeout=EPISODE_TIMEOUT_SECONDS)
+    clock = AgentClock(EPISODE_TIMEOUT_SECONDS, EPISODE_CEILING_SECONDS)
+    llm.agent_clock = clock
     container = None
     try:
         info = json.loads(row["info"])
@@ -332,7 +336,8 @@ async def run_episode(service: str, row: dict, prompt: str, out: Path, *,
         started = time.monotonic()
         record["started_at"] = datetime.now(timezone.utc).isoformat()
         try:
-            async with asyncio.timeout(EPISODE_TIMEOUT_SECONDS):
+            async with asyncio.timeout(EPISODE_TIMEOUT_SECONDS) as budget:
+                clock.attach(budget)
                 for turn in range(1, TURN_LIMIT + 1):
                     request_path = out / "requests" / row["test_id"] / f"turn-{turn:03d}.json.gz"
                     if record_requests:
@@ -383,11 +388,12 @@ async def run_episode(service: str, row: dict, prompt: str, out: Path, *,
                 else:
                     record["termination"] = "turn_limit"
         except TimeoutError:
-            record["termination"] = "timeout"
+            record["termination"] = clock.termination()  # "timeout" (the agent's budget) or "ceiling" (wall)
         except Exception as exc:
             record["termination"] = "error"
             record["error"] = f"{type(exc).__name__}: {exc}"
         record["elapsed_seconds"] = time.monotonic() - started
+        record["clock"] = clock.summary()
         # Stop execution before taking the final snapshot, including on timeout.
         await asyncio.to_thread(subprocess.run, ["docker", "rm", "-f", container], capture_output=True)
         container = None
@@ -537,6 +543,7 @@ async def run_smoke(service: str, seed_name: str, preflight, args) -> dict:
                   "smoke_runner_sha256": sha_file(Path(__file__).resolve()),
                   "prompt_sha256": hashlib.sha256(prompt.encode()).hexdigest(),
                   "turn_limit": TURN_LIMIT, "timeout_seconds": EPISODE_TIMEOUT_SECONDS,
+                  "ceiling_seconds": EPISODE_CEILING_SECONDS, "clock": CLOCK_RULE,
                   "max_output_tokens_per_call": args.max_output_tokens,
                   "prompt_caching": "none on Purdue GenAI Studio; same prompt bytes, no cache markers",
                   "qwen_settings": "Provider defaults; no thinking/temperature overrides",

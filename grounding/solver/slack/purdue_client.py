@@ -9,12 +9,16 @@ await llm.close().
 
 No prompt caching, no thinking budgets, no sampling overrides: provider defaults.
 API key comes from GENAI_API_KEY env var only; never logged or saved.
+
+An episode loop may set `agent_clock` (grounding/solver/slack/agent_clock.py): the client then tells it of every
+second spent waiting (the limiter's queue, backoffs, failed attempts), which stays off the agent's time budget.
 """
 from __future__ import annotations
 
 import asyncio
 import logging
 import os
+import time
 from dataclasses import dataclass
 from typing import Any
 from collections.abc import Iterable, Mapping
@@ -136,8 +140,10 @@ class PurdueClient:
         self.usage = usage_tracker if usage_tracker is not None else UsageTracker()
         self.max_attempts = max_attempts
         self.backoff_base = backoff_base
+        self._request_timeout = timeout
         self._client = httpx.AsyncClient(timeout=timeout)
         self._api_key = key
+        self.agent_clock = None  # set by an episode loop; see the module docstring
 
     def _add_cache_breakpoints(self, request: dict[str, Any]) -> None:
         return None
@@ -207,30 +213,40 @@ class PurdueClient:
         }
         headers = {"Authorization": "Bearer " + self._api_key, "Content-Type": "application/json"}
         last_exc: BaseException | None = None
+        clock = self.agent_clock
         for attempt in range(1, self.max_attempts + 1):
             try:
                 logger.info("Calling %s on Purdue GenAI (attempt %s/%s, max_tokens=%s)",
                             self.model_id, attempt, self.max_attempts, effective_max)
-                await acquire_purdue_slot()
-                response = await self._client.post(self.base_url, headers=headers, json=body)
+                await acquire_purdue_slot(on_wait=clock.pause if clock else None)
+                started = time.monotonic()
+                held = clock.hold(self._request_timeout) if clock else 0.0
                 try:
-                    response.raise_for_status()
-                except httpx.HTTPStatusError as http_exc:
+                    response = await self._client.post(self.base_url, headers=headers, json=body)
                     try:
-                        detail = (http_exc.response.text or "")[:300]
-                    except Exception:
-                        detail = ""
-                    lowered = detail.lower()
-                    if http_exc.response.status_code == 400 and (
-                            "rate limit" in lowered or "server connection error" in lowered
-                            or "overloaded" in lowered):
-                        raise _RateLimitError(f"Transient Purdue 400: {detail}") from http_exc
-                    raise httpx.HTTPStatusError(
-                        f"{http_exc} | body: {detail}",
-                        request=http_exc.request, response=http_exc.response) from http_exc
-                data = response.json()
-                if data is None:
-                    raise _RateLimitError("Purdue returned JSON null (documented rate-limit signal)")
+                        response.raise_for_status()
+                    except httpx.HTTPStatusError as http_exc:
+                        try:
+                            detail = (http_exc.response.text or "")[:300]
+                        except Exception:
+                            detail = ""
+                        lowered = detail.lower()
+                        if http_exc.response.status_code == 400 and (
+                                "rate limit" in lowered or "server connection error" in lowered
+                                or "overloaded" in lowered):
+                            raise _RateLimitError(f"Transient Purdue 400: {detail}") from http_exc
+                        raise httpx.HTTPStatusError(
+                            f"{http_exc} | body: {detail}",
+                            request=http_exc.request, response=http_exc.response) from http_exc
+                    data = response.json()
+                    if data is None:
+                        raise _RateLimitError("Purdue returned JSON null (documented rate-limit signal)")
+                except BaseException:
+                    if clock:  # a failed attempt is Purdue's time, not the agent's
+                        clock.settle(held, time.monotonic() - started, succeeded=False)
+                    raise
+                if clock:  # a successful call is the model's work and counts toward the budget
+                    clock.settle(held, time.monotonic() - started, succeeded=True)
                 choice = (data.get("choices") or [{}])[0]
                 msg = choice.get("message") or {}
                 text = (msg.get("content") or "").strip()
@@ -270,9 +286,12 @@ class PurdueClient:
                     pass
                 if isinstance(exc, _RateLimitError) or (
                         isinstance(exc, httpx.HTTPStatusError) and "rate limit" in str(exc).lower()):
-                    await asyncio.sleep(self._rate_wait_seconds(attempt))
+                    wait = self._rate_wait_seconds(attempt)
                 else:
-                    await asyncio.sleep(self.backoff_base * (2 ** (attempt - 1)))
+                    wait = self.backoff_base * (2 ** (attempt - 1))
+                if clock:
+                    clock.pause(wait)
+                await asyncio.sleep(wait)
         assert last_exc is not None
         raise last_exc
 

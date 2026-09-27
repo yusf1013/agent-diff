@@ -78,8 +78,11 @@ def _reserve(now: float, budget: int, path: Path) -> float:
             fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
 
 
-async def acquire_purdue_slot() -> None:
-    """Wait until this process holds a shared rate-limit slot. Blocking."""
+async def acquire_purdue_slot(on_wait=None) -> None:
+    """Wait until this process holds a shared rate-limit slot. Blocking.
+
+    `on_wait(seconds)`, when given, is told of each wait before it starts (an episode's agent clock keeps it off the
+    agent's time budget)."""
     if os.getenv("PURDUE_RATE_LIMIT_DISABLE") == "1":
         return
     path = _state_path()
@@ -88,6 +91,8 @@ async def acquire_purdue_slot() -> None:
         wait = await asyncio.to_thread(_reserve, time.time(), budget, path)
         if wait <= 0:
             return
+        if on_wait is not None:
+            on_wait(wait)
         await asyncio.sleep(wait)
 
 

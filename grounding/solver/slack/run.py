@@ -23,6 +23,7 @@ from agent_diff import AgentDiff
 from bedrock_llm import BedrockClaudeClient
 
 from grounding.paths import REPO_ROOT as ROOT
+from grounding.solver.slack.agent_clock import CEILING_SECONDS, AgentClock
 HERE = Path(__file__).resolve().parent
 RATES = {"input_tokens": 3.0, "output_tokens": 15.0,
          "cache_creation_input_tokens": 3.75, "cache_read_input_tokens": 0.30}
@@ -121,6 +122,11 @@ async def episode(row, args, prompt, out):
               "row_number": row["#"], "question": row["question"], "steps": []}
     path = out / (row["test_id"] + ".json")
     llm = BedrockClaudeClient(model_id=args.model, prompt_caching=True, timeout=480)
+    # The Purdue client (patched in by compare_purdue) keeps its waiting off the 480 s budget; Bedrock keeps wall time.
+    clock = AgentClock(480, CEILING_SECONDS)
+    timed_by_agent = hasattr(llm, "agent_clock")
+    if timed_by_agent:
+        llm.agent_clock = clock
     container = None
     try:
         info = json.loads(row["info"])
@@ -146,7 +152,8 @@ async def episode(row, args, prompt, out):
         started = time.monotonic()
         record["started_at"] = datetime.now(timezone.utc).isoformat()
         try:
-            async with asyncio.timeout(480):
+            async with asyncio.timeout(480) as budget:
+                clock.attach(budget)
                 for turn in range(1, 41):
                     request_path = out / "requests" / row["test_id"] / f"turn-{turn:03d}.json.gz"
                     if record_requests:
@@ -197,11 +204,13 @@ async def episode(row, args, prompt, out):
                 else:
                     record["termination"] = "turn_limit"
         except TimeoutError:
-            record["termination"] = "timeout"
+            record["termination"] = clock.termination()  # "timeout" (the budget) or "ceiling" (wall, Purdue only)
         except Exception as exc:
             record["termination"] = "error"
             record["error"] = f"{type(exc).__name__}: {exc}"
         record["elapsed_seconds"] = time.monotonic() - started
+        if timed_by_agent:
+            record["clock"] = clock.summary()
         # Stop execution before taking the final snapshot, including on timeout.
         await asyncio.to_thread(subprocess.run, ["docker", "rm", "-f", container], capture_output=True)
         container = None

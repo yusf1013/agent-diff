@@ -94,9 +94,12 @@ async def execute(case, source, args, slot):
             else:
                 record = await custom_runtime.run_custom(case, prepared, attempt, args.database_url, model=args.model)
             prepared = None  # both run paths clean up their template
+            # A cut by the wall ceiling ("ceiling") is the infrastructure's and is retried; a cut by the agent's own
+            # time budget ("timeout") is the agent's and is graded (agent_clock.py, since 2026-09-27).
             state.update(termination=record.get("termination"), error=record.get("error"),
-                         usage=record.get("usage"), turns=len(record.get("steps", [])),
-                         status="infrastructure_error" if record.get("termination") in ("error", "setup_error")
+                         usage=record.get("usage"), turns=len(record.get("steps", [])), clock=record.get("clock"),
+                         status="infrastructure_error"
+                         if record.get("termination") in ("error", "setup_error", "ceiling")
                          or record.get("diff") is None and "evaluation" not in record else "completed")
         except Exception as exc:
             state.update(status="infrastructure_error", error=f"{type(exc).__name__}: {exc}")
@@ -142,6 +145,7 @@ async def main_async(args):
                              "model_note": "qwen3.6:27b (recorded comparison) is no longer served; qwen3.8:27b is the "
                                            "same-size successor listed by Purdue on 2026-09-23",
                              "turn_limit": smoke.TURN_LIMIT, "timeout_seconds": smoke.EPISODE_TIMEOUT_SECONDS,
+                             "ceiling_seconds": smoke.EPISODE_CEILING_SECONDS, "clock": smoke.CLOCK_RULE,
                              "trials_per_case": 1, "prepare_only": args.prepare_only,
                              "cases": {c["case_id"]: c["case_sha256"] for c, _ in items},
                              "solver_context_excludes": ["references", "claims", "cards", "private", "coverage_claims"],
@@ -159,7 +163,9 @@ def main():
     parser.add_argument("--retry-infrastructure", action="store_true",
                         help="Retry attempts that failed for infrastructure reasons or were interrupted")
     parser.add_argument("--retry-timeouts", action="store_true",
-                        help="Retry episodes that hit the 480 s limit (queueing under the shared rate limit)")
+                        help="Retry episodes cut by the 480 s budget. Since 2026-09-27 that budget is the agent's own "
+                             "time (Purdue waiting excluded), so such a cut is normally graded, not retried; a cut by "
+                             "the wall ceiling is an infrastructure error (--retry-infrastructure)")
     parser.add_argument("--concurrency", type=int, default=3)
     parser.add_argument("--model", default="qwen3.8:27b")
     parser.add_argument("--database-url", default="postgresql://postgres@127.0.0.1:15432/agentdiff_campaign")

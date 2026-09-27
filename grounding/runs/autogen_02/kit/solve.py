@@ -1,4 +1,8 @@
-"""Run a set of variant cases on the solver: a main pass, then one retry pass for infrastructure errors and timeouts.
+"""Run a set of variant cases on the solver: a main pass, then one retry pass for infrastructure errors.
+
+Since 2026-09-27 (roadmap_01) Purdue waiting is off the trial's time budget (grounding/solver/slack/agent_clock.py): a
+cut by the wall ceiling counts as an infrastructure error and is retried; a cut by the agent's own budget ("timeout")
+is the agent's and is graded, not retried. Earlier runs retried every timeout (`--retry-timeouts`).
 
     python grounding/runs/fact_coverage_02/launch.py grounding.runs.autogen_02.kit.solve --cases-dir DIR --out RUN \
         [--cases ID ...] [--trials 3]
@@ -34,7 +38,7 @@ def main():
     args = p.parse_args()
     while solver_busy():
         time.sleep(30)
-    for extra in ([], ["--concurrency", "3", "--retry-infrastructure", "--retry-timeouts"]):
+    for extra in ([], ["--concurrency", "3", "--retry-infrastructure"]):
         cmd = ["grounding.runs.fact_coverage_02.run", "--out", str(args.out.resolve()), "--cases-dir",
                str(args.cases_dir.resolve()), "--trials", str(args.trials), "--concurrency", str(args.concurrency),
                *extra]
