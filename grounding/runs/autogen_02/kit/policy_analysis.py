@@ -126,6 +126,51 @@ def analyse() -> dict:
     return {"facts": facts, "cells": summary}
 
 
+def scored_tests() -> list[dict]:
+    """Every scored test of the generated scenarios' own suites: autogen_01's arms, and Phase 4's runs once scored."""
+    tests = []
+    for path in [A1 / "runs" / f"solve_{arm}.score.json" for arm in ("arm_r", "arm_p", "arm_p_v2")] + \
+            sorted((STUDY / "runs" / "phase4").glob("*.score.json")):
+        if path.exists():
+            tests += json.loads(path.read_text())["tests"]
+    return tests
+
+
+def phase3_pairs(mode: str, verdict_dirs: list[Path]) -> list[dict]:
+    """The pair reading for Phase 3's units (plan, "Outcomes"): each absence twin against its fact's probes, each
+    drop-F unit against its scenario's cover, in the scenario's own suite run (autogen_01's arms, or Phase 4's).
+    Reads judge verdicts: run only after the blind labels of the runs concerned are written."""
+    from grounding.runs.autogen_02.kit.sampler import verdict_outcomes
+    plan = json.loads((STUDY / "runs" / "phase3" / f"plan_{mode}.json").read_text())
+    outcomes = verdict_outcomes(verdict_dirs)
+    probes, covers = defaultdict(list), defaultdict(list)
+    for t in scored_tests():
+        trials = [x["outcome"] for x in t["trials"].values()]
+        if t.get("form") in ("probe", "fact probe"):
+            probes[(t["scenario"], t["fact"])] += trials
+        elif t.get("form") == "cover":
+            covers[t["scenario"]] += trials
+    rows = []
+    for cell, seq in plan["cells"].items():
+        for u in seq:
+            trials = outcomes.get(u["unit"])
+            if not trials:
+                continue
+            usable = [o for o in trials.values() if o in FAIL | PASS]
+            k = sum(o in FAIL for o in usable)
+            if mode == "absence":
+                fact = u["facts"][0]
+                other = probes.get((u["scenario"], fact)) or probes.get((u["scenario"], SLACK_ALIASES.get(fact)), [])
+            else:
+                other = covers.get(u["scenario"], [])
+            of = sum(o in FAIL for o in other)
+            on = len([o for o in other if o in FAIL | PASS])
+            rows.append({"cell": cell, "unit": u["unit"], "source": u.get("source", "phase3"), "fails": k,
+                         "usable": len(usable), "against_fails": of, "against_n": on,
+                         "reading": reading(k, len(usable), of, on)})
+    return rows
+
+
 def actions(run_dir: Path) -> dict:
     """What each finished trial of a policy run did to the record the request asks about, from the state diff alone
     (the triage's `acted` on the first reference; mechanical, so a trial that asks and one that gives up both show

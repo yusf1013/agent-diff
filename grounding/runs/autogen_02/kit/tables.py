@@ -131,6 +131,24 @@ def phase3():
     if rows:
         out.append(md(["Cell", "Valid units", "Look", "Failures (one draw per unit)", "90% bounds", "Decision",
                        "Units by failures in 3 trials"], rows))
+    for mode in ("absence", "underspecified"):
+        path = RUNS / "phase3" / f"decisions_{mode}.json"
+        if not path.exists():
+            continue
+        for cell, d in json.loads(path.read_text()).items():
+            for part in ("phase3_only", "phase4_only"):
+                if part in d:
+                    p = d[part]
+                    out.append(f"\n{cell}, {part.replace('_', ' ')}: {p['failures']}/{p['draws']} "
+                               f"[{p['lower_90']:.2f}, {p['upper_90']:.2f}]")
+        pairs = policy_analysis.phase3_pairs(mode, [RUNS / "judge2_phase3"])
+        against = "the fact's probes" if mode == "absence" else "the scenario's cover"
+        by_cell = defaultdict(Counter)
+        for r in pairs:
+            by_cell[r["cell"]][r["reading"]] += 1
+        for cell, c in sorted(by_cell.items()):
+            out.append(f"\n**Pair reading, {cell}** (against {against} in the scenario's own suite run): "
+                       + ", ".join(f"{k}: {v}" for k, v in c.most_common()) + ".")
     return "\n".join(out)
 
 
