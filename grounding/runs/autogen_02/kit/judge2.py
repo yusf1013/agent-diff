@@ -35,6 +35,39 @@ FORMS = {"AT-": "absence twin (no target; the request presupposes one, with no e
          "U-": "underspecified (several records fully meet the singular request; each is listed as TARGET)"}
 
 
+GENERATED = ("AR-", "AP-", "AP2-", "G4-")
+
+
+def generated(case_id: str) -> bool:
+    """A test derived from a generated scenario (autogen_01's arms, or Phase 4), whatever its variant prefix."""
+    stem = case_id
+    for prefix in ("AT-", "UC-", "U-", "FP-", "P-"):
+        if stem.startswith(prefix):
+            stem = stem[len(prefix):]
+            break
+    return stem.startswith(GENERATED)
+
+
+def triage(run_name: str, trial: str, attempt: Path) -> tuple[dict, dict, dict]:
+    """v1's triage, with effects keyed by each table's real key for every generated scenario. v1 does this only
+    for tests under autogen_01's folder; Phases 3 and 4 run generated tests from this study's folder."""
+    import json as _json
+    from grounding.runs.autogen_01.kit.derive import normalize_effects
+    from grounding.runs.fact_coverage_01.pilot import analyze as pilot
+    from grounding.runs.fact_coverage_02 import score
+    from grounding.runs.fact_coverage_02.analyze import current
+    summary = _json.loads((attempt / "execution_summary.json").read_text())
+    case = current(_json.loads((attempt / "case.json").read_text()))
+    if generated(case["case_id"]) or v1.STUDY in attempt.resolve().parents:
+        normalize_effects(case)
+    row = {"run": run_name, "trial": trial, "case_id": summary["case_id"], "status": summary.get("status")}
+    if summary.get("status") == "completed":
+        row.update(pilot.attribute(case, attempt))
+    result = score.classify(row, case, {}, attempt)
+    return case, summary, {"references": row.get("references", []), "outcome": result["outcome"],
+                           "exposed": result["exposed"]}
+
+
 def form_of(case_id: str) -> str | None:
     for prefix, form in FORMS.items():
         if case_id.startswith(prefix):
@@ -90,7 +123,7 @@ def judge_one(item: dict, out: Path, calls_log: Path) -> dict:
         if old.get("attempt") == str(attempt):
             return old
         verdict_path.rename(dest / f"verdict-{Path(old.get('attempt', 'unknown')).name}.json")
-    case, summary, tri = v1.triage(item["run"], item["trial"], attempt)
+    case, summary, tri = triage(item["run"], item["trial"], attempt)
     # The policy concerns the record the request acts on (the first reference); another reference, such as the
     # workflow state an issue moves to, may also have a target.
     targets = len(case["references"][0]["expected"])

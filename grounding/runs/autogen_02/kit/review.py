@@ -14,7 +14,7 @@ from pathlib import Path
 
 from grounding.runs.autogen_01.kit import bundle
 from grounding.runs.autogen_01.kit import judge as v1
-from grounding.runs.autogen_02.kit.judge2 import form_of
+from grounding.runs.autogen_02.kit.judge2 import form_of, triage
 
 WRITE = re.compile(r"-X\s*(POST|PUT|PATCH|DELETE)|--request\s+(POST|PUT|PATCH|DELETE)|\bmutation\b|"
                    r"chat\.(postMessage|update|delete)|reactions\.(add|remove)|conversations\.(setTopic|setPurpose|"
@@ -47,7 +47,7 @@ def show(run_dir: Path, only: list[str] | None, brief: bool = False):
     seen = set()
     rows = sorted(trials(run_dir, only), key=lambda t: (t[1], t[0]))
     for trial, case_id, attempt in rows:
-        case, summary, tri = v1.triage(run_dir.name, trial, attempt)
+        case, summary, tri = triage(run_dir.name, trial, attempt)
         if case_id not in seen:
             seen.add(case_id)
             cand, _ = bundle.candidates(case)
@@ -76,7 +76,7 @@ def show(run_dir: Path, only: list[str] | None, brief: bool = False):
 def full(run_dir: Path, key: str):
     trial, case_id = key.split("/")
     attempt = v1.latest(run_dir, trial, case_id)
-    case, summary, tri = v1.triage(run_dir.name, trial, attempt)
+    case, summary, tri = triage(run_dir.name, trial, attempt)
     print(bundle.build(case, attempt, form_of(case_id), tri, summary))
 
 
