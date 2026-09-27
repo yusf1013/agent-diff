@@ -414,3 +414,33 @@ and cal3 is the calibration of record for drop-F.
 `correct_absent` as not failing and dropped `false_absence` and `incomplete` from n; amendment 2, C.5 counts every
 outcome other than `not_established` and `artifact`. The code now does the same (`sampler.PASS`). Only Phase 1's
 UC-BOX-21 t2 (a false absence) is affected so far.
+
+### Amendment 4 (2026-09-27, 01:43): the underspecified order, the gates, and Phase 4 in two batches
+
+**The gates of amendment 2, C.7 are met.**
+- **(a) Calibration:** cal3 passes the Phase 2 bars (amendment 3).
+- **(b) Distractors (D7):** all 93 Phase 1 drop-F trials are labelled. Failing trials by the number of other near misses
+  kept in the seed: 0: 5/6, 1: 9/9, 2: 24/24, 3: 33/33, 4: 9/9 (artifacts excluded). No trial passes, so no effect of
+  the distractors can show; the cover seed is kept.
+
+**The underspecified order was fixed at 01:42** (seed 2026092701, `runs/phase3/plan_underspecified.json`) from the
+population derived with iteration 3.
+- **Units** (distinct conditions): Box 22, Calendar 10, Linear 44, Slack 31.
+- **Excluded by the review rule (C.9):** 2 (AR-LIN-25's invalid scenario; AR-SLK-23's invalid near miss).
+- **Look 1:** 43 units, 129 trials. Its blind sample (30 trials, seed 17) was drawn before the run.
+- **Calendar has only 10 units:** even 10 failures of 10 give a lower bound of 0.79, so that cell cannot be shown
+  policy-level at 90%. It will be reported as undecided, with its estimate.
+
+**The Phase 1 underspecified labels found four of my hand-made drop-F variants defective** (BOX-23 extension,
+CAL-23 email and optional, LIN-24; 12 trials labelled artifact). In each, a reasonable reading leaves only one
+match: 'the contract file'; the exact title; 'the team's cycle' as the current cycle. The Muse writer or reader had
+flagged three of the four during calibration.
+
+**Phase 4 runs in two batches,** as the time allows.
+- **Batch 1:** the 72 tests of the first 16 briefs' 13 accepted scenarios, plus G4-SLK-04 (retried in batch 2's
+  generation).
+- **Batch 2:** 87 tests of 16 more scenarios.
+- **Order and blind samples:** each batch's blind sample (30 trials; seeds 13 and 19) was drawn before its run. The
+  runs are chained after Phase 3's looks: absence look 1, then underspecified look 1, then batch 1, then batch 2.
+- **Relaunch:** absence look 1 first failed at 01:40 without the Purdue key (the worktree has no `grounding/.env`).
+  It was relaunched at 01:41 with `GROUNDING_ENV` set, and the failed log is kept.
