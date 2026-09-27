@@ -259,7 +259,9 @@ def derive_clone(case: dict, out: Path, calls_log: Path) -> dict:
         if not findings:
             verdict = reader2.read(variant, ws / f"reader-{round_no}", dest / f"reader-{round_no}", calls_log, vid)
             entry["reader"] = verdict
-            findings = reader2.problems(variant, verdict, variant["references"][0]["expected"])
+            # The request is the scenario's own: only the match set is the clone's to get right (amendment 3).
+            findings = reader2.problems(variant, verdict, variant["references"][0]["expected"], wording=False)
+            entry["wording_notes"] = reader2.wording_notes(verdict)
             entry["contestable"] = reader2.contestable(variant, verdict, variant["references"][0]["expected"])
         entry["findings"] = findings
         record.update(changes=changes, new_key=new_key, skip_children=answer.get("skip_children", []))

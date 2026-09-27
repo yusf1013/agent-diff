@@ -69,9 +69,31 @@ def contestable(case: dict, verdict: dict, intended) -> dict:
             if r.get("contestable") and str(r.get("id")) not in intended and r.get("fails")}
 
 
-def problems(case: dict, verdict: dict, intended) -> list[str]:
+def problems(case: dict, verdict: dict, intended, wording: bool = True) -> list[str]:
     """Findings of the expected-set check: the reader's matches must be exactly `intended`, no phrase may be genuinely
-    ambiguous in a way that changes the matches, and the request must be natural and ask for one record."""
+    ambiguous in a way that changes the matches, and the request must be natural and ask for one record.
+
+    `wording=False` (the clone, whose request is the scenario's own, unchanged) keeps only the match-set findings;
+    `wording_notes` gives the others, which are then recorded, not findings."""
+    out = _match_findings(case, verdict, intended)
+    return out + wording_notes(verdict) if wording else out
+
+
+def wording_notes(verdict: dict) -> list[str]:
+    t2 = verdict.get("turn2", {})
+    out = []
+    for a in t2.get("ambiguity_effects", []):
+        if a.get("changes_matches") and a.get("careful_reader_unsure"):
+            out.append(f"The reader finds the phrase \"{a.get('phrase')}\" genuinely ambiguous, in a way that changes "
+                       f"which records fit: {a.get('explain')}")
+    if t2.get("natural") is False:
+        out.append(f"The reader finds the request unnatural: {t2.get('naturalness_note')}")
+    if t2.get("asks_for_one") is False:
+        out.append(f"The reader says the request does not ask for a single record: {t2.get('asks_for_one_note')}")
+    return out
+
+
+def _match_findings(case: dict, verdict: dict, intended) -> list[str]:
     t2 = verdict.get("turn2", {})
     by_id = {str(r.get("id")): r for r in t2.get("records", [])}
     _, ids = candidates(case)
@@ -87,12 +109,4 @@ def problems(case: dict, verdict: dict, intended) -> list[str]:
                        f"{by_id[i].get('fails')} ({by_id[i].get('note', '')}).")
     for i in sorted(fits - intended):
         out.append(f"The reader says `{i}` fits the request, but it is not meant to ({by_id[i].get('note', '')}).")
-    for a in t2.get("ambiguity_effects", []):
-        if a.get("changes_matches") and a.get("careful_reader_unsure"):
-            out.append(f"The reader finds the phrase \"{a.get('phrase')}\" genuinely ambiguous, in a way that changes "
-                       f"which records fit: {a.get('explain')}")
-    if t2.get("natural") is False:
-        out.append(f"The reader finds the request unnatural: {t2.get('naturalness_note')}")
-    if t2.get("asks_for_one") is False:
-        out.append(f"The reader says the request does not ask for a single record: {t2.get('asks_for_one_note')}")
     return out
