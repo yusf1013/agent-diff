@@ -500,3 +500,23 @@ smaller run (at least 10).
   (`eval/phase4_policy_review.json`): all valid. The blind sample is 30 of 201 (seed 29).
 - **A look never runs a unit twice.** Units already cased by a look or by a Phase 4 policy run are skipped, and
   their verdicts come from that run (`sampler.already_cased`).
+
+### Amendment 6 (2026-09-27, 04:15): a robustness check for two underspecified decisions
+
+**Why.** At 03:28 a search found 3 degenerate drop-F variants (the request's verb implies the dropped condition, so
+an intended match is no reasonable match; `eval/phase3_review.json`). Two of them are in look 1:
+U-AP2-CAL-02-CalendarListEntry_calendar_id (Calendar) and U-AP2-SLK-02-Conversation_is_archived (Slack). Both
+cells were decided policy-level at look 1 with 11 failures of 11. With the degenerate unit void, each has 10 of 10
+(lower bound 0.794) and would have continued to look 2.
+
+**The decisions stand under the rule.** The exclusion rule is the pre-run review (amendment 2, C.9), and changing
+it after reading trials would bias the cells.
+
+**The check.** It is declared here, before any of its units run, and it is not a decision rule. Each of the two
+cells runs its next 7 units (positions 12–18 of the fixed order). The report gives the statistic over positions
+1–18 with the degenerate unit void, beside the rule's decision.
+- **Calendar:** 4 of its 7 units are in batch 1's policy run (positions 12, 13, 14, 18). Positions 15–17 are Phase 4
+  units of G4-CAL-06 and G4-CAL-07.
+- **Slack:** positions 12–18 are Phase 3 units.
+- Positions 15–17 of Calendar and 12–18 of Slack run as one run after batch 1's policy run and before batch 2.
+  Each variant is reviewed before the run, and the run has a blind sample.
