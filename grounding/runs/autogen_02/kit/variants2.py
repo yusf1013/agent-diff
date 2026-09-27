@@ -200,11 +200,30 @@ def _clone_prompt(case: dict) -> str:
             f"\n\nReplica notes:\n\n{notes}\n\nDescribe the copy, following the rules.")
 
 
-def _value(text: str):
+def _value(text: str, like=None):
+    """The writer's value (JSON text), typed like the target's field: a Slack ts written as a bare number stays the
+    exact string the writer wrote (a float would change its digits)."""
     try:
-        return json.loads(text)
+        value = json.loads(text)
     except (TypeError, ValueError):
         return text
+    if isinstance(like, str) and not isinstance(value, str):
+        return text.strip() if isinstance(value, (int, float)) else value
+    if isinstance(like, bool) or like is None:
+        return value
+    if isinstance(like, (int, float)) and isinstance(value, str):
+        try:
+            return type(like)(float(value))
+        except ValueError:
+            return value
+    return value
+
+
+def _target_row(case: dict) -> dict:
+    ref = case["references"][0]
+    table = ref["query"]["table"]
+    col = effect_key(case["domain"], table)[0]
+    return next((r for r in case["seed"][table] if str(r.get(col)) == str(ref["expected"][0])), {})
 
 
 def _clone_checks(case: dict, changes: dict, new_key: str) -> list[str]:
@@ -220,11 +239,15 @@ def _clone_checks(case: dict, changes: dict, new_key: str) -> list[str]:
         out.append(f"The new key `{new_key}` is already used in `{table}`.")
     rows = case["seed"][table]
     for f, v in target.items():
-        if not UNIQUE_FIELDS.match(f) or v in (None, "", [], {}) or f in changes or f == col:
+        if not UNIQUE_FIELDS.match(f) or v in (None, "", [], {}) or f == col:
             continue
         values = [json.dumps(r.get(f), sort_keys=True, default=str) for r in rows]
-        if len(rows) > 1 and len(set(values)) == len(values):  # the seed keeps this field unique
+        if len(rows) < 2 or len(set(values)) < len(values):  # only fields the seed keeps unique
+            continue
+        if f not in changes:
             out.append(f"The copy keeps the target's `{f}` ({v!r}), which is unique in every other record.")
+        elif json.dumps(changes[f], sort_keys=True, default=str) in values:
+            out.append(f"The copy's `{f}` ({changes[f]!r}) is already used by another record.")
     return out
 
 
@@ -247,7 +270,8 @@ def derive_clone(case: dict, out: Path, calls_log: Path) -> dict:
         if not answer.get("possible"):
             record.update(status="writer_declined", problems=[answer.get("reason", "")])
             break
-        changes = {c["field"]: _value(c["value"]) for c in answer.get("changes", [])}
+        like = _target_row(case)
+        changes = {c["field"]: _value(c["value"], like.get(c["field"])) for c in answer.get("changes", [])}
         new_key = answer["new_key"]
         findings = _clone_checks(case, changes, new_key)
         variant = None
