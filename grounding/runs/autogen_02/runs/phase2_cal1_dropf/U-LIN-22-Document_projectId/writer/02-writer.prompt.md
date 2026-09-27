@@ -1,0 +1,4 @@
+The edited request was checked, with these findings:
+- The reader finds the phrase "Leo Park last edited" genuinely ambiguous, in a way that changes which records fit: On visible fields only updatedById shows the last editor. Reading B requires updatedById=u-leo, so d-22 fails. Reading A asks for the latest edit by Leo even if later edited by someone else, so d-22, created by Leo and last touched by Sam, cannot be ruled out without full edit history. The two readings therefore differ on whether d-22 can match.
+
+Revise the edit under the same rules, or answer possible: false if it cannot be done.
