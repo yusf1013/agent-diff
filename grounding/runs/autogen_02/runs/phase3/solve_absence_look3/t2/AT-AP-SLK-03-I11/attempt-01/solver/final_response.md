@@ -1,0 +1,1 @@
+Successfully added a rocket reaction to the rollout timeline message in #eng-updates. The message "Updated rollout timeline: prod push moved to Thursday." (posted by Diego) in the C_ENG channel had Priya's reaction on it, and I added a "rocket" reaction to it.

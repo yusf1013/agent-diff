@@ -1,0 +1,1 @@
+Successfully archived the channel "beta-ops" (C_BETA). This was the most recently created channel that the workspace owner (Nina Torres, U_NINA) belongs to and that has exactly four members. The `conversations.archive` API returned `{"ok":true}` confirming the operation was successful.

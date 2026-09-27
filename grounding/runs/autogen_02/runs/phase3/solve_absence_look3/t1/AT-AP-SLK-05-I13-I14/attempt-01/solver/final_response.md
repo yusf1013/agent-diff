@@ -1,0 +1,1 @@
+Archived the channel "delta-ops" (C_DELTA), which was the most recently created channel that the workspace owner (Nina Torres) belongs to and that has exactly four members. The conversation.archive API call returned ok: true.
