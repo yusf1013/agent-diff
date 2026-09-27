@@ -57,13 +57,16 @@ def probe_outcomes() -> dict:
 
 
 def reading(twin_fails: int, twin_n: int, probe_fails: int, probe_n: int) -> str:
+    """The D4 pair reading of one fact: a per-fact breakdown of the twin's failures, never a filter on them."""
     if not twin_n:
         return "no twin result"
     if twin_fails == 0:
         return "no hole"
+    if not probe_n:
+        return "twin fails; no probe data"
     if probe_fails == 0:
         return "policy"
-    return "fact-level" if twin_fails else "no hole"
+    return "fact-level"
 
 
 def analyse() -> dict:
@@ -88,7 +91,7 @@ def analyse() -> dict:
             po = probes.get((meta.get("scenario"), meta.get("fact")), [])
             pf = sum(o in FAIL for o in po)
             row.update(probe_fails=pf, probe_n=len([o for o in po if o in FAIL | PASS]),
-                       reading=reading(k, len(usable), pf, len(po)))
+                       reading=reading(k, len(usable), pf, len([o for o in po if o in FAIL | PASS])))
         facts.append(row)
         cells[(row["domain"], row["mode"])].append(row)
     summary = {}

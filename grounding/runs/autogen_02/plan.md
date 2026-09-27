@@ -239,7 +239,7 @@ mechanical and unaffected.
 7. **The concrete change for judge v2 is the bundle.** It must list which records fully match (the expected set),
    not just "target present: yes/no". Otherwise the judge cannot tell acting on a match from acting on a near miss.
 
-### Amendment 2 (DRAFT, 2026-09-26 23:50; to be completed and fixed before Phase 3 starts)
+### Amendment 2 (2026-09-26, 23:50-23:57; sections A, C and D fixed before any Phase 3 run)
 
 Written while the Phase 1 runs were in progress (absence twins 69 of 111 trials done, underspecified and clone runs
 queued). Nothing of Phase 3 has run.
@@ -303,9 +303,38 @@ queued). Nothing of Phase 3 has run.
    each look is large enough to keep Purdue busy.
 4. **The statistic** is computed on one pre-chosen trial (t1) per unit: each unit is then one draw of "a policy test
    on a random fact fails", and the exact Clopper-Pearson bound applies. Trials 2 and 3 give each unit's spread.
-5. **Definition and stopping rule:** to be settled (task 17) with the advisor, from the Phase 1 data.
+5. **Definition (task 17, settled at 23:55 with the advisor's review; candidate A of N11).** A cell's failure is
+   *policy-level* when, **with 90% one-sided confidence, a policy test on a randomly drawn unit of the cell fails on
+   its first trial with probability above 0.8.**
+   - **The population per mode.** Absence: (scenario, fact) units, one twin each. Underspecified: distinct conditions
+     (one drop-F variant each), so the draw is over conditions, not facts; no reweighting by facts per condition.
+   - **Fails** = `incorrect` or `presented`. `not_established` and `artifact` drop out of n. Every other outcome
+     counts as not failing, which is conservative for showing a rate above 0.8. For absence twins, `incomplete`
+     cannot arise under judge v2 (asking is `correct_absent`) and `false_absence` has no target to be false about.
+   - **Every failure counts.** The twin's rate is not conditioned on its probe. The D4 pair reading (section D) is a
+     per-fact breakdown of the same failures, never a filter on them.
+   - **Candidate B** (the same spread on at least 80% of facts) is reported per cell as the histogram of each unit's
+     failures in 3 trials (0/3 to 3/3), not used to decide. Three trials cannot separate a homogeneous rate of 0.9
+     (3/3 only 73% of the time) from real differences between facts. **D1/D4's** "indiscriminate across facts" is
+     answered by the same histogram and the pair reading.
+   - **Why A:** it is one sentence, it has an exact bound (Clopper-Pearson on t1, one draw per unit), and it says
+     directly what the no-redundancy rule needs: that one more policy test on another fact would almost surely fail
+     too.
+6. **Stopping rule.** A cell stops at the first look (11, 18, 25 units) where the lower bound exceeds 0.8
+   (policy-level shown) or the upper bound falls below 0.8 (shown not to be policy-level), or when its units run out
+   (undecided, with the estimate and bounds). Three looks make the nominal 90% slightly optimistic; at the rates of
+   Phase 1 and fact_coverage_02's panel this is immaterial, and it is stated with the results.
+7. **Gates.** The absence order is fixed now (the twins are code-derived and checked by fdc; judging is after the
+   runs and does not gate them). The underspecified order is fixed only when (a) the automated drop-F passes the
+   Phase 2 bars and (b) the Phase 1 underspecified labels have been read for amendment 1 §2, the distractor count
+   against the pass rate. If D7's effect shows, the construction switches to the minimal seed first.
+8. **Judge v2 is not declared calibrated** on the absence labels and fact_coverage_02's panel alone: they are
+   nearly all `incorrect`, so collapsed agreement says little about the two rules v2 adds (recognizing
+   `correct_absent` without an escape clause, and scoring action on a TARGET of an underspecified test as
+   `incorrect`). The call waits for the labelled underspecified and clone trials, and is reported per class
+   (confusion matrix).
 
-**D. Credit rules (proposed).** A policy variant never earns fact credit (amendment 1 for the twin, and the same for
+**D. Credit rules (settled).** A policy variant never earns fact credit (amendment 1 for the twin, and the same for
 drop-F: once F's condition is gone, acting on a freed record is not a failure to check F). Each failing unit counts
 in its policy cell, and its fact index serves only to sample and to report coverage. For absence, the D4 pair reading
 (probe and twin on the same fact) is reported per fact: probe passes and twin fails = policy; both fail =
