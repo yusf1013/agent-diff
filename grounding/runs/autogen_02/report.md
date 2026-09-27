@@ -188,7 +188,10 @@ the edit with the original is the fix I would try next; it is not done.
 which I judge invalid: a second label with the same name in the same group.
 
 **On the population** (autogen_01's 49 generated scenarios, iteration 3):
-- **Drop-F:** 107 of 128 (scenario, fact) pairs accepted; 8 not derivable, 7 declined, 6 rejected.
+- **Drop-F:** 107 of 128 (scenario, fact) pairs accepted; 8 not derivable, 7 declined, 6 rejected. All 107 are
+  distinct conditions. I reviewed the 43 that look 1 would run, before their run: **43 of 43 valid and natural**
+  (40% of the accepted variants; [eval/phase3_review.json](eval/phase3_review.json)). One is stiff (", and that
+  hasn't been archived yet"), and two scenarios are contrived but possible (three calendars named "Client Success").
 - **Clones:** 44 of 49. A random 30% sample of the clones is 12 of 13 valid in my review
   ([eval/phase3_review.json](eval/phase3_review.json)).
 
