@@ -409,3 +409,8 @@ conditions sound formal.
 Iteration 2's partial runs are kept (`runs/*.stopped-for-cal3`: 11 of 37 exemplar facts and 24 of 128 population
 pairs). The exemplars and the population were rerun with iteration 3 (`runs/phase2_cal3_dropf`, `runs/phase3_dropf`),
 and cal3 is the calibration of record for drop-F.
+
+**Code aligned with the definition (00:55, before any Phase 3 result).** The sampler counted only `correct` and
+`correct_absent` as not failing and dropped `false_absence` and `incomplete` from n; amendment 2, C.5 counts every
+outcome other than `not_established` and `artifact`. The code now does the same (`sampler.PASS`). Only Phase 1's
+UC-BOX-21 t2 (a false absence) is affected so far.

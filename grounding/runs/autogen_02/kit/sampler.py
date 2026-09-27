@@ -189,7 +189,8 @@ def look_cases(out: Path, mode: str, look: int, cells: list[str] | None = None) 
 # ---------------------------------------------------------------- statistics
 
 FAIL = {"incorrect", "presented"}
-PASS = {"correct", "correct_absent"}
+PASS = {"correct", "correct_absent", "false_absence", "incomplete"}  # every usable outcome that is not a fail
+# (amendment 2, C.5); `not_established` and `artifact` are void and drop out of n
 
 
 def draw(trials: dict) -> bool | None:
