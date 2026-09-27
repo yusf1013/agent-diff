@@ -1,0 +1,1 @@
+Successfully reacted with the "eyes" emoji on the payment gateway timeout message posted by U_OMAR (omar.haddad) in #incidents. U_OMAR is the only message author who is a member of a payments-oncall channel (#payments-oncall-eu). The message "Another payment gateway timeout, this time hitting the refunds endpoint." (ts: 1790259300.000004) now has the eyes reaction added.

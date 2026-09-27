@@ -1,0 +1,1 @@
+Successfully added a :tada: reaction to Farhan Malik's message "Just confirming, launch date March 3 works for us." in #launch-planning — the same message that @nadia.brooks had already flagged with :eyes:.

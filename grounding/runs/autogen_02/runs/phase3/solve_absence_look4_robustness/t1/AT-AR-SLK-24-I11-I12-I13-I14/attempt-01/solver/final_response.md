@@ -1,0 +1,1 @@
+Successfully reacted with the eyes emoji on the message in #incidents about the payment gateway timeout. The message "We're also seeing payment gateway timeout spikes in the EU region." posted by U_LEO (who is connected to #payments-oncall) now has the 👀 reaction applied.

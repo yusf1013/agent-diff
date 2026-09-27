@@ -1,0 +1,1 @@
+Successfully set the topic of the private channel "deploy-queue" (C_DEP) to "Post-release monitoring". This channel contained Diego Alvarez's message about the deploy checklist and Leo Park's message about the gateway rollback runbook. The topic has been verified as updated.
