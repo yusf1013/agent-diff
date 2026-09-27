@@ -13,6 +13,9 @@ sandbox sees only the workspace (at `/work`), a private home for that session, a
 shell and web tools are off. The Meta API key goes in on stdin, and no key file exists inside the sandbox.
 - **Why a sandbox:** Muse's own approval modes do not stop file reads outside the workspace.
 - **Role instructions** are prepended to a session's first prompt; Muse has no system-prompt flag.
+- **Reminders:** judge and reader sessions run without Muse's reminder subagents (a `settings.json` in the session's
+  home sets an empty `run.reminder_roster`). The verify-reminder never changed a judge or reader call and cost about a
+  fifth of the bill (roadmap_01, 2026-09-27). `AUTOGEN_MUSE_NO_REMINDER_ROLES=""` restores Muse's default.
 - **Usage** comes from the session log's `model_completed` events, subagents included. It is priced at the model
   catalog's rates: billed (the contributor model), and list (the same model without "-contributor").
 
@@ -44,6 +47,10 @@ MUSE_HOMES = Path(os.environ.get("AUTOGEN_MUSE_HOMES", "/tmp/autogen-muse-homes"
 MUSE_BIN_DIR = Path.home() / ".local" / "bin"
 MUSE_AUTH = Path.home() / ".config" / "muse" / "auth.json"
 MUSE_CATALOG = Path.home() / ".local" / "share" / "muse" / "model-catalog"
+# Roles whose Muse sessions run without reminder subagents; "" keeps Muse's default roster for every role.
+MUSE_NO_REMINDER_ROLES = {r.strip() for r in os.environ.get("AUTOGEN_MUSE_NO_REMINDER_ROLES", "judge,reader").split(",")
+                          if r.strip()}
+MUSE_SETTINGS_NO_REMINDERS = {"schema_version": 1, "run": {"reminder_roster": {"agents": []}}}
 FILE_TOOLS = ["Read", "Write", "Edit", "Glob", "Grep"]
 READ_TOOLS = ["Read", "Glob", "Grep"]
 PROJECTS = Path.home() / ".claude" / "projects"
@@ -226,6 +233,16 @@ def _session_logs(home: Path, session_id: str) -> list:
     return sorted(p for d in root.rglob(session_id) if d.is_dir() for p in d.rglob("session.jsonl"))
 
 
+def _muse_settings(home: Path, role: str) -> str:
+    """Write the session's Muse settings when the role runs without reminders; returns "off" or "default"."""
+    if role not in MUSE_NO_REMINDER_ROLES:
+        return "default"
+    path = home / ".config" / "muse" / "settings.json"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(MUSE_SETTINGS_NO_REMINDERS))
+    return "off"
+
+
 def _usage(lines_before: dict, logs: list) -> tuple[dict, dict, list]:
     """Sum the model_completed events written since `lines_before`; returns totals, per-model totals and new lines."""
     total = {"input_tokens": 0, "cached_tokens": 0, "output_tokens": 0, "reasoning_tokens": 0, "requests": 0}
@@ -263,6 +280,7 @@ def _run_muse(call: Call) -> dict:
     session_id = call.resume or str(uuid.uuid4())
     home = MUSE_HOMES / session_id
     (home / "prompts").mkdir(parents=True, exist_ok=True)
+    reminders = _muse_settings(home, call.role)
     text = call.prompt if call.resume or not call.system_append else f"{call.system_append}\n\n---\n\n{call.prompt}"
     last_error = None
     for attempt in range(1, call.retries + 2):
@@ -310,7 +328,7 @@ def _run_muse(call: Call) -> dict:
         result = {"session_id": session_id, "result": final, "structured_output": structured_output,
                   "is_error": failed, "subtype": terminal.get("terminal"), "num_turns": usage["requests"],
                   "backend": "muse", "muse_binary": binary.name, "model": MUSE_MODEL,
-                  "reasoning_effort": call.effort or MUSE_EFFORT,
+                  "reasoning_effort": call.effort or MUSE_EFFORT, "reminders": reminders,
                   "usage": {"input_tokens": usage["input_tokens"] - usage["cached_tokens"],
                             "cache_read_input_tokens": usage["cached_tokens"], "cache_creation_input_tokens": 0,
                             "output_tokens": usage["output_tokens"], "reasoning_tokens": usage["reasoning_tokens"]},
@@ -322,7 +340,7 @@ def _run_muse(call: Call) -> dict:
         (call.log_dir / f"{stem}.transcript.jsonl").write_text("\n".join(new_lines) + ("\n" if new_lines else ""))
         row = usage_row(call, result, index, seconds, attempt)
         row.update({"backend": "muse", "reasoning_tokens": usage["reasoning_tokens"],
-                    "cost_usd_billed": result["cost_usd_billed"], "muse_binary": binary.name})
+                    "cost_usd_billed": result["cost_usd_billed"], "muse_binary": binary.name, "reminders": reminders})
         if failed:
             last_error = {"stdout_tail": (stdout or "")[-4000:], **record, "result": result}
             (call.log_dir / f"{stem}.failed.json").write_text(json.dumps(last_error, indent=1))

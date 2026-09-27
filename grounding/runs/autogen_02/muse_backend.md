@@ -19,6 +19,7 @@ AUTOGEN_BACKEND=muse python grounding/runs/fact_coverage_02/launch.py grounding.
 | `AUTOGEN_MUSE_MAX_STEPS` | `200` | a cap on model steps per turn |
 | `AUTOGEN_MUSE_HOMES` | `/tmp/autogen-muse-homes` | one private home per session (session logs, prompts) |
 | `AUTOGEN_MUSE_BIN` | the newest `~/.local/bin/muse-bin-*` | pins the Muse binary |
+| `AUTOGEN_MUSE_NO_REMINDER_ROLES` | `judge,reader` | roles whose sessions run without Muse's reminder subagents (added 2026-09-27; `""` restores Muse's default for every role) |
 
 The code is in [../autogen_01/kit/agent.py](../autogen_01/kit/agent.py), `_run_muse`.
 
@@ -62,6 +63,14 @@ product improvement". Prompts, the kit's documents and the solver's trajectories
 
 **Overhead per call.** Muse adds its own instructions and tool definitions, about 19,000 input tokens per request. Every
 turn also runs a small "reminder" subagent, about 3,000 input tokens. Both are counted.
+
+**Reminders off for judge and reader (2026-09-27, [roadmap_01](../roadmap_01/README.md)).** Muse's verify-reminder
+checks, after each answer, whether the agent verified what it reports. On autogen_02's judge and reader calls it never
+fired: all 4,883 of their reminder decisions were "no reminder", and no judge or reader session took a second step.
+It still cost about a fifth of the bill ($1.98 of $9.45 billed). Those sessions now run with an empty reminder
+roster, set in a `settings.json` in the session's home (`{"schema_version": 1, "run": {"reminder_roster": {"agents":
+[]}}}`; checked offline with Muse's `echo` provider). The writer keeps Muse's default, since its reminder fired 9
+times.
 
 ## First measurements
 
