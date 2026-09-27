@@ -303,7 +303,7 @@ queued). Nothing of Phase 3 has run.
    each look is large enough to keep Purdue busy.
 4. **The statistic** is computed on one pre-chosen trial (t1) per unit: each unit is then one draw of "a policy test
    on a random fact fails", and the exact Clopper-Pearson bound applies. Trials 2 and 3 give each unit's spread.
-   (Added at 00:05, before any Phase 3 result: when t1 is void, the unit's draw is the first usable of t2 and t3;
+   (Added at 00:02 on 2026-09-27, commit c67a65153, before any Phase 3 result: when t1 is void, the unit's draw is the first usable of t2 and t3;
    a unit with no usable trial drops out of n. Looks count units run, and a decision uses exactly the units up to
    the look.)
 5. **Definition (task 17, settled at 23:52 with the advisor's review, commit d3b3292e6; candidate A of N11).** A
