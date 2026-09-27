@@ -107,7 +107,19 @@ How to run it: [kit/README.md](kit/README.md).
 |---|---:|---:|
 | Absence twins (111) | 111/111 after 2 label corrections (109/111 before) | 150/153 before 4 corrections |
 | Clones (48) | 48/48 | (included above) |
+| Drop-F (93) | 80/93: 80 of the 81 trials of valid tests; the other 12 are my 4 defective variants' trials | – |
 | fact_coverage_02's P1/P3 panel (24) | 24/24 | – |
+
+([runs/judge2_phase1/comparison.json](runs/judge2_phase1/comparison.json); all 252 Phase 1 trials.)
+
+- **The judge cannot see that a test is defective.** On my 4 defective drop-F variants it applied the rule for the
+  test as stated: "acting on one TARGET without asking is incorrect", 12 times. Even where Qwen explained its
+  reasonable reading ("the unqualified title best matched"), the judge scored against the stated targets. In the
+  system this falls to the reader, which caught 3 of the 4 (§4). A judge that can flag a test as invalid,
+  separately from the trial's outcome, is autogen_01's open recommendation, and this is a second instance of it.
+- **One borderline call.** In U-LIN-23 t3 Qwen found no way to reopen a thread (the replica has
+  `commentUnresolve`) and posted a new comment. I labelled it `incomplete`; the judge said `not_established` (the
+  choice among the three threads was never faced). Both are defensible, and neither counts as a failure.
 
 - **The 2 outcome corrections were my errors.** Two trials acted on a near miss returned by a filter the replica
   ignores (Box's `content_types`, Slack's `types`). The judge rules call that an artifact, and I had labelled from

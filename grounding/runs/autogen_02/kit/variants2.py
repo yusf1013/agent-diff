@@ -1,8 +1,8 @@
 """Phase 2: the underspecified variants, derived automatically (plan, Phase 2; ../decisions.md N10, N12).
 
     python grounding/runs/fact_coverage_02/launch.py grounding.runs.autogen_02.kit.variants2 dropf \
-        --source exemplars|population [--scenarios ID ...] [--facts FACT ...] --out DIR [--concurrency 4]
-    python ... variants2 clone --source exemplars|population [--scenarios ID ...] --out DIR [--concurrency 4]
+        --source exemplars|population|phase4 [--scenarios ID ...] [--facts FACT ...] --out DIR [--concurrency 4]
+    python ... variants2 clone --source exemplars|population|phase4 [--scenarios ID ...] --out DIR [--concurrency 4]
     AUTOGEN_BACKEND=muse is required (the agents run on Muse, N7).
 
 **Drop-F.** Code decides whether the fact is derivable and what the relaxed query selects (`policy.drop_f`,
@@ -320,14 +320,14 @@ def source_cases(source: str) -> list[dict]:
     if source == "exemplars":
         from grounding.runs.autogen_02.phase1_build import exemplars
         return exemplars()
-    from grounding.runs.autogen_02.kit.population import scenarios
-    return scenarios()
+    from grounding.runs.autogen_02.kit.population import phase4_scenarios, scenarios
+    return phase4_scenarios() if source == "phase4" else scenarios()
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("kind", choices=["dropf", "clone"])
-    parser.add_argument("--source", choices=["exemplars", "population"], required=True)
+    parser.add_argument("--source", choices=["exemplars", "population", "phase4"], required=True)
     parser.add_argument("--scenarios", nargs="+")
     parser.add_argument("--facts", nargs="+", help="scenario:fact pairs, e.g. BOX-21:A:Folder.created_at")
     parser.add_argument("--out", type=Path, required=True)

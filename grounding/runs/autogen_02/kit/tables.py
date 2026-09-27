@@ -75,7 +75,8 @@ def actions_table():
     v2's verdict when I have no label, are left out)."""
     void = {"artifact", "not_established"}
     outcome = {}
-    for path in RUNS.glob("judge2_phase*/*/*/*/verdict.json"):
+    # Phase 1 verdicts only until the Phase 3 blind samples are labelled (no verdict may reach me before that).
+    for path in RUNS.glob("judge2_phase1/*/*/*/verdict.json"):
         v = json.loads(path.read_text())
         outcome[v["key"]] = v.get("outcome")
     outcome.update({k: v["outcome"] for k, v in policy_analysis.labels().items()})
