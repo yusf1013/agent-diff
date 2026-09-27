@@ -2,6 +2,7 @@
 
     python grounding/runs/fact_coverage_02/launch.py grounding.runs.autogen_02.kit.judge2 select --runs RUN_DIR ... > trials.json
     AUTOGEN_BACKEND=muse python ... judge2 run --trials trials.json --out DIR [--concurrency 4]
+    python ... judge2 select-panel > panel.json    # fact_coverage_02's 24 labelled P1/P3 trials
     python ... judge2 compare --out DIR --labels LABELS.json [LABELS.json ...]
 
 What changes from v1 (kit/prompts/judge_v2.md; v1 stays frozen in autogen_01):
@@ -60,6 +61,22 @@ def select(run_dirs: list[Path]) -> list[dict]:
             if attempt != v1.latest(run_dir, trial, case_id):
                 continue
             items.append({"run_dir": str(run_dir), "run": run_dir.name, "trial": trial, "case_id": case_id})
+    return items
+
+
+FC2_RUNS = STUDY.parent / "fact_coverage_02" / "runs"
+PANEL = {"method_pilot_panel": ["BOX-01-A", "CAL-06-A", "LIN-01-A"], "method_new_slk21": ["SLK-21-A"],
+         "method_pilot": ["BOX-01-TWIN", "CAL-09-TWIN", "LIN-15-TWIN"], "method_new": ["SLK-23-TWIN"]}
+
+
+def select_panel() -> list[dict]:
+    """fact_coverage_02's P1 and P3 policy-panel trials with manual labels (24), judged as form "policy panel"."""
+    items = []
+    for run, cases in PANEL.items():
+        for case_id in cases:
+            for trial in ("t1", "t2", "t3"):
+                items.append({"run_dir": str(FC2_RUNS / run), "run": run, "trial": trial, "case_id": case_id,
+                              "form": "policy panel"})
     return items
 
 
@@ -146,6 +163,7 @@ def main():
     sub = parser.add_subparsers(dest="cmd", required=True)
     s = sub.add_parser("select")
     s.add_argument("--runs", type=Path, nargs="+", required=True)
+    sub.add_parser("select-panel")
     r = sub.add_parser("run")
     r.add_argument("--trials", type=Path, required=True)
     r.add_argument("--out", type=Path, required=True)
@@ -156,6 +174,8 @@ def main():
     args = parser.parse_args()
     if args.cmd == "select":
         print(json.dumps(select([p.resolve() for p in args.runs]), indent=1))
+    elif args.cmd == "select-panel":
+        print(json.dumps(select_panel(), indent=1))
     elif args.cmd == "run":
         run(json.loads(args.trials.read_text()), args.out.resolve(), args.concurrency)
     else:

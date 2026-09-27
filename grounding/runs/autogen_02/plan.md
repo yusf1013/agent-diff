@@ -1,6 +1,8 @@
 # Plan: a complete automated testing system, and its evaluation
 
-**Status: fixed on 2026-09-26 at 23:40, before any run of this plan.** Changes go in dated amendments at the end.
+**Status: fixed on 2026-09-26 at 23:10 EDT (commit dfa62235d), before any run of this plan.** Changes go in dated
+amendments at the end. (The first version of this line said 23:40, and amendment 1 said 23:55. Both times were
+wrong; the commit times are the record.)
 - **Earlier runs in `runs/` are not part of this plan's evaluation.** These are the Muse smoke runs
   ([muse_backend.md](muse_backend.md)).
 - **The first draft of this file** (a component study of generation mechanisms) was superseded by the discussion of
@@ -211,7 +213,7 @@ Muse costs are small at the billed rate and are reported at list price.
 
 ## Amendments
 
-### Amendment 1 (2026-09-26, 23:55): tightenings from the advisor's review
+### Amendment 1 (2026-09-26, 23:15, commit 39e2875dd): tightenings from the advisor's review
 
 These were decided before any drop-F or clone variant was built. The absence-twin run had just started; the twins are
 mechanical and unaffected.

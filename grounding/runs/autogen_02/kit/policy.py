@@ -76,8 +76,13 @@ def _nodes(query):
         yield from _nodes(e["node"])
 
 
-def condition_keys(query: dict, claims: list, fact: str) -> set:
-    """Filter and edge keys that carry the fact: those labelled with it, and the DROP/SUB targets of its claims."""
+def condition_keys(query: dict, claims: list, fact: str, seed: dict | None = None) -> set:
+    """Filter and edge keys that carry the fact: those labelled with it, and the DROP/SUB targets of its claims.
+
+    With `seed`, the labels are completed (generated queries label facts incompletely, and a REPLACE mutation names
+    no key): every other filter on the same field of the same node joins a labelled filter (the two bounds of
+    "created in August" are one condition), and for each of the fact's near misses that the conditions so far do not
+    free, the most specific single condition whose removal frees it is added, found by testing."""
     keys = set()
     for node in _nodes(query):
         for f in node.get("filters", []):
@@ -89,7 +94,44 @@ def condition_keys(query: dict, claims: list, fact: str) -> set:
     for c in claims:
         if c["requirement"] == fact and c["mutation"].get("type") in ("DROP", "SUB") and c["mutation"].get("target"):
             keys.add(c["mutation"]["target"])
+    if seed is None:
+        return keys
+
+    def siblings():
+        for node in _nodes(query):
+            fields = {f.get("field") for f in node.get("filters", []) if f.get("key") in keys}
+            keys.update(f["key"] for f in node.get("filters", []) if f.get("field") in fields and f.get("key"))
+
+    def frees(witness, ks):
+        return any(_same(witness, s) for s in fdc.evaluate(seed, relaxed_query(query, ks)[0]))
+
+    siblings()
+    depth = _depths(query)
+    for c in claims:
+        if c["requirement"] != fact or frees(c["witness"], keys):
+            continue
+        freeing = [k for k in depth if frees(c["witness"], keys | {k})]
+        if freeing:
+            keys.add(max(freeing, key=lambda k: (depth[k][0], depth[k][1] == "filter")))
+            siblings()
     return keys
+
+
+def _depths(query: dict) -> dict:
+    """key -> (depth, "filter" | "edge") for every condition of the query."""
+    out = {}
+
+    def walk(node, d):
+        for f in node.get("filters", []):
+            if f.get("key"):
+                out[f["key"]] = (d, "filter")
+        for e in node.get("edges", []):
+            if e.get("key"):
+                out[e["key"]] = (d, "edge")
+            walk(e["node"], d + 1)
+
+    walk(query, 0)
+    return out
 
 
 def relaxed_query(query: dict, keys: set) -> tuple[dict, set]:
@@ -133,23 +175,36 @@ def _same(a, b):
     return fdc._same(a, b)
 
 
-def drop_f(case: dict, fact: str, prompt: str | None, variant_id: str | None = None) -> tuple:
-    """The underspecified variant on `fact`. Returns (variant, meta); meta['problems'] lists every failed check."""
+def drop_f(case: dict, fact: str, prompt: str | None, variant_id: str | None = None, semantic: bool = False) -> tuple:
+    """The underspecified variant on `fact`. Returns (variant, meta); meta['problems'] lists every failed check.
+
+    `semantic=False` is the Phase 1 construction: F's conditions are the keys labelled with F (and its DROP/SUB
+    targets), and a fact is dropped when its own labelled keys were removed. `semantic=True` (Phase 2 on, for
+    generated queries) finds F's conditions by testing (`condition_keys` with the seed), and a fact is dropped when
+    the relaxed query selects one of its near misses: its condition depended on the removed one (a binding, or a
+    role whose person was named in the dropped phrase). Either way, every record the relaxed query selects must be
+    the target or a declared near miss whose fact is dropped."""
     base = _base(case)
     sid, ref = base["case_id"], base["references"][0]
     claims = ref["claims"]
-    keys = condition_keys(ref["query"], claims, fact)
-    relaxed, removed = relaxed_query(ref["query"], keys)
     seed = _check_seed(base)
+    keys = condition_keys(ref["query"], claims, fact, seed if semantic else None)
+    relaxed, removed = relaxed_query(ref["query"], keys)
     full = fdc.evaluate(seed, ref["query"])
     selected = fdc.evaluate(seed, relaxed)
-    dropped_facts = sorted({c["requirement"] for c in claims
-                            if condition_keys(ref["query"], claims, c["requirement"]) & removed})
+    if semantic:
+        dropped_facts = sorted({c["requirement"] for c in claims if any(_same(c["witness"], s) for s in selected)}
+                               | {fact})
+    else:
+        dropped_facts = sorted({c["requirement"] for c in claims
+                                if condition_keys(ref["query"], claims, c["requirement"]) & removed})
     freed = [c["witness"] for c in claims if c["requirement"] in dropped_facts]
     expected_matches = list(full) + [w for w in freed if not any(_same(w, f) for f in full)]
     problems = []
     if not keys:
         problems.append(f"no query condition carries {fact}")
+    if not full:
+        problems.append("the full query selects no target on the cover seed")
     if sorted(map(str, selected)) != sorted(map(str, expected_matches)):
         problems.append(f"the relaxed query selects {selected}, not the target plus the freed near misses "
                         f"{expected_matches}")
@@ -173,7 +228,8 @@ def drop_f(case: dict, fact: str, prompt: str | None, variant_id: str | None = N
     variant = rename(variant, variant_id or f"U-{sid}-{fact.split(':')[-1].replace('.', '_')}")
     variant, errors = _finish(variant)
     problems += list(errors) + dangling(variant)
-    return variant, {"form": "underspecified", "scenario": sid, "fact": fact, "dropped_facts": dropped_facts,
+    return variant, {"form": "underspecified", "scenario": sid, "fact": fact, "semantic": semantic,
+                     "dropped_facts": dropped_facts,
                      "dropped_keys": sorted(keys), "matches": len(selected), "other_near_misses": kept_decoys,
                      "conditions_left": remaining, "problems": problems,
                      "family": _family(claims, [i for i, c in enumerate(claims) if c["requirement"] in dropped_facts])}
@@ -207,6 +263,11 @@ def clone(case: dict, changes: dict, new_key: str, variant_id: str | None = None
         for r in [r for r in base["seed"][child] if str(r.get(fk_col)) == target_id]:
             c = copy.deepcopy(r)
             c[fk_col] = new_key
+            # Other references to the target in the same row move too (Box comments point at their file by
+            # both file_id and the polymorphic item_id, which the schema does not declare as a foreign key).
+            for col_name, value in r.items():
+                if col_name != fk_col and str(value) == target_id and re.search(r"(_id|Id)$", col_name):
+                    c[col_name] = new_key
             if len(child_pk) == 1 and child_pk[0] != fk_col and c.get(child_pk[0]) is not None:
                 c[child_pk[0]] = f"{c[child_pk[0]]}_clone" if isinstance(c[child_pk[0]], str) else c[child_pk[0]] + 100000
             base["seed"][child].append(c)
