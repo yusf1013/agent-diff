@@ -17,7 +17,40 @@ system** ([plan.md](plan.md), decisions N7–N15 in [decisions.md](decisions.md)
 
 ## Summary
 
-*Pending: "what the runs show" is written last.*
+*Draft of 04:47. Phase 4's runs on Qwen are still running (batch 1 until about 07:00, then its policy variants, the
+robustness checks and batch 2); their rows say pending.*
+
+**What the runs show.**
+- **The system runs end to end, and a person is needed only to review and label.** From a brief to verdicts, every
+  step is automated: the scenario (Muse writer, code checks, replica pre-checks, Muse reader), its regular tests,
+  its per-fact policy variants (absence twins by code; drop-F variants and clones by Muse, checked by code and a
+  cold reader), the sampled policy runs on Qwen, and the judge (Muse, v2). On new briefs: 29 of 32 accepted, 24
+  of 29 valid in my review, $0.62 per accepted scenario at list price ($0.035 billed).
+- **All eight policy cells are policy-level under the pre-registered definition** (one test on a random fact of the
+  cell fails with probability above 0.8, at 90% confidence): absence in Box, Calendar and Linear at the first look
+  (11/11), Slack at the third (23/25); underspecified in Box, Calendar and Slack at the first look (11/11), Linear
+  at the second (17/18). So one absence test and one underspecified test per domain carry the whole policy result.
+  Per-fact policy tests add nothing, which is the no-redundancy rule's question.
+- **Three of the eight decisions each rest on one flawed test,** found while labelling blind trials: two drop-F
+  variants whose verb implies the dropped condition ("hide ... the calendar", but only listed calendars can be
+  hidden), and one absence twin whose member count depends on counting the acting bot. With that test void, each
+  of the three cells is undecided (lower bound 0.793 or 0.794). A declared robustness check (amendment 6) runs the
+  next units. *Pending.*
+- **What Qwen does:** under a presupposition it acts on the nearest record (121 of 132 absence trials at look 1),
+  often saying it is "the closest match". It will even change the world to fit the request: it unarchived a channel
+  to invite someone into "the channel that hasn't been archived", and created a missing team and issue. Given several
+  matches it acts on the first it finds (93 of 129) or on all of them (30). It asked which one exactly once, in
+  over 250 underspecified trials of this study. Its only reliable absence reports concern a different person (a
+  reply or a message by someone else).
+- **The judge is precise, and its errors are the tests' errors.** On 93 blind Phase 3 trials, judge v2 agrees with my
+  labels in 87. As a detector of failures its precision is 85/86 and its recall 85/85, with the same exposed fact in
+  85 of 85. Four of the six disagreements are defective or contestable tests, which the judge cannot flag. The
+  other two are borderline absence reports.
+- **The automation's quality problems are specific and fixable:** 3 of 162 accepted drop-F variants are degenerate
+  in that way (a verb-precondition check would catch them), and the copier cannot clone rows two steps from the
+  target (one clone rejected by the code check).
+
+**The plan's bars** (plan, Phase 2 "Calibration bars"; amendment 2 for the policy definition):
 
 **The plan's bars** (plan, Phase 2 "Calibration bars"; amendment 2 for the policy definition):
 
@@ -29,7 +62,7 @@ system** ([plan.md](plan.md), decisions N7–N15 in [decisions.md](decisions.md)
 | Automated drop-F: every accepted variant passes the code checks | all (cal3) | yes |
 | Automated drop-F: at least 90% valid and natural in my review | cal3 22/23 (96%) | yes |
 | Policy-level definition fixed before any Phase 3 run | amendment 2, 23:49–23:54 | yes |
-| Judge v2 on the blind samples (precision and recall; no bar set) | *pending* | – |
+| Judge v2 on the blind samples (precision and recall; no bar set) | Phase 3: 87/93 agreement; precision 85/86, recall 85/85. Phase 4: *pending* | – |
 
 ## 1. The system, and what is automated
 
