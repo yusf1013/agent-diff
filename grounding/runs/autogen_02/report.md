@@ -650,7 +650,7 @@ the runs end.*
 
 - **Member counts include the acting bot.** The bot is a member of every channel in the generated Slack seeds, so
   that it can read them, and the writers count it. "Exactly four members" then depends on whether a reader counts
-  the assistant's own account. Of the 8 member-count tests that ran, only AT-AP-SLK-05-I13-I14 flips with the
+  the assistant's own account. Of the 6 member-count tests that ran, only AT-AP-SLK-05-I13-I14 flips with the
   reading; in the others, every near miss fails under both. **The fix:** a code check that flags any count
   condition whose answer changes when the acting account is left out.
 - **Two more scenario flaws my pre-run review missed** (found while labelling batch 2's blind trials; recorded in
