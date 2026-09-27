@@ -220,7 +220,8 @@ def already_cased(out: Path, mode: str) -> set[str]:
         {p.stem for p in (STUDY / "runs" / "phase4").glob("*policy_cases/*/*.json")}
 
 
-def look_cases(out: Path, mode: str, look: int, cells: list[str] | None = None, dest_name: str | None = None) -> Path:
+def look_cases(out: Path, mode: str, look: int, cells: list[str] | None = None, dest_name: str | None = None,
+               positions: tuple[int, int] | None = None) -> Path:
     """Copy the cases of look `look` (the cell's valid units between the previous look and this one, in the fixed
     order) into out/<mode>_look<N>/<domain>/, or into out/<dest_name>/ (a look completed after the order was
     extended, amendment 5). Units already cased by an earlier look or a Phase 4 policy run are left out: their
@@ -235,7 +236,8 @@ def look_cases(out: Path, mode: str, look: int, cells: list[str] | None = None, 
     for cell, seq in doc["cells"].items():
         if cells and cell not in cells:
             continue
-        for u in valid_sequence(seq)[looks[look - 1]:looks[look]]:
+        lo, hi = (positions[0] - 1, positions[1]) if positions else (looks[look - 1], looks[look])
+        for u in valid_sequence(seq)[lo:hi]:
             if u["unit"] in have:
                 continue
             src = out / "units" / u["domain"] / f"{u['unit']}.json"
@@ -342,6 +344,8 @@ if __name__ == "__main__":
     lk.add_argument("--out", type=Path, required=True)
     lk.add_argument("--cells", nargs="+")
     lk.add_argument("--dest", help="a new folder name: only units no earlier look folder holds (amendment 5)")
+    lk.add_argument("--positions", type=int, nargs=2, metavar=("FIRST", "LAST"),
+                    help="valid positions FIRST..LAST (1-based) instead of the look's (a declared robustness check)")
     xt = sub.add_parser("extend")
     xt.add_argument("mode", choices=["absence", "underspecified"])
     xt.add_argument("--seed", type=int, required=True)
@@ -361,7 +365,8 @@ if __name__ == "__main__":
     if args.cmd == "plan":
         plan(args.mode, args.seed, args.out.resolve(), args.dropf.resolve() if args.dropf else None)
     elif args.cmd == "look":
-        look_cases(args.out.resolve(), args.mode, args.n, args.cells, args.dest)
+        look_cases(args.out.resolve(), args.mode, args.n, args.cells, args.dest,
+                   tuple(args.positions) if args.positions else None)
     elif args.cmd == "extend":
         extend(args.mode, args.seed, args.out.resolve(), args.dropf.resolve() if args.dropf else None)
     elif args.cmd == "decide":

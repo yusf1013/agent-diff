@@ -520,3 +520,12 @@ cells runs its next 7 units (positions 12–18 of the fixed order). The report g
 - **Slack:** positions 12–18 are Phase 3 units.
 - Positions 15–17 of Calendar and 12–18 of Slack run as one run after batch 1's policy run and before batch 2.
   Each variant is reviewed before the run, and the run has a blind sample.
+
+**Added at 04:44: Slack absence.** It was decided policy-level at look 3 (23 of 25, lower bound 0.801). Its last
+look-3 unit, AT-AP-SLK-05-I13-I14, has a contestable near miss: delta-ops has the acting bot plus exactly four
+people, so "exactly four members" fits it if the bot is not counted. I found this while labelling that unit's blind
+trials, before its verdicts; my three labels say `artifact`. With the unit void, the cell is 22 of 24 (lower bound
+0.793). The same check applies: the next 7 valid units (positions 26–32; 6 of autogen_01, 1 of Phase 4), run after
+the underspecified check (`runs/phase3/absence_look4_robustness`, blind sample 10 of 21, seed 47). The twins are code
+built, and their near misses were reviewed in autogen_01's review or mine. The report gives positions 1–32 with that
+unit void.
