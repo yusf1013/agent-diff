@@ -396,4 +396,16 @@ Three code changes followed:
 - drop-F uses iteration 2 (`runs/phase3_dropf`, restarted at 00:10);
 - the clone uses the fixed version above (`runs/phase3_clone`, started at 00:07, after those fixes).
 
-Iteration 2 also runs on the exemplars (`runs/phase2_cal2_dropf`). Its result is the calibration of record.
+Iteration 2 also ran on the exemplars (`runs/phase2_cal2_dropf`); see iteration 3 below.
+
+**Drop-F, iteration 3 (00:26, the last allowed).** Iteration 2 declined more often than iteration 1, and about half
+of its declines had one reason: the conditions that remain "sound like metadata no real user would write". Those
+conditions are the original request's own, whose wording the scenario's reader had already accepted. Rule 4 was
+meant for the writer's edit, and for CAL-23 the writer even declined the request I had written by hand ("that has an
+optional guest"). Declines of this kind shrink the underspecified population in a way that may depend on the kind of
+fact. So rule 4 now says to judge only the naturalness of the edit, and not to decline because the remaining
+conditions sound formal.
+
+Iteration 2's partial runs are kept (`runs/*.stopped-for-cal3`: 11 of 37 exemplar facts and 24 of 128 population
+pairs). The exemplars and the population were rerun with iteration 3 (`runs/phase2_cal3_dropf`, `runs/phase3_dropf`),
+and cal3 is the calibration of record for drop-F.
