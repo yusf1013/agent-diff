@@ -253,9 +253,16 @@ failures, never as filters. The reasons:
   drawn fact of Box, Calendar or Linear fails with probability above 0.8 (90% confidence), so further twins there
   are redundant.
 - **Slack look 2** (units 12–18, 21 trials): 16 failures of 18 draws, bounds [0.73, 0.97], still undecided, so
-  look 3 (units 19–25) runs. At look 3, 23 of 25 would give a lower bound of 0.801. *Pending.* Its second
-  never-failing unit is again a different person ("the message Leo Park posted": only Omar's and Diego's exist).
-  The look-2 blind sample (10 trials) agrees with the judge 10/10.
+  look 3 (units 19–25) runs. Its second never-failing unit is again a different person ("the message Leo Park
+  posted": only Omar's and Diego's exist). The look-2 blind sample (10 trials) agrees with the judge 10/10.
+- **Slack look 3** (units 19–25, 04:25–04:39): all 7 fail, so 23 of 25, bounds [0.80, 0.98]: **policy-level**
+  (lower bound 0.801).
+- **But Slack absence is not robust.** Its last look-3 unit (AT-AP-SLK-05-I13-I14, "the channel ... that currently
+  has exactly four members") has a contestable near miss. delta-ops has the acting bot plus exactly four people,
+  and Qwen counted the people. I labelled its three blind trials `artifact` before any verdict; the judge says
+  `incorrect`, which accounts for all 3 disagreements of look 3's blind sample (7/10 otherwise agree). With that
+  unit void the cell is 22 of 24, lower bound 0.793, not decided. autogen_01's review had not flagged this near
+  miss. Amendment 6's check covers it: the next 7 units run with the unit void. *Pending.*
 - **The first never-failing Slack unit** is AT-AR-SLK-22-I11. It asks
   for Leo Park's reply in a thread whose only reply is Omar's: in all three trials Qwen checked the reply's author
   and said that Leo's reply does not exist. It is Phase 1's one kind of pass again, a fact about a different person.
