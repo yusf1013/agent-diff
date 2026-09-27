@@ -214,20 +214,23 @@ def valid_sequence(seq: list[dict]) -> list[dict]:
 
 
 def already_cased(out: Path, mode: str) -> set[str]:
-    """Units already copied into an earlier look folder of this mode (run or queued)."""
-    return {p.stem for p in out.glob(f"{mode}_look*/*/*.json")}
+    """Units already copied into an earlier look folder of this mode, or into a Phase 4 policy run (amendment 5), run
+    or queued: a look takes their verdicts from that run instead of running them again."""
+    return {p.stem for p in out.glob(f"{mode}_look*/*/*.json")} | \
+        {p.stem for p in (STUDY / "runs" / "phase4").glob("*policy_cases/*/*.json")}
 
 
 def look_cases(out: Path, mode: str, look: int, cells: list[str] | None = None, dest_name: str | None = None) -> Path:
     """Copy the cases of look `look` (the cell's valid units between the previous look and this one, in the fixed
-    order) into out/<mode>_look<N>/<domain>/, or into out/<dest_name>/ with only the units no earlier look folder
-    holds (a look completed after the order was extended, amendment 5)."""
+    order) into out/<mode>_look<N>/<domain>/, or into out/<dest_name>/ (a look completed after the order was
+    extended, amendment 5). Units already cased by an earlier look or a Phase 4 policy run are left out: their
+    verdicts come from that run (pass its judge folder to `decide`)."""
     doc = json.loads((out / f"plan_{mode}.json").read_text())
     looks = [0] + doc["looks"]
     dest = out / (dest_name or f"{mode}_look{look}")
     if dest.exists():
         raise SystemExit(f"{dest} exists")
-    have = already_cased(out, mode) if dest_name else set()
+    have = already_cased(out, mode)
     n = 0
     for cell, seq in doc["cells"].items():
         if cells and cell not in cells:
