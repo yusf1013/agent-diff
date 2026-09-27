@@ -10,6 +10,8 @@ The [manual Slack comparison](manual_comparison_01/report.md) runs all 57 [manua
 
 [autogen_01](autogen_01/README.md) generates and judges fact-discrimination tests with Claude Code Sonnet agents, and compares them with fact_coverage_02's hand-built exemplars on Qwen ([report](autogen_01/report.md)).
 
+[autogen_02](autogen_02/overview.md) completes the automated system with per-fact absence and underspecified policy tests, sampled per domain, on Muse agents with Qwen as the solver ([report](autogen_02/report.md)). [roadmap_01](roadmap_01/README.md) holds the first two steps of the [roadmap](../protocols/roadmap.md) that followed.
+
 Historical paths inside JSON and provider transcripts were not rewritten. Human review links were updated where their targets moved. Use `python -m grounding.paths OLD_PATH` to locate recorded paths. A folder name or a recorded `review_pass` is not a new validity claim; retain the associated manual review and failed attempts.
 
 New writer and compilation batches use:
