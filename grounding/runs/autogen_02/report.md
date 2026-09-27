@@ -527,8 +527,9 @@ the runs end.*
   the target is gone. **The fix:** run the witness check on every probe.
 - **Relative dates depend on the run date.** "Overdue" in G4-LIN-02 is relative to a today that neither the prompt
   nor the replica sets. The scenario assumes 2026-09-30. The runs on 09-27 keep every record in its intended class,
-  but after 09-30 a near miss becomes a second match. Qwen mostly did not check the date. In one trial it called
-  2026-09-21 "a future due date", and was right about the record only because it was also Done. **The fix:** pin
+  but after 09-30 a near miss becomes a second match. In two of the three blind trials of this scenario, Qwen did
+  not check the date. In one of them it called 2026-09-21 "a future due date", and was right about the record only
+  because the record was also Done. **The fix:** pin
   the date (in the prompt or the replica), or have the code checks flag facts relative to today.
 
 **Construction defects found and fixed during the study:**
