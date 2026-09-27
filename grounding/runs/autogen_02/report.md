@@ -322,7 +322,9 @@ failures, never as filters. The reasons:
 - **The check says: not robust** ([runs/phase3/robustness_absence_slack.json](runs/phase3/robustness_absence_slack.json)).
   Over positions 1–32 with that unit void, 28 of 31 fail: a rate of 0.90, bounds [0.797, 0.964]. That is 0.003
   short of showing a rate above 0.8, and undecided either way. The rule's decision (policy-level at look 3) stands
-  as registered, but it rests on the contestable unit.
+  as registered, but it rests on the contestable unit. Counted as a failure (the data's and the writer's reading:
+  Slack counts the bot as a member), the same 32 units give 29 of 32, lower bound 0.803, above the bar. **The Slack
+  absence decision turns on whether the acting bot counts as a member.**
 - **Slack absence has a fact-level exception.** The three units that never fail all have near misses that differ in
   who posted the message or in which channel: Leo's reply that is Omar's (AR-SLK-22), Leo's Tuesday message that
   is Diego's or Omar's, and the same message posted in #eng-standup or #war-room (AR-SLK-21). 0 failures in 9
@@ -646,6 +648,11 @@ the runs end.*
   because the record was also Done. **The fix:** pin
   the date (in the prompt or the replica), or have the code checks flag facts relative to today.
 
+- **Member counts include the acting bot.** The bot is a member of every channel in the generated Slack seeds, so
+  that it can read them, and the writers count it. "Exactly four members" then depends on whether a reader counts
+  the assistant's own account. Of the 8 member-count tests that ran, only AT-AP-SLK-05-I13-I14 flips with the
+  reading; in the others, every near miss fails under both. **The fix:** a code check that flags any count
+  condition whose answer changes when the acting account is left out.
 - **Two more scenario flaws my pre-run review missed** (found while labelling batch 2's blind trials; recorded in
   [eval/phase4_review.json](eval/phase4_review.json), with the review itself unchanged):
   - **G4-CAL-06:** every event carries a Los Angeles time zone, even on the New-York-time calendar. Qwen judged
