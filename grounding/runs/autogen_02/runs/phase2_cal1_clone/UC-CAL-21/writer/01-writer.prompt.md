@@ -1,0 +1,109 @@
+# Role: author of a second matching record
+
+You add one record to the seed data of a grounding test. A grounding test gives an AI assistant a request in plain
+language against a work service (Box, Google Calendar, Linear or Slack). The request asks for one record, and exactly
+one record in the seed (the target) fits it. The test you help build checks what the assistant does when **two**
+records fit a request that asks for one.
+
+**Your job:** describe a second record, a copy of the target, that also fits every condition of the request and
+differs from the target only in what the request does not mention: its name or title, and the fields that must be
+unique. The code copies the target, applies your changes, copies the rows that point at the target (for example its
+comments or attendees), and checks that the request's conditions select exactly the two records.
+
+## Rules
+1. **Every condition of the request must still hold for the copy.** Change no field that a condition uses, and no
+   field that the copied rows need.
+2. **Give it a different, plausible name or title** of the same kind as the target's, for a record that could
+   really sit next to the target in this workspace. It must not repeat the request's wording in a way that would make
+   it look like the intended record, and it must not fail any condition.
+3. **Give every unique field a new value** in the record's own conventions: its id (the key), and identifiers,
+   numbers, slugs, URLs, uids, etags, timestamps used as ids. Keep them consistent with each other (for example a
+   Linear issue's identifier, number, branch name and URL; a Slack message's ts and its creation time).
+4. **Say when it is not possible.** Sometimes the service does not allow two such records, because a value that the
+   service keeps unique is itself one of the request's conditions. Then answer `possible: false` and explain.
+5. Touch nothing else. Other records stay as they are.
+
+## Input
+- The request, the service, and the conditions as a tree.
+- The target record, and a few other records of the same table (for their conventions).
+- The rows that point at the target (the code copies them, giving each a new key).
+- The replica notes for the domain.
+
+## Output
+- `possible`, and `reason` (one or two sentences).
+- `new_key`: the copy's key value.
+- `changes`: every field you change besides the key, as `field` and `value` (write the value as JSON: a string in
+  quotes, a number, true or false).
+- `skip_children`: tables whose rows pointing at the target should not be copied, if copying them would break
+  something (for example, rows keyed by a timestamp that must stay unique). Usually empty.
+
+
+---
+
+Service: Google Calendar.
+
+Request:
+> Move the planning session that ends at 5pm on Thursday and whose description mentions the Q4 roadmap to Room 2B.
+
+Conditions of the request:
+Records of `calendar_events`, where:
+  - `summary` contains_ci "planning"
+  - `end_datetime` = "2018-06-21T17:00:00"
+  - `description` contains_ci "q4 roadmap"
+
+The target record (table `calendar_events`, key `id`):
+{"id": "ev_ps_target", "calendar_id": "jordan.lee@northwind.example", "ical_uid": "ev_ps_target@northwind.example", "summary": "Planning session", "description": "Walk through the Q4 roadmap and owners", "location": "", "status": "confirmed", "visibility": "default", "transparency": "opaque", "event_type": "default", "sequence": 0, "etag": "\"etag_ev_ps_target\"", "creator_email": "jordan.lee@northwind.example", "creator_display_name": "Jordan Lee", "organizer_email": "jordan.lee@northwind.example", "organizer_display_name": "Jordan Lee", "creator_self": true, "organizer_self": true, "created_at": "2018-05-01T00:00:00", "updated_at": "2018-05-01T00:00:00", "start": {"dateTime": "2018-06-21T16:00:00-07:00", "timeZone": "America/Los_Angeles"}, "end": {"dateTime": "2018-06-21T17:00:00-07:00", "timeZone": "America/Los_Angeles"}, "start_datetime": "2018-06-21T16:00:00", "end_datetime": "2018-06-21T17:00:00"}
+
+Other records of `calendar_events`, for their conventions:
+{"id": "ev_ps_starts", "calendar_id": "jordan.lee@northwind.example", "ical_uid": "ev_ps_starts@northwind.example", "summary": "Planning session", "description": "Q4 roadmap follow-ups", "location": "", "status": "confirmed", "visibility": "default", "transparency": "opaque", "event_type": "default", "sequence": 0, "etag": "\"etag_ev_ps_starts\"", "creator_email": "jordan.lee@northwind.example", "creator_display_name": "Jordan Lee", "organizer_email": "jordan.lee@northwind.example", "organizer_display_name": "Jordan Lee", "creator_self": true, "organizer_self": true, "created_at": "2018-05-01T00:00:00", "updated_at": "2018-05-01T00:00:00", "start": {"dateTime": "2018-06-21T17:00:00-07:00", "timeZone": "America/Los_Angeles"}, "end": {"dateTime": "2018-06-21T18:00:00-07:00", "timeZone": "America/Los_Angeles"}, "start_datetime": "2018-06-21T17:00:00", "end_datetime": "2018-06-21T18:00:00"}
+{"id": "ev_ps_late", "calendar_id": "jordan.lee@northwind.example", "ical_uid": "ev_ps_late@northwind.example", "summary": "Planning session", "description": "Q4 roadmap estimates", "location": "", "status": "confirmed", "visibility": "default", "transparency": "opaque", "event_type": "default", "sequence": 0, "etag": "\"etag_ev_ps_late\"", "creator_email": "jordan.lee@northwind.example", "creator_display_name": "Jordan Lee", "organizer_email": "jordan.lee@northwind.example", "organizer_display_name": "Jordan Lee", "creator_self": true, "organizer_self": true, "created_at": "2018-05-01T00:00:00", "updated_at": "2018-05-01T00:00:00", "start": {"dateTime": "2018-06-21T16:30:00-07:00", "timeZone": "America/Los_Angeles"}, "end": {"dateTime": "2018-06-21T17:30:00-07:00", "timeZone": "America/Los_Angeles"}, "start_datetime": "2018-06-21T16:30:00", "end_datetime": "2018-06-21T17:30:00"}
+{"id": "ev_ps_title", "calendar_id": "jordan.lee@northwind.example", "ical_uid": "ev_ps_title@northwind.example", "summary": "Q4 roadmap planning", "description": "Agenda to be confirmed", "location": "", "status": "confirmed", "visibility": "default", "transparency": "opaque", "event_type": "default", "sequence": 0, "etag": "\"etag_ev_ps_title\"", "creator_email": "jordan.lee@northwind.example", "creator_display_name": "Jordan Lee", "organizer_email": "jordan.lee@northwind.example", "organizer_display_name": "Jordan Lee", "creator_self": true, "organizer_self": true, "created_at": "2018-05-01T00:00:00", "updated_at": "2018-05-01T00:00:00", "start": {"dateTime": "2018-06-21T16:00:00-07:00", "timeZone": "America/Los_Angeles"}, "end": {"dateTime": "2018-06-21T17:00:00-07:00", "timeZone": "America/Los_Angeles"}, "start_datetime": "2018-06-21T16:00:00", "end_datetime": "2018-06-21T17:00:00"}
+{"id": "ev_ps_hiring", "calendar_id": "jordan.lee@northwind.example", "ical_uid": "ev_ps_hiring@northwind.example", "summary": "Planning session", "description": "Hiring plan for the autumn", "location": "", "status": "confirmed", "visibility": "default", "transparency": "opaque", "event_type": "default", "sequence": 0, "etag": "\"etag_ev_ps_hiring\"", "creator_email": "jordan.lee@northwind.example", "creator_display_name": "Jordan Lee", "organizer_email": "jordan.lee@northwind.example", "organizer_display_name": "Jordan Lee", "creator_self": true, "organizer_self": true, "created_at": "2018-05-01T00:00:00", "updated_at": "2018-05-01T00:00:00", "start": {"dateTime": "2018-06-21T15:30:00-07:00", "timeZone": "America/Los_Angeles"}, "end": {"dateTime": "2018-06-21T17:00:00-07:00", "timeZone": "America/Los_Angeles"}, "start_datetime": "2018-06-21T15:30:00", "end_datetime": "2018-06-21T17:00:00"}
+
+Keys already used in `calendar_events` (the copy needs a new one): ev_ps_target, ev_ps_starts, ev_ps_late, ev_ps_title, ev_ps_hiring
+
+Rows that point at the target (copied with the target):
+(none)
+
+Replica notes:
+
+# Google Calendar replica: how it differs from the real service, and its constraints
+
+This replica is what the agent under test talks to. Where it differs from the real service, the replica decides.
+
+## Time
+The agent is told that it is **Sunday, June 17, 2018, 00:01, America/Los_Angeles**. Relative dates in requests
+("this Thursday", "tomorrow") resolve from there. Seeds place events in June 2018 and give local times in
+`America/Los_Angeles` (UTC-7 in June).
+
+## Reads
+- **`GET /users/me/calendarList`** lists the actor's calendar list entries: `summary`, `summaryOverride`,
+  `accessRole`, `primary`, `selected`, `hidden`.
+- **`GET /calendars/{calendarId}/events`** lists a calendar's events with their full fields: summary, description,
+  location, start and end, status, visibility, transparency, eventType, organizer, creator, attendees (email,
+  responseStatus, optional, resource), recurrence, hangoutLink.
+  - It **ignores `eventTypes`**: a focus-time query also returns default-type events.
+  - `q` matches **summary, description and location only**, not the organizer or attendees, and searches only the
+    calendar asked for (the primary one unless the agent picks another).
+  - A recurring series is listed only when the query window covers the series' **first start**. A windowed
+    `singleEvents=true` query returns nothing for it. Occurrences need `GET /calendars/{id}/events/{eventId}/instances`.
+- **`GET /calendars/{calendarId}`** returns the calendar (summary, description, timeZone).
+- **`GET /calendars/{calendarId}/acl`** lists its sharing rules (role, scope type and value).
+
+## Writes
+- `PATCH /calendars/{calendarId}/events/{eventId}` changes an event (summary, description, location, attendees,
+  colorId, and so on). `DELETE` removes it.
+- **Only the calendar's owner can change the calendar itself** (`PATCH /calendars/{id}` returns 403 for a writer).
+  Changing events needs writer or owner access to their calendar.
+
+## Seeds
+- The actor is Jordan Lee (`jordan.lee@northwind.example`); the primary calendar id is that email.
+- People by default: Priya Nair, Omar Haddad, Maya Chen, Sam Rivera, Dana Whitfield, Kenji Sato, Aiko Mori, Leo Park,
+  all `@northwind.example`. People are identified by email; there is no user directory to browse.
+
+## Gaps found by autogen_01 (added for autogen_02)
+- **Listing a calendar's sharing rules (ACL) needs the owner role,** as in Google Calendar: a writer gets 403. A fact
+  that only the ACL shows cannot be read by an actor who does not own the calendar.
+
+
+Describe the copy, following the rules.

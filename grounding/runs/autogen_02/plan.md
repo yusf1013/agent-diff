@@ -238,3 +238,75 @@ mechanical and unaffected.
    LIN-23, LIN-24, LIN-25, LIN-26 and SLK-24.
 7. **The concrete change for judge v2 is the bundle.** It must list which records fully match (the expected set),
    not just "target present: yes/no". Otherwise the judge cannot tell acting on a match from acting on a near miss.
+
+### Amendment 2 (DRAFT, 2026-09-26 23:50; to be completed and fixed before Phase 3 starts)
+
+Written while the Phase 1 runs were in progress (absence twins 69 of 111 trials done, underspecified and clone runs
+queued). Nothing of Phase 3 has run.
+
+**A. Construction, settled by Phase 1 and the population survey.**
+1. **Drop-F derivability is mechanical.** Code alone (`kit/check_derivable.py`: the relaxed query's match set, at
+   least two matches, scope D2) makes the same derivable or not-derivable call as my hand-made set on 37 of 37
+   exemplar facts (31 derivable; 6 not, all scope D2). The prediction of amendment 1 (about 7 not derivable) was close:
+   6, but a different set (LIN-23, LIN-24 and LIN-26 were derivable; SLK-23's two facts were not).
+2. **Generated queries label facts incompletely.** On autogen_01's 128 generated (scenario, fact) pairs, the labelled
+   construction failed on 20. `policy.condition_keys(..., seed)` now completes the labels by testing: a labelled
+   filter takes the other filters on the same field of its node (the two bounds of "in August"), and each near miss
+   the conditions do not yet free adds the most specific single condition whose removal frees it. On the exemplars
+   it gives the same keys, dropped facts and calls as the labelled construction (37 of 37).
+3. **Dropped facts are found by what the relaxed query selects.** Removing a phrase frees the near misses of every
+   fact whose condition depended on it: a binding (the optional guest who must also be Kenji), or a role whose
+   person the phrase named ("that Priya Nair modified last" carries the role and the name). Such facts are dropped
+   together, and their near misses become intended matches. With this, 120 of the 128 generated pairs are derivable;
+   the 8 others are scope D2 (5) and AP-SLK-05 (3), whose "most recently created" superlative autogen_01 already
+   found invalid.
+4. **Absence twins:** 125 of 128 derive and pass fdc. The 3 others inherit defects of autogen_01's own derived tests
+   (`kit/recheck_a1.py`): AP-SLK-03 and AP2-SLK-03 (a reaction claim that fdc does not confirm in isolation) and
+   AP-SLK-05 (the superlative).
+5. **The clone copier missed a second reference.** Box comments point at their file by `file_id` and by the
+   undeclared polymorphic `item_id`. `policy.clone` moved only the declared key, so UC-BOX-23's copied comments still
+   pointed at the target through `item_id`. The Muse clone writer found this (it declined, naming the cause).
+   Fixed: every `_id`/`Id` column equal to the target's key moves. Phase 1's UC-BOX-23 was rebuilt before its run
+   started (the first build is kept in `runs/phase1/cases_clone.v1-before-item_id-fix/`); no other clone changed.
+6. **A wording risk, recorded:** "the folder Leo Park last modified" can be read as a superlative ("the one Leo
+   modified most recently"). Where such a phrase is the main remaining condition of a drop-F variant, that reading
+   could pick one record. In the exemplars every candidate has the same timestamp, so both readings leave several
+   matches. Watched for in the labels.
+
+**B. Phase 2 automation as built** (`kit/variants2.py`, `kit/reader2.py`, prompts `dropf_writer.md`,
+`clone_writer.md`):
+1. **The reader is blind to the intended set.** Instead of telling the reader the intended matches (the "expected-set
+   mode" above), it reads the reworded request cold with its own conditions, and code compares the records it finds
+   fitting with the intended set. A second match is not a finding; a different match set is. Findings also cover a
+   genuine ambiguity that changes the matches, an unnatural request, and a request that does not ask for one record.
+   A contestable near miss kept from the scenario is recorded, not a finding: it does not depend on the rewording.
+2. **Code checks added:** no plural or universal word (amendment 1), and no content word that the original request
+   does not contain (after the smoke run, where a repair round turned "the Pricing sheet file" into "the Pricing
+   sheet.xlsx file").
+3. **Up to two repair rounds** with the findings, as in autogen_01's pipeline.
+4. **Calibration iterations** (at most three):
+   - **cal1 (23:42):** drop-F on all 37 exemplar facts; clones stopped after 4 of 18, all declined. The clone
+     rules were too strict: "change no field a condition uses" forbade a new title that still contains the request's
+     words, and records without a name had no allowed change. The copier bug above also caused one decline.
+   - **cal2 (23:48, clones):** the writer may change a field a condition uses if the new value still meets it (fdc
+     and the reader check that); a record without a name differs in another unused field; the writer judges only
+     whether the copy can exist, not the request's wording.
+
+**C. Phase 3 design (proposed).**
+1. **Units.** Absence: the per-fact twin. Underspecified: the drop-F variant per distinct condition; facts sharing a
+   condition share the variant, which is one unit. The clone is per scenario and is reported, not sampled.
+2. **Order.** Per cell, a random order fixed by a seed before any Phase 3 run, stratified by substitute family
+   (`kit/sampler.py`). The absence order can be fixed now; the underspecified order once the automated variants pass
+   calibration.
+3. **Looks instead of batches of 4:** after 11, 18 and 25 units, the smallest samples that can show a rate above 0.8
+   at 90% one-sided confidence with 0, 1 and 2 passes. Three looks keep the error from repeated testing small, and
+   each look is large enough to keep Purdue busy.
+4. **The statistic** is computed on one pre-chosen trial (t1) per unit: each unit is then one draw of "a policy test
+   on a random fact fails", and the exact Clopper-Pearson bound applies. Trials 2 and 3 give each unit's spread.
+5. **Definition and stopping rule:** to be settled (task 17) with the advisor, from the Phase 1 data.
+
+**D. Credit rules (proposed).** A policy variant never earns fact credit (amendment 1 for the twin, and the same for
+drop-F: once F's condition is gone, acting on a freed record is not a failure to check F). Each failing unit counts
+in its policy cell, and its fact index serves only to sample and to report coverage. For absence, the D4 pair reading
+(probe and twin on the same fact) is reported per fact: probe passes and twin fails = policy; both fail =
+fact-level; twin passes = no hole.

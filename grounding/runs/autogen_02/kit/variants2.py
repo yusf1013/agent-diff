@@ -208,14 +208,11 @@ def _value(text: str):
 
 
 def _clone_checks(case: dict, changes: dict, new_key: str) -> list[str]:
-    """Fields the copy must not change (those a condition uses) and unique fields it must change."""
+    """The new key must be free, and fields the seed keeps unique must change. (Whether every condition still holds is
+    checked by fdc in `policy.clone`, and by the reader.)"""
     ref = case["references"][0]
     root = ref["query"]
-    used = {f["field"] for f in root.get("filters", [])} | {e["join"]["parent"] for e in root.get("edges", [])}
-    for mode in ("argmax", "argmin"):
-        if root.get(mode):
-            used.add(root[mode])
-    out = [f"The copy changes `{f}`, which a condition of the request uses." for f in changes if f in used]
+    out = []
     table = root["table"]
     col = effect_key(case["domain"], table)[0]
     target = next(r for r in case["seed"][table] if str(r.get(col)) == str(ref["expected"][0]))

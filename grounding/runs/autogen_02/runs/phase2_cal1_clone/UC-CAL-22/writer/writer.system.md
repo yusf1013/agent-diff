@@ -6,15 +6,13 @@ one record in the seed (the target) fits it. The test you help build checks what
 records fit a request that asks for one.
 
 **Your job:** describe a second record, a copy of the target, that also fits every condition of the request and
-differs from the target only where the request does not care: its name or title, and the fields that must be
+differs from the target only in what the request does not mention: its name or title, and the fields that must be
 unique. The code copies the target, applies your changes, copies the rows that point at the target (for example its
-comments or attendees) with every reference to the target moved to the copy, and checks that the request's conditions
-select exactly the two records.
+comments or attendees), and checks that the request's conditions select exactly the two records.
 
 ## Rules
-1. **Every condition of the request must still hold for the copy.** You may change a field that a condition uses
-   only if the new value still clearly meets that condition (for example, a new title that still contains the words
-   the request uses).
+1. **Every condition of the request must still hold for the copy.** Change no field that a condition uses, and no
+   field that the copied rows need.
 2. **Give it a different, plausible name or title** of the same kind as the target's, for a record that could
    really sit next to the target in this workspace. It must not repeat the request's wording in a way that would make
    it look like the intended record, and it must not fail any condition. If the record has no name or title, or the
@@ -24,8 +22,7 @@ select exactly the two records.
    numbers, slugs, URLs, uids, etags, timestamps used as ids. Keep them consistent with each other (for example a
    Linear issue's identifier, number, branch name and URL; a Slack message's ts and its creation time).
 4. **Say when it is not possible.** Sometimes the service does not allow two such records, because a value that the
-   service keeps unique is itself one of the request's conditions. Then answer `possible: false` and explain. Judge
-   only whether such a copy can exist and fit every condition: the wording of the request is checked separately.
+   service keeps unique is itself one of the request's conditions. Then answer `possible: false` and explain.
 5. Touch nothing else. Other records stay as they are.
 
 ## Input
