@@ -113,4 +113,8 @@ returns the decoy too.
 - **User messages not checked separately.** The messages the code assembles from each test (the writer's facts, the
   reader's records, the judge's bundle) carry that test's own content by design, so they were not scanned apart from
   the templates.
+  - A scenario that copied an example passes the copy on to the judge: G4-BOX-05's bundle explains its decoy with
+    the example's own words ("Owned by Maya Lopez, not Maya Chen").
+  - That is still the test's own definition, which the judge is meant to see, so it affects nothing the judge is
+    measured on.
 - **The benchmark's API documentation** was not checked for leaks; it is not ours.
