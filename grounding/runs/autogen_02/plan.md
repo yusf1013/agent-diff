@@ -529,3 +529,39 @@ trials, before its verdicts; my three labels say `artifact`. With the unit void,
 the underspecified check (`runs/phase3/absence_look4_robustness`, blind sample 10 of 21, seed 47). The twins are code
 built, and their near misses were reviewed in autogen_01's review or mine. The report gives positions 1–32 with that
 unit void.
+
+### Amendment 7 (2026-09-27, 05:14): the analysis of batch 1's policy run, declared before it runs
+
+**What the run is.** Every policy variant of batch 1's 14 scenarios that the review rule keeps: 30 twins, 26 drop-F
+units and 11 clones (201 trials). They are not a random draw from any cell. They are all the units of 14 chosen
+scenarios, and the units of one scenario share its seed and request.
+
+**The analysis** (judge v2's verdicts, read only after the run's blind sample of 30 is labelled):
+- **Per cell** (domain × mode): one draw per unit (t1, else the first usable of t2 and t3, as in C.5), failures k
+  of n, with the 90% one-sided bounds. The bounds are descriptive: they assume independent units, which these are
+  not.
+- **Drop-F units and clones apart.** The underspecified decisions rest on drop-F units only, and these are the first
+  automated clones to run.
+- **Per scenario:** the scenarios in which every unit fails, and those in which some unit passes, so that the
+  clustering shows.
+- **Beside the draws:**
+  - the trials that fail;
+  - the trials that ask (underspecified) or report the absence (absence);
+  - each twin's pair reading against its fact's probes in batch 1's regular run.
+
+**A check of the decisions, not a decision rule.** All eight cells were decided policy-level. A cell's units in this
+run contradict its decision if their upper bound is below 0.8, the mirror of C.5's rule. With these sizes only a
+large miss can show. The contradiction happens at:
+
+| Units in the cell (n) | 4 | 5 | 6 | 8 | 9 | 10 |
+|---|---:|---:|---:|---:|---:|---:|
+| Failures at or below which the upper bound is under 0.8 | 1 | 2 | 3 | 4 | 5 | 5 |
+
+- **Twins per cell:** Box 9, Calendar 10, Linear 6, Slack 5.
+- **Drop-F units per cell:** Box 8, Calendar 9, Linear 5, Slack 4.
+- **Clones** (Box 1, Calendar 4, Linear 3, Slack 3) are reported without the check. They are one per scenario, not
+  per fact, so they are not units of the cells.
+
+**Double use.** Calendar's drop-F units at positions 12, 13, 14 and 18 of the fixed order are also amendment 6's
+units. Its robustness statistic is computed only after both this run and the robustness run are judged, because the
+statistic stops at the first unit without verdicts.
