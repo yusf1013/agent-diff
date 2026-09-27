@@ -177,6 +177,7 @@ def compare(out: Path, label_files: list[Path]) -> dict:
         if not ref:
             continue
         rows.append({"key": v["key"], "kind": v.get("kind"), "ref": ref["outcome"], "judge": v.get("outcome"),
+                     "ref_exposed": sorted(ref.get("exposed", [])), "judge_exposed": sorted(v.get("exposed", [])),
                      "note": v.get("note", "")[:300], "ref_note": ref.get("note", "")[:300]})
     collapsed = [r for r in rows if v1.COLLAPSE.get(r["ref"], r["ref"]) == v1.COLLAPSE.get(r["judge"], r["judge"])]
     by_kind = {}
@@ -188,9 +189,24 @@ def compare(out: Path, label_files: list[Path]) -> dict:
     for r in rows:
         confusion.setdefault(r["ref"], {}).setdefault(r["judge"], 0)
         confusion[r["ref"]][r["judge"]] += 1
+    # The judge as a detector of failures (precision first): among trials that are usable by my label and the
+    # judge's (neither says void), how many of the judge's failures are failures by my label, and how many of mine
+    # the judge finds.
+    usable = [r for r in rows if "void" not in (v1.COLLAPSE.get(r["ref"]), v1.COLLAPSE.get(r["judge"]))]
+    jf = [r for r in usable if v1.COLLAPSE.get(r["judge"]) == "fail"]
+    rf = [r for r in usable if v1.COLLAPSE.get(r["ref"]) == "fail"]
+    both = [r for r in jf if v1.COLLAPSE.get(r["ref"]) == "fail"]
+    detector = {"usable_by_both": len(usable), "judge_fail": len(jf), "label_fail": len(rf), "both_fail": len(both),
+                "precision": f"{len(both)}/{len(jf)}", "recall": f"{len(both)}/{len(rf)}",
+                "void_by_label_only": sum(1 for r in rows if v1.COLLAPSE.get(r["ref"]) == "void"
+                                          and v1.COLLAPSE.get(r["judge"]) != "void"),
+                "void_by_judge_only": sum(1 for r in rows if v1.COLLAPSE.get(r["judge"]) == "void"
+                                          and v1.COLLAPSE.get(r["ref"]) != "void"),
+                "same_exposed_facts_when_both_fail": f"{sum(r['ref_exposed'] == r['judge_exposed'] for r in both)}"
+                                                     f"/{len(both)}"}
     return {"labelled_trials": len(rows), "collapsed_agreement": f"{len(collapsed)}/{len(rows)}",
-            "by_kind": {k: f"{a}/{n}" for k, (n, a) in by_kind.items()}, "confusion_ref_to_judge": confusion,
-            "disagreements": [r for r in rows if r not in collapsed]}
+            "by_kind": {k: f"{a}/{n}" for k, (n, a) in by_kind.items()}, "failure_detection": detector,
+            "confusion_ref_to_judge": confusion, "disagreements": [r for r in rows if r not in collapsed]}
 
 
 def main():
