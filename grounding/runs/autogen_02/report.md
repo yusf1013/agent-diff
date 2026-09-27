@@ -373,6 +373,18 @@ the runs end.*
   `subscribers`, Calendar `eventTypes`) turn some trials into artifacts. The review view now flags any use of them,
   but only a reader of the trial can say whether the result depended on it.
 
+- **Drop-F can remove a condition that the request's verb already implies.** "Hide the 'Design Team' calendar
+  that I've shared with Kenji Sato as a writer" drops "in my calendar list", but only calendars on the list can be
+  hidden, so the second intended match is no reasonable match. Found while labelling a blind trial. A search of all
+  162 accepted drop-F variants for verbs that imply a state of their object (hide, unarchive, invite, reopen,
+  archive, ...) found **3 degenerate variants** in all, 2 of them in look 1. The Muse reader and my pre-run review
+  (43 of 43 valid, in truth 42) both missed them. They stay in the order: the exclusion rule is the pre-run review,
+  and changing it after reading trials would bias the cells. The decisions state what depends on them. **The fix
+  to try next:** a code check that the dropped condition is not the verb's precondition (a table of verbs and the
+  states they require), or a reader question: "can the action apply to each intended match?"
+- **The same pattern makes one absence twin easy.** "Unarchive the incidents channel about the checkout outage",
+  with only a live channel left, is the one absence twin that Qwen answered without acting (in one trial of three).
+
 **Construction defects found and fixed during the study:**
 - The clone copier moved only a copied row's declared foreign key (UC-BOX-23's comments), and gave copied rows ids
   ending in `_clone`, which Qwen used once to tell the copy from the original.
