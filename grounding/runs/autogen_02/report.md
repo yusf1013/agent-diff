@@ -105,6 +105,51 @@ cover "Initech pricing.docx", which is the reason the Muse writer gave for decli
 - **One inconsistency:** the judge listed the near miss's fact for 2 of the 3 identical AT-LIN-24 trials (the
   fabricated cycle) and nothing for the third. It is harmless for scoring, since twins never credit facts.
 
+## 4. Phase 2: the automated underspecified variants, calibrated on the exemplars
+
+**How they are built** ([kit/variants2.py](kit/variants2.py)):
+- **Code decides whether a fact is derivable and what the relaxed query selects.** The construction is semantic:
+  it finds the conditions a fact's near misses actually fail, and drops the facts whose near misses the relaxed
+  query frees. On the exemplars it makes my call on 37 of 37 facts.
+- **The Muse writer rewords.** Code rejects plural or universal words, and any content word the original does not
+  contain.
+- **The Muse reader reads the result cold,** without being told the intended matches; code compares the records it
+  finds with the intended set.
+
+**Three iterations** (the plan's maximum; [plan.md](plan.md), amendment 3):
+
+| Iteration | Accepted of 31 derivable | Valid and natural (my review) | Identical to my request | What changed after it |
+|---|---:|---:|---:|---|
+| cal1 | 27 | 25/27 | 17 | the added-words check; a definite reference ("the …", after "into a cycle of") |
+| cal2 (stopped twice) | – | – | – | the check allows generic nouns and stems (two false flags) |
+| cal3 (of record) | 23 | 22/23 | 20 | none (maximum reached) |
+
+**The bars are met by cal3:**
+- the same derivability call on 37 of 37;
+- every accepted variant passes the code checks;
+- 96% valid and natural.
+
+**The price is yield:** 23 of 31 against cal1's 27. Iteration 3 stopped the writer from declining over the
+remaining conditions' formal wording (which is the original request's). The reader then rejects some of the same
+variants as unnatural, because it cannot tell inherited wording from the edit. A third reader turn that compares
+the edit with the original is the fix I would try next; it is not done.
+
+**The automation found defects in my manual standard:**
+- **U-BOX-23-File_extension.** The writer declined because "the contract file" need not cover "Initech pricing.docx".
+  The Qwen runs bore this out: I labelled all three trials of my hand-made variant as a defective test.
+- **U-CAL-23's two variants.** The reader rejected them because "Friday's architecture review" can mean the event
+  titled exactly so; Qwen read it that way in all six trials.
+- **The superlative "the hub Dana Whitfield last updated".** The writer and the reader raised it again and again.
+  The writer reworded it three times, unasked, to "last updated by", which removes the ambiguity.
+
+**Clones:** 17 of 18 exemplar scenarios, matching my possible/not-possible call on 17. The exception is UC-LIN-25,
+which I judge invalid: a second label with the same name in the same group.
+
+**On the population** (autogen_01's 49 generated scenarios, iteration 3):
+- **Drop-F:** 107 of 128 (scenario, fact) pairs accepted; 8 not derivable, 7 declined, 6 rejected.
+- **Clones:** 44 of 49. A random 30% sample of the clones is 12 of 13 valid in my review
+  ([eval/phase3_review.json](eval/phase3_review.json)).
+
 ## 3. The policy-level definition (task 17)
 
 *Draft.* Three candidates were on the table (decision N11): (A) with 90% confidence, a policy test on a randomly
