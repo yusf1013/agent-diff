@@ -518,6 +518,19 @@ the runs end.*
   (the service refused it). In the third it answered that the channel "is already unarchived": I labelled that
   `correct_absent`, the judge `presented`.
 
+- **A probe can lose its near miss's trap** (found while labelling batch 1). A probe's seed removes the target; when
+  a near miss's trap runs through the target's own records, it goes too. In P-G4-LIN-01-I13, removing the project
+  Atlas removed its Meridian milestone, which Canyon Web's issue pointed to, so the probe cannot expose its fact.
+  Qwen passed it. The code's witness check catches this, but only the policy derivation runs it: it rejected the
+  twin of the same seed, while autogen_01's suite derivation, which built the probe, does not run it. It flags 1 of
+  Phase 4's 62 pairs and 3 of autogen_01's: two of the same kind, and one where the near miss becomes a match once
+  the target is gone. **The fix:** run the witness check on every probe.
+- **Relative dates depend on the run date.** "Overdue" in G4-LIN-02 is relative to a today that neither the prompt
+  nor the replica sets. The scenario assumes 2026-09-30. The runs on 09-27 keep every record in its intended class,
+  but after 09-30 a near miss becomes a second match. Qwen mostly did not check the date. In one trial it called
+  2026-09-21 "a future due date", and was right about the record only because it was also Done. **The fix:** pin
+  the date (in the prompt or the replica), or have the code checks flag facts relative to today.
+
 **Construction defects found and fixed during the study:**
 - The clone copier moved only a copied row's declared foreign key (UC-BOX-23's comments), and gave copied rows ids
   ending in `_clone`, which Qwen used once to tell the copy from the original.
