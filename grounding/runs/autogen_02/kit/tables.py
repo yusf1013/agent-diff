@@ -41,14 +41,32 @@ def phase1():
                          ", ".join(f"{k}: {v}" for k, v in sorted(spread.items(), reverse=True))])
     out.append(md(["Mode", "Domain", "Variants", "Failing trials", "Trial 1 fails", "90% bounds (t1)",
                    "Variants by failures in 3 trials"], rows))
-    readings = Counter(f["reading"] for f in res["facts"] if f["mode"] == "absence")
-    out.append("\n**The D4 pair reading of the absence twins** (the fact's probes in autogen_01's same-day control "
-               "run, 3 trials each): " + ", ".join(f"{k}: {v}" for k, v in readings.most_common()) + ".\n")
+    for mode, against in (("absence", "the fact's probes"), ("underspecified", "the scenario's cover"),
+                          ("clone", "the scenario's cover")):
+        readings = Counter(f.get("reading") for f in res["facts"] if f["mode"] == mode)
+        if readings:
+            out.append(f"\n**The pair reading, {mode}** (against {against} in autogen_01's same-day control run, 3 "
+                       "trials each): " + ", ".join(f"{k}: {v}" for k, v in readings.most_common()) + ".")
+    out.append("")
+    under = [f for f in res["facts"] if f["mode"] == "underspecified"]
+    if under:
+        by_count = defaultdict(lambda: [0, 0, 0])
+        for f in under:
+            k = f.get("other_near_misses")
+            by_count[k][0] += 1
+            by_count[k][1] += f["fails"]
+            by_count[k][2] += f["usable"]
+        out.append("\n**Amendment 1 §2 (decision D7): failures of the drop-F variants by the number of other near misses "
+                   "kept in the seed as distractors.**\n")
+        out.append(md(["Other near misses in the seed", "Variants", "Failing trials"],
+                      [[k, v[0], f"{v[1]}/{v[2]}"] for k, v in sorted(by_count.items(), key=lambda kv: str(kv[0]))]))
+        out.append("")
     rows = [[f["variant"], f["fact"], f.get("family") or "", f"{f['fails']}/{f['usable']}",
-             f"{f.get('probe_fails', '')}/{f.get('probe_n', '')}" if f["mode"] == "absence" else "",
-             f.get("reading", "") if f["mode"] == "absence" else f"{f.get('matches')} matches, "
-             f"{f.get('other_near_misses')} other near misses"] for f in res["facts"]]
-    out.append(md(["Variant", "Fact", "Family", "Fails", "Probe fails", "Reading / match set"], rows))
+             f"{f.get('probe_fails', '')}/{f.get('probe_n', '')}" if f["mode"] == "absence" else
+             f"cover {f.get('cover_fails', '')}/{f.get('cover_n', '')}",
+             f.get("reading", "") if f["mode"] == "absence" else f"{f.get('reading', '')}; {f.get('matches')} "
+             f"matches, {f.get('other_near_misses')} other near misses"] for f in res["facts"]]
+    out.append(md(["Variant", "Fact", "Family", "Fails", "Probe or cover fails", "Reading; match set"], rows))
     return "\n".join(out)
 
 

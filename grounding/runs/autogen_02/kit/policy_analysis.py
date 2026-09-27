@@ -10,7 +10,8 @@ Sources:
   judged), one probe per near miss, 3 trials each.
 
 Per fact: the twin's failures k/3 (absence) and the drop-F variant's k/3 (underspecified), the probe failures j/m,
-and the D4 pair reading. Per domain and mode: the rate on trial 1 with its exact one-sided 90% bounds (definition A),
+and the D4 pair reading; for the underspecified variants and the clones, the same reading against the scenario's
+cover in the control run (the cover passes and the variant fails = policy). Per domain and mode: the rate on trial 1 with its exact one-sided 90% bounds (definition A),
 the spread of k/3 over facts (definition B), and the rate over all trials.
 """
 from __future__ import annotations
@@ -57,6 +58,12 @@ def probe_outcomes() -> dict:
     return out
 
 
+def cover_outcomes() -> dict:
+    """scenario -> [outcome, ...] of its cover (target and every near miss) in the control run."""
+    score = json.loads((A1 / "runs" / "solve_control.score.json").read_text())
+    return {t["scenario"]: [x["outcome"] for x in t["trials"].values()] for t in score["tests"] if t.get("form") == "cover"}
+
+
 def reading(twin_fails: int, twin_n: int, probe_fails: int, probe_n: int) -> str:
     """The D4 pair reading of one fact: a per-fact breakdown of the twin's failures, never a filter on them."""
     if not twin_n:
@@ -75,6 +82,7 @@ def analyse() -> dict:
     outcomes = variant_outcomes(lab)
     index = json.loads((STUDY / "runs" / "phase1" / "index.json").read_text())
     probes = probe_outcomes()
+    covers = cover_outcomes()
     facts = []
     cells = defaultdict(list)
     for vid, res in sorted(outcomes.items()):
@@ -94,6 +102,11 @@ def analyse() -> dict:
             pf = sum(o in FAIL for o in po)
             row.update(probe_fails=pf, probe_n=len([o for o in po if o in FAIL | PASS]),
                        reading=reading(k, len(usable), pf, len([o for o in po if o in FAIL | PASS])))
+        elif res.get("mode") in ("underspecified", "clone"):
+            co = covers.get(meta.get("scenario"), [])
+            cf = sum(o in FAIL for o in co)
+            cn = len([o for o in co if o in FAIL | PASS])
+            row.update(cover_fails=cf, cover_n=cn, reading=reading(k, len(usable), cf, cn))
         facts.append(row)
         cells[(row["domain"], row["mode"])].append(row)
     summary = {}
