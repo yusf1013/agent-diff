@@ -1,0 +1,73 @@
+# Running the kit on Muse Code instead of Claude Code
+
+Written 2026-09-26 at the user's request: Claude Code Sonnet did not scale with the user's subscription quota, while
+Muse Code (Meta) with `muse-spark-1.3-contributor` is cheap for them.
+
+## How to run it
+
+The kit's agents (writer, reader, judge) are unchanged. Only the agent runner switches:
+
+```bash
+AUTOGEN_BACKEND=muse python grounding/runs/fact_coverage_02/launch.py grounding.runs.autogen_01.kit.<module> ...
+```
+
+| Variable | Default | Meaning |
+|---|---|---|
+| `AUTOGEN_BACKEND` | `claude` | `muse` selects Muse Code |
+| `AUTOGEN_MUSE_MODEL` | `muse-spark-1.3-contributor` | the model id |
+| `AUTOGEN_MUSE_EFFORT` | `high` | the reasoning effort (none … max, ultra) |
+| `AUTOGEN_MUSE_MAX_STEPS` | `200` | a cap on model steps per turn |
+| `AUTOGEN_MUSE_HOMES` | `/tmp/autogen-muse-homes` | one private home per session (session logs, prompts) |
+| `AUTOGEN_MUSE_BIN` | the newest `~/.local/bin/muse-bin-*` | pins the Muse binary |
+
+The code is in [../autogen_01/kit/agent.py](../autogen_01/kit/agent.py), `_run_muse`.
+
+## What had to change, and why
+
+- **Confinement.** Muse's approval modes (`never`, `on-request`, `untrusted`) all let the agent read files outside its
+  workspace. A probe read a file of this repository from a workspace under `/tmp`. The user's own default profile is
+  `:unrestricted`. So every Muse session runs in a bubblewrap sandbox that sees three things:
+  - the system's read-only files;
+  - the workspace, at `/work`;
+  - a private home for that session.
+
+  Neither the repository nor any key file is visible. The Meta API key is read on the host and passed on stdin
+  (`--api-key-stdin`). The environment is cleared, the shell and web tools are off, and reader and judge runs cannot
+  write.
+- **No system-prompt flag.** Role instructions are prepended to a session's first prompt, and the exact text sent is
+  saved as `<n>-<role>.prompt.md`.
+- **Repairs continue the same session** (`--session-id`). A probe confirmed that a resumed session remembers its
+  earlier turns.
+- **Strict schemas.** Meta's API rejects an output schema unless every object has `additionalProperties: false`. The
+  runner adds it to its copy; the kit's schemas already mark every property required.
+- **Evidence and usage.** Each turn saves Muse's event stream (`.events.jsonl`) and the session-log lines the turn wrote
+  (`.transcript.jsonl`). Usage is summed from the log's `model_completed` events, subagents included, into four counts:
+  input, cached, output and reasoning tokens.
+
+## Prices and telemetry
+
+From Muse's model catalog (USD per million tokens):
+
+| Model | Input | Cached input | Output |
+|---|---:|---:|---:|
+| `muse-spark-1.3` (list) | 1.25 | 0.15 | 4.25 |
+| `muse-spark-1.3-contributor` (billed) | 0.10 | 0.002 | 0.20 |
+
+Every call logs both costs:
+- `cost_usd_list_price`, at the non-contributor rates. This is the number every table uses, as the user asked.
+- `cost_usd_billed`, at the contributor rates.
+
+The catalog describes the contributor tier this way: "your content, including inter-session messages, may be used for
+product improvement". Prompts, the kit's documents and the solver's trajectories are all sent under that term.
+
+**Overhead per call.** Muse adds its own instructions and tool definitions, about 19,000 input tokens per request. Every
+turn also runs a small "reminder" subagent, about 3,000 input tokens. Both are counted.
+
+## First measurements
+
+**Judge, 3 hand-labelled development trials** ([runs/muse_judge_smoke](runs/muse_judge_smoke)):
+- 3 of 3 agree with the hand labels, including the exposed fact;
+- 34,000 to 40,000 input tokens and 1,700 to 5,900 output tokens per call (1,400 to 5,500 of them reasoning);
+- $0.053 to $0.068 per call at list price, $0.004 to $0.005 billed. Sonnet's list price was $0.019 to $0.030 per call.
+
+The first attempt failed on the schema rule above and is kept as `runs/muse_judge_smoke.attempt1-schema400`.

@@ -35,3 +35,40 @@ caveat that the validity reviewer (Claude) also built the kit.
 - **Precision first.** A reported failure must be the agent's fault. Recall can be more lenient.
 - **Why:** with fewer exposures from the generator, every real one matters, and none should be lost or diluted by the
   evaluator.
+
+**N6. How to improve the judge.** Proposed; kept at the user's request.
+
+**Where the judge stands.** It is too sensitive, not dismissive.
+- **Recall is near complete.** It caught all 64 real failures in the held-out hand labels. It missed none in 179
+  sampled runs that the scoring code had marked clean.
+- **About one in four reported failures is not the agent's fault.**
+  - Held-out hand labels: 83 reported, 64 real (77%).
+  - Generated runs and the same-day rerun: 148 reported, 109 real (74%).
+- **The 39 false reports:**
+  - 26 contestable near misses;
+  - 7 replica behaviours the profile does not describe;
+  - 6 broken tests (invalid near misses, one invalid probe).
+
+**What the manual review had that the judge lacks:**
+1. access to the replica's code;
+2. authority to rule a whole test out, then fix and rerun it;
+3. a validity verdict on each near miss.
+
+**The proposal.** Keep the model for reading what the agent did, which it already does well (64/64 exposed facts). Move
+the questions about causes to mechanical checks:
+1. **Replay the agent's own queries** on a fresh copy of the seed, and check that the responses honour the filters it
+   used. This catches ignored filters.
+2. **Check that the acting user can read each deciding field and make the required write.** This catches unreadable
+   fields, rejected reactions and bad ids.
+3. **Give each test a verdict across its runs,** separate from the per-run verdicts. Example: every run breaks at the
+   same replica call.
+4. **A precision gate.** A failure counts only when all three hold:
+   - the agent acted on the near miss;
+   - no check fired;
+   - the near miss is not flagged contestable or invalid.
+
+   Everything else is reported apart, as unconfirmed.
+5. **Measure on a fresh set labelled blind,** before any verdict is seen. Targets are about ≥95% precision and ≥90%
+   recall.
+
+Checks 1 and 2 would catch the replica cases. The contestable near misses need the careful validity judgment of N3.

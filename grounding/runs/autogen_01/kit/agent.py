@@ -1,15 +1,25 @@
-"""Run one headless Claude Code agent turn and keep its evidence.
+"""Run one headless agent turn (Claude Code or Muse Code) and keep its evidence.
 
     result = run(Call(role="writer", workspace=ws, prompt=text, log_dir=out, tools=FILE_TOOLS, write=True))
     result = run(Call(..., resume=result["session_id"]))          # a repair continues the same conversation
 
-Every call runs `claude -p` with its working directory in a clean workspace outside any repository, in restricted
-mode (file tools confined to the workspace, no Bash, user/project settings ignored) and with no MCP servers, so no
-project instructions, memory or other files reach the agent. The prompt goes in on stdin. Saved per call, under
-`log_dir`:
-- `<n>-<role>.prompt.md` (the text sent);
-- `<n>-<role>.result.json` (the CLI's JSON result: usage, cost estimate, session id, structured output);
-- `<n>-<role>.transcript.jsonl` (the session transcript).
+**Claude Code** (the default, `AUTOGEN_BACKEND=claude`). Every call runs `claude -p` with its working directory in a
+clean workspace outside any repository, in restricted mode (file tools confined to the workspace, no Bash,
+user/project settings ignored) and with no MCP servers. So no project instructions, memory or other files reach the
+agent. The prompt goes in on stdin.
+
+**Muse Code** (`AUTOGEN_BACKEND=muse`; see `_run_muse`). Every session runs `muse exec` inside a bubblewrap sandbox. The
+sandbox sees only the workspace (at `/work`), a private home for that session, and the system's read-only files. The
+shell and web tools are off. The Meta API key goes in on stdin, and no key file exists inside the sandbox.
+- **Why a sandbox:** Muse's own approval modes do not stop file reads outside the workspace.
+- **Role instructions** are prepended to a session's first prompt; Muse has no system-prompt flag.
+- **Usage** comes from the session log's `model_completed` events, subagents included. It is priced at the model
+  catalog's rates: billed (the contributor model), and list (the same model without "-contributor").
+
+Saved per call, under `log_dir`:
+- `<n>-<role>.prompt.md`: the text sent;
+- `<n>-<role>.result.json`: the result (usage, cost estimate, session id, structured output);
+- `<n>-<role>.transcript.jsonl`: the session transcript. Muse also keeps `<n>-<role>.events.jsonl`, its event stream.
 
 A line of usage is also appended to the run's `calls.jsonl`.
 """
@@ -19,12 +29,21 @@ import json
 import os
 import subprocess
 import time
+import uuid
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
 
+BACKEND = os.environ.get("AUTOGEN_BACKEND", "claude")
 CLAUDE = os.environ.get("CLAUDE_BIN", "claude")
 MODEL = os.environ.get("AUTOGEN_MODEL", "sonnet")
+MUSE_MODEL = os.environ.get("AUTOGEN_MUSE_MODEL", "muse-spark-1.3-contributor")
+MUSE_EFFORT = os.environ.get("AUTOGEN_MUSE_EFFORT", "high")
+MUSE_MAX_STEPS = os.environ.get("AUTOGEN_MUSE_MAX_STEPS", "200")
+MUSE_HOMES = Path(os.environ.get("AUTOGEN_MUSE_HOMES", "/tmp/autogen-muse-homes"))
+MUSE_BIN_DIR = Path.home() / ".local" / "bin"
+MUSE_AUTH = Path.home() / ".config" / "muse" / "auth.json"
+MUSE_CATALOG = Path.home() / ".local" / "share" / "muse" / "model-catalog"
 FILE_TOOLS = ["Read", "Write", "Edit", "Glob", "Grep"]
 READ_TOOLS = ["Read", "Glob", "Grep"]
 PROJECTS = Path.home() / ".claude" / "projects"
@@ -97,6 +116,8 @@ def usage_row(call: Call, result: dict, index: int, seconds: float, attempt: int
 
 def run(call: Call) -> dict:
     """One agent turn. Returns the CLI result dict (with `structured_output` when a schema was given)."""
+    if BACKEND == "muse":
+        return _run_muse(call)
     call.workspace.mkdir(parents=True, exist_ok=True)
     call.log_dir.mkdir(parents=True, exist_ok=True)
     system_file = None
@@ -140,6 +161,181 @@ def run(call: Call) -> dict:
         if call.calls_log:
             with call.calls_log.open("a") as fh:
                 fh.write(json.dumps(usage_row(call, result, index, seconds, attempt)) + "\n")
+        return result
+    raise RuntimeError(f"{call.role} {call.label}: agent call failed after retries: "
+                       f"{json.dumps(last_error)[:1500] if last_error else ''}")
+
+
+def _muse_binary() -> Path:
+    """The Muse binary: `AUTOGEN_MUSE_BIN`, or the newest installed one. The launcher script auto-updates, so the binary
+    is called directly and its name is logged with every call."""
+    if os.environ.get("AUTOGEN_MUSE_BIN"):
+        return Path(os.environ["AUTOGEN_MUSE_BIN"])
+    bins = sorted(MUSE_BIN_DIR.glob("muse-bin-*"), key=lambda p: p.stat().st_mtime)
+    if not bins:
+        raise RuntimeError(f"no muse-bin-* in {MUSE_BIN_DIR}")
+    return bins[-1]
+
+
+def _muse_prices(model: str) -> dict:
+    """USD per million tokens from Muse's model catalog: billed (this model) and list (without '-contributor')."""
+    rows = {}
+    for path in MUSE_CATALOG.glob("*.json"):
+        for row in json.loads(path.read_text()).get("rows", []):
+            rows[row["model_id"]] = {k: float(v) for k, v in row["cost"].items() if k != "currency"}
+    billed = rows.get(model)
+    listed = rows.get(model.removesuffix("-contributor"), billed)
+    if not billed:
+        raise RuntimeError(f"model {model} not in the Muse catalog")
+    return {"billed": billed, "list": listed}
+
+
+def _muse_cost(usage: dict, price: dict) -> float:
+    cached = usage["cached_tokens"]
+    return ((usage["input_tokens"] - cached) * price["input"] + cached * price["cached"]
+            + usage["output_tokens"] * price["output"]) / 1e6
+
+
+def _strict_schema(schema):
+    """A copy of a JSON schema with `additionalProperties: false` on every object, which Meta's API requires. The
+    kit's schemas already list every property as required."""
+    if isinstance(schema, list):
+        return [_strict_schema(x) for x in schema]
+    if not isinstance(schema, dict):
+        return schema
+    out = {k: _strict_schema(v) for k, v in schema.items()}
+    if out.get("type") == "object" or "properties" in out:
+        out["additionalProperties"] = False
+    return out
+
+
+def _sandbox(home: Path, workspace: Path, binary: Path) -> list:
+    """bubblewrap: read-only system files, the workspace at /work, a private home, nothing else of the host."""
+    return ["bwrap", "--ro-bind", "/usr", "/usr", "--symlink", "usr/bin", "/bin", "--symlink", "usr/lib", "/lib",
+            "--symlink", "usr/lib64", "/lib64", "--symlink", "usr/sbin", "/sbin", "--ro-bind", "/etc", "/etc",
+            "--ro-bind-try", "/run/systemd/resolve", "/run/systemd/resolve", "--proc", "/proc", "--dev", "/dev",
+            "--tmpfs", "/tmp", "--dir", "/home", "--bind", str(home), "/home/agent", "--bind", str(workspace), "/work",
+            "--ro-bind", str(binary), "/opt/muse/muse", "--unshare-all", "--share-net", "--die-with-parent",
+            "--new-session", "--clearenv", "--setenv", "HOME", "/home/agent", "--setenv", "PATH", "/usr/bin:/bin",
+            "--setenv", "LANG", "C.UTF-8", "--setenv", "MUSE_AUTH_PATH", "/home/agent/.config/muse/auth.json",
+            "--chdir", "/work", "/opt/muse/muse"]
+
+
+def _session_logs(home: Path, session_id: str) -> list:
+    root = home / ".local" / "share" / "muse" / "sessions"
+    return sorted(p for d in root.rglob(session_id) if d.is_dir() for p in d.rglob("session.jsonl"))
+
+
+def _usage(lines_before: dict, logs: list) -> tuple[dict, dict, list]:
+    """Sum the model_completed events written since `lines_before`; returns totals, per-model totals and new lines."""
+    total = {"input_tokens": 0, "cached_tokens": 0, "output_tokens": 0, "reasoning_tokens": 0, "requests": 0}
+    per_model, new_lines = {}, []
+    for path in logs:
+        lines = path.read_text().splitlines()
+        fresh = lines[lines_before.get(str(path), 0):]
+        new_lines += fresh
+        for line in fresh:
+            try:
+                event = json.loads(line).get("payload", {}).get("event", {})
+            except ValueError:
+                continue
+            if event.get("kind") != "model_completed":
+                continue
+            u, m = event.get("usage") or {}, event.get("model", "?")
+            bucket = per_model.setdefault(m, {k: 0 for k in total})
+            for k in ("input_tokens", "cached_tokens", "output_tokens", "reasoning_tokens"):
+                total[k] += u.get(k) or 0
+                bucket[k] += u.get(k) or 0
+            total["requests"] += 1
+            bucket["requests"] += 1
+    return total, per_model, new_lines
+
+
+def _run_muse(call: Call) -> dict:
+    """One Muse Code turn in a bubblewrap sandbox (see the module docstring)."""
+    call.workspace.mkdir(parents=True, exist_ok=True)
+    call.log_dir.mkdir(parents=True, exist_ok=True)
+    if call.system_append:
+        (call.log_dir / f"{call.role}.system.md").write_text(call.system_append)
+    binary = _muse_binary()
+    prices = _muse_prices(MUSE_MODEL)
+    key = json.loads(MUSE_AUTH.read_text())["providers"]["meta"]["api_key"]
+    session_id = call.resume or str(uuid.uuid4())
+    home = MUSE_HOMES / session_id
+    (home / "prompts").mkdir(parents=True, exist_ok=True)
+    text = call.prompt if call.resume or not call.system_append else f"{call.system_append}\n\n---\n\n{call.prompt}"
+    last_error = None
+    for attempt in range(1, call.retries + 2):
+        index = _next_index(call.log_dir)
+        stem = f"{index:02}-{call.role}"
+        (call.log_dir / f"{stem}.prompt.md").write_text(text)
+        (home / "prompts" / f"{stem}.md").write_text(text)
+        args = ["exec", "--json", "--api-key-stdin", "--prompt-file", f"/home/agent/prompts/{stem}.md",
+                "--model", MUSE_MODEL, "--reasoning-effort", call.effort or MUSE_EFFORT, "--workspace", "/work",
+                "--session-id", session_id, "--disable-shell", "--disable-web-tools", "--no-foreign-personal-context",
+                "--approval-mode", "never", "--approval-judge", "off", "--max-model-steps", MUSE_MAX_STEPS]
+        if not call.write:
+            args.append("--disable-write")
+        if call.schema:
+            (home / "prompts" / f"{stem}.schema.json").write_text(json.dumps(_strict_schema(call.schema)))
+            args += ["--output-schema", f"/home/agent/prompts/{stem}.schema.json"]
+        cmd = _sandbox(home, call.workspace, binary) + args
+        before = {str(p): len(p.read_text().splitlines()) for p in _session_logs(home, session_id)}
+        start = time.time()
+        try:
+            proc = subprocess.run(cmd, input=key + "\n", capture_output=True, text=True, timeout=call.timeout)
+            stdout, stderr, code = proc.stdout, proc.stderr, proc.returncode
+        except subprocess.TimeoutExpired as exc:
+            stdout, stderr, code = exc.stdout or "", f"timeout after {call.timeout}s", -1
+            stdout = stdout.decode() if isinstance(stdout, bytes) else stdout
+        seconds = time.time() - start
+        (call.log_dir / f"{stem}.events.jsonl").write_text(stdout or "")
+        events = []
+        for line in (stdout or "").splitlines():
+            try:
+                events.append(json.loads(line))
+            except ValueError:
+                pass
+        terminal = next((e["payload"] for e in reversed(events) if e.get("payload_type", "").startswith("run.terminal")),
+                        {})
+        usage, per_model, new_lines = _usage(before, _session_logs(home, session_id))
+        final = terminal.get("text")
+        failed = code != 0 or terminal.get("terminal") != "completed" or final is None
+        structured_output = None
+        if call.schema and not failed:
+            try:
+                structured_output = json.loads(final)
+            except ValueError:
+                failed = True
+        result = {"session_id": session_id, "result": final, "structured_output": structured_output,
+                  "is_error": failed, "subtype": terminal.get("terminal"), "num_turns": usage["requests"],
+                  "backend": "muse", "muse_binary": binary.name, "model": MUSE_MODEL,
+                  "reasoning_effort": call.effort or MUSE_EFFORT,
+                  "usage": {"input_tokens": usage["input_tokens"] - usage["cached_tokens"],
+                            "cache_read_input_tokens": usage["cached_tokens"], "cache_creation_input_tokens": 0,
+                            "output_tokens": usage["output_tokens"], "reasoning_tokens": usage["reasoning_tokens"]},
+                  "modelUsage": per_model, "prices_per_mtok": prices,
+                  "total_cost_usd": _muse_cost(usage, prices["list"]),
+                  "cost_usd_billed": _muse_cost(usage, prices["billed"])}
+        record = {"command": ["<bwrap sandbox>", *args], "cwd": str(call.workspace), "exit": code,
+                  "stderr": (stderr or "")[-4000:]}
+        (call.log_dir / f"{stem}.transcript.jsonl").write_text("\n".join(new_lines) + ("\n" if new_lines else ""))
+        row = usage_row(call, result, index, seconds, attempt)
+        row.update({"backend": "muse", "reasoning_tokens": usage["reasoning_tokens"],
+                    "cost_usd_billed": result["cost_usd_billed"], "muse_binary": binary.name})
+        if failed:
+            last_error = {"stdout_tail": (stdout or "")[-4000:], **record, "result": result}
+            (call.log_dir / f"{stem}.failed.json").write_text(json.dumps(last_error, indent=1))
+            if call.calls_log:
+                with call.calls_log.open("a") as fh:
+                    fh.write(json.dumps({**row, "failed": True}) + "\n")
+            time.sleep(10 * attempt)
+            continue
+        result["_call"] = record
+        (call.log_dir / f"{stem}.result.json").write_text(json.dumps(result, indent=1, ensure_ascii=False))
+        if call.calls_log:
+            with call.calls_log.open("a") as fh:
+                fh.write(json.dumps(row) + "\n")
         return result
     raise RuntimeError(f"{call.role} {call.label}: agent call failed after retries: "
                        f"{json.dumps(last_error)[:1500] if last_error else ''}")
