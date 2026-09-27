@@ -1,7 +1,8 @@
 # Automated grounding tests for AI agents: the system and what it found
 
-*For a reader new to the project. Written 2026-09-27 from the autogen_02 study's data; every number below comes
-from the committed runs ([report.md](report.md) and [tables.md](tables.md) give the details and sources).*
+*For a reader new to the project. Written 2026-09-27 from the autogen_02 study's data, after all its runs; every
+number below comes from the committed runs ([report.md](report.md) and [tables.md](tables.md) give the details and
+sources).*
 
 ## 1. The problem
 
@@ -57,11 +58,14 @@ is enough, and testing every fact is redundant.
 | Underspecified, clone | the LLM describes a copy of the target; code builds it | code; the reader | 25 of 29 accepted; 11 of 11 valid in review |
 | Sampling and decisions | code: a random order fixed by a seed, looks at 11/18/25 tests | pre-registered before any run | – |
 | Running the agent | Qwen on Purdue, 3 trials per test | – | 90 to 170 trials an hour (limit: ~20 requests a minute) |
-| Judging | an LLM judge (Muse, "judge v2") | a human grades random trials blind, before seeing the judge | agreement 95% (Phase 1), 90/93 then 80/80 on the blind samples; precision 88/89 and recall 88/88 in the first 93 |
+| Judging | an LLM judge (Muse, "judge v2") | a human grades random trials blind, before seeing the judge | agreement 95% on the first 252 trials; on later blind samples 90/93, then 110/110; precision 88/89 and recall 88/88 in the first 93 |
 | People | review scenarios and variants before their runs; grade blind samples; rule on contested tests | – | 455 trials graded by hand |
 
-**Cost:** writing a scenario costs $0.62 at list price ($0.04 billed). All LLM work so far (writer, reader, judge):
-$143 at list price, $9 billed, over about 3,000 calls. *Batch 2's judge adds a little.*
+**Cost:**
+- **One scenario:** $0.62 at list price ($0.035 billed).
+- **All LLM work in the study** (writer, reader, judge, including development): $148 at list price, $9.47 billed,
+  over 3,093 calls.
+- **The agent runs:** 1,356 trial attempts, 10,802 requests, about 10 hours of Purdue time.
 
 ## 5. How much ran
 
@@ -69,7 +73,7 @@ $143 at list price, $9 billed, over about 3,000 calls. *Batch 2's judge adds a l
 |---|---:|---:|---:|
 | Hand-made (earlier study), policy tests built per fact | 18 | 84 | 252 |
 | autogen_01's generated scenarios (Sonnet), policy tests sampled | 49 | 125 twins, 107 drop-F, 44 clones available | 195 absence, 183 underspecified |
-| New scenarios (Muse), regular tests | 29 | 159 | 216 + *batch 2: 261* |
+| New scenarios (Muse), regular tests | 29 | 159 | 477 |
 | New scenarios, policy tests (the first 14) | 14 | 67 | 201 |
 
 ## 6. Results
@@ -97,10 +101,13 @@ $143 at list price, $9 billed, over about 3,000 calls. *Batch 2's judge adds a l
 | Suite | Tests | Facts exposed (failed in at least one trial) | Facts per test |
 |---|---:|---:|---:|
 | New scenarios, batch 1 (Muse) | 72 | 19 of 29 | 0.26 |
-| New scenarios, batch 2 (Muse) | 87 | *pending* | *pending* |
+| New scenarios, batch 2 (Muse) | 87 | 5 of 30 | 0.06 |
+| **New scenarios, both** | **159** | **24 of 59** | **0.15** |
 | autogen_01, three arms (Sonnet) | 108 / 84 / 93 | 11 / 19 / 13 | 0.10 / 0.23 / 0.14 |
 
-The suites test different facts and were graded by different judge versions, so the comparison is rough.
+- **The comparison is rough:** the suites test different facts and were graded by different judge versions.
+- **Difficulty varies widely by scenario:** batch 2's scenarios came from the same process as batch 1's, yet Qwen
+  passes nearly all of them (no Slack test in batch 2 exposes anything).
 
 ### 6.3 What the agent does
 
@@ -127,7 +134,7 @@ The suites test different facts and were graded by different judge versions, so 
 ### 6.4 The judge
 
 On random trials a person graded before seeing its verdicts, the LLM judge agrees in 90 of 93 (the first policy
-runs) and then in 80 of 80. When it says "fail" it is right 88 of 89 times, and it finds every failure the person
+runs), then in 110 of 110. When it says "fail" it is right 88 of 89 times, and it finds every failure the person
 found. Its only systematic weakness is that it cannot tell a flawed test from a failing agent.
 
 ## 7. What the automation gets wrong, and the fixes
@@ -153,4 +160,4 @@ grading trials by hand: human grading is still the system's safety net.
 - Slack's search ignores card text;
 - only Calendar has a fixed "today".
 
-Linear's failing `projects` query and nested reads cause nearly all timeouts (21 of 21 in the new scenarios' runs).
+Linear's failing `projects` query and nested reads cause every timeout in the new scenarios' runs (21 of 21).
