@@ -72,3 +72,54 @@ the questions about causes to mechanical checks:
    recall.
 
 Checks 1 and 2 would catch the replica cases. The contestable near misses need the careful validity judgment of N3.
+
+**N7. The agents run on Muse from now on.** Settled.
+- **Which agents:** the generation agents (writer, reader) and the judge, on `muse-spark-1.3-contributor` through the
+  kit's Muse backend ([muse_backend.md](muse_backend.md)).
+- **Why:** Claude Code Sonnet did not scale with the user's quota.
+- **Telemetry:** tokens are logged with two costs, at list (non-contributor) and at billed (contributor) rates. The
+  tables use the list price.
+
+**N8. The solver stays Qwen** (`qwen3.8:27b` on Purdue). Settled. A faster API was considered: DeepSeek V4.1 Flash
+would have cost roughly $2–12 for autogen_01's solver tokens. It was not adopted, so results stay comparable with the
+earlier studies.
+
+**N9. The scope of this study.** Settled.
+- **The goal:** wrap automatic testing up as a complete system (the current automation, plus complete handling of
+  underspecified and absent requests, the policy tests), and evaluate that system fully.
+- **Out of scope:**
+  - requests with several matches;
+  - capability boundaries;
+  - failure attribution. The judge-precision checks of N6 belong to failure attribution, so they wait.
+
+**N10. The policy tests are fact-wise and sampled.** Settled.
+- **Absence:** the presupposing twin of a fact's probe.
+- **Underspecified:** the request left unspecified on that fact.
+- **Sampling:** the tests are drawn at random rather than all run. Sampling continues until the target statistic is
+  shown, at about 90% confidence, or every case has run. Reporting the tests saved is not needed.
+- **The full size:** the 49 existing generated scenarios hold 128 (scenario, fact) pairs. Two variants each at 3
+  trials is 768 trials.
+
+**N11. What "policy-level" means is open.** It is to be settled by investigation before any sampling. The candidates:
+- **(A)** with 90% confidence, a test on a randomly chosen fact fails with probability of at least 80%;
+- **(B)** the failure rate (0/3 … 3/3) is about the same on at least 80% of the facts;
+- **(D1/D4)** the original definition: "indiscriminate across facts", measured by rate and spread.
+
+**N12. Underspecified cases need a new method, built by hand first.** Settled.
+- **The order:** first manual underspecified cases on the fact_coverage_01 and 02 exemplars, then automation. Absence
+  can already be derived by code.
+- **Calibration:** the new generation and judging are calibrated on a small subset, evaluated and iterated. Large-scale
+  generation starts only once the results are good.
+- **What follows from the manual results:** the credit rules, and the underspecified construction.
+
+**N13. The judge is Muse, not Sonnet.** Settled.
+
+**N14. Working mode for the overnight run** (2026-09-26/27). Settled.
+- Work autonomously and keep the Purdue rate limit busy. Keep to the standard of work and reporting of fact_coverage_01
+  and 02.
+- Consult the advisor where needed.
+- **Time:** the 7:30 sync is not a deadline. Unfinished work is reported as unfinished.
+- **If everything is done** and the advisor agrees, form investigation questions for the parts left out of scope.
+
+**N15. Where the work lives.** The user merged `exp/autogen` into main (a37c6e657). This study continues in the worktree
+`.claude/worktrees/autogen-02`, on branch `exp/autogen-02`, made from local main. Commit; never push.
