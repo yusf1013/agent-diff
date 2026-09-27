@@ -62,6 +62,10 @@ $L grounding.runs.autogen_02.kit.sampler look underspecified 1 --cells calendar/
 
 `decide` then reports each writer's units apart beside the combined decision.
 
+A declared robustness check (amendment 6) runs units past a decided look with `--positions FIRST LAST` (1-based,
+in the cell's valid order) and a `--dest` folder. Looks never run a unit twice: units already cased by a look or a
+Phase 4 policy run are skipped, and their verdicts come from that run.
+
 ## 4. Solver runs (Qwen on Purdue, 3 trials)
 
 ```bash
