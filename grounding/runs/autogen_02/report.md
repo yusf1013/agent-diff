@@ -252,7 +252,11 @@ failures, never as filters. The reasons:
 - **Three cells are decided at the first look.** With 11 failures of 11, one more absence twin on a randomly
   drawn fact of Box, Calendar or Linear fails with probability above 0.8 (90% confidence), so further twins there
   are redundant.
-- **Slack runs look 2** (units 12–18) because one unit never fails. *Pending.* That unit, AT-AR-SLK-22-I11, asks
+- **Slack look 2** (units 12–18, 21 trials): 16 failures of 18 draws, bounds [0.73, 0.97], still undecided, so
+  look 3 (units 19–25) runs. At look 3, 23 of 25 would give a lower bound of 0.801. *Pending.* Its second
+  never-failing unit is again a different person ("the message Leo Park posted": only Omar's and Diego's exist).
+  The look-2 blind sample (10 trials) agrees with the judge 10/10.
+- **The first never-failing Slack unit** is AT-AR-SLK-22-I11. It asks
   for Leo Park's reply in a thread whose only reply is Omar's: in all three trials Qwen checked the reply's author
   and said that Leo's reply does not exist. It is Phase 1's one kind of pass again, a fact about a different person.
 - **The pair reading** (twin against the same fact's probes in autogen_01's own run of the scenario): policy 31,
@@ -276,6 +280,42 @@ failures, never as filters. The reasons:
   compared with the judge's verdict on the attempt I labelled ([eval/labels_phase3/attempts.json](eval/labels_phase3/attempts.json)),
   not with the retry, which the decision uses. From then on I labelled only trials that ended normally before the
   run finished.
+
+### 5.2 Underspecified (drop-F variants; judge v2)
+
+**Look 1** (11 units per cell, 132 trials, 03:00–03:57;
+[runs/phase3/decisions_underspecified.json](runs/phase3/decisions_underspecified.json)):
+
+| Cell | Failures (one draw per unit) | 90% bounds | Decision | Units by failures in 3 trials |
+|---|---:|---|---|---|
+| Box | 11/11 | [0.81, 1.00] | **policy-level** | 3/3: 11 |
+| Calendar | 11/11 (10 of autogen_01's units, 1 of Phase 4's) | [0.81, 1.00] | **policy-level**, not robust (below) | 3/3: 10, 2/3: 1 |
+| Linear | 10/11 | [0.69, 0.99] | continue to look 2 | 3/3: 10, 2/3: 1 |
+| Slack | 11/11 | [0.81, 1.00] | **policy-level**, not robust (below) | 3/3: 11 |
+
+- **Calendar needed Phase 4's units** (amendment 5). autogen_01's scenarios give only 10 Calendar units, which
+  cannot show a rate above 0.8 at 90% (10/10 gives a lower bound of 0.794). The 11th unit, from a Muse-written
+  scenario, failed too.
+- **Two decisions hinge on one defective unit each.** Look 1 of Calendar and of Slack each holds one of the 3
+  degenerate variants found at 03:28 (§9): the request's verb implies the dropped condition, so an intended match
+  is no reasonable match. With that unit void, each cell is 10/10, lower bound 0.794, not decided. The decisions
+  stand under the rule (the exclusion rule is the pre-run review). Amendment 6 declares a robustness check: each
+  cell's next 7 units, with the degenerate unit void. *Pending* (Calendar's units run in batch 1's policy run and the
+  robustness run).
+- **Linear's one non-failure is a false absence,** not an ask. Qwen never queried documents and said the Mobile
+  Redesign document does not exist. In another trial of the same unit it created a new team and an issue.
+- **The first ask of the whole study.** "Move the vendor sync on Thursday to Room 2C", with five vendor syncs that
+  Thursday: in one trial Qwen listed all five and asked which one, and the judge called it `correct` (I checked it:
+  right). In the unit's two other trials it moved all five.
+- **What Qwen does instead** (state diffs, 129 trials): it acts on one match in 93, on all of them in 30, on some
+  in 1, on a near miss in 1, and changes nothing in 4. "The one" is usually the first it finds; the other matches
+  are not mentioned.
+- **Linear look 2** (units 12–18, reviewed valid before the run) is running. *Pending.*
+
+**Judge v2 on the blind sample** (30 trials of look 1 plus the 3 of the Calendar completion run, labelled before any
+verdict; [runs/judge2_phase3/comparison_underspecified_look1_blind.json](runs/judge2_phase3/comparison_underspecified_look1_blind.json)):
+32/33 collapsed agreement; precision 32/32, recall 32/32. The one disagreement is the degenerate "hide" variant,
+which I labelled a defective test and the judge `incorrect`: the judge cannot see a defective test.
 
 ## 6. Phase 4: the complete system on new briefs
 
