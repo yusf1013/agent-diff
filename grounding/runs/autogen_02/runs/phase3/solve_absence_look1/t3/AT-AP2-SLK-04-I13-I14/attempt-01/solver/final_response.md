@@ -1,0 +1,1 @@
+Successfully added a ✅ (check) reaction to Diego's message in #incidents: "Wrapping up the gateway rollback, still watching error rates." (ts: 1786359600.000024). This was the gateway rollback message with 4 messages in its thread. The reaction has been confirmed via the reactions.get API.

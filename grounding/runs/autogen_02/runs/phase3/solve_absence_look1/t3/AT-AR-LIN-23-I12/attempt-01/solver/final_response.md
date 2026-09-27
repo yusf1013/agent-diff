@@ -1,0 +1,1 @@
+Successfully reopened the comment thread on WEB-7. The comment "Confirmed: payment retry attempts time out under load." (ID: c-f8) was resolved by Sam Patel, and I cleared the `resolvingUserId` via `commentUpdate`, which reopened the thread. The `resolvingUser` is now null, indicating the thread is no longer in a resolved state.

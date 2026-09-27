@@ -1,0 +1,1 @@
+Successfully added a 🚀 rocket reaction to the message in #incidents that Diego Alvarez had previously reacted to with 🔥 fire. The message (ts: 1790085000.000005) now has both reactions.

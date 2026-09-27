@@ -1,0 +1,1 @@
+The "Vendor sync: Freight" event on Thursday, June 21, 2018 (10:30 AM – 11:00 AM PT) has been updated with the location set to "Room 2C". Dana Whitfield is the organizer of this event (dana.whitfield@northwind.example).

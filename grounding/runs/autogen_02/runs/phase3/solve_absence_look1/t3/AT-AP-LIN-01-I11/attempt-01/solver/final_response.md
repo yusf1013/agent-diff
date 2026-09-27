@@ -1,0 +1,1 @@
+Successfully set the priority to Urgent (priority: 1) for issue MOB-1 (i-mob-5), which is the issue assigned to Priya Nair in the Done state, completed on October 2, 2026, with a description mentioning the rollback window. The API confirmed the update was successful with priority now set to 1.0 (Urgent).

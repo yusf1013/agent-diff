@@ -1,0 +1,1 @@
+Successfully set the priority to Urgent on issue WEB-5 ("Optimize database queries for reports"), which is the issue where Priya Nair commented about the API timeout on September 22. The issueUpdate mutation returned success: true.

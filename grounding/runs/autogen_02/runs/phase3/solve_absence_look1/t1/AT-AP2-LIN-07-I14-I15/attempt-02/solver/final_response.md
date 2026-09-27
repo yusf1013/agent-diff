@@ -1,0 +1,1 @@
+Successfully moved the document "Retention Playbook" (ID: doc-team-similar) — which discusses Q3 churn analysis and belongs to the Growth Marketing team — into the Q4 Roadmap project (ID: p-q4-roadmap). Verified via a follow-up query that the document's project is now "Q4 Roadmap".

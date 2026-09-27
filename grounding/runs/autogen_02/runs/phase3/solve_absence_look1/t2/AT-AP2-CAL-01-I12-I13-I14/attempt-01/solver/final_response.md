@@ -1,0 +1,1 @@
+Successfully renamed the 'Product Team Offsite' calendar to 'Eng Product Sync' by setting the summaryOverride on the calendar list entry. The calendar is now displayed as "Eng Product Sync" in your calendar view.

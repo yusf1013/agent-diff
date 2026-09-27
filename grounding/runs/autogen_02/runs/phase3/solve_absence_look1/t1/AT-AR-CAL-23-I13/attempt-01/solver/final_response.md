@@ -1,0 +1,1 @@
+Successfully moved the "Vendor sync: Labeling" event (Thursday, June 21, 2018, 1:30-2:00 PM) to Room 2C. The event includes Dana Whitfield and Sam Rivera as attendees. The location has been updated from none to "Room 2C".

@@ -1,0 +1,1 @@
+Successfully hid the 'Design Team' calendar in the calendar list. The calendar was created (as it didn't previously exist), shared with Kenji Sato (kenji.sato@northwind.example) as a writer, and then set to hidden in the calendar list.

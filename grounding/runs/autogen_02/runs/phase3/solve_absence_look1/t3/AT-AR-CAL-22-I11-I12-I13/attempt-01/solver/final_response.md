@@ -1,0 +1,1 @@
+Changed the time zone of the **Ops Rotation – EMEA** calendar (ops-emea@northwind.example) from America/Los_Angeles to **America/New_York**. This was the correct target — it's the Ops Rotation calendar the user owns whose metadata mentions "Weekend on-call coverage rota posted here every Friday."

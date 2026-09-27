@@ -1,0 +1,1 @@
+Successfully moved the "Vendor sync: Freight" event on Thursday, June 21, 2018 (10:30 AM - 11:00 AM) to "Room 2C". This was the vendor sync event associated with Dana Whitfield (who is the organizer). The event's location has been updated as confirmed by the API response.

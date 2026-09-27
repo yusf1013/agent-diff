@@ -1,0 +1,1 @@
+Successfully archived the private channel "hr-general" (C_HRGEN). It had "Onboarding new hires" as its topic and Diego Alvarez (U_DIEGO) was a confirmed member. The archive operation returned ok: true.

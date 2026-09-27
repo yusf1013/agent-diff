@@ -1,0 +1,1 @@
+The task cannot be completed because Leo Park (U_LEO) has no reply in the thread about tonight's payments launch checklist in #launch-prep. The only reply in that thread is from Omar Haddad (U_OMAR), who said "Signed off on my end, checklist looks good." Leo Park has no messages in the #launch-prep channel at all, so there is no message to add a rocket reaction to.

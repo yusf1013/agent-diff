@@ -1,0 +1,1 @@
+Successfully updated the "Fall Kickoff" cycle (c-split) end date from October 13 to October 20. The cycle starts September 29 and includes the checkout timeout issue (GRO-1: "Checkout timeout on refund confirmation").

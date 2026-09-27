@@ -1,0 +1,1 @@
+Successfully moved the "Client sync" event about finalizing the Meridian contract (id: ev_end_early) to **Room 4C**. The event was previously in Room 3C and is now updated on June 21 from 2:30 PM to 3:00 PM PT.

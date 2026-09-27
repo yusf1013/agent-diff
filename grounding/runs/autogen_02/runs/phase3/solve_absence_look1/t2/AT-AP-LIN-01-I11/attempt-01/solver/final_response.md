@@ -1,0 +1,1 @@
+Successfully set the priority to Urgent (priority: 1) for the issue "Mobile payment rollback check" (id: i-mob-5). This issue was in the Done state, assigned to Priya Nair, had a description mentioning the rollback window, and was completed on October 2, 2026.

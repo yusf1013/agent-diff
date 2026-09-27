@@ -1,0 +1,1 @@
+Successfully added the tag "archive-ready" to folder "Vendor Agreements" (ID: 9502). This folder is in the Legal Hold collection, was last modified by Priya Nair, contains exactly 3 items, and has a creation date closest to June 3, 2026 (created June 2, 2026). The API confirmed the tag was applied with the response showing "tags": ["archive-ready"].

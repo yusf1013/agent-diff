@@ -1,0 +1,1 @@
+Successfully changed the time zone of the "Ops Rotation – EMEA" calendar (ops-emea@northwind.example) from America/Los_Angeles to America/New_York. This is the Ops Rotation calendar the user owns whose description/location mentions weekend on-call coverage.

@@ -1,0 +1,1 @@
+Successfully updated the "Fall Kickoff" cycle end date from September 29 to October 20, 2026. The cycle contains the "Checkout timeout during 3DS redirect" issue (PLA-1) assigned to Sam Rivera on the Platform team.

@@ -1,0 +1,1 @@
+Successfully set the priority to Urgent (4) on issue WEB-5 "Optimize database queries for reports" (id: i-web-24). This was the issue where Priya Nair commented on September 22 about "There's an API timeout when exporting large reports." The priority was updated from Medium (2) to Urgent (4).

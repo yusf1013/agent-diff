@@ -1,0 +1,1 @@
+Successfully moved the "Vendor sync: Ingredients" event on Thursday, June 21, 2018 (which includes Dana Whitfield as an attendee) to Room 2C. The location field has been updated from its previous value to "Room 2C".

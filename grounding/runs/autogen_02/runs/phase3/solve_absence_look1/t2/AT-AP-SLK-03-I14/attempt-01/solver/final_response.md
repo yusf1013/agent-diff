@@ -1,0 +1,1 @@
+I added a rocket reaction to the message "Rollout timeline confirmed for Friday, see thread." in #eng-updates. This was the message about the rollout timeline in that channel. The reaction was successfully added as confirmed by the `ok: true` response.

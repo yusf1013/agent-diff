@@ -1,0 +1,1 @@
+The "Fall Kickoff" cycle's end date has been pushed from September 29 to October 20, 2026. The cycle (ID: c-time) now runs from 2026-09-15 to 2026-10-20 and contains the "Checkout timeout during 3DS redirect" issue assigned to Sam Rivera.

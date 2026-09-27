@@ -1,0 +1,1 @@
+Successfully added a check reaction to Diego's gateway rollback message in #incidents (ts: 1786359600.000024) — "Wrapping up the gateway rollback, still watching error rates." This message has 4 messages in its thread (parent + 3 replies).

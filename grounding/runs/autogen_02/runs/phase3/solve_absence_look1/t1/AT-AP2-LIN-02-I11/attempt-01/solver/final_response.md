@@ -1,0 +1,1 @@
+The 'Renew SSO certificate' issue (ID: i-it-sso-b), filed by leo.park@northwind.example and assigned to Dana Whitfield, has been successfully set to **Urgent** priority (changed from Medium/3.0 to Urgent/1.0).

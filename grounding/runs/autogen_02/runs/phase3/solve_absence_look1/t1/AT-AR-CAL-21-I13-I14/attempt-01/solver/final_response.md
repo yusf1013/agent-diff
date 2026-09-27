@@ -1,0 +1,1 @@
+Successfully moved the "Client sync" event (about finalizing the Meridian contract, on June 21 at 3:30 PM) from Room 6D to Room 4C. The event was updated via a PATCH request and the location now shows as "Room 4C".

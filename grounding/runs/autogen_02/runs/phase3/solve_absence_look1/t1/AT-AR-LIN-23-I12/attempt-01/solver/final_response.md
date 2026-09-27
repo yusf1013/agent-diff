@@ -1,0 +1,1 @@
+Successfully reopened the comment thread on WEB-7 ("Investigate flaky checkout tests"). The comment "Confirmed: payment retry attempts time out under load." (id: c-f8), which had been resolved by Sam Patel, now has its resolving user cleared (resolvingUser: null), effectively reopening the thread.

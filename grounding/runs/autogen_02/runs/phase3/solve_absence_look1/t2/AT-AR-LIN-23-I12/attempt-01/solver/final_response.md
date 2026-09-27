@@ -1,0 +1,1 @@
+Reopened the comment thread on WEB-7 about payment retries timing out. The original comment (c-f8: "Confirmed: payment retry attempts time out under load.") had its resolution cleared — resolvingCommentId and resolvingUser are now null. Additionally, a new reply was posted to the thread: "Reopening this thread - payment retry timeouts are still occurring."

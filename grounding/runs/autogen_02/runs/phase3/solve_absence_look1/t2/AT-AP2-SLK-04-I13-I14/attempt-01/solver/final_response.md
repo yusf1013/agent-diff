@@ -1,0 +1,1 @@
+Successfully added a "check" reaction to Diego's message "Wrapping up the gateway rollback, still watching error rates." (ts: 1786359600.000024) in the #incidents channel. This is the gateway rollback thread with 4 messages in it (the parent message plus 3 replies from Leo, Omar, and Aisha).

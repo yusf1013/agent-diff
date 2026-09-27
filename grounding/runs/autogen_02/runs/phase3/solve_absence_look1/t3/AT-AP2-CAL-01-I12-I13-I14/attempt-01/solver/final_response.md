@@ -1,0 +1,1 @@
+Successfully renamed the 'Product Team' calendar (originally "Product Team Offsite") to "Eng Product Sync" using a summary override on the calendar list entry. The calendar remains checked/selected as before.

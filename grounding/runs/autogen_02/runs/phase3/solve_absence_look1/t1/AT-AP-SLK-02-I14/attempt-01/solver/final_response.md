@@ -1,0 +1,1 @@
+The incidents channel about the checkout outage (`incidents-checkout-live`, ID: `C_CHECKOUT_LIVE`) is already unarchived (`is_archived: false`). No action was needed — the channel is active and available for use.

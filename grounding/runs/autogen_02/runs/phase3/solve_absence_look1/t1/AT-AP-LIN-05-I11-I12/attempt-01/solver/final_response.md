@@ -1,0 +1,1 @@
+Successfully set the priority to Urgent (4) on issue WEB-2 "Improve payment retry logic". This issue had a resolved comment from Priya Nair about the payment gateway timeout, resolved on March 3, 2026.

@@ -1,0 +1,1 @@
+The "Client sync" event (about finalizing the Meridian contract) that ends at 3:30 PM on June 21, 2018 has been successfully moved to Room 4C. The location was updated from "Meridian contract signing suite" to "Room 4C".
