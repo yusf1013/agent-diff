@@ -255,9 +255,14 @@ def review4():
 
 
 def phase4_scores():
-    out = ["## Phase 4: yield of the generated suites on Qwen\n"]
+    out = ["## Phase 4: yield of the generated suites on Qwen\n",
+           "autogen_01's arms (Sonnet-written scenarios, judged by judge v1) are the reference rows.\n"]
     rows = []
-    for path in sorted((RUNS / "phase4").glob("*.score.json")):
+    a1 = STUDY.parent / "autogen_01" / "runs"
+    for path in [a1 / f"solve_{arm}.score.json" for arm in ("arm_r", "arm_p", "arm_p_v2")] + \
+            sorted((RUNS / "phase4").glob("*.score.json")):
+        if not path.exists():
+            continue
         s = json.loads(path.read_text())
         a = s.get("all", {})
         rows.append([path.stem.replace(".score", ""), a.get("tests"), a.get("trials"), len(a.get("facts_detect3", [])),
