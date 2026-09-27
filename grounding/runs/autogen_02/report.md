@@ -17,15 +17,15 @@ system** ([plan.md](plan.md), decisions N7–N15 in [decisions.md](decisions.md)
 
 ## Summary
 
-*Status at 06:57, written for the 07:30 sync. The runs continue after it; rows marked pending wait for them.*
+*Status at 07:23, written for the 07:30 sync. The runs continue after it; rows marked pending wait for them.*
 
 | Part | State | About when |
 |---|---|---|
 | Phase 3: the eight policy decisions | final | – |
 | Phase 4: generation, policy derivation, my reviews | final | – |
 | Phase 4 batch 1: 72 regular tests (216 trials) | run, judged, scored (§6.3) | done |
-| Batch 1's policy run: 67 units, 201 trials (amendment 7) | running: 150 of 201 at 06:57; blind labels 22 of 30 so far | run ends ~07:40, judged ~08:15 |
-| Robustness checks (amendment 6): 17 units, 51 trials | queued | run ~08:15, judged ~08:40 |
+| Batch 1's policy run: 67 units, 201 trials (amendment 7) | main pass done; 16 timed-out trials (all Linear) being retried; blind labels 28 of 30 (the other 2 wait for their retries) | run ends ~07:45, judged ~08:20 |
+| Robustness checks (amendment 6): 17 units, 51 trials | queued | run ~08:20, judged ~08:45 |
 | Batch 2: 87 regular tests (261 trials) | queued | run ~10:00, judged ~10:30 |
 | Questions for the parts left out of scope (task 23) | held until the above are done | after batch 2 |
 
