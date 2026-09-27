@@ -22,12 +22,35 @@ def cost(folder: Path) -> tuple[float, float, float]:
     return lst, billed, secs
 
 
+def review(folder: Path, scenarios: list[str] | None):
+    """For my review before a run: per accepted variant, the scenario's request, the variant's request, and every
+    candidate record with the scenario's note on it (bundle.candidates)."""
+    from grounding.runs.autogen_01.kit import bundle
+    from grounding.runs.autogen_02.kit.variants2 import source_cases
+    originals = {c["case_id"]: c["prompt"] for src in ("population", "phase4") for c in source_cases(src)}
+    for record_path in sorted(folder.glob("*/record.json")):
+        r = json.loads(record_path.read_text())
+        if r["status"] != "accepted" or (scenarios and r["scenario"] not in scenarios):
+            continue
+        case = json.loads((record_path.parent / "variant.json").read_text())
+        cand, _ = bundle.candidates(case)
+        cand = "\n".join(line[:260] for line in cand.splitlines())
+        print(f"\n{'#' * 80}\n=== {r['id']} (matches {r.get('matches')}, near misses left {r.get('other_near_misses')})"
+              f"\nORIGINAL: {originals.get(r['scenario'])}\nVARIANT:  {case['prompt']}\n{cand}")
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("dir", type=Path)
     parser.add_argument("--manual", action="store_true")
     parser.add_argument("--status", nargs="+")
+    parser.add_argument("--review", action="store_true",
+                        help="accepted variants only: the original and the variant request, then every candidate")
+    parser.add_argument("--scenarios", nargs="+", help="with --review: only these scenarios")
     args = parser.parse_args()
+    if args.review:
+        review(args.dir, args.scenarios)
+        return
     manual_dropf, manual_clone = {}, {}
     if args.manual:
         for v in json.loads((STUDY / "phase1_dropf.json").read_text())["variants"]:
@@ -41,7 +64,8 @@ def main():
         if args.status and r["status"] not in args.status:
             continue
         if not originals:
-            originals = {c["case_id"]: c["prompt"] for src in ("exemplars", "population") for c in source_cases(src)}
+            originals = {c["case_id"]: c["prompt"] for src in ("exemplars", "population", "phase4")
+                         for c in source_cases(src)}
         lst, billed, _ = cost(record_path.parent)
         print(f"\n=== {r['id']} [{r['status']}] facts={r.get('dropped_facts', '')} matches={r.get('matches', '')} "
               f"others={r.get('other_near_misses', '')} cost list ${lst:.3f} billed ${billed:.4f}")
