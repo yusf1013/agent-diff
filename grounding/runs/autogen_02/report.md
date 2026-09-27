@@ -17,7 +17,19 @@ system** ([plan.md](plan.md), decisions N7–N15 in [decisions.md](decisions.md)
 
 ## Summary
 
-*Pending: the bars table and "what the runs show" are written last.*
+*Pending: "what the runs show" is written last.*
+
+**The plan's bars** (plan, Phase 2 "Calibration bars"; amendment 2 for the policy definition):
+
+| Bar | Result | Met |
+|---|---|---|
+| Judge v2: at least 90% collapsed agreement with my Phase 1 labels | 239/252 (95%); 12 of the 13 misses are my 4 defective variants' trials (§2.4) | yes |
+| Judge v2: at least 90% with fact_coverage_02's 24 P1/P3 labels | 24/24 | yes |
+| Automated drop-F: the same derivable call as mine on at least 90% of the 37 exemplar facts | 37/37 | yes |
+| Automated drop-F: every accepted variant passes the code checks | all (cal3) | yes |
+| Automated drop-F: at least 90% valid and natural in my review | cal3 22/23 (96%) | yes |
+| Policy-level definition fixed before any Phase 3 run | amendment 2, 23:49–23:54 | yes |
+| Judge v2 on the blind samples (precision and recall; no bar set) | *pending* | – |
 
 ## 1. The system, and what is automated
 
