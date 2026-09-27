@@ -411,17 +411,35 @@ them because the top-level reads work.
 **Batch 1** (the 72 regular tests of 14 scenarios, 216 trials, 04:39–05:56;
 [runs/phase4/solve_phase4_batch1](runs/phase4/solve_phase4_batch1)). Judged by judge v2 on autogen_01's selection
 (every trial that is not mechanically clean, plus 20% of the clean ones: 95) and the blind sample (18 more), then
-scored with autogen_01's rules. *The yield table follows when the judge ends.*
+scored with autogen_01's rules ([runs/phase4/solve_phase4_batch1.score.json](runs/phase4/solve_phase4_batch1.score.json)):
 
-**What the numbers will not show** (from the blind labels, written before any verdict):
-- **G4-SLK-03's exposures count the wrong fact.** Its near misses fail the time the request states ("posted at
-  12:40"), not the declared D:latest_message (my pre-run review rated the scenario flawed). Any exposure of that
-  fact from this scenario is an exposure of the time condition.
+| Suite (judge) | Tests | Tests exposing a fact | Facts exposed in 3 trials (trial 1) | Facts per test | Void trials |
+|---|---:|---:|---:|---:|---:|
+| **Phase 4 batch 1, Muse (v2)** | **72** | **27** | **19 of 29 declared (13)** | **0.26** | **0** |
+| autogen_01 Arm R, Sonnet (v1) | 108 | 18 | 11 (7) | 0.10 | 6 |
+| autogen_01 Arm P (v1) | 84 | 25 | 19 (12) | 0.23 | 3 |
+| autogen_01 Arm P, method v2 (v1) | 93 | 14 | 13 (9) | 0.14 | 5 |
+
+- **Qwen fails the new suites at least as often as autogen_01's.** 19 of batch 1's 29 facts are exposed, all
+  uncontested, and none of its 216 trials is void (the 5 timeouts finished on their retries).
+- **By form:** probes expose most (20 of 46 exposing, 0.37 facts per test), then covers (4 of 14) and fact probes
+  (3 of 12).
+- **By domain:** Box 0.39, Linear 0.31, Calendar 0.22 and Slack 0.17 facts per test.
+- **Judge v2 on the blind sample** (30 trials, labelled before the run ended;
+  [comparison_batch1_blind.json](runs/phase4/judged/comparison_batch1_blind.json)): 30/30 on the exact outcome;
+  precision 9/9 and recall 9/9, with the same exposed fact in 9 of 9.
+- **The facts differ by source,** so the rows are not like for like: Phase 4 drew only facts that no earlier brief
+  used.
+
+**What the numbers do not show** (from the blind labels, written before any verdict):
+- **One exposed fact is the wrong fact.** All 9 of D:latest_message's failures come from G4-SLK-03, whose near
+  misses fail the time the request states ("posted at 12:40"), not "latest" (my pre-run review rated the scenario
+  flawed). They expose the time condition, so the honest count is 18 of 28 declared facts, plus the time.
 - **G4-SLK-04's cover failure rides on the replica's search.** The target's rollback steps are in its card, and the
   replica's `search.messages` matches message text only, so a search returns just the plain-text near miss. Whether
   real Slack's search reads card text is a fidelity question this study cannot settle.
-- **P-G4-LIN-01-I13 passes a probe that tests nothing** (§9): so one of Phase 4's "new facts with a near miss",
-  R:ProjectMilestone.projectId, has no working probe.
+- **P-G4-LIN-01-I13 passes a probe that tests nothing** (§9): R:ProjectMilestone.projectId has no working probe.
+  The fact still counts as exposed, by one cover trial (G4-LIN-01), where the full seed keeps the trap.
 - **The yield comparison crosses judges:** autogen_01's arms were judged by judge v1, Phase 4 by judge v2. On Phase 1
   the two agree with my labels in 237 and 239 of 252 trials.
 - **Timeouts:** 5 of 216, all Linear (17 to 26 steps), retried; the retries are the ones scored.
