@@ -507,7 +507,10 @@ U-G4-CAL-03-primary, which Calendar's look 1 ran, and U-G4-CAL-04-local_time, th
 is left out by the review rule: AT-G4-CAL-01-I15, whose near miss is contestable (§6.2).
 
 **Batch 1's policy run** ([runs/phase4/batch1_policy_cases](runs/phase4/batch1_policy_cases)): 30 twins, 26 drop-F
-units and 11 clones, 201 trials. *Pending: the run is queued after batch 1's regular tests.*
+units and 11 clones, 201 trials, 05:56 to about 07:45. 16 trials timed out, all Linear (the scenarios whose
+conditions go through the replica's failing `projects` and nested-attachment reads), and were retried. The analysis
+is the one amendment 7 declared before the run: per cell, drop-F units and clones apart, per scenario, and a check
+of the eight decisions. *Pending: the judge, then the analysis.*
 
 ## 7. Against the manual standard
 
