@@ -83,10 +83,10 @@ runs on one tagged version.
 
 | Step | Item | Status | Where |
 |---|---|---|---|
-| 1 | Trial clock excludes Purdue waiting | in progress | [roadmap_01](../runs/roadmap_01/README.md) |
-| 1 | Muse verify-reminder off for judge and reader | in progress | [roadmap_01](../runs/roadmap_01/README.md) |
-| 1 | List-level loose ends | in progress | [roadmap_01](../runs/roadmap_01/README.md) |
-| 2 | Prompt overfitting and leak audit | in progress | [roadmap_01](../runs/roadmap_01/README.md) |
-| 2 | Domain knowledge in deterministic code | in progress | [roadmap_01](../runs/roadmap_01/README.md) |
-| 3 | Discussion, fixes, frozen version | waiting for step 2 | – |
+| 1 | Trial clock excludes Purdue waiting | done (2026-09-27) | [roadmap_01/clock_smoke](../runs/roadmap_01/clock_smoke/README.md) |
+| 1 | Muse verify-reminder off for judge and reader | done (2026-09-27) | [roadmap_01/muse_reminder_check](../runs/roadmap_01/muse_reminder_check/README.md) |
+| 1 | List-level loose ends | done (2026-09-27) | [roadmap_01](../runs/roadmap_01/README.md) |
+| 2 | Prompt overfitting and leak audit | reported (2026-09-27) | [overfit_audit.md](../runs/roadmap_01/overfit_audit.md) |
+| 2 | Domain knowledge in deterministic code | reported (2026-09-27) | [domain_code_audit.md](../runs/roadmap_01/domain_code_audit.md) |
+| 3 | Discussion, fixes, frozen version | ready: 13 proposed changes listed | [roadmap_01](../runs/roadmap_01/README.md#for-step-3-proposed-changes-none-made) |
 | 4–6 | Suite, investigations, final evaluation | not started | – |
