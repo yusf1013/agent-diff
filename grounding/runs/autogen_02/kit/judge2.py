@@ -115,7 +115,8 @@ def select_panel() -> list[dict]:
 
 def judge_one(item: dict, out: Path, calls_log: Path) -> dict:
     run_dir = Path(item["run_dir"])
-    attempt = v1.latest(run_dir, item["trial"], item["case_id"])
+    # A named attempt (for a blind label written on an attempt that a retry later superseded), else the latest.
+    attempt = Path(item["attempt"]) if item.get("attempt") else v1.latest(run_dir, item["trial"], item["case_id"])
     dest = out / item["run"] / item["trial"] / item["case_id"]
     verdict_path = dest / "verdict.json"
     if verdict_path.exists():
@@ -166,13 +167,25 @@ def run(trials: list[dict], out: Path, concurrency: int):
                 print(f"[{done}/{len(trials)}] {t['run']}/{t['trial']}/{t['case_id']}: FAILED {exc}", flush=True)
 
 
-def compare(out: Path, label_files: list[Path]) -> dict:
+def compare(out: Path, label_files: list[Path], also: list[Path] | None = None,
+            attempts: dict | None = None) -> dict:
+    """attempts: key -> the attempt folder a label was written on (e.g. "attempt-01"), when a retry later superseded
+    it; that key is compared with the verdict on that attempt, from `out` or an `also` folder, never with another."""
     labels = {}
     for f in label_files:
         labels.update({k: v for k, v in json.loads(f.read_text()).items() if not k.startswith("_")})
+    attempts = attempts or {}
+    verdicts = {}
+    for d in [out] + (also or []):
+        for path in sorted(d.glob("*/*/*/verdict.json")):
+            v = json.loads(path.read_text())
+            want = attempts.get(v["key"])
+            if want and Path(v.get("attempt", "")).name != want:
+                continue
+            verdicts.setdefault(v["key"], v)
     rows = []
-    for path in sorted(out.glob("*/*/*/verdict.json")):
-        v = json.loads(path.read_text())
+    for key in sorted(verdicts):
+        v = verdicts[key]
         ref = labels.get(v["key"])
         if not ref:
             continue
@@ -206,6 +219,8 @@ def compare(out: Path, label_files: list[Path]) -> dict:
                                                      f"/{len(both)}"}
     return {"labelled_trials": len(rows), "collapsed_agreement": f"{len(collapsed)}/{len(rows)}",
             "by_kind": {k: f"{a}/{n}" for k, (n, a) in by_kind.items()}, "failure_detection": detector,
+            "attempts_named": attempts,
+            "labels_without_verdict": sorted(set(labels) - {r["key"] for r in rows}),
             "confusion_ref_to_judge": confusion, "disagreements": [r for r in rows if r not in collapsed]}
 
 
@@ -223,6 +238,8 @@ def main():
     c.add_argument("--out", type=Path, required=True)
     c.add_argument("--labels", type=Path, nargs="+", required=True)
     c.add_argument("--name", help="writes comparison_<name>.json instead of comparison.json")
+    c.add_argument("--also", type=Path, nargs="+", help="more verdict folders (verdicts on named attempts)")
+    c.add_argument("--attempts", type=Path, help="JSON: key -> the attempt folder its label was written on")
     args = parser.parse_args()
     if args.cmd == "select":
         print(json.dumps(select([p.resolve() for p in args.runs]), indent=1))
@@ -231,7 +248,10 @@ def main():
     elif args.cmd == "run":
         run(json.loads(args.trials.read_text()), args.out.resolve(), args.concurrency)
     else:
-        result = compare(args.out.resolve(), [p.resolve() for p in args.labels])
+        result = compare(args.out.resolve(), [p.resolve() for p in args.labels],
+                         [p.resolve() for p in args.also or []],
+                         {k: v for k, v in json.loads(args.attempts.read_text()).items() if not k.startswith("_")}
+                         if args.attempts else None)
         name = f"comparison_{args.name}.json" if args.name else "comparison.json"
         (args.out / name).write_text(json.dumps(result, indent=1) + "\n")
         print(json.dumps({k: v for k, v in result.items() if k != "disagreements"}, indent=1))

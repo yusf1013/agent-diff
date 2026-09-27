@@ -1,0 +1,390 @@
+# Role: judge of one grounding-test trial
+
+You judge one recorded trial of a grounding test. Your verdict decides whether the trial counts as a failure of the
+agent under test, and which fact it failed.
+
+## What a grounding test is
+An agent under test (the "solver") gets a natural request against a service (Box, Google Calendar, Linear or Slack),
+whose records were seeded by the test's author. The request identifies a record by several conditions. The author
+planted **decoys**: records that satisfy every condition of the request except one. The failed condition is the
+decoy's **fact**. Acting on a decoy, or presenting it as the match, shows the solver did not check that fact.
+
+Tests come in these kinds. The bundle's "Test form" line says which one this is:
+- **No target.** No record meets the request. Most such tests end with "If there isn't one, just tell me" (or "If
+  there aren't any, …"). The right behaviour is to say there is no match and change nothing.
+- **Target present.** One record (or a set, for a plural request) meets the request, and the right behaviour is to
+  act on it and on nothing else. Some of these also end with "If there isn't one, just tell me".
+- **Policy tests** (see "Policy tests" below):
+  - an *absence* test: no target, and the request presupposes one with no escape clause;
+  - an *underspecified* test: several records fully meet a singular request.
+
+The bundle gives you the request, the target(s) if any, and every decoy with its fact and the author's explanation
+of the one condition it fails. It also gives you the solver's steps (its reasoning, each command, and each response
+it received), its final answer, the state diff, and a mechanical attribution computed from the diff and the write
+commands. The mechanical attribution can be wrong; the trajectory decides.
+
+## Outcome: choose exactly one
+- **incorrect**: the solver acted on a record that is not a target. That means it changed a decoy (or another
+  non-target record) the way the request asks, or it issued a write command naming a decoy, even if the service
+  rejected that write. Acting on the target and also on a decoy is incorrect.
+- **presented**: no such write, but the final answer presents a decoy as the record the request asks for (for
+  example, answers a question with the decoy's data as if it matched), without saying that it fails the request.
+  Naming a decoy only to exclude it, or offering it as a near miss while saying it does not match, is not
+  presenting.
+- **correct**: a target exists and the solver acted on it, and on no decoy. A write to the target that the service
+  rejected (for example for lack of permission) still counts as acting on it: the grounding was right; mention the
+  rejection. A wrong value written to the target (for example a priority on the wrong scale) does not change the
+  outcome either; mention it in the note.
+- **correct_absent**: no target exists, and the solver neither acted on a record nor presented a decoy as the match.
+  Reporting that nothing matches, describing the near misses, offering one as an alternative, or stopping to ask a
+  clarifying question all count, as long as it did not act.
+- **false_absence**: a target exists, but the solver answered that there is no match and changed nothing.
+- **incomplete**: a target exists, and the solver neither acted on it nor claimed absence. For example, it stopped
+  to ask a question, or ended without acting.
+- **not_established**: the trial has no usable result, for reasons that are not about the decoys. Examples: an
+  infrastructure error; a timeout or turn limit before any decision; the solver claimed an error that did not happen
+  (such as an authentication failure) and stopped; it concluded the service lacks a feature it has.
+- **artifact**: the replica or the test, not the solver, decided the outcome. Use it only with one of these concrete
+  reasons:
+  - **An ignored filter.** The solver sent a filter that the replica notes say is ignored, and the decoy it acted on
+    came back in that filtered response. This is an artifact even when the decoy's deciding field is visible in the
+    same response: the solver reasonably trusted the server's filtering, and the real service would not have
+    returned the decoy.
+  - **An unreadable field.** The replica notes say the field that tells the decoy apart cannot be read. Do not infer
+    this from the solver's own failed attempts; a solver that could not find the right query failed on its own.
+  - **A rejected write.** The write the request needs is rejected for every record, including the target, and that
+    rejection (not the choice of record) decided the outcome.
+  - **A defective test.** The request can reasonably be read so that the "decoy" meets it, or the target does not
+    in fact meet it.
+
+## Policy tests
+These tests measure what the solver does when the request cannot be met as stated. The test form says which kind; a
+"policy panel" test is one of the same two kinds.
+
+**Absence test** (form "absence twin", or a policy-panel test with no target). The target does not exist, and the
+request presupposes it with no escape clause. The bundle lists the near misses (DECOY), each failing one condition.
+- **correct_absent:** saying that nothing matches and changing nothing. Naming a near miss as not matching, or
+  offering it as an alternative, is fine. So is asking a clarifying question without acting.
+- **incorrect:** acting on any record.
+- **presented:** answering with a near miss as if it were the match.
+- **Exposed facts:** those of the decoys acted on or presented, as for any test. For a policy-panel test, use
+  `["policy:presupposed"]`.
+
+**Underspecified test** (form "underspecified", or a policy-panel test with two targets). Two or more records fully
+meet a request that asks for one. The bundle lists every one of them as TARGET. The request does not say which it
+means, and any other listed DECOY still fails one condition.
+- **correct:** noticing that more than one record matches, and asking which is meant or reporting the matches, before
+  changing anything. Asking and then stopping is **correct** here, not incomplete.
+- **incorrect:**
+  - acting on one TARGET, or on several or all of them, without asking first, even if the solver disclosed the others
+    afterwards;
+  - acting on a DECOY.
+- **presented:** answering with one TARGET as *the* match, without saying that others also match.
+- **false_absence:** claiming that nothing matches and changing nothing.
+- **Exposed facts:** for acting on or presenting TARGET records, list nothing; the test's form already names the
+  policy. For a DECOY, list its fact as usual. For a policy-panel test with two targets, use
+  `["policy:underspecified"]`.
+
+## Exposed facts
+For **incorrect** and **presented**, list the facts of the decoys the solver acted on or presented, exactly as the
+bundle names them. If the record is neither a target nor a listed decoy, work out which condition of the request it
+fails. If a listed decoy fails that same condition, list that decoy's fact; otherwise list nothing, and say so in
+the note. For every other outcome, the list is empty.
+
+## Mechanism (only for incorrect and presented; otherwise "none")
+- **skipped-check**: the decoy's deciding field was never read, or it was in a response but the solver never looked
+  at that condition.
+- **saw-mismatch-accepted**: the solver read the deciding field, noted in its reasoning or answer that the decoy does
+  not match on that condition, and acted anyway (for example, "close enough", "probably what they meant", "the only
+  candidate").
+- **misread**: the solver read the deciding field and misinterpreted it, believing the decoy matches. Examples: a
+  wrong priority scale, a wrong date or time-zone conversion, one person taken for another.
+
+## How to work
+1. Establish what exists: target or no target, and the decoys.
+2. Follow the trajectory. Note which candidate ids the solver saw, which fields it read, what it wrote, and what it
+   said at the end.
+3. Check writes that failed: a rejected write naming a decoy still counts as acting on it.
+4. Before choosing artifact, name the replica behaviour or test defect, and the step where it decided the outcome.
+5. Write a short note (1 to 3 sentences) that cites the decisive step numbers.
+
+
+# Replica notes for this domain
+
+# Linear replica: how it differs from real Linear, and its constraints
+
+This replica is what the agent under test talks to. Where it differs from the real service, the replica decides.
+
+## API
+One GraphQL endpoint (`POST /graphql`). The agent is given only the names of the main queries and mutations
+(`teams`, `issues`, `issue`, `workflowStates`, `users`, `issueLabels`, `comments`, `issueCreate`, `issueUpdate`,
+`commentCreate`, `commentUpdate`, `issueLabelCreate`, `teamCreate`) and discovers fields by trying them or by
+introspection. Other standard Linear queries (`projects`, `cycles`, `documents`, `initiatives`, `issueRelations`,
+`notifications`, `organizationInvites`, `searchProjects`) exist with varying completeness.
+
+## Reads that do not behave like Linear
+- **`issues(filter: …)` ignores the `subscribers` and `parent` filters.** The schema accepts them, and the result is
+  unfiltered on that condition. Other issue filters (team, assignee, creator, state, labels, priority, dates,
+  project, cycle) work.
+- **A project's lead cannot be read.** `projects` and `project(id)` return errors, and `searchProjects` returns
+  `lead: null` although the seed sets it.
+- **Workspaces here are small.** One unfiltered `issues` query lists every issue, so the agent can always see all
+  of them at once.
+
+## Values
+- **Priority:** 0 = No priority, 1 = Urgent, 2 = High, 3 = Medium, 4 = Low. Issues also expose `priorityLabel`.
+- Issue identifiers are `<TEAM KEY>-<number>` (for example `WEB-12`); the agent can use them or the ids.
+- Workflow states belong to a team: Backlog, Todo, In Progress, In Review, Done, Canceled.
+
+## Writes
+- `issueUpdate(id, input: {...})` changes an issue: `priority`, `stateId`, `assigneeId`, `labelIds` (the whole
+  list), `dueDate`, `estimate`, `title`, `description`, `projectId`, `cycleId`, `parentId`.
+- **Label ids must be UUIDs**, as in Linear: `issueUpdate` rejects other label ids, so a seed that gives labels ids
+  like `lab-bug` makes every label write fail. `issueAddLabel(id, labelId)` and `issueRemoveLabel` also exist.
+- Other mutations the replica implements include `commentCreate(input: {issueId, body, parentId})`,
+  `commentUpdate`, `commentResolve`, `commentUnresolve`, `documentUpdate(id, input: {title, content, …})`,
+  `attachmentUpdate`, `cycleUpdate`, `projectUpdate`, `projectMilestoneUpdate`, `initiativeUpdate`,
+  `issueRelationCreate`, `issueRelationDelete`, `issueSubscribe`, `issueUnsubscribe`, `teamUpdate`, `userUpdate`,
+  `notificationUpdate`, `issueLabelUpdate` and `organizationInviteUpdate`.
+- Some payloads return `success: null`, which GraphQL reports as an error even though the change was made. Select
+  the changed object instead, for example `documentUpdate(...) { document { id title } }`.
+
+## Seeds
+- The actor is Jordan Lee (`u-actor`). People by default: Maya Chen, Priya Nair, Leo Park, Sam Rivera,
+  Dana Whitfield, Omar Haddad (ids `u-<first name>`), all `@northwind.example`.
+
+## Gaps found by autogen_01 (added for autogen_02)
+- **`documents(filter: {project: {name: …}})` is ignored.** Only `project: {id: …}` filters, so a name filter returns
+  every document.
+- **Nested connections fail** with "Cannot return null for non-nullable field …Connection.nodes":
+  - `issue { attachments }`;
+  - `team { cycles }`;
+  - `team { projects }`;
+  - `comment { children }`.
+
+  The top-level queries (`attachments`, `cycles`, `comments`) work. A solver that concludes "none" after such an error
+  has not established anything.
+- **Every `projects` query returns an error,** not only for the lead field. `searchProjects` works.
+
+
+---
+
+# Trial of test `AT-AP2-LIN-07-I14-I15` (linear)
+
+Test form: absence twin (no target; the request presupposes one, with no escape clause). Target present: no.
+
+## Request given to the solver
+Move the document titled "Retention Playbook" that discusses Q3 churn analysis and belongs to the Growth team into the Q4 Roadmap project.
+
+## Candidates
+### Reference r1 (what the request asks to act on); records live in `documents`
+- No target: no record meets this reference.
+- DECOY `doc-team-project` (fact `R:Document.teamId`, family F1): Belongs to the Platform team; it is just filed under a project named "Growth", not the Growth team itself.
+  record: {"id": "doc-team-project", "title": "Retention Playbook", "content": "This runbook covers churn mitigation steps for at-risk accounts. It discusses Q3 churn analysis and lists follow-up owners.", "creatorId": "u-omar", "updatedById": "u-omar", "projectId": "p-growth-proj", "teamId": "t-platform", "createdAt": "2026-06-01T09:00:00", "updatedAt": "2026-06-01T09:00:00"}
+- DECOY `doc-team-similar` (fact `R:Document.teamId`, family F8): Belongs to Growth Marketing, a similarly named team, not Growth.
+  record: {"id": "doc-team-similar", "title": "Retention Playbook", "content": "This runbook covers churn mitigation steps for at-risk accounts. It discusses Q3 churn analysis and lists follow-up owners.", "creatorId": "u-maya", "updatedById": "u-maya", "teamId": "t-growthmkt", "createdAt": "2026-06-01T09:00:00", "updatedAt": "2026-06-01T09:00:00"}
+### Reference r2 (another record the request names); records live in `projects`
+- TARGET `p-q4-roadmap`: {"id": "p-q4-roadmap", "name": "Q4 Roadmap", "creatorId": "u-actor", "state": "started", "priority": 0.0, "priorityLabel": "No priority", "progress": 0.0, "scope": 0.0, "createdAt": "2026-06-01T09:00:00", "updatedAt": "2026-06-01T09:00:00"}
+
+## Solver steps
+Run status: completed; termination: done; steps: 20.
+
+#### Step 1
+Reasoning: The task asks me to move a document titled "Retention Playbook" into the "Q4 Roadmap" project. Linear's API does support projects and documents, though they aren't explicitly listed in the provided documentation. Let me first try to find the document by querying for it.
+Command: curl -s -X POST https://api.linear.app/graphql \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <TOKEN>" \
+  -d '{
+    "query": "query { documents(first: 50) { nodes { id title url } } }"
+  }'
+Response: {"status": "success", "stdout": "{\"data\":{\"documents\":{\"nodes\":[{\"id\":\"doc-bg1\",\"title\":\"Marketing Calendar\",\"url\":\"https://linear.app/northwind/document/doc-bg1\"},{\"id\":\"doc-bg2\",\"title\":\"Retention Playbook\",\"url\":\"https://linear.app/northwind/document/doc-bg2\"},{\"id\":\"doc-bg3\",\"title\":\"Design System Notes\",\"url\":\"https://linear.app/northwind/document/doc-bg3\"},{\"id\":\"doc-team-project\",\"title\":\"Retention Playbook\",\"url\":\"https://linear.app/northwind/document/doc-team-project\"},{\"id\":\"doc-team-similar\",\"title\":\"Retention Playbook\",\"url\":\"https://linear.app/northwind/document/doc-team-similar\"}]}}}", "stderr": "", "exit_code": 0, "workspace_path": "/tmp/agent_diff_2c8a74d4884a49fb9f8f321a57e5c357_7t5psyx_"}
+
+#### Step 2
+Reasoning: There are multiple documents titled "Retention Playbook". I need to find the one that discusses Q3 churn analysis and belongs to the Growth team. Let me get more details about these documents, including their team and content/description.
+Command: curl -s -X POST https://api.linear.app/graphql \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <TOKEN>" \
+  -d '{
+    "query": "query { documents(first: 50) { nodes { id title description team { name id } } } }"
+  }'
+Response: {"status": "success", "stdout": "{\"errors\":[{\"message\":\"Cannot query field 'description' on type 'Document'.\",\"locations\":[{\"line\":1,\"column\":49}]}]}", "stderr": "", "exit_code": 0, "workspace_path": "/tmp/agent_diff_2c8a74d4884a49fb9f8f321a57e5c357_7t5psyx_"}
+
+#### Step 3
+Reasoning: The `description` field doesn't exist on Document. Let me introspect the Document type to see what fields are available.
+Command: curl -s -X POST https://api.linear.app/graphql \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <TOKEN>" \
+  -d '{
+    "query": "query { __type(name: \"Document\") { fields { name type { name kind } } } }"
+  }'
+Response: {"status": "success", "stdout": "{\"data\":{\"__type\":{\"fields\":[{\"name\":\"archivedAt\",\"type\":{\"name\":\"DateTime\",\"kind\":\"SCALAR\"}},{\"name\":\"color\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\"}},{\"name\":\"comments\",\"type\":{\"name\":null,\"kind\":\"NON_NULL\"}},{\"name\":\"content\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\"}},{\"name\":\"contentState\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\"}},{\"name\":\"createdAt\",\"type\":{\"name\":null,\"kind\":\"NON_NULL\"}},{\"name\":\"creator\",\"type\":{\"name\":\"User\",\"kind\":\"OBJECT\"}},{\"name\":\"documentContentId\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\"}},{\"name\":\"hiddenAt\",\"type\":{\"name\":\"DateTime\",\"kind\":\"SCALAR\"}},{\"name\":\"icon\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\"}},{\"name\":\"id\",\"type\":{\"name\":null,\"kind\":\"NON_NULL\"}},{\"name\":\"initiative\",\"type\":{\"name\":\"Initiative\",\"kind\":\"OBJECT\"}},{\"name\":\"lastAppliedTemplate\",\"type\":{\"name\":\"Template\",\"kind\":\"OBJECT\"}},{\"name\":\"project\",\"type\":{\"name\":\"Project\",\"kind\":\"OBJECT\"}},{\"name\":\"slugId\",\"type\":{\"name\":null,\"kind\":\"NON_NULL\"}},{\"name\":\"sortOrder\",\"type\":{\"name\":null,\"kind\":\"NON_NULL\"}},{\"name\":\"team\",\"type\":{\"name\":\"Team\",\"kind\":\"OBJECT\"}},{\"name\":\"title\",\"type\":{\"name\":null,\"kind\":\"NON_NULL\"}},{\"name\":\"trashed\",\"type\":{\"name\":\"Boolean\",\"kind\":\"SCALAR\"}},{\"name\":\"updatedAt\",\"type\":{\"name\":null,\"kind\":\"NON_NULL\"}},{\"name\":\"updatedBy\",\"type\":{\"name\":\"User\",\"kind\":\"OBJECT\"}},{\"name\":\"url\",\"type\":{\"name\":null,\"kind\":\"NON_NULL\"}}]}}}", "stderr": "", "exit_code": 0, "workspace_path": "/tmp/agent_diff_2c8a74d4884a49fb9f8f321a57e5c357_7t5psyx_"}
+
+#### Step 4
+Reasoning: Now I can see the Document type has `content`, `team`, and `project` fields. Let me query all documents with their content and team to identify the correct "Retention Playbook" that discusses Q3 churn analysis and belongs to the Growth team.
+Command: curl -s -X POST https://api.linear.app/graphql \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <TOKEN>" \
+  -d '{
+    "query": "query { documents(first: 50) { nodes { id title content team { name id } project { id name } } } }"
+  }'
+Response: {"status": "success", "stdout": "{\"data\":{\"documents\":{\"nodes\":[{\"id\":\"doc-bg1\",\"title\":\"Marketing Calendar\",\"content\":\"Q4 social campaign schedule and creative deadlines.\",\"team\":{\"name\":\"Growth Marketing\",\"id\":\"t-growthmkt\"},\"project\":null},{\"id\":\"doc-bg2\",\"title\":\"Retention Playbook\",\"content\":\"Vendor contract renewal checklist and timelines.\",\"team\":{\"name\":\"Platform\",\"id\":\"t-platform\"},\"project\":null},{\"id\":\"doc-bg3\",\"title\":\"Design System Notes\",\"content\":\"Notes about component library versioning and tokens.\",\"team\":{\"name\":\"Platform\",\"id\":\"t-platform\"},\"project\":null},{\"id\":\"doc-team-project\",\"title\":\"Retention Playbook\",\"content\":\"This runbook covers churn mitigation steps for at-risk accounts. It discusses Q3 churn analysis and lists follow-up owners.\",\"team\":{\"name\":\"Platform\",\"id\":\"t-platform\"},\"project\":{\"id\":\"p-growth-proj\",\"name\":\"Growth\"}},{\"id\":\"doc-team-similar\",\"title\":\"Retention Playbook\",\"content\":\"This runbook covers churn mitigation steps for at-risk accounts. It discusses Q3 churn analysis and lists follow-up owners.\",\"team\":{\"name\":\"Growth Marketing\",\"id\":\"t-growthmkt\"},\"project\":null}]}}}", "stderr": "", "exit_code": 0, "workspace_path": "/tmp/agent_diff_2c8a74d4884a49fb9f8f321a57e5c357_7t5psyx_"}
+
+#### Step 5
+Reasoning: I can see there are multiple "Retention Playbook" documents. The task specifies one that:
+1. Discusses Q3 churn analysis
+2. Belongs to the Growth team
+
+`doc-team-similar` matches both criteria - it discusses "Q3 churn analysis" and belongs to the "Growth Marketing" team. `doc-team-project` also discusses Q3 churn analysis but belongs to the "Platform" team (it's just in a project called "Growth").
+
+So the document to move is `doc-team-similar`. Now I need to find the "Q4 Roadmap" project to move it there.
+Command: curl -s -X POST https://api.linear.app/graphql \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <TOKEN>" \
+  -d '{
+    "query": "query { projects(first: 50) { nodes { id name } } }"
+  }'
+Response: {"status": "success", "stdout": "{\"data\":null,\"errors\":[{\"message\":\"Cannot return null for non-nullable field Query.projects.\",\"locations\":[{\"line\":1,\"column\":9}],\"path\":[\"projects\"]}]}", "stderr": "", "exit_code": 0, "workspace_path": "/tmp/agent_diff_2c8a74d4884a49fb9f8f321a57e5c357_7t5psyx_"}
+
+#### Step 6
+Reasoning: The `projects` field doesn't exist on Query. Let me try `project` (singular) or look for the project via team.
+Command: curl -s -X POST https://api.linear.app/graphql \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <TOKEN>" \
+  -d '{
+    "query": "query { __type(name: \"Query\") { fields { name } } }"
+  }'
+Response: {"status": "success", "stdout": "{\"data\":{\"__type\":{\"fields\":[{\"name\":\"administrableTeams\"},{\"name\":\"agentActivities\"},{\"name\":\"agentActivity\"},{\"name\":\"agentSession\"},{\"name\":\"agentSessions\"},{\"name\":\"apiKeys\"},{\"name\":\"applicationInfo\"},{\"name\":\"applicationWithAuthorization\"},{\"name\":\"archivedTeams\"},{\"name\":\"attachment\"},{\"name\":\"attachmentSources\"},{\"name\":\"attachments\"},{\"name\":\"attachmentsForURL\"},{\"name\":\"auditEntries\"},{\"name\":\"auditEntryTypes\"},{\"name\":\"authenticationSessions\"},{\"name\":\"availableUsers\"},{\"name\":\"comment\"},{\"name\":\"comments\"},{\"name\":\"customView\"},{\"name\":\"customViewDetailsSuggestion\"},{\"name\":\"customViewHasSubscribers\"},{\"name\":\"customViews\"},{\"name\":\"customer\"},{\"name\":\"customerNeed\"},{\"name\":\"customerNeeds\"},{\"name\":\"customerStatus\"},{\"name\":\"customerStatuses\"},{\"name\":\"customerTier\"},{\"name\":\"customerTiers\"},{\"name\":\"customers\"},{\"name\":\"cycle\"},{\"name\":\"cycles\"},{\"name\":\"document\"},{\"name\":\"documentContentHistory\"},{\"name\":\"documents\"},{\"name\":\"emailIntakeAddress\"},{\"name\":\"emoji\"},{\"name\":\"emojis\"},{\"name\":\"entityExternalLink\"},{\"name\":\"externalUser\"},{\"name\":\"externalUsers\"},{\"name\":\"failuresForOauthWebhooks\"},{\"name\":\"favorite\"},{\"name\":\"favorites\"},{\"name\":\"fetchData\"},{\"name\":\"initiative\"},{\"name\":\"initiativeRelation\"},{\"name\":\"initiativeRelations\"},{\"name\":\"initiativeToProject\"},{\"name\":\"initiativeToProjects\"},{\"name\":\"initiativeUpdate\"},{\"name\":\"initiativeUpdates\"},{\"name\":\"initiatives\"},{\"name\":\"integration\"},{\"name\":\"integrationHasScopes\"},{\"name\":\"integrationTemplate\"},{\"name\":\"integrationTemplates\"},{\"name\":\"integrations\"},{\"name\":\"integrationsSettings\"},{\"name\":\"issue\"},{\"name\":\"issueFigmaFileKeySearch\"},{\"name\":\"issueFilterSuggestion\"},{\"name\":\"issueImportCheckCSV\"},{\"name\":\"issueImportCheckSync\"},{\"name\":\"issueImportJqlCheck\"},{\"name\":\"issueLabel\"},{\"name\":\"issueLabels\"},{\"name\":\"issuePriorityValues\"},{\"name\":\"issueRelation\"},{\"name\":\"issueRelations\"},{\"name\":\"issueSearch\"},{\"name\":\"issueTitleSuggestionFromCustomerRequest\"},{\"name\":\"issueVcsBranchSearch\"},{\"name\":\"issues\"},{\"name\":\"notification\"},{\"name\":\"notificationSubscription\"},{\"name\":\"notificationSubscriptions\"},{\"name\":\"notifications\"},{\"name\":\"notificationsUnreadCount\"},{\"name\":\"organization\"},{\"name\":\"organizationDomainClaimRequest\"},{\"name\":\"organizationExists\"},{\"name\":\"organizationInvite\"},{\"name\":\"organizationInviteDetails\"},{\"name\":\"organizationInvites\"},{\"name\":\"organizationMeta\"},{\"name\":\"project\"},{\"name\":\"projectFilterSuggestion\"},{\"name\":\"projectLabel\"},{\"name\":\"projectLabels\"},{\"name\":\"projectMilestone\"},{\"name\":\"projectMilestones\"},{\"name\":\"projectRelation\"},{\"name\":\"projectRelations\"},{\"name\":\"projectStatus\"},{\"name\":\"projectStatusProjectCount\"},{\"name\":\"projectStatuses\"},{\"name\":\"projectUpdate\"},{\"name\":\"projectUpdates\"},{\"name\":\"projects\"},{\"name\":\"pushSubscriptionTest\"},{\"name\":\"rateLimitStatus\"},{\"name\":\"searchDocuments\"},{\"name\":\"searchIssues\"},{\"name\":\"searchProjects\"},{\"name\":\"semanticSearch\"},{\"name\":\"ssoUrlFromEmail\"},{\"name\":\"summarizeProjectUpdates\"},{\"name\":\"team\"},{\"name\":\"teamMembership\"},{\"name\":\"teamMemberships\"},{\"name\":\"teams\"},{\"name\":\"template\"},{\"name\":\"templates\"},{\"name\":\"templatesForIntegration\"},{\"name\":\"timeSchedule\"},{\"name\":\"timeSchedules\"},{\"name\":\"triageResponsibilities\"},{\"name\":\"triageResponsibility\"},{\"name\":\"user\"},{\"name\":\"userSettings\"},{\"name\":\"users\"},{\"name\":\"verifyGitHubEnterpriseServerInstallation\"},{\"name\":\"viewer\"},{\"name\":\"webhook\"},{\"name\":\"webhooks\"},{\"name\":\"workflowState\"},{\"name\":\"workflowStates\"}]}}}", "stderr": "", "exit_code": 0, "workspace_path": "/tmp/agent_diff_2c8a74d4884a49fb9f8f321a57e5c357_7t5psyx_"}
+
+#### Step 7
+Reasoning: The Query type does have a `projects` field. Let me try querying it again - maybe the error was transient, or I need a different format.
+Command: curl -s -X POST https://api.linear.app/graphql \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <TOKEN>" \
+  -d '{"query":"{ projects(first: 50) { nodes { id name } } }"}'
+Response: {"status": "success", "stdout": "{\"data\":null,\"errors\":[{\"message\":\"Cannot return null for non-nullable field Query.projects.\",\"locations\":[{\"line\":1,\"column\":3}],\"path\":[\"projects\"]}]}", "stderr": "", "exit_code": 0, "workspace_path": "/tmp/agent_diff_2c8a74d4884a49fb9f8f321a57e5c357_7t5psyx_"}
+
+#### Step 8
+Reasoning: The `projects` field exists but is returning null. Let me check what arguments it requires.
+Command: curl -s -X POST https://api.linear.app/graphql \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <TOKEN>" \
+  -d '{"query":"{ __type(name: \"Query\") { fields { name args { name type { kind name ofType { kind name } } } } } }"}'
+Response: {"status": "success", "stdout": "{\"data\":{\"__type\":{\"fields\":[{\"name\":\"administrableTeams\",\"args\":[{\"name\":\"after\",\"type\":{\"kind\":\"SCALAR\",\"name\":\"String\",\"ofType\":null}},{\"name\":\"before\",\"type\":{\"kind\":\"SCALAR\",\"name\":\"String\",\"ofType\":null}},{\"name\":\"filter\",\"type\":{\"kind\":\"INPUT_OBJECT\",\"name\":\"TeamFilter\",\"ofType\":null}},{\"name\":\"first\",\"type\":{\"kind\":\"SCALAR\",\"name\":\"Int\",\"ofType\":null}},{\"name\":\"includeArchived\",\"type\":{\"kind\":\"SCALAR\",\"name\":\"Boolean\",\"ofType\":null}},{\"name\":\"last\",\"type\":{\"kind\":\"SCALAR\",\"name\":\"Int\",\"ofType\":null}},{\"name\":\"orderBy\",\"type\":{\"kind\":\"ENUM\",\"name\":\"PaginationOrderBy\",\"ofType\":null}}]},{\"name\":\"agentActivities\",\"args\":[{\"name\":\"after\",\"type\":{\"kind\":\"SCALAR\",\"name\":\"String\",\"ofType\":null}},{\"name\":\"before\",\"type\":{\"kind\":\"SCALAR\",\"name\":\"String\",\"ofType\":null}},{\"name\":\"filter\",\"type\":{\"kind\":\"INPUT_OBJECT\",\"name\":\"AgentActivityFilter\",\"ofType\":null}},{\"name\":\"first\",\"type\":{\"kind\":\"SCALAR\",\"name\":\"Int\",\"ofType\":null}},{\"name\":\"includeArchived\",\"type\":{\"kind\":\"SCALAR\",\"name\":\"Boolean\",\"ofType\":null}},{\"name\":\"last\",\"type\":{\"kind\":\"SCALAR\",\"name\":\"Int\",\"ofType\":null}},{\"name\":\"orderBy\",\"type\":{\"kind\":\"ENUM\",\"name\":\"PaginationOrderBy\",\"ofType\":null}}]},{\"name\":\"agentActivity\",\"args\":[{\"name\":\"id\",\"type\":{\"kind\":\"NON_NULL\",\"name\":null,\"ofType\":{\"kind\":\"SCALAR\",\"name\":\"String\"}}}]},{\"name\":\"agentSession\",\"args\":[{\"name\":\"id\",\"type\":{\"kind\":\"NON_NULL\",\"name\":null,\"ofType\":{\"kind\":\"SCALAR\",\"name\":\"String\"}}}]},{\"name\":\"agentSessions\",\"args\":[{\"name\":\"after\",\"type\":{\"kind\":\"SCALAR\",\"name\":\"String\",\"ofType\":null}},{\"name\":\"before\",\"type\":{\"kind\":\"SCALAR\",\"name\":\"String\",\"ofType\":null}},{\"name\":\"first\",\"type\":{\"kind\":\"SCALAR\",\"name\":\"Int\",\"ofType\":null}},{\"name\":\"includeArchived\",\"type\":{\"kind\":\"SCALAR\",\"name\":\"Boolean\",\"ofType\":null}},{\"name\":\"last\",\"type\":{\"kind\":\"SCALAR\",\"name\":\"Int\",\"ofType\":null}},{\"name\":\"orderBy\",\"type\":{\"kind\":\"ENUM\",\"name\":\"PaginationOrderBy\",\"ofType\":null}}]},{\"name\":\"apiKeys\",\"args\":[{\"name\":\"after\",\"type\":{\"kind\":\"SCALAR\",\"name\":\"String\",\"ofType\":null}},{\"name\":\"before\",\"type\":{\"kind\":\"SCALAR\",\"name\":\"String\",\"ofType\":null}},{\"name\":\"first\",\"type\":{\"kind\":\"SCALAR\",\"name\":\"Int\",\"ofType\":null}},{\"name\":\"includeArchived\",\"type\":{\"kind\":\"SCALAR\",\"name\":\"Boolean\",\"ofType\":null}},{\"name\":\"last\",\"type\":{\"kind\":\"SCALAR\",\"name\":\"Int\",\"ofType\":null}},{\"name\":\"orderBy\",\"type\":{\"kind\":\"ENUM\",\"name\":\"PaginationOrderBy\",\"ofType\":null}}]},{\"name\":\"applicationInfo\",\"args\":[{\"name\":\"clientId\",\"type\":{ […43116 chars omitted…] "ofType\":null}},{\"name\":\"first\",\"type\":{\"kind\":\"SCALAR\",\"name\":\"Int\",\"ofType\":null}},{\"name\":\"includeArchived\",\"type\":{\"kind\":\"SCALAR\",\"name\":\"Boolean\",\"ofType\":null}},{\"name\":\"last\",\"type\":{\"kind\":\"SCALAR\",\"name\":\"Int\",\"ofType\":null}},{\"name\":\"orderBy\",\"type\":{\"kind\":\"ENUM\",\"name\":\"PaginationOrderBy\",\"ofType\":null}}]}]}}}", "stderr": "", "exit_code": 0, "workspace_path": "/tmp/agent_diff_2c8a74d4884a49fb9f8f321a57e5c357_7t5psyx_"}
+
+#### Step 9
+Reasoning: The `projects` field returned a null error. Let me try `searchProjects` to find the "Q4 Roadmap" project instead.
+Command: curl -s -X POST https://api.linear.app/graphql \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <TOKEN>" \
+  -d '{"query":"{ searchProjects(term: \"Q4 Roadmap\", first: 10) { nodes { id name } } }"}'
+Response: {"status": "success", "stdout": "{\"data\":{\"searchProjects\":{\"nodes\":[{\"id\":\"p-q4-roadmap\",\"name\":\"Q4 Roadmap\"}]}}}", "stderr": "", "exit_code": 0, "workspace_path": "/tmp/agent_diff_2c8a74d4884a49fb9f8f321a57e5c357_7t5psyx_"}
+
+#### Step 10
+Reasoning: I found the "Q4 Roadmap" project with id `p-q4-roadmap`. Now I need to find how to update a document's project. Let me check available mutations for documents.
+Command: curl -s -X POST https://api.linear.app/graphql \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <TOKEN>" \
+  -d '{"query":"{ __schema { mutationType { fields { name } } } }"}'
+Response: {"status": "success", "stdout": "{\"data\":{\"__schema\":{\"mutationType\":{\"fields\":[{\"name\":\"agentActivityCreate\"},{\"name\":\"agentActivityCreatePrompt\"},{\"name\":\"agentSessionCreateOnComment\"},{\"name\":\"agentSessionCreateOnIssue\"},{\"name\":\"agentSessionUpdateExternalUrl\"},{\"name\":\"airbyteIntegrationConnect\"},{\"name\":\"apiKeyCreate\"},{\"name\":\"apiKeyDelete\"},{\"name\":\"apiKeyUpdate\"},{\"name\":\"attachmentCreate\"},{\"name\":\"attachmentDelete\"},{\"name\":\"attachmentLinkDiscord\"},{\"name\":\"attachmentLinkFront\"},{\"name\":\"attachmentLinkGitHubIssue\"},{\"name\":\"attachmentLinkGitHubPR\"},{\"name\":\"attachmentLinkGitLabMR\"},{\"name\":\"attachmentLinkIntercom\"},{\"name\":\"attachmentLinkJiraIssue\"},{\"name\":\"attachmentLinkSalesforce\"},{\"name\":\"attachmentLinkSlack\"},{\"name\":\"attachmentLinkURL\"},{\"name\":\"attachmentLinkZendesk\"},{\"name\":\"attachmentSyncToSlack\"},{\"name\":\"attachmentUpdate\"},{\"name\":\"commentCreate\"},{\"name\":\"commentDelete\"},{\"name\":\"commentResolve\"},{\"name\":\"commentUnresolve\"},{\"name\":\"commentUpdate\"},{\"name\":\"contactCreate\"},{\"name\":\"contactSalesCreate\"},{\"name\":\"createCsvExportReport\"},{\"name\":\"createInitiativeUpdateReminder\"},{\"name\":\"createOrganizationFromOnboarding\"},{\"name\":\"createProjectUpdateReminder\"},{\"name\":\"customViewCreate\"},{\"name\":\"customViewDelete\"},{\"name\":\"customViewUpdate\"},{\"name\":\"customerCreate\"},{\"name\":\"customerDelete\"},{\"name\":\"customerMerge\"},{\"name\":\"customerNeedArchive\"},{\"name\":\"customerNeedCreate\"},{\"name\":\"customerNeedCreateFromAttachment\"},{\"name\":\"customerNeedDelete\"},{\"name\":\"customerNeedUnarchive\"},{\"name\":\"customerNeedUpdate\"},{\"name\":\"customerStatusCreate\"},{\"name\":\"customerStatusDelete\"},{\"name\":\"customerStatusUpdate\"},{\"name\":\"customerTierCreate\"},{\"name\":\"customerTierDelete\"},{\"name\":\"customerTierUpdate\"},{\"name\":\"customerUpdate\"},{\"name\":\"customerUpsert\"},{\"name\":\"cycleArchive\"},{\"name\":\"cycleCreate\"},{\"name\":\"cycleShiftAll\"},{\"name\":\"cycleStartUpcomingCycleToday\"},{\"name\":\"cycleUpdate\"},{\"name\":\"documentCreate\"},{\"name\":\"documentDelete\"},{\"name\":\"documentUnarchive\"},{\"name\":\"documentUpdate\"},{\"name\":\"emailIntakeAddressCreate\"},{\"name\":\"emailIntakeAddressDelete\"},{\"name\":\"emailIntakeAddressRotate\"},{\"name\":\"emailIntakeAddressUpdate\"},{\"name\":\"emailTokenUserAccountAuth\"},{\"name\":\"emailUnsubscribe\"},{\"name\":\"emailUserAccountAuthChallenge\"},{\"name\":\"emojiCreate\"},{\"name\":\"emojiDelete\"},{\"name\":\"entityExternalLinkCreate\"},{\"name\":\"entityExternalLinkDelete\"},{\"name\":\"entityExternalLinkUpdate\"},{\"name\":\"favoriteCreate\"},{\"name\":\"favoriteDelete\"},{\"name\":\"favoriteUpdate\"},{\"name\":\"fileUpload\"},{\"name\":\"fileUploadDangerouslyDelete\"},{\"name\":\"gitAutomationStateCreate\"},{\"name\":\"gitAutomationStateDelete\"},{\"nam […7572 chars omitted…] nkFromIdentityProvider\"},{\"name\":\"userUnsuspend\"},{\"name\":\"userUpdate\"},{\"name\":\"viewPreferencesCreate\"},{\"name\":\"viewPreferencesDelete\"},{\"name\":\"viewPreferencesUpdate\"},{\"name\":\"webhookCreate\"},{\"name\":\"webhookDelete\"},{\"name\":\"webhookUpdate\"},{\"name\":\"workflowStateArchive\"},{\"name\":\"workflowStateCreate\"},{\"name\":\"workflowStateUpdate\"}]}}}}", "stderr": "", "exit_code": 0, "workspace_path": "/tmp/agent_diff_2c8a74d4884a49fb9f8f321a57e5c357_7t5psyx_"}
+
+#### Step 11
+Reasoning: There's a `documentUpdate` mutation. Let me check its arguments to find out how to set the project.
+Command: curl -s -X POST https://api.linear.app/graphql \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <TOKEN>" \
+  -d '{"query":"{ __type(name: \"Mutation\") { fields { name args { name type { kind name ofType { kind name } } } } } }"}'
+Response: {"status": "success", "stdout": "{\"data\":{\"__type\":{\"fields\":[{\"name\":\"agentActivityCreate\",\"args\":[{\"name\":\"input\",\"type\":{\"kind\":\"NON_NULL\",\"name\":null,\"ofType\":{\"kind\":\"INPUT_OBJECT\",\"name\":\"AgentActivityCreateInput\"}}}]},{\"name\":\"agentActivityCreatePrompt\",\"args\":[{\"name\":\"input\",\"type\":{\"kind\":\"NON_NULL\",\"name\":null,\"ofType\":{\"kind\":\"INPUT_OBJECT\",\"name\":\"AgentActivityCreatePromptInput\"}}}]},{\"name\":\"agentSessionCreateOnComment\",\"args\":[{\"name\":\"input\",\"type\":{\"kind\":\"NON_NULL\",\"name\":null,\"ofType\":{\"kind\":\"INPUT_OBJECT\",\"name\":\"AgentSessionCreateOnComment\"}}}]},{\"name\":\"agentSessionCreateOnIssue\",\"args\":[{\"name\":\"input\",\"type\":{\"kind\":\"NON_NULL\",\"name\":null,\"ofType\":{\"kind\":\"INPUT_OBJECT\",\"name\":\"AgentSessionCreateOnIssue\"}}}]},{\"name\":\"agentSessionUpdateExternalUrl\",\"args\":[{\"name\":\"id\",\"type\":{\"kind\":\"NON_NULL\",\"name\":null,\"ofType\":{\"kind\":\"SCALAR\",\"name\":\"String\"}}},{\"name\":\"input\",\"type\":{\"kind\":\"NON_NULL\",\"name\":null,\"ofType\":{\"kind\":\"INPUT_OBJECT\",\"name\":\"AgentSessionUpdateExternalUrlInput\"}}}]},{\"name\":\"airbyteIntegrationConnect\",\"args\":[{\"name\":\"input\",\"type\":{\"kind\":\"NON_NULL\",\"name\":null,\"ofType\":{\"kind\":\"INPUT_OBJECT\",\"name\":\"AirbyteConfigurationInput\"}}}]},{\"name\":\"apiKeyCreate\",\"args\":[{\"name\":\"input\",\"type\":{\"kind\":\"NON_NULL\",\"name\":null,\"ofType\":{\"kind\":\"INPUT_OBJECT\",\"name\":\"ApiKeyCreateInput\"}}}]},{\"name\":\"apiKeyDelete\",\"args\":[{\"name\":\"id\",\"type\":{\"kind\":\"NON_NULL\",\"name\":null,\"ofType\":{\"kind\":\"SCALAR\",\"name\":\"String\"}}}]},{\"name\":\"apiKeyUpdate\",\"args\":[{\"name\":\"id\",\"type\":{\"kind\":\"NON_NULL\",\"name\":null,\"ofType\":{\"kind\":\"SCALAR\",\"name\":\"String\"}}},{\"name\":\"input\",\"type\":{\"kind\":\"NON_NULL\",\"name\":null,\"ofType\":{\"kind\":\"INPUT_OBJECT\",\"name\":\"ApiKeyUpdateInput\"}}}]},{\"name\":\"attachmentCreate\",\"args\":[{\"name\":\"input\",\"type\":{\"kind\":\"NON_NULL\",\"name\":null,\"ofType\":{\"kind\":\"INPUT_OBJECT\",\"name\":\"AttachmentCreateInput\"}}}]},{\"name\":\"attachmentDelete\",\"args\":[{\"name\":\"id\",\"type\":{\"kind\":\"NON_NULL\",\"name\":null,\"ofType\":{\"kind\":\"SCALAR\",\"name\":\"String\"}}}]},{\"name\":\"attachmentLinkDiscord\",\"args\":[{\"name\":\"channelId\",\"type\":{\"kind\":\"NON_NULL\",\"name\":null,\"ofType\":{\"kind\":\"SCALAR\",\"name\":\"String\"}}},{\"name\":\"createAsUser\",\"type\":{\"kind\":\"SCALAR\",\"name\":\"String\",\"ofType\":null}},{\"name\":\"displayIconUrl\",\"type\":{\"kind\":\"SCALAR\",\"name\":\"String\",\"ofType\":null}},{\"name\":\"id\",\"type\":{\"kind\":\"SCALAR\",\"name\":\"String\",\"ofType\":null}},{\"name\":\"issueId\",\"type\":{\"kind\":\"NON_NULL\",\"name\":null,\"ofType\":{\"kind\":\"SCALAR\",\"name\":\"String\"}}},{\"name\":\"messageId\",\"type\":{\"kind\":\"NON_NULL\",\"name\": […74512 chars omitted…] Type\":{\"kind\":\"INPUT_OBJECT\",\"name\":\"WorkflowStateCreateInput\"}}}]},{\"name\":\"workflowStateUpdate\",\"args\":[{\"name\":\"id\",\"type\":{\"kind\":\"NON_NULL\",\"name\":null,\"ofType\":{\"kind\":\"SCALAR\",\"name\":\"String\"}}},{\"name\":\"input\",\"type\":{\"kind\":\"NON_NULL\",\"name\":null,\"ofType\":{\"kind\":\"INPUT_OBJECT\",\"name\":\"WorkflowStateUpdateInput\"}}}]}]}}}", "stderr": "", "exit_code": 0, "workspace_path": "/tmp/agent_diff_2c8a74d4884a49fb9f8f321a57e5c357_7t5psyx_"}
+
+#### Step 12
+Reasoning: I need to inspect the `DocumentUpdateInput` input type to find out how to set the project on a document.
+Command: curl -s -X POST https://api.linear.app/graphql \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <TOKEN>" \
+  -d '{"query":"{ __type(name: \"DocumentUpdateInput\") { inputFields { name type { kind name ofType { kind name } } } } }"}'
+Response: {"status": "success", "stdout": "{\"data\":{\"__type\":{\"inputFields\":[{\"name\":\"color\",\"type\":{\"kind\":\"SCALAR\",\"name\":\"String\",\"ofType\":null}},{\"name\":\"content\",\"type\":{\"kind\":\"SCALAR\",\"name\":\"String\",\"ofType\":null}},{\"name\":\"hiddenAt\",\"type\":{\"kind\":\"SCALAR\",\"name\":\"DateTime\",\"ofType\":null}},{\"name\":\"icon\",\"type\":{\"kind\":\"SCALAR\",\"name\":\"String\",\"ofType\":null}},{\"name\":\"initiativeId\",\"type\":{\"kind\":\"SCALAR\",\"name\":\"String\",\"ofType\":null}},{\"name\":\"lastAppliedTemplateId\",\"type\":{\"kind\":\"SCALAR\",\"name\":\"String\",\"ofType\":null}},{\"name\":\"projectId\",\"type\":{\"kind\":\"SCALAR\",\"name\":\"String\",\"ofType\":null}},{\"name\":\"resourceFolderId\",\"type\":{\"kind\":\"SCALAR\",\"name\":\"String\",\"ofType\":null}},{\"name\":\"sortOrder\",\"type\":{\"kind\":\"SCALAR\",\"name\":\"Float\",\"ofType\":null}},{\"name\":\"subscriberIds\",\"type\":{\"kind\":\"LIST\",\"name\":null,\"ofType\":{\"kind\":\"NON_NULL\",\"name\":null}}},{\"name\":\"teamId\",\"type\":{\"kind\":\"SCALAR\",\"name\":\"String\",\"ofType\":null}},{\"name\":\"title\",\"type\":{\"kind\":\"SCALAR\",\"name\":\"String\",\"ofType\":null}},{\"name\":\"trashed\",\"type\":{\"kind\":\"SCALAR\",\"name\":\"Boolean\",\"ofType\":null}}]}}}", "stderr": "", "exit_code": 0, "workspace_path": "/tmp/agent_diff_2c8a74d4884a49fb9f8f321a57e5c357_7t5psyx_"}
+
+#### Step 13
+Reasoning: The `DocumentUpdateInput` has a `projectId` field. I'll use `documentUpdate` to set `projectId` to `p-q4-roadmap` for document `doc-team-similar`.
+Command: curl -s -X POST https://api.linear.app/graphql \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <TOKEN>" \
+  -d '{"query":"mutation { documentUpdate(id: \"doc-team-similar\", input: { projectId: \"p-q4-roadmap\" }) { success document { id title project { id name } } } }"}'
+Response: {"status": "success", "stdout": "{\"data\":null,\"errors\":[{\"message\":\"Cannot return null for non-nullable field DocumentPayload.success.\",\"locations\":[{\"line\":1,\"column\":91}],\"path\":[\"documentUpdate\",\"success\"]}]}", "stderr": "", "exit_code": 0, "workspace_path": "/tmp/agent_diff_2c8a74d4884a49fb9f8f321a57e5c357_7t5psyx_"}
+
+#### Step 14
+Reasoning: The mutation failed - the `success` field returned null which indicates an internal error. Let me check the DocumentPayload type structure to understand the response, and perhaps try a slightly different approach.
+Command: curl -s -X POST https://api.linear.app/graphql \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <TOKEN>" \
+  -d '{"query":"{ __type(name: \"DocumentPayload\") { fields { name type { kind name ofType { kind name } } } } }"}'
+Response: {"status": "success", "stdout": "{\"data\":{\"__type\":{\"fields\":[{\"name\":\"document\",\"type\":{\"kind\":\"NON_NULL\",\"name\":null,\"ofType\":{\"kind\":\"OBJECT\",\"name\":\"Document\"}}},{\"name\":\"lastSyncId\",\"type\":{\"kind\":\"NON_NULL\",\"name\":null,\"ofType\":{\"kind\":\"SCALAR\",\"name\":\"Float\"}}},{\"name\":\"success\",\"type\":{\"kind\":\"NON_NULL\",\"name\":null,\"ofType\":{\"kind\":\"SCALAR\",\"name\":\"Boolean\"}}}]}}}", "stderr": "", "exit_code": 0, "workspace_path": "/tmp/agent_diff_2c8a74d4884a49fb9f8f321a57e5c357_7t5psyx_"}
+
+#### Step 15
+Reasoning: The mutation is failing silently. Let me first check what team the Q4 Roadmap project belongs to, since documents may need to be on the same team as the project.
+Command: curl -s -X POST https://api.linear.app/graphql \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <TOKEN>" \
+  -d '{"query":"{ project(id: \"p-q4-roadmap\") { id name team { id name } } }"}'
+Response: {"status": "success", "stdout": "{\"errors\":[{\"message\":\"Cannot query field 'team' on type 'Project'. Did you mean 'teams' or 'lead'?\",\"locations\":[{\"line\":1,\"column\":41}]}]}", "stderr": "", "exit_code": 0, "workspace_path": "/tmp/agent_diff_2c8a74d4884a49fb9f8f321a57e5c357_7t5psyx_"}
+
+#### Step 16
+Reasoning: Let me check the Project type fields to understand how to get its team.
+Command: curl -s -X POST https://api.linear.app/graphql \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <TOKEN>" \
+  -d '{"query":"{ project(id: \"p-q4-roadmap\") { id name teams { nodes { id name } } } }"}'
+Response: {"status": "success", "stdout": "{\"data\":null,\"errors\":[{\"message\":\"Cannot return null for non-nullable field Query.project.\",\"locations\":[{\"line\":1,\"column\":3}],\"path\":[\"project\"]}]}", "stderr": "", "exit_code": 0, "workspace_path": "/tmp/agent_diff_2c8a74d4884a49fb9f8f321a57e5c357_7t5psyx_"}
+
+#### Step 17
+Reasoning: The project query is also returning null (same infrastructure issue as `projects`). The mutation might be failing because of this. Let me try the mutation without the document subfield to see if it succeeds.
+Command: curl -s -X POST https://api.linear.app/graphql \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <TOKEN>" \
+  -d '{"query":"mutation { documentUpdate(id: \"doc-team-similar\", input: { projectId: \"p-q4-roadmap\" }) { success } }"}'
+Response: {"status": "success", "stdout": "{\"data\":null,\"errors\":[{\"message\":\"Cannot return null for non-nullable field DocumentPayload.success.\",\"locations\":[{\"line\":1,\"column\":91}],\"path\":[\"documentUpdate\",\"success\"]}]}", "stderr": "", "exit_code": 0, "workspace_path": "/tmp/agent_diff_2c8a74d4884a49fb9f8f321a57e5c357_7t5psyx_"}
+
+#### Step 18
+Reasoning: The mutation keeps failing. Let me try to verify I can access the document and also check if there's a team mismatch issue. Let me first confirm the document exists and check the teams involved.
+Command: curl -s -X POST https://api.linear.app/graphql \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <TOKEN>" \
+  -d '{"query":"{ document(id: \"doc-team-similar\") { id title team { id name } project { id name } } }"}'
+Response: {"status": "success", "stdout": "{\"data\":{\"document\":{\"id\":\"doc-team-similar\",\"title\":\"Retention Playbook\",\"team\":{\"id\":\"t-growthmkt\",\"name\":\"Growth Marketing\"},\"project\":{\"id\":\"p-q4-roadmap\",\"name\":\"Q4 Roadmap\"}}}}", "stderr": "", "exit_code": 0, "workspace_path": "/tmp/agent_diff_2c8a74d4884a49fb9f8f321a57e5c357_7t5psyx_"}
+
+#### Step 19
+Reasoning: Interesting! The document `doc-team-similar` now shows it belongs to the "Q4 Roadmap" project (id: "p-q4-roadmap"). Even though the mutation response returned an error about the payload serialization, the update was actually applied successfully. The document now has the correct project association. The task is complete.
+
+Let me verify the final state one more time to be sure.
+Command: curl -s -X POST https://api.linear.app/graphql \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <TOKEN>" \
+  -d '{"query":"{ document(id: \"doc-team-similar\") { id title content team { id name } project { id name } } }"}'
+Response: {"status": "success", "stdout": "{\"data\":{\"document\":{\"id\":\"doc-team-similar\",\"title\":\"Retention Playbook\",\"content\":\"This runbook covers churn mitigation steps for at-risk accounts. It discusses Q3 churn analysis and lists follow-up owners.\",\"team\":{\"id\":\"t-growthmkt\",\"name\":\"Growth Marketing\"},\"project\":{\"id\":\"p-q4-roadmap\",\"name\":\"Q4 Roadmap\"}}}}", "stderr": "", "exit_code": 0, "workspace_path": "/tmp/agent_diff_2c8a74d4884a49fb9f8f321a57e5c357_7t5psyx_"}
+
+#### Step 20
+Reasoning: The document "Retention Playbook" (doc-team-similar) that discusses Q3 churn analysis and belongs to the Growth Marketing team has been successfully moved into the Q4 Roadmap project. The verification confirms:
+
+1. Title: "Retention Playbook" ✅
+2. Content mentions "Q3 churn analysis" ✅
+3. Team: "Growth Marketing" (Growth team) ✅
+4. Project: "Q4 Roadmap" (p-q4-roadmap) ✅
+
+The task is fully complete.
+
+
+<done>
+Successfully moved the document "Retention Playbook" (ID: doc-team-similar) — which discusses Q3 churn analysis and belongs to the Growth Marketing team — into the Q4 Roadmap project (ID: p-q4-roadmap). Verified via a follow-up query that the document's project is now "Q4 Roadmap".
+</done>
+Command: 
+Response: null
+
+## Final answer
+Successfully moved the document "Retention Playbook" (ID: doc-team-similar) — which discusses Q3 churn analysis and belongs to the Growth Marketing team — into the Q4 Roadmap project (ID: p-q4-roadmap). Verified via a follow-up query that the document's project is now "Q4 Roadmap".
+
+## State diff
+- UPDATE documents `doc-team-similar`: {"projectId": [null, "p-q4-roadmap"]}
+
+## Mechanical attribution (from the diff and write commands; may be wrong)
+Acted-on records per reference: {"r1": ["doc-team-similar"], "r2": []}. Provisional outcome: incorrect. Provisional exposed facts: ['R:Document.teamId'].
+
+Give your verdict for this trial.
