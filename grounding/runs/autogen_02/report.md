@@ -524,6 +524,12 @@ the runs end.*
   `subscribers`, Calendar `eventTypes`) turn some trials into artifacts. The review view now flags any use of them,
   but only a reader of the trial can say whether the result depended on it.
 
+- **A Box replica bug:** `PUT /files/{id}` without `shared_link` in the body removes the file's shared link.
+  `backend/src/services/box/api/routes.py` passes `body.get("shared_link")`, which is None, and `update_file` reads
+  None as "remove". The folder handler uses an UNSET sentinel for this. I found it in a policy trial's state diff:
+  tagging a shared spreadsheet unshared it. It does not change which record a trial acted on, so no outcome in this
+  study depends on it, but a state assertion would. It is left unfixed until the runs end, so that every batch sees
+  the same replica.
 - **Drop-F can remove a condition that the request's verb already implies.** "Hide the 'Design Team' calendar
   that I've shared with Kenji Sato as a writer" drops "in my calendar list", but only calendars on the list can be
   hidden, so the second intended match is no reasonable match. Found while labelling a blind trial. A search of all
