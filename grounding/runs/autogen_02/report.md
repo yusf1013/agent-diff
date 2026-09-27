@@ -17,7 +17,7 @@ system** ([plan.md](plan.md), decisions N7–N15 in [decisions.md](decisions.md)
 
 ## Summary
 
-*Final, 10:05. Every planned run is done, judged and analysed. A summary for readers new to the project is in
+*Final, 10:01. Every planned run is done, judged and analysed. A summary for readers new to the project is in
 [overview.md](overview.md).*
 
 | Part | State |
@@ -505,8 +505,11 @@ the same way: 71 trials by autogen_01's selection plus 24 of the blind sample.
     acted on the target in all 5 covers.
   - The briefs were drawn the same way for both batches, so this is variance between scenarios: some writers'
     near misses are easy to tell apart.
-- **The exposed facts** are mostly relations: a hub's creator, a calendar's data owner (G4-CAL-06, including its
-  cover in 3 of 3 trials), and which team a label belongs to (G4-LIN-06).
+- **The five exposed facts:**
+  - a hub's creator;
+  - a calendar's data owner (G4-CAL-06, whose cover fails in 3 of 3 trials);
+  - which team a label belongs to, and whether one label carries both name and team (G4-LIN-06);
+  - an issue's estimate.
 - **Judge v2 on the blind sample** (30 trials, labelled before any verdict): 30/30; precision and recall 1/1.
 - **Both batches together** expose 24 of their 59 facts at 0.15 facts per test, inside autogen_01's range (0.10 to
   0.23).
