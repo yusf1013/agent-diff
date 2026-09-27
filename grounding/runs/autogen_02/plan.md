@@ -487,3 +487,16 @@ trial. So the queue runs past the 7:30 sync.
 
 **Blind samples.** Every new run gets one before it starts, drawn from its cases folder: 30 trials, or a third of a
 smaller run (at least 10).
+
+**Added at 02:39, before any Phase 3 verdict (the absence look-1 judge had not started):**
+- **The underspecified extension** was fixed at 02:37 (seed 2026092703) from Phase 4's drop-F: 55 of 62 pairs
+  accepted, 51 distinct conditions. Box 36 valid units (14 from Phase 4), Calendar 27 (17), Linear 57 (14), Slack 36
+  (6).
+- **Calendar underspecified's look 1** completes with its 11th unit, U-G4-CAL-03-primary: one unit, run as
+  `underspecified_look1b` right after underspecified look 1. The blind sample is its 3 trials.
+- **Batch 1's policy run** (`runs/phase4/batch1_policy_cases`, queued after batch 1): 30 twins, 26 drop-F units and
+  11 clones of the 14 scenarios, 201 trials. Left out are the twin that the review rule excludes (AT-G4-CAL-01-I15)
+  and U-G4-CAL-03-primary, which a look already runs. I reviewed all 37 Muse-written variants before the run
+  (`eval/phase4_policy_review.json`): all valid. The blind sample is 30 of 201 (seed 29).
+- **A look never runs a unit twice.** Units already cased by a look or by a Phase 4 policy run are skipped, and
+  their verdicts come from that run (`sampler.already_cased`).
