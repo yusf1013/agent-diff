@@ -46,11 +46,9 @@ robustness checks and batch 2); their rows say pending.*
   labels in 87. As a detector of failures its precision is 85/86 and its recall 85/85, with the same exposed fact in
   85 of 85. Four of the six disagreements are defective or contestable tests, which the judge cannot flag. The
   other two are borderline absence reports.
-- **The automation's quality problems are specific and fixable:** 3 of 162 accepted drop-F variants are degenerate
+- **The automation's quality problems are specific and fixable:** 3 of 159 accepted drop-F variants are degenerate
   in that way (a verb-precondition check would catch them), and the copier cannot clone rows two steps from the
   target (one clone rejected by the code check).
-
-**The plan's bars** (plan, Phase 2 "Calibration bars"; amendment 2 for the policy definition):
 
 **The plan's bars** (plan, Phase 2 "Calibration bars"; amendment 2 for the policy definition):
 
@@ -414,7 +412,45 @@ them because the top-level reads work.
 
 ### 6.4 The policy variants of the new scenarios
 
-*Pending: derivation on Muse is running (drop-F for 62 pairs, clones for 29 scenarios).*
+**Derivation** from the 29 accepted scenarios and their 62 (scenario, fact) pairs (01:57–02:37; Muse writer and
+reader, code checks; [runs/phase4_dropf](runs/phase4_dropf), [runs/phase4_clone](runs/phase4_clone)):
+
+| Variant | Attempted | Accepted | Declined by the writer | Rejected | Not derivable |
+|---|---:|---:|---:|---:|---:|
+| Absence twin (code) | 62 pairs | 61 | – | 1 by the code check | – |
+| Drop-F (one per condition) | 59 conditions | 52 (51 distinct; 47 in one round, 5 in two or three) | 4 | 1 by the reader | 2 (scope D2) |
+| Clone (one per scenario) | 29 | 25 | 3 | 1 by the code check | – |
+
+- **55 of the 62 pairs have their own accepted drop-F variant** (57 counting a variant that drops the fact together
+  with another). The 51 distinct conditions: Calendar 17, Box 14, Linear 14, Slack 6. Two accepted variants
+  drop the same condition (G4-CAL-04's start time carries two facts), and the order holds it once.
+- **The writer's refusals are reasoned.**
+  - **Four drop-F variants** were declined because no deletion-only edit leaves a natural request with the
+    intended matches. In G4-BOX-05, for instance, dropping the owner leaves "that Leo Park modified last", and
+    three files share that time, so none is "last".
+  - **G4-SLK-03's clone:** the target's time is its message id, which a copy cannot share.
+  - **G4-BOX-01's clone:** under an exact-quote reading of "approved for launch", no copy (nor the target) fits.
+  - **G4-LIN-06's clone:** the writer read the scenario's query as not enforcing the label's team, so that two near
+    misses would already match. I did not check this.
+- **The failures are the construction's known limits.**
+  - The rejected clone (UC-G4-BOX-04) needs a row two steps from the target (the task's assignment), and the
+    copier copies only rows that point at the target.
+  - The rejected twin (G4-LIN-01's project fact): its near miss does not break the claim in the mutation check.
+  - The rejected drop-F variant: the reader read "approved for launch" as an exact quote, so that the target itself
+    no longer fit.
+- **The degenerate variant** (§9): 1 of the 52, U-G4-CAL-05-CalendarListEntry_hidden, at a Calendar position that
+  no look reaches.
+- **Muse cost:** $8.08 list ($0.49 billed) for drop-F, 207 calls; $4.71 ($0.29) for clones, 99 calls
+  ([tables.md](tables.md), "Muse usage").
+
+**My review before any run** ([eval/phase4_policy_review.json](eval/phase4_policy_review.json)). I read every
+Muse-written variant that runs: the 26 drop-F units and 11 clones of batch 1's 14 scenarios. I also read
+U-G4-CAL-03-primary, which Calendar's look 1 ran, and U-G4-CAL-04-local_time, the duplicate of a batch-1 unit. All
+39 were valid and natural. The three Phase 4 units of the robustness run were read with it (amendment 6). One twin
+is left out by the review rule: AT-G4-CAL-01-I15, whose near miss is contestable (§6.2).
+
+**Batch 1's policy run** ([runs/phase4/batch1_policy_cases](runs/phase4/batch1_policy_cases)): 30 twins, 26 drop-F
+units and 11 clones, 201 trials. *Pending: the run is queued after batch 1's regular tests.*
 
 ## 7. Against the manual standard
 
@@ -425,11 +461,15 @@ Failure rates of policy tests on Qwen, by who built them (trials that act withou
 | fact_coverage_01 pilot (Box, Calendar, Linear) | hand | 46/48 (96%) | – |
 | fact_coverage_02 policy panel (P1, P3; one per domain) | hand | 12/12 | 12/12 |
 | **Phase 1: per fact on fact_coverage_02's scenarios** | hand (my variants) | **108/111 (97%)** | **drop-F 80/81, clones 47/48** |
-| Phase 3: per fact on autogen_01's scenarios, sampled | Muse (variants), Sonnet (scenarios) | *pending* | *pending* |
+| Phase 3: per fact on autogen_01's scenarios, sampled (judge v2's verdicts) | Sonnet (scenarios); code (twins), Muse (drop-F wording) | 166/174 (95%) | drop-F 151/153 (99%) |
 | manual_exemplars_01's Slack suite (Qwen 3.6, 1 run each) | hand | 5/11 (45%) | 25/26 (96%) |
 
 - **The per-fact tests reproduce the manual panel's rates.** Moving from one test per domain to one per fact changes
   nothing: the failure appears for every fact, as it did for every domain.
+- **The automated tests reproduce them too.** On autogen_01's generated scenarios, the sampled twins and drop-F
+  variants fail in 95% and 99% of trials, close to my hand-made ones (97% and 99%). The Phase 3 rates are judge v2's
+  verdicts (on the blind samples, precision 85/86 and recall 85/85). They include the 9 trials of the three flawed
+  units (§5), all scored `incorrect`. Without them the rates are 163/171 and 145/147, still 95% and 99%.
 - **The Slack suite is the exception on absence.** Its absent requests also presuppose a match ("DM the person who
   reacted with 🔥 to the budget-freeze announcement in #finance"), yet Qwen 3.6 established absence in 6 of 11. The
   model version, the harness and the scenarios all differ from ours, so this study cannot say which difference
@@ -461,8 +501,9 @@ the runs end.*
 - **Drop-F can remove a condition that the request's verb already implies.** "Hide the 'Design Team' calendar
   that I've shared with Kenji Sato as a writer" drops "in my calendar list", but only calendars on the list can be
   hidden, so the second intended match is no reasonable match. Found while labelling a blind trial. A search of all
-  162 accepted drop-F variants for verbs that imply a state of their object (hide, unarchive, invite, reopen,
-  archive, ...) found **3 degenerate variants** in all, 2 of them in look 1. The Muse reader and my pre-run review
+  159 accepted drop-F variants for verbs that imply a state of their object (hide, unarchive, invite, reopen,
+  archive, ...) found **3 degenerate variants** in all, 2 of them in look 1. A re-check against the seeds (05:07)
+  confirmed them: in the other 16 requests with such a verb, every intended match meets the verb's precondition. The Muse reader and my pre-run review
   (43 of 43 valid, in truth 42) both missed them. They stay in the order: the exclusion rule is the pre-run review,
   and changing it after reading trials would bias the cells. The decisions state what depends on them. **The fix
   to try next:** a code check that the dropped condition is not the verb's precondition (a table of verbs and the
@@ -485,8 +526,9 @@ the runs end.*
   both, keeping the originals.
 - **Timestamps:** I wrote times later than the real ones in the plan and in two review files. All were corrected to
   the commit times or to `date`.
-- **A miscount:** the look-1 review said 43 of 94 variants (46%) where it is 43 of 107 (40%). Corrected, with the
-  original kept.
+- **Two miscounts:** the look-1 review said 43 of 94 variants (46%) where it is 43 of 107 (40%). The verb search
+  said 162 variants where it is 159: I added Phase 4's 55 accepted (scenario, fact) pairs instead of its 52
+  variants. Both corrected, with the originals kept.
 - **The first absence look-1 launch** had no Purdue key (the worktree has no `grounding/.env`). The runner still
   printed "solve done" and triggered a judge on no trials. The relaunch used `GROUNDING_ENV`, and the Purdue queue now
   stops on a run that completes no trial.
