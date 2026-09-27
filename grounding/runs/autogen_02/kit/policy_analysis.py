@@ -20,6 +20,7 @@ import json
 from collections import defaultdict
 from pathlib import Path
 
+from grounding.runs.autogen_01.inputs.make_briefs import SLACK_ALIASES  # the control run uses the catalog names
 from grounding.runs.autogen_02.kit.sampler import FAIL, PASS, lower_bound, upper_bound
 
 STUDY = Path(__file__).resolve().parents[1]
@@ -88,7 +89,8 @@ def analyse() -> dict:
         sc = meta.get("scenario") or ""
         row["domain"] = {"BOX": "box", "CAL": "calendar", "LIN": "linear", "SLK": "slack"}.get(sc.split("-")[0])
         if res.get("mode") == "absence":
-            po = probes.get((meta.get("scenario"), meta.get("fact")), [])
+            fact = meta.get("fact")
+            po = probes.get((meta.get("scenario"), fact)) or probes.get((meta.get("scenario"), SLACK_ALIASES.get(fact)), [])
             pf = sum(o in FAIL for o in po)
             row.update(probe_fails=pf, probe_n=len([o for o in po if o in FAIL | PASS]),
                        reading=reading(k, len(usable), pf, len([o for o in po if o in FAIL | PASS])))
