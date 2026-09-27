@@ -1,0 +1,1 @@
+Successfully moved the Quarterly planning meeting for Dana Whitfield (scheduled for Thursday, June 21, 2018 at 12:00-12:30 PM) to Room 5B. The event's location has been updated from its previous value to "Room 5B".

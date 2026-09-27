@@ -1,0 +1,1 @@
+Successfully moved the "Quarterly planning" meeting organized by Dana Whitfield on Thursday, June 21, 2018 (12:00 PM – 12:30 PM) to **Room 5B**. The event location was updated via a PATCH request, and the API confirmed the change.

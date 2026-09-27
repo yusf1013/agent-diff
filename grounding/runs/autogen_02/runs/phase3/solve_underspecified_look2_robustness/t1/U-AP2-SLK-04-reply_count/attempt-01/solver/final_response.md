@@ -1,0 +1,1 @@
+Successfully added a "check" reaction to Diego's message in #incidents that mentions the gateway rollback ("Finished the gateway rollback about ten minutes ago.").

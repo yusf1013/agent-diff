@@ -1,0 +1,1 @@
+Added a "check" reaction to all three of Diego's messages in #incidents that mention the gateway rollback. All reactions were added successfully.

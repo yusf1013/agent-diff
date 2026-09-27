@@ -1,0 +1,1 @@
+Successfully moved the Thursday Quarterly Planning Lunch (June 21, 2018) on the Team Planning calendar (planning-shared@northwind.example, set to New York time) to Room 5B. The event location has been updated.

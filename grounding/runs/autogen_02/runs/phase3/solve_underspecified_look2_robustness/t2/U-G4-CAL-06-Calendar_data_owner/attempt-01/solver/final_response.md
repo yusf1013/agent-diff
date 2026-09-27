@@ -1,0 +1,1 @@
+Successfully moved the Thursday quarterly planning lunch (June 21, 2018) to Room 5B. The event was found on the "Team Planning" calendar (planning-shared@northwind.example) which is set to New York time (America/New_York). The location has been updated to "Room 5B" as confirmed by the API response.
