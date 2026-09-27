@@ -1,0 +1,1 @@
+Successfully added a :thumbsup: reaction to the September 23 rollback message in #deploys. The message by Priya Sharma ("Rollback of payments-api finished; error rates are back to normal.") now has the thumbsup reaction.

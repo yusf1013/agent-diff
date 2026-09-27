@@ -1,0 +1,1 @@
+Successfully reopened the comment thread on WEB-5 by using the `commentUnresolve` mutation on all three comments (c-21, c-22, c-25). All comments now have `resolvedAt: null`, confirming the thread is reopened.

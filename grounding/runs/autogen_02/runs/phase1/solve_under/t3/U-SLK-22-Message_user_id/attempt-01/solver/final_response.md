@@ -1,0 +1,1 @@
+Successfully added an :eyes: reaction to the reply in the #incidents (C_INC) thread about the checkout outage. The parent message was "Checkout outage: 502s on /pay since 14:05 UTC." and the reply that received the reaction was "Rolled back the gateway config; watching the error rate."

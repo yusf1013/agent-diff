@@ -1,0 +1,1 @@
+Added an :eyes: reaction to the reply in the #incidents channel thread about the checkout outage. The reaction was placed on U_DIEGO's message "Rolled back the gateway config; watching the error rate." (ts: 1790000400.000002), which is a reply in the thread started by U_LEO's "Checkout outage: 502s on /pay since 14:05 UTC." message.

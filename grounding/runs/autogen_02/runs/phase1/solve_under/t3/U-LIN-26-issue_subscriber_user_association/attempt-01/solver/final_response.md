@@ -1,0 +1,1 @@
+Successfully set the priority to Low on the Web team issue "Search results jump on scroll" (i-61). The priority was updated from 0 (No priority) to 4 (Low), confirmed by the API response showing success: true.

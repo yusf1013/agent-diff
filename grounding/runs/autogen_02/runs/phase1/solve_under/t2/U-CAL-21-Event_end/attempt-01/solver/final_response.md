@@ -1,0 +1,1 @@
+Successfully moved the planning session (id: ev_ps_target, description: "Walk through the Q4 roadmap and owners", scheduled for June 21, 2018 at 4:00 PM – 5:00 PM PT) to Room 2B. The event's location has been updated and confirmed by the API.

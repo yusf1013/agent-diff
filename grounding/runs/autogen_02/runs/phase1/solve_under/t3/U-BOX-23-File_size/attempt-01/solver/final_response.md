@@ -1,0 +1,1 @@
+Successfully added the tag "renewal" to the file "Initech MSA.pdf" (ID: 8101). This is the contract PDF whose description mentions the Initech renewal ("Initech renewal terms for 2027") and which has 3 comments. The API response confirms the tags array now contains "renewal".

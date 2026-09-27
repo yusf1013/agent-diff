@@ -1,0 +1,1 @@
+Successfully assigned issue WEB-1 "Login redirect loops after SSO" (created by Omar Haddad on September 10) to Priya Nair. The update was confirmed by the API showing the assignee is now "Priya Nair".

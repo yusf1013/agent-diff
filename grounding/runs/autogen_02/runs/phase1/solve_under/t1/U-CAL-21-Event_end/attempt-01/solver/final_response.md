@@ -1,0 +1,1 @@
+Updated the "Planning session" event (description: "Walk through the Q4 roadmap and owners") to be held in Room 2B. The event on June 21, 2018 from 4:00 PM to 5:00 PM PT now has its location set to "Room 2B".

@@ -1,0 +1,1 @@
+Successfully reopened the comment thread on WEB-5 ("Flaky checkout test") by calling `commentUnresolve` on comment c-21 ("The retry wrapper hides the real failure."). The thread's `resolvedAt` field is now `null`, confirming it has been reopened.

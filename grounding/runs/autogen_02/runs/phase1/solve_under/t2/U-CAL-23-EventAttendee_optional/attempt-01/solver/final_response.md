@@ -1,0 +1,1 @@
+Successfully deleted the "Architecture review" event on Friday, June 22, 2018 (10:00–11:00 AM PT) that Kenji Sato (kenji.sato@northwind.example) attends. The API returned HTTP 204, confirming the event was removed from the primary calendar.
