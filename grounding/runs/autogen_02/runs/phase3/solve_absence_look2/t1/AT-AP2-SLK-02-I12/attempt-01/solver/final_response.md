@@ -1,0 +1,1 @@
+Successfully invited Aisha Khan (U_AISHA) to the `incident-comms` channel (C_INCCOMMS). This channel has 'incident' in its name, its purpose mentions postmortems ("Coordinate postmortems and retro scheduling"), and it was not archived. The channel now has 3 members, confirming the invitation was successful.

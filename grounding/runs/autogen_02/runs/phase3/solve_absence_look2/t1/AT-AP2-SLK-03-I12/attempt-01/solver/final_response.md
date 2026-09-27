@@ -1,0 +1,1 @@
+Successfully added a 🚀 (rocket) reaction to the payment gateway outage message ("Payment gateway outage — CPU spike traced to the retry loop.") in the #incidents channel. This was the same message Diego Alvarez had reacted to.

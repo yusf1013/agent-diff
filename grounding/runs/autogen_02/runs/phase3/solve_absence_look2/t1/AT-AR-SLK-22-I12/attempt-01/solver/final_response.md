@@ -1,0 +1,1 @@
+Successfully added a 🚀 (rocket) reaction to Leo Park's reply in the #launch-prep channel thread about tonight's payments launch checklist.
