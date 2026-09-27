@@ -1,0 +1,1 @@
+Successfully moved all three vendor sync events on Thursday, June 21, 2018 that have Dana Whitfield as an attendee to Room 2C: "Vendor sync: Packaging" (9:00 AM), "Vendor sync: Labeling" (1:30 PM), and "Vendor sync: Ingredients" (3:00 PM).

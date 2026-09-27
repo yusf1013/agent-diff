@@ -1,0 +1,1 @@
+I've hidden all three "Client Success" calendars (cs-east, cs-north, and cs-south) from your calendar list. They will no longer appear in your calendar list. Note that "Client Success Renewals" was left visible since it's a separate calendar.

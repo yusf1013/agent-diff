@@ -1,0 +1,1 @@
+Successfully renamed the private team "Growth" (id: t-growth) to "Growth Pod". This was the private team whose description mentions "Coordinates the Q3 OKR pilot rollout across regional sales teams." The API returned a success confirmation with the updated team name.

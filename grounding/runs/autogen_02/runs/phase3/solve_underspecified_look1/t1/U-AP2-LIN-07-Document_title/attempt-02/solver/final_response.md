@@ -1,0 +1,1 @@
+The document "Retention Playbook" (doc-target) that discusses Q3 churn analysis and belongs to the Growth team has been confirmed to be in the Q4 Roadmap project. The document's content reads: "This runbook covers churn mitigation steps for at-risk accounts. It discusses Q3 churn analysis and lists follow-up owners." Its project is now set to "Q4 Roadmap" (p-q4-roadmap).

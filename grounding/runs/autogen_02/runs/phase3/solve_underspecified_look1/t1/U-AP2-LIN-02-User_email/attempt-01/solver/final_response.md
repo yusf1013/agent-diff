@@ -1,0 +1,1 @@
+Successfully set the "Renew SSO certificate" issues assigned to guest contractor Dana Whitfield to Urgent priority. Both IT-1 and IT-4 (both assigned to u-danaguest with the external email dana.whitfield.ext@northwind.example) were updated from priority 3.0 (Medium) to priority 1.0 (Urgent).

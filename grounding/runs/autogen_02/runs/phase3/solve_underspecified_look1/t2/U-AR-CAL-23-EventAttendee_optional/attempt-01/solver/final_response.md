@@ -1,0 +1,1 @@
+Successfully moved the "Vendor sync: Packaging" event on Thursday, June 21 (9:00 AM) to Room 2C. This event has Dana Whitfield as an attendee along with Sam Rivera. The location update was confirmed by the API.

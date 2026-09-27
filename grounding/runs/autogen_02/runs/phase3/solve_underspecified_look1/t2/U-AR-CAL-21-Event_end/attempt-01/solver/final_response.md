@@ -1,0 +1,1 @@
+Successfully moved the "Client sync" event (about finalizing the Meridian contract) to Room 4C. The event's location was updated from "Room 8B" to "Room 4C". The event is scheduled for June 21, 2018 from 3:00 PM to 3:30 PM (PT).

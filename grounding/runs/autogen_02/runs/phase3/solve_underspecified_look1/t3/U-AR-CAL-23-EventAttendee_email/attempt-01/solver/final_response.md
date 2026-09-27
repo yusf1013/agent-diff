@@ -1,0 +1,1 @@
+Successfully updated the "Vendor sync: Packaging" event (Thursday, June 21, 9:00 AM) to have its location set to "Room 2C". This was the vendor sync on Thursday with Dana Whitfield listed as an optional attendee.

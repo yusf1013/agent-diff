@@ -1,0 +1,1 @@
+Successfully updated the 'Renew SSO certificate' issue (id: i-it-sso) assigned to guest contractor Dana Whitfield (dana.whitfield.ext@northwind.example, guest: true) to Urgent priority (4.0). The update returned success: true.

@@ -1,0 +1,1 @@
+Added a 🚀 rocket reaction to the rollout timeline message ("Rollout timeline: shipping to prod Friday 3pm.") in the #eng-updates channel. The reaction was added successfully.

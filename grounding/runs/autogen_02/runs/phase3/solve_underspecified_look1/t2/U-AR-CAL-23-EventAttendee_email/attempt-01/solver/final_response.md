@@ -1,0 +1,1 @@
+Successfully moved the "Vendor sync: Packaging" event (Thursday, June 21 at 9:00 AM) to Room 2C. This was the vendor sync event with an optional attendee (Dana Whitfield, optional: true). The location has been updated to "Room 2C" as confirmed by the API response.

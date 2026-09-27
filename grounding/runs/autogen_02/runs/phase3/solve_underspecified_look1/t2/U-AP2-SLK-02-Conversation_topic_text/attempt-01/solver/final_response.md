@@ -1,0 +1,1 @@
+Successfully invited Aisha Khan (U_AISHA) to both non-archived channels with 'incident' in their name: **incident-comms** and **incident-response**. Both invitations were confirmed by the API.

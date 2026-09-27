@@ -1,0 +1,1 @@
+Updated the "Fall Kickoff" cycle (Platform team, ID: c-time) that contains the "Checkout timeout during 3DS redirect" issue (PLA-1) assigned to Sam Rivera. Its end date has been pushed from September 29, 2026 to October 20, 2026.

@@ -1,0 +1,1 @@
+Successfully renamed the Growth team's document "Draft notes" (which mentioned the referral program pilot) to "Referral pilot — launch notes". The document (ID: d-target) in the Growth team now has the updated title.

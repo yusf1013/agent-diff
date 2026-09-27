@@ -1,0 +1,1 @@
+Successfully hid the 'Design Team' calendar (`design-team@northwind.example`) from the user's calendar list. This is the calendar where Kenji Sato has been shared as a writer. The calendar's `hidden` flag is now set to `true`, so it will no longer appear in the user's calendar list view, though it still exists and its events remain intact.

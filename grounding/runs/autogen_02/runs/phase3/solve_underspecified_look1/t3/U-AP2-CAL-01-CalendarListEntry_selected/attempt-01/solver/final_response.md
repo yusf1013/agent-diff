@@ -1,0 +1,1 @@
+Successfully renamed the 'Product Team' calendar (product_team_eng) to 'Eng Product Sync' by setting the summaryOverride on the calendar list entry. The calendar now displays as "Eng Product Sync" in the user's calendar view.

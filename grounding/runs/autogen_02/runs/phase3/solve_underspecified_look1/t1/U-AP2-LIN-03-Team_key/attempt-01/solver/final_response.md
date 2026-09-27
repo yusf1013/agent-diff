@@ -1,0 +1,1 @@
+Renamed the private team "Growth" (id: t-growth) — whose description mentions the Q3 OKR pilot rollout — to "Growth Pod". The teamUpdate mutation returned success, and the team now shows name "Growth Pod" while remaining private.

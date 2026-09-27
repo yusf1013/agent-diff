@@ -1,0 +1,1 @@
+Successfully pushed the end date of the "Fall Kickoff" cycle (c-target) to October 20, 2026. This cycle contains the "Checkout timeout on payment retry" issue (WEB-1) assigned to Sam Rivera. The cycle now runs from September 29 to October 20, 2026 (previously September 29 to October 13).

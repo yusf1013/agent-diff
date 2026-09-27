@@ -1,0 +1,1 @@
+Successfully renamed the checked calendar "Product Team" (product_team_eng) to "Eng Product Sync" by setting the summary override. The calendar now displays as "Eng Product Sync" in your calendar list.

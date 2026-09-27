@@ -1,0 +1,1 @@
+Successfully added the tag "ready-for-review" to the "Discovery Production Set" folder (ID: 9001) in the Legal Archive. This folder holds 900,000,000 bytes (~858 MB, exceeding 800 MB) and has a shared link with "open" access. The API response confirms the tag was applied: `"tags":["ready-for-review"]`.

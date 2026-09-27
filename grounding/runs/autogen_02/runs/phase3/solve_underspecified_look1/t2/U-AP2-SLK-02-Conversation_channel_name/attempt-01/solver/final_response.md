@@ -1,0 +1,1 @@
+Successfully invited Aisha Khan (U_AISHA) to the `postmortems-hub` channel (C_POSTMORTEMS), which has the topic "Incident retros and postmortems recap channel" and is not archived. The channel now has 3 members.

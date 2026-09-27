@@ -1,0 +1,3 @@
+Successfully invited Aisha Khan (U_AISHA) to both non-archived channels with 'incident' in their name:
+1. **incident-comms** (C_INCCOMMS) — confirmed, member count now 3
+2. **incident-response** (C_INCRESP) — confirmed, member count now 4

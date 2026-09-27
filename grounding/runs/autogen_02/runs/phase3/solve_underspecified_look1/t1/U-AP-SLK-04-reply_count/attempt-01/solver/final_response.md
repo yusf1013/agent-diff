@@ -1,0 +1,1 @@
+Invited U_LEO (who posted the deploy freeze message in #incidents) to the #incident-response channel. The API confirmed the invitation was successful.

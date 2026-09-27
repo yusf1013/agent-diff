@@ -1,0 +1,1 @@
+Successfully unarchived the `incidents-checkout` channel (C_CHECKOUT), which was the archived coordination channel for the checkout outage incident (502s during payment retries).

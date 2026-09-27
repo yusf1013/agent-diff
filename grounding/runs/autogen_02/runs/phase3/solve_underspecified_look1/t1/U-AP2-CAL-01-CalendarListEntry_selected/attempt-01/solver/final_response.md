@@ -1,0 +1,1 @@
+The 'Product Team' calendar (ID: product_team_eng) has been successfully renamed to 'Eng Product Sync'. Since I don't own the calendar, I set a `summaryOverride` on the calendar list entry, which changes the display name in the user's view to "Eng Product Sync".

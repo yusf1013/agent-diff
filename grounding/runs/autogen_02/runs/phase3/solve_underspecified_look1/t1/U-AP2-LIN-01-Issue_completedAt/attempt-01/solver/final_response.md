@@ -1,0 +1,1 @@
+Successfully set the priority to Urgent (4) on the Web team's issue "Fix checkout regression" in the Website Redesign project. This issue is marked Done and its description mentions the pagination fix: "Ships the backend patch for the pagination fix along with checkout retries."
