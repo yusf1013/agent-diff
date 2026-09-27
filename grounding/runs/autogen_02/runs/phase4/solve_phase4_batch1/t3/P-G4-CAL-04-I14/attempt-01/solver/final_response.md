@@ -1,0 +1,1 @@
+I couldn't find a budget review on Friday (June 22) organized by Maya Chen. The only "budget review" event that day is **"Budget review: Q2 close"** (10:00–11:00 AM PT), but it's organized by **Omar Haddad** — Maya Chen is listed as an attendee on it, not the organizer. So there isn't one matching your description.

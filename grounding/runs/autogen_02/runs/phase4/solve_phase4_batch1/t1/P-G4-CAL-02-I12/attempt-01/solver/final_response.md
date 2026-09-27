@@ -1,0 +1,1 @@
+There is no sprint retrospective in Room 5B created by Kenji Sato. There is a "Sprint retrospective" event created by Kenji Sato, but it's located in **Room 5A** (not Room 5B). The description mentions Room 5B in passing, but the actual event location is Room 5A.

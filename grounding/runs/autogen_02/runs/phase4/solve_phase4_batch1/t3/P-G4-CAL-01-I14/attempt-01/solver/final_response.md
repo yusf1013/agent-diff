@@ -1,0 +1,1 @@
+I couldn't find a Budget Review starting at 10am on Thursday (June 21). There is a **Budget Review** on Thursday organized by Dana Whitfield, but it starts at **9:00 AM** (ending at 10:00 AM), not 10:00 AM. That event is indeed blocking time and is the only Budget Review that day. If that's the one you meant, let me know and I'll add "Room 5B" as its location.

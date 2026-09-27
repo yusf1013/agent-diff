@@ -1,0 +1,1 @@
+I looked into the "Checkout crash on Safari" issue (WEB-4), but it doesn't have any comments or a description with a "Crash log" link from PagerDuty uploaded by Maya Chen. The issue's comments list is completely empty and its description is blank. Since there's no such crash log attached to the issue, I did not update the estimate.

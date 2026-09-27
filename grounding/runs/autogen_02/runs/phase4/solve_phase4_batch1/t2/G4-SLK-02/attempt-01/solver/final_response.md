@@ -1,0 +1,1 @@
+Successfully added an "eyes" reaction to Maya Chen's release checklist message ("The release checklist is final, all items signed off for Thursday's deploy.") in #launch-plan, which Diego Alvarez had previously reacted to with a thumbsup.

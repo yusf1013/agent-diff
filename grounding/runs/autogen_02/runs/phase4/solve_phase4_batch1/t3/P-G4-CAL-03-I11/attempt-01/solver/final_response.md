@@ -1,0 +1,1 @@
+There is no "Budget review" event with Maya Chen on Thursday (June 21) on your primary calendar. The only event that day is "Roadmap sync" with Omar Haddad at 2:00 PM. There is a "Budget review" on Friday June 22 at 10:00 AM, but it's with Sam Rivera — not Maya Chen. No events with Maya Chen were found this week at all.

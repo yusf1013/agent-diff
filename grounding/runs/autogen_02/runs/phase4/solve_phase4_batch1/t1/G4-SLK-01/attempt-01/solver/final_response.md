@@ -1,0 +1,1 @@
+Successfully added the "eyes" reaction to the message from ana.torre@northwind.example in #releases that says "Release cut is ready" and has a bot (Deploy Bot) reaction of "tada".

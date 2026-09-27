@@ -1,0 +1,3 @@
+There isn't a release checklist message from Maya Chen in #launch-plan that Diego Alvarez reacted to with a thumbsup. 
+
+I found Maya's release checklist message ("Reminder: the release checklist for Thursday is pinned above, please review it."), and Diego did react to it — but with a **tada** reaction, not a thumbsup. The thumbsup on that message was from Leo, not Diego. Since the message doesn't match all the criteria you specified, I haven't added an eyes reaction.

@@ -1,0 +1,1 @@
+Updated the **Budget Review** (Thursday, June 21, 10:00 AM – 11:00 AM) to take place in **Room 5B**. Dana Whitfield created the event, Maya Chen is the organizer, and attendees Priya Nair and Omar Haddad have been notified of the change.

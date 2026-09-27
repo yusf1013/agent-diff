@@ -1,0 +1,9 @@
+I was unable to add the "eyes" reaction because no matching message was found. Here's what I determined:
+
+- The user with the email **ana.torre@northwind.example** is **U_ANATORRE** (display name: ana.torre), but they have **not** posted a message saying "Release cut is ready" in #releases.
+
+- There are two messages saying "Release cut is ready" in #releases with a bot "tada" reaction, but they are from different users:
+  - **ana.torre.pm** (U_ANAPM) – email: `a.torre@northwind.example`
+  - **ana.torres** (U_ANATORRES) – email: `ana.torres@northwind.example`
+
+None of these match the exact email **ana.torre@northwind.example**, so I cannot confirm the right message to react to.

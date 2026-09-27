@@ -1,0 +1,1 @@
+There is no "Sprint retrospective" event in Room 5B created by Kenji Sato on the primary calendar. The closest match is a "Sprint retrospective **follow-up**" (June 21, 2018, 2–3 PM) in Room 5B created by Kenji Sato, but that's a follow-up meeting, not the retrospective itself. Since no exact match exists, I haven't made any color changes.

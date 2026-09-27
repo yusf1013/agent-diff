@@ -1,0 +1,1 @@
+Successfully added the 👀 (eyes) reaction to the message "Release cut is ready" from ana.torre.pm in #releases. The message had a "tada" reaction from the deploy bot (U_DEPLOYBOT), confirming it was the correct message.

@@ -1,0 +1,1 @@
+The "Checkout crash on Safari" issue (WEB-3) exists, but it has no comments or attachments — there is no "Crash log" link from PagerDuty uploaded by Maya Chen on it. Since the specified attachment doesn't exist, I did not update the estimate.

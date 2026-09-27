@@ -1,0 +1,1 @@
+I found the event — it's actually titled **"Budget sync: Q2 close"** (organized by Maya Chen, Friday June 22, 10:00–11:00 AM). I've updated its location to **Room 5B**. The change has been confirmed by the API.

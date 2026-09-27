@@ -1,0 +1,1 @@
+I found the message from ana.torre in #releases saying "Release cut is ready", and it does have a 🎉 tada reaction. However, the reaction was added by **Diego Alvarez** (a regular user, not a bot). Since the message wasn't reacted to with tada by a bot, I haven't added the eyes reaction — the condition wasn't met.

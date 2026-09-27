@@ -1,0 +1,1 @@
+There isn't a "Budget Review" event starting at 10:00 AM on Thursday (June 21) organized by Dana Whitfield. There are two other Budget Review events that day — one at **9:00 AM** and one at **11:00 AM** — both organized by Dana Whitfield, but none at 10:00 AM. So there's no event to move to Room 5B based on your criteria.

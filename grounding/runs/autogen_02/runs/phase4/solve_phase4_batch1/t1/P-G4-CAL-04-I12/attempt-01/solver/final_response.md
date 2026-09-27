@@ -1,0 +1,1 @@
+I couldn't find a budget review on Friday (June 22) organized by Maya Chen. The closest match is a "Budget review: Q2 close" organized by Maya Chen, but it's scheduled for **Saturday, June 23** at 10:00 AM. There's also a separate "Budget review: Q2 close" on Monday, June 18 organized by Leo Park. Would you like me to move the Saturday one to Room 5B instead?

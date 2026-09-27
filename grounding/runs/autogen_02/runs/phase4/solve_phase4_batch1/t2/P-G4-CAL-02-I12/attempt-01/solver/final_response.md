@@ -1,0 +1,1 @@
+There isn't a sprint retrospective in **Room 5B** created by Kenji Sato. The only "Sprint retrospective" on your calendar was created by Kenji Sato, but it's set to **Room 5A** (Room 5B is only mentioned in the event description, not as the actual location). No changes were made.

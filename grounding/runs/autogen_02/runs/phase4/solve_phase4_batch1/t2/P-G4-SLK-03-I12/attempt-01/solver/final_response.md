@@ -1,0 +1,1 @@
+Successfully added the 👀 (eyes) reaction to Diego Alvarez's message "Gateway rollback halfway done, reverting the remaining pods." in #deployments (ts: 1789994100.000004).

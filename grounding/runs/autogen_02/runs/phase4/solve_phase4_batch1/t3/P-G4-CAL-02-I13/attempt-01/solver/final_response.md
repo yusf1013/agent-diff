@@ -1,0 +1,1 @@
+There isn't a sprint retrospective in Room 5B that was created by Kenji Sato. I found a sprint retrospective in Room 5B, but it was created by **Leo Park** (Kenji Sato is listed as the organizer, not the creator). If you meant the one organized by Kenji Sato (created by Leo Park), let me know and I can update its color to red.

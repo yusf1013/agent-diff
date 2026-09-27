@@ -1,0 +1,1 @@
+Added the 👀 (eyes) reaction to Diego Alvarez's latest message in #deployments about the gateway rollback: "Gateway rollback halfway done, reverting the remaining pods." (posted at ts 1789994100.000004).

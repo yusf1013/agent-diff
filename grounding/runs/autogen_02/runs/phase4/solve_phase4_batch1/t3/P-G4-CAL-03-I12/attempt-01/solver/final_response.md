@@ -1,0 +1,1 @@
+There is no "Budget review" event with Maya Chen on Thursday (June 21) on your primary calendar. The only "Budget review" I found is on **Friday, June 22 at 10:00 AM** with **Sam Rivera** — not Maya Chen. No event matching all your criteria (Budget review + Maya Chen + Thursday) exists, so no location change was made.

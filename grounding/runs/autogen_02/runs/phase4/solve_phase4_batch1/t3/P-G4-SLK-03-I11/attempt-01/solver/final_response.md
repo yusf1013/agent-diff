@@ -1,0 +1,1 @@
+Added the 👀 eyes reaction to Diego Alvarez's message about the gateway rollback in #deployments.

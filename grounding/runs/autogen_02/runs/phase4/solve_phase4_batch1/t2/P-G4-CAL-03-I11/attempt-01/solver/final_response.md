@@ -1,0 +1,1 @@
+There is no "Budget review" event with Maya Chen on your primary calendar for this Thursday (June 21). The only event on your calendar that Thursday is "Roadmap sync" with Omar Haddad at 2:00 PM. So there's nothing to move to Room 5B.

@@ -1,0 +1,1 @@
+There isn't a budget review on Friday (June 22) organized by Maya Chen. The only budget review she organizes is "Budget review: Q2 close" on **Saturday, June 23** at 10:00 AM – 11:00 AM. If you'd like me to move that one to Room 5B, just let me know!

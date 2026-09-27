@@ -1,0 +1,1 @@
+There isn't a card from Maya Chen in #launch-readiness that lists rollback steps. Her launch checklist card (ts `1789992300.000004`) covers **rollout steps** (open flags → ramp traffic → monitor errors), not rollback steps. The other two cards in the channel are from Diego (handoff notes) and Leo (cleanup steps) — neither lists rollback steps either. No reaction was added.

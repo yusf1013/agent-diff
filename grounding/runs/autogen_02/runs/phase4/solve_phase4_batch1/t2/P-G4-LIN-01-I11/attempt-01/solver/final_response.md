@@ -1,0 +1,1 @@
+Successfully updated the description of the "Beacon Refresh" project (id: p-beacon) to "Pivoting to usage-based pricing". This project matched all the criteria: it's high-priority, at-risk, and has the "Meridian Phase 2" milestone with a target date of December 2, 2026. The update was confirmed by the API returning `success: true`.

@@ -1,0 +1,1 @@
+There isn't a Maya Chen launch checklist card listing rollback steps in #launch-readiness. Her only card in that channel is a **verification checklist** ("confirm monitors / note owners"), not a rollback checklist. The other cards in the channel are from Diego (handoff notes) and Leo (cleanup steps) — none of them list rollback steps either. So there's nothing to react to.

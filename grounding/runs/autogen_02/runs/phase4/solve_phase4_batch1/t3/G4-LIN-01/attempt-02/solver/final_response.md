@@ -1,0 +1,1 @@
+Successfully updated the description of the "Atlas" project (id: p-atlas) to "Pivoting to usage-based pricing". This is the high-priority, at-risk project with the Meridian milestone due December 2, 2026.

@@ -1,0 +1,1 @@
+There is no overdue high-priority issue assigned to Maya Chen on the Web team. She currently has only one issue on that team — "Refresh pricing page copy" — which is **medium** priority (not high) and has a due date of **2026-09-30** (in the future, so not overdue). No estimate was changed.

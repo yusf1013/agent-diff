@@ -1,0 +1,1 @@
+There is no overdue high-priority issue assigned to Maya Chen on the Web team. Her only issue on that team is WEB-2 "Update footer links," which is high-priority but has a future due date (2026-09-21) and is already marked as "Done." No estimate was updated.

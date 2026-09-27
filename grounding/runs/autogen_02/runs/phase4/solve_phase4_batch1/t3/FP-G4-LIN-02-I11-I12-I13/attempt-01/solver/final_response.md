@@ -1,0 +1,1 @@
+There isn't an overdue high-priority issue assigned to Maya Chen on the Web team. She has three high-priority issues ("Update footer links", "Refresh pricing page copy", and "Add loading spinner to gallery"), but all of them have due dates in the future (Sep–Oct 2026), so none are overdue.

@@ -1,0 +1,1 @@
+I searched your primary calendar for a "Budget Review" on Thursday, June 21st, and found one organized by Dana Whitfield — however, it starts at **9:00 AM**, not 10:00 AM. There is no Budget Review starting at 10 AM. If the 9 AM event is the one you meant, let me know and I'll move it to Room 5B.

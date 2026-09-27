@@ -1,0 +1,1 @@
+I couldn't find a "Budget Review" event starting at 10am on Thursday, June 21. There are two Budget Review events that day, both organized by Dana Whitfield, but they start at **9:00 AM** and **11:00 AM** respectively — neither is at 10am. If you'd like me to change the location on one of those two, just let me know which one.

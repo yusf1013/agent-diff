@@ -1,0 +1,1 @@
+There isn't an overdue high-priority issue assigned to Maya Chen on the Web team. The only high-priority issue she has on that team is "Add loading spinner to gallery," which is due 2026-10-10 (13 days from today, 2026-09-27) — so it's still in the future and not overdue. No changes were made.

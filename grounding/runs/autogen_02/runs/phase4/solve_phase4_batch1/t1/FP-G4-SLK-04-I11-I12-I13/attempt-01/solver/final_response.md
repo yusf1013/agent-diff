@@ -1,0 +1,1 @@
+Found Maya Chen's launch checklist card listing rollback steps in #launch-readiness (timestamp: 1789989900.000002) with the text "Launch checklist: rollback steps — 1) halt deploys 2) restore snapshot 3) verify health." Successfully added the 👀 (eyes) reaction to that message.

@@ -1,0 +1,1 @@
+I searched your calendar for a "Budget Review" event starting at 10 AM on Thursday (June 21). I found a "Budget Review" at that time, but it is **organized by Priya Nair**, not Dana Whitfield — Dana is listed as an attendee. No event matching your description (Budget Review, 10 AM Thursday, organized by Dana Whitfield) exists on your calendar, so no location change was made.

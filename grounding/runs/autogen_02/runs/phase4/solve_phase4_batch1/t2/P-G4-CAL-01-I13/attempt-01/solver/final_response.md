@@ -1,0 +1,1 @@
+There isn't a Budget Review at 10am on Thursday (June 21). However, there is a **Budget Review** organized by Dana Whitfield that starts at **11:00 AM** (11–12 PM) on Thursday. If that's the one you meant, let me know and I'll move it to Room 5B.

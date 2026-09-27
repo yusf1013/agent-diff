@@ -1,0 +1,1 @@
+I found one message in #releases from ana.torre@northwind.example that says "Release cut is ready" (timestamp 1789992480.000004). It does have a **tada** reaction, but it was added by **Diego Alvarez** (U_DIEGO), who is a regular user, not a bot. There is no message matching your criteria (reacted to with tada by a **bot**), so I did not add the eyes reaction.

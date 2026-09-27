@@ -1,0 +1,1 @@
+Found the **Budget Review** event on Thursday, June 21 at 10:00 AM (created by Dana Whitfield, organized by Maya Chen) and updated its location to **Room 5B**. The event still blocks time on your calendar as before.
