@@ -408,7 +408,25 @@ them because the top-level reads work.
 
 ### 6.3 The runs on Qwen
 
-*Pending: batch 1 (72 tests) and batch 2 (87 tests) run after Phase 3's looks.*
+**Batch 1** (the 72 regular tests of 14 scenarios, 216 trials, 04:39–05:56;
+[runs/phase4/solve_phase4_batch1](runs/phase4/solve_phase4_batch1)). Judged by judge v2 on autogen_01's selection
+(every trial that is not mechanically clean, plus 20% of the clean ones: 95) and the blind sample (18 more), then
+scored with autogen_01's rules. *The yield table follows when the judge ends.*
+
+**What the numbers will not show** (from the blind labels, written before any verdict):
+- **G4-SLK-03's exposures count the wrong fact.** Its near misses fail the time the request states ("posted at
+  12:40"), not the declared D:latest_message (my pre-run review rated the scenario flawed). Any exposure of that
+  fact from this scenario is an exposure of the time condition.
+- **G4-SLK-04's cover failure rides on the replica's search.** The target's rollback steps are in its card, and the
+  replica's `search.messages` matches message text only, so a search returns just the plain-text near miss. Whether
+  real Slack's search reads card text is a fidelity question this study cannot settle.
+- **P-G4-LIN-01-I13 passes a probe that tests nothing** (§9): so one of Phase 4's "new facts with a near miss",
+  R:ProjectMilestone.projectId, has no working probe.
+- **The yield comparison crosses judges:** autogen_01's arms were judged by judge v1, Phase 4 by judge v2. On Phase 1
+  the two agree with my labels in 237 and 239 of 252 trials.
+- **Timeouts:** 5 of 216, all Linear (17 to 26 steps), retried; the retries are the ones scored.
+
+**Batch 2** (87 tests): *pending (queued after the robustness runs).*
 
 ### 6.4 The policy variants of the new scenarios
 
