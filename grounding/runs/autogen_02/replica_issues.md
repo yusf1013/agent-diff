@@ -12,8 +12,8 @@ study's runs are judged. None is fixed in `backend/`.
 | Calendar | `events.list` ignores `eventTypes` | ignored filter | autogen_01 | as above | replica notes |
 | Calendar | a fixed clock (2018-06-17); relative days ("on Thursday") are anchored to the seed's week | property | autogen_02 | none; Qwen found the date | report §9 (dates) |
 | Linear | `issues(filter: {parent})` and `subscribers` are ignored; `documents(filter: {project: {name}})` is ignored | ignored filter | autogen_01 | as above | replica notes |
-| Linear | every `projects` query errors (`searchProjects` works) | gap | autogen_01 | long trials and timeouts: 5 of batch 1's, most of the policy run's 16 | replica notes; report §9 |
-| Linear | nested connections fail: `issue { attachments }`, `team { cycles }`, `team { projects }`, `comment { children }` (the top-level queries work) | gap | autogen_01 | as above; a solver that stops at the error has not established anything | replica notes |
+| Linear | every `projects` query errors (`searchProjects` works) | gap | autogen_01 | long trials and timeouts in G4-LIN-01's tests: 2 of batch 1's 5 timeouts, 9 of the policy run's 16 | replica notes; report §9 |
+| Linear | nested connections fail: `issue { attachments }`, `team { cycles }`, `team { projects }`, `comment { children }` (the top-level queries work) | gap | autogen_01 | the same in G4-LIN-04's tests: 3 of batch 1's timeouts, 7 of the policy run's; a solver that stops at the error has not established anything | replica notes |
 | Linear, Box, Slack | no fixed clock: "overdue" and other facts relative to today depend on the run date | property | **new**: 05:33 | G4-LIN-02 is valid only for runs from 09-23 to 09-30 | report §9; `eval/phase4_review.json` |
 | Slack | `users.conversations` ignores `types` | ignored filter | autogen_01 | as above | replica notes |
 | Slack | `search.messages` matches message text only, not card (`blocks`) text | fidelity question | **new** as an effect (the notes say "matches message text"): 05:45 | a search finds only plain-text near misses of a card condition (G4-SLK-04) | report §6.3 |
