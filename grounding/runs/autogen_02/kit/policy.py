@@ -92,14 +92,41 @@ def condition_keys(query: dict, claims: list, fact: str) -> set:
     return keys
 
 
-def relaxed_query(query: dict, keys: set) -> dict:
+def relaxed_query(query: dict, keys: set) -> tuple[dict, set]:
+    """The query with every filter and edge named in `keys` removed; an edge goes with its whole subtree. Returns the
+    relaxed query and every key removed (subtrees included). fdc's DROP is not used for edges: it keeps the edge
+    unjoined, so a count on it (a derived fact such as "holds exactly two files") would still apply."""
     out = copy.deepcopy(query)
-    present = set(fdc.keys(out))
-    for key in sorted(keys):
-        if key in present:
-            out = fdc.mutate(out, {"type": "DROP", "target": key})
-            present = set(fdc.keys(out))
-    return out
+    removed = set()
+
+    def subtree(node):
+        for f in node.get("filters", []):
+            removed.add(f.get("key"))
+        for e in node.get("edges", []):
+            removed.add(e.get("key"))
+            subtree(e["node"])
+
+    def walk(node):
+        kept_filters = []
+        for f in node.get("filters", []):
+            if f.get("key") in keys:
+                removed.add(f.get("key"))
+            else:
+                kept_filters.append(f)
+        node["filters"] = kept_filters
+        kept_edges = []
+        for e in node.get("edges", []):
+            if e.get("key") in keys:
+                removed.add(e.get("key"))
+                subtree(e["node"])
+            else:
+                walk(e["node"])
+                kept_edges.append(e)
+        node["edges"] = kept_edges
+
+    walk(out)
+    removed.discard(None)
+    return out, removed
 
 
 def _same(a, b):
@@ -112,11 +139,12 @@ def drop_f(case: dict, fact: str, prompt: str | None, variant_id: str | None = N
     sid, ref = base["case_id"], base["references"][0]
     claims = ref["claims"]
     keys = condition_keys(ref["query"], claims, fact)
-    relaxed = relaxed_query(ref["query"], keys)
+    relaxed, removed = relaxed_query(ref["query"], keys)
     seed = _check_seed(base)
     full = fdc.evaluate(seed, ref["query"])
     selected = fdc.evaluate(seed, relaxed)
-    dropped_facts = sorted({c["requirement"] for c in claims if condition_keys(ref["query"], claims, c["requirement"]) & keys})
+    dropped_facts = sorted({c["requirement"] for c in claims
+                            if condition_keys(ref["query"], claims, c["requirement"]) & removed})
     freed = [c["witness"] for c in claims if c["requirement"] in dropped_facts]
     expected_matches = list(full) + [w for w in freed if not any(_same(w, f) for f in full)]
     problems = []
@@ -151,9 +179,9 @@ def drop_f(case: dict, fact: str, prompt: str | None, variant_id: str | None = N
                      "family": _family(claims, [i for i, c in enumerate(claims) if c["requirement"] in dropped_facts])}
 
 
-def clone(case: dict, changes: dict, new_key: str, variant_id: str | None = None) -> tuple:
+def clone(case: dict, changes: dict, new_key: str, variant_id: str | None = None, skip_children=()) -> tuple:
     """The underspecified clone: the target copied with `changes` (fields the request does not use), and a copy of
-    every row that points at it. Returns (variant, meta)."""
+    every row that points at it, except in the `skip_children` tables. Returns (variant, meta)."""
     base = _base(case)
     sid, ref = base["case_id"], base["references"][0]
     table = ref["query"]["table"]
@@ -173,7 +201,7 @@ def clone(case: dict, changes: dict, new_key: str, variant_id: str | None = None
     base["seed"][table].append(new_row)
     copied = 0
     for child, fk_col, ref_table, ref_col in _foreign_keys(base["domain"]):
-        if ref_table != table or ref_col != col or child not in base["seed"] or child == table:
+        if ref_table != table or ref_col != col or child not in base["seed"] or child == table or child in skip_children:
             continue
         child_pk = effect_key(base["domain"], child)
         for r in [r for r in base["seed"][child] if str(r.get(fk_col)) == target_id]:

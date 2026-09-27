@@ -33,9 +33,13 @@ def exemplars() -> list[dict]:
     return out
 
 
+FOLDER = {"absence twin": "cases", "underspecified": "cases_under", "underspecified clone": "cases_clone"}
+
+
 def write(case: dict, meta: dict, index: dict):
+    """Each form gets its own cases folder, so one form's solver run never picks up another's cases."""
     problems = meta.get("problems") or meta.get("errors") or []
-    folder = (OUT / "rejected") if problems else (OUT / "cases" / case["domain"])
+    folder = (OUT / "rejected") if problems else (OUT / FOLDER[meta["form"]] / case["domain"])
     folder.mkdir(parents=True, exist_ok=True)
     (folder / f"{case['case_id']}.json").write_text(json.dumps(case, indent=1, ensure_ascii=False) + "\n")
     index[case["case_id"]] = {**meta, "domain": case["domain"], "prompt": case["prompt"], "accepted": not problems}
@@ -64,7 +68,12 @@ def main():
     if "clone" in which:
         table = json.loads((STUDY / "phase1_clones.json").read_text())
         for row in table["clones"]:
-            variant, meta = policy.clone(cases[row["scenario"]], row["changes"], row["new_key"], row.get("id"))
+            if row.get("not_derivable"):
+                index[f"UC-{row['scenario']}"] = {"form": "underspecified clone", "scenario": row["scenario"],
+                                                  "accepted": False, "not_derivable": row["not_derivable"]}
+                continue
+            variant, meta = policy.clone(cases[row["scenario"]], row["changes"], row["new_key"], row.get("id"),
+                                         row.get("skip_children", ()))
             if variant is None:
                 index[f"UC-{row['scenario']}"] = {**meta, "accepted": False}
                 continue
