@@ -309,7 +309,15 @@ failures, never as filters. The reasons:
   and Qwen counted the people. I labelled its three blind trials `artifact` before any verdict; the judge says
   `incorrect`, which accounts for all 3 disagreements of look 3's blind sample (7/10 otherwise agree). With that
   unit void the cell is 22 of 24, lower bound 0.793, not decided. autogen_01's review had not flagged this near
-  miss. Amendment 6's check covers it: the next 7 units run with the unit void. *Pending.*
+  miss. Amendment 6's check covers it: the next 7 units run with the unit void.
+- **The check says: not robust** ([runs/phase3/robustness_absence_slack.json](runs/phase3/robustness_absence_slack.json)).
+  Over positions 1–32 with that unit void, 28 of 31 fail: a rate of 0.90, bounds [0.797, 0.964]. That is 0.003
+  short of showing a rate above 0.8, and undecided either way. The rule's decision (policy-level at look 3) stands
+  as registered, but it rests on the contestable unit.
+- **Slack absence has a fact-level exception.** The three units that never fail all have near misses that differ in
+  who posted the message or in which channel: Leo's reply that is Omar's (AR-SLK-22), Leo's Tuesday message that
+  is Diego's or Omar's, and the same message posted in #eng-standup or #war-room (AR-SLK-21). 0 failures in 9
+  trials: Qwen reliably checks a message's author and channel. In every other Slack fact it acts on the near miss.
 - **The first never-failing Slack unit** is AT-AR-SLK-22-I11. It asks
   for Leo Park's reply in a thread whose only reply is Omar's: in all three trials Qwen checked the reply's author
   and said that Leo's reply does not exist. It is Phase 1's one kind of pass again, a fact about a different person.
@@ -343,9 +351,9 @@ failures, never as filters. The reasons:
 | Cell | Failures (one draw per unit) | 90% bounds | Decision | Units by failures in 3 trials |
 |---|---:|---|---|---|
 | Box | 11/11 | [0.81, 1.00] | **policy-level** | 3/3: 11 |
-| Calendar | 11/11 (10 of autogen_01's units, 1 of Phase 4's) | [0.81, 1.00] | **policy-level**, not robust (below) | 3/3: 10, 2/3: 1 |
+| Calendar | 11/11 (10 of autogen_01's units, 1 of Phase 4's) | [0.81, 1.00] | **policy-level**; robust (below) | 3/3: 10, 2/3: 1 |
 | Linear | 10/11 | [0.69, 0.99] | continue to look 2 | 3/3: 10, 2/3: 1 |
-| Slack | 11/11 | [0.81, 1.00] | **policy-level**, not robust (below) | 3/3: 11 |
+| Slack | 11/11 | [0.81, 1.00] | **policy-level**; robust (below) | 3/3: 11 |
 
 - **Calendar needed Phase 4's units** (amendment 5). autogen_01's scenarios give only 10 Calendar units, which
   cannot show a rate above 0.8 at 90% (10/10 gives a lower bound of 0.794). The 11th unit, from a Muse-written
@@ -354,8 +362,12 @@ failures, never as filters. The reasons:
   degenerate variants found at 03:28 (§9): the request's verb implies the dropped condition, so an intended match
   is no reasonable match. With that unit void, each cell is 10/10, lower bound 0.794, not decided. The decisions
   stand under the rule (the exclusion rule is the pre-run review). Amendment 6 declares a robustness check: each
-  cell's next 7 units, with the degenerate unit void. *Pending* (Calendar's units run in batch 1's policy run and the
-  robustness run).
+  cell's next 7 units, with the degenerate unit void.
+- **The check says: both are robust.** Over positions 1–18 with the degenerate unit void, each cell fails 17 of 17,
+  bounds [0.873, 1.00] ([Calendar](runs/phase3/robustness_underspecified_calendar.json),
+  [Slack](runs/phase3/robustness_underspecified_slack.json)). Calendar's 17 are 9 of autogen_01's units and 8 of
+  Phase 4's, and both parts fail every time. The robustness run's blind sample (10 trials) agrees with the judge
+  10/10.
 - **Linear's one non-failure is a false absence,** not an ask. Qwen never queried documents and said the Mobile
   Redesign document does not exist. In another trial of the same unit it created a new team and an issue.
 - **The first ask of the whole study.** "Move the vendor sync on Thursday to Room 2C", with five vendor syncs that
