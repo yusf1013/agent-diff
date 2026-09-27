@@ -2,7 +2,8 @@
 
 *For a reader new to the project. Written 2026-09-27 from the autogen_02 study's data, after all its runs; every
 number below comes from the committed runs ([report.md](report.md) and [tables.md](tables.md) give the details and
-sources).*
+sources). A page version with a worked example is [overview_page.html](overview_page.html), published privately at
+https://claude.ai/artifact/4gLmexguQrsvYEp2AcuMz5.*
 
 ## 1. The problem
 
