@@ -1,0 +1,1 @@
+Diego Alvarez's message about the gateway rollback in #deployments ("Gateway rollback finished ahead of schedule.") does **not** meet the condition. It currently has **5** eyes reactions (from Aisha, Leo, Maya, Omar, and Priya), not exactly 3. Therefore, no thumbsup reaction was added.

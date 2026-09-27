@@ -1,0 +1,1 @@
+I looked through your calendar list and there isn't a calendar called "Team Travel" that you own. Your calendar list only contains "Quarterly Reviews" (reader access) and "Social" (writer access), neither of which you own. So there's nothing to hide.

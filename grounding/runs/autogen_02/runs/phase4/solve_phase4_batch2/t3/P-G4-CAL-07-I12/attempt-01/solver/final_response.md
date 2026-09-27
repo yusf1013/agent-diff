@@ -1,0 +1,1 @@
+There isn't a Quarterly planning meeting on Thursday (June 21) that Dana Whitfield declined. I found one "Quarterly planning" event scheduled for Thursday at 4:00 PM – 4:30 PM, but Dana Whitfield's response status on that meeting is **tentative**, not declined. Since it doesn't match the criteria you specified, I did not make any changes.

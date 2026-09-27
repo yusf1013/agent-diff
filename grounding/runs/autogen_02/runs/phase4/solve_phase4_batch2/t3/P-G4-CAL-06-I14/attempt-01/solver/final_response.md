@@ -1,0 +1,1 @@
+There isn't a Thursday quarterly planning lunch on Leo Park's calendar. In fact, his calendar (cal-leo-park@northwind.example, set to America/New_York) currently has no events at all, so there was nothing to move to Room 5B.

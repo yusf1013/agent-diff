@@ -1,0 +1,1 @@
+There is no Quarterly planning meeting scheduled for this Thursday (June 21) that Dana Whitfield declined. However, there is a "Quarterly planning" meeting on **Wednesday, June 20** from 10:00 AM–11:00 AM PT where Dana Whitfield has declined. If you'd like me to move that Wednesday meeting to Room 5B instead, just let me know!

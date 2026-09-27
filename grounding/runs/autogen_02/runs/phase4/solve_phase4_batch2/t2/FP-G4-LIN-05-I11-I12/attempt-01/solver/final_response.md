@@ -1,0 +1,1 @@
+There isn't an issue assigned to Maya Chen in the Web team's cycle ending October 12. The only cycles with her assigned issues are Cycle 11 (ending October 5) and Cycle 13 (ending October 19), so no action was taken.

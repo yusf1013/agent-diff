@@ -1,0 +1,1 @@
+Successfully set the estimate to 3 for the issue "Checkout button unresponsive on Safari" (i-target), which is in the Todo state, assigned to Maya Chen, in the Web team, and has the Bug label from the Web team.

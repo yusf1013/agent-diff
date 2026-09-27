@@ -1,0 +1,1 @@
+There is a "Quarterly planning" meeting on Thursday, June 21 at 12:00 PM, but Dana Whitfield is the **organizer** of that meeting, not an attendee who declined it. The attendee who declined was **Omar Haddad**. So there's no Quarterly planning meeting on this Thursday where Dana Whitfield declined — I'm not making the change.

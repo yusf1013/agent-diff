@@ -1,0 +1,1 @@
+There is no "Thursday quarterly planning lunch" on Leo Park's calendar. In fact, Leo Park's calendar (set to New York time) is currently completely empty — it has no events at all. Nothing to move to Room 5B.

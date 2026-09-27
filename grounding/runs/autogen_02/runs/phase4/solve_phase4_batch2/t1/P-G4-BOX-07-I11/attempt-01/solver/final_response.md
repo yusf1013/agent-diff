@@ -1,0 +1,1 @@
+There is no hub that matches your exact criteria. The "Product Launch" hub (ID 8101) does contain the "Launch Plan.pdf" file, but its Field Photos item is a **file** ("Field Photos contact sheet.jpg"), not a **folder** named "Field Photos". No other hub contains both a "Field Photos" folder and a "Launch Plan" file. So I did not update the description.

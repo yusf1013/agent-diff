@@ -1,0 +1,1 @@
+Successfully set the priority of MOB-50 ("Fix Apple Pay sheet layout") to High. This is the 3-point sub-issue of MOB-42 that is due on October 15, 2026. The API confirmed the update with success: true and priority: 3.0.

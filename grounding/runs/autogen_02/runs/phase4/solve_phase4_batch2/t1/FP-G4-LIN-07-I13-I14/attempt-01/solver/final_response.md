@@ -1,0 +1,1 @@
+There is no issue assigned to Maya Chen in the Atlas project in Web's Cycle 4. Maya Chen has two issues in Cycle 4, but both belong to the **Beacon** project (WEB-5 and WEB-6). The only issue in the Atlas project is "Atlas rollout tracker" (WEB-4), which is assigned to Leo Park and is in Cycle 3.

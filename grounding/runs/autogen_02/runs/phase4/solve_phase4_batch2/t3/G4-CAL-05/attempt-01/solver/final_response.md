@@ -1,0 +1,1 @@
+Successfully hid the "Team Travel" calendar (team-travel@northwind.example) that you own. It is now marked as `hidden: true` in your calendar list. Note: I left the other similarly-named calendars ("Travel Board" and the external "Team Travel" you have writer access to) unchanged.

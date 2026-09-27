@@ -1,0 +1,1 @@
+There is no issue assigned to Maya Chen in the Atlas project in Web's Cycle 4. The only issue Maya Chen is assigned to in Cycle 4 is WEB-5 ("Correct prorated totals on invoices"), but that's in the **Beacon** project, not Atlas. The only issue in the **Atlas** project is WEB-4 ("Atlas rollout tracker"), but it's assigned to **Leo Park** and in **Cycle 3**.

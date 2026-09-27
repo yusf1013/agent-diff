@@ -1,0 +1,1 @@
+There is no Todo issue in the Web team assigned to Maya Chen with the Bug label. I searched for issues matching all four criteria (Web team, assigned to Maya Chen, Bug label from the Web team, and Todo state) and found none. In fact, there are no issues at all in the Web team assigned to Maya Chen with the Bug label, regardless of their state.

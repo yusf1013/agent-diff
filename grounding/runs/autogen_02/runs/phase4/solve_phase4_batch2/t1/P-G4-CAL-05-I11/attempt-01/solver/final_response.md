@@ -1,0 +1,1 @@
+I checked your calendar list and there isn't a calendar called "Team Travel" that you own. The only calendar you own is **"Travel Board"** (team-travel-board@northwind.example). That may be the one you're thinking of — would you like me to hide that one instead?

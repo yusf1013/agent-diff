@@ -1,0 +1,1 @@
+There is no "Quarterly planning meeting" scheduled for this Thursday (June 21). The only event on your calendar for that day is a "Team lunch" at 12:00 PM, which doesn't match. So there's nothing to move to Room 5B.

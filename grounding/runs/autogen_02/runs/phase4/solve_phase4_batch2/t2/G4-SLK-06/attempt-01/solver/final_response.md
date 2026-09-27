@@ -1,0 +1,1 @@
+Successfully added a thumbsup reaction to Diego Alvarez's message "Gateway rollback is done, error rate is back to normal." in the #deployments channel. This message already had exactly 3 eyes reactions from U_LEO, U_OMAR, and U_PRIYA.

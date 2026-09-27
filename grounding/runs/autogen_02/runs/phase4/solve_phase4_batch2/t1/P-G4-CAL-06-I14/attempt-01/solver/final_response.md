@@ -1,0 +1,1 @@
+I searched Leo Park's calendar (set to America/New_York) for a Thursday quarterly planning lunch event, but no such event exists. In fact, the calendar is completely empty — there are no events at all. There is nothing to move to Room 5B.

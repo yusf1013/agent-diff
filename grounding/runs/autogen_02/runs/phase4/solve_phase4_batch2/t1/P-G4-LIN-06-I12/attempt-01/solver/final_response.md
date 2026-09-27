@@ -1,0 +1,1 @@
+There is no Todo issue assigned to Maya Chen in the Web team with the Bug label from the Web team. The closest match is WEB-4 ("Profile avatar upload fails"), which is in the Todo state, assigned to Maya Chen, and in the Web team, but it carries the "Bug" label from the **Mobile** team, not the Web team. So no estimate was set.

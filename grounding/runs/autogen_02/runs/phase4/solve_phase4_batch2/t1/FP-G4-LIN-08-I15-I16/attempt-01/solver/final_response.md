@@ -1,0 +1,1 @@
+MOB-42 ("Checkout crash on launch") has only one sub-issue: **MOB-57 – "Polish saved-card search"**, which has an estimate of **5 story points** and is due **October 22, 2026**. There is no sub-issue with 3 story points due on October 15, so no priority change was made.

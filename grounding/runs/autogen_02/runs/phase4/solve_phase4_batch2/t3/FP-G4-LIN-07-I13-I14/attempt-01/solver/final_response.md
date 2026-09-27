@@ -1,0 +1,1 @@
+There is no issue assigned to Maya Chen in the Atlas project under the Web team. The only issue in the Atlas project (WEB-4: "Atlas rollout tracker") is assigned to Leo Park. Maya Chen's two issues in the Web team (WEB-5 and WEB-6) both belong to the Beacon project, not Atlas. No action was taken since there is no matching issue to update.

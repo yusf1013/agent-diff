@@ -1,0 +1,1 @@
+There isn't a Quarterly planning meeting scheduled for this Thursday (June 21) that Dana Whitfield declined. I did find a "Quarterly planning" event, but it's scheduled for **Wednesday, June 20** at 10:00 AM (not Thursday). In that event, Dana Whitfield has declined, and Omar Haddad accepted. If you'd like me to move that Wednesday meeting to Room 5B instead, just let me know.

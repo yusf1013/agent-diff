@@ -1,0 +1,1 @@
+Updated the priority of **MOB-52** ("Fix Apple Pay sheet analytics") — the 3-point sub-issue of MOB-42 due on October 15 — to **High**. It previously had a priority of Medium (3) and is now set to High (2).

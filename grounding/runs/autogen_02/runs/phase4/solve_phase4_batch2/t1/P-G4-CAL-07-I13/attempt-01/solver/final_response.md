@@ -1,0 +1,1 @@
+There isn't a Quarterly planning meeting this Thursday that Dana Whitfield declined. I found a "Quarterly planning" event on Thursday, June 21 at 12:00 PM, but Dana Whitfield is the **organizer** of that meeting (not a declining attendee). The attendee who declined is **Omar Haddad**. Since no meeting matches your criteria, I haven't made any changes.

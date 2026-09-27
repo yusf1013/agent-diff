@@ -1,0 +1,1 @@
+There is no issue assigned to Maya Chen in the Web team's cycle ending October 12. Her only assigned issue ("Push notification opens wrong screen") is in the **Mobile** team's cycle ending October 12, not the Web team's. No update was made.

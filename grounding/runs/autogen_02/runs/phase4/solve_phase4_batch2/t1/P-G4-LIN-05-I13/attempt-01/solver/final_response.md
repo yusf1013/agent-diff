@@ -1,0 +1,1 @@
+There isn't an issue assigned to Maya Chen in the Web team's cycle ending October 12. The only issue assigned to Maya Chen in a cycle ending October 12 is "Push notification opens wrong screen" (i-mob-12), which belongs to the **Mobile** team, not the Web team. No issues in the Web team are currently assigned to her.

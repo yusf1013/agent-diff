@@ -1,0 +1,1 @@
+There is no 3-point sub-issue of MOB-42 due on October 15. The closest match is **MOB-53** ("Fix Apple Pay sheet dark mode"), which has 3 points but is due **October 16**, not October 15. No other sub-issues have a 3-point estimate.

@@ -1,0 +1,1 @@
+There is no issue assigned to Maya Chen in the Atlas project in Web's Cycle 4. In fact, Maya Chen has no issues assigned to her at all in the workspace. The issues currently in the Web team's Atlas project are assigned to Leo Park and Priya Nair, with none assigned to Maya.

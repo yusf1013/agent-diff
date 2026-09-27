@@ -1,0 +1,1 @@
+There is no issue assigned to Maya Chen in the Atlas project in Web's Cycle 4. The only issues in the Atlas project (WEB-2 "Refresh help-center illustrations" and WEB-4 "Atlas rollout tracker") are both assigned to Leo Park. No issue matching all your criteria (assigned to Maya Chen, in Atlas project, in Web's Cycle 4) exists, so no priority change was made.

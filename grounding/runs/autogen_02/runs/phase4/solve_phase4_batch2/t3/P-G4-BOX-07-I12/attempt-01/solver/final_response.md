@@ -1,0 +1,1 @@
+There is no "Product Launch" hub that includes both a "Field Photos" folder and a "Launch Plan" file. The only "Product Launch" hub (ID: 8102) contains a **"Studio Photos"** folder and a "Launch Plan.pdf" file — not a "Field Photos" folder. No changes were made.

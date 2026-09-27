@@ -1,0 +1,1 @@
+Successfully moved the "Quarterly planning lunch" event on Leo Park's calendar (America/New_York timezone) to **Room 5B**. The event is scheduled for Thursday, June 21, 2018 at 12:00 PM – 1:00 PM (10:00 AM – 11:00 AM Eastern Time).

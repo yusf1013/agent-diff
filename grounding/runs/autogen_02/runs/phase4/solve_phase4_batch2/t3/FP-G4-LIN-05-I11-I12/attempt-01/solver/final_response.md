@@ -1,0 +1,1 @@
+There is no Web team cycle ending October 12. The Web team's cycles currently end on October 5 (Cycle 11) and October 19 (Cycle 13). Maya Chen's Web team issues are in those two cycles, so there's no issue to update the estimate on.

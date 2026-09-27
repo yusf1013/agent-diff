@@ -1,0 +1,1 @@
+There isn't a Thursday quarterly planning lunch on Leo Park's calendar that is set to New York time. The only "Quarterly planning lunch" event found on his calendar (Thursday, June 21, 2018) is explicitly set to America/Los_Angeles time (12:00 PM – 1:00 PM PDT), not New York time. I did not make any changes.

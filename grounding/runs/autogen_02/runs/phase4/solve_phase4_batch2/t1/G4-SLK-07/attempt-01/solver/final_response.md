@@ -1,0 +1,1 @@
+Successfully set the topic of the private channel `release-ops` (C_REL) — where Diego Alvarez posted "Gateway rollback finished on prod, the error rate is back to baseline." — to "Post-release monitoring".

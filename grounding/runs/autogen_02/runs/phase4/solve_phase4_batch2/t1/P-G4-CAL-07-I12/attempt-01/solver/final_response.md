@@ -1,0 +1,1 @@
+There is no Quarterly planning meeting this Thursday that Dana Whitfield declined. The only Quarterly planning meeting on Thursday, June 21 (4:00–4:30 PM) shows Dana Whitfield's status as **tentative**, not declined. No action was taken.

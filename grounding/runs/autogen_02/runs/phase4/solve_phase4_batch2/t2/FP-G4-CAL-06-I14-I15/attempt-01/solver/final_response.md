@@ -1,0 +1,1 @@
+I checked Leo Park's calendar (cal-leo-park@northwind.example), which is set to America/New_York, and there is no "Thursday quarterly planning lunch" event (or any events at all) on it. There is nothing to move to Room 5B.

@@ -1,0 +1,3 @@
+There is no message from Diego Alvarez about a gateway rollback. Diego's only message in the workspace is about a deploy checklist in the private channel "deploy-queue." The gateway rollback message you may be thinking of was posted by **Leo Park** (not Diego) in the same private channel (#deploy-queue): *"The gateway rollback runbook still needs a second reviewer before Friday."*
+
+Since no message from Diego about the gateway rollback exists, I did not set a channel topic. Let me know if you'd like me to set the topic of #deploy-queue to "Post-release monitoring" based on Leo's message instead.

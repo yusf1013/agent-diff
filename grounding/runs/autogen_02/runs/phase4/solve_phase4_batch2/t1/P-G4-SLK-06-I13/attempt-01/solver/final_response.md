@@ -1,0 +1,1 @@
+Diego Alvarez's message about the gateway rollback ("Gateway rollback finished ahead of schedule." in #deployments) currently has **5 eyes reactions** (from Aisha, Leo, Maya, Omar, and Priya), not exactly 3. There is no message in #deployments that matches the criteria of being from Diego, about the gateway rollback, and having exactly 3 eyes reactions. No reaction was added.

@@ -1,0 +1,1 @@
+There is no 3-point sub-issue of MOB-42 due on October 15. The only sub-issue of MOB-42 is **MOB-57** ("Polish saved-card search"), which is a 5-point issue due on October 22. The 3-point issue due on October 15 that you might be thinking of is **MOB-55** ("Fix Apple Pay sheet layout follow-up"), but it is a sub-issue of **MOB-421**, not MOB-42.

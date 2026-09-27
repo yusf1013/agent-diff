@@ -1,0 +1,1 @@
+There is no issue assigned to Maya Chen in the Web team's cycle ending October 12 (Cycle 12). Her only issue in the Web team — "Search results missing thumbnails" — is in Cycle 11, which ends October 5. No estimate was changed.

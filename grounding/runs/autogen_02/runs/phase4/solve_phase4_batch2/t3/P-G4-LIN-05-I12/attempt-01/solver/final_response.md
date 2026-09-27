@@ -1,0 +1,1 @@
+There is no issue assigned to Maya Chen in the Web team's cycle ending October 12 (Cycle 12). That cycle contains no issues at all. Maya Chen's only issue in the Web team is **WEB-3** ("Receipt email shows wrong total"), which is in **Cycle 13** (Oct 12 – Oct 19). So there's no estimate to update.

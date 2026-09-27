@@ -1,0 +1,1 @@
+There is no issue assigned to Maya Chen in the Atlas project in Web's Cycle 4. The two issues Maya Chen has in Web's Cycle 4 are WEB-5 ("Correct prorated totals on invoices") and WEB-6 ("Atlas: update empty-state copy in settings"), but both are in the **Beacon** project, not the Atlas project. I was unable to set the priority since no matching issue exists.

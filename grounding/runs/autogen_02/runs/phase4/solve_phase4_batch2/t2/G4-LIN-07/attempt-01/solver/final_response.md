@@ -1,0 +1,1 @@
+Successfully set the priority to High on issue WEB-1 ("Fix checkout timeout on Safari"), which is assigned to Maya Chen in the Atlas project in Web's Cycle 4. The priority was updated from No Priority (0) to High (2).

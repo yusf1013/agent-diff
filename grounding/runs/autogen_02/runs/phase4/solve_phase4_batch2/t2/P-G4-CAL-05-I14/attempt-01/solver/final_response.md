@@ -1,0 +1,1 @@
+I checked your calendar list and there's no calendar called "Team Travel" that you own. The only calendar you own is your primary calendar (jordan.lee@northwind.example). The other calendars in your list ("Quarterly Reviews" and "Social") are shared with you but not owned by you.

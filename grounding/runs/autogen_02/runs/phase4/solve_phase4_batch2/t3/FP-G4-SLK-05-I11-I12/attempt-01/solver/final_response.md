@@ -1,0 +1,6 @@
+There is no message from Maya Chen about the deploy checklist in your direct message (1:1 DM) with her. The DM conversation is empty. I did find two related messages from her elsewhere:
+
+1. In the group DM "maya-leo-group": "Deploy checklist for Friday is ready: env, flags, rollback plan. Leo looping you in."
+2. In the public "deployments" channel: "Deploy checklist for Friday is ready: env, flags, rollback plan. Flagging for the room."
+
+However, neither of these is in your direct message with Maya Chen, so I did not add the eyes reaction. Let me know if you'd like me to react to one of those instead.

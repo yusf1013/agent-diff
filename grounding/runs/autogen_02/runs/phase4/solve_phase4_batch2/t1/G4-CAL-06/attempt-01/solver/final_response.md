@@ -1,0 +1,1 @@
+Successfully moved the Thursday quarterly planning lunch (June 21, 2018) on Leo Park's calendar to Room 5B. The event location was updated from none to "Room 5B" via a PATCH request to the Google Calendar API.

@@ -1,0 +1,1 @@
+There is no 3-point sub-issue of MOB-42 due on October 15. The sub-issue due on October 15 is **MOB-52** ("Fix Apple Pay sheet analytics"), but it has an estimate of **5 points**, not 3. No other sub-issues have a 3-point estimate. No changes were made.

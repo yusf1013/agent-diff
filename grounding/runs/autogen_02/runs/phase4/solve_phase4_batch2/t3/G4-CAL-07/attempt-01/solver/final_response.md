@@ -1,0 +1,1 @@
+Successfully moved the "Quarterly planning" meeting scheduled for Thursday, June 21, 2018 (10:00-11:00 AM) — the one Dana Whitfield declined — to **Room 5B**. The event location has been updated and confirmed in the API response.

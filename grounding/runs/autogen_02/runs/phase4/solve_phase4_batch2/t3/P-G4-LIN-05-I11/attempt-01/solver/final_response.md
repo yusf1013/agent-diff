@@ -1,0 +1,1 @@
+There is no issue assigned to Maya Chen in the Web team's cycle ending October 12. The only issue assigned to her in the Web team is **WEB-2** ("Search results missing thumbnails"), which is in **Cycle 11** — that cycle ends on **October 5**, not October 12. There is no cycle in the Web team with an end date of October 12, so I didn't make any changes.

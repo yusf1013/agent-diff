@@ -1,0 +1,1 @@
+Found the "Quarterly planning lunch" event on Thursday, June 21, 2018 (12:00–1:00 PM) on Leo Park's New York-timezone calendar (planning-parker@northwind.example). I updated its location to **Room 5B** successfully.

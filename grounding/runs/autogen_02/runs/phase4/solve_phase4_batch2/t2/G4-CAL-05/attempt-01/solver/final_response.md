@@ -1,0 +1,1 @@
+Successfully hid the "Team Travel" calendar (team-travel@northwind.example) that you own. It will no longer be shown in your calendar list, though its events will still be accessible if you unhide it later.

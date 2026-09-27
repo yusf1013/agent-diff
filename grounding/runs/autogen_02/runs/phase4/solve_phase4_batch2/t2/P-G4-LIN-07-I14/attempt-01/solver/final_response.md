@@ -1,0 +1,1 @@
+There is no issue assigned to Maya Chen in the **Atlas** project in Web's Cycle 4. The only issue assigned to her in Web's Cycle 4 is **WEB-6** ("Atlas: update empty-state copy in settings"), but it belongs to the **Beacon** project — not the Atlas project. The word "Atlas" only appears in the issue title, not as the project name.

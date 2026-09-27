@@ -1,0 +1,1 @@
+Successfully set the priority of MOB-55 ("Fix Apple Pay sheet layout follow-up") to **High**. This is the 3-point sub-issue of MOB-42 due on October 15. Its priority was changed from Low (4) to High (2).

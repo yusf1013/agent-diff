@@ -1,0 +1,1 @@
+There is no 3-point sub-issue of MOB-42 due on October 15. The only sub-issue of MOB-42 is MOB-57 ("Polish saved-card search"), which has a 5-point estimate and a due date of October 22. The two 3-point issues due October 15 (MOB-55 and MOB-56) belong to different parents (MOB-421 and MOB-7, respectively), not MOB-42. No update was made.

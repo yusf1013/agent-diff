@@ -1,0 +1,1 @@
+There is no 3-point sub-issue of MOB-42 due on October 15. MOB-42 ("Checkout crash on launch") has only one sub-issue: **MOB-57** ("Polish saved-card search"), which has a 5-point estimate and is due October 22. The 3-point issue due October 15 is MOB-56, but it is a sub-issue of MOB-7, not MOB-42.

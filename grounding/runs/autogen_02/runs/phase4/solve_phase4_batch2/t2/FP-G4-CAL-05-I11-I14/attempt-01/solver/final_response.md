@@ -1,0 +1,1 @@
+There is no calendar called "Team Travel" in your calendar list. The closest match is a calendar called **"Travel Board"** (team-travel-board@northwind.example), which you do own. If that's the one you meant, let me know and I can hide it for you.

@@ -1,0 +1,1 @@
+There is no issue that matches all the specified criteria. The only issue assigned to Maya Chen in the Web team is **WEB-3** ("Search results pagination broken"), which is in the "Todo" state but has **no labels** — so it does not carry the "Bug" label from the Web team. There are also no other Web team issues in the "Todo" state with the "Bug" label. No estimate was updated.

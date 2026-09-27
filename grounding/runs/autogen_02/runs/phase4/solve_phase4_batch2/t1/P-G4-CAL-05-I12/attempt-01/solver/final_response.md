@@ -1,0 +1,1 @@
+There is a calendar called "Team Travel" in your calendar list (ID: team-travel-ext@northwind.example), but you don't own it. It's owned by kenji.sato@northwind.example, and your access level is "writer." No "Team Travel" calendar that you own was found, so I didn't make any changes.
