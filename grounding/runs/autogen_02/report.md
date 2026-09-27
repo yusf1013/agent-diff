@@ -39,8 +39,8 @@ about 05:50, then its policy variants (about an hour), the robustness checks and
 - **What Qwen does:** under a presupposition it acts on the nearest record (121 of 132 absence trials at look 1),
   often saying it is "the closest match". It will even change the world to fit the request: it unarchived a channel
   to invite someone into "the channel that hasn't been archived", and created a missing team and issue. Given several
-  matches it acts on the first it finds (93 of 129) or on all of them (30). It asked which one exactly once, in
-  over 250 underspecified trials of this study. Its only reliable absence reports concern a different person (a
+  matches it acts on the first it finds (93 of 129) or on all of them (30). It asked which one exactly once in
+  the 294 underspecified trials of Phases 1 and 3. Its only reliable absence reports concern a different person (a
   reply or a message by someone else).
 - **The judge is precise, and its errors are the tests' errors.** On 93 blind Phase 3 trials, judge v2 agrees with my
   labels in 87. As a detector of failures its precision is 85/86 and its recall 85/85, with the same exposed fact in
@@ -497,8 +497,11 @@ the runs end.*
 - **The judge cannot flag a defective test** (§2.4): it scores against the stated targets. The reader is the only
   guard, and it caught 3 of my 4 defective variants.
 - **The rule "asking is correct" is untested on real trials:** no Phase 1 trial asked.
-- **Purdue throughput** is about 85 trials an hour, not the plan's 200. Phase 4 was cut to two batches, and the
-  queue runs past the sync.
+- **Purdue throughput** is 90 to 170 trials an hour, not the plan's 200. The limiter allows 19 requests a minute,
+  and a trial takes 3 to 26 steps. Phase 3's policy looks ran at 90 to 115 an hour. Batch 1's short covers and
+  probes ran at about 170 an hour, three trials at a time: 221 attempts in 77 minutes. Linear trials are the long
+  ones: all 5 of batch 1's timeouts are Linear, at 17 to 26 steps, several spent working around the `projects`
+  query that the replica fails. Phase 4 was cut to two batches, and the queue runs past the sync.
 - **Replica filters that are silently ignored** (Box `content_types`, Slack `types`, Linear `parent` and
   `subscribers`, Calendar `eventTypes`) turn some trials into artifacts. The review view now flags any use of them,
   but only a reader of the trial can say whether the result depended on it.
