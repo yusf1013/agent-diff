@@ -63,8 +63,8 @@ system** ([plan.md](plan.md), decisions N7–N15 in [decisions.md](decisions.md)
   - a probe can lose its near miss's trap when its seed drops the target: 1 in Phase 4 (§9), caught for twins by
     the code check but never run on probes;
   - "overdue" depends on a run date that nothing sets.
-- **The replica has one new bug and one open fidelity question** (§9): a Box file update unshares the file, and
-  Slack's search does not read card text.
+- **The replica has one new bug and one open fidelity question** (§9, §6.3). A Box file update unshares the file.
+  The replica's Slack search does not read card text; whether real Slack's does is open.
 
 **The plan's bars** (plan, Phase 2 "Calibration bars"; amendment 2 for the policy definition):
 
