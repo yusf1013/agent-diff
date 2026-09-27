@@ -618,16 +618,24 @@ Failure rates of policy tests on Qwen, by who built them (trials that act withou
 
 ## 8. Coverage and usage
 
-*Tables: [tables.md](tables.md) ("Catalog coverage", "Purdue usage", "Muse usage"). Final figures are written when
-the runs end.*
+*Tables: [tables.md](tables.md) ("Catalog coverage", "Purdue usage", "Muse usage").*
 
 - **Catalog coverage:** the three sources test 139 of the catalog's 255 facts with at least one near miss (55%):
   fact_coverage_02's hand-made scenarios 36, autogen_01's 82, Phase 4's 58. Phase 4 drew only facts no earlier brief
   used, so all 58 are new. 42 more are left out as known replica gaps (Linear 36, Calendar 6).
+- **The automated scenarios alone cover all 139,** including every fact the hand-made ones cover. That is 65% of the
+  213 facts the replicas can serve.
+- **By kind:** attribute 79 of 142, relation 32 of 65, binding 14 of 24, derived 10 of 15, hierarchy 4 of 9.
+- **Qwen on Purdue, the whole study:**
+  - 1,356 trial attempts, retries included, all completed;
+  - 10,802 requests, of which 2,580 were retries by the Purdue client (the usage logs do not record why);
+  - about 10.4 run-hours in all.
+- **Muse, the whole study** (writer, reader, judge, including development):
+  - 3,093 calls, $147.66 at list price and $9.47 billed;
+  - at list price: judge v2 $46, the drop-F variants $30, Phase 2's calibration $21, scenario generation $18, the
+    clones $13, judge v1 on Phase 1 $11, and development $8.
 
 ## 9. Shortcomings and problems
-
-*Draft; completed when the runs end.*
 
 **In the system:**
 - **The judge cannot flag a defective test** (§2.4): it scores against the stated targets. The reader is the only
