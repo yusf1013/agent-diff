@@ -17,8 +17,8 @@ system** ([plan.md](plan.md), decisions N7–N15 in [decisions.md](decisions.md)
 
 ## Summary
 
-*Draft of 04:47. Phase 4's runs on Qwen are still running (batch 1 until about 07:00, then its policy variants, the
-robustness checks and batch 2); their rows say pending.*
+*Draft of 04:47, timing corrected at 05:22. Phase 4's runs on Qwen are still running: batch 1's regular tests until
+about 05:50, then its policy variants (about an hour), the robustness checks and batch 2. Their rows say pending.*
 
 **What the runs show.**
 - **The system runs end to end, and a person is needed only to review and label.** From a brief to verdicts, every
