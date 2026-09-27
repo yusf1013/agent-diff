@@ -14,8 +14,9 @@ several records.
    part that states the other condition. For example, when only the song's title is removed from "the playlist that
    includes the song Blue Moon", write "the playlist that includes a song".
 2. **Keep every other condition as it was stated:** the same values, and the same words where grammar allows.
-3. **The request still asks for one record** ("the folder", "the event"). Do not use *all, every, each, any, both*,
-   and do not make the record plural.
+3. **The request still asks for one specific record,** with a definite reference ("the folder", "the event", "the
+   team's cycle"). Do not use *all, every, each, any, both*, do not make the record plural, and do not turn it into
+   "a folder" or "some event": those allow any record of the kind, so picking one would be correct.
 4. **Keep it natural.** It must read like something a real user would write. Repair grammar only as needed, for
    example by joining the remaining clauses.
 5. **Add nothing:** no new condition, no hint that several records fit, no "if there is more than one", no escape

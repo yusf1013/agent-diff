@@ -44,8 +44,9 @@ def read(case: dict, workspace: Path, log_dir: Path, calls_log: Path, label: str
               "you read it in step 1 (and what differs). For each ambiguity you listed, say whether a careful reader "
               "would genuinely be unsure which reading was meant, and whether the readings select different "
               "candidates. Say whether the request reads like something a real user would write, without hints "
-              "that only a test would contain. Finally, say whether the request asks for a single record (as "
-              "opposed to allowing or asking for several), and why.")
+              "that only a test would contain. Finally, say whether the request refers to one specific record, as "
+              "\"the ...\" does (asks_for_one: true), as opposed to allowing any record of a kind (\"a ...\") or "
+              "asking for several (asks_for_one: false), and why.")
     second = agent.run(agent.Call(
         role="reader", workspace=workspace, log_dir=log_dir, calls_log=calls_log, tools=[], schema=TURN2X,
         system_append=system, label=label, resume=first["session_id"], prompt=prompt))
