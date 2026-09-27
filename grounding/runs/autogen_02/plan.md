@@ -444,3 +444,46 @@ flagged three of the four during calibration.
   runs are chained after Phase 3's looks: absence look 1, then underspecified look 1, then batch 1, then batch 2.
 - **Relaunch:** absence look 1 first failed at 01:40 without the Purdue key (the worktree has no `grounding/.env`).
   It was relaunched at 01:41 with `GROUNDING_ENV` set, and the failed log is kept.
+
+### Amendment 5 (2026-09-27, 02:00): Phase 4's policy units, fixed before any Phase 3 verdict
+
+**Why.** The plan's Phase 4 says that policy variants "join the same sampled cells as fresh draws", without the
+rule. This amendment fixes it before any Phase 3 verdict exists: the absence look-1 judge starts when that run ends,
+and `runs/judge2_phase3` holds only its frozen prompt. What I had seen of Phase 3 so far: one blind-sample trial in
+the labelling view (to label it), and the state-diff categories of the first 12 absence look-1 trials in `tables.md`
+(all 12 acted on a near miss). I have seen no verdicts. The advisor reviewed the rule.
+
+**The rule: append, don't mix** (`sampler extend`).
+- Per cell, Phase 4's units come after Phase 3's fixed order, in their own stratified order (absence seed 2026092702;
+  underspecified seed 2026092703, fixed when the Phase 4 drop-F derivation ends). Phase 3's order is unchanged, so
+  look 1 is unchanged, and Phase 4 units are drawn only where Phase 3's units run out.
+- **Calendar underspecified** (10 Phase 3 units): look 1 completes with the first Phase 4 unit, so the cell can now
+  be decided. **Calendar absence** (13 valid Phase 3 units) reaches Phase 4 units at look 2. The other cells have
+  enough Phase 3 units for all three looks.
+- The plans before the extension are kept (`runs/phase3/plan_*.v1.json`).
+- **Review rule C.9** applies with my Phase 4 review (`eval/phase4_review.json`). It excludes AT-G4-CAL-01-I15 (the
+  contestable near miss `ev_budget_free`). G4-SLK-03's two near misses stay: they are valid near misses on the time
+  condition, although the fact they declare is D:latest_message. A twin on them still presupposes a record that does
+  not exist, and they still fail a condition.
+- **Absence, as extended:** Box 40 valid units (16 from Phase 4), Calendar 32 (19), Linear 62 (16), Slack 40 (9). One
+  Phase 4 twin fails fdc's check and is out (G4-LIN-01's milestone project).
+- **Reporting.** A cell's population becomes the accepted scenarios of two writers (autogen_01's Sonnet and this
+  study's Muse). Every decision that uses Phase 4 units reports the Phase 3-only and Phase 4-only statistics beside
+  the combined one (`sampler decide`).
+
+**The complete system on batch 1.** After batch 1's regular tests, all policy variants of its 14 scenarios run:
+absence twins, drop-F variants and clones, except units a look already ran. They show the system's policy handling
+end to end on new scenarios. They are also a check of what the decisions predict: one more policy test in a
+policy-level cell should almost surely fail. Every Muse-written variant that runs is reviewed by me before its run.
+
+**Order of the Purdue queue:**
+1. Phase 3's looks, including the Calendar fill.
+2. Phase 4 batch 1, regular tests.
+3. Batch 1's policy variants.
+4. Batch 2.
+
+Purdue runs about 85 trials an hour, not the plan's 200: the limiter's 19 requests a minute, at 12 to 18 turns per
+trial. So the queue runs past the 7:30 sync.
+
+**Blind samples.** Every new run gets one before it starts, drawn from its cases folder: 30 trials, or a third of a
+smaller run (at least 10).

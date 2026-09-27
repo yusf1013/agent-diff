@@ -3,8 +3,12 @@
     python grounding/runs/fact_coverage_02/launch.py grounding.runs.autogen_02.kit.sampler plan absence --seed S \
         --out runs/phase3
     python ... sampler plan underspecified --seed S --dropf DIR --out runs/phase3
-    python ... sampler look absence|underspecified N --out runs/phase3   # the cases of look N (1, 2, 3)
-    python ... sampler decide --out runs/phase3 --labels FILES...   # the per-cell statistics and decisions
+    python ... sampler look absence|underspecified N --out runs/phase3 [--cells C ...] [--dest NAME]
+        # the cases of look N (1, 2, 3); with --dest, only the units no earlier look folder holds
+    python ... sampler extend absence|underspecified --seed S [--dropf DIR] --out runs/phase3
+        # amendment 5: append Phase 4's units after each cell's fixed order (once, before any Phase 3 verdict)
+    python ... sampler decide absence|underspecified --out runs/phase3 --verdicts DIRS...
+        # the per-cell statistics and decisions
 
 **Cells** are domain x mode (absence, underspecified): 8 cells.
 **Units.** Absence: one twin per (scenario, fact), from `policy.absence_twins` (twins that fail fdc's checks are
@@ -79,11 +83,11 @@ def stratified_order(units: list[dict], seed: int) -> list[dict]:
     return [u for _, _, u in sorted(keyed, key=lambda t: (t[0], t[1]))]
 
 
-def absence_units() -> tuple[list[dict], list[dict]]:
+def absence_units(cases: list[dict] | None = None) -> tuple[list[dict], list[dict]]:
     from grounding.runs.autogen_02.kit.policy import absence_twins
     from grounding.runs.autogen_02.kit.population import scenarios
     units, excluded = [], []
-    for case in scenarios():
+    for case in cases or scenarios():
         for twin, meta in absence_twins(case):
             row = {"unit": twin["case_id"], "mode": "absence", "domain": case["domain"], "scenario": case["case_id"],
                    "facts": [meta["fact"]], "family": meta["family"], "decoys": meta["decoys"]}
@@ -142,17 +146,59 @@ def plan(mode: str, seed: int, out: Path, dropf_dir: Path | None = None, looks=L
     print(f"excluded: {len(excluded)}")
 
 
+def extend(mode: str, seed: int, out: Path, dropf_dir: Path | None = None):
+    """Append Phase 4's units to each cell's fixed order (amendment 5): the cell's Phase 3 order is unchanged, and
+    Phase 4's units follow it in their own stratified order (seed recorded), so they are drawn only where Phase 3's
+    units run out. The plan before the extension is kept as plan_<mode>.v1.json. Done once, before any Phase 3
+    verdict."""
+    import datetime
+    import shutil
+    from grounding.runs.autogen_02.kit.population import phase4_scenarios
+    plan_path = out / f"plan_{mode}.json"
+    doc = json.loads(plan_path.read_text())
+    if doc.get("extension"):
+        raise SystemExit(f"{plan_path} is already extended: the order is fixed once")
+    v1 = out / f"plan_{mode}.v1.json"
+    if not v1.exists():
+        shutil.copy(plan_path, v1)
+    units, excluded = absence_units(phase4_scenarios()) if mode == "absence" else dropf_units(dropf_dir)
+    cells = defaultdict(list)
+    for u in units:
+        cells[f"{u['domain']}/{u['mode']}"].append(u)
+    added = {}
+    for cell in sorted(cells):
+        seq = doc["cells"].setdefault(cell, [])
+        start = len(seq)
+        for i, u in enumerate(stratified_order(cells[cell], seed + sum(map(ord, cell))), start + 1):
+            dest = out / "units" / u["domain"]
+            dest.mkdir(parents=True, exist_ok=True)
+            (dest / f"{u['unit']}.json").write_text(json.dumps(u["_case"], indent=1, ensure_ascii=False) + "\n")
+            seq.append({k: v for k, v in u.items() if k != "_case"} | {"position": i, "source": "phase4"})
+        added[cell] = len(seq) - start
+    doc["extension"] = {"source": "phase4", "seed": seed, "at": datetime.datetime.now().isoformat(timespec="seconds"),
+                        "dropf_dir": str(dropf_dir) if dropf_dir else None, "added": added, "excluded": excluded}
+    plan_path.write_text(json.dumps(doc, indent=1, ensure_ascii=False) + "\n")
+    for cell, n in added.items():
+        valid = valid_sequence(doc["cells"][cell])
+        print(f"{cell}: {n} Phase 4 units appended; valid units now {len(valid)} "
+              f"({sum(u.get('source') == 'phase4' for u in valid)} from Phase 4)")
+    print(f"excluded: {len(excluded)}")
+
+
 VALIDITY = STUDY.parent / "autogen_01" / "eval" / "validity.json"
+VALIDITY4 = STUDY / "eval" / "phase4_review.json"
 
 
 def review_exclusion(unit: dict) -> str | None:
-    """Why autogen_01's manual validity review rules this unit out, or None (amendment 2, C.9). An absence unit goes
-    when any of its near misses is invalid or contestable (under presupposition, acting on a contestable near miss
-    may be the reasonable reading); an underspecified unit goes when any near miss left in its seed is invalid (a
-    record that in fact fits), or when the scenario is invalid."""
-    review = json.loads(VALIDITY.read_text()).get(unit["scenario"], {})
+    """Why the manual validity review rules this unit out, or None (amendment 2, C.9): autogen_01's review for its
+    scenarios, mine (eval/phase4_review.json) for Phase 4's. An absence unit goes when any of its near misses is
+    invalid or contestable (under presupposition, acting on a contestable near miss may be the reasonable reading);
+    an underspecified unit goes when any near miss left in its seed is invalid (a record that in fact fits), or when
+    the scenario is invalid."""
+    source = VALIDITY4 if unit["scenario"].startswith("G4-") else VALIDITY
+    review = json.loads(source.read_text()).get(unit["scenario"], {})
     if review.get("verdict") == "invalid":
-        return f"scenario {unit['scenario']} invalid in autogen_01's review"
+        return f"scenario {unit['scenario']} invalid in {'my Phase 4' if source == VALIDITY4 else 'autogen_01'}'s review"
     case = json.loads((STUDY / "runs" / "phase3" / "units" / unit["domain"] / f"{unit['unit']}.json").read_text())
     witnesses = {str(c["witness"]) for c in case["references"][0]["claims"]}
     for w, verdict in review.get("decoys", {}).items():
@@ -167,17 +213,28 @@ def valid_sequence(seq: list[dict]) -> list[dict]:
     return [u for u in seq if not review_exclusion(u)]
 
 
-def look_cases(out: Path, mode: str, look: int, cells: list[str] | None = None) -> Path:
+def already_cased(out: Path, mode: str) -> set[str]:
+    """Units already copied into an earlier look folder of this mode (run or queued)."""
+    return {p.stem for p in out.glob(f"{mode}_look*/*/*.json")}
+
+
+def look_cases(out: Path, mode: str, look: int, cells: list[str] | None = None, dest_name: str | None = None) -> Path:
     """Copy the cases of look `look` (the cell's valid units between the previous look and this one, in the fixed
-    order) into out/<mode>_look<N>/<domain>/."""
+    order) into out/<mode>_look<N>/<domain>/, or into out/<dest_name>/ with only the units no earlier look folder
+    holds (a look completed after the order was extended, amendment 5)."""
     doc = json.loads((out / f"plan_{mode}.json").read_text())
     looks = [0] + doc["looks"]
-    dest = out / f"{mode}_look{look}"
+    dest = out / (dest_name or f"{mode}_look{look}")
+    if dest.exists():
+        raise SystemExit(f"{dest} exists")
+    have = already_cased(out, mode) if dest_name else set()
     n = 0
     for cell, seq in doc["cells"].items():
         if cells and cell not in cells:
             continue
         for u in valid_sequence(seq)[looks[look - 1]:looks[look]]:
+            if u["unit"] in have:
+                continue
             src = out / "units" / u["domain"] / f"{u['unit']}.json"
             (dest / u["domain"]).mkdir(parents=True, exist_ok=True)
             (dest / u["domain"] / src.name).write_text(src.read_text())
@@ -260,6 +317,11 @@ def decide(out: Path, mode: str, verdict_dirs: list[Path], threshold: float = 0.
         else:
             decision = "continue to the next look"
         result[cell] = {**stats, "valid_units": len(valid), "look_reached": reached, "decision": decision}
+        if any(u.get("source") == "phase4" for u in valid[:reached]):  # amendment 5: the two writers' units apart
+            for name, keep in (("phase3_only", lambda u: u.get("source") != "phase4"),
+                               ("phase4_only", lambda u: u.get("source") == "phase4")):
+                part = cell_stats([u for u in valid[:reached] if keep(u)], outcomes, threshold)
+                result[cell][name] = {k: part[k] for k in ("draws", "failures", "rate", "lower_90", "upper_90")}
     return result
 
 
@@ -276,6 +338,12 @@ if __name__ == "__main__":
     lk.add_argument("n", type=int)
     lk.add_argument("--out", type=Path, required=True)
     lk.add_argument("--cells", nargs="+")
+    lk.add_argument("--dest", help="a new folder name: only units no earlier look folder holds (amendment 5)")
+    xt = sub.add_parser("extend")
+    xt.add_argument("mode", choices=["absence", "underspecified"])
+    xt.add_argument("--seed", type=int, required=True)
+    xt.add_argument("--dropf", type=Path)
+    xt.add_argument("--out", type=Path, required=True)
     dc = sub.add_parser("decide")
     dc.add_argument("mode", choices=["absence", "underspecified"])
     dc.add_argument("--out", type=Path, required=True)
@@ -290,7 +358,9 @@ if __name__ == "__main__":
     if args.cmd == "plan":
         plan(args.mode, args.seed, args.out.resolve(), args.dropf.resolve() if args.dropf else None)
     elif args.cmd == "look":
-        look_cases(args.out.resolve(), args.mode, args.n, args.cells)
+        look_cases(args.out.resolve(), args.mode, args.n, args.cells, args.dest)
+    elif args.cmd == "extend":
+        extend(args.mode, args.seed, args.out.resolve(), args.dropf.resolve() if args.dropf else None)
     elif args.cmd == "decide":
         res = decide(args.out.resolve(), args.mode, [p.resolve() for p in args.verdicts])
         (args.out.resolve() / f"decisions_{args.mode}.json").write_text(json.dumps(res, indent=1) + "\n")
