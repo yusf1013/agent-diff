@@ -75,3 +75,18 @@ def test_small_cell_exhausted_and_extension_reported_apart(tmp_path, monkeypatch
     d = _decide(tmp_path, monkeypatch)["calendar/absence"]
     assert d["look_reached"] == 11 and d["decision"] == "policy-level"
     assert d["phase3_only"]["draws"] == 10 and d["phase4_only"]["draws"] == 1
+
+
+def test_robustness_voids_named_units(tmp_path, monkeypatch):
+    units = [f"U{i}" for i in range(11)] + [f"P4{i}" for i in range(7)]
+    _plan(tmp_path, {"slack/absence": units})
+    outcomes = {u: {"t1": "incorrect"} for u in units}
+    outcomes["P43"] = {"t1": "correct_absent"}
+    _verdicts(tmp_path, outcomes)
+    monkeypatch.setattr(sampler, "review_exclusion", lambda u: None)
+    r = sampler.robustness(tmp_path, "absence", "slack/absence", 18, ["U4"], [tmp_path / "judged"])
+    # amendment 6: positions 1-18 with U4 void leave 17 draws, 16 failures
+    assert r["draws"] == 17 and r["failures"] == 16 and r["units_not_run"] == []
+    assert r["phase3_only"]["draws"] == 10 and r["phase4_only"]["failures"] == 6
+    r = sampler.robustness(tmp_path, "absence", "slack/absence", 11, ["U4"], [tmp_path / "judged"])
+    assert r["draws"] == 10 and not r["shown_above"]

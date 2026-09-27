@@ -64,7 +64,14 @@ $L grounding.runs.autogen_02.kit.sampler look underspecified 1 --cells calendar/
 
 A declared robustness check (amendment 6) runs units past a decided look with `--positions FIRST LAST` (1-based,
 in the cell's valid order) and a `--dest` folder. Looks never run a unit twice: units already cased by a look or a
-Phase 4 policy run are skipped, and their verdicts come from that run.
+Phase 4 policy run are skipped, and their verdicts come from that run. The check's statistic, with the flawed unit
+void (it writes `robustness_<mode>_<domain>.json`):
+
+```bash
+$L grounding.runs.autogen_02.kit.sampler robustness underspecified calendar/underspecified --last 18 \
+  --void U-AP2-CAL-02-CalendarListEntry_calendar_id --out $S/runs/phase3 \
+  --verdicts $S/runs/judge2_phase3 $S/runs/judge2_phase4_policy
+```
 
 ## 4. Solver runs (Qwen on Purdue, 3 trials)
 

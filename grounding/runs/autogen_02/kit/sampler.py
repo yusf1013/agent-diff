@@ -330,6 +330,27 @@ def decide(out: Path, mode: str, verdict_dirs: list[Path], threshold: float = 0.
     return result
 
 
+def robustness(out: Path, mode: str, cell: str, last: int, void: list[str], verdict_dirs: list[Path],
+               threshold: float = 0.8) -> dict:
+    """A declared robustness check (amendment 6), not a decision rule: the statistic over a cell's valid positions
+    1..last with the named units void."""
+    doc = json.loads((out / f"plan_{mode}.json").read_text())
+    valid = valid_sequence(doc["cells"][cell])[:last]
+    missing = [v for v in void if v not in {u["unit"] for u in valid}]
+    if missing:
+        raise SystemExit(f"not in valid positions 1-{last} of {cell}: {missing}")
+    outcomes = verdict_outcomes(verdict_dirs)
+    kept = [u for u in valid if u["unit"] not in void]
+    result = {"cell": cell, "positions": [1, last], "void": void, **cell_stats(kept, outcomes, threshold),
+              "units_not_run": [u["unit"] for u in kept if not outcomes.get(u["unit"])]}
+    if any(u.get("source") == "phase4" for u in kept):
+        for name, keep in (("phase3_only", lambda u: u.get("source") != "phase4"),
+                           ("phase4_only", lambda u: u.get("source") == "phase4")):
+            part = cell_stats([u for u in kept if keep(u)], outcomes, threshold)
+            result[name] = {k: part[k] for k in ("draws", "failures", "rate", "lower_90", "upper_90")}
+    return result
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = parser.add_subparsers(dest="cmd", required=True)
@@ -355,6 +376,13 @@ if __name__ == "__main__":
     dc.add_argument("mode", choices=["absence", "underspecified"])
     dc.add_argument("--out", type=Path, required=True)
     dc.add_argument("--verdicts", type=Path, nargs="+", required=True)
+    rb = sub.add_parser("robustness", help="a declared robustness check (amendment 6)")
+    rb.add_argument("mode", choices=["absence", "underspecified"])
+    rb.add_argument("cell", help="e.g. calendar/underspecified")
+    rb.add_argument("--last", type=int, required=True, help="the last valid position (1-based)")
+    rb.add_argument("--void", nargs="+", required=True, help="units treated as void")
+    rb.add_argument("--out", type=Path, required=True)
+    rb.add_argument("--verdicts", type=Path, nargs="+", required=True)
     ex = sub.add_parser("exclusions")
     ex.add_argument("mode", choices=["absence", "underspecified"])
     ex.add_argument("--out", type=Path, required=True)
@@ -372,6 +400,12 @@ if __name__ == "__main__":
     elif args.cmd == "decide":
         res = decide(args.out.resolve(), args.mode, [p.resolve() for p in args.verdicts])
         (args.out.resolve() / f"decisions_{args.mode}.json").write_text(json.dumps(res, indent=1) + "\n")
+        print(json.dumps(res, indent=1))
+    elif args.cmd == "robustness":
+        res = robustness(args.out.resolve(), args.mode, args.cell, args.last, args.void,
+                         [p.resolve() for p in args.verdicts])
+        name = f"robustness_{args.mode}_{args.cell.split('/')[0]}.json"
+        (args.out.resolve() / name).write_text(json.dumps(res, indent=1) + "\n")
         print(json.dumps(res, indent=1))
     elif args.cmd == "exclusions":
         doc = json.loads((args.out.resolve() / f"plan_{args.mode}.json").read_text())
