@@ -1,0 +1,1 @@
+Successfully updated the "Fall Kickoff" cycle (starts Sep 29, contains WEB-1 "Checkout timeout on payment retry" assigned to Sam Rivera) — its end date has been pushed from October 13 to **October 20, 2026**.

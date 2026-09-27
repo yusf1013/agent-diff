@@ -1,0 +1,1 @@
+I couldn't find a calendar named "Product Team" in your calendar list. The only similar one I found is **"Product Team Offsite"**, which is currently checked/selected. Would you like me to rename that one to "Eng Product Sync" instead, or is it a different calendar you were looking for?

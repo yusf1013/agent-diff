@@ -1,0 +1,7 @@
+I searched through all public and private channels (including archived ones) in the workspace. There is **no dedicated incidents channel specifically about a checkout outage**. Here's what I found:
+
+- **incidents-auth** – About a login rate-limiting incident (explicitly noted as "unrelated to checkout").
+- **incidents-billing** (archived) – Primarily about billing reconciliation and invoice retries. Its purpose mentions it "also holds the checkout outage postmortem thread for reference," but it is not itself the checkout outage channel.
+- **incidents-shipping** (archived) – About shipping carrier delays.
+
+No channel named something like `incidents-checkout` or similar exists, so there's nothing to unarchive on that basis. If you'd like, I could unarchive `incidents-billing` if the postmortem thread in there is what you're after — just let me know!

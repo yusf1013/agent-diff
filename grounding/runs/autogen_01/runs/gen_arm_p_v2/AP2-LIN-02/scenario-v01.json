@@ -1,0 +1,68 @@
+{
+ "scenario_id": "AP2-LIN-02",
+ "domain": "linear",
+ "request": "Set to Urgent priority the 'Renew SSO certificate' issue that's assigned to our guest contractor Dana Whitfield and was filed by leo.park@northwind.example.",
+ "answer": "one",
+ "seed": [
+  ["team", {"id": "t-it", "name": "IT Support", "key": "IT"}],
+  ["member", {"team": "t-it", "person": "actor"}],
+  ["member", {"team": "t-it", "person": "leo"}],
+  ["member", {"team": "t-it", "person": "dana"}],
+  ["member", {"team": "t-it", "person": "sam"}],
+  ["member", {"team": "t-it", "person": "priya"}],
+  ["person", {"key": "danaguest", "name": "Dana Whitfield", "email": "dana.whitfield.ext@northwind.example", "guest": true}],
+  ["member", {"team": "t-it", "person": "danaguest"}],
+  ["person", {"key": "danacho", "name": "Dana Cho", "email": "dana.cho@northwind.example", "guest": true}],
+  ["member", {"team": "t-it", "person": "danacho"}],
+  ["person", {"key": "leoparkinson", "name": "Leo Parkinson", "email": "leo.parkinson@northwind.example"}],
+  ["member", {"team": "t-it", "person": "leoparkinson"}],
+  ["issue", {"id": "i-it-sso", "team": "t-it", "title": "Renew SSO certificate", "assignee": "danaguest", "creator": "leo", "priority": 3}],
+  ["issue", {"id": "i-it-sso-b", "team": "t-it", "title": "Renew SSO certificate", "assignee": "dana", "creator": "leo", "priority": 3}],
+  ["issue", {"id": "i-it-sso-c", "team": "t-it", "title": "Renew SSO certificate", "assignee": "danacho", "creator": "leo", "priority": 3}],
+  ["issue", {"id": "i-it-sso-d", "team": "t-it", "title": "Renew SSO certificate", "assignee": "danaguest", "creator": "leoparkinson", "priority": 3}],
+  ["issue", {"id": "i-it-vpn", "team": "t-it", "title": "Update VPN configuration", "assignee": "sam", "creator": "priya", "priority": 2}],
+  ["issue", {"id": "i-it-fw", "team": "t-it", "title": "Rotate firewall rules", "assignee": "leo", "creator": "dana", "priority": 2}]
+ ],
+ "conditions": [
+  {"id": "c1", "text": "the 'Renew SSO certificate' issue", "facts": ["A:Issue.title"]},
+  {"id": "c2", "text": "that's assigned to our guest contractor Dana Whitfield", "facts": ["R:Issue.assigneeId", "A:User.name", "A:User.guest"]},
+  {"id": "c3", "text": "and was filed by leo.park@northwind.example", "facts": ["R:Issue.creatorId", "A:User.email"]}
+ ],
+ "reference": {
+  "name": "the SSO certificate renewal issue to reprioritize",
+  "target": ["i-it-sso"],
+  "query": {
+   "table": "issues",
+   "key": ["id"],
+   "filters": [
+    {"key": "f_title", "field": "title", "op": "eq", "value": "Renew SSO certificate", "fact": "A:Issue.title"}
+   ],
+   "edges": [
+    {"key": "e_assignee", "join": {"parent": "assigneeId", "child": "id", "op": "eq"}, "fact": "R:Issue.assigneeId",
+     "node": {"table": "users", "filters": [
+       {"key": "f_name", "field": "name", "op": "eq", "value": "Dana Whitfield", "fact": "A:User.name"},
+       {"key": "f_guest", "field": "guest", "op": "eq", "value": true, "fact": "A:User.guest"}
+      ], "edges": []}},
+    {"key": "e_creator", "join": {"parent": "creatorId", "child": "id", "op": "eq"}, "fact": "R:Issue.creatorId",
+     "node": {"table": "users", "filters": [
+       {"key": "f_email", "field": "email", "op": "eq", "value": "leo.park@northwind.example", "fact": "A:User.email"}
+      ], "edges": []}}
+   ]
+  },
+  "decoys": [
+   {"witness": "i-it-sso-b", "fact": "A:User.guest", "family": "F0",
+    "mutation": {"type": "DROP", "target": "f_guest"},
+    "explanation": "This Dana Whitfield is a regular employee (guest: false); the guest contractor is a different Dana Whitfield."},
+   {"witness": "i-it-sso-c", "fact": "A:User.name", "family": "F8", "substitute": "another person sharing the first name Dana",
+    "mutation": {"type": "DROP", "target": "f_name"},
+    "explanation": "The assignee is Dana Cho, a guest contractor, but not Dana Whitfield."},
+   {"witness": "i-it-sso-d", "fact": "A:User.email", "family": "F8", "substitute": "an email whose local part extends the requested one",
+    "mutation": {"type": "DROP", "target": "f_email"},
+    "explanation": "Filed by Leo Parkinson (leo.parkinson@northwind.example), not Leo Park (leo.park@northwind.example)."}
+  ],
+  "effect": {"table": "issues", "changes": ["update"]},
+  "written": ["issues.priority"]
+ },
+ "other_references": [],
+ "write": {"graphql": "mutation { issueUpdate(id: \"i-it-sso\", input: {priority: 1}) { success } }"}
+}

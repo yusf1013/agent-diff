@@ -1,0 +1,1 @@
+There isn't an issue that matches all of your criteria. The closest match is **"Refine checkout summary copy"** (Web team, Website Redesign project, Done, description mentions the pagination fix), but it was completed on **August 13**, not August 14. Since no issue was completed on August 14, I did not make any changes.

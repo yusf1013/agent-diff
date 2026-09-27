@@ -1,0 +1,1 @@
+There isn't a security review ticket assigned to Priya Chen (guest, priya.chen@vendorworks.example). She currently has no issues assigned to her in the workspace, so there's nothing to bump to Urgent priority.

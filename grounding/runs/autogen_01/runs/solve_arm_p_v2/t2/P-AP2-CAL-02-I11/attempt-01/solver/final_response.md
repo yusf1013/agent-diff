@@ -1,0 +1,1 @@
+I checked your calendar list and there is no "Design Team" calendar. Your list only contains your primary calendar and a "Marketing" calendar. Since the "Design Team" calendar doesn't exist in your calendar list, there's nothing to hide. It's possible the calendar was removed from your list, or it may have a different name.

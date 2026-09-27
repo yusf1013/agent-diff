@@ -1,0 +1,1 @@
+There is no issue in the **Checkout Redesign** project whose milestone has status **Done** and a target date of **March 15**. The only issue with a milestone in that project is *"Send payment confirmation email"*, which belongs to the milestone "Notifications" — its status is indeed **Done**, but its target date is **March 16**, not March 15.

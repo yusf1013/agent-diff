@@ -1,0 +1,92 @@
+{
+ "scenario_id": "AP-SLK-01",
+ "domain": "slack",
+ "request": "In #launch-planning, add a :tada: reaction to the message from Farhan Malik — the one who goes by Deebo — confirming the launch date, the one that @nadia.brooks already flagged with :eyes:.",
+ "answer": "one",
+ "seed": [
+  ["person", {"key": "farhan", "name": "Farhan Malik", "username": "farhan.malik", "display": "Deebo"}],
+  ["person", {"key": "farhan2", "name": "Farhan Malik", "username": "farhan.malik2", "display": "Farhan (Ops)"}],
+  ["person", {"key": "samir", "name": "Samir Osei", "username": "samir.osei", "display": "Deebo"}],
+  ["person", {"key": "nadia", "name": "Nadia Brooks", "username": "nadia.brooks", "display": "Nadia"}],
+  ["person", {"key": "nadia2", "name": "Nadia Brooks", "username": "nadia.brooks2", "display": "Nadia"}],
+  ["channel", {"id": "C_LAUNCH", "name": "launch-planning",
+               "members": ["farhan", "farhan2", "samir", "nadia", "nadia2", "leo", "omar"]}],
+  ["message", {"channel": "C_LAUNCH", "author": "farhan",
+               "text": "Confirmed: the launch date is set for March 3.",
+               "at": "2026-03-01T15:00:00Z", "ref": "target"}],
+  ["reaction", {"message": "@target", "person": "nadia", "name": "eyes", "at": "2026-03-01T15:01:00Z"}],
+
+  ["message", {"channel": "C_LAUNCH", "author": "samir",
+               "text": "The launch date is confirmed for March 3.",
+               "at": "2026-03-01T15:05:00Z", "ref": "d_realname"}],
+  ["reaction", {"message": "@d_realname", "person": "nadia", "name": "eyes", "at": "2026-03-01T15:06:00Z"}],
+
+  ["message", {"channel": "C_LAUNCH", "author": "farhan2",
+               "text": "Launch date confirmed — March 3, no changes on our side.",
+               "at": "2026-03-01T15:10:00Z", "ref": "d_dispname"}],
+  ["reaction", {"message": "@d_dispname", "person": "nadia", "name": "eyes", "at": "2026-03-01T15:11:00Z"}],
+
+  ["message", {"channel": "C_LAUNCH", "author": "farhan",
+               "text": "Just confirming, launch date March 3 works for us.",
+               "at": "2026-03-01T15:15:00Z", "ref": "d_username"}],
+  ["reaction", {"message": "@d_username", "person": "nadia2", "name": "eyes", "at": "2026-03-01T15:16:00Z"}],
+
+  ["message", {"channel": "C_LAUNCH", "author": "leo",
+               "text": "Can we sync at 3pm today?", "at": "2026-03-01T15:20:00Z"}],
+  ["message", {"channel": "C_LAUNCH", "author": "omar",
+               "text": "Anyone tested the new onboarding flow?", "at": "2026-03-01T15:25:00Z"}]
+ ],
+ "conditions": [
+  {"id": "c1", "text": "In #launch-planning", "facts": ["A:Conversation.channel_name"]},
+  {"id": "c2", "text": "from Farhan Malik — the one who goes by Deebo", "facts": ["R:messages.user_id", "A:User.real_name", "A:User.display_name"]},
+  {"id": "c3", "text": "confirming the launch date", "facts": ["A:Message.message_text"]},
+  {"id": "c4", "text": "the one that @nadia.brooks already flagged with :eyes:", "facts": ["R:message_reactions", "A:User.username", "A:Reaction.reaction_type"]}
+ ],
+ "reference": {
+  "name": "the message to react to",
+  "target": ["@target"],
+  "query": {
+   "table": "messages",
+   "key": ["message_id"],
+   "filters": [
+    {"key": "f_text", "field": "message_text", "op": "contains_ci", "value": "launch date", "fact": "A:Message.message_text"}
+   ],
+   "edges": [
+    {"key": "e_author", "join": {"parent": "user_id", "child": "user_id", "op": "eq"}, "fact": "R:messages.user_id",
+     "node": {"table": "users", "filters": [
+       {"key": "f_real", "field": "real_name", "op": "eq", "value": "Farhan Malik", "fact": "A:User.real_name"},
+       {"key": "f_disp", "field": "display_name", "op": "eq", "value": "Deebo", "fact": "A:User.display_name"}
+      ], "edges": []}},
+    {"key": "e_channel", "join": {"parent": "channel_id", "child": "channel_id", "op": "eq"}, "fact": "R:messages.channel_id",
+     "node": {"table": "channels", "filters": [
+       {"key": "f_chan", "field": "channel_name", "op": "eq", "value": "launch-planning"}
+      ], "edges": []}},
+    {"key": "e_react", "join": {"parent": "message_id", "child": "message_id", "op": "eq"}, "fact": "R:message_reactions",
+     "node": {"table": "message_reactions", "filters": [
+       {"key": "f_emoji", "field": "reaction_type", "op": "eq", "value": "eyes", "fact": "A:Reaction.reaction_type"}
+      ], "edges": [
+       {"key": "e_reactor", "join": {"parent": "user_id", "child": "user_id", "op": "eq"},
+        "node": {"table": "users", "filters": [
+          {"key": "f_user", "field": "username", "op": "eq", "value": "nadia.brooks", "fact": "A:User.username"}
+         ], "edges": []}}
+      ]}}
+   ]
+  },
+  "decoys": [
+   {"witness": "@d_realname", "fact": "A:User.real_name", "family": "F1", "substitute": "User.display_name",
+    "mutation": {"type": "DROP", "target": "f_real"},
+    "explanation": "Samir Osei also goes by Deebo, but his real name is Samir Osei, not Farhan Malik; only the display name matches."},
+   {"witness": "@d_dispname", "fact": "A:User.display_name", "family": "F1", "substitute": "User.real_name",
+    "mutation": {"type": "DROP", "target": "f_disp"},
+    "explanation": "This second Farhan Malik shows up in Slack as 'Farhan (Ops)', not Deebo; only the real name matches."},
+   {"witness": "@d_username", "fact": "A:User.username", "family": "F8", "substitute": "nadia.brooks2, a similarly-handled duplicate account",
+    "mutation": {"type": "DROP", "target": "f_user"},
+    "explanation": "The eyes reaction here is from nadia.brooks2, a different account with a look-alike handle, not nadia.brooks."}
+  ],
+  "effect": {"table": "message_reactions", "changes": ["insert"], "key": ["message_id", "user_id", "reaction_type"], "field": "message_id"},
+  "written": ["message_reactions.reaction_type"]
+ },
+ "other_references": [],
+ "write": {"slack": "reactions.add", "params": {"channel": "C_LAUNCH", "timestamp": "@target", "name": "tada"}},
+ "probes": []
+}

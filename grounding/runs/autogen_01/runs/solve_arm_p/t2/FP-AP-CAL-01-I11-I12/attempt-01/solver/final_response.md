@@ -1,0 +1,1 @@
+I checked your calendar list and there is no calendar named "Client Success." The closest match is a calendar called "Client Success Renewals" (cs-renewals@northwind.example), which is currently unchecked. If that's the one you meant, let me know and I can hide it for you — but I didn't want to assume and hide the wrong calendar.

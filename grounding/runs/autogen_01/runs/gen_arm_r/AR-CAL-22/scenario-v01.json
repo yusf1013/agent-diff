@@ -1,0 +1,60 @@
+{
+ "scenario_id": "AR-CAL-22",
+ "domain": "calendar",
+ "request": "Change the time zone to America/New_York on the Ops Rotation calendar I own whose description mentions weekend on-call coverage.",
+ "answer": "one",
+ "seed": [
+  ["calendar", {"id": "ops-noram@northwind.example", "summary": "Ops Rotation – NORAM", "owner": "actor", "access": "owner", "description": "Weekly rotation for handling production incidents and weekend on-call coverage across engineering.", "location": "SF office, 4th floor conference room", "ref": "target"}],
+  ["calendar", {"id": "ops-emea@northwind.example", "summary": "Ops Rotation – EMEA", "owner": "actor", "access": "owner", "description": "Coordinates staffing schedules for the EMEA operations team.", "location": "Weekend on-call coverage rota posted here every Friday.", "ref": "f1"}],
+  ["calendar", {"id": "ops-apac@northwind.example", "summary": "Ops Rotation – APAC", "owner": "actor", "access": "owner", "description": "Handles daytime shift scheduling for the APAC ops team.", "ref": "f2"}],
+  ["event", {"id": "ev_apac_reminder", "calendar": "@f2", "summary": "Rotation reminder", "start": "2018-06-19T09:00:00", "end": "2018-06-19T09:15:00", "description": "Reminder: weekend on-call coverage assignments due Friday for the APAC rotation."}],
+  ["calendar", {"id": "ops-latam@northwind.example", "summary": "Ops Rotation – LATAM", "owner": "actor", "access": "owner", "description": "Tracks quarterly maintenance windows for LATAM data centers.", "ref": "f0"}],
+  ["calendar", {"id": "marketing@northwind.example", "summary": "Marketing Calendar", "owner": "maya", "access": "reader", "description": "Campaign launch schedule and content calendar."}],
+  ["calendar", {"id": "standup@northwind.example", "summary": "Ops Standup", "owner": "actor", "access": "owner", "description": "Daily standup notes for the ops team."}]
+ ],
+ "conditions": [
+  {"id": "c1", "text": "the Ops Rotation calendar", "facts": ["A:Calendar.summary"]},
+  {"id": "c2", "text": "I own", "facts": ["A:Calendar.data_owner"]},
+  {"id": "c3", "text": "whose description mentions weekend on-call coverage", "facts": ["A:Calendar.description"]}
+ ],
+ "reference": {
+  "name": "the Ops Rotation calendar to retime",
+  "target": ["@target"],
+  "query": {
+   "table": "calendars",
+   "filters": [
+    {"key": "f_summary", "field": "summary", "op": "contains_ci", "value": "Ops Rotation", "fact": "A:Calendar.summary"},
+    {"key": "f_owner", "field": "data_owner", "op": "eq", "value": "jordan.lee@northwind.example", "fact": "A:Calendar.data_owner"},
+    {"key": "f_desc", "field": "description", "op": "contains_ci", "value": "weekend on-call coverage", "fact": "A:Calendar.description"}
+   ],
+   "edges": []
+  },
+  "decoys": [
+   {"witness": "@f1", "fact": "A:Calendar.description", "family": "F1", "substitute": "Calendar.location",
+    "mutation": {"type": "REPLACE", "note": "description filter replaced by a location filter", "query": {
+      "table": "calendars", "key": ["id"],
+      "filters": [
+       {"key": "f_summary", "field": "summary", "op": "contains_ci", "value": "Ops Rotation"},
+       {"key": "f_owner", "field": "data_owner", "op": "eq", "value": "jordan.lee@northwind.example"},
+       {"key": "f_loc", "field": "location", "op": "contains_ci", "value": "weekend on-call coverage"}],
+      "edges": []}},
+    "explanation": "The EMEA calendar's location line mentions weekend on-call coverage; its own description talks about staffing schedules instead."},
+   {"witness": "@f2", "fact": "A:Calendar.description", "family": "F2", "substitute": "an event's description on the calendar",
+    "mutation": {"type": "REPLACE", "note": "the calendar's own description replaced by a contained event's description", "query": {
+      "table": "calendars", "key": ["id"],
+      "filters": [
+       {"key": "f_summary", "field": "summary", "op": "contains_ci", "value": "Ops Rotation"},
+       {"key": "f_owner", "field": "data_owner", "op": "eq", "value": "jordan.lee@northwind.example"}],
+      "edges": [{"key": "e_ev", "join": {"parent": "id", "child": "calendar_id", "op": "eq"},
+                 "node": {"table": "calendar_events", "filters": [
+                   {"key": "f_evdesc", "field": "description", "op": "contains_ci", "value": "weekend on-call coverage"}], "edges": []}}]}},
+    "explanation": "The APAC calendar's own description covers daytime shift scheduling; it is a reminder event on that calendar whose description mentions weekend on-call coverage."},
+   {"witness": "@f0", "fact": "A:Calendar.description", "family": "F0",
+    "mutation": {"type": "DROP", "target": "f_desc"},
+    "explanation": "Same name pattern and ownership, but its description tracks LATAM data-center maintenance windows, with no mention of weekend on-call coverage."}
+  ],
+  "effect": {"table": "calendars", "changes": ["update"]},
+  "written": ["calendars.time_zone"]
+ },
+ "write": {"method": "PATCH", "path": "/calendars/ops-noram@northwind.example", "body": {"timeZone": "America/New_York"}}
+}

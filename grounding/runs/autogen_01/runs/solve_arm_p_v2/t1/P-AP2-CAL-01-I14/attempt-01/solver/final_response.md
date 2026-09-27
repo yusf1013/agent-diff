@@ -1,0 +1,1 @@
+There is no 'Product Team' calendar in your calendar list. Your only calendar is your primary calendar (jordan.lee@northwind.example). If you'd like, I can create a new calendar with the name 'Eng Product Sync' — just let me know.

@@ -1,0 +1,1 @@
+There isn't a private channel whose purpose is coordinating vendor contracts. The only private channel I found is **#vendor-contracts**, but its purpose is set to "Archive of signed agreements," which is different. No topic was changed.

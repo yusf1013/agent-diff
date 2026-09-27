@@ -1,0 +1,1 @@
+There isn't a vendor sync on Thursday with Dana Whitfield as an optional attendee. The only vendor sync that day is "Vendor sync: Ingredients" at 3:00 PM, but in that event Dana Whitfield is a **required** attendee (not optional). Leo Park is the optional attendee on that event.

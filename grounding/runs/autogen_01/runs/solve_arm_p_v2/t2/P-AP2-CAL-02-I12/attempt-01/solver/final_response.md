@@ -1,0 +1,1 @@
+I found the 'Design Team' calendar (design-sync@northwind.example), but Kenji Sato is shared with **reader** access, not writer. The only person with writer access is Sam Rivera. Since the condition "shared with Kenji Sato as a writer" is not met, I have not hidden the calendar.

@@ -1,0 +1,1 @@
+There isn't one that matches all your criteria. I found a Thursday (June 21) planning session that ends at 5 pm — "Q4 roadmap planning" — but its description only says "Agenda to be confirmed." The phrase "Q4 roadmap" appears in the event title, not in the description field. If you'd like, I can move *that* event to Room 2B instead — just let me know.

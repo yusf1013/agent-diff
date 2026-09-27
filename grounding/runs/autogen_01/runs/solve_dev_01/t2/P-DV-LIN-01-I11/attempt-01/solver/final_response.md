@@ -1,0 +1,1 @@
+There is no issue in the **Checkout Redesign** project that matches your criteria. The only issue in that project, **"Handle partial refund rounding"** (WEB-2), has a milestone ("Refund flow") with a target date of **March 15, 2026**, but its status is **"overdue"**, not **"Done"**. So no priority update was made.

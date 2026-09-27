@@ -1,0 +1,5 @@
+The replica pre-checks found these problems:
+- Your probe failed: POST /graphql {"query": "{ workflowStates { id name team { id name } } }"} -> 400 [{"message": "Cannot query field 'id' on type 'WorkflowStateConnection'.", "locations": [{"line": 1, "column": 20}]}, {"message": "Cannot query field 'name' on type 'WorkflowStateConnection'.", "locations": [{"line": 1, "column": 23}]}, {"m
+- Your probe failed: POST /graphql {"query": "{ comments { id body issue { id } } }"} -> 400 [{"message": "Cannot query field 'id' on type 'CommentConnection'.", "locations": [{"line": 1, "column": 14}]}, {"message": "Cannot query field 'body' on type 'CommentConnection'.", "locations": [{"line": 1, "column": 17}]}, {"message": "Ca
+
+Fix scenario.json (edit it in place), then reply with a short summary of what you changed.

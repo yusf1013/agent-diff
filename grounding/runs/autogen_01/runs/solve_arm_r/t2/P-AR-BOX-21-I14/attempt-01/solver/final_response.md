@@ -1,0 +1,1 @@
+There is no folder that meets all of your criteria. The only folder in the Legal Hold collection is "Vendor Renewals" (ID: 9504). While it was created on June 3, 2026, has exactly 3 items, and is in the Legal Hold collection, it was last modified by **Sam Rivera**, not Priya Nair. No other folders exist in that collection, so there's no matching folder to tag.

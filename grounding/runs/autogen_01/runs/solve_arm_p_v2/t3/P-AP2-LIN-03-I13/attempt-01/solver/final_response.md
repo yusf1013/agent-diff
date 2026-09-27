@@ -1,0 +1,1 @@
+There isn't a private team whose key starts with "GR" and whose description mentions the Q3 OKR pilot rollout. The closest match is "Growth Analytics" (key: GRA), whose description does mention the Q3 OKR pilot rollout, but it is not a private team. The only private team is "Sales" (key: SLS), which doesn't match either the key or the description criteria.

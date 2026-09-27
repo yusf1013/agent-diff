@@ -1,0 +1,1 @@
+Successfully reacted with the eyes emoji on the payment gateway timeout message in #incidents posted by U_AISHA (who is a member of #payments-oncall). The message was "Seeing 504s tied to a payment gateway timeout on checkout after the last deploy." with timestamp 1790258400.000001.

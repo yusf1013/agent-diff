@@ -1,0 +1,1 @@
+I've hidden the 'Client Success' calendar (cs-east@northwind.example) in your calendar list. It's now set to hidden: true, so it will no longer appear in your calendar list. Note that this only hides it from your view — the calendar and its events still exist and are accessible to its owner (dana.whitfield@northwind.example).

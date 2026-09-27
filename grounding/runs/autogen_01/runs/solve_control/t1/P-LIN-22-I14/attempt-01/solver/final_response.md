@@ -1,0 +1,1 @@
+There isn't a doc in the "Checkout Redesign" project that Leo Park last edited (or any other user). The only document in the workspace is "Payments test notes," which belongs to the "Payments Revamp" project. So there's nothing to rename.

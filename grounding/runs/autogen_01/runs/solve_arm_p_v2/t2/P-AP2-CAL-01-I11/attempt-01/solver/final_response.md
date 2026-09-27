@@ -1,0 +1,1 @@
+There is a 'Product Team' calendar in your calendar list (ID: product_team_mkt), but it is **not currently checked** (selected: false). Since you asked about the one you "currently have checked," there isn't a 'Product Team' calendar that meets that criterion. If you'd like me to proceed with renaming it anyway, just let me know!

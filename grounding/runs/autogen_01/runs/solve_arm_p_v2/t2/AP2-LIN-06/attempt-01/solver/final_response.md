@@ -1,0 +1,1 @@
+Successfully renamed the attachment titled "Marketing brief" on issue ENG-14 that links to Dropbox (https://www.dropbox.com/s/9f8g7h3s2mv/marketing-brief.pdf) to "Marketing brief (archived)". The attachment (id: "att-target") now displays the updated title as confirmed by querying it directly.

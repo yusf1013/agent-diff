@@ -1,0 +1,1 @@
+There isn't a vendor sync on Thursday (June 21) with Dana Whitfield as an optional attendee. The only Thursday vendor sync is "Vendor sync: Ingredients" (1:00–1:30 PM), but in that event Dana is a required attendee — the optional attendee is Leo Park. No event matching your criteria was found, so nothing was changed.

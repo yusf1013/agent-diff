@@ -1,0 +1,1 @@
+There is no checkout timeout issue assigned to Sam Rivera. The "Checkout timeout on refund confirmation" issue exists in the Fall Kickoff cycle (starting Sept 29), but it's assigned to **Leo Park**, not Sam Rivera. Sam Rivera's issue in that cycle is "Rewrite onboarding checklist copy." Since the specific issue described doesn't match, I haven't modified any dates.

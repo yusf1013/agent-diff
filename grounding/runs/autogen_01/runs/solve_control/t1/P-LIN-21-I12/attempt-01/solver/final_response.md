@@ -1,0 +1,1 @@
+The Web team issue "Login redirect ignores locale" (created by Omar Haddad) has been successfully assigned to Priya Nair. Note: the issue's creation date was September 11, not September 10, but it was the only login redirect issue on the Web team by Omar Haddad, so I proceeded with the assignment.

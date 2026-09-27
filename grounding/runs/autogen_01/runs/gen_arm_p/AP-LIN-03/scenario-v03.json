@@ -1,0 +1,59 @@
+{
+ "scenario_id": "AP-LIN-03",
+ "domain": "linear",
+ "request": "Add Priya Nair to the private team keyed ENG, whose description mentions distributed systems.",
+ "answer": "one",
+ "seed": [
+  ["team", {"id": "t-eng", "name": "Platform Engineering", "key": "ENG",
+            "set": {"private": true, "description": "Owns distributed systems and core infrastructure tooling."},
+            "ref": "target"}],
+  ["team", {"id": "t-namesake", "name": "ENG", "key": "PLAT",
+            "set": {"private": true, "description": "Handles distributed systems reliability and infra automation."},
+            "ref": "d_key"}],
+  ["team", {"id": "t-ds-guild", "name": "Distributed Systems Guild", "key": "ENGOPS",
+            "set": {"private": true, "description": "Coordinates roadmap reviews and cross-team ceremonies."},
+            "ref": "d_desc"}],
+  ["team", {"id": "t-eng-public", "name": "Engineering Community", "key": "ENGQA",
+            "set": {"private": false, "description": "Maintains distributed systems documentation for the wider org."},
+            "ref": "d_private"}],
+  ["team", {"id": "t-sales", "name": "Sales Ops", "key": "SALES",
+            "set": {"private": false, "description": "Manages CRM integrations and deal pipelines."}}],
+  ["team", {"id": "t-design", "name": "Design Systems", "key": "DES",
+            "set": {"private": true, "description": "Maintains the design system and brand guidelines."}}]
+ ],
+ "conditions": [
+  {"id": "c1", "text": "the team keyed ENG", "facts": ["A:Team.key"]},
+  {"id": "c2", "text": "the private", "facts": ["A:Team.private"]},
+  {"id": "c3", "text": "whose description mentions distributed systems", "facts": ["A:Team.description"]}
+ ],
+ "reference": {
+  "name": "the team to add Priya Nair to",
+  "target": ["t-eng"],
+  "query": {
+   "table": "teams",
+   "key": ["id"],
+   "filters": [
+    {"key": "f_key", "field": "key", "op": "contains_ci", "value": "ENG", "fact": "A:Team.key"},
+    {"key": "f_private", "field": "private", "op": "eq", "value": true, "fact": "A:Team.private"},
+    {"key": "f_desc", "field": "description", "op": "contains_ci", "value": "distributed systems", "fact": "A:Team.description"}
+   ],
+   "edges": []
+  },
+  "decoys": [
+   {"witness": "t-namesake", "fact": "A:Team.key", "family": "F1", "substitute": "Team.name",
+    "mutation": {"type": "DROP", "target": "f_key"},
+    "explanation": "Its name is ENG, but its key is PLAT, which doesn't contain ENG; the private, distributed-systems team actually keyed ENG is a different team."},
+   {"witness": "t-ds-guild", "fact": "A:Team.description", "family": "F1", "substitute": "the topic on Team.name instead of Team.description",
+    "mutation": {"type": "DROP", "target": "f_desc"},
+    "explanation": "Its key is ENGOPS and its name mentions distributed systems, but its own description talks about roadmap reviews and ceremonies, not distributed systems."},
+   {"witness": "t-eng-public", "fact": "A:Team.private", "family": "F0",
+    "mutation": {"type": "DROP", "target": "f_private"},
+    "explanation": "Its key is ENGQA and its description also mentions distributed systems, but this team is not private."}
+  ],
+  "effect": {"table": "team_memberships", "changes": ["insert"], "field": "teamId"},
+  "written": ["team_memberships.teamId"]
+ },
+ "other_references": [],
+ "write": {"graphql": "mutation { teamMembershipCreate(input: {teamId: \"t-eng\", userId: \"u-priya\"}) { teamMembership { id } } }"},
+ "probes": []
+}

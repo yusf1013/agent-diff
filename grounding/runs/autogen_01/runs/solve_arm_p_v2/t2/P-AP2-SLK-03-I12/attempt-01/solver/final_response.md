@@ -1,0 +1,1 @@
+There is a payment gateway outage message in #incidents (posted by Omar): "Payment gateway outage — CPU spike traced to the retry loop." However, **Diego Alvarez** reacted to it with a **thumbsup** 👍, not a **fire** 🔥 emoji. The fire reaction was added by **Aisha**. Since Diego didn't react with fire, I did not add the rocket reaction as the specified condition wasn't met.

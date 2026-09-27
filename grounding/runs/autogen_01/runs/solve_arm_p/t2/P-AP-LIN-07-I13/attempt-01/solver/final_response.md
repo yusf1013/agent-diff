@@ -1,0 +1,3 @@
+I'm unable to rename the document. The Linear API endpoints available to me in this session only cover issues, teams, comments, labels, workflow states, and users — there are no document-related operations (list, read, or update) exposed. Linear's Documents feature isn't accessible through the API surface provided here, so I can't search for the "Draft notes" document or rename it to "Referral pilot — launch notes."
+
+If you have access to a Linear API key with the `documents:write` scope, you could use the `DocumentUpdate` mutation directly, or you can rename it manually in the Linear UI under the Growth team's documents.

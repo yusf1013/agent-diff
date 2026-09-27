@@ -1,0 +1,1 @@
+There isn't a client sync about finalizing the Meridian contract ending at 3:30 pm on your calendar. The closest match is a "Client sync" on June 21 from 3:00–3:30 pm, but its description is "Weekly check-in on the hiring pipeline" (it's just located at "Meridian contract signing suite"). No event matches the "finalizing the Meridian contract" topic, so I didn't make any changes.

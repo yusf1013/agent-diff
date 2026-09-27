@@ -1,0 +1,1 @@
+Successfully reopened the resolved comment thread on WEB-5 ("Flaky checkout test"). The comment "Can we pin the browser version?" (id: c-22), which had been resolved on 2026-06-01, is now reopened — its `resolvedAt` is back to `null`.

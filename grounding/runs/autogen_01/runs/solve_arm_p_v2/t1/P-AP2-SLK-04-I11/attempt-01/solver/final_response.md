@@ -1,0 +1,1 @@
+Added a ✅ check reaction to Diego's message in #incidents (ts: 1786357200.000007) — the one that reads "Posted the gateway rollback notes for the postmortem." and has 4 replies in its thread.

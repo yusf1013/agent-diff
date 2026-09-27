@@ -1,0 +1,1 @@
+There is no issue matching all the specified criteria. I found two comments by Priya Nair about API timeouts, but they were posted on **September 20** (WEB-4) and **September 21** (WEB-3), not September 22. There is also no record of Leo resolving any comment thread. No priority change was made.

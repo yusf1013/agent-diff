@@ -1,0 +1,1 @@
+Found the "Fall Kickoff Retro" cycle (starting Sept 29, 2026, on the Mobile team) which contains the issue "Checkout timeout on Apple Pay sheet" assigned to Sam Rivera. Successfully updated its end date from October 13 to October 20, 2026.

@@ -1,0 +1,1 @@
+I checked all calendars in your calendar list and there is no calendar whose description says it is for the London office. The only office-related calendar is "UK sites" (uk-sites@northwind.example), but its description says it is for the **Berlin** office, not London. I did not grant Sam Rivera any access.

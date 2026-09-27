@@ -1,0 +1,116 @@
+{
+ "scenario_id": "AR-SLK-23",
+ "domain": "slack",
+ "request": "Archive the private channel whose purpose mentions onboarding new hires and that has Diego Alvarez as a member.",
+ "answer": "one",
+ "seed": [
+  ["channel", {"id": "C_ONB", "name": "new-hire-onboarding", "private": true, "purpose": "Onboarding new hires and tracking their first 90 days", "members": ["diego", "aisha"]}],
+  ["channel", {"id": "C_HRGEN", "name": "hr-general", "private": true, "topic": "Onboarding new hires", "purpose": "General HR announcements and holiday schedule", "members": ["diego", "leo"]}],
+  ["channel", {"id": "C_HRBEN", "name": "hr-benefits", "private": true, "purpose": "Benefits enrollment and 401k questions", "members": ["diego", "maya"]}],
+  ["channel", {"id": "C_ONB_PUB", "name": "new-hires", "private": false, "purpose": "Onboarding new hires and swag ordering", "members": ["diego", "priya"]}],
+  ["channel", {"id": "C_ONB_GC", "name": "onboarding-design-pod", "private": false, "gc": true, "purpose": "Onboarding new hires for the design pod", "members": ["diego", "omar"]}],
+  ["channel", {"id": "C_BUDGET", "name": "budget-planning", "private": true, "purpose": "Quarterly budget planning and forecast reviews", "members": ["leo", "omar"]}],
+  ["channel", {"id": "C_NEWHIRE_NODIEGO", "name": "orientation-schedule", "private": false, "purpose": "Onboarding new hires and orientation schedule", "members": ["leo", "aisha"]}]
+ ],
+ "conditions": [
+  {"id": "c1", "text": "the private channel", "facts": ["A:Conversation.is_private"]},
+  {"id": "c2", "text": "whose purpose mentions onboarding new hires", "facts": ["A:Conversation.purpose_text"]},
+  {"id": "c3", "text": "that has Diego Alvarez as a member", "facts": ["R:channel_members", "A:User.real_name"]}
+ ],
+ "reference": {
+  "name": "the channel to archive",
+  "target": ["C_ONB"],
+  "query": {
+   "table": "channels",
+   "key": ["channel_id"],
+   "filters": [
+    {"key": "f_private", "field": "is_private", "op": "eq", "value": true, "fact": "A:Conversation.is_private"},
+    {"key": "f_purpose", "field": "purpose_text", "op": "contains_ci", "value": "onboarding new hires", "fact": "A:Conversation.purpose_text"}
+   ],
+   "edges": [
+    {"key": "e_mem", "join": {"parent": "channel_id", "child": "channel_id", "op": "eq"}, "fact": "R:channel_members",
+     "node": {"table": "channel_members", "filters": [], "edges": [
+       {"key": "e_user", "join": {"parent": "user_id", "child": "user_id", "op": "eq"},
+        "node": {"table": "users", "filters": [
+          {"key": "f_diego", "field": "real_name", "op": "eq", "value": "Diego Alvarez", "fact": "A:User.real_name"}
+         ], "edges": []}}
+     ]}}
+   ]
+  },
+  "decoys": [
+   {
+    "witness": "C_HRGEN",
+    "fact": "A:Conversation.purpose_text",
+    "family": "F1",
+    "substitute": "Conversation.topic_text",
+    "mutation": {
+     "type": "REPLACE",
+     "note": "purpose_text replaced by topic_text (sibling text field)",
+     "query": {
+      "table": "channels",
+      "key": ["channel_id"],
+      "filters": [
+       {"key": "f_private", "field": "is_private", "op": "eq", "value": true},
+       {"key": "f_topic", "field": "topic_text", "op": "contains_ci", "value": "onboarding new hires"}
+      ],
+      "edges": [
+       {"key": "e_mem", "join": {"parent": "channel_id", "child": "channel_id", "op": "eq"},
+        "node": {"table": "channel_members", "filters": [], "edges": [
+          {"key": "e_user", "join": {"parent": "user_id", "child": "user_id", "op": "eq"},
+           "node": {"table": "users", "filters": [
+             {"key": "f_diego", "field": "real_name", "op": "eq", "value": "Diego Alvarez"}
+            ], "edges": []}}
+        ]}}
+      ]
+     }
+    },
+    "explanation": "hr-general's topic mentions onboarding new hires, but its purpose is about general HR announcements; the request asks about the purpose."
+   },
+   {
+    "witness": "C_HRBEN",
+    "fact": "A:Conversation.purpose_text",
+    "family": "F0",
+    "mutation": {"type": "DROP", "target": "f_purpose"},
+    "explanation": "Same privacy and membership, but hr-benefits' purpose is about benefits enrollment, not onboarding."
+   },
+   {
+    "witness": "C_ONB_PUB",
+    "fact": "A:Conversation.is_private",
+    "family": "F0",
+    "mutation": {"type": "DROP", "target": "f_private"},
+    "explanation": "new-hires has the right purpose and member, but it is a public channel, not a private one."
+   },
+   {
+    "witness": "C_ONB_GC",
+    "fact": "A:Conversation.is_private",
+    "family": "F1",
+    "substitute": "Conversation.is_gc (group DM flag)",
+    "mutation": {
+     "type": "REPLACE",
+     "note": "is_private replaced by is_gc: a group DM read as restricted-access instead of a private channel",
+     "query": {
+      "table": "channels",
+      "key": ["channel_id"],
+      "filters": [
+       {"key": "f_gc", "field": "is_gc", "op": "eq", "value": true},
+       {"key": "f_purpose", "field": "purpose_text", "op": "contains_ci", "value": "onboarding new hires"}
+      ],
+      "edges": [
+       {"key": "e_mem", "join": {"parent": "channel_id", "child": "channel_id", "op": "eq"},
+        "node": {"table": "channel_members", "filters": [], "edges": [
+          {"key": "e_user", "join": {"parent": "user_id", "child": "user_id", "op": "eq"},
+           "node": {"table": "users", "filters": [
+             {"key": "f_diego", "field": "real_name", "op": "eq", "value": "Diego Alvarez"}
+            ], "edges": []}}
+        ]}}
+      ]
+     }
+    },
+    "explanation": "onboarding-design-pod is a group DM Diego belongs to with the right purpose text, but its is_private flag is false; only is_gc is set."
+   }
+  ],
+  "effect": {"table": "channels", "changes": ["update"]},
+  "written": ["channels.is_archived"]
+ },
+ "write": {"slack": "conversations.archive", "params": {"channel": "C_ONB"}}
+}

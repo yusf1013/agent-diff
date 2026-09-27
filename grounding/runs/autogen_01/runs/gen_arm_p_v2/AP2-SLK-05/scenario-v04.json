@@ -1,0 +1,115 @@
+{
+ "scenario_id": "AP2-SLK-05",
+ "domain": "slack",
+ "request": "Archive the channel that our workspace admin belongs to, that has exactly 5 members, and that was created before March 2026.",
+ "answer": "one",
+ "seed": [
+  ["person", {"key": "amara", "name": "Amara Diallo", "role": "admin"}],
+  ["person", {"key": "victor", "name": "Victor Reyes", "role": "owner"}],
+  ["person", {"key": "nina", "name": "Nina Osei", "role": "member"}],
+  ["person", {"key": "sam", "name": "Sam Coleman", "role": "member"}],
+  ["person", {"key": "tariq", "name": "Tariq Malik", "role": "member"}],
+  ["person", {"key": "elena", "name": "Elena Petrova", "role": "member"}],
+
+  ["channel", {"id": "C_ATLAS", "name": "proj-atlas", "members": ["amara", "nina", "sam", "tariq"],
+               "set": {"created_at": "2026-02-10T12:00:00Z"}}],
+  ["message", {"channel": "C_ATLAS", "author": "amara", "text": "Channel created on 2026-02-10.", "at": "2026-02-10T12:05:00Z", "ref": "m_atlas_kickoff"}],
+
+  ["channel", {"id": "C_SIX", "name": "proj-nova", "members": ["amara", "nina", "sam", "tariq", "elena"],
+               "set": {"created_at": "2026-02-05T12:00:00Z"}}],
+  ["message", {"channel": "C_SIX", "author": "amara", "text": "Channel created on 2026-02-05.", "at": "2026-02-05T12:05:00Z", "ref": "m_six_kickoff"}],
+
+  ["channel", {"id": "C_POSTERS", "name": "proj-comet", "members": ["amara", "nina", "sam"],
+               "set": {"created_at": "2026-02-12T12:00:00Z"}}],
+  ["message", {"channel": "C_POSTERS", "author": "amara", "text": "Kicking off the comet migration doc.", "at": "2026-02-12T12:00:00Z", "ref": "m_amara"}],
+  ["message", {"channel": "C_POSTERS", "author": "nina", "text": "Added the schema changes.", "at": "2026-02-12T12:05:00Z", "ref": "m_nina"}],
+  ["message", {"channel": "C_POSTERS", "author": "sam", "text": "LGTM, merging today.", "at": "2026-02-12T12:10:00Z", "ref": "m_sam"}],
+  ["message", {"channel": "C_POSTERS", "author": "tariq", "text": "Can I get access to review this too?", "at": "2026-02-12T12:15:00Z", "ref": "m_tariq"}],
+  ["message", {"channel": "C_POSTERS", "author": "elena", "text": "Following along, looks good.", "at": "2026-02-12T12:20:00Z", "ref": "m_elena"}],
+
+  ["channel", {"id": "C_LATE", "name": "proj-orion", "members": ["amara", "nina", "sam", "tariq"],
+               "set": {"created_at": "2026-03-04T12:00:00Z"}}],
+  ["message", {"channel": "C_LATE", "author": "amara", "text": "Channel created on 2026-03-04.", "at": "2026-03-04T12:05:00Z", "ref": "m_late_kickoff"}],
+
+  ["channel", {"id": "C_OWNER", "name": "proj-vega", "members": ["victor", "nina", "sam", "tariq"],
+               "set": {"created_at": "2026-02-08T12:00:00Z"}}],
+  ["message", {"channel": "C_OWNER", "author": "victor", "text": "Channel created on 2026-02-08.", "at": "2026-02-08T12:05:00Z", "ref": "m_owner_kickoff"}],
+
+  ["channel", {"id": "C_PLAIN", "name": "proj-lyra", "members": ["nina", "sam", "tariq", "elena"],
+               "set": {"created_at": "2026-02-15T12:00:00Z"}}],
+  ["message", {"channel": "C_PLAIN", "author": "nina", "text": "Channel created on 2026-02-15.", "at": "2026-02-15T12:05:00Z", "ref": "m_plain_kickoff"}],
+
+  ["channel", {"id": "C_GENERAL", "name": "general", "members": ["victor", "elena", "sam", "tariq", "nina"],
+               "set": {"created_at": "2026-04-01T12:00:00Z"}}],
+
+  ["channel", {"id": "C_RANDOM", "name": "watercooler", "members": ["elena"],
+               "set": {"created_at": "2026-01-01T12:00:00Z"}}]
+ ],
+ "conditions": [
+  {"id": "c1", "text": "that our workspace admin belongs to", "facts": ["R:channel_members", "A:WorkspaceMembership.role"]},
+  {"id": "c2", "text": "has exactly 5 members", "facts": ["D:member_count"]},
+  {"id": "c3", "text": "was created before March 2026", "facts": ["A:Conversation.created_at"]}
+ ],
+ "reference": {
+  "name": "the channel to archive",
+  "target": ["C_ATLAS"],
+  "query": {
+   "table": "channels",
+   "key": ["channel_id"],
+   "filters": [
+    {"key": "f_created", "field": "created_at", "op": "lt", "value": "2026-03-01T00:00:00Z", "fact": "A:Conversation.created_at"}
+   ],
+   "edges": [
+    {"key": "e_members", "join": {"parent": "channel_id", "child": "channel_id", "op": "eq"}, "count": {"op": "eq", "value": 5},
+     "fact": "D:member_count",
+     "node": {"table": "channel_members", "filters": [], "edges": []}},
+    {"key": "e_admin", "join": {"parent": "channel_id", "child": "channel_id", "op": "eq"}, "fact": "R:channel_members",
+     "node": {"table": "channel_members", "filters": [
+       {"key": "f_admin_member", "field": "user_id", "op": "eq", "value": "U_AMARA", "fact": "A:WorkspaceMembership.role"}
+      ], "edges": []}}
+   ]
+  },
+  "decoys": [
+   {"witness": "C_SIX", "fact": "D:member_count", "family": "F7", "substitute": "one member over the requested count",
+    "mutation": {"type": "REPLACE", "note": "member count boundary shifted from 5 to 6", "query": {
+      "table": "channels", "key": ["channel_id"],
+      "filters": [{"key": "f_created", "field": "created_at", "op": "lt", "value": "2026-03-01T00:00:00Z"}],
+      "edges": [
+       {"key": "e_members", "join": {"parent": "channel_id", "child": "channel_id", "op": "eq"}, "count": {"op": "eq", "value": 6},
+        "node": {"table": "channel_members", "filters": [], "edges": []}},
+       {"key": "e_admin", "join": {"parent": "channel_id", "child": "channel_id", "op": "eq"},
+        "node": {"table": "channel_members", "filters": [
+          {"key": "f_admin_member", "field": "user_id", "op": "eq", "value": "U_AMARA"}
+         ], "edges": []}}
+      ]
+     }},
+    "explanation": "Amara Diallo is a member and it predates March, but it has 6 members, one over the requested count."},
+   {"witness": "C_POSTERS", "fact": "D:member_count", "family": "F6", "substitute": "distinct message authors (posters) counted instead of true membership",
+    "mutation": {"type": "REPLACE", "note": "member count replaced by distinct-poster count", "query": {
+      "table": "channels", "key": ["channel_id"],
+      "filters": [{"key": "f_created", "field": "created_at", "op": "lt", "value": "2026-03-01T00:00:00Z"}],
+      "edges": [
+       {"key": "e_posters", "join": {"parent": "channel_id", "child": "channel_id", "op": "eq"}, "count": {"op": "eq", "value": 5},
+        "node": {"table": "messages", "filters": [], "edges": []}},
+       {"key": "e_admin", "join": {"parent": "channel_id", "child": "channel_id", "op": "eq"},
+        "node": {"table": "channel_members", "filters": [
+          {"key": "f_admin_member", "field": "user_id", "op": "eq", "value": "U_AMARA"}
+         ], "edges": []}}
+      ]
+     }},
+    "explanation": "Amara Diallo is a member and it predates March, but only 3 named people plus the bot actually belong to it (4 members); five people posted in it, including two who never joined."},
+   {"witness": "C_LATE", "fact": "A:Conversation.created_at", "family": "F7", "substitute": "created just after the cutoff",
+    "mutation": {"type": "DROP", "target": "f_created"},
+    "explanation": "Amara Diallo is a member and it has exactly 5 members, but it was created on March 4, 2026, a few days after the cutoff."},
+   {"witness": "C_OWNER", "fact": "A:WorkspaceMembership.role", "family": "F7", "substitute": "the workspace owner instead of the admin",
+    "mutation": {"type": "DROP", "target": "f_admin_member"},
+    "explanation": "It has exactly 5 members and predates March, but its notable member is Victor Reyes, the workspace owner, not the admin."},
+   {"witness": "C_PLAIN", "fact": "A:WorkspaceMembership.role", "family": "F0", "substitute": "only ordinary members, no admin or owner",
+    "mutation": {"type": "DROP", "target": "f_admin_member"},
+    "explanation": "It has exactly 5 members and predates March, but every named member is a plain member; the admin never joined."}
+  ],
+  "effect": {"table": "channels", "changes": ["update"]},
+  "written": ["channels.is_archived"]
+ },
+ "write": {"slack": "conversations.archive", "params": {"channel": "C_ATLAS"}}
+}

@@ -1,0 +1,1 @@
+I found your "Ops Rotation – EMEA" calendar (ops-emea@northwind.example), which you own and which mentions weekend on-call coverage in its details. I successfully changed its time zone from America/Los_Angeles to America/New_York.

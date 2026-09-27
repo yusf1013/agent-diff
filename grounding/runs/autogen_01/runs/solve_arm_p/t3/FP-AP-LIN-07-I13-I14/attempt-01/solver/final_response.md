@@ -1,0 +1,1 @@
+There is no document titled "Draft notes" in the **Growth** team that mentions the referral program pilot. I found two documents with that title and content, but they belong to the **Platform** team (one is assigned to Platform, the other is unassigned). The Growth team has no such document.

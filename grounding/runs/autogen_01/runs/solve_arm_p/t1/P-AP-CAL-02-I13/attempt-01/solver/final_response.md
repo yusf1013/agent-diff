@@ -1,0 +1,1 @@
+Successfully hid the "Team Calendar" (team-launch@northwind.example) on your calendar list. This is the calendar where you have writer access. It's now set to hidden, so it will no longer appear in your calendar list view.

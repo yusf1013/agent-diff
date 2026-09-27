@@ -1,0 +1,1 @@
+There isn't a private channel whose purpose mentions onboarding new hires. The only non-archived private channel in the workspace is **budget-planning**, whose purpose is "Quarterly budget planning and forecast reviews." No archiving was performed.

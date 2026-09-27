@@ -1,0 +1,1 @@
+Cycle 14 (starting September 29, 2026) exists, but it does **not** include an Urgent issue assigned to Priya Nair. The only issue assigned to her in that cycle is "Investigate renewal push notification failure," which has a priority of **Medium** (not Urgent). Because the required condition isn't met, I did not change the cycle's end date.

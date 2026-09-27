@@ -1,0 +1,1 @@
+Updated the 'Renew SSO certificate' issue (i-it-sso) — assigned to guest contractor Dana Whitfield (dana.whitfield.ext@northwind.example) and filed by leo.park@northwind.example — to **Urgent** priority (4.0). The API confirmed `success: true`.

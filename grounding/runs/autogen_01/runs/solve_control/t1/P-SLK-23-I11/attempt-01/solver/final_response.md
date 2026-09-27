@@ -1,0 +1,1 @@
+There isn't a private channel whose purpose is coordinating vendor contracts. The only private channel in the workspace is **#procurement**, but its purpose is "Purchase approvals and budgets" (its topic mentions vendor contracts this quarter, though). No channel matches the description you provided, so no topic update was made.

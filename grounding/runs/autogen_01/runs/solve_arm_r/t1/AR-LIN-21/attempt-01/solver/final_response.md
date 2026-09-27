@@ -1,0 +1,1 @@
+Successfully set the priority to Urgent on the Web team's issue "Login timeout on SSO redirect" (WEB-1), which was created by Maya Chen on June 3rd. The priority was updated from 0 (No priority) to 1 (Urgent).

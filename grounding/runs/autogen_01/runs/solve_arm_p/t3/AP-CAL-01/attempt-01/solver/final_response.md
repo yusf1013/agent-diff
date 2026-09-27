@@ -1,0 +1,1 @@
+The 'Client Success' calendar (cs-north@northwind.example) has been hidden. It was already unchecked (selected: false), and I've now set hidden: true, so it will no longer appear in your calendar list.

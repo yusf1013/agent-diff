@@ -1,0 +1,1 @@
+I found the "Client Success Renewals" calendar (which you referred to as "Client Success") — it was already unchecked (selected: false) as you mentioned. I've now set it to hidden, so it will no longer appear in your calendar list at all.

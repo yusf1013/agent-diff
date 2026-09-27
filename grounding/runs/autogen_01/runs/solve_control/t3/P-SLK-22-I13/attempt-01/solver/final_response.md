@@ -1,0 +1,1 @@
+There is no reply from Diego Alvarez in the #incidents checkout outage thread. The thread has only one reply, from Omar Haddad. No action was taken.

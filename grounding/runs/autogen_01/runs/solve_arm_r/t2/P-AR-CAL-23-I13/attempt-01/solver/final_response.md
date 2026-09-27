@@ -1,0 +1,1 @@
+There isn't a vendor sync on Thursday (June 21) with Dana Whitfield as an **optional** attendee. The only vendor event that day is "Vendor sync: Labeling" at 1:30–2:00 PM, and Dana is a **required** attendee there — not optional. So there's nothing to move to Room 2C based on the criteria you gave.

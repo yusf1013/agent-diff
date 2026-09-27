@@ -1,0 +1,1 @@
+The deploy freeze message in #incidents ("Reminder: deploy freeze starts Monday for all services." posted by U_LEO) only has **3 replies**, not 4. No message in #incidents about a deploy freeze with 4 replies exists, so there's no one to invite to #incident-response.

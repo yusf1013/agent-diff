@@ -1,0 +1,1 @@
+There is no private channel whose purpose mentions onboarding new hires. The only private channel in the workspace is **#budget-planning** (C_BUDGET), and its purpose is "Quarterly budget planning and forecast reviews" — nothing about onboarding. So there's nothing to archive.

@@ -1,0 +1,1 @@
+There isn't a Web team issue about the login redirect that Omar Haddad created on September 10. The closest match is "Login redirect ignores locale" (ID: i-23), which is on the Web team and was created by Omar Haddad, but it was created on **September 11**, not September 10. Since it doesn't match the September 10 date you specified, I did not assign it to Priya Nair.

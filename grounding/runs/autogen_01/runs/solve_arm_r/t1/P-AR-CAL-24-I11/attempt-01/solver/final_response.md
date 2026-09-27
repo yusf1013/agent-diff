@@ -1,0 +1,3 @@
+There isn't a Front Desk calendar located at Building 4, 3rd Floor. The only Front Desk calendar in your calendar list (id: `cal_front_b2`) is located at **Building 2, 1st Floor**. Its current description is: "Note: while Building 4, 3rd Floor is being repainted, route overflow front desk shifts here." — so "Building 4, 3rd Floor" only appears in that description as a reference to a temporary arrangement, not as the calendar's location.
+
+Let me know if you'd like me to update the description on that existing Front Desk calendar (Building 2, 1st Floor) or if there's another calendar I should be looking at.

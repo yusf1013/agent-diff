@@ -1,0 +1,1 @@
+I checked all calendars on your calendar list and there is no calendar whose description says it is for the London office. The only office-specific calendar is "Iberia team" (madrid@northwind.example), which is described as the "Calendar for the Madrid office." So I'm unable to grant Sam Rivera read access to a London office calendar since none exists.

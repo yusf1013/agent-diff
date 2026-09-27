@@ -1,0 +1,1 @@
+Successfully hid the "Team Calendar" (`team-design@northwind.example`) from the calendar list. This is the Team Calendar with writer access that belongs to the design team (owned by sam.rivera@northwind.example). The calendar is now set to `hidden: true`, meaning it will no longer appear in the calendar list view, though it will still be synced in the background.

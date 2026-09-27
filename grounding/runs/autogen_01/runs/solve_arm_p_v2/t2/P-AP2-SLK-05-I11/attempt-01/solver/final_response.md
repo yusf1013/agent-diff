@@ -1,0 +1,7 @@
+There is no channel in your workspace that meets all three criteria (the workspace owner belongs to it, was created before March 2026, and has exactly 5 members). Here's what I found:
+
+- **proj-nova** (C_FOUR): Created ~Feb 2026, owner is a member, but has only **4 members**
+- **watercooler** (C_RANDOM): Created ~Jan 2026, but has only **2 members** and the owner isn't in it
+- **general** (C_GENERAL): Created ~April 2026 (after March), so it doesn't qualify
+
+No matching channel was found, so no channel was archived.

@@ -1,0 +1,1 @@
+Successfully moved the planning session "Walk through the Q4 roadmap and owners" (Thursday June 21, 4:00–5:00 PM) to **Room 2B**. The event's location has been updated via a PATCH request to the Google Calendar API.

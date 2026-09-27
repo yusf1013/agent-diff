@@ -1,0 +1,1 @@
+I searched your primary calendar for "vendor" events on Thursday, June 21, 2018. There is only one vendor sync that day — "Vendor sync: Labeling" (1:30–2:00 PM) — but in that event, Dana Whitfield is a **required** attendee, not an optional one. There isn't a vendor sync on Thursday with Dana Whitfield as an optional attendee, so no change was made.

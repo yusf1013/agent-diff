@@ -1,0 +1,72 @@
+{
+ "scenario_id": "DV-LIN-01",
+ "domain": "linear",
+ "request": "Set the priority to Urgent for the issue assigned to Priya Nair on Aurora's milestone that's due September 30 and hasn't started yet.",
+ "answer": "one",
+ "seed": [
+  ["team", {"id": "t-neb", "name": "Nebula", "key": "NEB"}],
+  ["member", {"team": "t-neb", "person": "priya"}],
+  ["team", {"id": "t-comet", "name": "Comet", "key": "COM"}],
+  ["member", {"team": "t-comet", "person": "sam"}],
+  ["project", {"id": "p-aurora", "name": "Aurora"}],
+  ["project", {"id": "p-comet", "name": "Comet"}],
+  ["milestone", {"id": "m-target", "project": "p-aurora", "name": "Public beta launch", "target": "2026-09-30", "status": "unstarted"}],
+  ["milestone", {"id": "m-status-decoy", "project": "p-aurora", "name": "Internal beta", "target": "2026-09-30", "status": "next"}],
+  ["milestone", {"id": "m-date-decoy", "project": "p-aurora", "name": "Early access", "target": "2026-10-15", "status": "unstarted"}],
+  ["milestone", {"id": "m-comet", "project": "p-comet", "name": "Comet beta", "target": "2026-09-30", "status": "unstarted"}],
+  ["issue", {"id": "i-target", "team": "t-neb", "title": "Add OAuth token refresh", "assignee": "priya", "project": "p-aurora", "milestone": "m-target", "priority": 3, "state": "Todo"}],
+  ["issue", {"id": "i-decoy-rel", "team": "t-neb", "title": "Fix session cache eviction", "assignee": "priya", "project": "p-aurora", "priority": 3, "state": "Todo"}],
+  ["issue", {"id": "i-decoy-status", "team": "t-neb", "title": "Add refresh token rotation", "assignee": "priya", "project": "p-aurora", "milestone": "m-status-decoy", "priority": 3, "state": "Todo"}],
+  ["issue", {"id": "i-decoy-date", "team": "t-neb", "title": "Add PKCE support", "assignee": "priya", "project": "p-aurora", "milestone": "m-date-decoy", "priority": 3, "state": "Todo"}],
+  ["issue", {"id": "i-comet-1", "team": "t-comet", "title": "Refresh comet auth", "assignee": "sam", "project": "p-comet", "milestone": "m-comet", "priority": 3, "state": "Todo"}]
+ ],
+ "conditions": [
+  {"id": "c1", "text": "the issue assigned to Priya Nair", "facts": ["R:Issue.assigneeId", "A:User.name"]},
+  {"id": "c2", "text": "on Aurora's milestone", "facts": ["R:Issue.projectMilestoneId", "R:ProjectMilestone.projectId", "A:Project.name"]},
+  {"id": "c3", "text": "that's due September 30", "facts": ["A:ProjectMilestone.targetDate"]},
+  {"id": "c4", "text": "and hasn't started yet", "facts": ["A:ProjectMilestone.status"]}
+ ],
+ "reference": {
+  "name": "the issue to reprioritize",
+  "target": ["i-target"],
+  "query": {
+   "table": "issues",
+   "key": ["id"],
+   "filters": [],
+   "edges": [
+    {"key": "e_assignee", "join": {"parent": "assigneeId", "child": "id", "op": "eq"}, "fact": "R:Issue.assigneeId",
+     "node": {"table": "users", "filters": [
+       {"key": "f_assignee", "field": "name", "op": "eq", "value": "Priya Nair", "fact": "A:User.name"}], "edges": []}},
+    {"key": "e_mile", "join": {"parent": "projectMilestoneId", "child": "id", "op": "eq"}, "fact": "R:Issue.projectMilestoneId",
+     "node": {"table": "project_milestones", "filters": [
+       {"key": "f_status", "field": "status", "op": "eq", "value": "unstarted", "fact": "A:ProjectMilestone.status"},
+       {"key": "f_date", "field": "targetDate", "op": "eq", "value": "2026-09-30", "fact": "A:ProjectMilestone.targetDate"}],
+      "edges": [
+       {"key": "e_proj", "join": {"parent": "projectId", "child": "id", "op": "eq"}, "fact": "R:ProjectMilestone.projectId",
+        "node": {"table": "projects", "filters": [
+          {"key": "f_project", "field": "name", "op": "eq", "value": "Aurora", "fact": "A:Project.name"}], "edges": []}}
+      ]}}
+   ]
+  },
+  "decoys": [
+   {"witness": "i-decoy-rel", "fact": "R:Issue.projectMilestoneId", "family": "F2",
+    "substitute": "Issue.projectId without the milestone",
+    "mutation": {"type": "SUB", "target": "e_mile", "replacement": {
+      "key": "e_mile", "join": {"parent": "projectId", "child": "id", "op": "eq"},
+      "node": {"table": "projects", "filters": [
+        {"key": "x", "field": "name", "op": "eq", "value": "Aurora"}], "edges": []}}},
+    "explanation": "It's directly in the Aurora project but was never put on any milestone, so it has no milestone due date or status at all."},
+   {"witness": "i-decoy-status", "fact": "A:ProjectMilestone.status", "family": "F7",
+    "substitute": "the milestone one stage ahead of unstarted",
+    "mutation": {"type": "DROP", "target": "f_status"},
+    "explanation": "Its milestone (Internal beta) is in Aurora and due September 30, but its status is next, not unstarted."},
+   {"witness": "i-decoy-date", "fact": "A:ProjectMilestone.targetDate", "family": "F7",
+    "substitute": "the nearest later milestone date",
+    "mutation": {"type": "DROP", "target": "f_date"},
+    "explanation": "Its milestone (Early access) is in Aurora and hasn't started yet, but targets October 15, not September 30."}
+  ],
+  "effect": {"table": "issues", "changes": ["update"]},
+  "written": ["issues.priority"]
+ },
+ "write": {"graphql": "mutation { issueUpdate(id: \"i-target\", input: {priority: 1}) { issue { id priority } } }"}
+}

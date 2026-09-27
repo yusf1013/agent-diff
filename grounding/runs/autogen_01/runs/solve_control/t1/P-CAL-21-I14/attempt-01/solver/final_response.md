@@ -1,0 +1,1 @@
+There isn't a planning session on Thursday (June 21) that matches all your criteria. There is a "Planning session" that ends at 5 PM that day, but its description says "Hiring plan for the autumn" — it does not mention the Q4 roadmap. No other events on that Thursday qualify either.

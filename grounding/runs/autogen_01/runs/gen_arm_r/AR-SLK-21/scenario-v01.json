@@ -1,0 +1,145 @@
+{
+ "scenario_id": "AR-SLK-21",
+ "domain": "slack",
+ "request": "React with :eyes: to the message Leo Park posted in #incidents on Tuesday.",
+ "answer": "one",
+ "seed": [
+  ["channel", {"id": "C_INC", "name": "incidents", "members": ["leo", "diego", "omar"]}],
+  ["channel", {"id": "C_ENG", "name": "eng-standup", "members": ["leo", "priya"]}],
+  ["channel", {"id": "C_WAR", "name": "war-room", "members": ["diego", "maya"]}],
+
+  ["message", {"channel": "C_INC", "author": "leo", "text": "Rolled back the payment gateway config after the spike.",
+               "at": "2026-09-22T12:10:00Z", "ref": "target"}],
+
+  ["message", {"channel": "C_INC", "author": "diego", "text": "Anyone seeing elevated latency on checkout?",
+               "at": "2026-09-22T11:30:00Z", "ref": "d1"}],
+  ["reaction", {"message": "@d1", "person": "leo", "name": "thumbsup", "at": "2026-09-22T11:35:00Z"}],
+
+  ["message", {"channel": "C_INC", "author": "omar", "text": "I'm looking into the DB connection pool now.",
+               "at": "2026-09-22T12:40:00Z", "ref": "d2"}],
+
+  ["message", {"channel": "C_ENG", "author": "leo", "text": "Standup notes: sprint burndown looks good.",
+               "at": "2026-09-22T12:00:00Z", "ref": "d3"}],
+
+  ["message", {"channel": "C_WAR", "author": "leo", "text": "Escalating this to the payments team.",
+               "at": "2026-09-22T12:20:00Z", "ref": "d4"}],
+  ["reaction", {"message": "@d4", "person": "diego", "name": "raised_hands", "at": "2026-09-22T12:25:00Z"}],
+
+  ["message", {"channel": "C_INC", "author": "leo", "text": "Wrapping up the post-incident review doc.",
+               "at": "2026-09-23T12:00:00Z", "ref": "d5"}],
+
+  ["message", {"channel": "C_ENG", "author": "priya", "text": "Sprint planning notes for next week.",
+               "at": "2026-09-21T12:00:00Z"}],
+  ["message", {"channel": "C_WAR", "author": "maya", "text": "Scheduling the next deployment window.",
+               "at": "2026-09-24T12:00:00Z"}]
+ ],
+ "conditions": [
+  {"id": "c1", "text": "the message Leo Park posted", "facts": ["R:messages.user_id"]},
+  {"id": "c2", "text": "in #incidents", "facts": ["R:messages.channel_id"]},
+  {"id": "c3", "text": "on Tuesday", "facts": ["A:Message.created_at"]}
+ ],
+ "reference": {
+  "name": "the message to react to",
+  "target": ["@target"],
+  "query": {
+   "table": "messages",
+   "key": ["message_id"],
+   "filters": [
+    {"key": "f_from", "field": "created_at", "op": "ge", "value": "2026-09-22T00:00:00Z", "fact": "A:Message.created_at"},
+    {"key": "f_to", "field": "created_at", "op": "lt", "value": "2026-09-23T00:00:00Z"}
+   ],
+   "edges": [
+    {"key": "e_author", "join": {"parent": "user_id", "child": "user_id", "op": "eq"}, "fact": "R:messages.user_id",
+     "node": {"table": "users", "filters": [{"key": "f_auth", "field": "real_name", "op": "eq", "value": "Leo Park"}], "edges": []}},
+    {"key": "e_channel", "join": {"parent": "channel_id", "child": "channel_id", "op": "eq"}, "fact": "R:messages.channel_id",
+     "node": {"table": "channels", "filters": [{"key": "f_chan", "field": "channel_name", "op": "eq", "value": "incidents"}], "edges": []}}
+   ]
+  },
+  "decoys": [
+   {"witness": "@d1", "fact": "R:messages.user_id", "family": "F1", "substitute": "reactor of the message (message_reactions)",
+    "mutation": {"type": "REPLACE", "note": "author role replaced by reactor role", "query": {
+      "table": "messages", "key": ["message_id"],
+      "filters": [
+       {"key": "f_from", "field": "created_at", "op": "ge", "value": "2026-09-22T00:00:00Z"},
+       {"key": "f_to", "field": "created_at", "op": "lt", "value": "2026-09-23T00:00:00Z"}
+      ],
+      "edges": [
+       {"key": "e_channel", "join": {"parent": "channel_id", "child": "channel_id", "op": "eq"},
+        "node": {"table": "channels", "filters": [{"key": "f_chan", "field": "channel_name", "op": "eq", "value": "incidents"}], "edges": []}},
+       {"key": "e_react", "join": {"parent": "message_id", "child": "message_id", "op": "eq"},
+        "node": {"table": "message_reactions", "filters": [],
+         "edges": [{"key": "e_reactor", "join": {"parent": "user_id", "child": "user_id", "op": "eq"},
+                    "node": {"table": "users", "filters": [{"key": "f_reactor", "field": "real_name", "op": "eq", "value": "Leo Park"}], "edges": []}}]}}
+      ]
+     }},
+    "explanation": "Diego Alvarez posted this message in #incidents on Tuesday; Leo Park only reacted to it with a thumbs-up."},
+
+   {"witness": "@d2", "fact": "R:messages.user_id", "family": "F2", "substitute": "member of the message's channel",
+    "mutation": {"type": "REPLACE", "note": "author role replaced by channel-membership check", "query": {
+      "table": "messages", "key": ["message_id"],
+      "filters": [
+       {"key": "f_from", "field": "created_at", "op": "ge", "value": "2026-09-22T00:00:00Z"},
+       {"key": "f_to", "field": "created_at", "op": "lt", "value": "2026-09-23T00:00:00Z"}
+      ],
+      "edges": [
+       {"key": "e_channel", "join": {"parent": "channel_id", "child": "channel_id", "op": "eq"},
+        "node": {"table": "channels", "filters": [{"key": "f_chan", "field": "channel_name", "op": "eq", "value": "incidents"}],
+         "edges": [{"key": "e_member", "join": {"parent": "channel_id", "child": "channel_id", "op": "eq"},
+                    "node": {"table": "channel_members", "filters": [],
+                     "edges": [{"key": "e_memuser", "join": {"parent": "user_id", "child": "user_id", "op": "eq"},
+                                "node": {"table": "users", "filters": [{"key": "f_memname", "field": "real_name", "op": "eq", "value": "Leo Park"}], "edges": []}}]}}]}}
+      ]
+     }},
+    "explanation": "Omar Haddad posted this in #incidents on Tuesday; Leo Park is a member of #incidents but did not write it."},
+
+   {"witness": "@d3", "fact": "R:messages.channel_id", "family": "F2", "substitute": "channel the author belongs to",
+    "mutation": {"type": "REPLACE", "note": "message channel replaced by a channel the author belongs to", "query": {
+      "table": "messages", "key": ["message_id"],
+      "filters": [
+       {"key": "f_from", "field": "created_at", "op": "ge", "value": "2026-09-22T00:00:00Z"},
+       {"key": "f_to", "field": "created_at", "op": "lt", "value": "2026-09-23T00:00:00Z"}
+      ],
+      "edges": [
+       {"key": "e_author", "join": {"parent": "user_id", "child": "user_id", "op": "eq"},
+        "node": {"table": "users", "filters": [{"key": "f_auth", "field": "real_name", "op": "eq", "value": "Leo Park"}],
+         "edges": [{"key": "e_belongs", "join": {"parent": "user_id", "child": "user_id", "op": "eq"},
+                    "node": {"table": "channel_members", "filters": [],
+                     "edges": [{"key": "e_chan2", "join": {"parent": "channel_id", "child": "channel_id", "op": "eq"},
+                                "node": {"table": "channels", "filters": [{"key": "f_chan2", "field": "channel_name", "op": "eq", "value": "incidents"}], "edges": []}}]}}]}}
+      ]
+     }},
+    "explanation": "Leo Park posted this on Tuesday in #eng-standup, a channel he belongs to, not in #incidents."},
+
+   {"witness": "@d4", "fact": "R:messages.channel_id", "family": "F2", "substitute": "channel a reactor belongs to",
+    "mutation": {"type": "REPLACE", "note": "message channel replaced by a channel the reactor belongs to", "query": {
+      "table": "messages", "key": ["message_id"],
+      "filters": [
+       {"key": "f_from", "field": "created_at", "op": "ge", "value": "2026-09-22T00:00:00Z"},
+       {"key": "f_to", "field": "created_at", "op": "lt", "value": "2026-09-23T00:00:00Z"}
+      ],
+      "edges": [
+       {"key": "e_author", "join": {"parent": "user_id", "child": "user_id", "op": "eq"},
+        "node": {"table": "users", "filters": [{"key": "f_auth", "field": "real_name", "op": "eq", "value": "Leo Park"}], "edges": []}},
+       {"key": "e_react", "join": {"parent": "message_id", "child": "message_id", "op": "eq"},
+        "node": {"table": "message_reactions", "filters": [],
+         "edges": [{"key": "e_reactor2", "join": {"parent": "user_id", "child": "user_id", "op": "eq"},
+                    "node": {"table": "users", "filters": [],
+                     "edges": [{"key": "e_reactbelongs", "join": {"parent": "user_id", "child": "user_id", "op": "eq"},
+                                "node": {"table": "channel_members", "filters": [],
+                                 "edges": [{"key": "e_chan3", "join": {"parent": "channel_id", "child": "channel_id", "op": "eq"},
+                                            "node": {"table": "channels", "filters": [{"key": "f_chan3", "field": "channel_name", "op": "eq", "value": "incidents"}], "edges": []}}]}}]}}]}}
+      ]
+     }},
+    "explanation": "Leo Park posted this on Tuesday in #war-room; Diego Alvarez, who reacted to it, belongs to #incidents, but the message itself is not there."},
+
+   {"witness": "@d5", "fact": "A:Message.created_at", "family": "F7", "substitute": "the adjacent day",
+    "mutation": {"type": "DROP", "target": "f_to"},
+    "explanation": "Leo Park posted this in #incidents, but on Wednesday, the day after."}
+  ],
+  "effect": {"table": "message_reactions", "changes": ["insert"], "key": ["message_id", "user_id", "reaction_type"], "field": "message_id"},
+  "written": ["message_reactions.reaction_type"]
+ },
+ "other_references": [],
+ "write": {"slack": "reactions.add", "params": {"channel": "C_INC", "timestamp": "@target", "name": "eyes"}},
+ "probes": []
+}

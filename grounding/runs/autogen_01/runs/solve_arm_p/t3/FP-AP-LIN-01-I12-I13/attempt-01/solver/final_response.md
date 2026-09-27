@@ -1,0 +1,1 @@
+Successfully set the priority to Urgent for issue WEB-2 ("Plan the rollback window for payment migration") in the Web team. This was the issue in the Done state, assigned to Priya Nair, whose description mentions the rollback window, completed on October 2, 2026. The priority is now confirmed as 4 (Urgent).

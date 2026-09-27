@@ -1,0 +1,1 @@
+Found the "Client sync" event (ending at 3:30 PM on June 21) that was associated with the Meridian contract and moved its location from "Meridian contract signing suite" to "Room 4C". The update was successful.

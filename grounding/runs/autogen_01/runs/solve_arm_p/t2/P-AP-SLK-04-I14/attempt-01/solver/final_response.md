@@ -1,0 +1,1 @@
+There isn't a message in #incidents about a deploy freeze that got 4 replies. The only deploy freeze message — "Update: extending the deploy freeze another week." posted by Maya (U_MAYA) — has 3 replies in its thread, not 4. So there's no qualifying message to invite from.

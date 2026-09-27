@@ -1,0 +1,100 @@
+{
+ "scenario_id": "AP2-LIN-05",
+ "domain": "linear",
+ "request": "Set the priority to Urgent on the issue where Priya commented about the API timeout, in a comment thread posted on September 22 that Leo has already resolved.",
+ "answer": "one",
+ "seed": [
+  ["team", {"id": "t-web", "name": "Web", "key": "WEB"}],
+  ["member", {"team": "t-web", "person": "priya"}],
+  ["member", {"team": "t-web", "person": "leo"}],
+  ["member", {"team": "t-web", "person": "sam"}],
+  ["member", {"team": "t-web", "person": "maya"}],
+  ["member", {"team": "t-web", "person": "dana"}],
+  ["member", {"team": "t-web", "person": "omar"}],
+
+  ["issue", {"id": "i-web-20", "team": "t-web", "title": "Improve payment retry queue", "assignee": "sam", "state": "In Progress", "priority": 3, "created": "2026-09-01T09:00:00"}],
+  ["comment", {"id": "c-target", "issue": "i-web-20", "author": "priya", "body": "We keep seeing an API timeout during retries; let's add exponential backoff.", "created": "2026-09-22T10:00:00", "resolver": "leo", "resolved": "2026-09-22T15:00:00"}],
+  ["comment", {"id": "c-chatter", "issue": "i-web-20", "author": "dana", "body": "Nice catch, thanks for flagging.", "created": "2026-09-23T09:00:00"}],
+
+  ["issue", {"id": "i-web-21", "team": "t-web", "title": "Investigate flaky checkout tests", "assignee": "leo", "priority": 2, "created": "2026-09-01T09:00:00"}],
+  ["comment", {"id": "c-split-author", "issue": "i-web-21", "author": "priya", "body": "Can we rename this ticket to reflect the current scope?", "created": "2026-09-22T09:00:00"}],
+  ["comment", {"id": "c-split-topic", "issue": "i-web-21", "author": "leo", "body": "Seeing the same API timeout in the staging logs too.", "created": "2026-09-22T11:00:00", "resolver": "leo", "resolved": "2026-09-22T16:00:00"}],
+
+  ["issue", {"id": "i-web-22", "team": "t-web", "title": "Reduce webhook latency", "assignee": "maya", "priority": 2, "created": "2026-09-01T09:00:00"}],
+  ["comment", {"id": "c-f7", "issue": "i-web-22", "author": "priya", "body": "The API timeout happens whenever latency spikes above 2 seconds.", "created": "2026-09-21T10:00:00", "resolver": "leo", "resolved": "2026-09-21T14:00:00"}],
+
+  ["issue", {"id": "i-web-23", "team": "t-web", "title": "Fix webhook signature verification", "assignee": "dana", "priority": 2, "created": "2026-09-01T09:00:00"}],
+  ["comment", {"id": "c-f1", "issue": "i-web-23", "author": "priya", "body": "This API timeout also shows up on the staging webhook endpoint.", "created": "2026-09-20T09:00:00", "resolver": "leo", "resolved": "2026-09-22T09:30:00"}],
+
+  ["issue", {"id": "i-web-24", "team": "t-web", "title": "Optimize database queries for reports", "assignee": "omar", "priority": 2, "created": "2026-09-01T09:00:00"}],
+  ["comment", {"id": "c-f0", "issue": "i-web-24", "author": "priya", "body": "There's an API timeout when exporting large reports.", "created": "2026-09-22T08:00:00"}],
+
+  ["issue", {"id": "i-web-25", "team": "t-web", "title": "Update onboarding email copy", "assignee": "sam", "priority": 1, "created": "2026-09-01T09:00:00"}],
+  ["comment", {"id": "c-bg", "issue": "i-web-25", "author": "sam", "body": "Let's tweak the subject line for clarity.", "created": "2026-09-15T09:00:00", "resolver": "leo", "resolved": "2026-09-15T12:00:00"}]
+ ],
+ "conditions": [
+  {"id": "c1", "text": "the issue where Priya commented about the API timeout", "facts": ["B:Comment.issueId", "R:Comment.userId", "A:Comment.body"]},
+  {"id": "c2", "text": "in a comment thread posted on September 22", "facts": ["A:Comment.createdAt"]},
+  {"id": "c3", "text": "that Leo has already resolved", "facts": ["A:Comment.resolvedAt"]}
+ ],
+ "reference": {
+  "name": "the issue whose resolved comment from Priya about the API timeout was posted on September 22",
+  "target": ["i-web-20"],
+  "query": {
+   "table": "issues",
+   "key": ["id"],
+   "filters": [],
+   "edges": [
+    {"key": "e_comment", "join": {"parent": "id", "child": "issueId", "op": "eq"}, "fact": "B:Comment.issueId",
+     "node": {
+      "table": "comments",
+      "filters": [
+       {"key": "f_body", "field": "body", "op": "contains_ci", "value": "API timeout", "fact": "A:Comment.body"},
+       {"key": "f_created_from", "field": "createdAt", "op": "ge", "value": "2026-09-22T00:00:00", "fact": "A:Comment.createdAt"},
+       {"key": "f_created_to", "field": "createdAt", "op": "lt", "value": "2026-09-23T00:00:00"},
+       {"key": "f_resolved", "field": "resolvedAt", "op": "not_null", "fact": "A:Comment.resolvedAt"}
+      ],
+      "edges": [
+       {"key": "e_author", "join": {"parent": "userId", "child": "id", "op": "eq"}, "fact": "R:Comment.userId",
+        "node": {"table": "users", "filters": [{"key": "f_who", "field": "name", "op": "eq", "value": "Priya Nair"}], "edges": []}}
+      ]
+     }}
+   ]
+  },
+  "decoys": [
+   {"witness": "i-web-21", "fact": "B:Comment.issueId", "family": "F5", "substitute": "the author and topic conditions met by different comments on the issue",
+    "mutation": {"type": "SPLIT", "target": "e_comment", "groups": [["e_author"], ["f_body", "f_created_from", "f_created_to", "f_resolved"]]},
+    "explanation": "Priya commented on this issue, but about renaming the ticket; it's Leo's comment, not hers, that mentions the API timeout, was posted September 22 and is resolved."},
+   {"witness": "i-web-22", "fact": "A:Comment.createdAt", "family": "F7", "substitute": "the adjacent day",
+    "mutation": {"type": "DROP", "target": "f_created_from"},
+    "explanation": "Priya's API-timeout comment here is resolved, but it was posted September 21, the day before."},
+   {"witness": "i-web-23", "fact": "A:Comment.createdAt", "family": "F1", "substitute": "Comment.resolvedAt",
+    "mutation": {"type": "REPLACE", "note": "createdAt replaced by resolvedAt", "query": {
+     "table": "issues", "key": ["id"], "filters": [],
+     "edges": [
+      {"key": "e_comment", "join": {"parent": "id", "child": "issueId", "op": "eq"},
+       "node": {
+        "table": "comments",
+        "filters": [
+         {"key": "f_body", "field": "body", "op": "contains_ci", "value": "API timeout"},
+         {"key": "u1", "field": "resolvedAt", "op": "ge", "value": "2026-09-22T00:00:00"},
+         {"key": "u2", "field": "resolvedAt", "op": "lt", "value": "2026-09-23T00:00:00"},
+         {"key": "f_resolved", "field": "resolvedAt", "op": "not_null"}
+        ],
+        "edges": [
+         {"key": "e_author", "join": {"parent": "userId", "child": "id", "op": "eq"},
+          "node": {"table": "users", "filters": [{"key": "f_who", "field": "name", "op": "eq", "value": "Priya Nair"}], "edges": []}}
+        ]
+       }}
+     ]
+    }},
+    "explanation": "Priya posted this comment on September 20; it was only marked resolved on September 22."},
+   {"witness": "i-web-24", "fact": "A:Comment.resolvedAt", "family": "F0",
+    "mutation": {"type": "DROP", "target": "f_resolved"},
+    "explanation": "Priya posted this API-timeout comment on September 22, but it hasn't been resolved."}
+  ],
+  "effect": {"table": "issues", "changes": ["update"]},
+  "written": ["issues.priority"]
+ },
+ "write": {"graphql": "mutation { issueUpdate(id: \"i-web-20\", input: {priority: 1}) { issue { id priority } } }"}
+}

@@ -1,0 +1,1 @@
+Successfully added a :tada: reaction to Farhan Malik's (Deebo's) message "Confirmed: the launch date is set for March 3." in #launch-planning. This is the message that @nadia.brooks had already flagged with :eyes:. The API confirmed the reaction was added with {"ok":true}.

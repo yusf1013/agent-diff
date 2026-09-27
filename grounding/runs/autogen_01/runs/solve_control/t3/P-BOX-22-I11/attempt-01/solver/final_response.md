@@ -1,0 +1,1 @@
+There isn't a hub that Dana Whitfield last updated which also contains the Pricing sheet file. The only hub in the workspace is **"Deal desk"** (ID: 5202), and while it does contain **Pricing sheet.xlsx**, it was last **updated by Leo Park** (not Dana Whitfield). Dana Whitfield *created* the hub but didn't make the last update to it. So the task cannot be completed as described.

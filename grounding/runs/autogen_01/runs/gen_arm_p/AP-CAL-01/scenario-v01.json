@@ -1,0 +1,56 @@
+{
+ "scenario_id": "AP-CAL-01",
+ "domain": "calendar",
+ "request": "Please remove the 'Client Success' calendar from my calendar list — I already unchecked it, so it doesn't show up in my calendar view anymore.",
+ "answer": "one",
+ "seed": [
+  ["calendar", {"id": "cs-north@northwind.example", "summary": "Client Success", "owner": "sam", "access": "reader", "selected": false, "hidden": false}],
+  ["calendar", {"id": "cs-south@northwind.example", "summary": "Client Success", "owner": "maya", "access": "reader", "selected": true, "hidden": true}],
+  ["calendar", {"id": "cs-east@northwind.example", "summary": "Client Success", "owner": "dana", "access": "reader", "selected": true, "hidden": false}],
+  ["calendar", {"id": "cs-renewals@northwind.example", "summary": "Client Success Renewals", "owner": "kenji", "access": "reader", "selected": false, "hidden": false}],
+  ["calendar", {"id": "finance-ops@northwind.example", "summary": "Finance Ops", "owner": "leo", "access": "reader", "selected": false, "hidden": false}],
+  ["calendar", {"id": "product-roadmap@northwind.example", "summary": "Product Roadmap", "owner": "aiko", "access": "writer", "selected": true, "hidden": false}],
+  ["calendar", {"id": "team-offsite@northwind.example", "summary": "Team Offsite", "owner": "omar", "access": "reader", "selected": true, "hidden": false}]
+ ],
+ "conditions": [
+  {"id": "c1", "text": "the 'Client Success' calendar", "facts": ["A:Calendar.summary"]},
+  {"id": "c2", "text": "I already unchecked it, so it doesn't show up in my calendar view anymore", "facts": ["A:CalendarListEntry.selected"]}
+ ],
+ "reference": {
+  "name": "the calendar list entry to remove",
+  "target": ["cs-north@northwind.example"],
+  "query": {
+   "table": "calendar_list_entries",
+   "filters": [
+    {"key": "f_selected", "field": "selected", "op": "eq", "value": false, "fact": "A:CalendarListEntry.selected"}
+   ],
+   "edges": [
+    {"key": "e_cal", "join": {"parent": "calendar_id", "child": "id", "op": "eq"},
+     "node": {"table": "calendars", "filters": [
+       {"key": "f_summary", "field": "summary", "op": "eq", "value": "Client Success", "fact": "A:Calendar.summary"}
+      ], "edges": []}}
+   ]
+  },
+  "decoys": [
+   {"witness": "cs-renewals@northwind.example", "fact": "A:Calendar.summary", "family": "F8",
+    "substitute": "a calendar whose name shares the same words plus more",
+    "mutation": {"type": "DROP", "target": "f_summary"},
+    "explanation": "It's already unchecked, but it's named 'Client Success Renewals', not 'Client Success'."},
+   {"witness": "finance-ops@northwind.example", "fact": "A:Calendar.summary", "family": "F0",
+    "substitute": "a differently named calendar",
+    "mutation": {"type": "DROP", "target": "f_summary"},
+    "explanation": "It's already unchecked too, but it's called 'Finance Ops', not 'Client Success'."},
+   {"witness": "cs-south@northwind.example", "fact": "A:CalendarListEntry.selected", "family": "F1",
+    "substitute": "CalendarListEntry.hidden",
+    "mutation": {"type": "DROP", "target": "f_selected"},
+    "explanation": "This 'Client Success' calendar is already hidden from the list, but its selected checkbox is still on — it hasn't been unchecked."},
+   {"witness": "cs-east@northwind.example", "fact": "A:CalendarListEntry.selected", "family": "F0",
+    "mutation": {"type": "DROP", "target": "f_selected"},
+    "explanation": "This 'Client Success' calendar is still checked/selected, so it still shows in the calendar view."}
+  ],
+  "effect": {"table": "calendar_list_entries", "changes": ["delete"]},
+  "written": ["calendar_list_entries.deleted"]
+ },
+ "write": {"method": "DELETE", "path": "/users/me/calendarList/cs-north@northwind.example"},
+ "probes": []
+}

@@ -1,0 +1,1 @@
+I searched the Growth team (and the entire workspace) for an issue or document titled "Draft notes" that mentions a referral program pilot, and there isn't one. In fact, there are no issues of any kind in this workspace at all, so there's nothing to rename.

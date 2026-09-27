@@ -1,0 +1,1 @@
+Successfully updated the priority to **Urgent** on issue **WEB-2: "Checkout hangs for guest users on Safari"** (assigned to Priya Nair, Cycle 4) in the Web Platform team. The priority was changed from Normal (3.0) to Urgent (1.0).

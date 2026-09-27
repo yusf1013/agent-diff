@@ -1,0 +1,1 @@
+Found the "Ops Rotation – EMEA" calendar (owned by you, with "Weekend on-call coverage rota posted here every Friday" noted in its metadata). Successfully changed its time zone from America/Los_Angeles to America/New_York.

@@ -1,0 +1,1 @@
+There is no calendar whose description says it is for the London office. The only non-primary calendar is titled **"London office"** (ID: `london@northwind.example`), but its **description** actually reads "Calendar for the **Paris** office." Since no calendar's description matches "London office," I did not grant Sam Rivera any access.

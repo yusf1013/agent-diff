@@ -1,0 +1,1 @@
+The rollout timeline message in #eng-updates ("Rollout timeline: no changes, still Friday 3pm." by Aisha, ts 1789927200.000004) only has a **tada** reaction from Leo. There is no **eyes** reaction from Priya on it, so I did not add a rocket reaction. If you'd like, I can still add the rocket reaction unconditionally — just let me know.

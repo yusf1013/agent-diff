@@ -1,0 +1,89 @@
+{
+ "scenario_id": "AP-CAL-02",
+ "domain": "calendar",
+ "request": "Hide the Team Calendar that I have writer access to on my calendar list, and that's shared with the design team as a writer.",
+ "answer": "one",
+ "seed": [
+  ["calendar", {"id": "team-design@northwind.example", "summary": "Team Calendar", "owner": "sam", "access": "writer", "in_list": true}],
+  ["acl", {"id": "acl-design-team", "calendar": "team-design@northwind.example", "role": "writer", "scope_type": "group", "scope_value": "design-team@northwind.example"}],
+
+  ["calendar", {"id": "team-brand@northwind.example", "summary": "Team Calendar", "owner": "dana", "in_list": false}],
+  ["acl", {"id": "acl-brand-jordan", "calendar": "team-brand@northwind.example", "role": "writer", "scope_type": "user", "scope_value": "jordan.lee@northwind.example"}],
+  ["acl", {"id": "acl-brand-design-team", "calendar": "team-brand@northwind.example", "role": "writer", "scope_type": "group", "scope_value": "design-team@northwind.example"}],
+
+  ["calendar", {"id": "team-ops@northwind.example", "summary": "Team Calendar", "owner": "actor", "in_list": false}],
+  ["acl", {"id": "acl-ops-design-team", "calendar": "team-ops@northwind.example", "role": "writer", "scope_type": "group", "scope_value": "design-team@northwind.example"}],
+
+  ["calendar", {"id": "team-launch@northwind.example", "summary": "Team Calendar", "owner": "kenji", "access": "writer", "in_list": true}],
+  ["acl", {"id": "acl-launch-design-team", "calendar": "team-launch@northwind.example", "role": "reader", "scope_type": "group", "scope_value": "design-team@northwind.example"}],
+  ["acl", {"id": "acl-launch-product-team", "calendar": "team-launch@northwind.example", "role": "writer", "scope_type": "group", "scope_value": "product-team@northwind.example"}],
+
+  ["calendar", {"id": "marketing-sync@northwind.example", "summary": "Marketing Sync", "owner": "aiko", "access": "reader", "in_list": true}],
+  ["acl", {"id": "acl-marketing-team", "calendar": "marketing-sync@northwind.example", "role": "writer", "scope_type": "group", "scope_value": "marketing-team@northwind.example"}],
+
+  ["calendar", {"id": "team-sales@northwind.example", "summary": "Team Calendar", "owner": "leo", "access": "reader", "in_list": true}],
+  ["acl", {"id": "acl-sales-team", "calendar": "team-sales@northwind.example", "role": "writer", "scope_type": "group", "scope_value": "sales-team@northwind.example"}]
+ ],
+ "conditions": [
+  {"id": "c1", "text": "the Team Calendar", "facts": ["A:Calendar.summary"]},
+  {"id": "c2", "text": "that I have writer access to on my calendar list", "facts": ["R:CalendarListEntry.calendar_id", "A:CalendarListEntry.access_role"]},
+  {"id": "c3", "text": "that's shared with the design team as a writer", "facts": ["B:AclRule.calendar_id", "A:AclRule.scope_value", "A:AclRule.role"]}
+ ],
+ "reference": {
+  "name": "the calendar to hide",
+  "target": ["team-design@northwind.example"],
+  "query": {
+   "table": "calendars",
+   "filters": [
+    {"key": "f_name", "field": "summary", "op": "eq", "value": "Team Calendar", "fact": "A:Calendar.summary"}
+   ],
+   "edges": [
+    {"key": "e_list", "join": {"parent": "id", "child": "calendar_id", "op": "eq"}, "fact": "R:CalendarListEntry.calendar_id",
+     "node": {"table": "calendar_list_entries", "filters": [
+       {"key": "f_role", "field": "access_role", "op": "eq", "value": "writer", "fact": "A:CalendarListEntry.access_role"}
+      ], "edges": []}},
+    {"key": "e_acl", "join": {"parent": "id", "child": "calendar_id", "op": "eq"}, "fact": "B:AclRule.calendar_id",
+     "node": {"table": "calendar_acl_rules", "filters": [
+       {"key": "f_scope", "field": "scope_value", "op": "eq", "value": "design-team@northwind.example", "fact": "A:AclRule.scope_value"},
+       {"key": "f_aclrole", "field": "role", "op": "eq", "value": "writer", "fact": "A:AclRule.role"}
+      ], "edges": []}}
+   ]
+  },
+  "decoys": [
+   {"witness": "team-brand@northwind.example", "fact": "R:CalendarListEntry.calendar_id", "family": "F1",
+    "substitute": "a personal ACL grant on the calendar (scope: user, Jordan's own email)",
+    "mutation": {"type": "SUB", "target": "e_list", "replacement": {
+      "key": "e_list", "join": {"parent": "id", "child": "calendar_id", "op": "eq"},
+      "node": {"table": "calendar_acl_rules", "filters": [
+        {"key": "x1", "field": "scope_type", "op": "eq", "value": "user"},
+        {"key": "x2", "field": "scope_value", "op": "eq", "value": "jordan.lee@northwind.example"},
+        {"key": "x3", "field": "role", "op": "eq", "value": "writer"}
+       ], "edges": []}}},
+    "explanation": "Jordan has been personally granted writer access to this calendar, but he never put it on his own calendar list, so he has no writer entry there."},
+   {"witness": "team-ops@northwind.example", "fact": "R:CalendarListEntry.calendar_id", "family": "F1",
+    "substitute": "Calendar.data_owner naming Jordan instead of an entry on his calendar list",
+    "mutation": {"type": "REPLACE", "note": "calendar-list edge replaced by a filter on the calendar's stored data owner", "query": {
+      "table": "calendars", "key": ["id"],
+      "filters": [
+       {"key": "f_name", "field": "summary", "op": "eq", "value": "Team Calendar"},
+       {"key": "f_owner", "field": "data_owner", "op": "eq", "value": "jordan.lee@northwind.example"}
+      ],
+      "edges": [
+       {"key": "e_acl", "join": {"parent": "id", "child": "calendar_id", "op": "eq"},
+        "node": {"table": "calendar_acl_rules", "filters": [
+          {"key": "f_scope", "field": "scope_value", "op": "eq", "value": "design-team@northwind.example"},
+          {"key": "f_aclrole", "field": "role", "op": "eq", "value": "writer"}
+         ], "edges": []}}
+      ]
+     }},
+    "explanation": "Jordan is recorded as this calendar's data owner, but he has since removed it from his own calendar list, so it carries no writer entry for him there."},
+   {"witness": "team-launch@northwind.example", "fact": "B:AclRule.calendar_id", "family": "F5",
+    "substitute": "the scope and role conditions met by different ACL rules",
+    "mutation": {"type": "SPLIT", "target": "e_acl", "groups": [["f_scope"], ["f_aclrole"]]},
+    "explanation": "The design team's rule on this calendar is read-only; a separate rule grants writer access only to the product team."}
+  ],
+  "effect": {"table": "calendar_list_entries", "changes": ["update"], "field": "calendar_id"},
+  "written": ["calendar_list_entries.hidden"]
+ },
+ "write": {"method": "PATCH", "path": "/users/me/calendarList/team-design@northwind.example", "body": {"hidden": true}}
+}

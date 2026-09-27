@@ -1,0 +1,1 @@
+I found one issue titled "Renew SSO certificate" filed by leo.park@northwind.example, but it is assigned to **Dana Cho** (dana.cho@northwind.example), not Dana Whitfield. No issue matching your exact criteria (assigned to a guest contractor named Dana Whitfield) exists. If you meant the issue assigned to Dana Cho (IT-3), let me know and I'll set its priority to Urgent.

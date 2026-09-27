@@ -1,0 +1,1 @@
+Successfully set the priority to Urgent on issue WEB-1 ("Checkout error handling cleanup"). This was the issue associated with the resolved comment from Priya Nair about the payment gateway timeout, posted on March 3. The priority has been updated from its previous value to 4 (Urgent).

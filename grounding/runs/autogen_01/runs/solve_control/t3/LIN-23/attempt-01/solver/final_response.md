@@ -1,0 +1,1 @@
+Successfully reopened the comment thread on WEB-5 that Maya Chen had resolved. The comment "The retry wrapper hides the real failure." (ID: c-21) had its resolution cleared by setting `resolvingUserId` and `resolvingCommentId` to null via the `commentUpdate` mutation. The `resolvingUser` is now null, confirming the thread is reopened.

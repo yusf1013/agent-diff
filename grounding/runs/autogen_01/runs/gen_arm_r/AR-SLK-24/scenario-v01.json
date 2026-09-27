@@ -1,0 +1,148 @@
+{
+ "scenario_id": "AR-SLK-24",
+ "domain": "slack",
+ "request": "React with the eyes emoji on the message in #incidents about the payment gateway timeout that was posted by someone who's a member of #payments-oncall.",
+ "answer": "one",
+ "seed": [
+  ["channel", {"id": "C_INC", "name": "incidents", "members": ["aisha", "diego", "leo", "omar", "maya", "priya"]}],
+  ["channel", {"id": "C_PAY", "name": "payments-oncall", "members": ["aisha", "priya"]}],
+  ["channel", {"id": "C_PAY_EU", "name": "payments-oncall-eu", "members": ["omar"]}],
+
+  ["message", {"channel": "C_INC", "author": "aisha", "text": "Seeing 504s tied to a payment gateway timeout on checkout after the last deploy.", "at": "2026-09-24T14:00:00Z", "ref": "target"}],
+  ["message", {"channel": "C_INC", "author": "diego", "text": "Getting the same payment gateway timeout error on the mobile checkout flow.", "at": "2026-09-24T14:05:00Z", "ref": "d_f1"}],
+  ["message", {"channel": "C_INC", "author": "leo", "text": "We're also seeing payment gateway timeout spikes in the EU region.", "at": "2026-09-24T14:10:00Z", "ref": "d_f2"}],
+  ["message", {"channel": "C_INC", "author": "omar", "text": "Another payment gateway timeout, this time hitting the refunds endpoint.", "at": "2026-09-24T14:15:00Z", "ref": "d_f8"}],
+  ["message", {"channel": "C_INC", "author": "maya", "text": "FYI, seeing intermittent payment gateway timeout warnings in staging.", "at": "2026-09-24T14:20:00Z", "ref": "d_f0"}],
+
+  ["message", {"channel": "C_INC", "author": "diego", "text": "Standup notes: sprint review moved to Thursday.", "at": "2026-09-24T09:00:00Z", "ref": "bg1"}],
+  ["message", {"channel": "C_INC", "author": "leo", "text": "On-call handoff notes are posted in the wiki.", "at": "2026-09-24T09:05:00Z", "ref": "bg2"}],
+
+  ["message", {"channel": "C_PAY", "author": "diego", "text": "Handing off on-call to Aisha this week.", "at": "2026-09-20T10:00:00Z", "ref": "diego_pay_msg"}],
+  ["message", {"channel": "C_PAY", "author": "aisha", "text": "Bumping this - anyone around to check the alert queue?", "at": "2026-09-23T10:00:00Z", "ref": "pay_msg2"}],
+  ["reaction", {"message": "@pay_msg2", "person": "leo", "name": "thumbsup", "at": "2026-09-23T10:05:00Z"}]
+ ],
+ "conditions": [
+  {"id": "c1", "text": "the message in #incidents", "facts": ["R:messages.channel_id"]},
+  {"id": "c2", "text": "about the payment gateway timeout", "facts": ["A:Message.message_text"]},
+  {"id": "c3", "text": "that was posted by someone who's a member of #payments-oncall", "facts": ["R:messages.user_id", "R:channel_members"]}
+ ],
+ "reference": {
+  "name": "the message to react to",
+  "target": ["@target"],
+  "query": {
+   "table": "messages",
+   "key": ["message_id"],
+   "filters": [
+    {"key": "f_text", "field": "message_text", "op": "contains_ci", "value": "payment gateway timeout", "fact": "A:Message.message_text"}
+   ],
+   "edges": [
+    {"key": "e_channel", "join": {"parent": "channel_id", "child": "channel_id", "op": "eq"}, "fact": "R:messages.channel_id",
+     "node": {"table": "channels", "filters": [
+       {"key": "f_chan", "field": "channel_name", "op": "eq", "value": "incidents"}
+      ], "edges": []}},
+    {"key": "e_member", "join": {"parent": "user_id", "child": "user_id", "op": "eq"}, "fact": "R:channel_members",
+     "node": {"table": "channel_members", "filters": [],
+      "edges": [
+       {"key": "e_pay", "join": {"parent": "channel_id", "child": "channel_id", "op": "eq"},
+        "node": {"table": "channels", "filters": [
+          {"key": "f_pay", "field": "channel_name", "op": "eq", "value": "payments-oncall"}
+         ], "edges": []}}
+      ]}}
+   ]
+  },
+  "decoys": [
+   {
+    "witness": "@d_f1",
+    "fact": "R:channel_members",
+    "family": "F1",
+    "substitute": "posted in the channel (location of authored message)",
+    "mutation": {
+     "type": "SUB",
+     "target": "e_member",
+     "replacement": {
+      "key": "e_member",
+      "join": {"parent": "user_id", "child": "user_id", "op": "eq"},
+      "node": {
+       "table": "messages",
+       "filters": [],
+       "edges": [
+        {"key": "x_chan", "join": {"parent": "channel_id", "child": "channel_id", "op": "eq"},
+         "node": {"table": "channels", "filters": [
+           {"key": "x_pay", "field": "channel_name", "op": "eq", "value": "payments-oncall"}
+          ], "edges": []}}
+       ]
+      }
+     }
+    },
+    "explanation": "Diego once posted a message in #payments-oncall, but he isn't a current member of that channel; Aisha is."
+   },
+   {
+    "witness": "@d_f2",
+    "fact": "R:channel_members",
+    "family": "F2",
+    "substitute": "reacted in the channel",
+    "mutation": {
+     "type": "SUB",
+     "target": "e_member",
+     "replacement": {
+      "key": "e_member",
+      "join": {"parent": "user_id", "child": "user_id", "op": "eq"},
+      "node": {
+       "table": "message_reactions",
+       "filters": [],
+       "edges": [
+        {"key": "y_msg", "join": {"parent": "message_id", "child": "message_id", "op": "eq"},
+         "node": {"table": "messages", "filters": [],
+          "edges": [
+           {"key": "y_chan", "join": {"parent": "channel_id", "child": "channel_id", "op": "eq"},
+            "node": {"table": "channels", "filters": [
+              {"key": "y_pay", "field": "channel_name", "op": "eq", "value": "payments-oncall"}
+             ], "edges": []}}
+          ]}}
+       ]
+      }
+     }
+    },
+    "explanation": "Leo reacted to a message inside #payments-oncall, but he isn't a member of that channel."
+   },
+   {
+    "witness": "@d_f8",
+    "fact": "R:channel_members",
+    "family": "F8",
+    "substitute": "member of a similarly named channel",
+    "mutation": {
+     "type": "SUB",
+     "target": "e_member",
+     "replacement": {
+      "key": "e_member",
+      "join": {"parent": "user_id", "child": "user_id", "op": "eq"},
+      "node": {
+       "table": "channel_members",
+       "filters": [],
+       "edges": [
+        {"key": "z_pay", "join": {"parent": "channel_id", "child": "channel_id", "op": "eq"},
+         "node": {"table": "channels", "filters": [
+           {"key": "z_val", "field": "channel_name", "op": "eq", "value": "payments-oncall-eu"}
+          ], "edges": []}}
+       ]
+      }
+     }
+    },
+    "explanation": "Omar is a member of #payments-oncall-eu, not #payments-oncall."
+   },
+   {
+    "witness": "@d_f0",
+    "fact": "R:channel_members",
+    "family": "F0",
+    "mutation": {
+     "type": "DROP",
+     "target": "e_member"
+    },
+    "explanation": "Maya has never posted, reacted, or held membership in #payments-oncall at all."
+   }
+  ],
+  "effect": {"table": "message_reactions", "changes": ["insert"], "key": ["message_id", "user_id", "reaction_type"], "field": "message_id"},
+  "written": ["message_reactions.reaction_type"]
+ },
+ "write": {"slack": "reactions.add", "params": {"channel": "C_INC", "timestamp": "@target", "name": "eyes"}}
+}

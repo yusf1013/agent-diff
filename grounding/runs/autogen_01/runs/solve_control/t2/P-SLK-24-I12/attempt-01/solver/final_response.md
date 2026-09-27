@@ -1,0 +1,1 @@
+There is no private channel that both **Priya Sharma** (U_PRIYA) and **Leo Park** (U_LEO) are members of. The only private channel in the workspace is #budget-review, and while Priya Sharma is a member, Leo Park is not — it contains a different person named Leo Parker (U_LEOPARKER) instead. I was unable to post the reminder.

@@ -1,0 +1,1 @@
+Deleted "Architecture review: search" from Friday, June 22 (3:00 PM – 4:00 PM, America/Los_Angeles). Kenji Satou (kenji.satou@northwind.example) was listed as an optional attendee. The event has been removed from the primary calendar.

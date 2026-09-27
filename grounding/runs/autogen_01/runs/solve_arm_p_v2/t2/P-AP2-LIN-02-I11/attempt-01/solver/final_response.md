@@ -1,0 +1,1 @@
+There isn't a matching issue. I found one issue titled "Renew SSO certificate" filed by leo.park@northwind.example, but it's assigned to the **internal** Dana Whitfield (dana.whitfield@northwind.example), not to the **guest contractor** Dana Whitfield (dana.whitfield.ext@northwind.example). Since the issue isn't assigned to the guest contractor, I did not change its priority.

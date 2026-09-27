@@ -1,0 +1,1 @@
+There is no message from Leo Park in the #incidents channel. The only message in that channel is from Diego ("Anyone seeing elevated latency on checkout?"). Since Leo Park hasn't posted anything there, there's nothing to react to.

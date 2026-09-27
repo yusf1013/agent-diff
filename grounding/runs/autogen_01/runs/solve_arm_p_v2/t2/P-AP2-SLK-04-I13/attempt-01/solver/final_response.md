@@ -1,0 +1,5 @@
+I couldn't find a message that exactly matches your description. There is only **one** message by Diego in #incidents mentioning "gateway rollback":
+
+> "Finished the gateway rollback about ten minutes ago."
+
+However, that thread has **5 replies** (from Leo, Omar, Aisha, Priya, and Maya), not 4. Since it doesn't match your "4 replies" criterion, I didn't add the reaction. Let me know if that's the message you meant and I'll add the checkmark reaction.

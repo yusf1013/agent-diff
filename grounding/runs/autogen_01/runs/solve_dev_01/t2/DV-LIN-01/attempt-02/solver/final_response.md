@@ -1,0 +1,1 @@
+Successfully set the priority to Urgent on the issue "Fix double-charge on retry" (i-web-1) in the Checkout Redesign project. This issue had a milestone "Payment integration" with status "Done" and target date March 15. The priority was updated from Medium (3.0) to Urgent (1.0), confirmed by the API response.

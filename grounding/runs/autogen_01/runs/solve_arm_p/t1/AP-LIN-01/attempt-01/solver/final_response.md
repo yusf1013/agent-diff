@@ -1,0 +1,1 @@
+Successfully updated the priority of issue WEB-1 ("Payment migration incident follow-up") to Urgent. This is the Web team issue in Done state, assigned to Priya Nair, whose description mentions "Coordinate the rollback window with on-call before merging," and was completed on October 2, 2026.

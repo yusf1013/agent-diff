@@ -1,0 +1,1 @@
+Successfully updated the "Renew SSO certificate" issue (IT-1) to **Urgent** priority (4.0). This is the issue assigned to guest contractor Dana Whitfield (dana.whitfield.ext@northwind.example) and filed by Leo Park (leo.park@northwind.example) in the IT Support team.

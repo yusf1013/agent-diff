@@ -1,0 +1,1 @@
+There isn't an archived incidents channel about the checkout outage that needs to be unarchived. The only checkout-outage-related channel I found is **incidents-checkout-live** (topic: "Live checkout outage monitoring – please post updates here"), and it is already active (not archived). No action was needed.

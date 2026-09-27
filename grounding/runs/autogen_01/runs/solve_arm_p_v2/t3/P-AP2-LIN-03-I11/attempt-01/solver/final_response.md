@@ -1,0 +1,1 @@
+There isn't a team that matches all the criteria. The closest match is **Growth Partnerships** (id: `t-growthpartnerships`), which is private and its description mentions "the Q3 OKR pilot rollout," but its key is **PTN**, not a key starting with "GR." No team has a key beginning with "GR," so no rename was performed.

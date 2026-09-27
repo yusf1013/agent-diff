@@ -1,0 +1,1 @@
+There is no folder that matches all the specified criteria. The "Legal Hold" collection (ID 9600) is empty — it contains no folders or files at all. Therefore, there is no folder in the Legal Hold collection that was created on June 3, 2026, last modified by Priya Nair, and has exactly 3 items directly in it. No tag has been added.

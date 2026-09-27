@@ -1,0 +1,1 @@
+I found the 'Product Team Offsite' calendar (the only checked calendar matching "Product Team") and renamed it to 'Eng Product Sync' by setting a display name override on your calendar list entry. It will now appear as "Eng Product Sync" in your calendar.

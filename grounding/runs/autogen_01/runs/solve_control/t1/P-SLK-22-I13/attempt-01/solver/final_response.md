@@ -1,0 +1,1 @@
+There is no reply from Diego Alvarez in the #incidents thread about the checkout outage. The thread (parent message: "Checkout outage: 502s on /pay since 14:05 UTC." by Leo) only has one reply, from Omar Haddad ("Payments dashboards look normal again."). Since Diego didn't reply in that thread, there's nothing to add an :eyes: reaction to.

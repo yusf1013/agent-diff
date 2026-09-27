@@ -1,0 +1,1 @@
+I found a 'Product Team' calendar in your list, but it is not currently checked (selected) in your calendar view. Since it doesn't meet the "currently checked" condition, I haven't renamed it. Let me know if you'd like me to rename it anyway or first check/enable it.

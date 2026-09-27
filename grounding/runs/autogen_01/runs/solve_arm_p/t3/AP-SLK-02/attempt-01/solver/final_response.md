@@ -1,0 +1,1 @@
+Successfully unarchived the **incidents-checkout** channel (C_CHECKOUT), which is the archived incidents channel related to the checkout outage. Its topic reads: "Checkout outage: 502s during payment retries, resolved and archived for reference."

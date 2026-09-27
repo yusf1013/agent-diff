@@ -1,0 +1,1 @@
+The 'Client Success' calendar has been successfully hidden from your calendar list. It's now set to `hidden: true`, so it will no longer appear in your calendar view. The subscription itself is still active — you can un-hide it at any time if you need it back.

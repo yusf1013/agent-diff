@@ -1,0 +1,102 @@
+{
+ "scenario_id": "DV-SLK-01",
+ "domain": "slack",
+ "request": "Invite the active Site Reliability Engineer based in the Europe/Berlin time zone to #incident-482.",
+ "answer": "one",
+ "seed": [
+  ["channel", {"id": "C_INC482", "name": "incident-482", "members": ["diego", "leo"], "topic": "Payments checkout outage"}],
+  ["person", {"key": "sofia", "name": "Sofia Martins", "ref": "sofia",
+              "set": {"title": "Site Reliability Engineer", "timezone": "Europe/Berlin", "is_active": true}}],
+  ["person", {"key": "marta", "name": "Marta Silva", "display": "Marta Silva (Site Reliability Engineer)", "ref": "marta",
+              "set": {"title": "Support Engineer", "timezone": "Europe/Berlin", "is_active": true}}],
+  ["person", {"key": "felix", "name": "Felix Bauer", "ref": "felix",
+              "set": {"title": "Platform Engineer", "timezone": "Europe/Berlin", "is_active": true}}],
+  ["person", {"key": "lukas", "name": "Lukas Weber", "ref": "lukas",
+              "set": {"title": "Site Reliability Engineer", "timezone": "Europe/London", "is_active": true}}],
+  ["person", {"key": "noah", "name": "Noah Fischer", "ref": "noah",
+              "set": {"title": "Site Reliability Engineer", "timezone": "Europe/Berlin", "is_active": false}}]
+ ],
+ "conditions": [
+  {"id": "c1", "text": "active", "facts": ["A:User.is_active"]},
+  {"id": "c2", "text": "Site Reliability Engineer", "facts": ["A:User.title"]},
+  {"id": "c3", "text": "based in the Europe/Berlin time zone", "facts": ["A:User.timezone"]}
+ ],
+ "reference": {
+  "name": "the on-call SRE to invite",
+  "target": ["@sofia"],
+  "query": {
+   "table": "users",
+   "key": ["id"],
+   "filters": [
+    {"key": "f_active", "field": "is_active", "op": "eq", "value": true, "fact": "A:User.is_active"},
+    {"key": "f_title", "field": "title", "op": "eq", "value": "Site Reliability Engineer", "fact": "A:User.title"},
+    {"key": "f_tz", "field": "timezone", "op": "eq", "value": "Europe/Berlin", "fact": "A:User.timezone"}
+   ],
+   "edges": []
+  },
+  "decoys": [
+   {
+    "witness": "@marta",
+    "fact": "A:User.title",
+    "family": "F1",
+    "substitute": "the role name appears in her display name, not her title field",
+    "mutation": {
+     "type": "REPLACE",
+     "note": "title filter replaced by a display_name match",
+     "query": {
+      "table": "users",
+      "key": ["id"],
+      "filters": [
+       {"key": "f_active", "field": "is_active", "op": "eq", "value": true},
+       {"key": "f_tz", "field": "timezone", "op": "eq", "value": "Europe/Berlin"},
+       {"key": "f_title_alt", "field": "display_name", "op": "contains_ci", "value": "Site Reliability Engineer"}
+      ],
+      "edges": []
+     }
+    },
+    "explanation": "Her display name reads 'Marta Silva (Site Reliability Engineer)', but her title field is Support Engineer."
+   },
+   {
+    "witness": "@felix",
+    "fact": "A:User.title",
+    "family": "F0",
+    "substitute": "a different title",
+    "mutation": {"type": "DROP", "target": "f_title"},
+    "explanation": "Same active status and time zone, but his title is Platform Engineer, not Site Reliability Engineer."
+   },
+   {
+    "witness": "@lukas",
+    "fact": "A:User.timezone",
+    "family": "F7",
+    "substitute": "the neighbouring time zone, one hour west",
+    "mutation": {"type": "DROP", "target": "f_tz"},
+    "explanation": "Same title and active status, but he's in Europe/London, not Europe/Berlin."
+   },
+   {
+    "witness": "@noah",
+    "fact": "A:User.is_active",
+    "family": "F0",
+    "substitute": "a deactivated account",
+    "mutation": {"type": "DROP", "target": "f_active"},
+    "explanation": "Same title and time zone, but his account is deactivated."
+   }
+  ],
+  "effect": {"table": "channel_members", "changes": ["insert"], "key": ["channel_id", "user_id"], "field": "user_id"},
+  "written": ["channel_members.channel_id"]
+ },
+ "other_references": [
+  {
+   "name": "the channel to invite them to",
+   "target": ["C_INC482"],
+   "query": {
+    "table": "channels",
+    "key": ["id"],
+    "filters": [
+     {"key": "f_chan", "field": "channel_name", "op": "eq", "value": "incident-482"}
+    ],
+    "edges": []
+   }
+  }
+ ],
+ "write": {"slack": "conversations.invite", "params": {"channel": "C_INC482", "users": "@sofia"}}
+}

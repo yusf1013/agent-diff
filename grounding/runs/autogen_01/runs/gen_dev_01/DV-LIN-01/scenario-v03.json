@@ -1,0 +1,101 @@
+{
+ "scenario_id": "DV-LIN-01",
+ "domain": "linear",
+ "request": "In the Checkout Redesign project, set the priority to Urgent on the issue whose milestone has status Done and target date March 15.",
+ "answer": "one",
+ "seed": [
+  ["team", {"id": "t-web", "name": "Web", "key": "WEB"}],
+  ["project", {"id": "p-checkout", "name": "Checkout Redesign", "lead": "maya"}],
+  ["project", {"id": "p-onboard", "name": "Onboarding Flow", "lead": "priya"}],
+  ["project", {"id": "p-mobile", "name": "Mobile Revamp", "lead": "leo"}],
+  ["milestone", {"id": "m-payment", "project": "p-checkout", "name": "Payment integration", "target": "2026-03-15", "status": "done"}],
+  ["milestone", {"id": "m-refund", "project": "p-checkout", "name": "Refund flow", "target": "2026-03-15", "status": "overdue"}],
+  ["milestone", {"id": "m-notify", "project": "p-checkout", "name": "Notifications", "target": "2026-03-16", "status": "done"}],
+  ["milestone", {"id": "m-signup", "project": "p-onboard", "name": "Sign-up flow", "target": "2026-05-01", "status": "next"}],
+  ["milestone", {"id": "m-launch", "project": "p-mobile", "name": "Launch prep", "target": "2026-04-01", "status": "next"}],
+  ["issue", {"id": "i-web-1", "team": "t-web", "title": "Fix double-charge on retry", "project": "p-checkout", "milestone": "m-payment", "priority": 3, "ref": "target"}],
+  ["issue", {"id": "i-web-2", "team": "t-web", "title": "Handle partial refund rounding", "project": "p-checkout", "milestone": "m-refund", "priority": 3}],
+  ["issue", {"id": "i-web-3", "team": "t-web", "title": "Send payment confirmation email", "project": "p-checkout", "milestone": "m-notify", "priority": 3}],
+  ["issue", {"id": "i-web-4", "team": "t-web", "title": "Investigate checkout timeout", "project": "p-checkout", "priority": 3}],
+  ["issue", {"id": "i-onb-1", "team": "t-web", "title": "Simplify sign-up form", "project": "p-onboard", "milestone": "m-signup", "priority": 3}],
+  ["issue", {"id": "i-mob-1", "team": "t-web", "title": "Design launch banner", "project": "p-mobile", "milestone": "m-launch", "priority": 3}]
+ ],
+ "conditions": [
+  {"id": "c1", "text": "In the Checkout Redesign project", "facts": ["A:Project.name"]},
+  {"id": "c2", "text": "whose milestone has status Done and target date March 15", "facts": ["R:Issue.projectMilestoneId", "A:ProjectMilestone.status", "A:ProjectMilestone.targetDate"]}
+ ],
+ "reference": {
+  "name": "the issue to set to Urgent priority",
+  "target": ["i-web-1"],
+  "query": {
+   "table": "issues",
+   "key": ["id"],
+   "filters": [],
+   "edges": [
+    {"key": "e_mile", "join": {"parent": "projectMilestoneId", "child": "id", "op": "eq"}, "fact": "R:Issue.projectMilestoneId",
+     "node": {
+      "table": "project_milestones",
+      "filters": [
+       {"key": "f_status", "field": "status", "op": "eq", "value": "done", "fact": "A:ProjectMilestone.status"},
+       {"key": "f_date", "field": "targetDate", "op": "eq", "value": "2026-03-15", "fact": "A:ProjectMilestone.targetDate"}
+      ],
+      "edges": [
+       {"key": "e_proj", "join": {"parent": "projectId", "child": "id", "op": "eq"}, "fact": "R:ProjectMilestone.projectId",
+        "node": {
+         "table": "projects",
+         "filters": [{"key": "f_projname", "field": "name", "op": "eq", "value": "Checkout Redesign", "fact": "A:Project.name"}],
+         "edges": []
+        }}
+      ]
+     }}
+   ]
+  },
+  "decoys": [
+   {
+    "witness": "i-web-2",
+    "fact": "A:ProjectMilestone.status",
+    "family": "F7",
+    "substitute": "the nearest status short of Done",
+    "mutation": {"type": "DROP", "target": "f_status"},
+    "explanation": "Its milestone, Refund flow, has target date March 15 like Payment integration, but its status is still Overdue, not Done."
+   },
+   {
+    "witness": "i-web-3",
+    "fact": "A:ProjectMilestone.targetDate",
+    "family": "F7",
+    "substitute": "the adjacent day",
+    "mutation": {"type": "DROP", "target": "f_date"},
+    "explanation": "Its milestone, Notifications, has status Done like Payment integration, but its target date is March 16, one day later."
+   },
+   {
+    "witness": "i-web-4",
+    "fact": "R:Issue.projectMilestoneId",
+    "family": "F1",
+    "substitute": "Issue.projectId without the milestone",
+    "mutation": {
+     "type": "REPLACE",
+     "note": "the milestone edge replaced by a direct project edge, the sibling role",
+     "query": {
+      "table": "issues",
+      "key": ["id"],
+      "filters": [],
+      "edges": [
+       {"key": "e_proj2", "join": {"parent": "projectId", "child": "id", "op": "eq"},
+        "node": {
+         "table": "projects",
+         "filters": [{"key": "f_projname2", "field": "name", "op": "eq", "value": "Checkout Redesign"}],
+         "edges": []
+        }}
+      ]
+     }
+    },
+    "explanation": "It's a Checkout Redesign issue, but it isn't attached to any milestone at all, so it has no status or target date to check."
+   }
+  ],
+  "effect": {"table": "issues", "changes": ["update"]},
+  "written": ["issues.priority"]
+ },
+ "other_references": [],
+ "write": {"graphql": "mutation { issueUpdate(id: \"i-web-1\", input: {priority: 1}) { success } }"},
+ "probes": []
+}

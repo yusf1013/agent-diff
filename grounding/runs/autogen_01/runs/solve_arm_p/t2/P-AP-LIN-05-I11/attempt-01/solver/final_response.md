@@ -1,0 +1,1 @@
+Found the comment from Priya Nair about the payment gateway timeout that was resolved on March 3 (comment c-2 on issue "Improve payment retry logic", id: i-web-2). Successfully updated the issue's priority to Urgent (priority: 4).

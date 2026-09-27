@@ -1,0 +1,1 @@
+There is no issue about "checkout hangs for guest users on Safari" assigned to Priya Nair in the Web Platform team's **Cycle 4**. The only matching issue (ID: i-web-102) is in **Cycle 5**, not Cycle 4. So no priority change was made.

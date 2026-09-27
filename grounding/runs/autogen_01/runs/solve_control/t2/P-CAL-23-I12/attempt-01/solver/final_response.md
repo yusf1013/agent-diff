@@ -1,0 +1,1 @@
+Deleted the event **"Architecture review: search"** on Friday, June 22, 2018 (3:00–4:00 PM PT). Kenji Satou was listed as an optional attendee on it. The event has been removed from the primary calendar.

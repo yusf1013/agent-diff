@@ -1,0 +1,1 @@
+Found the comment thread on WEB-7 about payment retries timing out — comment "Payment retry attempts still time out under load; can we add a backoff?" by Sam Rivera (id c-f1), which was resolved on 2026-08-04. I reopened it using the commentUnresolve mutation, and confirmed it is now resolvedAt: null (unresolved). The thread is reopened.

@@ -1,0 +1,84 @@
+{
+ "scenario_id": "AP-LIN-02",
+ "domain": "linear",
+ "request": "Bump the priority of the security review ticket assigned to Priya Chen, our guest reviewer from vendorworks.example, to Urgent.",
+ "answer": "one",
+ "seed": [
+  ["team", {"id": "t-grc", "name": "Governance & Compliance", "key": "GRC"}],
+  ["person", {"key": "priya_guest", "name": "Priya Chen", "email": "priya.chen@vendorworks.example", "guest": true}],
+  ["person", {"key": "priya_employee", "name": "Priya Chen", "email": "p.chen@vendorworks.example", "guest": false}],
+  ["person", {"key": "priyanka_guest", "name": "Priyanka Chen", "email": "priyanka.chen@vendorworks.example", "guest": true}],
+  ["person", {"key": "priya_vendorstaff", "name": "Priya Chen", "email": "priya.chen@vendorstaff.example", "guest": true}],
+  ["issue", {"id": "i-sec-payments", "team": "t-grc", "title": "Security review: Payments API", "assignee": "priya_guest", "priority": 3, "ref": "target"}],
+  ["issue", {"id": "i-sec-admin", "team": "t-grc", "title": "Security review: Admin console", "assignee": "priya_employee", "priority": 3}],
+  ["issue", {"id": "i-sec-mobile", "team": "t-grc", "title": "Security review: Mobile app", "assignee": "priyanka_guest", "priority": 3}],
+  ["issue", {"id": "i-sec-billing", "team": "t-grc", "title": "Security review: Billing service", "assignee": "priya_vendorstaff", "priority": 3}],
+  ["issue", {"id": "i-sec-network", "team": "t-grc", "title": "Security review: Network access", "assignee": "dana", "priority": 2}],
+  ["issue", {"id": "i-okr", "team": "t-grc", "title": "Quarterly OKR review", "assignee": "leo", "priority": 2}]
+ ],
+ "conditions": [
+  {"id": "c1", "text": "the security review ticket", "facts": ["A:Issue.title"]},
+  {"id": "c2", "text": "assigned to Priya Chen", "facts": ["R:Issue.assigneeId", "A:User.name"]},
+  {"id": "c3", "text": "our guest reviewer", "facts": ["A:User.guest"]},
+  {"id": "c4", "text": "from vendorworks.example", "facts": ["A:User.email"]}
+ ],
+ "reference": {
+  "name": "the security review ticket to reprioritize",
+  "target": ["i-sec-payments"],
+  "query": {
+   "table": "issues",
+   "key": ["id"],
+   "filters": [
+    {"key": "f_title", "field": "title", "op": "contains_ci", "value": "security review", "fact": "A:Issue.title"}
+   ],
+   "edges": [
+    {
+     "key": "e_assignee",
+     "join": {"parent": "assigneeId", "child": "id", "op": "eq"},
+     "fact": "R:Issue.assigneeId",
+     "node": {
+      "table": "users",
+      "filters": [
+       {"key": "f_name", "field": "name", "op": "eq", "value": "Priya Chen", "fact": "A:User.name"},
+       {"key": "f_guest", "field": "guest", "op": "eq", "value": true, "fact": "A:User.guest"},
+       {"key": "f_email", "field": "email", "op": "contains_ci", "value": "@vendorworks.example", "fact": "A:User.email"}
+      ],
+      "edges": []
+     }
+    }
+   ]
+  },
+  "decoys": [
+   {
+    "witness": "i-sec-admin",
+    "fact": "A:User.guest",
+    "family": "F0",
+    "mutation": {"type": "DROP", "target": "f_guest"},
+    "explanation": "This Priya Chen matches on name and email domain, but she is a full Northwind employee now, not a guest."
+   },
+   {
+    "witness": "i-sec-mobile",
+    "fact": "A:User.name",
+    "family": "F8",
+    "substitute": "a similarly named guest, Priyanka Chen",
+    "mutation": {"type": "DROP", "target": "f_name"},
+    "explanation": "Priyanka Chen is a guest reviewer from vendorworks.example, but her name isn't Priya Chen."
+   },
+   {
+    "witness": "i-sec-billing",
+    "fact": "A:User.email",
+    "family": "F8",
+    "substitute": "a domain that shares the vendor root but is a different company",
+    "mutation": {"type": "DROP", "target": "f_email"},
+    "explanation": "This Priya Chen is a guest reviewer, but her email is at vendorstaff.example, not vendorworks.example."
+   }
+  ],
+  "effect": {"table": "issues", "changes": ["update"]},
+  "written": ["issues.priority"]
+ },
+ "other_references": [],
+ "write": {
+  "graphql": "mutation { issueUpdate(id: \"i-sec-payments\", input: {priority: 1}) { issue { id priority } } }"
+ },
+ "probes": []
+}

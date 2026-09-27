@@ -1,0 +1,1 @@
+There is no active Site Reliability Engineer based in the Europe/Berlin time zone in this workspace. The only SRE on the team is **Lukas Weber** (U_LUKAS), but he is based in **Europe/London**, not Europe/Berlin. No invitation was made to #incident-482.

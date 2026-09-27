@@ -1,0 +1,144 @@
+{
+ "scenario_id": "AP-SLK-05",
+ "domain": "slack",
+ "request": "Archive the channel that our workspace owner belongs to, that was created before March 2026, and that currently has exactly four members.",
+ "answer": "one",
+ "seed": [
+  ["person", {"key": "nina", "name": "Nina Torres", "role": "owner"}],
+  ["person", {"key": "carlos", "name": "Carlos Diaz", "role": "admin"}],
+
+  ["channel", {"id": "C_LAUNCH", "name": "launch-ops", "members": ["nina", "diego", "leo"],
+               "set": {"created_at": "2026-01-10T12:00:00Z"}}],
+
+  ["channel", {"id": "C_BETA", "name": "beta-ops", "members": ["carlos", "leo", "omar"],
+               "set": {"created_at": "2026-01-15T12:00:00Z"}}],
+
+  ["channel", {"id": "C_GAMMA", "name": "gamma-ops", "members": ["nina", "diego", "leo"],
+               "set": {"created_at": "2026-03-01T08:00:00Z"}}],
+
+  ["channel", {"id": "C_DELTA", "name": "delta-ops", "members": ["nina", "diego", "leo", "omar"],
+               "set": {"created_at": "2026-01-20T12:00:00Z"}}],
+
+  ["channel", {"id": "C_EPSILON", "name": "epsilon-ops", "members": ["nina", "diego"],
+               "set": {"created_at": "2026-01-25T12:00:00Z"}}],
+  ["message", {"channel": "C_EPSILON", "author": "nina", "text": "Deploy window moved to Friday.",
+               "at": "2026-01-26T15:00:00Z", "ref": "eps_m1"}],
+  ["message", {"channel": "C_EPSILON", "author": "diego", "text": "Noted, updating the runbook.",
+               "at": "2026-01-26T15:05:00Z", "ref": "eps_m2"}],
+  ["message", {"channel": "C_EPSILON", "author": "leo", "text": "I can help with the runbook too.",
+               "at": "2026-01-26T15:10:00Z", "ref": "eps_m3"}],
+  ["message", {"channel": "C_EPSILON", "author": "omar", "text": "Thanks, I'll review before Friday.",
+               "at": "2026-01-26T15:15:00Z", "ref": "eps_m4"}],
+
+  ["channel", {"id": "C_RANDOM", "name": "random-chat", "members": ["leo", "omar"],
+               "set": {"created_at": "2026-04-15T12:00:00Z"}}]
+ ],
+ "conditions": [
+  {"id": "c1", "text": "the channel that our workspace owner belongs to", "facts": ["R:channel_members", "A:WorkspaceMembership.role"]},
+  {"id": "c2", "text": "that was created before March 2026", "facts": ["A:Conversation.created_at"]},
+  {"id": "c3", "text": "that currently has exactly four members", "facts": ["D:member_count"]}
+ ],
+ "reference": {
+  "name": "the channel to archive",
+  "target": ["C_LAUNCH"],
+  "query": {
+   "table": "channels",
+   "key": ["channel_id"],
+   "filters": [
+    {"key": "f_created", "field": "created_at", "op": "lt", "value": 1772323200, "fact": "A:Conversation.created_at"}
+   ],
+   "edges": [
+    {"key": "e_member", "join": {"parent": "channel_id", "child": "channel_id", "op": "eq"}, "fact": "R:channel_members",
+     "node": {"table": "channel_members", "filters": [], "edges": [
+       {"key": "e_role", "join": {"parent": "user_id", "child": "user_id", "op": "eq"}, "fact": "A:WorkspaceMembership.role",
+        "node": {"table": "user_teams", "filters": [
+          {"key": "f_role", "field": "role", "op": "eq", "value": "owner", "fact": "A:WorkspaceMembership.role"}
+         ], "edges": []}}
+      ]}},
+    {"key": "e_count", "join": {"parent": "channel_id", "child": "channel_id", "op": "eq"}, "count": {"op": "eq", "value": 4}, "fact": "D:member_count",
+     "node": {"table": "channel_members", "filters": [], "edges": []}}
+   ]
+  },
+  "decoys": [
+   {
+    "witness": "C_BETA",
+    "fact": "A:WorkspaceMembership.role",
+    "family": "F7",
+    "substitute": "an admin (the neighbouring workspace role) instead of the owner",
+    "mutation": {"type": "DROP", "target": "f_role"},
+    "explanation": "Carlos Diaz, a workspace admin, is the elevated member here; the workspace owner, Nina Torres, does not belong to beta-ops."
+   },
+   {
+    "witness": "C_GAMMA",
+    "fact": "A:Conversation.created_at",
+    "family": "F7",
+    "substitute": "the nearest date after the cutoff",
+    "mutation": {"type": "DROP", "target": "f_created"},
+    "explanation": "gamma-ops has the owner and four members, but it was created on March 1, 2026, just after the cutoff."
+   },
+   {
+    "witness": "C_DELTA",
+    "fact": "D:member_count",
+    "family": "F7",
+    "substitute": "one member more than requested",
+    "mutation": {
+     "type": "REPLACE",
+     "note": "the exact count 4 replaced by the neighbouring count 5",
+     "query": {
+      "table": "channels",
+      "key": ["channel_id"],
+      "filters": [
+       {"key": "f_created", "field": "created_at", "op": "lt", "value": 1772323200}
+      ],
+      "edges": [
+       {"key": "e_member", "join": {"parent": "channel_id", "child": "channel_id", "op": "eq"},
+        "node": {"table": "channel_members", "filters": [], "edges": [
+          {"key": "e_role", "join": {"parent": "user_id", "child": "user_id", "op": "eq"},
+           "node": {"table": "user_teams", "filters": [
+             {"key": "f_role", "field": "role", "op": "eq", "value": "owner"}
+            ], "edges": []}}
+         ]}},
+       {"key": "e_count", "join": {"parent": "channel_id", "child": "channel_id", "op": "eq"}, "count": {"op": "eq", "value": 5},
+        "node": {"table": "channel_members", "filters": [], "edges": []}}
+      ]
+     }
+    },
+    "explanation": "delta-ops has the owner and was created in time, but it has five members, one more than requested."
+   },
+   {
+    "witness": "C_EPSILON",
+    "fact": "D:member_count",
+    "family": "F6",
+    "substitute": "distinct posters in the channel instead of its actual members",
+    "mutation": {
+     "type": "REPLACE",
+     "note": "member count replaced by a count of distinct message authors",
+     "query": {
+      "table": "channels",
+      "key": ["channel_id"],
+      "filters": [
+       {"key": "f_created", "field": "created_at", "op": "lt", "value": 1772323200}
+      ],
+      "edges": [
+       {"key": "e_member", "join": {"parent": "channel_id", "child": "channel_id", "op": "eq"},
+        "node": {"table": "channel_members", "filters": [], "edges": [
+          {"key": "e_role", "join": {"parent": "user_id", "child": "user_id", "op": "eq"},
+           "node": {"table": "user_teams", "filters": [
+             {"key": "f_role", "field": "role", "op": "eq", "value": "owner"}
+            ], "edges": []}}
+         ]}},
+       {"key": "e_count", "join": {"parent": "channel_id", "child": "channel_id", "op": "eq"}, "count": {"op": "eq", "value": 4},
+        "node": {"table": "messages", "filters": [], "edges": []}}
+      ]
+     }
+    },
+    "explanation": "Only three people (plus the owner) are actually members of epsilon-ops, but four different people have posted there; counting posters instead of members wrongly admits it."
+   }
+  ],
+  "effect": {"table": "channels", "changes": ["update"]},
+  "written": ["channels.is_archived"]
+ },
+ "other_references": [],
+ "write": {"slack": "conversations.archive", "params": {"channel": "C_LAUNCH"}},
+ "probes": []
+}

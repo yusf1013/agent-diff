@@ -1,0 +1,1 @@
+There is no payment gateway outage message in #incidents. The channel currently only contains a single message: *"Reminder: standup moved to 10am today."* — and workspace-wide searches for "payment gateway outage," "payment gateway," "outage," and "payment" all returned zero matches. There's nothing to add a rocket reaction to.

@@ -1,0 +1,1 @@
+There is no folder in the Legal Hold collection that meets the specified criteria. The Legal Hold collection contains only one item (a file called "Insurance A.pdf") and no folders at all, so there is no folder that was created on June 3, 2026, last modified by Priya Nair, and has exactly 3 items directly in it.

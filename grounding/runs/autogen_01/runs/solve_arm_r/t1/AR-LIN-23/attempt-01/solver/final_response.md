@@ -1,0 +1,1 @@
+Successfully reopened the comment thread on WEB-7. The comment "The payment retry logic times out under load and needs a backoff." (c-target) by Maya Chen, which was previously resolved by Sam Rivera, has been reopened by clearing the resolving user. The comment's resolvingUser is now null, indicating the thread is back in an open state.

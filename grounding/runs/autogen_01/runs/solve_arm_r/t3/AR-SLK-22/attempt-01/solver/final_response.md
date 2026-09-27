@@ -1,0 +1,1 @@
+Successfully added a rocket reaction to Leo Park's reply ("All checklists are in, we're clear to ship.") in the thread about tonight's payments launch checklist in the #launch-prep channel.

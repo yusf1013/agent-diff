@@ -1,0 +1,1 @@
+I searched all accessible teams and there is no team that matches all the criteria. The closest match is **Growth Ops** (key "GRO", private), but its description is "Handles internal tooling requests and support tickets for the growth organization" — it does not mention a Q3 OKR pilot rollout. No rename was performed.

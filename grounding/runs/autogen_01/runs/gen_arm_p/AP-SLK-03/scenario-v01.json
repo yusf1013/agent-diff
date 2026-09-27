@@ -1,0 +1,164 @@
+{
+ "scenario_id": "AP-SLK-03",
+ "domain": "slack",
+ "request": "Add a rocket reaction to the message about the rollout timeline in #eng-updates that Priya reacted to with eyes.",
+ "answer": "one",
+ "seed": [
+  ["channel", {"id": "C_ENG", "name": "eng-updates", "members": ["leo", "diego", "priya", "omar", "aisha"]}],
+
+  ["message", {"channel": "C_ENG", "author": "leo", "text": "Rollout timeline: shipping to prod Friday 3pm.",
+               "at": "2026-09-20T15:00:00Z", "ref": "target"}],
+  ["reaction", {"message": "@target", "person": "priya", "name": "eyes", "at": "2026-09-20T15:05:00Z"}],
+  ["reaction", {"message": "@target", "person": "diego", "name": "thumbsup", "at": "2026-09-20T15:06:00Z"}],
+
+  ["message", {"channel": "C_ENG", "author": "diego", "text": "Updated rollout timeline: prod push moved to Thursday.",
+               "at": "2026-09-20T16:00:00Z", "ref": "d_emoji"}],
+  ["reaction", {"message": "@d_emoji", "person": "priya", "name": "thumbsup", "at": "2026-09-20T16:05:00Z"}],
+
+  ["message", {"channel": "C_ENG", "author": "priya", "text": "Rollout timeline slipped by one day, more soon.",
+               "at": "2026-09-20T17:00:00Z", "ref": "d_role1"}],
+  ["reaction", {"message": "@d_role1", "person": "omar", "name": "eyes", "at": "2026-09-20T17:05:00Z"}],
+
+  ["message", {"channel": "C_ENG", "author": "aisha", "text": "Following the rollout timeline update: QA is ready.",
+               "at": "2026-09-20T18:00:00Z", "ref": "d_role2"}],
+  ["reaction", {"message": "@d_role2", "person": "leo", "name": "tada", "at": "2026-09-20T18:05:00Z"}],
+
+  ["message", {"channel": "C_ENG", "author": "diego", "text": "Lunch at noon?",
+               "at": "2026-09-20T12:00:00Z", "ref": "sibling_msg"}],
+  ["reaction", {"message": "@sibling_msg", "person": "priya", "name": "eyes", "at": "2026-09-20T12:05:00Z"}],
+
+  ["message", {"channel": "C_ENG", "author": "omar", "text": "Rollout timeline confirmed for Friday, see thread.",
+               "at": "2026-09-20T19:00:00Z", "ref": "d_split"}],
+  ["reaction", {"message": "@d_split", "person": "priya", "name": "thumbsup", "at": "2026-09-20T19:05:00Z"}],
+  ["reaction", {"message": "@d_split", "person": "leo", "name": "eyes", "at": "2026-09-20T19:06:00Z"}],
+
+  ["message", {"channel": "C_ENG", "author": "diego", "text": "Standup at 9am tomorrow.",
+               "at": "2026-09-20T09:00:00Z", "ref": "bg1"}]
+ ],
+ "conditions": [
+  {"id": "c1", "text": "the message about the rollout timeline", "facts": ["A:Message.message_text"]},
+  {"id": "c2", "text": "in #eng-updates", "facts": ["A:Conversation.channel_name"]},
+  {"id": "c3", "text": "that Priya reacted to with eyes", "facts": ["A:Reaction.reaction_type", "R:message_reactions", "B:message_reactions.user"]}
+ ],
+ "reference": {
+  "name": "the message to add the rocket reaction to",
+  "target": ["@target"],
+  "query": {
+   "table": "messages",
+   "key": ["message_id"],
+   "filters": [
+    {"key": "f_text", "field": "message_text", "op": "contains_ci", "value": "rollout timeline", "fact": "A:Message.message_text"}
+   ],
+   "edges": [
+    {"key": "e_channel", "join": {"parent": "channel_id", "child": "channel_id", "op": "eq"},
+     "fact": "A:Conversation.channel_name",
+     "node": {"table": "channels", "filters": [
+       {"key": "f_chan", "field": "channel_name", "op": "eq", "value": "eng-updates"}
+      ], "edges": []}},
+    {"key": "e_react", "join": {"parent": "message_id", "child": "message_id", "op": "eq"},
+     "fact": "B:message_reactions.user",
+     "node": {"table": "message_reactions", "filters": [
+       {"key": "f_emoji", "field": "reaction_type", "op": "eq", "value": "eyes", "fact": "A:Reaction.reaction_type"}
+      ], "edges": [
+       {"key": "e_user", "join": {"parent": "user_id", "child": "user_id", "op": "eq"},
+        "fact": "R:message_reactions",
+        "node": {"table": "users", "filters": [
+          {"key": "f_user", "field": "username", "op": "eq", "value": "priya.sharma"}
+         ], "edges": []}}
+      ]}}
+   ]
+  },
+  "decoys": [
+   {
+    "witness": "@d_emoji",
+    "fact": "A:Reaction.reaction_type",
+    "family": "F0",
+    "substitute": "a different emoji reaction by the same person on the same message",
+    "mutation": {"type": "DROP", "target": "f_emoji"},
+    "explanation": "Priya reacted to it, but with thumbsup, not eyes."
+   },
+   {
+    "witness": "@d_role1",
+    "fact": "R:message_reactions",
+    "family": "F1",
+    "substitute": "authored the message",
+    "mutation": {
+     "type": "REPLACE",
+     "note": "the reactor role on message_reactions replaced by the message's author role",
+     "query": {
+      "table": "messages",
+      "key": ["message_id"],
+      "filters": [
+       {"key": "f_text", "field": "message_text", "op": "contains_ci", "value": "rollout timeline"}
+      ],
+      "edges": [
+       {"key": "e_channel", "join": {"parent": "channel_id", "child": "channel_id", "op": "eq"},
+        "node": {"table": "channels", "filters": [
+          {"key": "f_chan", "field": "channel_name", "op": "eq", "value": "eng-updates"}
+         ], "edges": []}},
+       {"key": "e_author", "join": {"parent": "user_id", "child": "user_id", "op": "eq"},
+        "node": {"table": "users", "filters": [
+          {"key": "x1", "field": "username", "op": "eq", "value": "priya.sharma"}
+         ], "edges": []}},
+       {"key": "e_anyreact", "join": {"parent": "message_id", "child": "message_id", "op": "eq"},
+        "node": {"table": "message_reactions", "filters": [
+          {"key": "x2", "field": "reaction_type", "op": "eq", "value": "eyes"}
+         ], "edges": []}}
+      ]
+     }
+    },
+    "explanation": "Priya posted this update herself; Omar is the one who added the eyes reaction to it."
+   },
+   {
+    "witness": "@d_role2",
+    "fact": "R:message_reactions",
+    "family": "F2",
+    "substitute": "reacted to another message in the same channel",
+    "mutation": {
+     "type": "REPLACE",
+     "note": "the reaction requirement checked against any message in the channel, not this message",
+     "query": {
+      "table": "messages",
+      "key": ["message_id"],
+      "filters": [
+       {"key": "f_text", "field": "message_text", "op": "contains_ci", "value": "rollout timeline"}
+      ],
+      "edges": [
+       {"key": "e_channel", "join": {"parent": "channel_id", "child": "channel_id", "op": "eq"},
+        "node": {"table": "channels", "filters": [
+          {"key": "f_chan", "field": "channel_name", "op": "eq", "value": "eng-updates"}
+         ], "edges": []}},
+       {"key": "e_sib", "join": {"parent": "channel_id", "child": "channel_id", "op": "eq"},
+        "node": {"table": "messages", "filters": [], "edges": [
+          {"key": "e_react2", "join": {"parent": "message_id", "child": "message_id", "op": "eq"},
+           "node": {"table": "message_reactions", "filters": [
+             {"key": "x3", "field": "reaction_type", "op": "eq", "value": "eyes"}
+            ], "edges": [
+             {"key": "e_user2", "join": {"parent": "user_id", "child": "user_id", "op": "eq"},
+              "node": {"table": "users", "filters": [
+                {"key": "x4", "field": "username", "op": "eq", "value": "priya.sharma"}
+               ], "edges": []}}
+            ]}}
+         ]}}
+      ]
+     }
+    },
+    "explanation": "Priya's eyes reaction is on the lunch message in #eng-updates, not on this rollout-timeline update."
+   },
+   {
+    "witness": "@d_split",
+    "fact": "B:message_reactions.user",
+    "family": "F5",
+    "substitute": "the emoji and reactor conditions met by two different reactions on the same message",
+    "mutation": {"type": "SPLIT", "target": "e_react", "groups": [["f_emoji"], ["e_user"]]},
+    "explanation": "Priya reacted with thumbsup and Leo reacted with eyes; no single reaction on it is both Priya's and eyes."
+   }
+  ],
+  "effect": {"table": "message_reactions", "changes": ["insert"], "key": ["message_id", "user_id", "reaction_type"], "field": "message_id"},
+  "written": ["message_reactions.reaction_type"]
+ },
+ "write": {
+  "slack": "reactions.add",
+  "params": {"channel": "C_ENG", "timestamp": "@target", "name": "rocket"}
+ }
+}

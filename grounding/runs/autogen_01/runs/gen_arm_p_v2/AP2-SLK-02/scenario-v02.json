@@ -1,0 +1,71 @@
+{
+ "scenario_id": "AP2-SLK-02",
+ "domain": "slack",
+ "request": "Invite Aisha Khan to the channel with 'incident' in its name, whose Topic mentions postmortems, and that hasn't been archived yet.",
+ "answer": "one",
+ "seed": [
+  ["channel", {"id": "C_INCRESP", "name": "incident-response", "members": ["diego", "leo"],
+               "topic": "Postmortems and outage retros for live incidents",
+               "purpose": "Coordinate incident response"}],
+  ["channel", {"id": "C_INCRESP_ARCH", "name": "incident-response-archive", "members": ["diego"],
+               "topic": "Postmortems and outage retros for closed incidents",
+               "purpose": "Archive of past incident retros", "set": {"is_archived": true}}],
+  ["channel", {"id": "C_INCCOMMS", "name": "incident-comms", "members": ["omar"],
+               "topic": "Live incident chatter and status updates",
+               "purpose": "Coordinate postmortems and retro scheduling"}],
+  ["channel", {"id": "C_POSTMORTEMS", "name": "postmortems-hub", "members": ["leo"],
+               "topic": "Incident retros and postmortems recap channel",
+               "purpose": "Central hub for postmortem write-ups"}],
+  ["channel", {"id": "C_ENG", "name": "engineering", "members": ["diego", "leo", "maya"],
+               "topic": "Roadmap planning and architecture discussions",
+               "purpose": "Engineering team home"}],
+  ["channel", {"id": "C_OLDINC", "name": "incident-2019-retro", "members": ["omar"],
+               "topic": "Archived project artifacts", "purpose": "N/A", "set": {"is_archived": true}}]
+ ],
+ "conditions": [
+  {"id": "c1", "text": "the channel with 'incident' in its name", "facts": ["A:Conversation.channel_name"]},
+  {"id": "c2", "text": "whose Topic mentions postmortems", "facts": ["A:Conversation.topic_text"]},
+  {"id": "c3", "text": "that hasn't been archived yet", "facts": ["A:Conversation.is_archived"]}
+ ],
+ "reference": {
+  "name": "the channel to invite Aisha to",
+  "target": ["C_INCRESP"],
+  "query": {
+   "table": "channels",
+   "filters": [
+    {"key": "f_name", "field": "channel_name", "op": "contains_ci", "value": "incident", "fact": "A:Conversation.channel_name"},
+    {"key": "f_topic", "field": "topic_text", "op": "contains_ci", "value": "postmortems", "fact": "A:Conversation.topic_text"},
+    {"key": "f_arch", "field": "is_archived", "op": "eq", "value": false, "fact": "A:Conversation.is_archived"}
+   ],
+   "edges": []
+  },
+  "decoys": [
+   {
+    "witness": "C_POSTMORTEMS",
+    "fact": "A:Conversation.channel_name",
+    "family": "F1",
+    "substitute": "the keyword appears in the topic, not the channel name",
+    "mutation": {"type": "DROP", "target": "f_name"},
+    "explanation": "Its topic mentions incident retros and postmortems, but the channel itself is named postmortems-hub, not anything with 'incident'."
+   },
+   {
+    "witness": "C_INCCOMMS",
+    "fact": "A:Conversation.topic_text",
+    "family": "F1",
+    "substitute": "Conversation.purpose_text",
+    "mutation": {"type": "DROP", "target": "f_topic"},
+    "explanation": "Its purpose mentions coordinating postmortems, but its topic is about live incident chatter, not postmortems."
+   },
+   {
+    "witness": "C_INCRESP_ARCH",
+    "fact": "A:Conversation.is_archived",
+    "family": "F0",
+    "mutation": {"type": "DROP", "target": "f_arch"},
+    "explanation": "Same naming pattern and a topic about postmortems, but this channel has already been archived."
+   }
+  ],
+  "effect": {"table": "channel_members", "changes": ["insert"], "key": ["channel_id", "user_id"], "field": "channel_id"},
+  "written": ["channel_members.channel_id", "channel_members.user_id"]
+ },
+ "write": {"slack": "conversations.invite", "params": {"channel": "C_INCRESP", "users": "U_AISHA"}}
+}

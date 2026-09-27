@@ -1,0 +1,3 @@
+I'm unable to complete this task. The Linear API available to me does not include operations for **documents** or **projects**. The supported operations are limited to teams, issues, comments, labels, workflow states, and team memberships. There is no endpoint to search for, read, or move documents, nor to reference or assign items to projects.
+
+To move the "Retention Playbook" document into the "Q4 Roadmap" project, you would need to do this directly in the Linear web/app UI (open the document → drag it into the project, or use the project assignment option within the document settings). If Linear adds document/project API support in the future, I'd be happy to help with it then.

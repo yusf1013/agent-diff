@@ -1,0 +1,1 @@
+There is no **active** Site Reliability Engineer based in the Europe/Berlin time zone in this workspace. The only user matching both criteria — Noah Fischer (U_NOAH) — has a **deleted** account and therefore cannot be invited to #incident-482.

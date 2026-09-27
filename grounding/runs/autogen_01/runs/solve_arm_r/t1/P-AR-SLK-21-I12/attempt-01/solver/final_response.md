@@ -1,0 +1,1 @@
+There is no message from Leo Park in **#incidents**. The channel only contains a single message — posted by **Omar Haddad** — saying *"I'm looking into the DB connection pool now."* Since Leo Park hasn't posted anything in that channel, there's no message to react with :eyes: to.

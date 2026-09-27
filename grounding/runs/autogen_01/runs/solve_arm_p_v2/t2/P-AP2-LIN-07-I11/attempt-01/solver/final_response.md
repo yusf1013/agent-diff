@@ -1,0 +1,3 @@
+I'm unable to complete this task. The Linear API available in this environment does not include document-related queries or operations. The supported resources are limited to teams, issues, workflow states, users, labels, comments, and team memberships. There is no way to search for, retrieve, or move a "document" titled "Retention Playbook" — or any document — through this API.
+
+I can confirm the **Growth** team does exist in your workspace, but I have no access to its documents or to any "Q4 Roadmap" project for moving items into. You may need to handle this through the Linear web UI or an API endpoint that supports document and project operations.

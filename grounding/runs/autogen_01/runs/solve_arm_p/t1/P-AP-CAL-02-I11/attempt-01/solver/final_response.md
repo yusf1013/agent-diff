@@ -1,0 +1,1 @@
+I checked your calendar list and found one calendar named "Team Calendar" (`team-sales@northwind.example`, owned by leo.park@northwind.example). However, your access role on it is **reader**, not **writer**, so it doesn't match the criteria you specified. There isn't a "Team Calendar" on your list where you have writer access, so I didn't make any changes.

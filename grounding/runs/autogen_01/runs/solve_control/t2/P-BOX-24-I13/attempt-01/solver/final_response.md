@@ -1,0 +1,1 @@
+I couldn't find a task matching your description. There is a task by Pat Kim (pat.kim@northwind.example) created on September 14, but it's on the file "Indemnity clause review.pdf" and the message is **"Please check the payment terms"** — not asking to check the indemnity clause. No task specifically asking to "check the indemnity clause" was found, so no due date was changed.

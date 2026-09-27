@@ -1,0 +1,1 @@
+There is no cycle that matches all of the specified criteria. The cycle named **Cycle 14** does exist and does include an Urgent issue ("Resolve duplicate charge on renewal") assigned to Priya Nair, but its start date is **September 28**, not September 29 as stated. Since it doesn't meet the start-date condition, I did not modify any end date.

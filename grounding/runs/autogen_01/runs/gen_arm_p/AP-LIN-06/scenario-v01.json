@@ -1,0 +1,71 @@
+{
+ "scenario_id": "AP-LIN-06",
+ "domain": "linear",
+ "request": "On issue WEB-14, rename the attachment titled 'Deploy runbook' that links to https://runbooks.northwind.example/deploy-staging to 'Deploy runbook (v2)'.",
+ "answer": "one",
+ "seed": [
+  ["team", {"id": "t-web", "name": "Web", "key": "WEB"}],
+  ["issue", {"id": "i-web-14", "team": "t-web", "number": 14,
+             "title": "Investigate staging deploy failures",
+             "creator": "actor", "assignee": "leo",
+             "description": "Investigating repeated staging deploy failures overnight. Runbook: https://runbooks.northwind.example/deploy-staging"}],
+  ["issue", {"id": "i-web-15", "team": "t-web", "number": 15,
+             "title": "Prod deploy runbook missing rollback section",
+             "creator": "actor", "assignee": "leo",
+             "description": "Split off from WEB-14 to track the missing rollback steps in the runbook."}],
+  ["issue", {"id": "i-web-20", "team": "t-web", "number": 20,
+             "title": "Fix login redirect bug after SSO",
+             "creator": "actor", "assignee": "maya",
+             "description": "Users land on the dashboard instead of the page they requested."}],
+  ["attachment", {"id": "att-web14-runbook", "issue": "i-web-14", "creator": "actor",
+                   "title": "Deploy runbook", "url": "https://runbooks.northwind.example/deploy-staging"}],
+  ["attachment", {"id": "att-web14-notes", "issue": "i-web-14", "creator": "actor",
+                   "title": "Deploy notes", "url": "https://runbooks.northwind.example/deploy-staging"}],
+  ["attachment", {"id": "att-web14-prod", "issue": "i-web-14", "creator": "actor",
+                   "title": "Deploy runbook", "url": "https://runbooks.northwind.example/deploy-prod"}],
+  ["attachment", {"id": "att-web15-runbook", "issue": "i-web-15", "creator": "actor",
+                   "title": "Deploy runbook", "url": "https://runbooks.northwind.example/deploy-staging"}],
+  ["attachment", {"id": "att-web20-diagram", "issue": "i-web-20", "creator": "actor",
+                   "title": "Login flow diagram", "url": "https://miro.example/board/22"}]
+ ],
+ "conditions": [
+  {"id": "c1", "text": "On issue WEB-14", "facts": ["R:Attachment.issueId", "A:Issue.identifier"]},
+  {"id": "c2", "text": "the attachment titled 'Deploy runbook'", "facts": ["A:Attachment.title"]},
+  {"id": "c3", "text": "that links to https://runbooks.northwind.example/deploy-staging", "facts": ["A:Attachment.url"]}
+ ],
+ "reference": {
+  "name": "the attachment to rename",
+  "target": ["att-web14-runbook"],
+  "query": {
+   "table": "attachments",
+   "key": ["id"],
+   "filters": [
+    {"key": "f_title", "field": "title", "op": "eq", "value": "Deploy runbook", "fact": "A:Attachment.title"},
+    {"key": "f_url", "field": "url", "op": "eq", "value": "https://runbooks.northwind.example/deploy-staging", "fact": "A:Attachment.url"}
+   ],
+   "edges": [
+    {"key": "e_issue", "join": {"parent": "issueId", "child": "id", "op": "eq"}, "fact": "R:Attachment.issueId",
+     "node": {"table": "issues", "filters": [
+       {"key": "f_ident", "field": "identifier", "op": "eq", "value": "WEB-14", "fact": "A:Issue.identifier"}
+      ], "edges": []}}
+   ]
+  },
+  "decoys": [
+   {"witness": "att-web14-notes", "fact": "A:Attachment.title", "family": "F1", "substitute": "Attachment.url",
+    "mutation": {"type": "DROP", "target": "f_title"},
+    "explanation": "Same link and same issue, but titled 'Deploy notes', not 'Deploy runbook'."},
+   {"witness": "att-web14-prod", "fact": "A:Attachment.url", "family": "F1", "substitute": "Attachment.title",
+    "mutation": {"type": "DROP", "target": "f_url"},
+    "explanation": "Same title and same issue, but links to the prod runbook, not the staging one."},
+   {"witness": "att-web15-runbook", "fact": "R:Attachment.issueId", "family": "F2",
+    "substitute": "URL mentioned in the issue description",
+    "mutation": {"type": "DROP", "target": "f_ident"},
+    "explanation": "Same title and link, but it is filed under WEB-15, the follow-up ticket split off from WEB-14, not under WEB-14 itself. WEB-14's description merely quotes that runbook URL as text."}
+  ],
+  "effect": {"table": "attachments", "changes": ["update"]},
+  "written": ["attachments.title"]
+ },
+ "other_references": [],
+ "write": {"graphql": "mutation { attachmentUpdate(id: \"att-web14-runbook\", input: {title: \"Deploy runbook (v2)\"}) { attachment { id title } } }"},
+ "probes": []
+}

@@ -1,0 +1,1 @@
+Successfully changed the timezone of the **Ops Rotation – EMEA** calendar (ops-emea@northwind.example) to **America/New_York**. This is the Ops Rotation calendar you own whose metadata mentions "Weekend on-call coverage rota posted here every Friday." The timezone was previously America/Los_Angeles and is now confirmed as America/New_York.

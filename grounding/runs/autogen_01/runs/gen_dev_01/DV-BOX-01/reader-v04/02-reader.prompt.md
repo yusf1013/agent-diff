@@ -1,0 +1,37 @@
+Step 2. These are all the records in the service:
+
+### box_file_versions (1)
+{"id": "99210", "file_id": "9210", "name": "Supplier Checklist.pdf", "size": 48213, "version_number": "1", "created_at": "2026-06-01T09:00:00+00:00", "modified_at": "2026-06-01T09:00:00+00:00", "modified_by_id": "30000000001"}
+### box_files (1)
+{"id": "9210", "name": "Supplier Checklist.pdf", "parent_id": "0", "owned_by_id": "30000000001", "created_by_id": "30000000001", "modified_by_id": "30000000001", "description": "Procurement checklist for new supplier onboarding.", "size": 48213, "extension": "pdf", "version_number": "1", "comment_count": 0, "created_at": "2026-06-01T09:00:00+00:00", "modified_at": "2026-06-01T09:00:00+00:00"}
+### box_folders (1)
+{"id": "0", "name": "All Files", "owned_by_id": "30000000001", "size": 0}
+### box_hub_items (1)
+{"id": "92030", "added_at": "2026-06-01T09:00:00+00:00", "added_by_id": "30000000001", "hub_id": "9203", "item_id": "9210", "item_type": "file", "item_name": "Supplier Checklist.pdf", "position": 1}
+### box_hubs (9)
+{"id": "9200", "title": "Vendor Onboarding", "description": "Procurement checklist and required forms for onboarding new vendors.", "created_by_id": "30000000001", "updated_by_id": "30000000001", "created_at": "2026-01-15T09:00:00+00:00", "updated_at": "2026-01-15T09:00:00+00:00", "is_ai_enabled": false, "is_collaboration_restricted_to_enterprise": false, "can_non_owners_invite": true, "can_shared_link_be_created": true, "view_count": 0}
+{"id": "9201", "title": "Vendor Onboarding EMEA", "description": "Procurement checklist and required forms for onboarding new EMEA vendors.", "created_by_id": "30000000001", "updated_by_id": "30000000001", "created_at": "2026-01-10T09:00:00+00:00", "updated_at": "2026-01-10T09:00:00+00:00", "is_ai_enabled": false, "is_collaboration_restricted_to_enterprise": false, "can_non_owners_invite": true, "can_shared_link_be_created": true, "view_count": 0}
+{"id": "9202", "title": "Q1 Supplier Hub", "description": "Vendor Onboarding procurement checklist and required forms for new suppliers.", "created_by_id": "30000000001", "updated_by_id": "30000000001", "created_at": "2026-01-05T09:00:00+00:00", "updated_at": "2026-01-05T09:00:00+00:00", "is_ai_enabled": false, "is_collaboration_restricted_to_enterprise": false, "can_non_owners_invite": true, "can_shared_link_be_created": true, "view_count": 0}
+{"id": "9203", "title": "Vendor Onboarding", "description": "General resources and contacts for new vendor setup.", "created_by_id": "30000000001", "updated_by_id": "30000000001", "created_at": "2026-01-20T09:00:00+00:00", "updated_at": "2026-01-20T09:00:00+00:00", "is_ai_enabled": false, "is_collaboration_restricted_to_enterprise": false, "can_non_owners_invite": true, "can_shared_link_be_created": true, "view_count": 0}
+{"id": "9204", "title": "Vendor Onboarding", "description": "Templates and forms for facilities requests.", "created_by_id": "30000000001", "updated_by_id": "30000000001", "created_at": "2026-01-12T09:00:00+00:00", "updated_at": "2026-01-12T09:00:00+00:00", "is_ai_enabled": false, "is_collaboration_restricted_to_enterprise": false, "can_non_owners_invite": true, "can_shared_link_be_created": true, "view_count": 0}
+{"id": "9205", "title": "Vendor Onboarding", "description": "Procurement checklist and required forms for onboarding new contractors.", "created_by_id": "30000000001", "updated_by_id": "30000000001", "created_at": "2025-12-29T09:00:00+00:00", "updated_at": "2025-12-29T09:00:00+00:00", "is_ai_enabled": false, "is_collaboration_restricted_to_enterprise": false, "can_non_owners_invite": true, "can_shared_link_be_created": true, "view_count": 0}
+{"id": "9206", "title": "Vendor Onboarding", "description": "Procurement checklist and required forms for onboarding new vendors (legacy).", "created_by_id": "30000000001", "updated_by_id": "30000000001", "created_at": "2025-10-05T09:00:00+00:00", "updated_at": "2026-01-18T09:00:00+00:00", "is_ai_enabled": false, "is_collaboration_restricted_to_enterprise": false, "can_non_owners_invite": true, "can_shared_link_be_created": true, "view_count": 0}
+{"id": "9207", "title": "Marketing Assets", "description": "Brand guidelines, logos, and marketing templates for campaigns.", "created_by_id": "30000000001", "updated_by_id": "30000000001", "created_at": "2026-03-02T09:00:00+00:00", "updated_at": "2026-03-02T09:00:00+00:00", "is_ai_enabled": false, "is_collaboration_restricted_to_enterprise": false, "can_non_owners_invite": true, "can_shared_link_be_created": true, "view_count": 0}
+{"id": "9208", "title": "IT Onboarding", "description": "Laptop setup, account provisioning, and access request steps for new hires.", "created_by_id": "30000000001", "updated_by_id": "30000000001", "created_at": "2026-01-08T09:00:00+00:00", "updated_at": "2026-01-08T09:00:00+00:00", "is_ai_enabled": false, "is_collaboration_restricted_to_enterprise": false, "can_non_owners_invite": true, "can_shared_link_be_created": true, "view_count": 0}
+### box_users (8)
+{"id": "30000000001", "name": "Jordan Lee", "login": "jordan.lee@northwind.example", "status": "active", "role": "admin", "created_at": "2025-01-10T00:00:00Z", "modified_at": "2025-01-10T00:00:00Z"}
+{"id": "30000000002", "name": "Maya Chen", "login": "maya.chen@northwind.example", "status": "active", "role": "user", "created_at": "2025-01-10T00:00:00Z", "modified_at": "2025-01-10T00:00:00Z"}
+{"id": "30000000003", "name": "Maya Lopez", "login": "maya.lopez@northwind.example", "status": "active", "role": "user", "created_at": "2025-01-10T00:00:00Z", "modified_at": "2025-01-10T00:00:00Z"}
+{"id": "30000000004", "name": "Leo Park", "login": "leo.park@northwind.example", "status": "active", "role": "user", "created_at": "2025-01-10T00:00:00Z", "modified_at": "2025-01-10T00:00:00Z"}
+{"id": "30000000005", "name": "Dana Whitfield", "login": "dana.whitfield@northwind.example", "status": "active", "role": "user", "created_at": "2025-01-10T00:00:00Z", "modified_at": "2025-01-10T00:00:00Z"}
+{"id": "30000000006", "name": "Priya Nair", "login": "priya.nair@northwind.example", "status": "active", "role": "user", "created_at": "2025-01-10T00:00:00Z", "modified_at": "2025-01-10T00:00:00Z"}
+{"id": "30000000007", "name": "Omar Haddad", "login": "omar.haddad@northwind.example", "status": "active", "role": "user", "created_at": "2025-01-10T00:00:00Z", "modified_at": "2025-01-10T00:00:00Z"}
+{"id": "30000000008", "name": "Sam Rivera", "login": "sam.rivera@northwind.example", "status": "active", "role": "user", "created_at": "2025-01-10T00:00:00Z", "modified_at": "2025-01-10T00:00:00Z"}
+
+The author lists these conditions of the request:
+- c1: whose title is simply 'Vendor Onboarding'
+- c2: whose description covers the procurement checklist
+- c3: which was originally created back in January
+
+The candidate records are the rows of `box_hubs`: 9200, 9201, 9202, 9203, 9204, 9205, 9206, 9207, 9208.
+For every candidate, give the ids of the author's conditions it fails (an empty list if it meets all of them), with a short note. Then say whether the author's conditions faithfully capture the request as you read it in step 1 (and what differs), whether each ambiguity you listed changes which candidates match, and whether the request reads like something a real user would write.

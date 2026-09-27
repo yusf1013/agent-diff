@@ -1,0 +1,1 @@
+I couldn't find a task matching your description. The only task created by pat.kim@northwind.example on September 14 is on "Acme MSA.pdf" with the message "Please approve the invoice" (due October 5, 2026). There is no task asking to check the indemnity clause. The file "Indemnity clause review.pdf" exists in the Legal folder but has no tasks assigned to it.

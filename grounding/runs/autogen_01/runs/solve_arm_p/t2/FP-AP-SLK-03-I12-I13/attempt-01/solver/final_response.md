@@ -1,0 +1,6 @@
+There isn't a message in #eng-updates that Priya reacted to with eyes. I checked both rollout timeline messages in the channel:
+
+1. **Aisha's message** ("Rollout timeline: no changes, still Friday 3pm.") — has a 🎉 reaction from Leo.
+2. **Priya's message** ("Rollout timeline slipped by one day, more soon.") — has an 👀 reaction, but it was added by **Omar**, not Priya.
+
+Since Priya hasn't added an "eyes" reaction to any message in that channel, I couldn't add the rocket. Let me know if you'd like me to add it to one of these messages instead!

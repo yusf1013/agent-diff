@@ -1,0 +1,1 @@
+There is no security review ticket assigned to Priya Chen (guest reviewer, priya.chen@vendorworks.example). The only security review ticket in that space — **"Security review: Mobile app" (GRC-3)** — is assigned to **Priyanka Chen** (priyanka.chen@vendorworks.example), who is a different person. No priority change was made.

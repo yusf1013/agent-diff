@@ -1,0 +1,1 @@
+There isn't a Friday architecture review with Kenji Sato (kenji.sato@northwind.example) as an optional guest. The only architecture review on Friday June 22 is "Architecture review: search" (3–4 PM), but its optional guest is Kenji **Satou** (kenji.satou@northwind.example) — a different person with a different name and email. I did not delete anything.

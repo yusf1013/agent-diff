@@ -1,0 +1,1 @@
+Successfully updated the priority of the issue "Checkout hangs for guest users on Safari" (ID: i-web-101) to Urgent. It was found in the Web Platform team's Cycle 4 and is assigned to Priya Nair. Its priority was changed from Medium (3.0) to Urgent (1.0).
