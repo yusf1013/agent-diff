@@ -17,16 +17,16 @@ system** ([plan.md](plan.md), decisions N7–N15 in [decisions.md](decisions.md)
 
 ## Summary
 
-*Status at 07:22, written for the 07:30 sync. The runs continue after it; rows marked pending wait for them.*
+*Status at 08:35. Only batch 2 is still running; its rows say pending.*
 
 | Part | State | About when |
 |---|---|---|
 | Phase 3: the eight policy decisions | final | – |
 | Phase 4: generation, policy derivation, my reviews | final | – |
 | Phase 4 batch 1: 72 regular tests (216 trials) | run, judged, scored (§6.3) | done |
-| Batch 1's policy run: 67 units, 201 trials (amendment 7) | main pass done; 16 timed-out trials (all Linear) being retried; blind labels 28 of 30 (the other 2 wait for their retries) | run ends ~07:45, judged ~08:20 |
-| Robustness checks (amendment 6): 17 units, 51 trials | queued | run ~08:20, judged ~08:45 |
-| Batch 2: 87 regular tests (261 trials) | queued | run ~10:00, judged ~10:30 |
+| Batch 1's policy run: 67 units, 201 trials (amendment 7) | run, judged, analysed (§6.4) | done |
+| Robustness checks (amendment 6): 17 units, 51 trials | run, judged, computed (§5) | done |
+| Batch 2: 87 regular tests (261 trials) | running: 78 of 261 at 08:35 | run ~09:40, judged ~10:10 |
 | Questions for the parts left out of scope (task 23) | held until the above are done | after batch 2 |
 
 **What the runs show.**
@@ -42,21 +42,30 @@ system** ([plan.md](plan.md), decisions N7–N15 in [decisions.md](decisions.md)
   (11/11), Slack at the third (23/25); underspecified in Box, Calendar and Slack at the first look (11/11), Linear
   at the second (17/18). So one absence test and one underspecified test per domain carry the whole policy result.
   Per-fact policy tests add nothing, which is the no-redundancy rule's question.
-- **Three of the eight decisions each rest on one flawed test,** found while labelling blind trials: two drop-F
-  variants whose verb implies the dropped condition ("hide ... the calendar", but only listed calendars can be
-  hidden), and one absence twin whose member count depends on counting the acting bot. With that test void, each
-  of the three cells is undecided (lower bound 0.793 or 0.794). A declared robustness check (amendment 6) runs the
-  next units. *Pending.*
+- **Seven of the eight hold up under a robustness check; Slack absence is borderline.** Three decisions each
+  rested on one flawed test, found while labelling blind trials:
+  - two drop-F variants whose verb implies the dropped condition ("hide ... the calendar", but only listed
+    calendars can be hidden);
+  - one absence twin whose member count depends on counting the acting bot.
+
+  A robustness check, declared before it ran (amendment 6), ran the next 7 units of each cell without the flawed
+  test:
+  - **Calendar and Slack underspecified:** 17 of 17 fail, lower bound 0.87. Robust.
+  - **Slack absence:** 28 of 31 fail, a rate of 0.90 but a lower bound of 0.797, just short of 0.8. Not robust.
+    The three units it passes are all about who posted a message and where, which Qwen reliably checks.
+- **The new scenarios' policy tests confirm the decisions** (amendment 7): 88 of 90 absence trials, 73 of 75
+  drop-F trials and all 33 clone trials fail, with no ask.
 - **What Qwen does:** under a presupposition it acts on the nearest record (121 of 132 absence trials at look 1),
   often saying it is "the closest match". It will even change the world to fit the request: it unarchived a channel
   to invite someone into "the channel that hasn't been archived", and created a missing team and issue. Given several
   matches it acts on the first it finds (93 of 129) or on all of them (30). It asked which one exactly once in
-  the 294 underspecified trials of Phases 1 and 3. Its only reliable absence reports concern a different person (a
-  reply or a message by someone else).
+  the 435 underspecified trials of this study (Phases 1, 3 and 4). Its only reliable absence reports concern who
+  posted a Slack message, or where.
 - **The judge is precise, and its errors are the tests' errors.** On 93 blind Phase 3 trials, judge v2 agrees with my
   labels in 87. As a detector of failures its precision is 85/86 and its recall 85/85, with the same exposed fact in
   85 of 85. Four of the six disagreements are defective or contestable tests, which the judge cannot flag. The
-  other two are borderline absence reports. On batch 1's 30 blind trials it agrees in all 30.
+  other two are borderline absence reports. On the 80 blind trials since then (batch 1, its policy run, the two
+  robustness runs) it agrees in all 80.
 - **The automation's quality problems are specific and fixable:**
   - 3 of 159 accepted drop-F variants are degenerate in that way (a verb-precondition check would catch them);
   - the copier cannot clone rows two steps from the target (one clone rejected by the code check);
@@ -76,7 +85,7 @@ system** ([plan.md](plan.md), decisions N7–N15 in [decisions.md](decisions.md)
 | Automated drop-F: every accepted variant passes the code checks | all (cal3) | yes |
 | Automated drop-F: at least 90% valid and natural in my review | cal3 22/23 (96%) | yes |
 | Policy-level definition fixed before any Phase 3 run | amendment 2, 23:49–23:54 | yes |
-| Judge v2 on the blind samples (precision and recall; no bar set) | Phase 3: 87/93 agreement; precision 85/86, recall 85/85. Phase 4 batch 1: 30/30; precision 9/9, recall 9/9. Policy run, robustness and batch 2: *pending* | – |
+| Judge v2 on the blind samples (precision and recall; no bar set) | Phase 3 looks: 87/93 agreement; precision 85/86, recall 85/85. Batch 1: 30/30 (9/9, 9/9). Its policy run: 30/30 (29/29, 29/29). Robustness runs: 10/10 and 10/10 (17/17, 17/17). Batch 2: *pending* | – |
 
 ## 1. The system, and what is automated
 
