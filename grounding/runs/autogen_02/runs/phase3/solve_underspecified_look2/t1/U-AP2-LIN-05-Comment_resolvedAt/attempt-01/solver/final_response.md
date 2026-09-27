@@ -1,0 +1,1 @@
+Successfully set the priority to Urgent (4.0) on issue WEB-1 ("Improve payment retry queue"), where Priya Nair commented "We keep seeing an API timeout during retries; let's add exponential backoff." on September 22 in a comment thread with a follow-up from Dana Whitfield.

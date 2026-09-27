@@ -1,0 +1,1 @@
+Successfully set the 'Renew SSO certificate' issue (IT-1) to Urgent priority. This was the issue assigned to guest contractor Dana Whitfield (dana.whitfield.ext@northwind.example) and filed by leo.park@northwind.example. The priority was updated from 3.0 (Medium) to 1.0 (Urgent) and the API confirmed the change.

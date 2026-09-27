@@ -1,0 +1,1 @@
+Successfully renamed the document titled "Draft notes" that mentions the referral program pilot (id: d-target) to "Referral pilot — launch notes". Verified via a follow-up query showing the document now has the new title.

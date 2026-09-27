@@ -1,0 +1,1 @@
+Successfully set the priority to Urgent (4) on issue WEB-1 "Improve payment retry queue" (i-web-20), which is the issue where Priya Nair commented about the API timeout in a comment thread on September 22.
