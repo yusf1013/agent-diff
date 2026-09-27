@@ -1,0 +1,1 @@
+There's no blocking relation on ENG-7 — its relations list is completely empty. (The database migration issue ENG-9 does block something, but it's ENG-8 "Refactor session store," not ENG-7.) So there was nothing to remove.

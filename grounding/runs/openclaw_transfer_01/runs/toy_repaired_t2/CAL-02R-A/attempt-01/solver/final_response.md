@@ -1,0 +1,1 @@
+Cancelled only the Tuesday, June 19 session of the weekly "Platform sync" (the Tuesday series Omar Haddad created). The single instance was deleted, creating an exception in the recurring series — all future and past occurrences of the weekly Tuesday "Platform sync" remain intact.

@@ -1,0 +1,1 @@
+Done. **MOB-3 – "Settings toggle misaligned on tablets"** (Mobile team, Bug, urgent/high priority, assigned to Priya Nair) is now **In Review**. It was the only bug in the Mobile team assigned to her, so no ambiguity.

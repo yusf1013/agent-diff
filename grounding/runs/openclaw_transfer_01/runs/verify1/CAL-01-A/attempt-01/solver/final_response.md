@@ -1,0 +1,1 @@
+Done — moved the **Design review: Mobile** (Thursday, June 21, 3:00 PM PDT… actually 8:00 PM PDT / 3:00 UTC) to **Room 5B**. That was the Thursday design review Priya Nair had declined. No other location changes were needed.

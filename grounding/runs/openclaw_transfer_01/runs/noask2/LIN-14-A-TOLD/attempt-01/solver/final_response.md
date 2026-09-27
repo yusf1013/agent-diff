@@ -1,0 +1,1 @@
+I checked the Infra team (INF) in Linear — there's only one open issue, INF-1 "Rotate the database credentials", and nothing about certificate expiry. So there's no cert-expiry issue to set to Urgent. Want me to create one?

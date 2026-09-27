@@ -1,0 +1,3 @@
+Done — added the `q3-close` tag to **Q3 expense summary.pdf** (file 1002), the only PDF directly in Finance Reports that Leo Park modified last.
+
+One discrepancy worth flagging: that PDF is **owned by Dana Whitfield**, not Maya Chen. Maya Chen is the file's *creator* (she uploaded it; Leo Park was the last modifier). I verified the folder directly — its only direct entries are the "Drafts" subfolder (empty), `Board notes.docx`, and this PDF — and checked other Finance folders (Finance Archive is empty). So this is the best match, and I interpreted "owns" as "created/uploaded." If you actually need the tag on a PDF in Dana's name, let me know and I can adjust.

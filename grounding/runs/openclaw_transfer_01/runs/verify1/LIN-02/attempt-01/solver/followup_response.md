@@ -1,0 +1,1 @@
+Which one — Leo Park's ("Please update the release notes before Friday.") or Sam Rivera's postponement ask? They're different comments, and deletion can't be undone, so I want to be sure before acting.

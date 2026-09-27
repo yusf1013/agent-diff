@@ -1,0 +1,1 @@
+Done — deleted your Friday "Focus time" block at the Library (9:00–11:00 AM). That was the only one showing you as free (it was set to transparent; your other Friday deep-work blocks at the Library show as busy).

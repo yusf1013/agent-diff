@@ -1,0 +1,1 @@
+Done. Maya Chen's all-day "Offsite" on June 29 (ev_off_org) had Omar Haddad as a required attendee, so I patched the event and set him to optional. He's still on the attendee list — just optional now.

@@ -1,0 +1,1 @@
+Done. Cancelled just this Tuesday's (June 19, 3:00 PM) instance of the Platform sync — attendees notified. The series itself still recurs, and this week's Wednesday 10 AM Platform sync with Omar remains untouched.

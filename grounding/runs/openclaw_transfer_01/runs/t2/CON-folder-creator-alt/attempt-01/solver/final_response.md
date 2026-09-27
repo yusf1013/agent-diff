@@ -1,0 +1,1 @@
+Done. The folder is **"Atlas launch"** (id 7002) directly under Projects — description "Atlas rollout workspace", tagged `client`, owned by Sam Rivera, and it contains `Rollout plan.pdf` owned by Maya Chen. I added the tag, preserving the existing one: tags are now `["client", "atlas-q3"]`.

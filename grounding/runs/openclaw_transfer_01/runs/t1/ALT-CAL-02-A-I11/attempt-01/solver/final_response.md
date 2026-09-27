@@ -1,0 +1,1 @@
+I checked your Google Calendar — there's no weekly Platform sync organized by Omar Haddad on it. In fact, the calendar is completely empty (no events at all, including deleted ones), so there was nothing to cancel. It's possible the event lives on a different calendar/account that isn't linked to this Google account, or was never added.

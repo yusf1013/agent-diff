@@ -1,0 +1,1 @@
+Done. Found the moved Design sync instance — originally Tuesday June 19, now Wednesday June 20 at 10:00 AM PDT (original start time shows 2018-06-19, confirming the move). I updated just that single instance to **Room 4C**; the recurring series and any other occurrences are untouched (location was Room 2A before).

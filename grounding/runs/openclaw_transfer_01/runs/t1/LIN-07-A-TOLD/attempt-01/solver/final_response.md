@@ -1,0 +1,1 @@
+Done. Maya Chen's "Referral launch plan" doc — the one in the Referral program project under the Growth initiative — is now renamed to **"Growth Q4 plan"**. Her other doc ("Retention ideas") belongs to a different project, so that one is untouched.

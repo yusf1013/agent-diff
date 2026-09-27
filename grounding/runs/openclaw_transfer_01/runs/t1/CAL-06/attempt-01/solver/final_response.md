@@ -1,0 +1,1 @@
+Done. Omar Haddad is now an **optional** attendee on the all-day **Team offsite** (June 29, created by Maya Chen), with the other attendees (Priya Nair, Jordan Lee) left unchanged. No notifications were sent to guests.

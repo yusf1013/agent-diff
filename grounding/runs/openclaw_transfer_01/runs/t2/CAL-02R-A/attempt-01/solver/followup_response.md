@@ -1,0 +1,1 @@
+Done. The **Wednesday June 20, 10:00** instance of Omar's Platform sync is cancelled (HTTP 204, and it no longer appears in the series' upcoming instances), with a cancellation notice sent to attendees. The rest of the weekly series — June 27, July 4, July 11, and beyond — is untouched, and so is Dana's Tuesday series.

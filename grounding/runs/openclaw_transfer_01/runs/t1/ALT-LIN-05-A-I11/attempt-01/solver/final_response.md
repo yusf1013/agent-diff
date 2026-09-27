@@ -1,0 +1,1 @@
+Nothing to move. The Platform team's current cycle (Cycle 14, Sep 14 – Sep 27) has no open issues at all — the only open issue on the team is PLT-3 "Migrate cron jobs" (8 points, due Sep 10), which is already sitting in Cycle 15, the next cycle. So no action was taken.

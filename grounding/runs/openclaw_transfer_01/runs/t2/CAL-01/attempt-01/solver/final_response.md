@@ -1,0 +1,1 @@
+Done. I moved **Design review: Checkout** (Thursday, June 21, 10:00–11:00 AM) to **Room 5B** — that's the Thursday review Priya Nair declined. I picked it over "Design review: Payments" (Wednesday, June 20, also declined by Priya) and "Design review: Billing" (Thursday, but declined by Omar, not Priya). External attendees got notified of the change.

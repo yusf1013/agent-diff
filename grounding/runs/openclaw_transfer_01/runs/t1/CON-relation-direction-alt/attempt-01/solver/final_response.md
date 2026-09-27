@@ -1,0 +1,1 @@
+Nope — there's no blocking relation on ENG-7 pointing that way. Its only relation is the opposite direction: ENG-7 ("Upgrade auth library") **blocks** ENG-9 ("Run database migration for the v2 schema"). So ENG-7 is blocking the migration, not the other way around. Nothing removed; let me know if you actually want that blocks relation cleared instead.

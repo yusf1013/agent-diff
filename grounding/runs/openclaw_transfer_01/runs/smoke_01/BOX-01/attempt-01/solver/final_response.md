@@ -1,0 +1,1 @@
+Done. Added the `q3-close` tag to **Q3 revenue summary.pdf** — the only PDF in the Finance Reports folder proper (not in subfolders) owned by Maya Chen and last modified by Leo Park. The API response confirms `tags: ["q3-close"]` is now applied.

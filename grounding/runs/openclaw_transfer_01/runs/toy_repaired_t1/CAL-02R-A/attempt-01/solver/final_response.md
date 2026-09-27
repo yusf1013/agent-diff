@@ -1,0 +1,1 @@
+Cancelled the Tuesday, June 19, 2018 instance of the weekly "Platform sync" (event `ev_psync2_20180619T150000Z`, created by Omar Haddad). The event's status is now "cancelled" while all other instances of the recurring series remain confirmed and unaffected.

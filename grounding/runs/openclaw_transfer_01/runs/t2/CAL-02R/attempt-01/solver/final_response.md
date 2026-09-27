@@ -1,0 +1,1 @@
+Cancelled. I deleted Tuesday June 19's instance (9:00–9:30 AM PT) of Omar Haddad's weekly Platform sync, with notifications sent to guests. The rest of the series — and Dana Whitfield's separate Platform sync later that day — are untouched.

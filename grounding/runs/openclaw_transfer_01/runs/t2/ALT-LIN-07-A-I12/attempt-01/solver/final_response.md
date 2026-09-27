@@ -1,0 +1,1 @@
+I checked Linear — there's no doc to rename. The only document in your workspace is "Referral launch plan" (Maya Chen created it, but it's for the Referral program project, not a Growth initiative). So no Growth initiative doc exists, and I didn't rename anything.

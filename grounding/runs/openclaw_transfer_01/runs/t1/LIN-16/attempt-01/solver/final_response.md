@@ -1,0 +1,1 @@
+Done. Maya Chen leads the **Checkout Redesign** project, and the bug in it — **WEB-1: "Coupon code rejected at checkout"** — now has priority **Urgent**. (The other issue in her project, WEB-4, is a task, not a bug, so I left it alone.)

@@ -1,0 +1,1 @@
+Done. Set the due date to **October 9, 2026** (end of day, EDT) on task 3005, "Review data-processing addendum" — Dana Whitfield's review task on **Acme vendor contract.pdf**, assigned to Omar Haddad and still open. Box confirmed the update.

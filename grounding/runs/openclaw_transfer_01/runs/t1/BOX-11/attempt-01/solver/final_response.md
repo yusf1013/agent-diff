@@ -1,0 +1,1 @@
+Done. On **Acme vendor contract.pdf**, I deleted the comment that Omar Haddad replied to — Priya Nair's "Is the renewal notice 60 or 90 days?" — which also removed that thread. The thread's replies (Omar's "It's 90 days" and Priya's follow-up) are gone with it, and Dana Whitfield's "Uploading the countersigned copy tomorrow." comment remains.

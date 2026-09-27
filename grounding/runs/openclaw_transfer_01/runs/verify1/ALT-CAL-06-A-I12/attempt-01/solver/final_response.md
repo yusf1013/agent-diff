@@ -1,0 +1,1 @@
+Done. I found the all-day "Offsite" event on June 29 organized by Maya Chen and made Omar Haddad (omar.haddad@northwind.example) an optional attendee — confirmed in the updated event. External attendees were notified.

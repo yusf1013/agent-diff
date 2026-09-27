@@ -1,0 +1,1 @@
+Found it and tagged. The folder is **Atlas launch** directly under Projects — description "Atlas rollout workspace", tagged `client`, owned by Sam Rivera, and it holds **Rollout plan.pdf**, which Maya Chen owns. I added `atlas-q3` to the tags (kept the existing `client` tag), so it's now `client, atlas-q3`.

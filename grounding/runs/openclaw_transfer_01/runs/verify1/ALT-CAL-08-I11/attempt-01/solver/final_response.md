@@ -1,0 +1,1 @@
+I checked your primary calendar — there's no dentist appointment on Wednesday (June 20), and actually the calendar is completely empty for June 17 through August 1, so there's nothing to delete. Nothing was changed.

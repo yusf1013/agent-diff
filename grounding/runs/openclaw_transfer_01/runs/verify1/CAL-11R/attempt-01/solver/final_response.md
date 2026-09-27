@@ -1,0 +1,1 @@
+Done. The Design sync that was moved from Tuesday June 19 to Wednesday June 20, 10:00 AM now has its location set to **Room 4C**. Only that single instance was changed — the recurring series and all other occurrences remain in Room 2A.

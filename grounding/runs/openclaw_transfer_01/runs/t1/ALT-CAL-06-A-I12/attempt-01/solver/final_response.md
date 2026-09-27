@@ -1,0 +1,1 @@
+Done — I found the all-day "Offsite" event (June 29) organized by Maya Chen, and Omar Haddad was already an attendee. I've updated him to **optional**. External guests will get a notification about the change.

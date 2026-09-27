@@ -1,0 +1,1 @@
+WEB-12 ("Idempotent payment requests") doesn't have a parent issue — its parent field is empty, so there's nothing to mark as Done. (For context: WEB-12 is itself the parent of WEB-13, if that's what you meant.)

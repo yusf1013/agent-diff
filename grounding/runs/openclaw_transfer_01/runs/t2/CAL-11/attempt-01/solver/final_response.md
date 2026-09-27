@@ -1,0 +1,1 @@
+Done ✅ The Design sync moved to Wednesday (June 20, 10:00–10:30 AM) is now set to **Room 4C**. Since it was the moved instance of a recurring event, I updated just that occurrence — the rest of the weekly series still stays in its original room.

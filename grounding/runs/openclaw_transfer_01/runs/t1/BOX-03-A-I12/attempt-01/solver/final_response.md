@@ -1,0 +1,1 @@
+Done. I set the due date on the review task "Review renewal dates" (task 3003) on `Acme vendor contract.pdf` — the one assigned to Omar Haddad by Dana Whitfield and still incomplete — to **October 9, 2026**. The API response confirms `due_at: 2026-10-09T00:00:00-04:00`.

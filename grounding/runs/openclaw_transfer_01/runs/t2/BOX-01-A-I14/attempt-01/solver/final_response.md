@@ -1,0 +1,1 @@
+Done. The Finance Reports folder has exactly one PDF at the top level — **Q3 payroll summary.pdf** (id 1005), owned by Maya Chen (Leo Park is its creator, and the only other direct item is a .docx, so it's the clear match). I added the tag `q3-close` and verified it's applied.

@@ -1,0 +1,1 @@
+Done. Cancelled this Tuesday's (June 19) instance of the Platform sync that Omar Haddad organizes — only that occurrence is now marked cancelled, and the recurring series continues as normal. The other "Platform sync" at 3 PM Tuesday that Dana Whitfield organizes was left untouched.

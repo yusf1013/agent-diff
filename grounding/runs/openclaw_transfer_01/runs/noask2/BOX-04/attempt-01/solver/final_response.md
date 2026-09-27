@@ -1,0 +1,1 @@
+Done. Maya Chen's **Brand guidelines** folder (in Marketing, id 4030) is now added to Leo Park's **Launch kit** hub, alongside the Launch assets folder. I disambiguated from the other "Brand guidelines" folder in root — that one is owned by Sam Rivera, not Maya.

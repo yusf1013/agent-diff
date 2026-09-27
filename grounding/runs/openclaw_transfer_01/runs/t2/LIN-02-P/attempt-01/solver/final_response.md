@@ -1,0 +1,1 @@
+Done. Deleted Leo Park's comment on ENG-42 ("Can we postpone the release until the migration lands?") — the API confirmed success. His other comment ("Please update the release notes before Friday.") was left untouched.

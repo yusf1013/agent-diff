@@ -1,7 +1,8 @@
 # Fact-discrimination coverage (FDC): criterion, catalogs and Qwen pilot
 
 Start with [report.md](report.md) (the answer and the main tables), then [criterion.md](criterion.md) (the
-definition) and [findings.md](findings.md) (every reviewed run, with links). Manual research work; no automated
+definition) and [findings.md](findings.md) (every reviewed run, with links). Later corrections to the held-fact evidence are in
+[corrections.md](corrections.md). Manual research work; no automated
 test-generation claim.
 
 Follow-up: [fact_coverage_02](../fact_coverage_02/README.md) turns the pilot into a test-design method. It runs the

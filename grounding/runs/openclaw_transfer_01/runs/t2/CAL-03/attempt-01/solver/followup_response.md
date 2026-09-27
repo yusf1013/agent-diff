@@ -1,0 +1,1 @@
+Done. Removed Dana Whitfield's reader ACL rule (acl_1) from the Marketing calendar and verified it's gone — she now has no access at all. Remaining access: owner (jordan.lee), writer (dana.white + northwind.example domain).

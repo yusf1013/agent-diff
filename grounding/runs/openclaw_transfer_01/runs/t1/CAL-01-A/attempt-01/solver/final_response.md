@@ -1,0 +1,1 @@
+Done — I moved **Design review: Mobile** (Thursday, June 21) to **Room 5B**. That's the Thursday design review where Priya Nair declined (the Payments review was Wednesday, and on Thursday's other reviews Priya didn't decline). Attendees were notified of the location update.

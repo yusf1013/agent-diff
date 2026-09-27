@@ -1,0 +1,1 @@
+I checked Linear — there's no such document. The Growth team exists in your workspace, but it has no issues (or anything else) in it, and Linear here only tracks issues, comments, labels, and teams — no standalone documents. So there's nothing created by Maya Chen to rename to "Growth Q4 plan."

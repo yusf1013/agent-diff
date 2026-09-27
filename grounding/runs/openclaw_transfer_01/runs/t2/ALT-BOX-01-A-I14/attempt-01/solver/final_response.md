@@ -1,0 +1,1 @@
+I checked the Finance Reports folder (ID 100) directly — it contains one PDF: "Q3 payroll summary.pdf". It is owned by Maya Chen, but it was last modified by Maya Chen herself, not Leo Park. So there's no PDF that matches both conditions (owned by Maya Chen AND last modified by Leo Park), and I haven't added the tag.

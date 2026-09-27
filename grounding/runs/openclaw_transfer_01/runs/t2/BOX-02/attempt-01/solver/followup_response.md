@@ -1,0 +1,1 @@
+Done — renamed `Q3 budget.xlsx` in Finance Archive to **`Q3 budget.xlsx - travel reviewed`** (the spreadsheet Priya Nair commented on re: travel costs). If you actually meant the docx in Finance Reports, say the word and I'll fix it.

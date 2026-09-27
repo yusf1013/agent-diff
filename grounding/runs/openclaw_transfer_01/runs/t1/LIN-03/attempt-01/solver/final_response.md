@@ -1,0 +1,1 @@
+Done. The **Beta** milestone in the **Checkout Redesign** project (led by Maya Chen — there were two projects with that name; the other is led by Sam Rivera) now has its target date set to **October 30, 2026**, verified via a re-query.

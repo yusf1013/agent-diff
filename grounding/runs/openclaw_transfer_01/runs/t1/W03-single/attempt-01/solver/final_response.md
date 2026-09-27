@@ -1,0 +1,1 @@
+Done ✅ Posted "Please send feedback by Friday." in **#finance-updates** — that's the channel containing the budget-approved message ("Budget approved for the autumn customer research program…") that Alex Rivera reacted to with 🎉.

@@ -1,0 +1,1 @@
+Done. I found the all-day "Offsite" event on June 29 (organized by Maya Chen) and set Omar Haddad as an optional attendee. He was previously a required attendee and has accepted; he's now optional and his response status is showing as needs action.

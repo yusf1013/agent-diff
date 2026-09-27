@@ -1,0 +1,1 @@
+Done — removed your 🔥 reaction from Elena's message in #product-launch (the launch-readiness channel): "The vendor review is at 2pm on Thursday in the Maple room." I verified the reaction was gone-side (it was the only fire reaction there).

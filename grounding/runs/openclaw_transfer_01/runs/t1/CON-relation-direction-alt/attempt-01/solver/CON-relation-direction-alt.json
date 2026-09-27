@@ -1,0 +1,247 @@
+{
+  "test_id": "CON-relation-direction-alt",
+  "question": "In Linear: ENG-7 is blocked by the database migration issue. Remove that blocking relation. If there isn't one, just tell me.",
+  "harness": "openclaw",
+  "termination": "done",
+  "final": "Nope — there's no blocking relation on ENG-7 pointing that way. Its only relation is the opposite direction: ENG-7 (\"Upgrade auth library\") **blocks** ENG-9 (\"Run database migration for the v2 schema\"). So ENG-7 is blocking the migration, not the other way around. Nothing removed; let me know if you actually want that blocks relation cleared instead.",
+  "turns": [
+    {
+      "label": "turn1",
+      "message": "In Linear: ENG-7 is blocked by the database migration issue. Remove that blocking relation. If there isn't one, just tell me.",
+      "text": "Nope — there's no blocking relation on ENG-7 pointing that way. Its only relation is the opposite direction: ENG-7 (\"Upgrade auth library\") **blocks** ENG-9 (\"Run database migration for the v2 schema\"). So ENG-7 is blocking the migration, not the other way around. Nothing removed; let me know if you actually want that blocks relation cleared instead.",
+      "termination": "done",
+      "returncode": 0,
+      "killed": null,
+      "duration_s": 90.7,
+      "meta_error": null,
+      "stop_reason": "stop"
+    }
+  ],
+  "steps": [
+    {
+      "turn": 1,
+      "tool": "read",
+      "arguments": {
+        "path": "~/.openclaw-runs/agentdiff-openclaw/t1/CON-relation-direction-alt/attempt-01-4db3a739/workspace-agentdiff-qwen/skills/linear/SKILL.md"
+      },
+      "action": "read {\"path\": \"~/.openclaw-runs/agentdiff-openclaw/t1/CON-relation-direction-alt/attempt-01-4db3a739/workspace-agentdiff-qwen/skills/linear/SKILL.md\"}",
+      "text": "",
+      "thinking": "I need to check the Linear skill and find the blocking relationship on ENG-7.",
+      "usage": {
+        "input": 8762,
+        "output": 90,
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "reasoningTokens": 18,
+        "totalTokens": 8852,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "stdout": "---\nname: linear\ndescription: \"Linear project management and issue tracking API. Use it for anything in the user's Linear account.\"\nmetadata: {\"openclaw\": {\"requires\": {\"bins\": [\"curl\"]}}}\n---\n\n# Linear\n\n## Current Session\n- **Service**: Linear\n- **Base URL**: https://api.linear.app/graphql\n- **Description**: Linear project management and issue tracking API\n\n## Environment\n- You are authenticated as a user in the Linear workspace/account.\n- Authentication is handled automatically via proxy. Use placeholder tokens like `<TOKEN>` where credentials would go.\n- You execute bash commands (primarily curl) to interact with the Linear API.\n\n## API Documentation\n## teams\nAll teams whose issues can be accessed by the user. This might be different from `administrableTeams`, which also includes teams whose settings can be changed by the user.\n\n## issues\nAll issues.\n\n## issue\nGet a single issue by ID.\n\n## workflowStates\nAll issue workflow states.\n\n## users\nAll users for the organization.\n\n## issueCreate\nCreates a new issue.\n\n## issueUpdate\nUpdates an issue.\n\n## commentCreate\nCreates a new comment.\n\n## teamCreate\nCreates a new team. The user who creates the team will automatically be added as a member to the newly created team.\n\n## issueLabelCreate\nCreates a new label.\n\n## issueLabels\nAll issue labels.\n\n## comments\nAll comments.\n\n## commentUpdate\nUpdates a comment.\n\n## commentDelete\nDeletes a comment.\n\n## issueLabelUpdate\nUpdates a label.\n\n## workflowStateCreate\nCreates a new state, adding it to the workflow of a team.\n\n## workflowStateArchive\nArchives a state. Only states with issues that have all been archived can be archived.\n\n## teamMembershipCreate\nCreates a new team membership.\n\n## issueRelationCreate\nCreates a new issue relation.\n",
+        "is_error": false
+      }
+    },
+    {
+      "turn": 1,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: Bearer <TOKEN>' -d '{\"query\":\"{ issue(id: \\\"ENG-7\\\") { identifier title issueRelations { id relationType source { id identifier title } destination { id identifier title } } } }\"}'"
+      },
+      "action": "curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: Bearer <TOKEN>' -d '{\"query\":\"{ issue(id: \\\"ENG-7\\\") { identifier title issueRelations { id relationType source { id identifier title } destination { id identifier title } } } }\"}'",
+      "text": "",
+      "thinking": "The skill mentions `issueRelationCreate`, but doesn't explicitly mention `issueRelationDelete` or a query for relations. Let me check the issue's relations. Linear's GraphQL has `issueRelations` (or `relations` on the issue type). I'll query the relations of issue ENG-7.\n\nGraphQL query:\n```\n{ issue(id: \"ENG-7\") { id identifier title relations { id relationType source { id identifier } destination { id identifier } } } }\n```\n\nActually, in Linear's API, `Issue` has `issueRelations`… Let me recall. Does Linear's GraphQL schema have `relations` on `Issue`? I think it's `issueRelations` on `Issue`… Let me just try a query for now. Is there an `issueRelations` field on the Issue type? Hmm. In Linear's schema, `Issue` includes: `project`, `state`, `assignee`, `labels`, `workflowStates`… and `issueRelations` might not exist. Is there a query field called `issueRelations`? Actually I think there's `IssueRelation` and a field `issueRelations(filter:)` on Query? Not 100% sure.\n\nThe skill only lists `issueRelationCreate` as a mutation. To delete, maybe I use `issueRelationDelete`? Not documented here, but it might exist in the API. Let me try.\n\nFirst, fetch the issue along with its relations:\n\n```graphql\n{\n  issue(id: \"ENG-7\") {\n    identifier\n    title\n    relations {\n      id\n      relationType\n      source { id identifier title }\n      destination { id identifier title }\n    }\n  }\n}\n```\n\nI'm not sure whether `relations` is a valid field name. Linear's docs: Query has `issue(id:)`, and the Issue type has an `issueRelations` field? Let me check my memory of Linear's API: there's a type `IssueRelation` with fields `id`, `relationType`, `source`, `destination`, `createdAt`. And the Query field is `issueRelations(filter: IssueRelationFilter)`. I think Query has `issueRelations`. Also Issue might have a `relations` connection.\n\nI'll try both — start with the query, then fall back. Let me run the first curl.",
+      "usage": {
+        "input": 9250,
+        "output": 587,
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "reasoningTokens": 492,
+        "totalTokens": 9837,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "stdout": "{\"errors\":[{\"message\":\"Cannot query field 'issueRelations' on type 'Issue'. Did you mean 'inverseRelations', 'relations', or 'suggestions'?\",\"locations\":[{\"line\":1,\"column\":41}]}]}",
+        "is_error": false
+      }
+    },
+    {
+      "turn": 1,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: Bearer <TOKEN>' -d '{\"query\":\"{ issue(id: \\\"ENG-7\\\") { identifier title relations { id relationType source { id identifier title } destination { id identifier title } } } }\"}'"
+      },
+      "action": "curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: Bearer <TOKEN>' -d '{\"query\":\"{ issue(id: \\\"ENG-7\\\") { identifier title relations { id relationType source { id identifier title } destination { id identifier title } } } }\"}'",
+      "text": "",
+      "thinking": "Need to fix the query: use `relations`.",
+      "usage": {
+        "input": 9409,
+        "output": 105,
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "reasoningTokens": 11,
+        "totalTokens": 9514,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "stdout": "{\"errors\":[{\"message\":\"Cannot query field 'id' on type 'IssueRelationConnection'.\",\"locations\":[{\"line\":1,\"column\":53}]},{\"message\":\"Cannot query field 'relationType' on type 'IssueRelationConnection'.\",\"locations\":[{\"line\":1,\"column\":56}]},{\"message\":\"Cannot query field 'source' on type 'IssueRelationConnection'.\",\"locations\":[{\"line\":1,\"column\":69}]},{\"message\":\"Cannot query field 'destination' on type 'IssueRelationConnection'.\",\"locations\":[{\"line\":1,\"column\":100}]}]}",
+        "is_error": false
+      }
+    },
+    {
+      "turn": 1,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: Bearer <TOKEN>' -d '{\"query\":\"{ issue(id: \\\"ENG-7\\\") { identifier title relations { nodes { id relationType source { id identifier title } destination { id identifier title } } } } }\"}'"
+      },
+      "action": "curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: Bearer <TOKEN>' -d '{\"query\":\"{ issue(id: \\\"ENG-7\\\") { identifier title relations { nodes { id relationType source { id identifier title } destination { id identifier title } } } } }\"}'",
+      "text": "",
+      "thinking": "The relations field is a connection — probably { nodes { ... } }.",
+      "usage": {
+        "input": 9635,
+        "output": 112,
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "reasoningTokens": 15,
+        "totalTokens": 9747,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "stdout": "{\"errors\":[{\"message\":\"Cannot query field 'relationType' on type 'IssueRelation'.\",\"locations\":[{\"line\":1,\"column\":64}]},{\"message\":\"Cannot query field 'source' on type 'IssueRelation'.\",\"locations\":[{\"line\":1,\"column\":77}]},{\"message\":\"Cannot query field 'destination' on type 'IssueRelation'.\",\"locations\":[{\"line\":1,\"column\":108}]}]}",
+        "is_error": false
+      }
+    },
+    {
+      "turn": 1,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: Bearer <TOKEN>' -d '{\"query\":\"{ __type(name: \\\"IssueRelation\\\") { fields { name } } }\"}'"
+      },
+      "action": "curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: Bearer <TOKEN>' -d '{\"query\":\"{ __type(name: \\\"IssueRelation\\\") { fields { name } } }\"}'",
+      "text": "",
+      "thinking": "Let me introspect the IssueRelation type.",
+      "usage": {
+        "input": 9831,
+        "output": 88,
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "reasoningTokens": 10,
+        "totalTokens": 9919,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "stdout": "{\"data\":{\"__type\":{\"fields\":[{\"name\":\"archivedAt\"},{\"name\":\"createdAt\"},{\"name\":\"id\"},{\"name\":\"issue\"},{\"name\":\"relatedIssue\"},{\"name\":\"type\"},{\"name\":\"updatedAt\"}]}}}",
+        "is_error": false
+      }
+    },
+    {
+      "turn": 1,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: Bearer <TOKEN>' -d '{\"query\":\"{ issue(id: \\\"ENG-7\\\") { identifier title relations { nodes { id type issue { identifier } relatedIssue { identifier title } } } inverseRelations { nodes { id type issue { identifier } relatedIssue { identifier title } } } } }\"}'"
+      },
+      "action": "curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: Bearer <TOKEN>' -d '{\"query\":\"{ issue(id: \\\"ENG-7\\\") { identifier title relations { nodes { id type issue { identifier } relatedIssue { identifier title } } } inverseRelations { nodes { id type issue { identifier } relatedIssue { identifier title } } } } }\"}'",
+      "text": "",
+      "thinking": "IssueRelation has `issue`, `relatedIssue`, and `type`. In Linear's GraphQL, for an issue's `relations`, each node has `issue` (the issue being queried) and `relatedIssue`. Actually, I think `relations` returns the relations where the issue is the source, and `inverseRelations` returns the ones where the issue is the destination. A \"blocks\" relation: issue A blocks B means A is the source and B is the destination. Let's try querying both.",
+      "usage": {
+        "input": 9968,
+        "output": 216,
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "reasoningTokens": 103,
+        "totalTokens": 10184,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "stdout": "{\"data\":{\"issue\":{\"identifier\":\"ENG-7\",\"title\":\"Upgrade auth library\",\"relations\":{\"nodes\":[{\"id\":\"r-1\",\"type\":\"blocks\",\"issue\":{\"identifier\":\"ENG-7\"},\"relatedIssue\":{\"identifier\":\"ENG-9\",\"title\":\"Run database migration for the v2 schema\"}}]},\"inverseRelations\":{\"nodes\":[]}}}}",
+        "is_error": false
+      }
+    },
+    {
+      "turn": 1,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: Bearer <TOKEN>' -d '{\"query\":\"{ __type(name: \\\"Mutation\\\") { fields { name } } }\"}' | tr ',' '\\n' | grep -i relation"
+      },
+      "action": "curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: Bearer <TOKEN>' -d '{\"query\":\"{ __type(name: \\\"Mutation\\\") { fields { name } } }\"}' | tr ',' '\\n' | grep -i relation",
+      "text": "",
+      "thinking": "There is one relation: ENG-7 blocks ENG-9, and its title is \"Run database migration for the v2 schema\". Hmm, the user is saying \"ENG-7 is blocked by the database migration issue\". The existing relation is that ENG-7 blocks ENG-9 (the direction is reversed). The user is asking to remove the blocking relation related to the database migration issue. The relation between ENG-7 and ENG-9 (database migration) exists — that's probably it. Let's remove it.\n\nI'll check if there's a relation deletion mutation. The skill listed issueRelationCreate but not delete. Let me check the Mutation type.",
+      "usage": {
+        "input": 10170,
+        "output": 223,
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "reasoningTokens": 135,
+        "totalTokens": 10393,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "stdout": "{\"name\":\"initiativeRelationCreate\"}\n{\"name\":\"initiativeRelationDelete\"}\n{\"name\":\"initiativeRelationUpdate\"}\n{\"name\":\"issueRelationCreate\"}\n{\"name\":\"issueRelationDelete\"}\n{\"name\":\"issueRelationUpdate\"}\n{\"name\":\"projectRelationCreate\"}\n{\"name\":\"projectRelationDelete\"}\n{\"name\":\"projectRelationUpdate\"}",
+        "is_error": false
+      }
+    },
+    {
+      "turn": 1,
+      "tool": null,
+      "text": "Nope — there's no blocking relation on ENG-7 pointing that way. Its only relation is the opposite direction: ENG-7 (\"Upgrade auth library\") **blocks** ENG-9 (\"Run database migration for the v2 schema\"). So ENG-7 is blocking the migration, not the other way around. Nothing removed; let me know if you actually want that blocks relation cleared instead.",
+      "thinking": "ENG-7 has a \"blocks\" relation to ENG-9, meaning ENG-7 is blocking the database migration. What the user is asking for is to remove the \"blocks\" relation where ENG-7 is blocked by the DB migration issue. In the direction of \"blocks\": issue ENG-7 → relatedIssue ENG-9 \"blocks\" means ENG-7 is blocking ENG-9. There is no inverse \"blocks\" relation. In other words, ENG-7 is not being blocked by a DB migration issue. Wait—could there be a \"blockedBy\" relation type in the inverse direction? inverseRelations is empty. Therefore the answer is: no such relation exists; if anything, it's ENG-7 that is blocking ENG-9.",
+      "usage": {
+        "input": 10337,
+        "output": 236,
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "reasoningTokens": 154,
+        "totalTokens": 10573,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      }
+    }
+  ],
+  "followup_steps": []
+}

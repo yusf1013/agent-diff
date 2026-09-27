@@ -1,0 +1,1 @@
+Done. Set the due date on the only task on **Acme vendor contract.pdf** — "Sign off on payment terms" (created by Dana Whitfield, assigned to Omar Haddad, still incomplete) — to **October 9, 2026** (5:00 PM EDT). One note: it's technically a "complete" task rather than a "review" one, but it's the only task matching all your criteria, so it's the right one.

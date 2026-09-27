@@ -1,0 +1,1 @@
+Done. Set the due date on the **"Review renewal dates"** task (assigned to Omar, on the Acme vendor contract) to **October 9, 2026**. Heads up again — that one was actually created by Sam Rivera, not Dana. If you'd rather I've updated the "Sign off on payment terms" task (the one Dana created) instead, say the word.

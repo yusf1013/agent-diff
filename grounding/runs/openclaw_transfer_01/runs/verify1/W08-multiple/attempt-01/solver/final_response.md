@@ -1,0 +1,1 @@
+Done. I scanned your channels and found the launch-readiness one: **#product-launch** (topic "Launch readiness plan"). Elena's message there had your 🔥 reaction — I removed it and verified it's gone. No other messages in your channels carried a 🔥 from you.

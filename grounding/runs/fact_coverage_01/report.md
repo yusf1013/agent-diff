@@ -7,6 +7,7 @@
 | Solver | Purdue GenAI `qwen3.8:27b` with the benchmark's standard prompt and a 40-turn / 480-second episode. The previously recorded `qwen3.6:27b` is no longer served by Purdue. |
 | Evidence | 327 scored episodes (179 distinct cases) on new Box, Calendar and Linear cases, plus 17 completed reruns of 11 earlier Slack cases. Every failure cited here was read in its trajectory, final answer and state diff. |
 | Status | Pilot complete. The criterion and catalogs are a proposal backed by one model and 1–3 trials per condition. They are not a validated final benchmark. All cases and judgments are manual research work. |
+| Corrections | [corrections.md](corrections.md) (2026-09-24): two replica limitations and a substring match made some *held* evidence vacuous; the strict held count becomes 38 of 54 (was 43 of 59). Failures and rates are unaffected. |
 
 This report is meant to be read on its own. Companion files are only needed for detail:
 - [criterion.md](criterion.md): the definition on one page;
@@ -81,7 +82,7 @@ across Slack, Box, Calendar and Linear?
     - a Linear "blocked by" relation handled as "blocks" (13/13, including 3/3 with the correct relation present);
     - a UTC time read as the local day;
     - a renamed calendar confused with one whose real name matches.
-- Most facts held. Of the 59 facts for which Qwen demonstrably looked at the near-miss, **43 never failed**.
+- Most facts held. Of the 59 facts for which Qwen demonstrably looked at the near-miss, **43 never failed**. *(Corrected to 38 of 54: [corrections.md](corrections.md).)*
 - Spelling the relation out in the request cured two weak facts (folder creator, hub inclusion). It did not cure event
   creator or relation direction: there Qwen read the evidence correctly and acted against it.
 
@@ -574,7 +575,8 @@ wording is the stronger finding.
 
 ### 7.6 What held
 
-- **43 of 59 strictly tested facts never failed** ([Appendix C](#appendix-c-per-fact-results)). They include:
+- **43 of 59 strictly tested facts never failed** ([Appendix C](#appendix-c-per-fact-results); corrected to 38 of 54 in
+  [corrections.md](corrections.md)). They include:
   - person roles: file owner (0/12), file creator (0/6), task creator (0/5), comment author, attendee vs organizer
     (0/5), assignee vs creator, document creator vs editor;
   - views and representations: series vs occurrence, calendar owner vs a calendar named after the person, next vs

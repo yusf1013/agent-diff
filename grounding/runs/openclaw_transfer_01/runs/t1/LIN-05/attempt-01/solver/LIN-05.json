@@ -1,0 +1,537 @@
+{
+  "test_id": "LIN-05",
+  "question": "In Linear: Today is September 23, 2026. Move every open issue in the Platform team's current cycle that's estimated at 5 points or more and is past its due date into the team's next cycle.",
+  "harness": "openclaw",
+  "termination": "done",
+  "final": "Done. Summary:\n\n**Platform team, Cycle 14 (Sep 14–27) → Cycle 15 (Sep 28–Oct 11):**\n- ✅ **PLT-1** — Rotate service credentials (5 pts, due Sep 15, Todo)\n- ✅ **PLT-2** — Split the billing worker (8 pts, due Sep 20, In Progress)\n\nLeft alone:\n- **PLT-5** \"Remove legacy queue\" (5 pts, due Sep 10) — already **Done**, so not open\n- **PLT-4** (3 pts) — under the 5-point threshold\n- **PLT-6** (5 pts) — not due until Sep 30\n\nVerified after the move: Cycle 15 now contains PLT-1 and PLT-2 (plus PLT-3, which was already in Cycle 15 — it wasn't in the current cycle so I didn't touch it).",
+  "turns": [
+    {
+      "label": "turn1",
+      "message": "In Linear: Today is September 23, 2026. Move every open issue in the Platform team's current cycle that's estimated at 5 points or more and is past its due date into the team's next cycle.",
+      "text": "Done. Summary:\n\n**Platform team, Cycle 14 (Sep 14–27) → Cycle 15 (Sep 28–Oct 11):**\n- ✅ **PLT-1** — Rotate service credentials (5 pts, due Sep 15, Todo)\n- ✅ **PLT-2** — Split the billing worker (8 pts, due Sep 20, In Progress)\n\nLeft alone:\n- **PLT-5** \"Remove legacy queue\" (5 pts, due Sep 10) — already **Done**, so not open\n- **PLT-4** (3 pts) — under the 5-point threshold\n- **PLT-6** (5 pts) — not due until Sep 30\n\nVerified after the move: Cycle 15 now contains PLT-1 and PLT-2 (plus PLT-3, which was already in Cycle 15 — it wasn't in the current cycle so I didn't touch it).",
+      "termination": "done",
+      "returncode": 0,
+      "killed": null,
+      "duration_s": 243.0,
+      "meta_error": null,
+      "stop_reason": "stop"
+    }
+  ],
+  "steps": [
+    {
+      "turn": 1,
+      "tool": "read",
+      "arguments": {
+        "path": "~/.openclaw-runs/agentdiff-openclaw/t1/LIN-05/attempt-01-2198274a/workspace-agentdiff-qwen/skills/linear/SKILL.md"
+      },
+      "action": "read {\"path\": \"~/.openclaw-runs/agentdiff-openclaw/t1/LIN-05/attempt-01-2198274a/workspace-agentdiff-qwen/skills/linear/SKILL.md\"}",
+      "text": "",
+      "thinking": "First, let's read the Linear skill.",
+      "usage": {
+        "input": 8783,
+        "output": 82,
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "reasoningTokens": 10,
+        "totalTokens": 8865,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "stdout": "---\nname: linear\ndescription: \"Linear project management and issue tracking API. Use it for anything in the user's Linear account.\"\nmetadata: {\"openclaw\": {\"requires\": {\"bins\": [\"curl\"]}}}\n---\n\n# Linear\n\n## Current Session\n- **Service**: Linear\n- **Base URL**: https://api.linear.app/graphql\n- **Description**: Linear project management and issue tracking API\n\n## Environment\n- You are authenticated as a user in the Linear workspace/account.\n- Authentication is handled automatically via proxy. Use placeholder tokens like `<TOKEN>` where credentials would go.\n- You execute bash commands (primarily curl) to interact with the Linear API.\n\n## API Documentation\n## teams\nAll teams whose issues can be accessed by the user. This might be different from `administrableTeams`, which also includes teams whose settings can be changed by the user.\n\n## issues\nAll issues.\n\n## issue\nGet a single issue by ID.\n\n## workflowStates\nAll issue workflow states.\n\n## users\nAll users for the organization.\n\n## issueCreate\nCreates a new issue.\n\n## issueUpdate\nUpdates an issue.\n\n## commentCreate\nCreates a new comment.\n\n## teamCreate\nCreates a new team. The user who creates the team will automatically be added as a member to the newly created team.\n\n## issueLabelCreate\nCreates a new label.\n\n## issueLabels\nAll issue labels.\n\n## comments\nAll comments.\n\n## commentUpdate\nUpdates a comment.\n\n## commentDelete\nDeletes a comment.\n\n## issueLabelUpdate\nUpdates a label.\n\n## workflowStateCreate\nCreates a new state, adding it to the workflow of a team.\n\n## workflowStateArchive\nArchives a state. Only states with issues that have all been archived can be archived.\n\n## teamMembershipCreate\nCreates a new team membership.\n\n## issueRelationCreate\nCreates a new issue relation.\n",
+        "is_error": false
+      }
+    },
+    {
+      "turn": 1,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -s -X POST https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: <TOKEN>' -d '{\"query\":\"{ teams(first: 50) { nodes { id name key } } }\"}'"
+      },
+      "action": "curl -s -X POST https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: <TOKEN>' -d '{\"query\":\"{ teams(first: 50) { nodes { id name key } } }\"}'",
+      "text": "",
+      "thinking": "I need to find the Platform team, the current cycle (project?), and the next cycle. In Linear, \"cycles\" exist per team. The GraphQL API has a `cycles` query, which can be filtered by team, and you can also retrieve `currentCycle` / `upcomingCycle` via `team.cycles`, `team.currentCycle`, and `team.upcomingCycle`.\n\nPlan:\n1. Query the Platform team: `teams { nodes { name key id } }`.\n2. Query the team's cycles: `team(id:) { currentCycle { id name } upcomingCycle { id name } }`.\n3. Query the issues within the current cycle: `cycle(id:) { issues(first: 100) { nodes { id number points dueAt state { name type } workflowState } } }`.\n4. Filter: open (state type != completed/canceled? \"Open issue\" — not done/canceled), points >= 5, dueAt < today (2026-09-23).\n5. Update each issue with `issueUpdate(input: { id, cycleId: <next cycle id> })`.\n\nAccording to the message, today is September 23, 2026. Past due date: dueAt < 2026-09-23 (i.e., before today), or <=? \"Past its due date\" typically means the due date is before today. I'll use dueAt before 2026-09-23T00:00:00Z. Hmm, if the due date is today, it's not past due. I'll use dueAt < start of today.\n\nAlright, let's get started.",
+      "usage": {
+        "input": 9276,
+        "output": 446,
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "reasoningTokens": 366,
+        "totalTokens": 9722,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "stdout": "{\"data\":{\"teams\":{\"nodes\":[{\"id\":\"t-plt\",\"name\":\"Platform\",\"key\":\"PLT\"},{\"id\":\"t-web\",\"name\":\"Web\",\"key\":\"WEB\"}]}}}",
+        "is_error": false
+      }
+    },
+    {
+      "turn": 1,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -s -X POST https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: <TOKEN>' -d '{\"query\":\"{ team(id: \\\"t-plt\\\") { id name key } cycles(first: 50) { nodes { id name startDate dueDate state teamId } } }\"}'"
+      },
+      "action": "curl -s -X POST https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: <TOKEN>' -d '{\"query\":\"{ team(id: \\\"t-plt\\\") { id name key } cycles(first: 50) { nodes { id name startDate dueDate state teamId } } }\"}'",
+      "text": "",
+      "thinking": "Next, I need to find the Platform team's cycles. Let me check whether the team query supports cycles. Linear's GraphQL has a `cycles` query that returns all cycles. Let me try querying the team's current cycle and next cycle.",
+      "usage": {
+        "input": 9401,
+        "output": 148,
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "reasoningTokens": 50,
+        "totalTokens": 9549,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "stdout": "{\"errors\":[{\"message\":\"Cannot query field 'startDate' on type 'Cycle'. Did you mean 'startsAt'?\",\"locations\":[{\"line\":1,\"column\":73}]},{\"message\":\"Cannot query field 'dueDate' on type 'Cycle'.\",\"locations\":[{\"line\":1,\"column\":83}]},{\"message\":\"Cannot query field 'state' on type 'Cycle'. Did you mean 'name'?\",\"locations\":[{\"line\":1,\"column\":91}]},{\"message\":\"Cannot query field 'teamId' on type 'Cycle'. Did you mean 'team'?\",\"locations\":[{\"line\":1,\"column\":97}]}]}",
+        "is_error": false
+      }
+    },
+    {
+      "turn": 1,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -s -X POST https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: <TOKEN>' -d '{\"query\":\"{ __type(name: \\\"Cycle\\\") { fields { name type { name kind ofType { name } } } } }\"}'"
+      },
+      "action": "curl -s -X POST https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: <TOKEN>' -d '{\"query\":\"{ __type(name: \\\"Cycle\\\") { fields { name type { name kind ofType { name } } } } }\"}'",
+      "text": "",
+      "thinking": "Cycles in the Linear API: Cycle has fields like id, name, startsAt, endsAt, completesAt, completedAt, etc... Let me query the schema via introspection to find the available fields.",
+      "usage": {
+        "input": 9644,
+        "output": 131,
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "reasoningTokens": 44,
+        "totalTokens": 9775,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "stdout": "{\"data\":{\"__type\":{\"fields\":[{\"name\":\"archivedAt\",\"type\":{\"name\":\"DateTime\",\"kind\":\"SCALAR\",\"ofType\":null}},{\"name\":\"autoArchivedAt\",\"type\":{\"name\":\"DateTime\",\"kind\":\"SCALAR\",\"ofType\":null}},{\"name\":\"completedAt\",\"type\":{\"name\":\"DateTime\",\"kind\":\"SCALAR\",\"ofType\":null}},{\"name\":\"completedIssueCountHistory\",\"type\":{\"name\":null,\"kind\":\"NON_NULL\",\"ofType\":{\"name\":null}}},{\"name\":\"completedScopeHistory\",\"type\":{\"name\":null,\"kind\":\"NON_NULL\",\"ofType\":{\"name\":null}}},{\"name\":\"createdAt\",\"type\":{\"name\":null,\"kind\":\"NON_NULL\",\"ofType\":{\"name\":\"DateTime\"}}},{\"name\":\"currentProgress\",\"type\":{\"name\":null,\"kind\":\"NON_NULL\",\"ofType\":{\"name\":\"JSONObject\"}}},{\"name\":\"description\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\",\"ofType\":null}},{\"name\":\"endsAt\",\"type\":{\"name\":null,\"kind\":\"NON_NULL\",\"ofType\":{\"name\":\"DateTime\"}}},{\"name\":\"id\",\"type\":{\"name\":null,\"kind\":\"NON_NULL\",\"ofType\":{\"name\":\"ID\"}}},{\"name\":\"inProgressScopeHistory\",\"type\":{\"name\":null,\"kind\":\"NON_NULL\",\"ofType\":{\"name\":null}}},{\"name\":\"inheritedFrom\",\"type\":{\"name\":\"Cycle\",\"kind\":\"OBJECT\",\"ofType\":null}},{\"name\":\"isActive\",\"type\":{\"name\":null,\"kind\":\"NON_NULL\",\"ofType\":{\"name\":\"Boolean\"}}},{\"name\":\"isFuture\",\"type\":{\"name\":null,\"kind\":\"NON_NULL\",\"ofType\":{\"name\":\"Boolean\"}}},{\"name\":\"isNext\",\"type\":{\"name\":null,\"kind\":\"NON_NULL\",\"ofType\":{\"name\":\"Boolean\"}}},{\"name\":\"isPast\",\"type\":{\"name\":null,\"kind\":\"NON_NULL\",\"ofType\":{\"name\":\"Boolean\"}}},{\"name\":\"isPrevious\",\"type\":{\"name\":null,\"kind\":\"NON_NULL\",\"ofType\":{\"name\":\"Boolean\"}}},{\"name\":\"issueCountHistory\",\"type\":{\"name\":null,\"kind\":\"NON_NULL\",\"ofType\":{\"name\":null}}},{\"name\":\"issues\",\"type\":{\"name\":null,\"kind\":\"NON_NULL\",\"ofType\":{\"name\":\"IssueConnection\"}}},{\"name\":\"name\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\",\"ofType\":null}},{\"name\":\"number\",\"type\":{\"name\":null,\"kind\":\"NON_NULL\",\"ofType\":{\"name\":\"Float\"}}},{\"name\":\"progress\",\"type\":{\"name\":null,\"kind\":\"NON_NULL\",\"ofType\":{\"name\":\"Float\"}}},{\"name\":\"progressHistory\",\"type\":{\"name\":null,\"kind\":\"NON_NULL\",\"ofType\":{\"name\":\"JSONObject\"}}},{\"name\":\"scopeHistory\",\"type\":{\"name\":null,\"kind\":\"NON_NULL\",\"ofType\":{\"name\":null}}},{\"name\":\"startsAt\",\"type\":{\"name\":null,\"kind\":\"NON_NULL\",\"ofType\":{\"name\":\"DateTime\"}}},{\"name\":\"team\",\"type\":{\"name\":null,\"kind\":\"NON_NULL\",\"ofType\":{\"name\":\"Team\"}}},{\"name\":\"uncompletedIssuesUponClose\",\"type\":{\"name\":null,\"kind\":\"NON_NULL\",\"ofType\":{\"name\":\"IssueConnection\"}}},{\"name\":\"updatedAt\",\"type\":{\"name\":null,\"kind\":\"NON_NULL\",\"ofType\":{\"name\":\"DateTime\"}}}]}}}",
+        "is_error": false
+      }
+    },
+    {
+      "turn": 1,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -s -X POST https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: <TOKEN>' -d '{\"query\":\"{ cycles { nodes { id name number startsAt endsAt isActive isFuture isPast isNext } } }\"}'"
+      },
+      "action": "curl -s -X POST https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: <TOKEN>' -d '{\"query\":\"{ cycles { nodes { id name number startsAt endsAt isActive isFuture isPast isNext } } }\"}'",
+      "text": "",
+      "thinking": "I need to fetch the team cycles and their associated workflow states, then identify any open issues in the current cycle with estimates of 5 or higher that are overdue, and move those to the next cycle.",
+      "usage": {
+        "input": 10422,
+        "output": 127,
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "reasoningTokens": 42,
+        "totalTokens": 10549,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "stdout": "{\"data\":{\"cycles\":{\"nodes\":[{\"id\":\"cy-p13\",\"name\":\"Cycle 13\",\"number\":13.0,\"startsAt\":\"2026-08-31T00:00:00\",\"endsAt\":\"2026-09-13T23:59:59\",\"isActive\":false,\"isFuture\":false,\"isPast\":true,\"isNext\":false},{\"id\":\"cy-p14\",\"name\":\"Cycle 14\",\"number\":14.0,\"startsAt\":\"2026-09-14T00:00:00\",\"endsAt\":\"2026-09-27T23:59:59\",\"isActive\":true,\"isFuture\":false,\"isPast\":false,\"isNext\":false},{\"id\":\"cy-p15\",\"name\":\"Cycle 15\",\"number\":15.0,\"startsAt\":\"2026-09-28T00:00:00\",\"endsAt\":\"2026-10-11T23:59:59\",\"isActive\":false,\"isFuture\":true,\"isPast\":false,\"isNext\":true},{\"id\":\"cy-w14\",\"name\":\"Cycle 14\",\"number\":14.0,\"startsAt\":\"2026-09-14T00:00:00\",\"endsAt\":\"2026-09-27T23:59:59\",\"isActive\":true,\"isFuture\":false,\"isPast\":false,\"isNext\":false}]}}}",
+        "is_error": false
+      }
+    },
+    {
+      "turn": 1,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -s -X POST https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: <TOKEN>' -d '{\"query\":\"{ __type(name: \\\"Issue\\\") { fields { name } } }\"}' | head -c 3000"
+      },
+      "action": "curl -s -X POST https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: <TOKEN>' -d '{\"query\":\"{ __type(name: \\\"Issue\\\") { fields { name } } }\"}' | head -c 3000",
+      "text": "",
+      "thinking": "Platform team: current cycle = Cycle 14 (cy-p14, active), next = Cycle 15 (cy-p15, isNext=true).\n\nNext, fetch Platform team's issues in the current cycle: open (not completed/canceled — need the state type), estimate >= 5, dueDate < today (2026-09-23). Let me check the Issue's fields: dueDate, estimate, state. Let me query issues filtered by cycle and team.",
+      "usage": {
+        "input": 10872,
+        "output": 193,
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "reasoningTokens": 106,
+        "totalTokens": 11065,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "stdout": "{\"data\":{\"__type\":{\"fields\":[{\"name\":\"activitySummary\"},{\"name\":\"addedToCycleAt\"},{\"name\":\"addedToProjectAt\"},{\"name\":\"addedToTeamAt\"},{\"name\":\"archivedAt\"},{\"name\":\"asksExternalUserRequester\"},{\"name\":\"asksRequester\"},{\"name\":\"assignee\"},{\"name\":\"attachments\"},{\"name\":\"autoArchivedAt\"},{\"name\":\"autoClosedAt\"},{\"name\":\"botActor\"},{\"name\":\"branchName\"},{\"name\":\"canceledAt\"},{\"name\":\"children\"},{\"name\":\"comments\"},{\"name\":\"documents\"},{\"name\":\"completedAt\"},{\"name\":\"createdAt\"},{\"name\":\"creator\"},{\"name\":\"customerTicketCount\"},{\"name\":\"cycle\"},{\"name\":\"delegate\"},{\"name\":\"description\"},{\"name\":\"descriptionState\"},{\"name\":\"documentContent\"},{\"name\":\"dueDate\"},{\"name\":\"estimate\"},{\"name\":\"externalUserCreator\"},{\"name\":\"favorite\"},{\"name\":\"formerAttachments\"},{\"name\":\"formerNeeds\"},{\"name\":\"history\"},{\"name\":\"id\"},{\"name\":\"identifier\"},{\"name\":\"incomingSuggestions\"},{\"name\":\"integrationSourceType\"},{\"name\":\"inverseRelations\"},{\"name\":\"labelIds\"},{\"name\":\"labels\"},{\"name\":\"lastAppliedTemplate\"},{\"name\":\"needs\"},{\"name\":\"number\"},{\"name\":\"parent\"},{\"name\":\"previousIdentifiers\"},{\"name\":\"priority\"},{\"name\":\"priorityLabel\"},{\"name\":\"prioritySortOrder\"},{\"name\":\"project\"},{\"name\":\"projectMilestone\"},{\"name\":\"reactionData\"},{\"name\":\"reactions\"},{\"name\":\"recurringIssueTemplate\"},{\"name\":\"relations\"},{\"name\":\"slaBreachesAt\"},{\"name\":\"slaHighRiskAt\"},{\"name\":\"slaMediumRiskAt\"},{\"name\":\"slaStartedAt\"},{\"name\":\"slaType\"},{\"name\":\"snoozedBy\"},{\"name\":\"snoozedUntilAt\"},{\"name\":\"sortOrder\"},{\"name\":\"sourceComment\"},{\"name\":\"startedAt\"},{\"name\":\"startedTriageAt\"},{\"name\":\"state\"},{\"name\":\"subIssueSortOrder\"},{\"name\":\"subscribers\"},{\"name\":\"suggestions\"},{\"name\":\"suggestionsGeneratedAt\"},{\"name\":\"syncedWith\"},{\"name\":\"team\"},{\"name\":\"title\"},{\"name\":\"trashed\"},{\"name\":\"triagedAt\"},{\"name\":\"updatedAt\"},{\"name\":\"url\"}]}}}",
+        "is_error": false
+      }
+    },
+    {
+      "turn": 1,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -s -X POST https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: <TOKEN>' -d '{\"query\":\"{ team(id: \\\"t-plt\\\") { workflowStates(first: 50) { nodes { id name type position } } } }\"}'"
+      },
+      "action": "curl -s -X POST https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: <TOKEN>' -d '{\"query\":\"{ team(id: \\\"t-plt\\\") { workflowStates(first: 50) { nodes { id name type position } } } }\"}'",
+      "text": "",
+      "thinking": "Now, I'll query the open issues in the Platform team's current cycle (cy-p14). \"Open\" = not done/canceled/completed. I need the workflowStates of the Platform team to know which states are \"open\". Let me query the issues with filterSet, or by specifying cycleId in the issues query. Let's try querying issues with a filter for cycle.",
+      "usage": {
+        "input": 11385,
+        "output": 172,
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "reasoningTokens": 80,
+        "totalTokens": 11557,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "stdout": "{\"errors\":[{\"message\":\"Cannot query field 'workflowStates' on type 'Team'. Did you mean 'draftWorkflowState', 'mergeWorkflowState', or 'startWorkflowState'?\",\"locations\":[{\"line\":1,\"column\":23}]}]}",
+        "is_error": false
+      }
+    },
+    {
+      "turn": 1,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -s -X POST https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: <TOKEN>' -d '{\"query\":\"{ workflowStates(teamId: \\\"t-plt\\\") { nodes { id name type position } } }\"}'"
+      },
+      "action": "curl -s -X POST https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: <TOKEN>' -d '{\"query\":\"{ workflowStates(teamId: \\\"t-plt\\\") { nodes { id name type position } } }\"}'",
+      "text": "",
+      "thinking": "Query the Platform team's workflow states by some other method — the top-level `workflowStates(teamId: ...)` probably exists.",
+      "usage": {
+        "input": 11547,
+        "output": 111,
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "reasoningTokens": 27,
+        "totalTokens": 11658,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "stdout": "{\"errors\":[{\"message\":\"Unknown argument 'teamId' on field 'Query.workflowStates'.\",\"locations\":[{\"line\":1,\"column\":18}]}]}",
+        "is_error": false
+      }
+    },
+    {
+      "turn": 1,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -s -X POST https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: <TOKEN>' -d '{\"query\":\"{ cycle(id: \\\"cy-p14\\\") { id name team { id key } issues { nodes { id identifier title estimate dueDate state { id name type } } } } }\"}'"
+      },
+      "action": "curl -s -X POST https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: <TOKEN>' -d '{\"query\":\"{ cycle(id: \\\"cy-p14\\\") { id name team { id key } issues { nodes { id identifier title estimate dueDate state { id name type } } } } }\"}'",
+      "text": "",
+      "thinking": "Let me check the arguments for the workflowStates query. Also, first let's grab the issues within the current cycle. Let me try querying the issues for cycle cy-p14 (the active cycle for team t-plt).",
+      "usage": {
+        "input": 11677,
+        "output": 148,
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "reasoningTokens": 47,
+        "totalTokens": 11825,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "stdout": "{\"data\":null,\"errors\":[{\"message\":\"Cannot return null for non-nullable field IssueConnection.nodes.\",\"locations\":[{\"line\":1,\"column\":58}],\"path\":[\"cycle\",\"issues\",\"nodes\"]}]}",
+        "is_error": false
+      }
+    },
+    {
+      "turn": 1,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -s -X POST https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: <TOKEN>' -d '{\"query\":\"{ cycle(id: \\\"cy-p14\\\") { id name issues(filter: {AND: []}) { nodes { id identifier title estimate dueDate state { id name type } } } } }\"}'"
+      },
+      "action": "curl -s -X POST https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: <TOKEN>' -d '{\"query\":\"{ cycle(id: \\\"cy-p14\\\") { id name issues(filter: {AND: []}) { nodes { id identifier title estimate dueDate state { id name type } } } } }\"}'",
+      "text": "",
+      "thinking": "The cycle's issues query needs a filter. Let me try issues(filter:).",
+      "usage": {
+        "input": 11834,
+        "output": 120,
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "reasoningTokens": 17,
+        "totalTokens": 11954,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "stdout": "{\"errors\":[{\"message\":\"Field 'AND' is not defined by type 'IssueFilter'. Did you mean 'and' or 'id'?\",\"locations\":[{\"line\":1,\"column\":49}]}]}",
+        "is_error": false
+      }
+    },
+    {
+      "turn": 1,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -s -X POST https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: <TOKEN>' -d '{\"query\":\"{ issues(first: 200, where: {team: {key: \\\"PLT\\\"}}) { nodes { id identifier title estimate dueDate cycle { id name } state { id name type } } } }\"}'"
+      },
+      "action": "curl -s -X POST https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: <TOKEN>' -d '{\"query\":\"{ issues(first: 200, where: {team: {key: \\\"PLT\\\"}}) { nodes { id identifier title estimate dueDate cycle { id name } state { id name type } } } }\"}'",
+      "text": "",
+      "thinking": "The filter for cycle issues failed because `filter: {AND: []}` is invalid. The earlier error was \"Cannot return null for non-nullable field IssueConnection.nodes.\" — strange, the issue nodes are null. Probably need to explicitly pass filter. Let me try fetching all issues on the team and filtering by cycle.\n\nLet me query all issues on team t-plt, specifying cycle id, estimate, dueDate, state.",
+      "usage": {
+        "input": 11992,
+        "output": 198,
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "reasoningTokens": 89,
+        "totalTokens": 12190,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "stdout": "{\"errors\":[{\"message\":\"Unknown argument 'where' on field 'Query.issues'.\",\"locations\":[{\"line\":1,\"column\":22}]}]}",
+        "is_error": false
+      }
+    },
+    {
+      "turn": 1,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -s -X POST https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: <TOKEN>' -d '{\"query\":\"{ __schema { queryType { fields { name args { name type { name kind ofType { name kind ofType { name kind ofType { name } } } } } } } } }\"}' | python3 -m json.tool | grep -A2 '\"name\": \"issues\"' "
+      },
+      "action": "curl -s -X POST https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: <TOKEN>' -d '{\"query\":\"{ __schema { queryType { fields { name args { name type { name kind ofType { name kind ofType { name kind ofType { name } } } } } } } } }\"}' | python3 -m json.tool | grep -A2 '\"name\": \"issues\"' ",
+      "text": "",
+      "thinking": "Let me check the arguments for Query.issues. In the Linear API, `issues(filter:)` is used. I'll introspect it.",
+      "usage": {
+        "input": 12147,
+        "output": 148,
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "reasoningTokens": 30,
+        "totalTokens": 12295,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "stdout": "\"name\": \"issues\",\n                        \"args\": [\n                            {",
+        "is_error": false
+      }
+    },
+    {
+      "turn": 1,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -s -X POST https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: <TOKEN>' -d '{\"query\":\"{ issues(first: 200, filter: {team: {key: {eq: \\\"PLT\\\"}}, cycle: {id: {eq: \\\"cy-p14\\\"}}}) { nodes { id identifier title estimate dueDate cycle { id name } state { id name type } } } }\"}'"
+      },
+      "action": "curl -s -X POST https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: <TOKEN>' -d '{\"query\":\"{ issues(first: 200, filter: {team: {key: {eq: \\\"PLT\\\"}}, cycle: {id: {eq: \\\"cy-p14\\\"}}}) { nodes { id identifier title estimate dueDate cycle { id name } state { id name type } } } }\"}'",
+      "text": "",
+      "thinking": "The filter argument is `filter` of type IssueFilter. IssueFilter probably has team {key}, cycle {id}, estimate, dueDate, and state {type}. Let's try constructing it.",
+      "usage": {
+        "input": 12296,
+        "output": 168,
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "reasoningTokens": 41,
+        "totalTokens": 12464,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "stdout": "{\"data\":{\"issues\":{\"nodes\":[{\"id\":\"i-plt-1\",\"identifier\":\"PLT-1\",\"title\":\"Rotate service credentials\",\"estimate\":5.0,\"dueDate\":\"2026-09-15\",\"cycle\":{\"id\":\"cy-p14\",\"name\":\"Cycle 14\"},\"state\":{\"id\":\"t-plt-st-1\",\"name\":\"Todo\",\"type\":\"unstarted\"}},{\"id\":\"i-plt-2\",\"identifier\":\"PLT-2\",\"title\":\"Split the billing worker\",\"estimate\":8.0,\"dueDate\":\"2026-09-20\",\"cycle\":{\"id\":\"cy-p14\",\"name\":\"Cycle 14\"},\"state\":{\"id\":\"t-plt-st-2\",\"name\":\"In Progress\",\"type\":\"started\"}},{\"id\":\"i-plt-5\",\"identifier\":\"PLT-4\",\"title\":\"Tune database pool sizes\",\"estimate\":3.0,\"dueDate\":\"2026-09-15\",\"cycle\":{\"id\":\"cy-p14\",\"name\":\"Cycle 14\"},\"state\":{\"id\":\"t-plt-st-1\",\"name\":\"Todo\",\"type\":\"unstarted\"}},{\"id\":\"i-plt-6\",\"identifier\":\"PLT-5\",\"title\":\"Remove legacy queue\",\"estimate\":5.0,\"dueDate\":\"2026-09-10\",\"cycle\":{\"id\":\"cy-p14\",\"name\":\"Cycle 14\"},\"state\":{\"id\":\"t-plt-st-4\",\"name\":\"Done\",\"type\":\"completed\"}},{\"id\":\"i-plt-7\",\"identifier\":\"PLT-6\",\"title\":\"Add request tracing\",\"estimate\":5.0,\"dueDate\":\"2026-09-30\",\"cycle\":{\"id\":\"cy-p14\",\"name\":\"Cycle 14\"},\"state\":{\"id\":\"t-plt-st-1\",\"name\":\"Todo\",\"type\":\"unstarted\"}}]}}}",
+        "is_error": false
+      }
+    },
+    {
+      "turn": 1,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -s -X POST https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: <TOKEN>' -d '{\"query\":\"mutation { issueUpdate(input: {id: \\\"i-plt-1\\\", cycleId: \\\"cy-p15\\\"}) { success issue { identifier cycle { name } } } }\"}'"
+      },
+      "action": "curl -s -X POST https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: <TOKEN>' -d '{\"query\":\"mutation { issueUpdate(input: {id: \\\"i-plt-1\\\", cycleId: \\\"cy-p15\\\"}) { success issue { identifier cycle { name } } } }\"}'",
+      "text": "Found the matching issues: **PLT-1** (5 pts, due Sep 15, Todo) and **PLT-2** (8 pts, due Sep 20, In Progress). PLT-5 is Done (not open), PLT-4 is 3 pts, and PLT-6 isn't due until Sep 30. Moving both to Cycle 15 (Sep 28 – Oct 11):",
+      "thinking": "Today is 2026-09-23. Open issues in cycle 14 (active), with estimated points of 5 or more, and past due date:\n\n- PLT-1: 5 pts, due 2026-09-15, Todo (open) → past due ✓\n- PLT-2: 8 pts, due 2026-09-20, In Progress (open) → past due ✓\n- PLT-4: 3 pts → excluded\n- PLT-5: 5 pts, due 2026-09-10, Done → not open\n- PLT-6: 5 pts, due 2026-09-30 → future\n\nSo PLT-1 and PLT-2 move to cycle 15 (cy-p15).\n\nCheck the arguments for issueUpdate.",
+      "usage": {
+        "input": 12838,
+        "output": 396,
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "reasoningTokens": 200,
+        "totalTokens": 13234,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "stdout": "{\"errors\":[{\"message\":\"Field 'id' is not defined by type 'IssueUpdateInput'.\",\"locations\":[{\"line\":1,\"column\":32}]},{\"message\":\"Field 'issueUpdate' argument 'id' of type 'String!' is required, but it was not provided.\",\"locations\":[{\"line\":1,\"column\":12}]}]}",
+        "is_error": false
+      }
+    },
+    {
+      "turn": 1,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -s -X POST https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: <TOKEN>' -d '{\"query\":\"mutation { issueUpdate(id: \\\"i-plt-1\\\", input: {cycleId: \\\"cy-p15\\\"}) { success issue { identifier cycle { name } } } }\"}'"
+      },
+      "action": "curl -s -X POST https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: <TOKEN>' -d '{\"query\":\"mutation { issueUpdate(id: \\\"i-plt-1\\\", input: {cycleId: \\\"cy-p15\\\"}) { success issue { identifier cycle { name } } } }\"}'",
+      "text": "",
+      "thinking": "This mock API uses issueUpdate(id: String!, input: IssueUpdateInput).",
+      "usage": {
+        "input": 13118,
+        "output": 118,
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "reasoningTokens": 17,
+        "totalTokens": 13236,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "stdout": "{\"data\":{\"issueUpdate\":{\"success\":true,\"issue\":{\"identifier\":\"PLT-1\",\"cycle\":{\"name\":\"Cycle 15\"}}}}}",
+        "is_error": false
+      }
+    },
+    {
+      "turn": 1,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -s -X POST https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: <TOKEN>' -d '{\"query\":\"mutation { issueUpdate(id: \\\"i-plt-2\\\", input: {cycleId: \\\"cy-p15\\\"}) { success issue { identifier cycle { name } } } }\"}'"
+      },
+      "action": "curl -s -X POST https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: <TOKEN>' -d '{\"query\":\"mutation { issueUpdate(id: \\\"i-plt-2\\\", input: {cycleId: \\\"cy-p15\\\"}) { success issue { identifier cycle { name } } } }\"}'",
+      "text": "",
+      "thinking": "Wait, I need to double-check PLT-1: estimate 5.0 ≥ 5 ✓, due date 2026-09-15 < 2026-09-23 ✓, state is Todo (open) ✓. PLT-2: 8.0 ✓, due date 2026-09-20 ✓, In Progress ✓. PLT-6's due date of 2026-09-30 is after today, so no change. Moving on to the next one.",
+      "usage": {
+        "input": 13264,
+        "output": 223,
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "reasoningTokens": 122,
+        "totalTokens": 13487,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "stdout": "{\"data\":{\"issueUpdate\":{\"success\":true,\"issue\":{\"identifier\":\"PLT-2\",\"cycle\":{\"name\":\"Cycle 15\"}}}}}",
+        "is_error": false
+      }
+    },
+    {
+      "turn": 1,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -s -X POST https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: <TOKEN>' -d '{\"query\":\"{ issues(first: 200, filter: {team: {key: {eq: \\\"PLT\\\"}}, cycle: {id: {eq: \\\"cy-p15\\\"}}}) { nodes { identifier title estimate dueDate state { name } cycle { name } } } }\"}'"
+      },
+      "action": "curl -s -X POST https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: <TOKEN>' -d '{\"query\":\"{ issues(first: 200, filter: {team: {key: {eq: \\\"PLT\\\"}}, cycle: {id: {eq: \\\"cy-p15\\\"}}}) { nodes { identifier title estimate dueDate state { name } cycle { name } } } }\"}'",
+      "text": "",
+      "thinking": "Quick check.",
+      "usage": {
+        "input": 13410,
+        "output": 127,
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "reasoningTokens": 4,
+        "totalTokens": 13537,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "stdout": "{\"data\":{\"issues\":{\"nodes\":[{\"identifier\":\"PLT-1\",\"title\":\"Rotate service credentials\",\"estimate\":5.0,\"dueDate\":\"2026-09-15\",\"state\":{\"name\":\"Todo\"},\"cycle\":{\"name\":\"Cycle 15\"}},{\"identifier\":\"PLT-2\",\"title\":\"Split the billing worker\",\"estimate\":8.0,\"dueDate\":\"2026-09-20\",\"state\":{\"name\":\"In Progress\"},\"cycle\":{\"name\":\"Cycle 15\"}},{\"identifier\":\"PLT-3\",\"title\":\"Migrate cron jobs\",\"estimate\":8.0,\"dueDate\":\"2026-09-10\",\"state\":{\"name\":\"Todo\"},\"cycle\":{\"name\":\"Cycle 15\"}}]}}}",
+        "is_error": false
+      }
+    },
+    {
+      "turn": 1,
+      "tool": null,
+      "text": "Done. Summary:\n\n**Platform team, Cycle 14 (Sep 14–27) → Cycle 15 (Sep 28–Oct 11):**\n- ✅ **PLT-1** — Rotate service credentials (5 pts, due Sep 15, Todo)\n- ✅ **PLT-2** — Split the billing worker (8 pts, due Sep 20, In Progress)\n\nLeft alone:\n- **PLT-5** \"Remove legacy queue\" (5 pts, due Sep 10) — already **Done**, so not open\n- **PLT-4** (3 pts) — under the 5-point threshold\n- **PLT-6** (5 pts) — not due until Sep 30\n\nVerified after the move: Cycle 15 now contains PLT-1 and PLT-2 (plus PLT-3, which was already in Cycle 15 — it wasn't in the current cycle so I didn't touch it).",
+      "thinking": "Wait a minute — PLT-3 \"Migrate cron jobs\" has an estimate of 8 points, due date 2026-09-10, state is Todo, and it's now showing up in Cycle 15. But when I queried Cycle 14 earlier, only 5 issues came back: PLT-1, 2, 4, 5, 6. PLT-3 wasn't in the list of Cycle 14 issues. Hmm, was PLT-3 already in Cycle 15? Or… was it in some other cycle? Let me check — in the earlier Cycle 14 query, only those 5 nodes came back. Maybe PLT-3 was already in Cycle 15 (uncycled or in a future cycle). I need to verify whether PLT-3 was in the current cycle (Cycle 14). The Cycle 14 query returned exactly 5 issues, and PLT-3 wasn't among them. So PLT-3 was already in Cycle 15 before my changes. No problem — I didn't move it.\n\nLet me double-check whether it was originally in Cycle 15… it's now in Cycle 15. It wasn't in the Cycle 14 list. Could it have been uncycled? If it had been uncycled, the Cycle 14 query wouldn't have returned it, and it wouldn't be showing up in Cycle 15 either. It's showing up in Cycle 15, and I only moved 2 issues (neither of which was PLT-3). So it must have originally been in Cycle 15. But wait — is PLT-3's state \"open\"? It's in Cycle 15, which is a future cycle, so no problem. It wasn't in the current cycle, so it's outside the scope of this task.\n\nAll verified. Done.",
+      "usage": {
+        "input": 13705,
+        "output": 623,
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "reasoningTokens": 405,
+        "totalTokens": 14328,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      }
+    }
+  ],
+  "followup_steps": []
+}

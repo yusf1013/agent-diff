@@ -1,0 +1,1 @@
+Done — removed your 🔥 (fire) reaction from Elena's message in the #product-launch channel (the launch readiness channel). Confirmed it was the only fire reaction there, posted by you, and `reactions.remove` returned ok.

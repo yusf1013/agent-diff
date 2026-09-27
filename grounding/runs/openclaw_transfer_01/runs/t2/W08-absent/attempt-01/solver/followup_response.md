@@ -1,0 +1,1 @@
+Done — removed your 🔥 from Elena's message in `#product-launch` ("The vendor review is at 2pm on Thursday in the Maple room."). Verified it's no longer there. Priya's vendor review message in `#general` still has your 🔥 if that was actually the one you meant.

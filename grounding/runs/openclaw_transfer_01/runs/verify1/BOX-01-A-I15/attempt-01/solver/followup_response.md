@@ -1,0 +1,1 @@
+Done — added the `q3-close` tag to `Q3 vendor summary.pdf` (id 1006) in `Finance Archive`. Confirmed the API response shows `tags: ["q3-close"]`, and it's the file owned by Maya Chen with Leo Park as last modifier.

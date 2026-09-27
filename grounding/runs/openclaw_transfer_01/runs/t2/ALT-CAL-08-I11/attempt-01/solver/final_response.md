@@ -1,0 +1,1 @@
+I checked your primary calendar — there are no events at all around the coming Wednesday (June 20), so there's no dentist appointment to delete. If it's scheduled further out or on a different calendar, let me know and I'll dig deeper.

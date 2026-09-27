@@ -1,0 +1,1 @@
+Done. The Design sync that was moved to this week — now Wednesday, June 20, 10:00–10:30 AM — is set to **Room 4C**. I patched only that single occurrence, so the rest of the weekly series (Room 2A) is unchanged.

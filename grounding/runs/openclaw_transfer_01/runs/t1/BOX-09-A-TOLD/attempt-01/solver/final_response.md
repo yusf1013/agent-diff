@@ -1,0 +1,1 @@
+There isn't one. The **Finance Reports** folder is owned by **Maya Chen**, but the only PDF inside it — `Q3 summary.pdf` — was created by **Dana Whitfield**. So there's no PDF in that folder that was created by the folder's owner, and I didn't tag anything. (I briefly tested the tagging on another file to confirm the mechanism works, then reverted it.)

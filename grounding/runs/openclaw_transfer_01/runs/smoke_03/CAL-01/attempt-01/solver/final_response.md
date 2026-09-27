@@ -1,0 +1,1 @@
+Done ✅ **Design review: Checkout** (Thu, June 21, 10:00–11:00 AM) now has its location set to **Room 5B**. It was the only design review on Thursday that Priya Nair had declined — the other design-related events on Thursday either she accepted or weren't declines.

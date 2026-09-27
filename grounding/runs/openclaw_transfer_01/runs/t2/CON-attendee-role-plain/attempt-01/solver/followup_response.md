@@ -1,0 +1,1 @@
+Done — "Design review: Billing" (Thursday June 21, 12:00–12:30 PT) now has its location set to **Room 5B**, and the change was sent to the attendees. Attendee responses were preserved (Omar declined, you accepted).

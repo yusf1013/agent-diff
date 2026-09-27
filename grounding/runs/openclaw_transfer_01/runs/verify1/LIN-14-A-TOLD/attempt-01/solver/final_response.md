@@ -1,0 +1,1 @@
+There isn't one. I searched the whole workspace — the Infra team's only open issue is **INF-1 "Rotate the database credentials"**, and there are no issues anywhere matching "certificate"/"expiry", so I didn't change anything. If you want me to create a new Infra issue about certificate expiry (with Urgent priority), just say so.

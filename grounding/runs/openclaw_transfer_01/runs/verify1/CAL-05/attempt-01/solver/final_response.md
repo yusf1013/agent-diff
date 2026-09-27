@@ -1,0 +1,1 @@
+Done. Deleted the "Focus time" event from Friday, June 22 — 9:00–11:00 AM, Library (private, shown as free). That was the only event matching all your criteria; I left the other Friday focus blocks alone.

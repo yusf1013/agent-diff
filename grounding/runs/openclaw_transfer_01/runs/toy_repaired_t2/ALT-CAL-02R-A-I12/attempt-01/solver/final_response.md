@@ -1,0 +1,1 @@
+There isn't a Tuesday session of the Platform sync that Omar Haddad organizes. His series (`ev_psync`) meets on Wednesday (June 20 this week). The Tuesday (June 19) "Platform sync" that shows up on the calendar belongs to a different series organized by Dana Whitfield. No cancellation was made.

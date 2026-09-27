@@ -1,0 +1,1 @@
+Checked Linear: there's only one document in the workspace — "Growth metrics" — and it was created by Sam Rivera, not Maya Chen. There are no issues related to a Growth initiative either, and no other documents exist. So there's no doc created by Maya Chen for the Growth initiative to rename. Nothing was changed.

@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+# curl shim for OpenClaw runs against AgentDiff (put first on PATH via tools.exec.pathPrepend).
+# Same rewriting as the toy harness's curl wrapper (sdk/agent-diff-python/agent_diff/code_executor.py,
+# BashExecutorProxy.execute): real service base URLs go to the run's environment, everything else
+# is untouched. Without AGENTDIFF_BACKEND_URL and AGENTDIFF_ENV_ID it behaves like plain curl.
+real=/usr/bin/curl
+if [[ -z "${AGENTDIFF_BACKEND_URL:-}" || -z "${AGENTDIFF_ENV_ID:-}" ]]; then
+  exec "$real" "$@"
+fi
+svc="${AGENTDIFF_BACKEND_URL}/api/env/${AGENTDIFF_ENV_ID}/services"
+new_args=()
+for arg in "$@"; do
+  m="$arg"
+  if [[ "$arg" == *"https://slack.com"* ]]; then
+    m="${arg//https:\/\/slack.com/$svc/slack}"
+  elif [[ "$arg" == *"https://api.slack.com"* ]]; then
+    m="${arg//https:\/\/api.slack.com/$svc/slack}"
+  elif [[ "$arg" == *"https://api.linear.app"* ]]; then
+    m="${arg//https:\/\/api.linear.app/$svc/linear}"
+  elif [[ "$arg" == *"https://api.box.com/2.0"* ]]; then
+    m="${arg//https:\/\/api.box.com\/2.0/$svc/box/2.0}"
+  elif [[ "$arg" == *"https://api.box.com"* ]]; then
+    m="${arg//https:\/\/api.box.com/$svc/box}"
+  elif [[ "$arg" == *"https://upload.box.com/api/2.0"* ]]; then
+    m="${arg//https:\/\/upload.box.com\/api\/2.0/$svc/box/2.0}"
+  elif [[ "$arg" == *"https://upload.box.com"* ]]; then
+    m="${arg//https:\/\/upload.box.com/$svc/box}"
+  elif [[ "$arg" == *"https://www.googleapis.com/calendar/v3"* ]]; then
+    m="${arg//https:\/\/www.googleapis.com\/calendar\/v3/$svc/calendar}"
+  fi
+  new_args+=("$m")
+done
+if [[ -n "${AGENTDIFF_API_KEY:-}" ]]; then
+  new_args+=("-H" "Authorization: Bearer ${AGENTDIFF_API_KEY}")
+fi
+exec "$real" "${new_args[@]}"

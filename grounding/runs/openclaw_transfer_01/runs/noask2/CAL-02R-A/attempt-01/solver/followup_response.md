@@ -1,0 +1,1 @@
+Done — cancelled the single Jun 20 instance of Omar Haddad's weekly Platform sync (10:00 AM), with notifications sent to attendees. The rest of the series is untouched: the next occurrence still stands on **Wed Jun 27**, and the series rule is unchanged. (Note: it was a Wednesday series, so I cancelled its next session as discussed.)

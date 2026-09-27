@@ -1,0 +1,1 @@
+Done — the Brand guidelines folder (Maya Chen's) is now in the Marketing hub, which now contains Q4 campaign and Brand guidelines. Note Launch assets is still not in the hub, in case you want to look into that separately.

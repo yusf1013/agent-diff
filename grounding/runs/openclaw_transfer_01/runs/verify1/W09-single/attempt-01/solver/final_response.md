@@ -1,0 +1,1 @@
+The bot in #incident-response is **WatcherBot** (U_WATCHER), and its profile shows the **T_ATLAS** workspace (team `T_ATLAS`, Slack URL https://T_ATLAS.slack.com/ — its email is u_watcher@atlas.example, so the workspace is "atlas"). This is the same workspace you're currently in.

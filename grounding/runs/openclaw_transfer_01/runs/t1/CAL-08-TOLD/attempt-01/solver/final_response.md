@@ -1,0 +1,1 @@
+No dentist appointment on a Wednesday in your primary calendar — the only one is on **Thursday, June 21 at 9:00–10:00 AM**. Nothing to delete. Want me to remove the Thursday one instead, or was a specific Wednesday in mind?
