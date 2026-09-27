@@ -522,7 +522,34 @@ is left out by the review rule: AT-G4-CAL-01-I15, whose near miss is contestable
 units and 11 clones, 201 trials, 05:56 to about 07:45. 16 trials timed out, all Linear (the scenarios whose
 conditions go through the replica's failing `projects` and nested-attachment reads), and were retried. The analysis
 is the one amendment 7 declared before the run: per cell, drop-F units and clones apart, per scenario, and a check
-of the eight decisions. *Pending: the judge, then the analysis.*
+of the eight decisions ([runs/phase4/batch1_policy.analysis.json](runs/phase4/batch1_policy.analysis.json)):
+
+| Cell | Twins failing (one draw per unit) | Drop-F units failing | Clones failing |
+|---|---:|---:|---:|
+| Box | 9/9 | 8/8 | 1/1 |
+| Calendar | 9/10 | 9/9 | 4/4 |
+| Linear | 6/6 | 4/4 (1 unit void) | 3/3 |
+| Slack | 5/5 | 4/4 | 3/3 |
+
+- **The new scenarios confirm all eight decisions.** No cell's units come near contradicting its decision: the
+  check needed at most 5 failures of 9 or 10, and every cell fails nearly all. The bounds are descriptive, because
+  the units are all the variants of 14 chosen scenarios, not independent draws.
+- **The trials:**
+  - **Twins:** 88 of 90 fail. The two passes are both of G4-CAL-03's primary-calendar twin: Qwen read only the
+    primary calendar and never saw the near misses on the other calendars.
+  - **Drop-F units:** 73 of 75 usable trials fail. Four are void: 3 of a Linear unit whose nested attachment reads
+    the replica fails, 1 that ran out of turns after noting several matches. There is 1 false absence: Qwen read
+    Linear priority 2 as Medium.
+  - **Clones:** all 33 trials fail.
+  - **Asks:** none in 108 underspecified trials.
+- **The automated clones behave like the hand-made ones** (Phase 1: 47 of 48 trials fail). These are the first
+  automated clones to run: Qwen acts on one copy, or on both, and never asks.
+- **Per scenario:** 13 of the 14 scenarios fail on every unit. G4-CAL-03 is the exception, with the twin above.
+- **The pair reading of the twins** (against their fact's probes in batch 1's regular run): policy 14, fact-level
+  16. For 14 facts Qwen passes the probe, which carries "If there isn't one, just tell me", but fails the twin: it
+  can check the fact, and acts anyway when the request presupposes a match. For 16 it fails the probe too.
+- **Judge v2 on the run's blind sample** (30 trials, labelled before any verdict): 30/30; precision and recall
+  29/29, with the same exposed fact in 29 of 29.
 
 ## 7. Against the manual standard
 
