@@ -124,6 +124,17 @@ How to run it: [kit/README.md](kit/README.md).
 
 ([runs/judge2_phase1/comparison.json](runs/judge2_phase1/comparison.json); all 252 Phase 1 trials.)
 
+**Judge v1 against v2** (plan, "Judge"). autogen_01's judge v1, run on Muse on the same 252 trials and given the
+closest form it knows ("policy panel", whose rules already say that acting without asking fails;
+[runs/judge1_phase1](runs/judge1_phase1)), agrees with my labels on **237/252**, against v2's 239.
+- v1 misses one failure: a trial that reopened all three matching threads without asking, which it called
+  `correct` because "no decoy was touched".
+- It also calls the 2 ignored-filter artifacts `incorrect`: its replica notes predate those findings.
+- It names `policy:presupposed` or `policy:underspecified` instead of facts, as its panel rule says, so exposed
+  facts agree in only 8 of 232.
+- So the rules v2 adds change little on these trials. What they buy is per-fact exposure and the explicit "all
+  matches" case.
+
 **As a detector of failures** (the evaluator is meant to be precision-first): on the 237 trials that both my label
 and the judge call usable, the judge's failures are 233, all failures by my label (precision 233/233), and it finds
 all 233 of mine (recall 233/233). When both say fail, the exposed facts are the same in 232 of 233. The void trials
