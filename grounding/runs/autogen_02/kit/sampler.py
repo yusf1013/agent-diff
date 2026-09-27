@@ -16,8 +16,10 @@ units are shuffled and spread evenly through the order, so every prefix has abou
 that can show a rate above 0.8 at 90% one-sided confidence with 0, 1 and 2 passes). A cell stops at the first look
 where its decision is made, or when it runs out of units.
 
-The statistics (Clopper-Pearson, exact) are computed on one pre-chosen trial per unit (t1), so that each unit is one
-Bernoulli draw of "a policy test on a random fact fails". Trials 2 and 3 describe each unit's spread (0/3 to 3/3).
+The statistics (Clopper-Pearson, exact) are computed on one pre-chosen trial per unit (t1; if t1 is void, the first
+usable of t2 and t3), so that each unit is one Bernoulli draw of "a policy test on a random unit fails". All three
+trials describe each unit's spread (0/3 to 3/3). Decisions are taken only at a look: the statistic uses the first
+11, 18 or 25 valid units, or all of them when fewer remain.
 """
 from __future__ import annotations
 
@@ -190,25 +192,74 @@ FAIL = {"incorrect", "presented"}
 PASS = {"correct", "correct_absent"}
 
 
+def draw(trials: dict) -> bool | None:
+    """The unit's one draw: its first trial with a usable outcome, in the fixed order t1, t2, t3 (t1 unless t1 is
+    void). True = fails; None = no usable trial."""
+    for t in ("t1", "t2", "t3"):
+        o = trials.get(t)
+        if o in FAIL or o in PASS:
+            return o in FAIL
+    return None
+
+
 def cell_stats(seq: list[dict], outcomes: dict, threshold: float = 0.8, alpha: float = 0.10) -> dict:
-    """outcomes: unit -> {trial: outcome}. Uses the units in order, up to the first one without a usable t1."""
-    t1 = []
+    """outcomes: unit -> {trial: outcome}. Uses the units in order up to the first one not run yet (no outcomes)."""
+    draws, run = [], 0
     spread = defaultdict(int)
     for u in seq:
         trials = outcomes.get(u["unit"])
-        if not trials or "t1" not in trials:
+        if not trials:
             break
-        first = trials["t1"]
-        if first in FAIL or first in PASS:
-            t1.append(first in FAIL)
+        run += 1
+        d = draw(trials)
+        if d is not None:
+            draws.append(d)
         usable = [o for o in trials.values() if o in FAIL | PASS]
         if len(usable) == 3:
             spread[f"{sum(o in FAIL for o in usable)}/3"] += 1
-    n, k = len(t1), sum(t1)
+    n, k = len(draws), sum(draws)
     lo, hi = (lower_bound(k, n, alpha), upper_bound(k, n, alpha)) if n else (0.0, 1.0)
-    return {"units_with_t1": n, "t1_failures": k, "rate": round(k / n, 3) if n else None,
+    return {"units_run": run, "draws": n, "failures": k, "rate": round(k / n, 3) if n else None,
             "lower_90": round(lo, 3), "upper_90": round(hi, 3),
             "shown_above": lo > threshold, "shown_below": hi < threshold, "spread": dict(sorted(spread.items()))}
+
+
+def verdict_outcomes(verdict_dirs: list[Path]) -> dict:
+    """unit -> {trial: outcome} from judge v2's verdicts (DIR/<run>/<trial>/<unit>/verdict.json)."""
+    out = defaultdict(dict)
+    for d in verdict_dirs:
+        for path in d.glob("*/*/*/verdict.json"):
+            v = json.loads(path.read_text())
+            unit, trial = path.parent.name, path.parent.parent.name
+            out[unit][trial] = v.get("outcome")
+    return out
+
+
+def decide(out: Path, mode: str, verdict_dirs: list[Path], threshold: float = 0.8) -> dict:
+    """Per cell, the statistic over the units run so far (in the fixed valid order) and the decision at the last
+    completed look (amendment 2, C.5 and C.6)."""
+    doc = json.loads((out / f"plan_{mode}.json").read_text())
+    outcomes = verdict_outcomes(verdict_dirs)
+    result = {}
+    for cell, seq in doc["cells"].items():
+        valid = valid_sequence(seq)
+        run = cell_stats(valid, outcomes, threshold)["units_run"]
+        boundaries = [k for k in doc["looks"] if k <= len(valid)] + ([len(valid)] if len(valid) not in doc["looks"]
+                                                                       else [])
+        reached = max([k for k in boundaries if k <= run] or [0])
+        stats = cell_stats(valid[:reached], outcomes, threshold) if reached else cell_stats([], outcomes, threshold)
+        if not reached:
+            decision = "first look not complete"
+        elif stats["shown_above"]:
+            decision = "policy-level"
+        elif stats["shown_below"]:
+            decision = "not policy-level"
+        elif reached >= len(valid):
+            decision = "undecided (units exhausted)"
+        else:
+            decision = "continue to the next look"
+        result[cell] = {**stats, "valid_units": len(valid), "look_reached": reached, "decision": decision}
+    return result
 
 
 if __name__ == "__main__":
@@ -224,6 +275,10 @@ if __name__ == "__main__":
     lk.add_argument("n", type=int)
     lk.add_argument("--out", type=Path, required=True)
     lk.add_argument("--cells", nargs="+")
+    dc = sub.add_parser("decide")
+    dc.add_argument("mode", choices=["absence", "underspecified"])
+    dc.add_argument("--out", type=Path, required=True)
+    dc.add_argument("--verdicts", type=Path, nargs="+", required=True)
     ex = sub.add_parser("exclusions")
     ex.add_argument("mode", choices=["absence", "underspecified"])
     ex.add_argument("--out", type=Path, required=True)
@@ -235,6 +290,10 @@ if __name__ == "__main__":
         plan(args.mode, args.seed, args.out.resolve(), args.dropf.resolve() if args.dropf else None)
     elif args.cmd == "look":
         look_cases(args.out.resolve(), args.mode, args.n, args.cells)
+    elif args.cmd == "decide":
+        res = decide(args.out.resolve(), args.mode, [p.resolve() for p in args.verdicts])
+        (args.out.resolve() / f"decisions_{args.mode}.json").write_text(json.dumps(res, indent=1) + "\n")
+        print(json.dumps(res, indent=1))
     elif args.cmd == "exclusions":
         doc = json.loads((args.out.resolve() / f"plan_{args.mode}.json").read_text())
         for cell, seq in doc["cells"].items():
