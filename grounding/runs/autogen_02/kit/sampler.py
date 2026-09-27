@@ -140,9 +140,34 @@ def plan(mode: str, seed: int, out: Path, dropf_dir: Path | None = None, looks=L
     print(f"excluded: {len(excluded)}")
 
 
+VALIDITY = STUDY.parent / "autogen_01" / "eval" / "validity.json"
+
+
+def review_exclusion(unit: dict) -> str | None:
+    """Why autogen_01's manual validity review rules this unit out, or None (amendment 2, C.9). An absence unit goes
+    when any of its near misses is invalid or contestable (under presupposition, acting on a contestable near miss
+    may be the reasonable reading); an underspecified unit goes when any near miss left in its seed is invalid (a
+    record that in fact fits), or when the scenario is invalid."""
+    review = json.loads(VALIDITY.read_text()).get(unit["scenario"], {})
+    if review.get("verdict") == "invalid":
+        return f"scenario {unit['scenario']} invalid in autogen_01's review"
+    case = json.loads((STUDY / "runs" / "phase3" / "units" / unit["domain"] / f"{unit['unit']}.json").read_text())
+    witnesses = {str(c["witness"]) for c in case["references"][0]["claims"]}
+    for w, verdict in review.get("decoys", {}).items():
+        if w not in witnesses:
+            continue
+        if verdict.startswith("invalid") or (unit["mode"] == "absence" and verdict.startswith("contestable")):
+            return f"near miss {w}: {verdict[:160]}"
+    return None
+
+
+def valid_sequence(seq: list[dict]) -> list[dict]:
+    return [u for u in seq if not review_exclusion(u)]
+
+
 def look_cases(out: Path, mode: str, look: int, cells: list[str] | None = None) -> Path:
-    """Copy the cases of look `look` (units between the previous look and this one) into
-    out/<mode>_look<N>/<domain>/."""
+    """Copy the cases of look `look` (the cell's valid units between the previous look and this one, in the fixed
+    order) into out/<mode>_look<N>/<domain>/."""
     doc = json.loads((out / f"plan_{mode}.json").read_text())
     looks = [0] + doc["looks"]
     dest = out / f"{mode}_look{look}"
@@ -150,7 +175,7 @@ def look_cases(out: Path, mode: str, look: int, cells: list[str] | None = None) 
     for cell, seq in doc["cells"].items():
         if cells and cell not in cells:
             continue
-        for u in seq[looks[look - 1]:looks[look]]:
+        for u in valid_sequence(seq)[looks[look - 1]:looks[look]]:
             src = out / "units" / u["domain"] / f"{u['unit']}.json"
             (dest / u["domain"]).mkdir(parents=True, exist_ok=True)
             (dest / u["domain"] / src.name).write_text(src.read_text())
@@ -199,6 +224,9 @@ if __name__ == "__main__":
     lk.add_argument("n", type=int)
     lk.add_argument("--out", type=Path, required=True)
     lk.add_argument("--cells", nargs="+")
+    ex = sub.add_parser("exclusions")
+    ex.add_argument("mode", choices=["absence", "underspecified"])
+    ex.add_argument("--out", type=Path, required=True)
     b = sub.add_parser("bounds")
     b.add_argument("k", type=int)
     b.add_argument("n", type=int)
@@ -207,5 +235,12 @@ if __name__ == "__main__":
         plan(args.mode, args.seed, args.out.resolve(), args.dropf.resolve() if args.dropf else None)
     elif args.cmd == "look":
         look_cases(args.out.resolve(), args.mode, args.n, args.cells)
+    elif args.cmd == "exclusions":
+        doc = json.loads((args.out.resolve() / f"plan_{args.mode}.json").read_text())
+        for cell, seq in doc["cells"].items():
+            for u in seq:
+                why = review_exclusion(u)
+                if why:
+                    print(f"{cell} #{u['position']} {u['unit']}: {why}")
     else:
         print(f"{args.k}/{args.n}: lower {lower_bound(args.k, args.n):.3f}, upper {upper_bound(args.k, args.n):.3f}")

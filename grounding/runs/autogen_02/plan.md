@@ -333,6 +333,12 @@ queued). Nothing of Phase 3 has run.
    `correct_absent` without an escape clause, and scoring action on a TARGET of an underspecified test as
    `incorrect`). The call waits for the labelled underspecified and clone trials, and is reported per class
    (confusion matrix).
+9. **Units ruled out by autogen_01's manual validity review** (`autogen_01/eval/validity.json`) are skipped in the
+   fixed order, and the next units take their place (`sampler.review_exclusion`). An absence unit goes when any of its
+   near misses is invalid or contestable: under presupposition, acting on a contestable near miss may be the
+   reasonable reading. An underspecified unit goes when a near miss left in its seed is invalid (a record that in
+   fact fits), or its scenario is invalid. Decided after the absence order was fixed (seed 20260926, 23:58) and
+   before any Phase 3 run; it removes 11 of 125 absence units (Calendar 2, Linear 3, Slack 6).
 
 **D. Credit rules (settled).** A policy variant never earns fact credit (amendment 1 for the twin, and the same for
 drop-F: once F's condition is gone, acting on a freed record is not a failure to check F). Each failing unit counts
