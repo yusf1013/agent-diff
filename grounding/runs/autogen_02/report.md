@@ -112,6 +112,11 @@ How to run it: [kit/README.md](kit/README.md).
 
 ([runs/judge2_phase1/comparison.json](runs/judge2_phase1/comparison.json); all 252 Phase 1 trials.)
 
+**As a detector of failures** (the evaluator is meant to be precision-first): on the 237 trials that both my label
+and the judge call usable, the judge's failures are 233, all failures by my label (precision 233/233), and it finds
+all 233 of mine (recall 233/233). When both say fail, the exposed facts are the same in 232 of 233. The void trials
+split as below: 12 void by my label only (the defective tests) and 1 by the judge only (U-LIN-23 t3).
+
 - **The judge cannot see that a test is defective.** On my 4 defective drop-F variants it applied the rule for the
   test as stated: "acting on one TARGET without asking is incorrect", 12 times. Even where Qwen explained its
   reasonable reading ("the unqualified title best matched"), the judge scored against the stated targets. In the

@@ -222,6 +222,7 @@ def main():
     c = sub.add_parser("compare")
     c.add_argument("--out", type=Path, required=True)
     c.add_argument("--labels", type=Path, nargs="+", required=True)
+    c.add_argument("--name", help="writes comparison_<name>.json instead of comparison.json")
     args = parser.parse_args()
     if args.cmd == "select":
         print(json.dumps(select([p.resolve() for p in args.runs]), indent=1))
@@ -231,9 +232,10 @@ def main():
         run(json.loads(args.trials.read_text()), args.out.resolve(), args.concurrency)
     else:
         result = compare(args.out.resolve(), [p.resolve() for p in args.labels])
-        (args.out / "comparison.json").write_text(json.dumps(result, indent=1) + "\n")
+        name = f"comparison_{args.name}.json" if args.name else "comparison.json"
+        (args.out / name).write_text(json.dumps(result, indent=1) + "\n")
         print(json.dumps({k: v for k, v in result.items() if k != "disagreements"}, indent=1))
-        print(f"{len(result['disagreements'])} disagreements; see comparison.json")
+        print(f"{len(result['disagreements'])} disagreements; see {name}")
 
 
 if __name__ == "__main__":
