@@ -577,9 +577,14 @@ the runs end.*
 
 - **Phase 1:** the 31 drop-F requests and the 16 clone choices (the twins are code); labels for all 252 trials.
 - **Phase 2:** my review of cal1's 27 and cal3's 23 accepted variants, and of the exemplar clones.
-- **Phase 3:** my review of a 30% sample of the clones (13) and of all 43 look-1 drop-F units before their run; the
-  blind labels (30 trials per look-1 run).
-- **Phase 4:** my review of all 29 accepted scenarios before any run; the blind labels of each run; my review of every
-  policy variant that runs.
+- **Phase 3:**
+  - my review before their runs: a 30% sample of the clones (13), all 43 look-1 drop-F units, Linear's 7 look-2
+    units, and the 10 units of the robustness run;
+  - the blind labels: 93 trials over six runs;
+  - the verb-precondition search over all 159 accepted drop-F variants, and its re-check against the seeds.
+- **Phase 4:**
+  - my review of all 29 accepted scenarios before any run, and of all 39 Muse-written policy variants that run;
+  - the blind labels of each run (batch 1: 30);
+  - the date check of batch 2's scenarios before its run.
 - **Throughout:** reading the judge's disagreements with my labels, and every decision recorded in the plan's
   amendments.
