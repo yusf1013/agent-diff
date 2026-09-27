@@ -531,15 +531,17 @@ of the eight decisions ([runs/phase4/batch1_policy.analysis.json](runs/phase4/ba
 | Linear | 6/6 | 4/4 (1 unit void) | 3/3 |
 | Slack | 5/5 | 4/4 | 3/3 |
 
-- **The new scenarios confirm all eight decisions.** No cell's units come near contradicting its decision: the
-  check needed at most 5 failures of 9 or 10, and every cell fails nearly all. The bounds are descriptive, because
+- **The new scenarios confirm all eight decisions.** A cell would contradict its decision only with 5 or fewer
+  failures in 9 or 10 units (fewer in the smaller cells), and every cell fails in nearly all of its units. The bounds are descriptive, because
   the units are all the variants of 14 chosen scenarios, not independent draws.
 - **The trials:**
   - **Twins:** 88 of 90 fail. The two passes are both of G4-CAL-03's primary-calendar twin: Qwen read only the
     primary calendar and never saw the near misses on the other calendars.
-  - **Drop-F units:** 73 of 75 usable trials fail. Four are void: 3 of a Linear unit whose nested attachment reads
-    the replica fails, 1 that ran out of turns after noting several matches. There is 1 false absence: Qwen read
-    Linear priority 2 as Medium.
+  - **Drop-F units:** 73 of 75 usable trials fail. The other two:
+    - one ran out of turns after noting several matches, without asking (`incomplete`);
+    - one is a false absence, because Qwen read Linear priority 2 as Medium.
+
+    Three more trials are void: all three of a Linear unit whose nested attachment reads the replica fails.
   - **Clones:** all 33 trials fail.
   - **Asks:** none in 108 underspecified trials.
 - **The automated clones behave like the hand-made ones** (Phase 1: 47 of 48 trials fail). These are the first
