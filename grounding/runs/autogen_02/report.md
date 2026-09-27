@@ -77,16 +77,29 @@ How to run it: [kit/README.md](kit/README.md).
 **Clones (48 trials, 16 scenarios).**
 - **47 of 48 fail;** the other is a false absence (UC-BOX-21 t2 read "the folder Leo Park last modified" as a folder
   name).
-- **No trial asks which record is meant.** Qwen acts on one match, or on both: it granted both calendars in
-  UC-CAL-22 in all three trials, and changed both issues in UC-LIN-26.
+- **No trial asks which record is meant.** Qwen acts on one match (33 trials), or on both (9): it granted both
+  calendars in UC-CAL-22 in all three trials, and changed both issues in UC-LIN-26 (state diffs, tables.md).
 - **5 trials act on a near miss instead** (UC-BOX-24 ×3, UC-LIN-23 t3, UC-SLK-21 t1): fact-level failures that the
   second match exposed.
 - **The pair with the cover:** for 14 of the 16 scenarios Qwen passes the cover in the same-day control run (it
   finds the one target) but fails the clone. The failure appears once a second match exists.
 
-**Drop-F (93 trials, 31 variants).** *Pending, labelling in progress:* so far every trial acts without asking. The
-exception is my own variant U-BOX-23-File_extension, labelled a defective test. "The contract file" need not
-cover "Initech pricing.docx", which is the reason the Muse writer gave for declining that variant (§4).
+**Drop-F (93 trials, 31 variants, all labelled by me before any verdict).**
+- **80 of 81 usable trials fail;** the other is `incomplete` (U-LIN-23 t3 posted a new comment and reopened no
+  thread). **No trial asks which record is meant.** From the state diffs: 66 act on one match, 8 on several
+  or all, and 6 on a near miss (U-BOX-24, whose cover Qwen fails too).
+- **12 trials are void (`artifact`), from 4 of my 31 hand-made variants, which are defective tests:**
+  - U-BOX-23-File_extension: "the contract file" need not cover "Initech pricing.docx";
+  - U-CAL-23's two variants: "Friday's architecture review" can mean the event titled exactly so, which leaves one
+    match (Qwen said so in all six trials);
+  - U-LIN-24: "the Engineering team's cycle" naturally means the team's current cycle, again one match.
+  The automation flagged 3 of the 4 (the writer declined the first; the reader rejected U-CAL-23's two; §4).
+- **The pair with the cover:** for 23 variants Qwen passes the scenario's cover but fails the variant, so the failure
+  is the policy's. For 4 it fails the cover too (U-BOX-24 ×3, U-LIN-23), and the 4 defective variants have no result.
+- **Decision D7 (amendment 1 §2): the other near misses left in the seed change nothing.** The fear was that a
+  variant fails only because a distractor draws Qwen. Variants with 0 to 4 other near misses fail alike (5 of 6,
+  9/9, 24/24, 33/33, 9/9 trials; the one non-failure is the `incomplete` trial). With no pass anywhere there is no
+  effect to find, so the cover's seed stays the variant's seed.
 
 ## 2.4 Judge v2 against my Phase 1 labels
 

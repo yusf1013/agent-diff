@@ -126,10 +126,52 @@ def analyse() -> dict:
     return {"facts": facts, "cells": summary}
 
 
+def actions(run_dir: Path) -> dict:
+    """What each finished trial of a policy run did to the record the request asks about, from the state diff alone
+    (the triage's `acted` on the first reference; mechanical, so a trial that asks and one that gives up both show
+    as "no change"). Returns trial key -> category:
+    - absence: "near miss", "other record" (a record that is not a near miss, e.g. one Qwen created), "no change";
+    - underspecified: "near miss", "all matches", "some matches", "one match", "no change"."""
+    from grounding.runs.autogen_02.kit.judge2 import triage
+    from grounding.runs.autogen_01.kit import judge as v1
+    out = {}
+    for summary in sorted(run_dir.glob("t*/*/attempt-*/execution_summary.json")):
+        attempt = summary.parent
+        trial, case_id = attempt.parts[-3], attempt.parts[-2]
+        if attempt != v1.latest(run_dir, trial, case_id) or json.loads(summary.read_text()).get("status") != "completed":
+            continue
+        case, _, tri = triage(run_dir.name, trial, attempt)
+        refs = tri.get("references") or []
+        if not refs:
+            continue
+        r = refs[0]
+        acted, expected = set(r["acted"]), set(r["expected"])
+        if acted - expected:
+            cat = "near miss" if r["exposed"] else "other record"
+        elif not acted:
+            cat = "no change"
+        elif acted == expected:
+            cat = "all matches" if len(expected) > 1 else "the target"
+        else:
+            cat = "one match" if len(acted) == 1 else "some matches"
+        out[f"{run_dir.name}/{trial}/{case_id}"] = cat
+    return out
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--json", type=Path)
+    parser.add_argument("--actions", type=Path, nargs="+", help="run folders: print what their trials did instead")
+    parser.add_argument("--each", action="store_true", help="with --actions: one line per trial")
     args = parser.parse_args()
+    if args.actions:
+        from collections import Counter
+        for run_dir in args.actions:
+            got = actions(run_dir.resolve())
+            print(run_dir.name, len(got), dict(Counter(got.values()).most_common()))
+            if args.each:
+                print("\n".join(f"  {k} {v}" for k, v in sorted(got.items())))
+        return
     result = analyse()
     for r in result["facts"]:
         extra = f" probe {r.get('probe_fails')}/{r.get('probe_n')} -> {r.get('reading')}" if r["mode"] == "absence" else ""
