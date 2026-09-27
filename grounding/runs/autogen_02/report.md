@@ -42,17 +42,18 @@ system** ([plan.md](plan.md), decisions N7–N15 in [decisions.md](decisions.md)
   (11/11), Slack at the third (23/25); underspecified in Box, Calendar and Slack at the first look (11/11), Linear
   at the second (17/18). So one absence test and one underspecified test per domain carry the whole policy result.
   Per-fact policy tests add nothing, which is the no-redundancy rule's question.
-- **Seven of the eight hold up under a robustness check; Slack absence is borderline.** Three decisions each
-  rested on one flawed test, found while labelling blind trials:
+- **All eight hold up.** Three decisions each rested on one test found flawed or contestable while I labelled
+  blind trials:
   - two drop-F variants whose verb implies the dropped condition ("hide ... the calendar", but only listed
     calendars can be hidden);
   - one absence twin whose member count depends on counting the acting bot.
 
-  A robustness check, declared before it ran (amendment 6), ran the next 7 units of each cell without the flawed
-  test:
+  A robustness check, declared before it ran (amendment 6), ran the next 7 units of each cell without that test:
   - **Calendar and Slack underspecified:** 17 of 17 fail, lower bound 0.87. Robust.
-  - **Slack absence:** 28 of 31 fail, a rate of 0.90 but a lower bound of 0.797, just short of 0.8. Not robust.
-    The three units it passes are all about who posted a message and where, which Qwen reliably checks.
+  - **Slack absence:** 28 of 31 fail without the bot-count test, a lower bound of 0.797. The PI then ruled that
+    test valid, since the bot is a member as the writer and Slack's API count it: 29 of 32, lower bound 0.803,
+    policy-level. The three units it passes are all about who posted a message and where, which Qwen reliably
+    checks.
 - **The new scenarios' policy tests confirm the decisions** (amendment 7): 88 of 90 absence trials, 73 of 75
   drop-F trials and all 33 clone trials fail, with no ask.
 - **What Qwen does:** under a presupposition it acts on the nearest record (121 of 132 absence trials at look 1),
@@ -64,7 +65,8 @@ system** ([plan.md](plan.md), decisions N7–N15 in [decisions.md](decisions.md)
 - **The judge is precise, and its errors are the tests' errors.** On 93 blind Phase 3 trials, judge v2 agrees with my
   labels in 87. As a detector of failures its precision is 85/86 and its recall 85/85, with the same exposed fact in
   85 of 85. Four of the six disagreements are defective or contestable tests, which the judge cannot flag. The
-  other two are borderline absence reports. On the 80 blind trials since then (batch 1, its policy run, the two
+  other two are borderline absence reports. By the PI's ruling on the bot-count test, three of those were my errors:
+  90 of 93, precision 88/89, recall 88/88. On the 80 blind trials since then (batch 1, its policy run, the two
   robustness runs) it agrees in all 80.
 - **The automation's quality problems are specific and fixable:**
   - 3 of 159 accepted drop-F variants are degenerate in that way (a verb-precondition check would catch them);
@@ -85,7 +87,7 @@ system** ([plan.md](plan.md), decisions N7–N15 in [decisions.md](decisions.md)
 | Automated drop-F: every accepted variant passes the code checks | all (cal3) | yes |
 | Automated drop-F: at least 90% valid and natural in my review | cal3 22/23 (96%) | yes |
 | Policy-level definition fixed before any Phase 3 run | amendment 2, 23:49–23:54 | yes |
-| Judge v2 on the blind samples (precision and recall; no bar set) | Phase 3 looks: 87/93 agreement; precision 85/86, recall 85/85. Batch 1: 30/30 (9/9, 9/9). Its policy run: 30/30 (29/29, 29/29). Robustness runs: 10/10 and 10/10 (17/17, 17/17). Batch 2: *pending* | – |
+| Judge v2 on the blind samples (precision and recall; no bar set) | Phase 3 looks: 87/93 agreement; precision 85/86, recall 85/85 (90/93, 88/89, 88/88 with the ruling on the bot-count test). Batch 1: 30/30 (9/9, 9/9). Its policy run: 30/30 (29/29, 29/29). Robustness runs: 10/10 and 10/10 (17/17, 17/17). Batch 2: *pending* | – |
 
 ## 1. The system, and what is automated
 
@@ -325,6 +327,10 @@ failures, never as filters. The reasons:
   as registered, but it rests on the contestable unit. Counted as a failure (the data's and the writer's reading:
   Slack counts the bot as a member), the same 32 units give 29 of 32, lower bound 0.803, above the bar. **The Slack
   absence decision turns on whether the acting bot counts as a member.**
+- **Ruling (the PI, 08:54): the bot counts,** as the writer counted it and as Slack's API counts it. The unit is
+  valid, and Slack absence is policy-level over all 32 units run: 29 of 32, lower bound 0.803
+  ([eval/phase3_review.json](eval/phase3_review.json), "rulings"). My three `artifact` labels stay as written; by
+  the ruling they were wrong, and the judge's `incorrect` was right.
 - **Slack absence has a fact-level exception.** The three units that never fail all have near misses that differ in
   who posted the message or in which channel: Leo's reply that is Omar's (AR-SLK-22), Leo's Tuesday message that
   is Diego's or Omar's, and the same message posted in #eng-standup or #war-room (AR-SLK-21). 0 failures in 9
@@ -651,8 +657,9 @@ the runs end.*
 - **Member counts include the acting bot.** The bot is a member of every channel in the generated Slack seeds, so
   that it can read them, and the writers count it. "Exactly four members" then depends on whether a reader counts
   the assistant's own account. Of the 6 member-count tests that ran, only AT-AP-SLK-05-I13-I14 flips with the
-  reading; in the others, every near miss fails under both. **The fix:** a code check that flags any count
-  condition whose answer changes when the acting account is left out.
+  reading; in the others, every near miss fails under both. The PI ruled that the bot counts, as the writers and
+  Slack's API count it. **The fix:** a code check that flags any count condition whose answer changes when the
+  acting account is left out, so that the writer states the count unambiguously ("four people").
 - **Two more scenario flaws my pre-run review missed** (found while labelling batch 2's blind trials; recorded in
   [eval/phase4_review.json](eval/phase4_review.json), with the review itself unchanged):
   - **G4-CAL-06:** every event carries a Los Angeles time zone, even on the New-York-time calendar. Qwen judged
