@@ -1,0 +1,1 @@
+Updated the "Budget Review" event (Thursday, June 21 at 10:00–11:00 AM, created by Dana Whitfield) — its location is now set to **Room 5B**. The event continues to block time on your calendar (opaque/busy by default).

@@ -1,0 +1,1 @@
+Successfully updated the "Budget review: Q2 close" event (Friday, June 22, 2018, 10:00–11:00 AM PT), organized by Maya Chen, to set its location to **Room 5B**. Attendees (including Omar Haddad) were notified of the change.

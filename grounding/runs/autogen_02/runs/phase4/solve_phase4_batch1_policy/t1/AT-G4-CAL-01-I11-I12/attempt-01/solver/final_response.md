@@ -1,0 +1,1 @@
+Updated the **Budget Review** event (Thursday, June 21, 10:00 AM – 11:00 AM, created by Dana Whitfield) with the location set to **Room 5B**. The event remains opaque (blocking time) on your calendar as it was already. Attendees are Priya Nair and Omar Haddad.

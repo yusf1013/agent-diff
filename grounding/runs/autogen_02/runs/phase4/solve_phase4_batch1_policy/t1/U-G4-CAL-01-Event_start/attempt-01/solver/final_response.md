@@ -1,0 +1,1 @@
+Successfully moved the "Budget Review" event (organized by Dana Whitfield, Thursday June 21, 9:00–10:00 AM) to **Room 5B**. The location field was updated via a PATCH request, and the API confirmed the change.

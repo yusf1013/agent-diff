@@ -1,0 +1,1 @@
+Successfully set the color of the "Sprint retrospective" event in Room 5B, created by Kenji Sato (Kenji Satou), to red (colorId "1"). The event (ID: ev_decoy_creator) was updated and the API confirmed the change.

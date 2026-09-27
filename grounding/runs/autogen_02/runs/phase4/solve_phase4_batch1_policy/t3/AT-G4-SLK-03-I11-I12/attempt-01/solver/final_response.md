@@ -1,0 +1,1 @@
+Successfully added the "eyes" reaction to Diego Alvarez's latest message in #deployments: "Gateway rollback halfway done, reverting the remaining pods." (timestamp 1789994100.000004, posted at 12:40).

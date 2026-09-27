@@ -1,0 +1,1 @@
+Successfully set the estimate to 5 on the "Checkout crash on Safari" issue (WEB-4). The issue was identified as the one with the "Crash log" link from PagerDuty uploaded by Maya Chen, and the update was confirmed by the API returning `success: true` with `estimate: 5.0`.

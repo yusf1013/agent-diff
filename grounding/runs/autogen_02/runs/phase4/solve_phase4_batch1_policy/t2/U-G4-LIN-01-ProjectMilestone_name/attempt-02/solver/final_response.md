@@ -1,0 +1,1 @@
+Successfully updated the description of the project "Atlas" (p-atlas) — the high-priority, at-risk project with a milestone due December 2, 2026 — to "Pivoting to usage-based pricing". The API confirmed the update with success: true.

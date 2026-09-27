@@ -1,0 +1,1 @@
+Successfully set the color of the "Sprint retrospective" event (ID: ev_target) in Room 5B, created by Kenji Sato, to red (colorId "1" / Tomato). The event is on the primary calendar, scheduled for June 21, 2018 from 10:00 AM to 11:00 AM.

@@ -1,0 +1,1 @@
+Successfully added an "eyes" reaction to Maya Chen's release checklist message ("The release checklist is locked in, everything is approved for Thursday's deploy.") in #launch-plan (C_LAUNCH). This was the message that Diego Alvarez had previously reacted to with a thumbsup reaction.

@@ -1,0 +1,1 @@
+Successfully updated the "Sprint retrospective" event (created by Kenji Sato) to red color (colorId "11", hex #dc2127). The event was found on the primary calendar and its color was changed via a PATCH request.

@@ -1,0 +1,1 @@
+Successfully set the color of the "Sprint retrospective" event (created by Kenji Sato, referencing Room 5B) to red by updating its colorId to "11" (background #dc2127). The event ID is `ev_decoy_location` on the primary calendar.

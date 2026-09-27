@@ -1,0 +1,1 @@
+Successfully set the color of the "Sprint retrospective" event in Room 5B to red (colorId "11"). The event (ID: ev_target) on June 21, 2018 from 10:00-11:00 AM in Room 5B now has the red color applied.

@@ -1,0 +1,1 @@
+Successfully updated the "Budget Review" event (Thursday, June 21 at 10 AM, organized by Dana Whitfield) to have the location set to "Room 5B". The event is confirmed as blocking (opaque) on your calendar.

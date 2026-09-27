@@ -1,0 +1,1 @@
+Successfully updated the "Budget Review" event on Thursday, June 21, 2018 (9:00 AM – 10:00 AM PT), organized by Dana Whitfield, to set its location to **Room 5B**. The event remains blocking time (opaque) and all other details (attendees, organizer, etc.) are unchanged.

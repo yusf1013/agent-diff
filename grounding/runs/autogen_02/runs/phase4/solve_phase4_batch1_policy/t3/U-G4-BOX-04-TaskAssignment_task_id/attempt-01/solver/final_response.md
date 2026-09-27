@@ -1,0 +1,1 @@
+Successfully added the tag "q3-signoff" to "Q3 budget review packet.pdf" (ID: 8101) in the Budget Reviews folder. This was the PDF file that had a review task ("Please review the Q3 budget figures"). The API response confirms the file now has `tags: ["q3-signoff"]`.

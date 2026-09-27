@@ -1,0 +1,1 @@
+Successfully moved the "Budget review: Q2 close" event on Friday, June 22, 2018 (organized by Maya Chen) to Room 5B. The event is now set from 10:00 AM to 11:00 AM PDT with the location updated to "Room 5B".

@@ -1,0 +1,1 @@
+Successfully added the tag "q3-signoff" to "Q3 budget actuals.pdf" (file ID: 8103) in the Budget Reviews folder. This was identified as the PDF with a review task (task ID: 9103, "Please review the Q3 budget figures"). The API response confirms the tag is now applied.

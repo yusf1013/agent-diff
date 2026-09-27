@@ -1,0 +1,1 @@
+Successfully updated the description of the Harbor Mobile project (the high-priority, at-risk project with a milestone due December 2, 2026) to "Pivoting to usage-based pricing". The API confirmed the update was successful.

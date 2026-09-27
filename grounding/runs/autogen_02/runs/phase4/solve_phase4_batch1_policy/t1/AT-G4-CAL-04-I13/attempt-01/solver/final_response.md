@@ -1,0 +1,1 @@
+Successfully moved the budget review event ("Budget sync: Q2 close") organized by Maya Chen, scheduled for Friday June 22, 2018 at 10:00 AM, to **Room 5B**. The location has been updated on the primary calendar.

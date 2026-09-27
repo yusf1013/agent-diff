@@ -1,0 +1,1 @@
+Successfully updated the description of the "Harbor Mobile" project (p-harbor) to 'Pivoting to usage-based pricing'. This was the high-priority (priority: 2/High), at-risk project that has a Meridian milestone and a milestone due December 2, 2026 ("Harbor Launch"). The API confirmed the update was successful.

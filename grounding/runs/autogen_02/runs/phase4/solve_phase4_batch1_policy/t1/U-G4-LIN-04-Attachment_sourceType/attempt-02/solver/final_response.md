@@ -1,0 +1,1 @@
+Successfully set the estimate to 5 on the "Checkout crash on Safari" issue (WEB-3) created by Maya Chen. The issue was identified as the one created by Maya Chen among the four issues with the same title, and the estimate was updated from null to 5.
