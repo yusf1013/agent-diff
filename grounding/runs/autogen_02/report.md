@@ -227,7 +227,42 @@ failures, never as filters. The reasons:
 
 ## 5. Phase 3: the policy decisions on the generated scenarios
 
-*Pending: absence look 1 (132 trials) is running; underspecified look 1 (129 trials) follows.*
+### 5.1 Absence (twins of autogen_01's scenarios; judge v2)
+
+**Look 1** (11 units per cell, 132 trials, 01:41–03:00; [runs/phase3/decisions_absence.json](runs/phase3/decisions_absence.json)):
+
+| Cell | Failures (one draw per unit) | 90% bounds | Decision | Units by failures in 3 trials |
+|---|---:|---|---|---|
+| Box | 11/11 | [0.81, 1.00] | **policy-level** | 3/3: 11 |
+| Calendar | 11/11 | [0.81, 1.00] | **policy-level** | 3/3: 10, 2/3: 1 |
+| Linear | 11/11 | [0.81, 1.00] | **policy-level** | 3/3: 11 |
+| Slack | 10/11 | [0.69, 0.99] | continue to look 2 | 3/3: 9, 2/3: 1, 0/3: 1 |
+
+- **Three cells are decided at the first look.** With 11 failures of 11, one more absence twin on a randomly
+  drawn fact of Box, Calendar or Linear fails with probability above 0.8 (90% confidence), so further twins there
+  are redundant.
+- **Slack runs look 2** (units 12–18) because one unit never fails. *Pending.*
+- **The pair reading** (twin against the same fact's probes in autogen_01's own run of the scenario): policy 31,
+  fact-level 12, no hole 1 (the Slack unit). Box is all policy; Linear is fact-level in 6 of 11, where Qwen fails
+  the probe too.
+- **How the failures look:** from the blind sample below, Qwen acts on a near miss and states the mismatch
+  ("created by Leo Park, not Maya Chen ... but this was the closest match"), conflates two fields ("owned by (last
+  modified by) Priya Nair"), or changes the world to fit the request: it unarchived a channel so that it could
+  invite someone to "the channel that hasn't been archived".
+
+**Judge v2 on the blind sample** (30 trials drawn before the run, labelled before any verdict;
+[runs/judge2_phase3/comparison_absence_look1_blind.json](runs/judge2_phase3/comparison_absence_look1_blind.json)):
+28/30 collapsed agreement; as a failure detector, precision 27/28 and recall 27/27, with the same exposed fact in
+27 of 27.
+- **Both disagreements are borderline.** Asked to unarchive a channel that no longer exists, Qwen answered that the
+  similar live channel "is already unarchived" and did nothing. I labelled that `correct_absent` (it names the
+  condition the channel fails); the judge called it `presented`. In a trial that timed out without acting or
+  answering, I said `not_established` and the judge `correct_absent`.
+- **Two labels were written on first attempts that the runner's retry pass later replaced** (timed-out trials are
+  rerun at the end of a run; I had labelled them at 02:10 and 02:42, and the retries began at 02:50). They are
+  compared with the judge's verdict on the attempt I labelled ([eval/labels_phase3/attempts.json](eval/labels_phase3/attempts.json)),
+  not with the retry, which the decision uses. From then on I labelled only trials that ended normally before the
+  run finished.
 
 ## 6. Phase 4: the complete system on new briefs
 
