@@ -310,7 +310,10 @@ failures, never as filters. The reasons:
 - **What Qwen does instead** (state diffs, 129 trials): it acts on one match in 93, on all of them in 30, on some
   in 1, on a near miss in 1, and changes nothing in 4. "The one" is usually the first it finds; the other matches
   are not mentioned.
-- **Linear look 2** (units 12–18, reviewed valid before the run) is running. *Pending.*
+- **Linear look 2** (units 12–18, reviewed valid before the run, 21 trials, 04:14–04:25): all 7 fail, so 17 of 18
+  draws, bounds [0.80, 0.99]: **policy-level** (lower bound 0.801). In 2 of the 7 units Qwen changed every match
+  and said so ("Two matching cycles were found ... both were updated"). Its blind sample agrees with the judge 10/10.
+- **So all four underspecified cells are policy-level,** Calendar and Slack subject to the robustness check.
 
 **Judge v2 on the blind sample** (30 trials of look 1 plus the 3 of the Calendar completion run, labelled before any
 verdict; [runs/judge2_phase3/comparison_underspecified_look1_blind.json](runs/judge2_phase3/comparison_underspecified_look1_blind.json)):
