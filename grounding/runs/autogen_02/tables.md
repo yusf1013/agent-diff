@@ -297,6 +297,17 @@ autogen_01's arms (Sonnet-written scenarios, judged by judge v1) are the referen
 | slack | 34 | 7 | 22 | 9 | 31 | 91% |
 | all | 255 | 36 | 82 | 58 | 139 | 55% |
 
+**By kind of fact** (automated = autogen_01's or Phase 4's generated scenarios):
+
+| Kind | Catalog facts | Hand-made scenarios | Automated scenarios | Union | Share | Left out as replica gaps |
+|---|---|---|---|---|---|---|
+| A (attribute) | 142 | 19 | 79 | 79 | 56% | 23 |
+| R (relation) | 65 | 13 | 32 | 32 | 49% | 14 |
+| B (binding) | 24 | 0 | 14 | 14 | 58% | 1 |
+| D (derived) | 15 | 2 | 10 | 10 | 67% | 1 |
+| H (hierarchy) | 9 | 2 | 4 | 4 | 44% | 3 |
+| all | 255 | 36 | 139 | 139 | 55% | 42 |
+
 ## Purdue usage per solve run (Qwen; every attempt, retries included)
 
 | Run | Attempts | Completed | Requests | Retries | Input tokens | Output tokens | Wall hours (first start to last end) |
@@ -314,8 +325,8 @@ autogen_01's arms (Sonnet-written scenarios, judged by judge v1) are the referen
 | phase3/solve_underspecified_look2_robustness | 30 | 30 | 170 | 41 | 1,168,026 | 66,201 | 0.2 |
 | phase4/solve_phase4_batch1 | 221 | 221 | 1350 | 365 | 8,290,445 | 399,502 | 1.3 |
 | phase4/solve_phase4_batch1_policy | 217 | 217 | 1985 | 431 | 13,800,030 | 628,518 | 1.9 |
-| phase4/solve_phase4_batch2 | 261 | 80 | 383 | 149 | 2,124,630 | 106,248 | 0.4 |
-| all | 1356 | 1175 | 9600 | 2295 |  |  | 9.3 |
+| phase4/solve_phase4_batch2 | 261 | 127 | 618 | 185 | 4,488,672 | 182,897 | 0.6 |
+| all | 1356 | 1222 | 9835 | 2331 |  |  | 9.5 |
 
 ## Muse usage per component and role (list and billed)
 

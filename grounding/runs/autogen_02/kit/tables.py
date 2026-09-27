@@ -308,6 +308,23 @@ def coverage():
            + md(["Domain", "Catalog facts"] + list(sources) + ["Union", "Share"], rows))
     if off_catalog:
         out += f"\n\nFact ids outside the catalog (not counted): {', '.join(sorted(off_catalog))}."
+    # by kind of fact: A attribute, R relation, B binding, D derived, H hierarchy; automated = autogen_01 or Phase 4
+    kinds = {"A": "attribute", "R": "relation", "B": "binding", "D": "derived", "H": "hierarchy"}
+    excluded = json.loads((STUDY / "inputs" / "briefs_phase4.excluded.json").read_text())  # domain -> fact ids
+    excluded_ids = {f"{d}:{f}" for d, facts in excluded.items() for f in facts}
+    krows = []
+    for k, name in kinds.items():
+        cat = {f"{d}:{f}" for d, facts in catalog.items() for f in facts if f.startswith(k + ":")}
+        got = {n: {f"{d}:{f}" for d in catalog for f in tested[n][d] if f"{d}:{f}" in cat} for n in sources}
+        auto = got["autogen_01 (Sonnet)"] | got["Phase 4 (Muse)"]
+        union = auto | got["fact_coverage_02 (hand)"]
+        krows.append([f"{k} ({name})", len(cat), len(got["fact_coverage_02 (hand)"]), len(auto), len(union),
+                      f"{len(union) / len(cat):.0%}", len(cat & excluded_ids)])
+    tot = [sum(r[i] for r in krows) for i in range(1, 5)]  # catalog, hand, automated, union
+    krows.append(["all", *tot, f"{tot[3] / tot[0]:.0%}", sum(r[6] for r in krows)])
+    out += ("\n\n**By kind of fact** (automated = autogen_01's or Phase 4's generated scenarios):\n\n"
+            + md(["Kind", "Catalog facts", "Hand-made scenarios", "Automated scenarios", "Union", "Share",
+                  "Left out as replica gaps"], krows))
     return out
 
 
