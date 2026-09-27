@@ -418,12 +418,17 @@ reader, code checks; [runs/phase4_dropf](runs/phase4_dropf), [runs/phase4_clone]
 | Variant | Attempted | Accepted | Declined by the writer | Rejected | Not derivable |
 |---|---:|---:|---:|---:|---:|
 | Absence twin (code) | 62 pairs | 61 | – | 1 by the code check | – |
-| Drop-F (one per condition) | 59 conditions | 52 (51 distinct; 47 in one round, 5 in two or three) | 4 | 1 by the reader | 2 (scope D2) |
+| Drop-F | 59 attempts (one per fact, except three facts carried by another fact's condition) | 52 (51 distinct conditions; 47 in one round, 5 in two or three) | 4 | 1 by the reader | 2 (scope D2) |
 | Clone (one per scenario) | 29 | 25 | 3 | 1 by the code check | – |
 
-- **55 of the 62 pairs have their own accepted drop-F variant** (57 counting a variant that drops the fact together
-  with another). The 51 distinct conditions: Calendar 17, Box 14, Linear 14, Slack 6. Two accepted variants
-  drop the same condition (G4-CAL-04's start time carries two facts), and the order holds it once.
+- **55 of the 62 pairs have an accepted drop-F variant,** the count fixed in amendment 5:
+  - 52 have a variant built for them;
+  - 2 share one built for another fact of the same condition;
+  - 1 is dropped by the accepted variant of another condition.
+- **Two more** are dropped by another condition's accepted variant although their own attempt failed (57 in all).
+  **Five have none:** 4 declined by the writer, 1 not derivable.
+- **The 51 distinct conditions:** Calendar 17, Box 14, Linear 14, Slack 6. Two accepted variants drop the same
+  condition (G4-CAL-04's start time carries two facts), and the order holds it once.
 - **The writer's refusals are reasoned.**
   - **Four drop-F variants** were declined because no deletion-only edit leaves a natural request with the
     intended matches. In G4-BOX-05, for instance, dropping the owner leaves "that Leo Park modified last", and
