@@ -1,0 +1,36 @@
+Step 2. These are all the records in the service:
+
+### calendar_list_entries (7)
+{"id": "cle_jordan.lee@northwind.example", "user_id": "u_actor", "calendar_id": "jordan.lee@northwind.example", "access_role": "owner", "primary": true, "selected": true, "hidden": false, "deleted": false, "created_at": "2018-01-01T00:00:00", "updated_at": "2018-01-01T00:00:00"}
+{"id": "cle_team-travel@northwind.example", "user_id": "u_actor", "calendar_id": "team-travel@northwind.example", "access_role": "owner", "primary": false, "selected": true, "hidden": false, "deleted": false, "created_at": "2018-01-01T00:00:00", "updated_at": "2018-01-01T00:00:00", "summary_override": "Team Travel"}
+{"id": "cle_team-travel-board@northwind.example", "user_id": "u_actor", "calendar_id": "team-travel-board@northwind.example", "access_role": "owner", "primary": false, "selected": true, "hidden": false, "deleted": false, "created_at": "2018-01-01T00:00:00", "updated_at": "2018-01-01T00:00:00", "summary_override": "Travel Board"}
+{"id": "cle_team-travel-ext@northwind.example", "user_id": "u_actor", "calendar_id": "team-travel-ext@northwind.example", "access_role": "writer", "primary": false, "selected": true, "hidden": false, "deleted": false, "created_at": "2018-01-01T00:00:00", "updated_at": "2018-01-01T00:00:00", "summary_override": "Team Travel"}
+{"id": "cle_team-travel-hid@northwind.example", "user_id": "u_actor", "calendar_id": "team-travel-hid@northwind.example", "access_role": "owner", "primary": false, "selected": true, "hidden": true, "deleted": false, "created_at": "2018-01-01T00:00:00", "updated_at": "2018-01-01T00:00:00", "summary_override": "Team Travel"}
+{"id": "cle_reviews@northwind.example", "user_id": "u_actor", "calendar_id": "reviews@northwind.example", "access_role": "reader", "primary": false, "selected": true, "hidden": false, "deleted": false, "created_at": "2018-01-01T00:00:00", "updated_at": "2018-01-01T00:00:00"}
+{"id": "cle_social@northwind.example", "user_id": "u_actor", "calendar_id": "social@northwind.example", "access_role": "writer", "primary": false, "selected": true, "hidden": false, "deleted": false, "created_at": "2018-01-01T00:00:00", "updated_at": "2018-01-01T00:00:00", "summary_override": "Social"}
+### calendar_users (9)
+{"id": "u_actor", "email": "jordan.lee@northwind.example", "display_name": "Jordan Lee", "self": true, "created_at": "2017-05-01T00:00:00", "updated_at": "2017-05-01T00:00:00"}
+{"id": "u_priya", "email": "priya.nair@northwind.example", "display_name": "Priya Nair", "self": false, "created_at": "2017-05-01T00:00:00", "updated_at": "2017-05-01T00:00:00"}
+{"id": "u_omar", "email": "omar.haddad@northwind.example", "display_name": "Omar Haddad", "self": false, "created_at": "2017-05-01T00:00:00", "updated_at": "2017-05-01T00:00:00"}
+{"id": "u_maya", "email": "maya.chen@northwind.example", "display_name": "Maya Chen", "self": false, "created_at": "2017-05-01T00:00:00", "updated_at": "2017-05-01T00:00:00"}
+{"id": "u_sam", "email": "sam.rivera@northwind.example", "display_name": "Sam Rivera", "self": false, "created_at": "2017-05-01T00:00:00", "updated_at": "2017-05-01T00:00:00"}
+{"id": "u_dana", "email": "dana.whitfield@northwind.example", "display_name": "Dana Whitfield", "self": false, "created_at": "2017-05-01T00:00:00", "updated_at": "2017-05-01T00:00:00"}
+{"id": "u_kenji", "email": "kenji.sato@northwind.example", "display_name": "Kenji Sato", "self": false, "created_at": "2017-05-01T00:00:00", "updated_at": "2017-05-01T00:00:00"}
+{"id": "u_aiko", "email": "aiko.mori@northwind.example", "display_name": "Aiko Mori", "self": false, "created_at": "2017-05-01T00:00:00", "updated_at": "2017-05-01T00:00:00"}
+{"id": "u_leo", "email": "leo.park@northwind.example", "display_name": "Leo Park", "self": false, "created_at": "2017-05-01T00:00:00", "updated_at": "2017-05-01T00:00:00"}
+### calendars (7)
+{"id": "jordan.lee@northwind.example", "summary": "jordan.lee@northwind.example", "description": "Primary calendar", "time_zone": "America/Los_Angeles", "owner_id": "u_actor", "data_owner": "jordan.lee@northwind.example", "deleted": false, "created_at": "2018-01-01T00:00:00", "updated_at": "2018-01-01T00:00:00"}
+{"id": "team-travel@northwind.example", "summary": "Shared Travel Schedule", "time_zone": "America/Los_Angeles", "owner_id": "u_actor", "data_owner": "jordan.lee@northwind.example", "deleted": false, "created_at": "2018-01-01T00:00:00", "updated_at": "2018-01-01T00:00:00"}
+{"id": "team-travel-board@northwind.example", "summary": "Team Travel", "time_zone": "America/Los_Angeles", "owner_id": "u_actor", "data_owner": "jordan.lee@northwind.example", "deleted": false, "created_at": "2018-01-01T00:00:00", "updated_at": "2018-01-01T00:00:00"}
+{"id": "team-travel-ext@northwind.example", "summary": "Shared Travel Calendar", "time_zone": "America/Los_Angeles", "owner_id": "u_kenji", "data_owner": "kenji.sato@northwind.example", "deleted": false, "created_at": "2018-01-01T00:00:00", "updated_at": "2018-01-01T00:00:00"}
+{"id": "team-travel-hid@northwind.example", "summary": "Travel Planning Schedule", "time_zone": "America/Los_Angeles", "owner_id": "u_actor", "data_owner": "jordan.lee@northwind.example", "deleted": false, "created_at": "2018-01-01T00:00:00", "updated_at": "2018-01-01T00:00:00"}
+{"id": "reviews@northwind.example", "summary": "Quarterly Reviews", "time_zone": "America/Los_Angeles", "owner_id": "u_maya", "data_owner": "maya.chen@northwind.example", "deleted": false, "created_at": "2018-01-01T00:00:00", "updated_at": "2018-01-01T00:00:00"}
+{"id": "social@northwind.example", "summary": "Social Calendar", "time_zone": "America/Los_Angeles", "owner_id": "u_sam", "data_owner": "sam.rivera@northwind.example", "deleted": false, "created_at": "2018-01-01T00:00:00", "updated_at": "2018-01-01T00:00:00"}
+
+Use your own conditions from step 1 as the author's conditions, with these ids:
+- r1: the record is a calendar in the calendar list of Jordan Lee (jordan.lee@northwind.example)
+- r2: the calendar is currently showing/visible in that list (i.e. not hidden)
+- r3: the calendar is owned by Jordan Lee (the requester is the owner)
+
+The candidate records are the rows of `calendars`: jordan.lee@northwind.example, team-travel@northwind.example, team-travel-board@northwind.example, team-travel-ext@northwind.example, team-travel-hid@northwind.example, reviews@northwind.example, social@northwind.example.
+For every candidate, give the ids of the conditions it fails under the careful reading (an empty list if it meets all of them), whether a careful colleague could still argue that it meets the request (contestable), and a short note. Then say whether the conditions faithfully capture the request as you read it in step 1 (and what differs). For each ambiguity you listed, say whether a careful reader would genuinely be unsure which reading was meant, and whether the readings select different candidates. Say whether the request reads like something a real user would write, without hints that only a test would contain. Finally, say whether the request refers to one specific record, as "the ..." does (asks_for_one: true), as opposed to allowing any record of a kind ("a ...") or asking for several (asks_for_one: false), and why.
