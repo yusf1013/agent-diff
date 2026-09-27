@@ -288,3 +288,56 @@ Failure rates of policy tests on Qwen, by who built them (trials that act withou
   reacted with 🔥 to the budget-freeze announcement in #finance"), yet Qwen 3.6 established absence in 6 of 11. The
   model version, the harness and the scenarios all differ from ours, so this study cannot say which difference
   matters. Our Slack twins fail 21 of 23. Its underspecified cases agree with ours.
+
+## 8. Coverage and usage
+
+*Tables: [tables.md](tables.md) ("Catalog coverage", "Purdue usage", "Muse usage"). Final figures are written when
+the runs end.*
+
+- **Catalog coverage:** the three sources test 139 of the catalog's 255 facts with at least one near miss (55%):
+  fact_coverage_02's hand-made scenarios 36, autogen_01's 82, Phase 4's 58. Phase 4 drew only facts no earlier brief
+  used, so all 58 are new. 42 more are left out as known replica gaps (Linear 36, Calendar 6).
+
+## 9. Shortcomings and problems
+
+*Draft; completed when the runs end.*
+
+**In the system:**
+- **The judge cannot flag a defective test** (§2.4): it scores against the stated targets. The reader is the only
+  guard, and it caught 3 of my 4 defective variants.
+- **The rule "asking is correct" is untested on real trials:** no Phase 1 trial asked.
+- **Purdue throughput** is about 85 trials an hour, not the plan's 200. Phase 4 was cut to two batches, and the
+  queue runs past the sync.
+- **Replica filters that are silently ignored** (Box `content_types`, Slack `types`, Linear `parent` and
+  `subscribers`, Calendar `eventTypes`) turn some trials into artifacts. The review view now flags any use of them,
+  but only a reader of the trial can say whether the result depended on it.
+
+**Construction defects found and fixed during the study:**
+- The clone copier moved only a copied row's declared foreign key (UC-BOX-23's comments), and gave copied rows ids
+  ending in `_clone`, which Qwen used once to tell the copy from the original.
+- It did not copy polymorphic hub items and tasks, and wrote a Slack `ts` as a float.
+- The first added-words check flagged two legitimate edits. "Into a cycle of" was indefinite, which led to the rule
+  of a definite reference.
+
+**In my own work:**
+- **4 of my 31 hand-made drop-F variants were defective** (§2.3).
+- **Two absence labels were wrong:** I had missed a filter the replica ignores. The judge disagreed, and I corrected
+  both, keeping the originals.
+- **Timestamps:** I wrote times later than the real ones in the plan and in two review files. All were corrected to
+  the commit times or to `date`.
+- **A miscount:** the look-1 review said 43 of 94 variants (46%) where it is 43 of 107 (40%). Corrected, with the
+  original kept.
+- **The first absence look-1 launch** had no Purdue key (the worktree has no `grounding/.env`). The runner still
+  printed "solve done" and triggered a judge on no trials. The relaunch used `GROUNDING_ENV`, and the Purdue queue now
+  stops on a run that completes no trial.
+
+## 10. What was done by hand
+
+- **Phase 1:** the 31 drop-F requests and the 16 clone choices (the twins are code); labels for all 252 trials.
+- **Phase 2:** my review of cal1's 27 and cal3's 23 accepted variants, and of the exemplar clones.
+- **Phase 3:** my review of a 30% sample of the clones (13) and of all 43 look-1 drop-F units before their run; the
+  blind labels (30 trials per look-1 run).
+- **Phase 4:** my review of all 29 accepted scenarios before any run; the blind labels of each run; my review of every
+  policy variant that runs.
+- **Throughout:** reading the judge's disagreements with my labels, and every decision recorded in the plan's
+  amendments.
