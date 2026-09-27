@@ -603,6 +603,7 @@ Failure rates of policy tests on Qwen, by who built them (trials that act withou
 | fact_coverage_02 policy panel (P1, P3; one per domain) | hand | 12/12 | 12/12 |
 | **Phase 1: per fact on fact_coverage_02's scenarios** | hand (my variants) | **108/111 (97%)** | **drop-F 80/81, clones 47/48** |
 | Phase 3: per fact on autogen_01's scenarios, sampled (judge v2's verdicts) | Sonnet (scenarios); code (twins), Muse (drop-F wording) | 166/174 (95%) | drop-F 151/153 (99%) |
+| **Phase 4: every variant of 14 new scenarios (judge v2's verdicts)** | **Muse throughout (scenarios, drop-F wording, clones); code (twins)** | **88/90 (98%)** | **drop-F 73/75, clones 33/33** |
 | manual_exemplars_01's Slack suite (Qwen 3.6, 1 run each) | hand | 5/11 (45%) | 25/26 (96%) |
 
 - **The per-fact tests reproduce the manual panel's rates.** Moving from one test per domain to one per fact changes
