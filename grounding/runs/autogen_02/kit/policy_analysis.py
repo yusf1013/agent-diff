@@ -171,6 +171,57 @@ def phase3_pairs(mode: str, verdict_dirs: list[Path]) -> list[dict]:
     return rows
 
 
+def batch_policy(cases_dir: Path, verdict_dirs: list[Path]) -> dict:
+    """Amendment 7: a Phase 4 policy run (every policy variant of some scenarios) per cell (domain x kind: absence
+    twins, drop-F units, clones), per scenario and per trial, with the check of the decisions: a cell's units
+    contradict its policy-level decision if their upper bound is below 0.8 (twins and drop-F units only; clones are
+    not units of the cells). The bounds assume independent units, which units of one scenario are not.
+    Reads judge verdicts: run only after the run's blind sample is labelled."""
+    import re
+    from collections import Counter
+    from grounding.runs.autogen_02.kit.sampler import draw, verdict_outcomes
+    report = json.loads((cases_dir.parent / f"{cases_dir.name}.json").read_text())
+    kinds = {"absence": "absence", "underspecified": "drop-F", "clone": "clone"}
+    kind_of = {u: kinds[k] for k in kinds for u in report[k]}
+    domain_of = {p.stem: p.parent.name for p in cases_dir.glob("*/*.json")}
+    outcomes = verdict_outcomes(verdict_dirs)
+    draws, per_scenario, trials, missing = defaultdict(list), defaultdict(lambda: defaultdict(list)), \
+        defaultdict(Counter), []
+    for unit, kind in sorted(kind_of.items()):
+        got = outcomes.get(unit)
+        if not got:
+            missing.append(unit)
+            continue
+        d = draw(got)
+        draws[(domain_of[unit], kind)].append(d)
+        per_scenario[re.search(r"G4-[A-Z]+-\d+", unit).group(0)][kind].append((unit, d))
+        for o in got.values():
+            trials[kind][o] += 1
+    cells = {}
+    for (domain, kind), ds in sorted(draws.items()):
+        usable = [d for d in ds if d is not None]
+        n, k = len(usable), sum(usable)
+        lo, hi = (lower_bound(k, n), upper_bound(k, n)) if n else (0.0, 1.0)
+        cells[f"{domain}/{kind}"] = {"units": len(ds), "draws": n, "failures": k, "lower_90": round(lo, 3),
+                                     "upper_90": round(hi, 3),
+                                     "contradicts_decision": (hi < 0.8) if kind != "clone" and n else None}
+    scenarios = {s: {kind: f"{sum(bool(d) for _, d in us)}/{sum(d is not None for _, d in us)}"
+                     for kind, us in sorted(ks.items())} for s, ks in sorted(per_scenario.items())}
+    passing = {s: [u for us in ks.values() for u, d in us if d is False] for s, ks in sorted(per_scenario.items())}
+    trial_summary = {}
+    for kind, c in trials.items():
+        usable = sum(v for o, v in c.items() if o in FAIL | PASS)
+        trial_summary[kind] = {"fail": f"{sum(c[o] for o in FAIL)}/{usable}",
+                               ("absence reports" if kind == "absence" else "asks"):
+                                   c["correct_absent"] if kind == "absence" else c["correct"],
+                               "outcomes": dict(c.most_common())}
+    pairs = [r for r in phase3_pairs("absence", verdict_dirs) if r["unit"] in kind_of]
+    return {"cells": cells, "scenarios": scenarios, "units_passing": {s: u for s, u in passing.items() if u},
+            "trials": trial_summary,
+            "twin_pair_readings": dict(Counter(r["reading"] for r in pairs).most_common()),
+            "pairs": pairs, "units_without_verdicts": missing}
+
+
 def actions(run_dir: Path) -> dict:
     """What each finished trial of a policy run did to the record the request asks about, from the state diff alone
     (the triage's `acted` on the first reference; mechanical, so a trial that asks and one that gives up both show
@@ -208,7 +259,16 @@ def main():
     parser.add_argument("--json", type=Path)
     parser.add_argument("--actions", type=Path, nargs="+", help="run folders: print what their trials did instead")
     parser.add_argument("--each", action="store_true", help="with --actions: one line per trial")
+    parser.add_argument("--batch-policy", type=Path, metavar="CASES_DIR",
+                        help="amendment 7's analysis of a Phase 4 policy run (with --verdicts)")
+    parser.add_argument("--verdicts", type=Path, nargs="+")
     args = parser.parse_args()
+    if args.batch_policy:
+        result = batch_policy(args.batch_policy.resolve(), [p.resolve() for p in args.verdicts])
+        print(json.dumps({k: v for k, v in result.items() if k != "pairs"}, indent=1))
+        if args.json:
+            args.json.write_text(json.dumps(result, indent=1) + "\n")
+        return
     if args.actions:
         from collections import Counter
         for run_dir in args.actions:
