@@ -89,11 +89,25 @@ FUNCTION_WORDS = {"a", "an", "the", "that", "which", "who", "whose", "where", "i
                   "this", "one", "my", "me", "i", "s"}
 
 
+# Generic nouns for a record: dropping the condition carried by a specific noun ("reply" for a thread's hierarchy)
+# leaves the record's generic name ("message"). Added after cal1, where the check flagged SLK-22's "Diego Alvarez's
+# message", which I had also written by hand.
+GENERIC_NOUNS = {"message", "messages", "post", "event", "events", "meeting", "issue", "issues", "file", "files",
+                 "folder", "folders", "document", "doc", "item", "items", "record", "entry", "task", "comment",
+                 "thread", "channel", "calendar", "hub", "label", "cycle", "team", "user", "person", "one"}
+
+
 def added_words(original: str, edited: str) -> list[str]:
-    """Content words of the edited request that the original does not contain (rules 2 and 5 of the writer)."""
+    """Content words of the edited request that the original does not contain (rules 2 and 5 of the writer). A word
+    counts as present when it shares a stem of at least four letters with an original word ("edit", "edited"), and
+    a record's generic noun is allowed."""
     words = lambda text: re.findall(r"[a-z0-9]+", text.lower())
     before = set(words(original))
-    return sorted({w for w in words(edited) if w not in before and w not in FUNCTION_WORDS})
+
+    def known(w):
+        return w in before or any(len(w) >= 4 and len(o) >= 4 and (o.startswith(w) or w.startswith(o))
+                                  for o in before)
+    return sorted({w for w in words(edited) if not known(w) and w not in FUNCTION_WORDS | GENERIC_NOUNS})
 
 
 def _rows(case, table, key, ids):
