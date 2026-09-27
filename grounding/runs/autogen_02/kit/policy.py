@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import copy
 import re
+import uuid
 from collections import defaultdict
 
 from grounding.runs.autogen_01.kit.derive import PRIVATE, _finish, _foreign_keys, dangling, effect_key
@@ -235,6 +236,35 @@ def drop_f(case: dict, fact: str, prompt: str | None, variant_id: str | None = N
                      "family": _family(claims, [i for i, c in enumerate(claims) if c["requirement"] in dropped_facts])}
 
 
+UUID = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", re.I)
+
+
+def fresh_id(value, existing):
+    """A new key in the style of `value`, unused in `existing`: the next number, a new UUID, or the prefix with the
+    next number. (A `_clone` suffix, used until 00:41 on 2026-09-27, told Qwen which record was the copy.)"""
+    taken = {str(x) for x in existing}
+    if isinstance(value, int):
+        return max([x for x in existing if isinstance(x, int)] + [value]) + 1
+    text = str(value)
+    if UUID.match(text):
+        return str(uuid.uuid5(uuid.NAMESPACE_URL, f"autogen_02 copy of {text}"))
+    m = re.match(r"^(.*?)(\d+)$", text)
+    if m:
+        prefix, digits = m.groups()
+        numbers = [int(re.match(r"^.*?(\d+)$", t).group(1)) for t in taken
+                   if t.startswith(prefix) and re.match(r"^.*?(\d+)$", t) and t[len(prefix):].isdigit()]
+        n = max(numbers + [int(digits)]) + 1
+        candidate = f"{prefix}{str(n).zfill(len(digits))}"
+        while candidate in taken:
+            n += 1
+            candidate = f"{prefix}{str(n).zfill(len(digits))}"
+        return candidate
+    n = 2
+    while f"{text}{n}" in taken:
+        n += 1
+    return f"{text}{n}"
+
+
 def clone(case: dict, changes: dict, new_key: str, variant_id: str | None = None, skip_children=()) -> tuple:
     """The underspecified clone: the target copied with `changes` (fields the request does not use), and a copy of
     every row that points at it, except in the `skip_children` tables. Returns (variant, meta)."""
@@ -256,6 +286,7 @@ def clone(case: dict, changes: dict, new_key: str, variant_id: str | None = None
     new_row.update({col: new_key, **changes})
     base["seed"][table].append(new_row)
     copied = 0
+    done = defaultdict(set)  # child table -> keys of the rows already copied
     for child, fk_col, ref_table, ref_col in _foreign_keys(base["domain"]):
         if ref_table != table or ref_col != col or child not in base["seed"] or child == table or child in skip_children:
             continue
@@ -269,7 +300,10 @@ def clone(case: dict, changes: dict, new_key: str, variant_id: str | None = None
                 if col_name != fk_col and str(value) == target_id and re.search(r"(_id|Id)$", col_name):
                     c[col_name] = new_key
             if len(child_pk) == 1 and child_pk[0] != fk_col and c.get(child_pk[0]) is not None:
-                c[child_pk[0]] = f"{c[child_pk[0]]}_clone" if isinstance(c[child_pk[0]], str) else c[child_pk[0]] + 100000
+                if str(r[child_pk[0]]) in done[child]:
+                    continue
+                done[child].add(str(r[child_pk[0]]))
+                c[child_pk[0]] = fresh_id(r[child_pk[0]], [x.get(child_pk[0]) for x in base["seed"][child]])
             base["seed"][child].append(c)
             copied += 1
     # Polymorphic references, which the schema does not declare as foreign keys: rows with `item_id` = the target and
@@ -281,14 +315,14 @@ def clone(case: dict, changes: dict, new_key: str, variant_id: str | None = None
                 continue
             child_pk = effect_key(base["domain"], child)
             for r in [r for r in rows_ if str(r.get("item_id")) == target_id and r.get("item_type") == kind
-                      and not any(str(c.get(child_pk[0])) == f"{r.get(child_pk[0])}_clone" for c in rows_)]:
+                      and str(r.get(child_pk[0])) not in done[child]]:
                 c = copy.deepcopy(r)
                 for col_name, value in r.items():
                     if str(value) == target_id and re.search(r"(_id|Id)$", col_name):
                         c[col_name] = new_key
                 if len(child_pk) == 1 and c.get(child_pk[0]) is not None:
-                    c[child_pk[0]] = f"{c[child_pk[0]]}_clone" if isinstance(c[child_pk[0]], str) \
-                        else c[child_pk[0]] + 100000
+                    done[child].add(str(r[child_pk[0]]))
+                    c[child_pk[0]] = fresh_id(r[child_pk[0]], [x.get(child_pk[0]) for x in rows_])
                 rows_.append(c)
                 copied += 1
     seed = _check_seed(base)
