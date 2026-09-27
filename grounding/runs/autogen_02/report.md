@@ -17,7 +17,7 @@ system** ([plan.md](plan.md), decisions N7–N15 in [decisions.md](decisions.md)
 
 ## Summary
 
-*Status at 07:23, written for the 07:30 sync. The runs continue after it; rows marked pending wait for them.*
+*Status at 07:22, written for the 07:30 sync. The runs continue after it; rows marked pending wait for them.*
 
 | Part | State | About when |
 |---|---|---|
