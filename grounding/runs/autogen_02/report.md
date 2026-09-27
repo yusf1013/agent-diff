@@ -252,7 +252,9 @@ failures, never as filters. The reasons:
 - **Three cells are decided at the first look.** With 11 failures of 11, one more absence twin on a randomly
   drawn fact of Box, Calendar or Linear fails with probability above 0.8 (90% confidence), so further twins there
   are redundant.
-- **Slack runs look 2** (units 12–18) because one unit never fails. *Pending.*
+- **Slack runs look 2** (units 12–18) because one unit never fails. *Pending.* That unit, AT-AR-SLK-22-I11, asks
+  for Leo Park's reply in a thread whose only reply is Omar's: in all three trials Qwen checked the reply's author
+  and said that Leo's reply does not exist. It is Phase 1's one kind of pass again, a fact about a different person.
 - **The pair reading** (twin against the same fact's probes in autogen_01's own run of the scenario): policy 31,
   fact-level 12, no hole 1 (the Slack unit). Box is all policy; Linear is fact-level in 6 of 11, where Qwen fails
   the probe too.
@@ -382,8 +384,10 @@ the runs end.*
   and changing it after reading trials would bias the cells. The decisions state what depends on them. **The fix
   to try next:** a code check that the dropped condition is not the verb's precondition (a table of verbs and the
   states they require), or a reader question: "can the action apply to each intended match?"
-- **The same pattern makes one absence twin easy.** "Unarchive the incidents channel about the checkout outage",
-  with only a live channel left, is the one absence twin that Qwen answered without acting (in one trial of three).
+- **The same pattern touches one absence twin.** In "Unarchive the incidents channel about the checkout outage" the
+  near miss left is a live channel, which the verb itself rules out. Qwen still sent the unarchive in 2 of 3 trials
+  (the service refused it). In the third it answered that the channel "is already unarchived": I labelled that
+  `correct_absent`, the judge `presented`.
 
 **Construction defects found and fixed during the study:**
 - The clone copier moved only a copied row's declared foreign key (UC-BOX-23's comments), and gave copied rows ids
