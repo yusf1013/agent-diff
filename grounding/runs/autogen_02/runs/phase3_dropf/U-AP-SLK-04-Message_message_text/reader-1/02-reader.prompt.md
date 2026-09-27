@@ -1,0 +1,74 @@
+Step 2. These are all the records in the service:
+
+### channel_members (10)
+{"channel_id": "C_INC", "user_id": "U01AGENBOT9", "joined_at": "2026-01-05T09:05:00Z"}
+{"channel_id": "C_INC", "user_id": "U_DIEGO", "joined_at": "2026-01-05T09:05:00Z"}
+{"channel_id": "C_INC", "user_id": "U_OMAR", "joined_at": "2026-01-05T09:05:00Z"}
+{"channel_id": "C_INC", "user_id": "U_LEO", "joined_at": "2026-01-05T09:05:00Z"}
+{"channel_id": "C_INC", "user_id": "U_MAYA", "joined_at": "2026-01-05T09:05:00Z"}
+{"channel_id": "C_INC", "user_id": "U_PRIYA", "joined_at": "2026-01-05T09:05:00Z"}
+{"channel_id": "C_INC", "user_id": "U_AISHA", "joined_at": "2026-01-05T09:05:00Z"}
+{"channel_id": "C_ENG", "user_id": "U01AGENBOT9", "joined_at": "2026-01-05T09:05:00Z"}
+{"channel_id": "C_ENG", "user_id": "U_PRIYA", "joined_at": "2026-01-05T09:05:00Z"}
+{"channel_id": "C_IR", "user_id": "U01AGENBOT9", "joined_at": "2026-01-05T09:05:00Z"}
+### channels (3)
+{"channel_id": "C_INC", "channel_name": "incidents", "team_id": "T1", "is_private": false, "is_dm": false, "is_gc": false, "created_at": "2026-01-05T09:00:00Z", "is_archived": false}
+{"channel_id": "C_ENG", "channel_name": "engineering", "team_id": "T1", "is_private": false, "is_dm": false, "is_gc": false, "created_at": "2026-01-05T09:00:00Z", "is_archived": false}
+{"channel_id": "C_IR", "channel_name": "incident-response", "team_id": "T1", "is_private": false, "is_dm": false, "is_gc": false, "created_at": "2026-01-05T09:00:00Z", "is_archived": false}
+### messages (29)
+{"message_id": "1789052400.000001", "channel_id": "C_INC", "user_id": "U_DIEGO", "message_text": "Are we still under the deploy freeze until Friday?", "type": "message", "ts": "1789052400.000001", "created_at": "2026-09-10T15:00:00Z"}
+{"message_id": "1789052700.000002", "channel_id": "C_INC", "user_id": "U_DIEGO", "message_text": "Following up since I haven't heard back.", "type": "message", "ts": "1789052700.000002", "created_at": "2026-09-10T15:05:00Z", "parent_id": "1789052400.000001"}
+{"message_id": "1789052820.000003", "channel_id": "C_INC", "user_id": "U_DIEGO", "message_text": "Bumping this again.", "type": "message", "ts": "1789052820.000003", "created_at": "2026-09-10T15:07:00Z", "parent_id": "1789052400.000001"}
+{"message_id": "1789053000.000004", "channel_id": "C_INC", "user_id": "U_DIEGO", "message_text": "Never mind, found the announcement.", "type": "message", "ts": "1789053000.000004", "created_at": "2026-09-10T15:10:00Z", "parent_id": "1789052400.000001"}
+{"message_id": "1789053120.000005", "channel_id": "C_INC", "user_id": "U_DIEGO", "message_text": "Confirmed with the release team, we're still frozen.", "type": "message", "ts": "1789053120.000005", "created_at": "2026-09-10T15:12:00Z", "parent_id": "1789052400.000001"}
+{"message_id": "1789056000.000006", "channel_id": "C_INC", "user_id": "U_OMAR", "message_text": "Status update on the payments rollout.", "type": "message", "ts": "1789056000.000006", "created_at": "2026-09-10T16:00:00Z", "blocks": [{"type": "rich_text", "elements": [{"type": "rich_text_section", "elements": [{"type": "text", "text": "Also, heads up: we are under the deploy freeze this week."}]}]}]}
+{"message_id": "1789056300.000007", "channel_id": "C_INC", "user_id": "U_OMAR", "message_text": "Adding the dashboard link here.", "type": "message", "ts": "1789056300.000007", "created_at": "2026-09-10T16:05:00Z", "parent_id": "1789056000.000006"}
+{"message_id": "1789056420.000008", "channel_id": "C_INC", "user_id": "U_OMAR", "message_text": "Rollout is at 60% now.", "type": "message", "ts": "1789056420.000008", "created_at": "2026-09-10T16:07:00Z", "parent_id": "1789056000.000006"}
+{"message_id": "1789056540.000009", "channel_id": "C_INC", "user_id": "U_OMAR", "message_text": "80% and holding steady.", "type": "message", "ts": "1789056540.000009", "created_at": "2026-09-10T16:09:00Z", "parent_id": "1789056000.000006"}
+{"message_id": "1789056660.000010", "channel_id": "C_INC", "user_id": "U_OMAR", "message_text": "Rollout complete.", "type": "message", "ts": "1789056660.000010", "created_at": "2026-09-10T16:11:00Z", "parent_id": "1789056000.000006"}
+{"message_id": "1789059600.000011", "channel_id": "C_INC", "user_id": "U_LEO", "message_text": "Reminder: deploy freeze starts Monday for all services.", "type": "message", "ts": "1789059600.000011", "created_at": "2026-09-10T17:00:00Z"}
+{"message_id": "1789059900.000012", "channel_id": "C_INC", "user_id": "U_LEO", "message_text": "Applies to all regions.", "type": "message", "ts": "1789059900.000012", "created_at": "2026-09-10T17:05:00Z", "parent_id": "1789059600.000011"}
+{"message_id": "1789060020.000013", "channel_id": "C_INC", "user_id": "U_LEO", "message_text": "Exceptions need sign-off from me.", "type": "message", "ts": "1789060020.000013", "created_at": "2026-09-10T17:07:00Z", "parent_id": "1789059600.000011"}
+{"message_id": "1789060140.000014", "channel_id": "C_INC", "user_id": "U_LEO", "message_text": "Will send a calendar hold too.", "type": "message", "ts": "1789060140.000014", "created_at": "2026-09-10T17:09:00Z", "parent_id": "1789059600.000011"}
+{"message_id": "1789063200.000015", "channel_id": "C_INC", "user_id": "U_MAYA", "message_text": "Update: extending the deploy freeze another week.", "type": "message", "ts": "1789063200.000015", "created_at": "2026-09-10T18:00:00Z"}
+{"message_id": "1789063500.000016", "channel_id": "C_INC", "user_id": "U_MAYA", "message_text": "Reason is the pending audit.", "type": "message", "ts": "1789063500.000016", "created_at": "2026-09-10T18:05:00Z", "parent_id": "1789063200.000015"}
+{"message_id": "1789063620.000017", "channel_id": "C_INC", "user_id": "U_MAYA", "message_text": "Will lift it once that's done.", "type": "message", "ts": "1789063620.000017", "created_at": "2026-09-10T18:07:00Z", "parent_id": "1789063200.000015"}
+{"message_id": "1789063740.000018", "channel_id": "C_INC", "user_id": "U_MAYA", "message_text": "Thanks for your patience everyone.", "type": "message", "ts": "1789063740.000018", "created_at": "2026-09-10T18:09:00Z", "parent_id": "1789063200.000015"}
+{"message_id": "1789066800.000019", "channel_id": "C_INC", "user_id": "U_PRIYA", "message_text": "Great work everyone on the payments launch!", "type": "message", "ts": "1789066800.000019", "created_at": "2026-09-10T19:00:00Z"}
+{"message_id": "1789067100.000020", "channel_id": "C_INC", "user_id": "U_PRIYA", "message_text": "Special thanks to the on-call folks.", "type": "message", "ts": "1789067100.000020", "created_at": "2026-09-10T19:05:00Z", "parent_id": "1789066800.000019"}
+{"message_id": "1789067220.000021", "channel_id": "C_INC", "user_id": "U_PRIYA", "message_text": "Metrics dashboard is looking great.", "type": "message", "ts": "1789067220.000021", "created_at": "2026-09-10T19:07:00Z", "parent_id": "1789066800.000019"}
+{"message_id": "1789067340.000022", "channel_id": "C_INC", "user_id": "U_PRIYA", "message_text": "Let's keep the momentum going.", "type": "message", "ts": "1789067340.000022", "created_at": "2026-09-10T19:09:00Z", "parent_id": "1789066800.000019"}
+{"message_id": "1789067460.000023", "channel_id": "C_INC", "user_id": "U_PRIYA", "message_text": "Cake in the kitchen to celebrate.", "type": "message", "ts": "1789067460.000023", "created_at": "2026-09-10T19:11:00Z", "parent_id": "1789066800.000019"}
+{"message_id": "1789070400.000024", "channel_id": "C_ENG", "user_id": "U_PRIYA", "message_text": "Just a heads up, the deploy freeze is still in effect for engineering.", "type": "message", "ts": "1789070400.000024", "created_at": "2026-09-10T20:00:00Z"}
+{"message_id": "1789070700.000025", "channel_id": "C_ENG", "user_id": "U_PRIYA", "message_text": "Will update once lifted.", "type": "message", "ts": "1789070700.000025", "created_at": "2026-09-10T20:05:00Z", "parent_id": "1789070400.000024"}
+{"message_id": "1789070820.000026", "channel_id": "C_ENG", "user_id": "U_PRIYA", "message_text": "Ping me with questions.", "type": "message", "ts": "1789070820.000026", "created_at": "2026-09-10T20:07:00Z", "parent_id": "1789070400.000024"}
+{"message_id": "1789070940.000027", "channel_id": "C_ENG", "user_id": "U_PRIYA", "message_text": "Thanks for your patience.", "type": "message", "ts": "1789070940.000027", "created_at": "2026-09-10T20:09:00Z", "parent_id": "1789070400.000024"}
+{"message_id": "1789071060.000028", "channel_id": "C_ENG", "user_id": "U_PRIYA", "message_text": "All set now.", "type": "message", "ts": "1789071060.000028", "created_at": "2026-09-10T20:11:00Z", "parent_id": "1789070400.000024"}
+{"message_id": "1789074000.000029", "channel_id": "C_INC", "user_id": "U_AISHA", "message_text": "Anyone know if the printer on 3rd floor is fixed?", "type": "message", "ts": "1789074000.000029", "created_at": "2026-09-10T21:00:00Z"}
+### teams (1)
+{"team_id": "T1", "team_name": "Northwind", "created_at": "2025-01-01T00:00:00Z"}
+### user_teams (7)
+{"user_id": "U01AGENBOT9", "team_id": "T1", "role": "admin"}
+{"user_id": "U_PRIYA", "team_id": "T1", "role": "member"}
+{"user_id": "U_DIEGO", "team_id": "T1", "role": "member"}
+{"user_id": "U_LEO", "team_id": "T1", "role": "member"}
+{"user_id": "U_OMAR", "team_id": "T1", "role": "member"}
+{"user_id": "U_AISHA", "team_id": "T1", "role": "member"}
+{"user_id": "U_MAYA", "team_id": "T1", "role": "member"}
+### users (7)
+{"user_id": "U01AGENBOT9", "username": "agentbot", "email": "agentbot@northwind.example", "real_name": "Agent Bot", "display_name": "AgentBot", "created_at": "2025-01-01T00:05:00Z", "is_bot": true, "is_active": true}
+{"user_id": "U_PRIYA", "username": "priya.sharma", "email": "priya.sharma@northwind.example", "real_name": "Priya Sharma", "display_name": "Priya", "created_at": "2025-01-01T00:05:00Z", "is_bot": false, "is_active": true}
+{"user_id": "U_DIEGO", "username": "diego.alvarez", "email": "diego.alvarez@northwind.example", "real_name": "Diego Alvarez", "display_name": "Diego", "created_at": "2025-01-01T00:05:00Z", "is_bot": false, "is_active": true}
+{"user_id": "U_LEO", "username": "leo.park", "email": "leo.park@northwind.example", "real_name": "Leo Park", "display_name": "Leo", "created_at": "2025-01-01T00:05:00Z", "is_bot": false, "is_active": true}
+{"user_id": "U_OMAR", "username": "omar.haddad", "email": "omar.haddad@northwind.example", "real_name": "Omar Haddad", "display_name": "Omar", "created_at": "2025-01-01T00:05:00Z", "is_bot": false, "is_active": true}
+{"user_id": "U_AISHA", "username": "aisha.khan", "email": "aisha.khan@northwind.example", "real_name": "Aisha Khan", "display_name": "Aisha", "created_at": "2025-01-01T00:05:00Z", "is_bot": false, "is_active": true}
+{"user_id": "U_MAYA", "username": "maya.chen", "email": "maya.chen@northwind.example", "real_name": "Maya Chen", "display_name": "Maya", "created_at": "2025-01-01T00:05:00Z", "is_bot": false, "is_active": true}
+
+Use your own conditions from step 1 as the author's conditions, with these ids:
+- r1: the record is the Slack user who authored the parent message, not someone who replied, reacted, or was mentioned
+- r2: that parent message was posted in the #incidents channel
+- r3: that parent message has exactly 4 replies in its thread
+- r4: that user is the person to be invited to the #incident-response channel
+
+The candidate records are the rows of `users`: U01AGENBOT9, U_PRIYA, U_DIEGO, U_LEO, U_OMAR, U_AISHA, U_MAYA.
+For every candidate, give the ids of the conditions it fails under the careful reading (an empty list if it meets all of them), whether a careful colleague could still argue that it meets the request (contestable), and a short note. Then say whether the conditions faithfully capture the request as you read it in step 1 (and what differs). For each ambiguity you listed, say whether a careful reader would genuinely be unsure which reading was meant, and whether the readings select different candidates. Say whether the request reads like something a real user would write, without hints that only a test would contain. Finally, say whether the request refers to one specific record, as "the ..." does (asks_for_one: true), as opposed to allowing any record of a kind ("a ...") or asking for several (asks_for_one: false), and why.
