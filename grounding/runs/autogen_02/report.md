@@ -93,7 +93,7 @@ How to run it: [kit/README.md](kit/README.md).
   - U-CAL-23's two variants: "Friday's architecture review" can mean the event titled exactly so, which leaves one
     match (Qwen said so in all six trials);
   - U-LIN-24: "the Engineering team's cycle" naturally means the team's current cycle, again one match.
-  The automation flagged 3 of the 4 (the writer declined the first; the reader rejected U-CAL-23's two; §4).
+  The automation flagged 3 of the 4 (the writer declined the first; the reader rejected U-CAL-23's two; §3).
 - **The pair with the cover:** for 23 variants Qwen passes the scenario's cover but fails the variant, so the failure
   is the policy's. For 4 it fails the cover too (U-BOX-24 ×3, U-LIN-23), and the 4 defective variants have no result.
 - **Decision D7 (amendment 1 §2): the other near misses left in the seed change nothing.** The fear was that a
@@ -101,7 +101,7 @@ How to run it: [kit/README.md](kit/README.md).
   9/9, 24/24, 33/33, 9/9 trials; the one non-failure is the `incomplete` trial). With no pass anywhere there is no
   effect to find, so the cover's seed stays the variant's seed.
 
-## 2.4 Judge v2 against my Phase 1 labels
+### 2.4 Judge v2 against my Phase 1 labels
 
 | Trials | Collapsed agreement | Exposed facts on failures |
 |---|---:|---:|
@@ -115,7 +115,7 @@ How to run it: [kit/README.md](kit/README.md).
 - **The judge cannot see that a test is defective.** On my 4 defective drop-F variants it applied the rule for the
   test as stated: "acting on one TARGET without asking is incorrect", 12 times. Even where Qwen explained its
   reasonable reading ("the unqualified title best matched"), the judge scored against the stated targets. In the
-  system this falls to the reader, which caught 3 of the 4 (§4). A judge that can flag a test as invalid,
+  system this falls to the reader, which caught 3 of the 4 (§3). A judge that can flag a test as invalid,
   separately from the trial's outcome, is autogen_01's open recommendation, and this is a second instance of it.
 - **One borderline call.** In U-LIN-23 t3 Qwen found no way to reopen a thread (the replica has
   `commentUnresolve`) and posted a new comment. I labelled it `incomplete`; the judge said `not_established` (the
@@ -130,7 +130,7 @@ How to run it: [kit/README.md](kit/README.md).
 - **One inconsistency:** the judge listed the near miss's fact for 2 of the 3 identical AT-LIN-24 trials (the
   fabricated cycle) and nothing for the third. It is harmless for scoring, since twins never credit facts.
 
-## 4. Phase 2: the automated underspecified variants, calibrated on the exemplars
+## 3. Phase 2: the automated underspecified variants, calibrated on the exemplars
 
 **How they are built** ([kit/variants2.py](kit/variants2.py)):
 - **Code decides whether a fact is derivable and what the relaxed query selects.** The construction is semantic:
@@ -175,7 +175,7 @@ which I judge invalid: a second label with the same name in the same group.
 - **Clones:** 44 of 49. A random 30% sample of the clones is 12 of 13 valid in my review
   ([eval/phase3_review.json](eval/phase3_review.json)).
 
-## 3. The policy-level definition (task 17)
+## 4. The policy-level definition (task 17)
 
 *Draft.* Three candidates were on the table (decision N11): (A) with 90% confidence, a policy test on a randomly
 chosen fact fails with probability above 0.8; (B) the failure rate is about the same on at least 80% of facts; (D1/D4)
@@ -190,4 +190,77 @@ failures, never as filters. The reasons:
   between facts, so (B) cannot decide; it is shown as the spread.
 - The pair reading answers a different question (why a unit fails), so it must not filter the rate.
 
-*Pending: the Phase 3 decisions per cell.*
+**The procedure** ([kit/sampler.py](kit/sampler.py)):
+- **Units.** Absence: one twin per (scenario, fact). Underspecified: one drop-F variant per distinct condition
+  (facts that share a condition share the variant).
+- **Order.** Per cell (domain × mode), a random order stratified by substitute family, fixed by a seed before any
+  run: absence 20260926, underspecified 2026092701 (after the Phase 2 bars were met).
+- **Looks** after 11, 18 and 25 units: the smallest samples that can show a rate above 0.8 at 90% with 0, 1 and 2
+  passes. A cell stops at the first look where its lower bound exceeds 0.8 or its upper bound falls below it.
+- **Review exclusions (C.9).** A unit is skipped when the manual validity review makes it unsound: for absence, any
+  invalid or contestable near miss (acting on a contestable one may be the reasonable reading); for underspecified,
+  an invalid near miss left in the seed, or an invalid scenario. This removes 11 of 125 absence units and 2 of 107
+  underspecified units.
+- **Phase 4's units (amendment 5,** fixed before any Phase 3 verdict) are appended after each cell's fixed order, so
+  they are drawn only where autogen_01's units run out: Calendar underspecified (10 units) and possibly Calendar
+  absence (13). Decisions that use them also report each writer's units apart.
+
+## 5. Phase 3: the policy decisions on the generated scenarios
+
+*Pending: absence look 1 (132 trials) is running; underspecified look 1 (129 trials) follows.*
+
+## 6. Phase 4: the complete system on new briefs
+
+### 6.1 Briefs and generation
+
+- **Briefs, drawn by rule** ([inputs/make_briefs4.py](inputs/make_briefs4.py)): catalog facts that no autogen_01
+  brief used, minus facts on known replica gaps (36 Linear facts: projects, the `parent` filter, initiatives; 6
+  Calendar facts: sharing rules and recurring series). Three facts per brief, grouped by entity: 51 briefs, 120 facts.
+  The domains are interleaved, so a run cut short still covers each one.
+- **Generated:** the first 32 briefs (8 per domain, 66 facts), on Muse, through autogen_01's orchestrator with this
+  study's replica notes ([kit/generate.py](kit/generate.py)).
+
+| Briefs | Accepted | Rejected | Failed | Versions per accepted (median, max) | Sent back by checks or pre-checks / reader |
+|---:|---:|---:|---:|---|---|
+| 32 | 29 | 2 (G4-BOX-02, G4-LIN-03) | 1 (G4-CAL-08, Muse infrastructure) | 2, 7 | 14 / 4 scenarios |
+
+- **Time:** median 408 s of wall time per accepted scenario (max 1,238 s).
+- **One builder crash became a finding.** G4-SLK-04's second version crashed the seed builder (a `KeyError`). The
+  wrapper now returns such errors to the writer as a finding, and the retry was accepted at version 5.
+- **Cost:** $17.91 at list price ($1.01 billed) for all 32 briefs, or **$0.62 per accepted scenario**. autogen_01's
+  Sonnet writer cost $1.78 (Arm R), $3.07 (method v2) and $5.47 (Arm P) at list price. The two models' list prices
+  differ, so this compares what the runs cost, not how efficient the writers are.
+- **The suite:** 159 tests (29 covers, 99 probes, 31 fact probes). The policy variants come from the same scenarios
+  (§6.4).
+
+### 6.2 My validity review of the 29 accepted scenarios
+
+I read every accepted scenario before any of its runs ([eval/phase4_review.json](eval/phase4_review.json)).
+
+| Set | Scenarios valid / flawed / invalid | Near misses valid / contestable / invalid |
+|---|---|---|
+| **Phase 4 (Muse)** | **24 / 5 / 0 of 29** | **96 / 1 / 0 of 99**, plus 2 valid for another fact than declared |
+| autogen_01 Arm R (Sonnet) | 16 / 1 / 1 of 18 | 64 / 1 / 2 of 67 |
+| autogen_01 Arm P | 11 / 4 / 0 of 15 | 48 / 5 / 3 of 56 |
+| autogen_01 Arm P, method v2 | 15 / 1 / 0 of 16 | 60 / 2 / 0 of 62 |
+
+The five flawed scenarios:
+- **G4-CAL-01:** the transparency condition is an aside ("it's blocking time on my calendar"); its near miss is
+  contestable.
+- **G4-SLK-01:** contrived (a Slack user named by email; "that a bot reacted to with tada").
+- **G4-BOX-03:** one near miss was created on June 8 and last modified on June 5.
+- **G4-BOX-06:** "(not in its subfolders)" is a hint only a test would give; it gives away the hierarchy near miss.
+- **G4-SLK-03:** to fix a superlative, the writer added "posted at 12:40", which makes "latest" redundant. Its near
+  misses now fail the time, so they do not test the declared fact (D:latest_message).
+
+**Replica risks** noted in 5 Linear scenarios: the conditions touch reads the replica serves only partly (nested
+`cycles` and `attachments` connections, the `projects` query, the ignored `parent` filter). The pre-checks passed
+them because the top-level reads work.
+
+### 6.3 The runs on Qwen
+
+*Pending: batch 1 (72 tests) and batch 2 (87 tests) run after Phase 3's looks.*
+
+### 6.4 The policy variants of the new scenarios
+
+*Pending: derivation on Muse is running (drop-F for 62 pairs, clones for 29 scenarios).*
