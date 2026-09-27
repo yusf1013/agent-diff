@@ -1,7 +1,7 @@
 """Phase 4: select the trials to judge and score a generated suite's run, with autogen_01's rules and this study's
 triage (effects keyed by the real table key for tests outside autogen_01's folder).
 
-    python grounding/runs/fact_coverage_02/launch.py grounding.runs.autogen_02.kit.phase4 select RUN_DIR SUITE > trials.json
+    python grounding/runs/fact_coverage_02/launch.py grounding.runs.autogen_02.kit.phase4 select RUN_DIR SUITE [--blind BLIND.json] > trials.json
     python ... phase4 score RUN_DIR SUITE JUDGED [--json OUT]
     python ... phase4 cases SUITE SCENARIO_ID ... > ids.txt     # the case ids of some scenarios, for `solve --cases`
 
@@ -25,7 +25,16 @@ score_run.triage = triage   # trial_outcomes imported it by name
 def main():
     cmd, args = sys.argv[1], sys.argv[2:]
     if cmd == "select":
-        print(json.dumps(v1.select_run(Path(args[0]).resolve(), Path(args[1]).resolve()), indent=1))
+        run_dir = Path(args[0]).resolve()
+        items = v1.select_run(run_dir, Path(args[1]).resolve())
+        if "--blind" in args:  # every trial of the blind sample is judged too, clean or not
+            have = {f"{i['run']}/{i['trial']}/{i['case_id']}" for i in items}
+            for key in json.loads(Path(args[args.index("--blind") + 1]).read_text())["keys"]:
+                run, trial, case_id = key.split("/")
+                if key not in have and (run_dir / trial / case_id).exists():
+                    items.append({"run_dir": str(run_dir), "run": run, "trial": trial, "case_id": case_id,
+                                  "blind_sample": True})
+        print(json.dumps(items, indent=1))
     elif cmd == "score":
         result = score_run.score(Path(args[0]).resolve(), Path(args[1]).resolve(), Path(args[2]).resolve())
         if "--json" in args:
