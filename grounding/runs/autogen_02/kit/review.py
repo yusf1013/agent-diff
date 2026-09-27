@@ -20,6 +20,11 @@ WRITE = re.compile(r"-X\s*(POST|PUT|PATCH|DELETE)|--request\s+(POST|PUT|PATCH|DE
                    r"chat\.(postMessage|update|delete)|reactions\.(add|remove)|conversations\.(setTopic|setPurpose|"
                    r"invite|kick|archive|rename|join|leave)|pins\.add|\s-d\s|--data", re.I)
 NOISE = ("calendar_sync_tokens",)
+# Filters the replicas accept but ignore (inputs/<domain>/replica.md): a near miss returned through one of them may
+# be an artifact of the replica, not the solver's choice.
+IGNORED = {"Box search content_types": r"content_types", "Slack users.conversations types": r"users\.conversations.*types",
+           "Linear subscribers filter": r"subscribers\s*:\s*\{", "Linear parent filter": r"\bparent\s*:\s*\{",
+           "Linear documents project name filter": r"project\s*:\s*\{\s*name", "Calendar eventTypes": r"eventTypes"}
 UNFINISHED = {"solver_running", "preflight", "installing", "installed", "pending"}
 READ = re.compile(r"\s-G\s(?!.*-X\s*(POST|PUT|PATCH|DELETE))")
 
@@ -68,6 +73,10 @@ def show(run_dir: Path, only: list[str] | None, brief: bool = False, skip: set |
         print(f"\n=== {case_id} {trial} [{summary.get('status')}/{record.get('termination') or summary.get('termination')}"
               f", {len(steps)} steps] provisional={tri['outcome']} exposed={tri['exposed']}")
         print("writes:\n" + ("\n".join(writes) if writes else "  (none)"))
+        flagged = sorted({name for s in steps for name, pat in IGNORED.items()
+                          if re.search(pat, str(s.get("action") or ""))})
+        if flagged:
+            print(f"IGNORED FILTERS USED: {', '.join(flagged)}")
         diff = bundle.diff_text(attempt).strip()
         if brief:
             diff = "\n".join(l for l in diff.splitlines() if not any(n in l for n in NOISE)).strip()
