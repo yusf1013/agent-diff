@@ -349,3 +349,51 @@ drop-F: once F's condition is gone, acting on a freed record is not a failure to
 in its policy cell, and its fact index serves only to sample and to report coverage. For absence, the D4 pair reading
 (probe and twin on the same fact) is reported per fact: probe passes and twin fails = policy; both fail =
 fact-level; twin passes = no hole.
+
+### Amendment 3 (2026-09-27, 00:10): Phase 2 calibration, iterations 1 and 2
+
+**Drop-F, iteration 1 (cal1, 23:42-00:08, `runs/phase2_cal1_dropf`).** Code decided derivability as I did on 37 of
+37 facts. Of the 31 derivable facts the writer produced 27 accepted variants. It declined 3:
+- the "last updated" superlative, for BOX-22's file name;
+- "contract", for BOX-23's description and extension.
+
+One was rejected after three rounds (CAL-23's optional guest).
+
+My review of the 27 (`eval/phase2_review.json`): 17 identical to my hand-made requests, 4 equivalent, 6 reworded
+beyond the dropped condition. **25 of 27 are valid and natural** (the bar is 90%). The two that are not:
+- LIN-24's "into a cycle of the Engineering team" is indefinite, so any cycle fits;
+- CAL-21's "the event with planning in the title" is test-like.
+
+Three of the rewordings replace "X last modified/updated/edited" with "last modified by X". This removes a
+superlative reading that the Muse readers raised again and again. It is a finding about fact_coverage_02's wording,
+recorded for the report.
+
+**Changes for iteration 2** (the version used on the population):
+1. **The added-words check** (amendment 2, B.2), which cal1 ran without. Applied to cal1 after the fact, it flagged 4
+   of 27. Two were false flags: SLK-22's "message" for "reply", and LIN-22's "edit" for "edited". So the check now
+   allows a record's generic noun, and words sharing a stem of four letters or more.
+2. **A definite reference to one record,** in the writer's rule 3 and the reader's last question ("the …", not
+   "a …").
+
+A first start of iteration 2 (00:07) used the check without refinement 1. It was stopped at 00:09 and kept
+(`runs/*.stopped-strict-words`).
+
+**Clones.**
+- **cal1** was stopped after 4 of 18 (amendment 2, B.4).
+- **cal2** (`runs/phase2_cal2_clone`) accepted 13 as run.
+- **Re-scored.** A clone's request is the scenario's own, so the reader's findings about its wording (unnatural,
+  ambiguous) are not the clone's. Re-scored with only the match set as findings (`kit/calibration.py`), **17 of 18**
+  are accepted. The one decline is LIN-24, as mine.
+- **My review finds UC-LIN-25 invalid:** a second "Regression" label in the Bug group, which Linear does not allow.
+  (I had called it not derivable.)
+
+Three code changes followed:
+- a value is typed like the target's field (a Slack `ts` written as a number had become a float);
+- a new value of a unique field must be free;
+- the clone reader's wording findings are notes (`reader2.problems(..., wording=False)`).
+
+**The population runs** (Phase 3's variants of autogen_01's 49 scenarios):
+- drop-F uses iteration 2 (`runs/phase3_dropf`, restarted at 00:10);
+- the clone uses the fixed version above (`runs/phase3_clone`, started at 00:07, after those fixes).
+
+Iteration 2 also runs on the exemplars (`runs/phase2_cal2_dropf`). Its result is the calibration of record.
