@@ -60,7 +60,7 @@ about 05:50, then its policy variants (about an hour), the robustness checks and
 | Automated drop-F: every accepted variant passes the code checks | all (cal3) | yes |
 | Automated drop-F: at least 90% valid and natural in my review | cal3 22/23 (96%) | yes |
 | Policy-level definition fixed before any Phase 3 run | amendment 2, 23:49–23:54 | yes |
-| Judge v2 on the blind samples (precision and recall; no bar set) | Phase 3: 87/93 agreement; precision 85/86, recall 85/85. Phase 4: *pending* | – |
+| Judge v2 on the blind samples (precision and recall; no bar set) | Phase 3: 87/93 agreement; precision 85/86, recall 85/85. Phase 4 batch 1: 30/30; precision 9/9, recall 9/9. Policy run, robustness and batch 2: *pending* | – |
 
 ## 1. The system, and what is automated
 
