@@ -91,7 +91,9 @@ def judge_one(item: dict, out: Path, calls_log: Path) -> dict:
             return old
         verdict_path.rename(dest / f"verdict-{Path(old.get('attempt', 'unknown')).name}.json")
     case, summary, tri = v1.triage(item["run"], item["trial"], attempt)
-    targets = sum(len(r["expected"]) for r in case["references"] if r["use"] == "target")
+    # The policy concerns the record the request acts on (the first reference); another reference, such as the
+    # workflow state an issue moves to, may also have a target.
+    targets = len(case["references"][0]["expected"])
     form = item.get("form") or form_of(case["case_id"]) or (
         "cover (target and all decoys)" if targets else "no-target test with all of the scenario's decoys")
     text = bundle.build(case, attempt, form, tri, summary)

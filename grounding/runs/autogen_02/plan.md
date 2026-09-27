@@ -239,7 +239,7 @@ mechanical and unaffected.
 7. **The concrete change for judge v2 is the bundle.** It must list which records fully match (the expected set),
    not just "target present: yes/no". Otherwise the judge cannot tell acting on a match from acting on a near miss.
 
-### Amendment 2 (2026-09-26, 23:50-23:57; sections A, C and D fixed before any Phase 3 run)
+### Amendment 2 (2026-09-26, 23:49-23:54, commits 584c3ce9e, d3b3292e6, 43cc2420c; fixed before any Phase 3 run)
 
 Written while the Phase 1 runs were in progress (absence twins 69 of 111 trials done, underspecified and clone runs
 queued). Nothing of Phase 3 has run.
@@ -303,7 +303,7 @@ queued). Nothing of Phase 3 has run.
    each look is large enough to keep Purdue busy.
 4. **The statistic** is computed on one pre-chosen trial (t1) per unit: each unit is then one draw of "a policy test
    on a random fact fails", and the exact Clopper-Pearson bound applies. Trials 2 and 3 give each unit's spread.
-5. **Definition (task 17, settled at 23:55 with the advisor's review; candidate A of N11).** A cell's failure is
+5. **Definition (task 17, settled at 23:52 with the advisor's review, commit d3b3292e6; candidate A of N11).** A cell's failure is
    *policy-level* when, **with 90% one-sided confidence, a policy test on a randomly drawn unit of the cell fails on
    its first trial with probability above 0.8.**
    - **The population per mode.** Absence: (scenario, fact) units, one twin each. Underspecified: distinct conditions
@@ -337,7 +337,7 @@ queued). Nothing of Phase 3 has run.
    fixed order, and the next units take their place (`sampler.review_exclusion`). An absence unit goes when any of its
    near misses is invalid or contestable: under presupposition, acting on a contestable near miss may be the
    reasonable reading. An underspecified unit goes when a near miss left in its seed is invalid (a record that in
-   fact fits), or its scenario is invalid. Decided after the absence order was fixed (seed 20260926, 23:58) and
+   fact fits), or its scenario is invalid. Decided after the absence order was fixed (seed 20260926) and
    before any Phase 3 run; it removes 11 of 125 absence units (Calendar 2, Linear 3, Slack 6).
 
 **D. Credit rules (settled).** A policy variant never earns fact credit (amendment 1 for the twin, and the same for
