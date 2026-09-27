@@ -211,4 +211,28 @@ Muse costs are small at the billed rate and are reported at list price.
 
 ## Amendments
 
-(none yet)
+### Amendment 1 (2026-09-26, 23:55): tightenings from the advisor's review
+
+These were decided before any drop-F or clone variant was built. The absence-twin run had just started; the twins are
+mechanical and unaffected.
+
+1. **Credit is not double-counted.**
+   - The absence twin never credits its fact as a *fact*. It contributes only to that fact's absence-policy cell.
+   - The probe keeps the fact's normal credit (fact_coverage_01 §4.3: a presupposing request earns no fact credit).
+2. **The drop-F seed.** The cover's seed, as in fact_coverage_02's P3. Each variant records how many other near misses
+   stay in its seed as non-matching distractors. Decision D7 found that packing near misses of different facts
+   suppressed failures (4 of 84 against 17 of 93). If the distractor count predicts the pass rate, Phase 2 switches
+   to the minimal seed: the target plus the freed near misses.
+3. **The clone is checked by code.** The scenario's full query, run on the seed with the clone, must select exactly
+   the target and the clone. `kit/policy.py` generalizes fact_coverage_02's `twin_case` to any table key, and also
+   copies the rows that point at the target.
+4. **"Singular wording."** Code rejects a reworded request containing *all, every, each, any* or *both*. Whether it
+   is otherwise singular and natural is judged by the reader (Phase 2) and by me (Phase 1). So it is no longer in the
+   code-checked part of the credit rule.
+5. **Labels.** I read all the Phase 1 trials, not just the unclean ones, because they set the judge's calibration
+   bar. Budget: 1–2 hours.
+6. **A prediction, stated before building.** Drop-F should be *not derivable* (scope D2) for scenarios whose request
+   has no second identifying condition besides the dropped one. I expect about 7 of the 37 facts, in CAL-22, CAL-24,
+   LIN-23, LIN-24, LIN-25, LIN-26 and SLK-24.
+7. **The concrete change for judge v2 is the bundle.** It must list which records fully match (the expected set),
+   not just "target present: yes/no". Otherwise the judge cannot tell acting on a match from acting on a near miss.
