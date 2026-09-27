@@ -1,0 +1,1 @@
+Successfully added the **Discount policy.pdf** file (id: 8012) to the **Sales hub** (id: 5203) — the hub that Dana Whitfield last updated. The hub already contained the Sales folder (id: 8000) which includes the Pricing sheet file. The hub now contains both the Sales folder and the Discount policy.pdf file.

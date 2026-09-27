@@ -1,0 +1,1 @@
+Successfully renamed the document "Checkout rollout" (id: d-22) — which was created and last edited by Leo Park in the Checkout Redesign project — to "Checkout QA plan". The rename was confirmed by re-querying the document and verifying its title is now "Checkout QA plan".

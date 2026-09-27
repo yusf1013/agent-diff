@@ -1,0 +1,1 @@
+Successfully set the priority to Low on the Web team issue "Filters reset on back" (i-63), which Dana Whitfield is subscribed to (as the creator). The priority was updated from 0 (No priority) to 4 (Low).

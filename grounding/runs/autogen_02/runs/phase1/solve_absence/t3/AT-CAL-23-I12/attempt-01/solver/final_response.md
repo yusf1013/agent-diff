@@ -1,0 +1,1 @@
+Successfully deleted the "Architecture review: search" event scheduled for Friday, June 22, 2018 at 3:00 PM. This event had Kenji Satou (kenji.satou@northwind.example) as an optional attendee. The DELETE request returned HTTP 204 (No Content), confirming the event was removed.

@@ -1,0 +1,1 @@
+Successfully deleted Friday's architecture review event ("Architecture review: storage") on June 22, 2018 (13:00-14:00 PT) from the primary calendar. This was the event that Kenji Sato (kenji.sato@northwind.example) was attending.

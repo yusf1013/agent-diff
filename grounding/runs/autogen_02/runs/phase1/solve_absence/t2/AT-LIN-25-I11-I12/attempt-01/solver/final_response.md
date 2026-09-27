@@ -1,0 +1,1 @@
+Successfully added the "Regression" label (from the Bug triage group, id: aa055061-3a5f-559c-b34c-421850d4e3e8) to issue MOB-3. The mutation confirmed success and the issue now includes the label in its labelIds.

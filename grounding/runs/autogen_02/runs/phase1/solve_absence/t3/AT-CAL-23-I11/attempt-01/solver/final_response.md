@@ -1,0 +1,1 @@
+Successfully deleted the event "Architecture review: storage" (ID: ev_ar_required) from Friday, June 22, 2018 at 1:00 PM PT. Kenji Sato (kenji.sato@northwind.example) was listed as an attendee. The API returned HTTP 204 confirming the deletion.

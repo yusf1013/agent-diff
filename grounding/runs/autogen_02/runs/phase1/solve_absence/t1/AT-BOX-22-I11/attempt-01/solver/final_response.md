@@ -1,0 +1,1 @@
+Successfully added the "Discount policy.pdf" file (ID: 8012) to the "Deal desk" hub (ID: 5202) — the hub created by Dana Whitfield that already contained the "Pricing sheet.xlsx" file. The API returned a success status for the operation.

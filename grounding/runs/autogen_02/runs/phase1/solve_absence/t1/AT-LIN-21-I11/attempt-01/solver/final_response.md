@@ -1,0 +1,1 @@
+Successfully assigned the Web team issue WEB-2 "Login redirect drops the return URL" (created on September 10) to Priya Nair. The API confirmed the update with `success: true` and shows the assignee is now "Priya Nair".

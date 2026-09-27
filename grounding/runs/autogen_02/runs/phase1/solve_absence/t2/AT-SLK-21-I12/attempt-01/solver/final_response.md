@@ -1,0 +1,1 @@
+Successfully added a :thumbsup: reaction to the message Priya Sharma posted in #deploys about the rollback ("Rollback plan for the cache migration is ready for review.").

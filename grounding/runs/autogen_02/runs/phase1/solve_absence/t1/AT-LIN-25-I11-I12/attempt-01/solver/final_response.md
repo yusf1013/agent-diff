@@ -1,0 +1,1 @@
+Successfully added the "Regression" label (from the Bug triage group) to issue MOB-3 ("Crash on resume from background"). The label with ID `aa055061-3a5f-559c-b34c-421850d4e3e8` was applied via the `issueUpdate` mutation with `addedLabelIds`.

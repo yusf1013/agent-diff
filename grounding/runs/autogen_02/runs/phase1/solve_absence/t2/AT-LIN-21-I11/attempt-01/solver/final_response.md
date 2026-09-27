@@ -1,0 +1,1 @@
+Successfully assigned the Web team issue "Login redirect drops the return URL" (created on September 10) to Priya Nair. The issue was previously assigned to Omar Haddad and is now assigned to Priya Nair as confirmed by the API response.

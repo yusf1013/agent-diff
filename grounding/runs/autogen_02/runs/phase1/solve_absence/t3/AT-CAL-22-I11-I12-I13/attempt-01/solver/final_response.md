@@ -1,0 +1,1 @@
+Sam Rivera (sam.rivera@northwind.example) has been granted read access ("reader" role) to the London office calendar (london@northwind.example). The ACL rule was successfully created with ID: london@northwind.example:user:sam.rivera@northwind.example.

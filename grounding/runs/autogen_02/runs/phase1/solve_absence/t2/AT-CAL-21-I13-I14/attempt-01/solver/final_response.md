@@ -1,0 +1,1 @@
+Successfully moved the "Q4 roadmap planning" session (Thursday, June 21, 2018, ending at 5pm) to Room 2B. The event location was updated from none to "Room 2B" via a PATCH request to the Google Calendar API.

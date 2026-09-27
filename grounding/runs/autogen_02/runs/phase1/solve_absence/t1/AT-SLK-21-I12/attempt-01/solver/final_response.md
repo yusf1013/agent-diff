@@ -1,0 +1,1 @@
+Successfully added a :thumbsup: reaction to the message Priya Sharma posted in #deploys about the rollback. The message "Rollback plan for the cache migration is ready for review." (timestamp 1790078400.000004) in channel C_DEPLOYS now has a thumbsup reaction.

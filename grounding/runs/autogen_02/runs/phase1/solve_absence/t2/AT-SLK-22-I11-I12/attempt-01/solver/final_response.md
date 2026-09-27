@@ -1,0 +1,1 @@
+Successfully added the :eyes: reaction to Diego Alvarez's reply in the #incidents thread about the checkout outage. The reply ("Might be the same config push as the checkout outage.") was in the thread starting with Leo's message about the checkout outage (502s on /pay since 14:05 UTC).

@@ -1,0 +1,1 @@
+Successfully reopened the comment thread on WEB-5 ("Flaky checkout test") that Maya Chen was involved with. The comment "Can we pin the browser version?" (c-22) was previously resolved, and I cleared the resolving user and resolving comment ID via a `commentUpdate` mutation. The thread is now reopened with no resolving user assigned.

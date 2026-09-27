@@ -1,0 +1,1 @@
+Successfully reopened the resolved comment thread on WEB-5. Comment c-22 ("Can we pin the browser version?" by Maya Chen) was previously resolved and is now reopened using the `commentUnresolve` mutation. The comment's `resolvedAt` and `resolvingUser` are now both null, confirming the thread is no longer in a resolved state.

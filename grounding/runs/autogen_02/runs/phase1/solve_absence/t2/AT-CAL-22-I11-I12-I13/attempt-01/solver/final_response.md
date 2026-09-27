@@ -1,0 +1,1 @@
+Successfully granted Sam Rivera (sam.rivera@northwind.example) read access to the "London office" calendar (london@northwind.example). An ACL rule was created with the "reader" role, allowing Sam to view events on that calendar.

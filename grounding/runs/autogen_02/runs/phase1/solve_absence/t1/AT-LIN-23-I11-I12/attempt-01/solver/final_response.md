@@ -1,0 +1,1 @@
+Reopened the resolved comment thread on WEB-5 by Maya Chen. The thread ("Can we pin the browser version?") was resolved, and I reopened it by creating a reply comment (parentId: c-22) on the issue, which is the standard way to reopen a resolved comment thread in Linear.

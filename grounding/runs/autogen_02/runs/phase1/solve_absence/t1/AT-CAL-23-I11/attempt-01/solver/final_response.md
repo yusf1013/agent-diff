@@ -1,0 +1,1 @@
+Successfully deleted the "Architecture review: storage" event (ID: ev_ar_required) from Friday, June 22, 2018 at 1:00 PM – 2:00 PM (America/Los_Angeles). The event had Kenji Sato (kenji.sato@northwind.example) and Aiko Mori as attendees. The deletion was confirmed with an HTTP 204 response.

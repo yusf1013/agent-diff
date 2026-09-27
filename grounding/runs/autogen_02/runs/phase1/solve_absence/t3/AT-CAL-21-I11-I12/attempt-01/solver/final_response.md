@@ -1,0 +1,1 @@
+Successfully moved the planning session (ID: ev_ps_late) with description "Q4 roadmap estimates" that ends at 5:30pm on Thursday, June 21 to Room 2B. The event's location field has been updated to "Room 2B".

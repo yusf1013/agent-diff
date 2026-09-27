@@ -1,0 +1,1 @@
+Set the priority to Low on WEB-2 "Pagination skips a page" — the Web team issue that Dana Whitfield is subscribed to (as assignee). The priority was successfully updated from its previous value to Low (1).
