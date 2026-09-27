@@ -646,6 +646,16 @@ the runs end.*
   because the record was also Done. **The fix:** pin
   the date (in the prompt or the replica), or have the code checks flag facts relative to today.
 
+- **Two more scenario flaws my pre-run review missed** (found while labelling batch 2's blind trials; recorded in
+  [eval/phase4_review.json](eval/phase4_review.json), with the review itself unchanged):
+  - **G4-CAL-06:** every event carries a Los Angeles time zone, even on the New-York-time calendar. Qwen judged
+    "set to New York time" by the event's zone and declined, so two blind probe passes do not test the facts.
+  - **G4-BOX-05:** "the PDF in the Finance Reports folder owned by Maya Chen" lets "owned by" attach to the folder.
+    Qwen did so in both blind probe trials: one still read the PDFs' owners, the other never tested the near miss.
+
+  Both slipped past the review because it reads the request and the near misses. It does not check the seed's
+  other fields against the request (here the events' zones), or whether the request can be parsed another way.
+
 **Construction defects found and fixed during the study:**
 - The clone copier moved only a copied row's declared foreign key (UC-BOX-23's comments), and gave copied rows ids
   ending in `_clone`, which Qwen used once to tell the copy from the original.
