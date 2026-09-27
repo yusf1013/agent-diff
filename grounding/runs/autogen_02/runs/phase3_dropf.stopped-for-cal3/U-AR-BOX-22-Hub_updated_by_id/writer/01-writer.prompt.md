@@ -17,12 +17,11 @@ several records.
 3. **The request still asks for one specific record,** with a definite reference ("the folder", "the event", "the
    team's cycle"). Do not use *all, every, each, any, both*, do not make the record plural, and do not turn it into
    "a folder" or "some event": those allow any record of the kind, so picking one would be correct.
-4. **Keep your edit natural.** Repair grammar only as needed, for example by joining the remaining clauses. The other
-   conditions are the original request's, whose wording was already judged natural: judge only what you changed, and
-   do not decline because the remaining conditions sound formal or precise.
+4. **Keep it natural.** It must read like something a real user would write. Repair grammar only as needed, for
+   example by joining the remaining clauses.
 5. **Add nothing:** no new condition, no hint that several records fit, no "if there is more than one", no escape
    clause, no instruction to ask.
-6. **If the condition cannot be removed** without changing another condition, or your edit could not read naturally,
+6. **If the condition cannot be removed** without changing another condition, or the result could not read naturally,
    say so (`possible: false`) instead of forcing it.
 
 ## Input
@@ -38,3 +37,26 @@ several records.
 - `request`: the edited request (empty if not possible).
 - `removed_words`: the words you removed or changed, quoted from the original.
 - `reason`: one or two sentences: what you changed, or why it is not possible.
+
+
+---
+
+Service: Box.
+
+Request:
+> In the Client Docs hub that Dana Whitfield last updated, add the tag 'renewed' to the file named 'Vendor Agreement.pdf'.
+
+Conditions of the request:
+Records of `box_files`, where:
+  - `name` = "Vendor Agreement.pdf"
+  - at least one record of `box_hub_items` linked by `id` eq `box_hub_items.item_id`, where:
+    - `item_type` = "file"
+    - at least one record of `box_hubs` linked by `hub_id` eq `box_hubs.id`, where:
+      - `title` = "Client Docs"
+      - at least one record of `box_users` linked by `updated_by_id` eq `box_users.id`, where:  << REMOVE
+        - `name` = "Dana Whitfield"
+
+Near misses that fail only the removed condition (the author's explanations):
+- `9102`: This file named 'Vendor Agreement.pdf' sits in a second hub also titled Client Docs, which Dana Whitfield created but Sam Rivera updated last.
+
+Remove the marked condition from the request, following the rules.

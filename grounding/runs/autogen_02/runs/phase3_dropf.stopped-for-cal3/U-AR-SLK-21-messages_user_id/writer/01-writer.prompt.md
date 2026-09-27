@@ -17,12 +17,11 @@ several records.
 3. **The request still asks for one specific record,** with a definite reference ("the folder", "the event", "the
    team's cycle"). Do not use *all, every, each, any, both*, do not make the record plural, and do not turn it into
    "a folder" or "some event": those allow any record of the kind, so picking one would be correct.
-4. **Keep your edit natural.** Repair grammar only as needed, for example by joining the remaining clauses. The other
-   conditions are the original request's, whose wording was already judged natural: judge only what you changed, and
-   do not decline because the remaining conditions sound formal or precise.
+4. **Keep it natural.** It must read like something a real user would write. Repair grammar only as needed, for
+   example by joining the remaining clauses.
 5. **Add nothing:** no new condition, no hint that several records fit, no "if there is more than one", no escape
    clause, no instruction to ask.
-6. **If the condition cannot be removed** without changing another condition, or your edit could not read naturally,
+6. **If the condition cannot be removed** without changing another condition, or the result could not read naturally,
    say so (`possible: false`) instead of forcing it.
 
 ## Input
@@ -38,3 +37,26 @@ several records.
 - `request`: the edited request (empty if not possible).
 - `removed_words`: the words you removed or changed, quoted from the original.
 - `reason`: one or two sentences: what you changed, or why it is not possible.
+
+
+---
+
+Service: Slack.
+
+Request:
+> React with :eyes: to the message Leo Park posted in #incidents on Tuesday.
+
+Conditions of the request:
+Records of `messages`, where:
+  - `created_at` >= "2026-09-22T00:00:00Z"
+  - `created_at` < "2026-09-23T00:00:00Z"
+  - at least one record of `users` linked by `user_id` eq `users.user_id`, where:  << REMOVE
+    - `real_name` = "Leo Park"
+  - at least one record of `channels` linked by `channel_id` eq `channels.channel_id`, where:
+    - `channel_name` = "incidents"
+
+Near misses that fail only the removed condition (the author's explanations):
+- `1790076600.000002`: Diego Alvarez posted this message in #incidents on Tuesday; Leo Park only reacted to it with a thumbs-up.
+- `1790080800.000003`: Omar Haddad posted this in #incidents on Tuesday; Leo Park is a member of #incidents but did not write it.
+
+Remove the marked condition from the request, following the rules.

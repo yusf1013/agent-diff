@@ -17,12 +17,11 @@ several records.
 3. **The request still asks for one specific record,** with a definite reference ("the folder", "the event", "the
    team's cycle"). Do not use *all, every, each, any, both*, do not make the record plural, and do not turn it into
    "a folder" or "some event": those allow any record of the kind, so picking one would be correct.
-4. **Keep your edit natural.** Repair grammar only as needed, for example by joining the remaining clauses. The other
-   conditions are the original request's, whose wording was already judged natural: judge only what you changed, and
-   do not decline because the remaining conditions sound formal or precise.
+4. **Keep it natural.** It must read like something a real user would write. Repair grammar only as needed, for
+   example by joining the remaining clauses.
 5. **Add nothing:** no new condition, no hint that several records fit, no "if there is more than one", no escape
    clause, no instruction to ask.
-6. **If the condition cannot be removed** without changing another condition, or your edit could not read naturally,
+6. **If the condition cannot be removed** without changing another condition, or the result could not read naturally,
    say so (`possible: false`) instead of forcing it.
 
 ## Input
@@ -38,3 +37,25 @@ several records.
 - `request`: the edited request (empty if not possible).
 - `removed_words`: the words you removed or changed, quoted from the original.
 - `reason`: one or two sentences: what you changed, or why it is not possible.
+
+
+---
+
+Service: Linear.
+
+Request:
+> Update the title of the roadmap document in the Mobile Redesign project that Leo Park last edited to "Mobile Redesign Roadmap v2".
+
+Conditions of the request:
+Records of `documents`, where:
+  - `title` contains_ci "roadmap"
+  - at least one record of `projects` linked by `projectId` eq `projects.id`, where:  << REMOVE
+    - `name` = "Mobile Redesign"  << REMOVE
+  - at least one record of `users` linked by `updatedById` eq `users.id`, where:
+    - `name` = "Leo Park"
+
+Near misses that fail only the removed condition (the author's explanations):
+- `doc-decoy1`: It belongs to the Platform Migration project; it is only linked to the Mobile Redesign initiative, not the Mobile Redesign project.
+- `doc-decoy2`: Its project is Mobile App Redesign, not Mobile Redesign.
+
+Remove the marked condition from the request, following the rules.

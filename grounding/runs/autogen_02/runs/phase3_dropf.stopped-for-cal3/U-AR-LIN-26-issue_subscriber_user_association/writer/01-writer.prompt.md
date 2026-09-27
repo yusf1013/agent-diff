@@ -17,12 +17,11 @@ several records.
 3. **The request still asks for one specific record,** with a definite reference ("the folder", "the event", "the
    team's cycle"). Do not use *all, every, each, any, both*, do not make the record plural, and do not turn it into
    "a folder" or "some event": those allow any record of the kind, so picking one would be correct.
-4. **Keep your edit natural.** Repair grammar only as needed, for example by joining the remaining clauses. The other
-   conditions are the original request's, whose wording was already judged natural: judge only what you changed, and
-   do not decline because the remaining conditions sound formal or precise.
+4. **Keep it natural.** It must read like something a real user would write. Repair grammar only as needed, for
+   example by joining the remaining clauses.
 5. **Add nothing:** no new condition, no hint that several records fit, no "if there is more than one", no escape
    clause, no instruction to ask.
-6. **If the condition cannot be removed** without changing another condition, or your edit could not read naturally,
+6. **If the condition cannot be removed** without changing another condition, or the result could not read naturally,
    say so (`possible: false`) instead of forcing it.
 
 ## Input
@@ -38,3 +37,27 @@ several records.
 - `request`: the edited request (empty if not possible).
 - `removed_words`: the words you removed or changed, quoted from the original.
 - `reason`: one or two sentences: what you changed, or why it is not possible.
+
+
+---
+
+Service: Linear.
+
+Request:
+> In the Web team, set the priority to Urgent for the Design system audit issue that Sam Rivera is subscribed to.
+
+Conditions of the request:
+Records of `issues`, where:
+  - `title` = "Design system audit"
+  - at least one record of `teams` linked by `teamId` eq `teams.id`, where:
+    - `name` = "Web"
+  - at least one record of `issue_subscriber_user_association` linked by `id` eq `issue_subscriber_user_association.issue_id`, where:  << REMOVE
+    - at least one record of `users` linked by `user_id` eq `users.id`, where:
+      - `name` = "Sam Rivera"  << REMOVE
+
+Near misses that fail only the removed condition (the author's explanations):
+- `i-web-2`: Sam Rivera is the assignee of this issue, not a subscriber; he never subscribed to it.
+- `i-web-3`: Sam Rivera created this issue but did not subscribe to it.
+- `i-web-4`: Dana Whitfield is the subscriber on this issue, not Sam Rivera.
+
+Remove the marked condition from the request, following the rules.

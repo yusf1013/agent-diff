@@ -17,12 +17,11 @@ several records.
 3. **The request still asks for one specific record,** with a definite reference ("the folder", "the event", "the
    team's cycle"). Do not use *all, every, each, any, both*, do not make the record plural, and do not turn it into
    "a folder" or "some event": those allow any record of the kind, so picking one would be correct.
-4. **Keep your edit natural.** Repair grammar only as needed, for example by joining the remaining clauses. The other
-   conditions are the original request's, whose wording was already judged natural: judge only what you changed, and
-   do not decline because the remaining conditions sound formal or precise.
+4. **Keep it natural.** It must read like something a real user would write. Repair grammar only as needed, for
+   example by joining the remaining clauses.
 5. **Add nothing:** no new condition, no hint that several records fit, no "if there is more than one", no escape
    clause, no instruction to ask.
-6. **If the condition cannot be removed** without changing another condition, or your edit could not read naturally,
+6. **If the condition cannot be removed** without changing another condition, or the result could not read naturally,
    say so (`possible: false`) instead of forcing it.
 
 ## Input

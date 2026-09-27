@@ -17,12 +17,11 @@ several records.
 3. **The request still asks for one specific record,** with a definite reference ("the folder", "the event", "the
    team's cycle"). Do not use *all, every, each, any, both*, do not make the record plural, and do not turn it into
    "a folder" or "some event": those allow any record of the kind, so picking one would be correct.
-4. **Keep your edit natural.** Repair grammar only as needed, for example by joining the remaining clauses. The other
-   conditions are the original request's, whose wording was already judged natural: judge only what you changed, and
-   do not decline because the remaining conditions sound formal or precise.
+4. **Keep it natural.** It must read like something a real user would write. Repair grammar only as needed, for
+   example by joining the remaining clauses.
 5. **Add nothing:** no new condition, no hint that several records fit, no "if there is more than one", no escape
    clause, no instruction to ask.
-6. **If the condition cannot be removed** without changing another condition, or your edit could not read naturally,
+6. **If the condition cannot be removed** without changing another condition, or the result could not read naturally,
    say so (`possible: false`) instead of forcing it.
 
 ## Input
@@ -38,3 +37,26 @@ several records.
 - `request`: the edited request (empty if not possible).
 - `removed_words`: the words you removed or changed, quoted from the original.
 - `reason`: one or two sentences: what you changed, or why it is not possible.
+
+
+---
+
+Service: Box.
+
+Request:
+> In my Favorites, add the tag audit-ready to the folder Leo Park last modified that was created in August 2026 and holds exactly two files.
+
+Conditions of the request:
+Records of `box_folders`, where:
+  - `created_at` contains_ci "2026-08-"  << REMOVE
+  - at least one record of `box_collections` linked by `collections` json_contains `box_collections.id`, where:
+    - `name` = "Favorites"
+  - at least one record of `box_users` linked by `modified_by_id` eq `box_users.id`, where:
+    - `name` = "Leo Park"
+  - a number = 2 of records of `box_files` linked by `id` eq `box_files.parent_id`
+
+Near misses that fail only the removed condition (the author's explanations):
+- `7104`: Created on September 1, the day after August.
+- `7106`: Created in March.
+
+Remove the marked condition from the request, following the rules.

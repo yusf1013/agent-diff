@@ -17,12 +17,11 @@ several records.
 3. **The request still asks for one specific record,** with a definite reference ("the folder", "the event", "the
    team's cycle"). Do not use *all, every, each, any, both*, do not make the record plural, and do not turn it into
    "a folder" or "some event": those allow any record of the kind, so picking one would be correct.
-4. **Keep your edit natural.** Repair grammar only as needed, for example by joining the remaining clauses. The other
-   conditions are the original request's, whose wording was already judged natural: judge only what you changed, and
-   do not decline because the remaining conditions sound formal or precise.
+4. **Keep it natural.** It must read like something a real user would write. Repair grammar only as needed, for
+   example by joining the remaining clauses.
 5. **Add nothing:** no new condition, no hint that several records fit, no "if there is more than one", no escape
    clause, no instruction to ask.
-6. **If the condition cannot be removed** without changing another condition, or your edit could not read naturally,
+6. **If the condition cannot be removed** without changing another condition, or the result could not read naturally,
    say so (`possible: false`) instead of forcing it.
 
 ## Input
@@ -38,3 +37,25 @@ several records.
 - `request`: the edited request (empty if not possible).
 - `removed_words`: the words you removed or changed, quoted from the original.
 - `reason`: one or two sentences: what you changed, or why it is not possible.
+
+
+---
+
+Service: Linear.
+
+Request:
+> In the Support team, set priority to Urgent for the issue assigned to Priya Nair that's tagged Customer Tier.
+
+Conditions of the request:
+Records of `issues`, where:
+  - at least one record of `teams` linked by `teamId` eq `teams.id`, where:
+    - `name` = "Support"
+  - at least one record of `users` linked by `assigneeId` eq `users.id`, where:
+    - `name` = "Priya Nair"
+  - at least one record of `issue_labels` linked by `labelIds` json_contains `issue_labels.id`, where:
+    - `name` = "Customer Tier"  << REMOVE
+
+Near misses that fail only the removed condition (the author's explanations):
+- `i-sup-2`: The issue is tagged Enterprise, a specific tier nested under the Customer Tier group, not the bare Customer Tier label itself; team and assignee still match.
+
+Remove the marked condition from the request, following the rules.
