@@ -17,26 +17,27 @@ system** ([plan.md](plan.md), decisions N7–N15 in [decisions.md](decisions.md)
 
 ## Summary
 
-*Status at 08:35. Only batch 2 is still running; its rows say pending.*
+*Final, 10:05. Every planned run is done, judged and analysed. A summary for readers new to the project is in
+[overview.md](overview.md).*
 
-| Part | State | About when |
-|---|---|---|
-| Phase 3: the eight policy decisions | final | – |
-| Phase 4: generation, policy derivation, my reviews | final | – |
-| Phase 4 batch 1: 72 regular tests (216 trials) | run, judged, scored (§6.3) | done |
-| Batch 1's policy run: 67 units, 201 trials (amendment 7) | run, judged, analysed (§6.4) | done |
-| Robustness checks (amendment 6): 17 units, 51 trials | run, judged, computed (§5) | done |
-| Batch 2: 87 regular tests (261 trials) | running: 78 of 261 at 08:35 | run ~09:40, judged ~10:10 |
-| Questions for the parts left out of scope (task 23) | held until the above are done | after batch 2 |
+| Part | State |
+|---|---|
+| Phase 3: the eight policy decisions | final |
+| Phase 4: generation, policy derivation, my reviews | final |
+| Phase 4 batch 1: 72 regular tests (216 trials) | run, judged, scored (§6.3) |
+| Batch 1's policy run: 67 units, 201 trials (amendment 7) | run, judged, analysed (§6.4) |
+| Robustness checks (amendment 6): 17 units, 51 trials | run, judged, computed (§5) |
+| Batch 2: 87 regular tests (261 trials) | run, judged, scored (§6.3) |
+| Questions for the parts left out of scope (task 23) | to be discussed with the PI |
 
 **What the runs show.**
 - **The system runs end to end, and a person is needed only to review and label.** From a brief to verdicts, every
   step is automated: the scenario (Muse writer, code checks, replica pre-checks, Muse reader), its regular tests,
   its per-fact policy variants (absence twins by code; drop-F variants and clones by Muse, checked by code and a
   cold reader), the sampled policy runs on Qwen, and the judge (Muse, v2). On new briefs: 29 of 32 accepted, 24
-  of 29 valid in my review, $0.62 per accepted scenario at list price ($0.035 billed). The new suites work: batch
-  1's 72 tests expose 19 of their 29 facts on Qwen (0.26 facts per test; autogen_01's suites 0.10 to 0.23, on other
-  facts).
+  of 29 valid in my review, $0.62 per accepted scenario at list price ($0.035 billed). The new suites work. Their
+  159 tests expose 24 of their 59 facts on Qwen, 0.15 facts per test: batch 1 0.26, batch 2 0.06. autogen_01's
+  suites got 0.10 to 0.23, on other facts.
 - **All eight policy cells are policy-level under the pre-registered definition** (one test on a random fact of the
   cell fails with probability above 0.8, at 90% confidence): absence in Box, Calendar and Linear at the first look
   (11/11), Slack at the third (23/25); underspecified in Box, Calendar and Slack at the first look (11/11), Linear
@@ -66,8 +67,8 @@ system** ([plan.md](plan.md), decisions N7–N15 in [decisions.md](decisions.md)
   labels in 87. As a detector of failures its precision is 85/86 and its recall 85/85, with the same exposed fact in
   85 of 85. Four of the six disagreements are defective or contestable tests, which the judge cannot flag. The
   other two are borderline absence reports. By the PI's ruling on the bot-count test, three of those were my errors:
-  90 of 93, precision 88/89, recall 88/88. On the 80 blind trials since then (batch 1, its policy run, the two
-  robustness runs) it agrees in all 80.
+  90 of 93, precision 88/89, recall 88/88. On the 110 blind trials since then (the two batches, batch 1's policy
+  run, the two robustness runs) it agrees in all 110.
 - **The automation's quality problems are specific and fixable:**
   - 3 of 159 accepted drop-F variants are degenerate in that way (a verb-precondition check would catch them);
   - the copier cannot clone rows two steps from the target (one clone rejected by the code check);
@@ -87,7 +88,7 @@ system** ([plan.md](plan.md), decisions N7–N15 in [decisions.md](decisions.md)
 | Automated drop-F: every accepted variant passes the code checks | all (cal3) | yes |
 | Automated drop-F: at least 90% valid and natural in my review | cal3 22/23 (96%) | yes |
 | Policy-level definition fixed before any Phase 3 run | amendment 2, 23:49–23:54 | yes |
-| Judge v2 on the blind samples (precision and recall; no bar set) | Phase 3 looks: 87/93 agreement; precision 85/86, recall 85/85 (90/93, 88/89, 88/88 with the ruling on the bot-count test). Batch 1: 30/30 (9/9, 9/9). Its policy run: 30/30 (29/29, 29/29). Robustness runs: 10/10 and 10/10 (17/17, 17/17). Batch 2: *pending* | – |
+| Judge v2 on the blind samples (precision and recall; no bar set) | Phase 3 looks: 87/93 agreement; precision 85/86, recall 85/85 (90/93, 88/89, 88/88 with the ruling on the bot-count test). Batch 1: 30/30 (9/9, 9/9). Its policy run: 30/30 (29/29, 29/29). Robustness runs: 10/10 and 10/10 (17/17, 17/17). Batch 2: 30/30 (1/1, 1/1) | – |
 
 ## 1. The system, and what is automated
 
@@ -489,7 +490,26 @@ scored with autogen_01's rules ([runs/phase4/solve_phase4_batch1.score.json](run
   the two agree with my labels in 237 and 239 of 252 trials.
 - **Timeouts:** 5 of 216, all Linear (17 to 26 steps), retried; the retries are the ones scored.
 
-**Batch 2** (87 tests): *pending (queued after the robustness runs).*
+**Batch 2** (the 87 regular tests of the other 15 scenarios, 261 trials, 08:12–09:41, no timeouts;
+[runs/phase4/solve_phase4_batch2.score.json](runs/phase4/solve_phase4_batch2.score.json)). It was judged and scored
+the same way: 71 trials by autogen_01's selection plus 24 of the blind sample.
+
+| Suite | Tests | Tests exposing a fact | Facts exposed in 3 trials (trial 1) | Facts per test | Void trials |
+|---|---:|---:|---:|---:|---:|
+| Phase 4 batch 2 | 87 | 10 | 5 of 30 declared (2) | 0.06 | 2 |
+| **Phase 4, both batches** | **159** | **37** | **24 of 59 (15)** | **0.15** | **2** |
+
+- **Batch 2 is much easier for Qwen than batch 1.**
+  - By service: Slack 0 of 16 tests exposing, Box 2 of 22, Calendar 4 of 19, Linear 4 of 30.
+  - Of the 30 blind trials, 29 pass: Qwen reported the absence correctly in 24 of 25 probes and fact probes, and
+    acted on the target in all 5 covers.
+  - The briefs were drawn the same way for both batches, so this is variance between scenarios: some writers'
+    near misses are easy to tell apart.
+- **The exposed facts** are mostly relations: a hub's creator, a calendar's data owner (G4-CAL-06, including its
+  cover in 3 of 3 trials), and which team a label belongs to (G4-LIN-06).
+- **Judge v2 on the blind sample** (30 trials, labelled before any verdict): 30/30; precision and recall 1/1.
+- **Both batches together** expose 24 of their 59 facts at 0.15 facts per test, inside autogen_01's range (0.10 to
+  0.23).
 
 ### 6.4 The policy variants of the new scenarios
 
