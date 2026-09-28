@@ -16,6 +16,31 @@ bare-loop results of Purdue's Qwen (autogen_01 and autogen_02) stay as a referen
 | `runs/` | One folder per run: `t<k>/<case_id>/attempt-XX`, the layout judge v2 and the scoring read. `runs/policy/`: each look's cases (`<mode>_look<N>`), run (`solve_…`), verdicts (`judged_…`) and the decisions |
 | `eval/` | The blind samples (`blind_<run>.json`) and my labels (`labels_<run>/`), each written before any verdict on its trials |
 
+## Summary (2026-09-28)
+
+- **Regular suite** (`full_02`, 438 tests × 3 trials):
+  - 94 of 436 tests expose a fact, with 60 facts at detect@3 and 44 at detect@1. These are adjusted by the manual
+    validity reviews (unadjusted: 104 of 438, 65 and 48).
+  - Probes carry most of it: 76 of 279 expose a fact, against 2 of 77 covers.
+- **Policy stage** (autogen_02's units, orders and rule):
+  - None of the eight cells is policy-level. Six are shown not policy-level, and two are undecided with their
+    units exhausted: Box absence at 0.75 and Slack underspecified at 0.80.
+  - Qwen in the toy harness was policy-level in all eight.
+- **How it fails** (by hand, over 185 blind trials):
+  - OpenClaw's Qwen checks the records. Most of its failures come after it has seen the mismatch: it reports the
+    discrepancy and acts on the closest record anyway.
+  - It asks which match was meant in about a quarter of underspecified trials. Qwen in the toy harness never did.
+- **Judge v2** agrees with my labels on 183 of 185 blind trials.
+  - On the trials both call usable, it finds all 92 failures I labelled and no others, with the same facts on 91.
+  - The 2 disagreements are trials it voided as artifacts. One is a group DM the replica reports as private, which
+    my label missed. The other is a contested near miss.
+- **Findings for the PI** (below):
+  - seed ids that name a record's role, and times the services never produce;
+  - a run-date dependency the date check missed (AR-SLK-21);
+  - near misses the validity reviews had already ruled out, which the known-defects list never took in;
+  - two Linear mutations that apply but answer with an error, and Box's collection names;
+  - 25.6% of trials remarking on a trap or a test, against a few percent in the toy harness.
+
 ## The suite
 
 - **Where it comes from:** every accepted generated scenario, 78 in all. autogen_01's arms R (18), P (15) and P v2
@@ -268,14 +293,29 @@ L="python grounding/runs/fact_coverage_02/launch.py"
 $L grounding.runs.openclaw_eval_01.materialize                                    # the suite (no model calls)
 SOLVER_BACKEND=selfhost $L grounding.integrations.openclaw.purdue_proxy --backend selfhost   # the proxy, port 18778
 SOLVER_BACKEND=selfhost $L grounding.runs.openclaw_eval_01.run --out grounding/runs/openclaw_eval_01/runs/NAME \
-    [--cases ID ...] [--trials 3] [--concurrency 16] [--retry-infrastructure]
+    [--cases-dir DIR] [--cases ID ...] [--trials 3] [--concurrency 16] [--retry-infrastructure]
+$L grounding.runs.openclaw_eval_01.blind_sample CASES_DIR RUN_NAME N SEED       # before the run
+$L grounding.runs.autogen_02.kit.judge2 select --runs RUN_DIR > TRIALS.json     # a policy look: every trial
+AUTOGEN_BACKEND=muse $L grounding.runs.autogen_02.kit.judge2 run --trials TRIALS.json --out JUDGED_DIR
+$L grounding.runs.autogen_02.kit.judge2 compare --out JUDGED_DIR --labels LABELS.json --name blind
+# the policy stage: write a look's units, run and judge them, then decide
+$L grounding.runs.openclaw_eval_01.policy look absence|underspecified N [--cells C ...]
+$L grounding.runs.openclaw_eval_01.policy decide absence|underspecified --verdicts JUDGED_DIR ...
+$L grounding.runs.openclaw_eval_01.adjudicate full_02                           # the score by the validity reviews
 ```
+
+For the regular suite, judge v2's selection (every trial that is not mechanically clean, 20% of the clean ones,
+and the blind sample) and the score come from `autogen_02.kit.phase4 select` and `phase4 score`.
 
 ## Runs
 
 | Run | What | Result |
 |---|---|---|
 | `smoke_01` (2026-09-27) | 8 tests, 1 trial: a generated Slack cover and fact probe, G4-CAL-06 (cover and a probe, with the new zones), G4-BOX-05, a Box probe, G4-LIN-01, a G4-LIN-02 probe | 8 of 8 completed and ended on their own; see below |
+| `full_01` (2026-09-28, stopped) | The regular suite, 3 trials, before the neutral layout | Stopped after 535 trials: its prompts named the benchmark and the test. A record only |
+| `smoke_02` (2026-09-28) | 3 tests, 1 trial, the neutral layout | 3 of 3 completed; no prompt leaks |
+| `full_02` (2026-09-28) | The regular suite, 438 tests × 3 trials, neutral layout | See "Results: the regular suite" |
+| `policy/solve_absence_look1`-`4`, `policy/solve_underspecified_look1`-`4` (2026-09-28) | The policy stage's looks: 132 + 42 + 42 + 153 absence trials, 132 + 21 + 21 + 30 underspecified trials | See "Results: the policy stage" |
 
 **What the smoke run showed** ([run_summary.json](runs/smoke_01/run_summary.json); outcomes are the mechanical
 triage, before any judge):

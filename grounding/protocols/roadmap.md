@@ -104,6 +104,21 @@ the final runs use one frozen version.
   - whether they are flawed or weak but valid;
   - whether the kit checks for them before 6b.
 
+  In 6a's blind samples, 4 underspecified trials acted on the match whose id says "target", one saying so.
+- **Open, from 6a** (details in [openclaw_eval_01](../runs/openclaw_eval_01/README.md)):
+  - **The validity reviews' verdicts never reached the known-defects list.** 6a's numbers apply them, as autogen_01
+    did: 2 tests of AR-LIN-25 left out, and 23 trials on contested or invalid near misses not counted. The PI
+    decides whether the list should carry them, and which near misses count as flawed.
+  - **A run-date dependency the date check missed:** AR-SLK-21 ("posted … on Tuesday"). Its tests are valid only for
+    runs from 2026-09-23 to 2026-09-28, and every run so far fell inside. The check has no weekday names.
+  - **Replica:**
+    - Linear's `documentUpdate` and `attachmentUpdate` apply the change but answer with an error.
+    - Box names every collection "Favorites" in an item's details.
+    - Neither is fixed.
+  - **Awareness:** 25.6% of OpenClaw's trials remark on a trap, a decoy or a test (11.0% say outright it is a
+    test), against a few percent in the toy harness. Such trials do not pass more often.
+  - **Impossible times:** 6 Box records were created after their last modification, as noted before.
+
 ## Standing rules
 
 - Changes to existing prompts or functionality are discussed with the PI first ("if it ain't broke, don't fix it").
@@ -136,7 +151,7 @@ the final runs use one frozen version.
 | 2 | Domain knowledge in deterministic code | done and discussed | [domain_code_audit.md](../runs/roadmap_01/domain_code_audit.md) |
 | 3 | Agreed fixes, frozen version | done (2026-09-27), tag `grounding-freeze-01` | [roadmap_02](../runs/roadmap_02/README.md) |
 | 5 | Investigations | in progress (separate session, branch `exp/investigations-01`) | – |
-| 6a | OpenClaw × self-hosted Qwen, frozen suite | in progress. `full_01` was stopped: the harness leaked the test ids into the prompt. The fixed run `full_02` and the first policy looks have been running since 2026-09-28 04:50 UTC; blind samples are being labelled. | [openclaw_eval_01](../runs/openclaw_eval_01/README.md) |
+| 6a | OpenClaw × self-hosted Qwen, frozen suite | done (2026-09-28). Regular suite: 94 of 436 tests expose a fact, 60 facts at detect@3 (adjusted by the validity reviews). Policy stage: no cell policy-level (6 not, 2 undecided), where Purdue's Qwen in the toy harness was policy-level in all 8. Judge v2 agrees with 183 of 185 blind labels. `full_01` was stopped, since the harness leaked the test ids; `full_02` is the run. Findings for the PI are in the README. | [openclaw_eval_01](../runs/openclaw_eval_01/README.md) |
 | 6b | The remaining briefs on OpenClaw | not started | – |
 | 6c | Judge baselines | done for Qwen's 429 labels (2026-09-28): on the blind samples, recall is 0.72 for J0, 0.75 for J1 and 1.00 for judge v2, all at precision ≥ 0.99. OpenClaw's labels are added after 6a. | [judge_baselines_01](../runs/judge_baselines_01/README.md) |
 | 6d | Generator baselines | not started | – |
