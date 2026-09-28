@@ -53,6 +53,19 @@ the final runs use one frozen version.
    - **Several-match requests.**
    - **The capability boundary.**
    - The known-defects list is the development set for attribution.
+   - **Policy-level: the definition and the sampling rule** (added 2026-09-28, from 6a).
+     - **The question:** what should "policy-level" mean for an agent whose runs of one test disagree, and when
+       can a sample of policy tests stand in for all of them?
+     - **Why it came up:** OpenClaw's Qwen fails many policy tests in one or two of three runs. The decisions change
+       with how the runs are read: the first run only (the rule so far), any of the three, or all of them pooled.
+     - **Candidate definitions:**
+       - with 90% confidence, one run of a policy test on a new fact fails with probability above 0.8;
+       - the same for a test with its three runs;
+       - the failure rate is about the same across 80% of the facts.
+     - **The ground truth:** the full set of policy tests on OpenClaw, which runs regardless of the sampled
+       decisions. Each definition and sampling rule is judged against it: does it reach the same decision, and
+       with how few tests?
+     - **The working rule until then:** all runs are used, with tests (not runs) as the independent units.
 6. **Final evaluation:**
    - **6a. OpenClaw with the self-hosted Qwen, on the frozen generated suite.**
      - **Settings:** the model's real limits (131k context, 8k output); no "Yes, go ahead." follow-up turn.
@@ -72,6 +85,18 @@ the final runs use one frozen version.
        baselines test that we never defined gets noted.
      - **Runs:** on OpenClaw, compared under fact_coverage_02's decision D5.
    - **6e. Reports:** OpenClaw for first-time readers; the system (generation and judging); the baselines.
+
+## Decisions (2026-09-28, discussion after 6a; in progress)
+
+- **Seed ids that leak the answer make a test flawed** (a validity issue). Ids that merely are not random are a
+  quality issue.
+  - The pipeline will prevent them with an automated check before 6b.
+  - The affected scenarios are regenerated through the fixed pipeline.
+- **Near misses the manual reviews ruled out:** those the agent cannot check, and those a natural reading of the
+  request includes, are flawed (groups A and B). The ambiguous ones (group C) are ruled case by case.
+- **The policy statistic** uses all runs, with tests as the independent units (see the investigation in step 5).
+- **The full set of policy tests runs on OpenClaw**, whatever the sampled decisions were.
+- Nothing runs until the PI closes the discussion.
 
 ## Decisions (2026-09-27)
 
