@@ -1,0 +1,1 @@
+Done — Budget Review on Thursday June 21, 10:00–11:00am now has location **Room 5B**. It's still blocking time as before (opaque). I didn't notify attendees (Priya and Omar); want me to send them the update?

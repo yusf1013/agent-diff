@@ -40,6 +40,13 @@ LABEL_FILES = sorted((A2 / "eval/labels_phase1").glob("*.json")) + \
 # attribution_01's development set.
 V2_DIRS = ["autogen_02/runs/judge2_phase3_attempt01", "autogen_02/runs/judge2_phase1", "autogen_02/runs/judge2_phase3",
            "autogen_02/runs/judge2_panel", "autogen_02/runs/judge2_phase4_policy", "autogen_02/runs/phase4/judged"]
+# OpenClaw's blind samples (roadmap 6a) and judge v2's verdicts on them. Its keys carry the study's name, since its
+# policy looks reuse autogen_02's run names. full_01's labels are left out: that run leaked the test and was stopped.
+OC = "openclaw_eval_01"
+OC_LABEL_FILES = sorted(p for p in (RUNS / OC / "eval").glob("labels_*/*_blind.json") if p.parent.name != "labels_full_01")
+OC_V2_DIRS = [f"{OC}/runs/judged_full_02"] + sorted(
+    str(p.relative_to(RUNS)) for p in (RUNS / OC / "runs" / "policy").glob("judged_*") if p.is_dir())
+SOURCES = [("", LABEL_FILES, V2_DIRS), (f"{OC}/", OC_LABEL_FILES, OC_V2_DIRS)]
 MISTAKE = {"incorrect", "presented"}
 NO_MISTAKE = {"correct", "correct_absent", "false_absence", "incomplete"}
 SERVICE = {"box": "Box", "calendar": "Google Calendar", "linear": "Linear", "slack": "Slack"}
@@ -59,16 +66,16 @@ def local(path: str) -> Path:
 
 
 def trials() -> list[dict]:
-    labels = {}
-    for f in LABEL_FILES:
-        for key, v in json.loads(f.read_text()).items():
-            if not key.startswith("_") and isinstance(v, dict) and "outcome" in v:
-                labels[key] = {**v, "file": f.name}
-    v2 = {}
-    for d in V2_DIRS:
-        for path in sorted((RUNS.parent.parent / "grounding/runs" / d).glob("*/*/*/verdict.json")):
-            v = json.loads(path.read_text())
-            v2.setdefault(v["key"], v)
+    labels, v2 = {}, {}
+    for prefix, label_files, v2_dirs in SOURCES:
+        for f in label_files:
+            for key, v in json.loads(f.read_text()).items():
+                if not key.startswith("_") and isinstance(v, dict) and "outcome" in v:
+                    labels[prefix + key] = {**v, "file": f.name}
+        for d in v2_dirs:
+            for path in sorted((RUNS.parent.parent / "grounding/runs" / d).glob("*/*/*/verdict.json")):
+                v = json.loads(path.read_text())
+                v2.setdefault(prefix + v["key"], v)
     out = []
     for key, label in sorted(labels.items()):
         verdict = v2.get(key)
@@ -176,7 +183,10 @@ def matrix(rows: list[tuple[bool, bool | None]]) -> dict:
 
 def group(item: dict) -> str:
     """Phase 1's labels (every trial of the variant runs) or a blind sample labelled before any verdict (Phases 3
-    and 4). Judge v2's rules were written while Phase 1 was labelled, so only the blind samples are held out for it."""
+    and 4). Judge v2's rules were written while Phase 1 was labelled, so only the blind samples are held out for it.
+    OpenClaw's trials (all from blind samples) form their own group."""
+    if item["key"].startswith(f"{OC}/"):
+        return "openclaw"
     return "phase1" if item["label_file"] in {p.name for p in (A2 / "eval/labels_phase1").glob("*.json")} else "blind"
 
 
@@ -200,12 +210,15 @@ def score() -> dict:
     items = [t for t in everything if not is_flawed(t["key"], flawed)]
     verdicts = {}
     for variant in ("j0", "j1"):
-        for path in (HERE / "runs" / variant).glob("*/*/*/verdict.json"):
+        for path in (HERE / "runs" / variant).rglob("verdict.json"):
             v = json.loads(path.read_text())
             verdicts.setdefault(variant, {})[v["key"]] = v.get("mistake")
     result = {"left_out_as_flawed": sorted(t["key"] for t in everything if is_flawed(t["key"], flawed))}
-    for name, subset in (("all", items), ("phase1", [t for t in items if group(t) == "phase1"]),
-                         ("blind", [t for t in items if group(t) == "blind"])):
+    qwen = [t for t in items if group(t) != "openclaw"]
+    # "all", "phase1" and "blind" are Qwen's trials, as before OpenClaw's were added; "openclaw" is OpenClaw's.
+    for name, subset in (("all", qwen), ("phase1", [t for t in qwen if group(t) == "phase1"]),
+                         ("blind", [t for t in qwen if group(t) == "blind"]),
+                         ("openclaw", [t for t in items if group(t) == "openclaw"])):
         part = {"trials": len(subset), "mistakes_by_label": sum(t["truth"] for t in subset)}
         for variant in ("j0", "j1"):
             part[variant] = matrix([(t["truth"], verdicts.get(variant, {}).get(t["key"])) for t in subset])

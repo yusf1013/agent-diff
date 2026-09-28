@@ -1,0 +1,1 @@
+Done — the Thursday 10am Budget Review (Thu Jun 21, 10:00–11:00 AM) now has location **Room 5B**. Since it's a location change only, attendees Priya and Omar get an update notice; your other 10am "Budget Review" copy on the calendar that's set as free time was left alone.

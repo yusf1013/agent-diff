@@ -1,0 +1,1 @@
+Done — added a 🚀 reaction to Omar's latest rollout timeline message ("Rollout timeline confirmed for Friday, see thread.") in #eng-updates. There were a few earlier timeline messages, so I reacted to the most recent one that supersedes the rest.
