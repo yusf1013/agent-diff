@@ -5,6 +5,11 @@
 - **Probe:** one per decoy. The decoy alone, no target, and "If there isn't one, just tell me." (plural: "If there
   aren't any, …"). A decoy's `keep` rows stay, as in the pilot.
 - **Fact probe:** one per fact with two or more decoys, holding all of them, no target, and the escape clause.
+
+A probe or fact probe that fails the reference check once the target is gone is dropped and recorded
+(`suite_with_dropped`). Removing the target can take a near miss's trap with it, or make the near miss a full match;
+such a test cannot expose its fact. The check always ran here, but until 2026-09-27 its result was ignored
+(roadmap step 3).
 """
 from __future__ import annotations
 
@@ -91,12 +96,17 @@ def _finish(case):
     return case, errors
 
 
-def suite(case: dict):
-    """[(test case, meta)] for a built scenario case; meta has form, scenario, fact, family."""
+def suite_with_dropped(case: dict):
+    """(kept, dropped) for a built scenario case, each a list of (test case, meta); meta has form, scenario, fact,
+    family, and for a dropped test the reference check's `errors`."""
     sid = case["case_id"]
     plural = bool(case.get("plural"))
     base = {k: v for k, v in copy.deepcopy(case).items() if k not in PRIVATE}
-    out = []
+    out, dropped = [], []
+
+    def add(test, errors, meta):
+        (dropped if errors else out).append((test, {**meta, "errors": errors} if errors else meta))
+
     cover, _ = _finish(copy.deepcopy(base))
     out.append((cover, {"form": "cover", "scenario": sid, "fact": None, "family": None}))
     ref = base["references"][0]
@@ -104,16 +114,21 @@ def suite(case: dict):
     for ci, claim in enumerate(ref["claims"]):
         key = f"I1{ci + 1}"
         probe = told(rename(isolate(base, 0, ci, claim.get("keep", ())), f"P-{sid}-{key}"), plural)
-        probe, _ = _finish(probe)
-        out.append((probe, {"form": "probe", "scenario": sid, "fact": claim["requirement"],
-                            "family": claim.get("family"), "contestable": bool(claim.get("contestable"))}))
+        probe, errors = _finish(probe)
+        add(probe, errors, {"form": "probe", "scenario": sid, "fact": claim["requirement"],
+                            "family": claim.get("family"), "contestable": bool(claim.get("contestable"))})
         by_fact[claim["requirement"]].append((ci, key))
     for fact, items in by_fact.items():
         if len(items) < 2:
             continue
         keys = [k for _, k in items]
         fp = told(rename(keep_claims(base, 0, {ci for ci, _ in items}), f"FP-{sid}-{'-'.join(keys)}"), plural)
-        fp, _ = _finish(fp)
-        out.append((fp, {"form": "fact probe", "scenario": sid, "fact": fact,
-                         "family": "+".join(sorted({ref["claims"][ci].get("family", "") for ci, _ in items}))}))
-    return out
+        fp, errors = _finish(fp)
+        add(fp, errors, {"form": "fact probe", "scenario": sid, "fact": fact,
+                         "family": "+".join(sorted({ref["claims"][ci].get("family", "") for ci, _ in items}))})
+    return out, dropped
+
+
+def suite(case: dict):
+    """[(test case, meta)] for a built scenario case: the tests kept by `suite_with_dropped`."""
+    return suite_with_dropped(case)[0]

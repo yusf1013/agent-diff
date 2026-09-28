@@ -7,11 +7,11 @@ judgment work, and code does everything that can be checked or derived.
 |---|---|---|
 | Brief | code, from your briefs file | a scenario id, a domain, and 2-4 catalog facts to test |
 | Write | **writer agent** (Sonnet; Read, Write, Edit, Glob, Grep; no Bash) | `scenario.json`: request, seed, target, conditions, reference query, decoys with mutations, write call |
-| Check | code ([scenario.py](scenario.py)) | format, seed expansion, `fdc.check_reference` (every decoy fails exactly its fact), anchors survive, no dangling keys, every derived test re-checked (nothing matches once the target is removed), replica rules, request lint |
+| Check | code ([scenario.py](scenario.py)) | format, seed expansion, `fdc.check_reference` (every decoy fails exactly its fact), anchors survive, no dangling keys, every derived test re-checked (nothing matches once the target is removed), replica rules, request lint (including words relative to today, outside Calendar) |
 | Pre-check | code ([preflight.py](preflight.py)) | install on the replica, read every record, **observability** (each decoy's deciding value is visible), **write feasibility** (the action works on the target) |
 | Read | **reader agent** (Sonnet, no tools, fresh session) | the request alone, then the records: which records match, which condition each decoy fails, genuine ambiguity, naturalness |
 | Repair | the same writer session, resumed | every finding goes back to the writer; up to 6 check rounds and 2 reader rounds |
-| Suite | code ([derive.py](derive.py)) | cover, one probe per decoy, one fact probe per fact with several decoys |
+| Suite | code ([derive.py](derive.py)) | cover, one probe per decoy, one fact probe per fact with several decoys; a probe whose near miss no longer fails exactly its fact once the target is gone is dropped and recorded (`suite_dropped.json`) |
 | Run | code (fact_coverage_02's runner) | the agent under test, 3 trials per test |
 | Judge | **judge agent** (Sonnet, no tools) | one verdict per trial that is not mechanically clean: outcome, exposed facts, mechanism |
 | Score | code ([score_run.py](score_run.py)) | distinct facts exposed (detect@1, detect@3), by form, family and domain |
@@ -48,6 +48,7 @@ any repository. So they read no project instructions or memory, and no files but
 - [prompts/](prompts/): the role prompts (writer, reader, judge);
 - [docs/](docs/): the writer's method notes and the scenario format;
 - [examples/](examples/): the two worked examples every writer sees;
+- [seedops.py](seedops.py), with [seed_linear.py](seed_linear.py) and [seed_slack.py](seed_slack.py): the seed builders;
 - [agent.py](agent.py): runs one agent turn and saves its evidence;
 - [orchestrate.py](orchestrate.py), [reader.py](reader.py): generation;
 - [judge.py](judge.py), [bundle.py](bundle.py): judging;
@@ -61,3 +62,34 @@ any repository. So they read no project instructions or memory, and no files but
 - **Test-level decisions** (a whole test invalid) are outside the judge, which scores trial by trial.
 - **Replica gaps** must be listed in `replica.md`. A filter the replica ignores makes an artifact, and the judge
   recognizes it more reliably when the gap is listed.
+- **Dates relative to today.** Only Calendar's replica has a fixed today. Elsewhere the build sends back a request
+  with words such as "overdue" or "next week". The check is a word list, so it also catches such a word inside
+  quoted message text (AR-SLK-22's "tonight", accepted before the check existed). OpenClaw reads the time from
+  several clocks; a full solution waits until one is needed (roadmap step 3).
+
+## Notes on the inputs (for maintainers; no agent reads this file)
+Recorded in roadmap step 3 (2026-09-27) from the [overfit audit](../../roadmap_01/overfit_audit.md) and the
+[code audit](../../roadmap_01/domain_code_audit.md). The inputs stay as they are; these notes disclose what they
+carry.
+- **Where "Make the near miss tempting" comes from.** That section of [docs/method.md](docs/method.md) (method v2)
+  was drawn from autogen_01's Arm R autopsy ([report](../report.md)). The autopsy compared the generated decoys with
+  the hand-made exemplars' decoys, which had exposed failures in fact_coverage_01's pilot runs on Qwen
+  (`qwen3.8:27b`). Its rules name no model or test. Its examples are two exemplars' decoys (CAL-24's Tokyo
+  calendar, BOX-24's `pat.kimura`), which is why v2 was tested on Arm P only. The final evaluation on other agents
+  shows whether it generalizes.
+- **One line of Slack's replica notes is about agents,** not the mock: "With few channels, the agent usually lists
+  them all" (`inputs/slack/replica.md` here and in autogen_02). The writer, the clone author and the judge read it.
+  It is harmless, so it is left as it is.
+- **The default people include near-miss pairs.** Each domain's `seed_ops.md` lists people present in every seed.
+  Box has both Maya Chen and Maya Lopez, a ready pair for similar-name decoys. Writers lean on the defaults, which
+  fed the copying below.
+- **9 of the 29 Phase 4 scenarios (Muse) copied the worked examples.** They are kept as valid tests:
+  - "Room 5B", the Calendar example's destination, in 6 of 7 Calendar scenarios: G4-CAL-01, 02, 03, 04, 06 and 07.
+    G4-CAL-03 also copies "on Thursday to Room 5B".
+  - G4-BOX-05, a near copy of the Box example (the PI ruled it a valid test in roadmap step 3).
+  - G4-BOX-06, which borrows the Box example's structure.
+  - G4-LIN-08, which borrows method.md's "MOB-42" example.
+
+  Since 2026-09-27 the writer prompt asks writers to match the examples' standard, not their content.
+- **Slack's acting bot is a member of every channel the builder creates,** so that it can read them. Every member
+  count includes the bot. One test's count read two ways (AT-AP-SLK-05-I13-I14); the PI ruled that the bot counts.

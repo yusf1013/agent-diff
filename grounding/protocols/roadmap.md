@@ -1,6 +1,6 @@
 # Roadmap after autogen_02
 
-Agreed with the PI on 2026-09-27 after [autogen_02](../runs/autogen_02/overview.md), and re-agreed on 2026-09-28
+Agreed with the PI on 2026-09-27 after [autogen_02](../runs/autogen_02/overview.md), and re-agreed later that day
 once steps 1 and 2 were done. The work is done in steps. The PI steps in where a step needs a decision. Progress is
 recorded in the status table at the end.
 
@@ -73,7 +73,7 @@ the final runs use one frozen version.
      - **Runs:** on OpenClaw, compared under fact_coverage_02's decision D5.
    - **6e. Reports:** OpenClaw for first-time readers; the system (generation and judging); the baselines.
 
-## Decisions (2026-09-28)
+## Decisions (2026-09-27)
 
 - **Flawed is flawed.** Every flawed test, whenever it was found, is left out of the results and counted as flawed
   in the generation numbers. When it was found goes in a footnote. A flaw is judged on the test itself, never on its
@@ -125,7 +125,7 @@ the final runs use one frozen version.
 | 1 | List-level loose ends | done (2026-09-27) | [roadmap_01](../runs/roadmap_01/README.md) |
 | 2 | Prompt overfitting and leak audit | done and discussed | [overfit_audit.md](../runs/roadmap_01/overfit_audit.md) |
 | 2 | Domain knowledge in deterministic code | done and discussed | [domain_code_audit.md](../runs/roadmap_01/domain_code_audit.md) |
-| 3 | Agreed fixes, frozen version | in progress (branch `exp/roadmap-02`) | – |
+| 3 | Agreed fixes, frozen version | done (2026-09-27), tag `grounding-freeze-01` | [roadmap_02](../runs/roadmap_02/README.md) |
 | 5 | Investigations | in progress (separate session, branch `exp/investigations-01`) | – |
 | 6a | OpenClaw × self-hosted Qwen, frozen suite | not started | – |
 | 6b | The remaining briefs on OpenClaw | not started | – |

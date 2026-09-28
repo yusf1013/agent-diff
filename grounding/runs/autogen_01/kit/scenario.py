@@ -151,6 +151,25 @@ def _ids_in_request(case) -> list[str]:
     return sorted(set(found))
 
 
+# Words that tie a request to the day it runs. Only the Calendar replica has a fixed today (roadmap step 3).
+RELATIVE_DATE = re.compile(
+    r"\b(today|tonight|tomorrow|yesterday|overdue|past[- ]due|upcoming|ago|(this|next|last|coming|previous|past) "
+    r"(week|weekend|month|year|quarter|monday|tuesday|wednesday|thursday|friday|saturday|sunday)|"
+    r"within the (last|past|next))\b", re.I)
+
+
+def _relative_dates(s) -> list[str]:
+    """Outside Calendar, a request relative to today changes meaning with the day of the run."""
+    if s["domain"] == "calendar":
+        return []
+    found = sorted({m.group(0).lower() for m in RELATIVE_DATE.finditer(s["request"])})
+    if not found:
+        return []
+    return [f"The request depends on the day it runs ({', '.join(found)}): only the Calendar replica has a fixed "
+            "today, so which records match would change with the date. Use conditions that name dates, or that do "
+            "not depend on them."]
+
+
 def _replica_rules(s, case) -> list[str]:
     p = []
     if s["domain"] == "slack":
@@ -225,13 +244,15 @@ def build(s: dict, brief: dict):
         return None, [f"Reference query or mutation cannot be evaluated: {type(exc).__name__}: {exc}"]
     problems += [f"Claim check: {e}" for e in errors]
     problems += _lint(s)
+    problems += _relative_dates(s)
     ids = _ids_in_request(case)
     if ids:
         problems.append(f"The request contains internal ids {ids}; name records as a user would.")
     problems += _replica_rules(s, case)
     if not errors:
         problems += [f"Seed: {m}" for m in derive.dangling(case)]
-        for test, meta in derive.suite(case):
+        kept, dropped = derive.suite_with_dropped(case)
+        for test, meta in kept + dropped:  # the writer still hears about every probe, including those derivation drops
             if meta["form"] in ("probe", "fact probe"):
                 problems += [f"{test['case_id']}: {m} (an entity the request names must still exist when the "
                              "target is removed)" for m in missing_anchors(test)]

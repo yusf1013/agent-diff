@@ -153,7 +153,7 @@ def generate(brief: dict, run_dir: Path) -> dict:
 
 
 def write_suite(case: dict, run_dir: Path):
-    tests = derive.suite(case)
+    tests, dropped = derive.suite_with_dropped(case)
     with LOCK:
         index_path = run_dir / "suite.json"
         index = json.loads(index_path.read_text()) if index_path.exists() else []
@@ -164,6 +164,13 @@ def write_suite(case: dict, run_dir: Path):
             path.write_text(json.dumps(test, indent=1, ensure_ascii=False) + "\n")
             index.append({"case_id": test["case_id"], "domain": case["domain"], **meta})
         index_path.write_text(json.dumps(sorted(index, key=lambda t: t["case_id"]), indent=1) + "\n")
+        # Tests the derivation dropped (they fail the reference check once the target is gone), kept on record.
+        dropped_path = run_dir / "suite_dropped.json"
+        record = json.loads(dropped_path.read_text()) if dropped_path.exists() else []
+        record = [t for t in record if t["scenario"] != case["case_id"]]
+        record += [{"case_id": t["case_id"], "domain": case["domain"], **m} for t, m in dropped]
+        if record:
+            dropped_path.write_text(json.dumps(sorted(record, key=lambda t: t["case_id"]), indent=1) + "\n")
 
 
 def main():

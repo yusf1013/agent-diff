@@ -15,9 +15,10 @@ import json
 import re
 import uuid
 from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
 
-from grounding.runs.fact_coverage_01.pilot import cases_linear as LIN
-from grounding.runs.fact_coverage_02 import scenarios_slack as SLK
+from grounding.runs.autogen_01.kit import seed_linear as LIN
+from grounding.runs.autogen_01.kit import seed_slack as SLK
 
 UUID = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$")
 T0 = "2026-06-01T09:00:00+00:00"
@@ -25,6 +26,14 @@ T0 = "2026-06-01T09:00:00+00:00"
 
 class SeedError(ValueError):
     pass
+
+
+def local_offset(local: str, tz: str) -> str:
+    """The UTC offset ("-07:00") of zone `tz` at the naive local time `local` ("2018-06-21T10:00:00")."""
+    delta = datetime.fromisoformat(local).replace(tzinfo=ZoneInfo(tz)).utcoffset()
+    minutes = int(delta.total_seconds() // 60)
+    sign = "-" if minutes < 0 else "+"
+    return f"{sign}{abs(minutes) // 60:02d}:{abs(minutes) % 60:02d}"
 
 
 def resolve(value, refs):
@@ -367,8 +376,12 @@ class CalendarSeed(Builder):
         else:
             if end is None:
                 raise SeedError("a timed event needs an end")
-            row.update(start={"dateTime": utc_start or f"{start}-07:00", "timeZone": self.TZ},
-                       end={"dateTime": f"{end}-07:00", "timeZone": self.TZ}, start_datetime=start, end_datetime=end)
+            # The event keeps its calendar's time zone, with that zone's offset on its date. (Until 2026-09-27 every
+            # event got Los Angeles at -07:00, whatever its calendar; roadmap step 3.)
+            tz = next((c["time_zone"] for c in self.t["calendars"] if c["id"] == cal), self.TZ)
+            row.update(start={"dateTime": utc_start or f"{start}{local_offset(start, tz)}", "timeZone": tz},
+                       end={"dateTime": f"{end}{local_offset(end, tz)}", "timeZone": tz},
+                       start_datetime=start, end_datetime=end)
         if recurrence:
             row["recurrence"] = recurrence
         if hangout:
