@@ -68,6 +68,18 @@ def box_tree(api, fid, limit=1000):
     return found
 
 
+def box_list_paged(api, fid, limit=1000):
+    """Every page of a folder's listing (offset paging)."""
+    found, offset = set(), 0
+    while True:
+        body = api({"method": "GET", "path": f"/folders/{fid}/items", "params": {"limit": limit, "offset": offset}})
+        entries = body.get("entries", [])
+        found |= ids_in(entries)
+        offset += len(entries)
+        if not entries or offset >= int(body.get("total_count", 0)):
+            return found
+
+
 def box_search(api, query, **params):
     return api({"method": "GET", "path": "/search", "params": {"query": query, "type": "file", **params}})
 
@@ -83,6 +95,7 @@ BOX = {
     "search person's name under folder (limit 200)": (False, lambda api, e: ids_in(box_search(
         api, e.get("person", "Leo"), ancestor_folder_ids=e["folder"], limit=200))),
     "list tree (limit 1000) [thorough]": (True, lambda api, e: box_tree(api, e["folder"])),
+    "list named, every page (limit 1000) [thorough]": (True, lambda api, e: box_list_paged(api, e["folder"])),
 }
 
 
@@ -166,6 +179,20 @@ def slk(api, method, **params):
     return api({"slack": method, "params": params})
 
 
+def slk_hist_paged(api, channel, limit=999):
+    """Every page of a channel's history (cursor paging)."""
+    found, cursor = set(), None
+    while True:
+        params = {"channel": channel, "limit": limit}
+        if cursor:
+            params["cursor"] = cursor
+        body = slk(api, "conversations.history", **params)
+        found |= ids_in(body.get("messages", []))
+        cursor = (body.get("response_metadata") or {}).get("next_cursor")
+        if not cursor or not body.get("has_more"):
+            return found
+
+
 def slk_hist_matching(api, e, types, **extra):
     found = set()
     params = {"limit": 1000, **extra}
@@ -208,6 +235,8 @@ SLACK = {
         api, e, "public_channel,private_channel", exclude_archived="true")),
     "channel list (public+private) -> history [thorough]": (True, lambda api, e: slk_hist_matching(
         api, e, "public_channel,private_channel")),
+    "named channel history, every page (limit 999) [thorough]": (True, lambda api, e: slk_hist_paged(
+        api, e["channel"])),
 }
 def slk_hist_all(api, types):
     """Every conversation of the given types (all of them, no name filter) -> its history."""

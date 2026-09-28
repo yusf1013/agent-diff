@@ -202,3 +202,22 @@ cannot express.
   - folder trees and sub-team trees: 0 misses in 10 trials;
   - owned calendars that are visible: 0 misses in 10.
 - **The hidden-calendar result does not depend on the contestable wording.** It holds with "the calendars I own".
+
+## Cycle 5 (design, 2026-09-28): controls, and pagination beyond the largest page
+
+**Why:** cycles 3–4 found that visibility defaults hide matches from Qwen, and that stated structural scopes do not.
+Two questions follow.
+- **Is the miss caused by the default, or by an inability?**
+  - SM2-CAL-03 names hidden calendars in the scope ("including any I have hidden").
+  - SM2-SLK-02 says "public or private".
+
+  If Qwen then finds everything, the defaults are the hiding place.
+- **Does Qwen follow pagination when even its largest page leaves matches behind?** The generous variant always
+  won in cycles 1–4, because no seed was larger than one big page.
+  - SM2-BOX-02 has a 1,150-file folder. The condition (the last modifier) is one search cannot express, so a listing
+    is the only route, and `limit=1000` leaves two matches for page 2.
+  - SM2-SLK-03 has an 1,100-message channel. The condition (Leo's :rocket: reaction) is one search cannot express,
+    and `limit=999` leaves the two oldest matches.
+
+**Mechanical check:** on both pagination seeds, only paging through every page finds all four matches. Every
+single-page route misses two, including the tree and channel-list routes that were thorough on the smaller seeds.

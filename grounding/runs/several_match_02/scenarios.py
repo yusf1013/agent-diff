@@ -261,7 +261,138 @@ def slk():
     }, {"C_MIG1": "V", "C_MIG2": "V", "C_MIG3": "H", "C_MIG4": "H"}
 
 
-SCENARIOS = [box, cal, lin, slk, cal_owned_wording]
+# ------------------------------------------------------------------ cycle 5
+def cal_explicit_hidden():
+    """Control: the hidden calendar named by the request's scope. If Qwen then finds it, the cycle 3-4 misses come
+    from the default, not from an inability."""
+    s, place = cal_owned_wording()
+    req = ("Delete every 'Vendor sync' event from Monday, June 18 through Friday, June 22 on the calendars I own, "
+           "including any I have hidden.")
+    return {**s, "scenario_id": "SM2-CAL-03", "request": req,
+            "conditions": [{**c, "text": "on the calendars I own, including any I have hidden"} if c["id"] == "c3"
+                           else c for c in s["conditions"]]}, place
+
+
+def slk_explicit_private():
+    """Control: private channels named by the request's scope."""
+    s, place = slk()
+    return {**s, "scenario_id": "SM2-SLK-02",
+            "request": "Invite Aisha Khan to every channel, public or private, whose topic mentions the Q3 migration.",
+            "conditions": [{**s["conditions"][0], "text": "every channel, public or private, whose topic mentions "
+                                                          "the Q3 migration"}]}, place
+
+
+def box_pages():
+    """A 1,150-file folder: the largest page (1000) leaves 2 matches for a second page. The condition (the last
+    modifier) is one no search can express."""
+    leo = node("box_users", [filt("f_mod", "name", "eq", "Leo Park", "A:User.name")])
+    contracts = node("box_folders", [filt("f_folder", "name", "eq", "Contracts", "A:Folder.name")])
+    query = {"table": "box_files", "filters": [],
+             "edges": [edge("e_mod", "modified_by_id", "id", leo, "R:File.modified_by_id"),
+                       edge("e_parent", "parent_id", "id", contracts, "R:File.parent_id")]}
+    seed = [["folder", {"id": "8200", "name": "Contracts"}], ["folder", {"id": "8299", "name": "Contracts Archive"}],
+            ["file", {"id": "8201", "name": "Acme MSA.pdf", "parent": "8200", "creator": "MC", "modifier": "LP"}],
+            ["file", {"id": "8202", "name": "Birch lease.docx", "parent": "8200", "creator": "DW", "modifier": "LP"}],
+            ["file", {"id": "8203", "name": "Zenith SOW.pdf", "parent": "8200", "creator": "PN", "modifier": "LP"}],
+            ["file", {"id": "8204", "name": "Zeta NDA.docx", "parent": "8200", "creator": "OH", "modifier": "LP"}],
+            ["file", {"id": "8211", "name": "Acme MSA amendment.pdf", "parent": "8200", "creator": "LP",
+                      "modifier": "MC"}],
+            ["file", {"id": "8212", "name": "Cedar NDA.pdf", "parent": "8299", "creator": "MC", "modifier": "LP"}]]
+    others = ["MC", "DW", "PN", "OH", "SR"]
+    seed += [["file", {"id": str(90000 + i), "name": f"M-{i:04d} supplier terms.docx", "parent": "8200",
+                       "creator": others[i % 5], "modifier": others[(i + 2) % 5]}] for i in range(1, 1145)]
+    return {
+        "scenario_id": "SM2-BOX-02", "domain": "box",
+        "request": "Add the tag legal-hold to every file in the Contracts folder that Leo Park modified last.",
+        "answer": "all", "seed": seed,
+        "conditions": [
+            {"id": "c1", "text": "every file in the Contracts folder", "facts": ["R:File.parent_id", "A:Folder.name"]},
+            {"id": "c2", "text": "that Leo Park modified last", "facts": ["R:File.modified_by_id", "A:User.name"]},
+        ],
+        "reference": {
+            "name": "the files to tag", "target": ["8201", "8202", "8203", "8204"], "query": query,
+            "decoys": [
+                {"witness": "8211", "fact": "R:File.modified_by_id", "family": "F1", "substitute": "File.created_by_id",
+                 "mutation": {"type": "SUB", "target": "e_mod", "replacement": edge(
+                     "e_mod", "created_by_id", "id", node("box_users", [filt("x", "name", "eq", "Leo Park")]))},
+                 "explanation": "Leo Park created it, but Maya Chen modified it last."},
+                {"witness": "8212", "fact": "A:Folder.name", "family": "F0", "substitute": "Folder named Contracts Archive",
+                 "mutation": {"type": "SUB", "target": "e_parent", "replacement": edge(
+                     "e_parent", "parent_id", "id", node("box_folders", [filt("x", "name", "eq", "Contracts Archive")]))},
+                 "explanation": "Leo Park modified it last, but it is in Contracts Archive."},
+            ],
+            "effect": {"table": "box_files", "changes": ["update"]}, "written": ["box_files.tags"],
+        },
+        "write": {"method": "PUT", "path": "/files/8201", "body": {"tags": ["legal-hold"]}},
+        "strategy_entry": {"folder": "8200", "words": "Contracts", "ext": "pdf", "person": "Leo Park"},
+    }, {"8201": "V", "8202": "V", "8203": "P", "8204": "P"}
+
+
+def slk_pages():
+    """An 1,100-message channel: the largest history page (999) leaves 2 matches for a second page. The condition
+    (Leo's :rocket: reaction) is one search cannot express."""
+    rocket = node("message_reactions", [filt("f_rtype", "reaction_type", "eq", "rocket", "A:Reaction.reaction_type")],
+                  [edge("e_ruser", "user_id", "user_id",
+                        node("users", [filt("f_ruser", "real_name", "eq", "Leo Park", "A:User.real_name")]),
+                        "B:message_reactions.user")])
+    query = {"table": "messages", "key": ["message_id"], "filters": [],
+             "edges": [edge("e_chan", "channel_id", "channel_id",
+                            node("channels", [filt("f_chan", "channel_name", "eq", "deploys",
+                                                   "A:Conversation.channel_name")]), "R:messages.channel_id"),
+                       edge("e_react", "message_id", "message_id", rocket, "R:message_reactions")]}
+    seed = [["channel", {"id": "C_DEP", "name": "deploys", "members": ["priya", "diego", "leo", "omar", "aisha"]}],
+            ["channel", {"id": "C_STG", "name": "deploys-staging", "members": ["diego", "leo"]}]]
+    authors = ["diego", "omar", "aisha", "priya"]
+
+    def at(i):  # message i of 1100, one every 30 minutes from 2026-07-01
+        m = 30 * (i - 1)
+        return f"2026-{7 + m // (60 * 24 * 31):02d}-{1 + (m // (60 * 24)) % 31:02d}T{(m // 60) % 24:02d}:{m % 60:02d}:00Z"
+    special = {10: ("t1", "leo", "rocket"), 40: ("t2", "leo", "rocket"), 1050: ("t3", "leo", "rocket"),
+               1080: ("t4", "leo", "rocket"), 1090: ("nm_priya", "priya", "rocket"), 1095: ("nm_tada", "leo", "tada")}
+    for i in range(1, 1101):
+        msg = {"channel": "C_DEP", "author": authors[i % 4], "text": f"Deployed build {5000 + i}.", "at": at(i)}
+        if i in special:
+            msg["ref"] = special[i][0]
+        seed.append(["message", msg])
+        if i in special:
+            seed.append(["reaction", {"message": f"@{special[i][0]}", "person": special[i][1], "name": special[i][2]}])
+    seed.append(["message", {"channel": "C_STG", "author": "diego", "text": "Staging build 77 is up.",
+                             "at": at(1099), "ref": "nm_chan"}])
+    seed.append(["reaction", {"message": "@nm_chan", "person": "leo", "name": "rocket"}])
+    return {
+        "scenario_id": "SM2-SLK-03", "domain": "slack",
+        "request": "Add an :eyes: reaction to every message in #deploys that Leo Park reacted to with :rocket:.",
+        "answer": "all", "seed": seed,
+        "conditions": [
+            {"id": "c1", "text": "every message in #deploys", "facts": ["R:messages.channel_id",
+                                                                     "A:Conversation.channel_name"]},
+            {"id": "c2", "text": "that Leo Park reacted to with :rocket:",
+             "facts": ["R:message_reactions", "A:Reaction.reaction_type", "B:message_reactions.user",
+                       "A:User.real_name"]},
+        ],
+        "reference": {
+            "name": "the messages to react to", "target": ["@t1", "@t2", "@t3", "@t4"], "query": query,
+            "decoys": [
+                {"witness": "@nm_priya", "fact": "B:message_reactions.user", "family": "F0",
+                 "mutation": {"type": "DROP", "target": "f_ruser"},
+                 "explanation": "A #deploys message with a :rocket:, but from Priya Sharma, not Leo."},
+                {"witness": "@nm_tada", "fact": "A:Reaction.reaction_type", "family": "F0",
+                 "mutation": {"type": "DROP", "target": "f_rtype"},
+                 "explanation": "Leo reacted to it, but with :tada:."},
+                {"witness": "@nm_chan", "fact": "A:Conversation.channel_name", "family": "F0",
+                 "mutation": {"type": "DROP", "target": "f_chan"},
+                 "explanation": "Leo's :rocket:, but in #deploys-staging."},
+            ],
+            "effect": {"table": "message_reactions", "changes": ["insert"],
+                       "key": ["message_id", "user_id", "reaction_type"], "field": "message_id"},
+            "written": [],
+        },
+        "write": {"slack": "reactions.add", "params": {"channel": "C_DEP", "timestamp": "@t3", "name": "eyes"}},
+        "strategy_entry": {"prefix": "deploys", "search": "rocket", "channel": "C_DEP"},
+    }, {"@t1": "P", "@t2": "P", "@t3": "V", "@t4": "V"}
+
+
+SCENARIOS = [box, cal, lin, slk, cal_owned_wording, cal_explicit_hidden, slk_explicit_private, box_pages, slk_pages]
 
 
 def main():
