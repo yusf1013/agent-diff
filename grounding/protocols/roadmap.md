@@ -93,7 +93,15 @@ the final runs use one frozen version.
   - The pipeline will prevent them with an automated check before 6b.
   - The affected scenarios are regenerated through the fixed pipeline.
 - **Near misses the manual reviews ruled out:** those the agent cannot check, and those a natural reading of the
-  request includes, are flawed (groups A and B). The ambiguous ones (group C) are ruled case by case.
+  request includes, are flawed (groups A and B). The ambiguous ones (group C), case by case:
+  - **AP-SLK-02's C_BILLING:** valid in the cover and the two probes. Its absence twin stays out, because the
+    request insists the channel exists.
+  - **AP-CAL-02's team-brand and team-ops:** valid.
+  - **AP2-SLK-01's bot near miss:** flawed, since the request's own naming supports both readings. This includes
+    the two underspecified units that keep it.
+  - **G4-CAL-01's free copy:** valid as worded, but the scenario is flawed for its ids (`ev_budget_free` and
+    others).
+  - **AP-LIN-07:** flawed for its ids.
 - **The policy statistic** uses all runs, with tests as the independent units (see the investigation in step 5).
 - **The full set of policy tests runs on OpenClaw**, whatever the sampled decisions were.
 - Nothing runs until the PI closes the discussion.
