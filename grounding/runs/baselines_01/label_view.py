@@ -74,9 +74,19 @@ def main():
     base = case.get("baseline", {})
     print(f"## {case_id} ({case['domain']})")
     print("REQUEST:", case["prompt"])
-    print("EXPECTED:", base.get("expected"))
-    for op in base.get("seed_ops", []):
-        print("  SEED", short(op, 260))
+    if base:
+        print("EXPECTED:", base.get("expected"))
+        if base.get("removed"):
+            print("  REMOVED TARGET:", short(base["removed"], 300))
+        for op in base.get("seed_ops", []):
+            print("  SEED", short(op, 260))
+    for ref in case.get("references", []):  # our own cases: the answer key, for labelling only
+        print(f"  TARGET {ref.get('expected')}")
+        for claim in ref.get("claims", []):
+            print(f"  DECOY {claim.get('witness')} [{claim.get('requirement')} {claim.get('family')}]: "
+                  f"{short(claim.get('explanation'), 300)}")
+    if case.get("plain_twin"):
+        print("  PLAIN TWIN:", case["plain_twin"]["note"])
     for trial in trials:
         show(run_dir, case_id, trial, steps, brief)
 
