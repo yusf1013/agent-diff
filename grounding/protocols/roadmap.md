@@ -136,7 +136,7 @@ the final runs use one frozen version.
 | 2 | Domain knowledge in deterministic code | done and discussed | [domain_code_audit.md](../runs/roadmap_01/domain_code_audit.md) |
 | 3 | Agreed fixes, frozen version | done (2026-09-27), tag `grounding-freeze-01` | [roadmap_02](../runs/roadmap_02/README.md) |
 | 5 | Investigations | in progress (separate session, branch `exp/investigations-01`) | – |
-| 6a | OpenClaw × self-hosted Qwen, frozen suite | in progress: the full run and the first policy looks running since 2026-09-28 03:15 UTC; blind samples being labelled | [openclaw_eval_01](../runs/openclaw_eval_01/README.md) |
+| 6a | OpenClaw × self-hosted Qwen, frozen suite | in progress. `full_01` was stopped: the harness leaked the test ids into the prompt. The fixed run `full_02` and the first policy looks have been running since 2026-09-28 04:50 UTC; blind samples are being labelled. | [openclaw_eval_01](../runs/openclaw_eval_01/README.md) |
 | 6b | The remaining briefs on OpenClaw | not started | – |
 | 6c | Judge baselines | done for Qwen's 429 labels (2026-09-28): on the blind samples, recall is 0.72 for J0, 0.75 for J1 and 1.00 for judge v2, all at precision ≥ 0.99. OpenClaw's labels are added after 6a. | [judge_baselines_01](../runs/judge_baselines_01/README.md) |
 | 6d | Generator baselines | not started | – |
