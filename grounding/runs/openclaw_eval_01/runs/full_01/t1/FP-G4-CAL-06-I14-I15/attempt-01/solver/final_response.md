@@ -1,0 +1,1 @@
+I checked Leo Park's calendar (cal-leo-park@northwind.example, America/New_York) thoroughly — searched for "quarterly," "lunch," and "planning," plus listed all events on it. The calendar is completely empty, so there's no quarterly planning lunch on Thursday to move. Nothing was changed.

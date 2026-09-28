@@ -1,0 +1,1 @@
+Done. Found the **Quarterly planning lunch** on Leo Park's calendar — Thursday, June 21, 2018, 12:00 PM (America/New_York). It had no location set, so I moved it to **Room 5B** and confirmed the update.

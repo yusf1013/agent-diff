@@ -1,0 +1,1 @@
+I checked your Google Calendar — you don't have a "Product Team" calendar. Your calendar list only contains your primary calendar (jordan.lee@northwind.example), which is the only one checked. So there was nothing to rename; if the calendar is supposed to be there, it may need to be shared with you or re-added first.

@@ -1,0 +1,1 @@
+Done. The **Sprint retrospective** in Room 5B (created by Kenji Sato, June 21 10:00–11:00 AM) is now set to red — colorId `4` (`#ff887c`), confirmed in the updated event. I matched on all three criteria and skipped the near-duplicate events (Room 5A, "follow-up" title, and the Leo Park-organizer/Kenji Satou creator variants).

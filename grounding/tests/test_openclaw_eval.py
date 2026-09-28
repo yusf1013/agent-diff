@@ -47,6 +47,41 @@ def test_selfhost_provider_is_written_per_attempt(tmp_path, workspace, monkeypat
     assert "SECRET_NAME" not in json.dumps(written)
 
 
+def test_neutral_state_names_nothing_of_the_benchmark(tmp_path, workspace, monkeypatch):
+    (workspace / "IDENTITY.md").write_text("# IDENTITY.md\n- **Name:** AgentDiff Qwen\n")
+    monkeypatch.setattr(oc, "real_config", lambda: fake_config(workspace))
+    state = tmp_path / "state"
+    config = oc.build_state_dir(state, "tok123456", "calendar", backend="selfhost", neutral=True)
+    agent = config["agents"]["list"][0]
+    assert agent["id"] == agent["name"] == oc.NEUTRAL_AGENT_ID
+    assert agent["workspace"] == str(state / f"workspace-{oc.NEUTRAL_AGENT_ID}")
+    assert "Qwen" in (state / f"workspace-{oc.NEUTRAL_AGENT_ID}" / "IDENTITY.md").read_text()
+    assert config["tools"]["exec"]["pathPrepend"] == [str(state / "bin")]
+    for name in ("curl", "clock.cjs"):
+        text = (state / "bin" / name).read_text()
+        assert "AGENTDIFF" not in text and "agentdiff" not in text.lower() and "toy harness" not in text
+    assert "SVC_BASE_URL" in (state / "bin" / "curl").read_text()
+    written = (state / "openclaw.json").read_text().lower()
+    assert "agentdiff" not in written
+    env = oc.process_env(state, "env1", "http://127.0.0.1:18001", "calendar", oc.CALENDAR_NOW, neutral=True)
+    assert not any("AGENTDIFF" in k for k in env) and env["NODE_OPTIONS"].endswith(str(state / "bin" / "clock.cjs"))
+    assert env["SVC_ENV_ID"] == "env1" and "CLOCK_START" in env
+
+
+def test_the_guard_finds_what_a_prompt_gives_away(tmp_path):
+    import gzip
+    requests = tmp_path / "requests"
+    requests.mkdir()
+    body = {"messages": [{"role": "system", "content": "skills at /home/u/.openclaw-state/3f/workspace-assistant"},
+                         {"role": "user", "content": "In Box: tag the file."}]}
+    (requests / "0001.request.json.gz").write_bytes(gzip.compress(json.dumps(body).encode()))
+    assert oc.prompt_leaks(requests, "P-G4-BOX-03-I12") == []
+    body["messages"][0]["content"] += " ~/.openclaw-runs/agentdiff-openclaw/t1/P-G4-BOX-03-I12/attempt-01-ab/"
+    (requests / "0001.request.json.gz").write_bytes(gzip.compress(json.dumps(body).encode()))
+    assert oc.prompt_leaks(requests, "P-G4-BOX-03-I12") == ["agentdiff", "attempt-", "g4-box-03", "openclaw-runs",
+                                                            "p-g4-box-03-i12"]
+
+
 def test_purdue_backend_is_unchanged(tmp_path, workspace, monkeypatch):
     monkeypatch.setattr(oc, "real_config", lambda: fake_config(workspace))
     config = oc.build_state_dir(tmp_path / "state", "tok123456", "box")

@@ -1,0 +1,1 @@
+Done — the **Client Success** calendar is now hidden from your calendar list (verified: `hidden: true`). It won't appear in the list anymore, though its events will still show on your calendar since it remains selected. If you'd rather have it fully removed from the list, say the word and I'll unsubscribe from it.

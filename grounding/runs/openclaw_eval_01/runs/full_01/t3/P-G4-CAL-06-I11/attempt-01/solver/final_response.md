@@ -1,0 +1,3 @@
+There isn't one. Leo Park's own calendar (`Leo Park`, set to America/New_York) has no quarterly planning lunch — no events at all in the next month, and nothing matching "planning" or "lunch" anywhere in its history.
+
+One caveat so you can double-check my call: there *is* a "Quarterly planning lunch" on **Thursday, June 21, 2018, 12:00–1:00 PM (New York time)**, but it's on the shared **"Team Planning"** calendar (`planning-shared`), owned by Jordan Lee — not on Leo Park's calendar. Since you specified Leo Park's calendar, I left it untouched. If you actually meant that one, say the word and I'll move it to Room 5B.

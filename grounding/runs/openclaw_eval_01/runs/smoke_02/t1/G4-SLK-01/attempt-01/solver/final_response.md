@@ -1,0 +1,1 @@
+Done ✅ — added 👀 to the "Release cut is ready" message from ana.torre@northwind.example in #releases (the one with the bot's tada). There were several lookalike messages in that channel, so I matched on both the exact email and the Deploy Bot reaction to make sure I hit the right one.

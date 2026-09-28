@@ -1,0 +1,1 @@
+Done. The matching calendar is **Ops Rotation – NORAM** (`ops-noram@northwind.example`) — its description mentions "weekend on-call coverage across engineering," and you're the owner. Its time zone is now set to **America/New_York**, confirmed in the updated metadata.

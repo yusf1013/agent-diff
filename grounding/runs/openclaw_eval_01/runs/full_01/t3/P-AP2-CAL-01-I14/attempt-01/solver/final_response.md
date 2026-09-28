@@ -1,0 +1,1 @@
+I checked your Google Calendar list — there's no 'Product Team' calendar. Your list only has one calendar: your primary one (jordan.lee@northwind.example), which is selected. So there's nothing to rename.

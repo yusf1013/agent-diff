@@ -1,0 +1,1 @@
+Done — the budget review organized by Maya Chen on Friday (June 22, 10:00–11:00 AM PT) now has its location set to Room 5B. I skipped the other budget review entries (Thursday evening UTC copy and Saturday) since they weren't the Friday one she organized.

@@ -1,0 +1,1 @@
+Done. There was exactly one match — the **Client sync** on **Jun 21, 3:00–3:30 pm** (in the Meridian contract signing suite). It's now set to **Room 4C**, time unchanged. I sent updates to any attendees.

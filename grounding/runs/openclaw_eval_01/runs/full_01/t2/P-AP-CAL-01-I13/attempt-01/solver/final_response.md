@@ -1,0 +1,1 @@
+Done — I hid the **Client Success** calendar (`cs-south@northwind.example`). It's now marked hidden, so it won't appear in your calendar list anymore. If you want it back later, just unhide it in Google Calendar's settings.

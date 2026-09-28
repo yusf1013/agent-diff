@@ -1,0 +1,1 @@
+Done. The file was `Q3 budget forecast.pdf` in Budget Reviews — the only PDF there. It had a review task ("Please review the Q3 budget figures") that Leo Park assigned to Maya Chen, and her assignment was completed, so I added the `q3-signoff` tag. Confirmed in the API response: the file now has `tags: ["q3-signoff"]`.

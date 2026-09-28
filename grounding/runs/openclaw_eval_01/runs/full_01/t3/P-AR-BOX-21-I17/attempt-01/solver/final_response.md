@@ -1,0 +1,1 @@
+No match. The Legal Hold collection contains exactly one folder — **Vendor Filings** (created June 3, 2026, last modified by Priya Nair on June 21) — but it has only **1 item** directly in it (a subfolder called "Vendor Filings 2023"), not 3. So no folder satisfies all four criteria, and I didn't add the tag.

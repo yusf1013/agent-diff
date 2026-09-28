@@ -1,0 +1,1 @@
+Done. I added the `launch-ready` tag to **Summer Launch** (folder 8110) in Box — the only folder directly under Marketing that's owned by Dana Whitfield and was created by Leo Park. Verified the tag is in place.

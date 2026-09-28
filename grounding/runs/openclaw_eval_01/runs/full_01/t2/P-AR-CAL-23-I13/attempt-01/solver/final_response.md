@@ -1,0 +1,1 @@
+The only vendor sync on this Thursday (June 21) is **"Vendor sync: Labeling"** at 1:30–2:00 PM PT, but Dana Whitfield is a *required* attendee there (along with Sam Rivera) — not optional. There's no Thursday vendor sync where Dana is optional, so I left everything as-is and didn't change anything.

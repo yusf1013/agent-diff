@@ -1,0 +1,1 @@
+Done. The Product Launch hub (ID 8100) — the one containing the **Field Photos** folder and **Launch Plan.pdf** — now has its description set to **"Archived launch kit"**. I identified it among four same-named hubs by its item list; the others contained different combinations (e.g., Studio Photos, Launch Budget, or a contact sheet) so they were left untouched.

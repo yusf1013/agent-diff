@@ -1,0 +1,1 @@
+Done ✅ — I found the quarterly planning lunch on Leo Park's calendar (Thursday, June 21, 12:00–1:00 PM New York time) and moved it to **Room 5B**. Only the location changed; time and attendees are untouched.

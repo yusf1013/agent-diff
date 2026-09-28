@@ -1,0 +1,1 @@
+There's no match. The only Thursday vendor sync I found is "Vendor sync: Ingredients" (Thu Jun 21, 3:00–3:30 PM PDT), and in it Dana Whitfield is a **required** attendee — the optional one is Leo Park. So no event met the "Dana as optional attendee" condition, and I didn't change anything. Want me to move the Ingredients sync to Room 2C anyway?

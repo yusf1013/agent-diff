@@ -1,0 +1,1 @@
+Done. There was exactly one PDF in Budget Reviews — **Q3 budget variance.pdf** — and it had the matching review task: created by Leo Park ("Please review the Q3 budget figures"), assigned to Maya Chen, with resolution state **approved**. I added the `q3-signoff` tag to it and confirmed the file now shows `tags: ["q3-signoff"]`.

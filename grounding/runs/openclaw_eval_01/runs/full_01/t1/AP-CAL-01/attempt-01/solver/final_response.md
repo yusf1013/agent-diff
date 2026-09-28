@@ -1,0 +1,1 @@
+Done. The unchecked 'Client Success' calendar (cs-north@northwind.example) is now hidden — it no longer appears in your calendar list. The other two 'Client Success' calendars (east and south) are untouched and still visible as before.

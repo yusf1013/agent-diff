@@ -1,0 +1,1 @@
+I found it — "Team Travel" (`team-travel-hid@northwind.example`) is on your calendar list and you own it (accessRole: owner). No action needed though: it's **already hidden** (`hidden: true`), so nothing was changed. If it's still showing somewhere, let me know where and I'll dig further.

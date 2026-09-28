@@ -1,0 +1,1 @@
+No such calendar. The only "Ops Rotation" calendar you own is **Ops Rotation – APAC** (ops-apac@northwind.example), and its description is "Handles daytime shift scheduling for the APAC ops team." — no mention of weekend on-call coverage. I didn't change anything; let me know if you want the timezone switched on that one anyway.

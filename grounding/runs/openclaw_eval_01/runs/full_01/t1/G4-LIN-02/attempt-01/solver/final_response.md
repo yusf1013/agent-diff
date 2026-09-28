@@ -1,0 +1,1 @@
+Done ✅ — set the estimate to **5** on **WEB-1 "Fix checkout redirect loop"** (Maya Chen, Web team, high priority, In Progress, due 2026-09-22). It was the only issue matching all the criteria; her other two (WEB-3, WEB-4) weren't overdue.

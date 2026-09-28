@@ -1,0 +1,1 @@
+Done. Added the tag **launch-ready** to the **Summer Launch** folder (ID 8110) — the one directly under Marketing, created by Leo Park and owned by Dana Whitfield. It was the only Leo Park–created folder there owned by Dana (Spring Launch and Summer Launch Assets are owned by Priya Nair), so the match is unambiguous. Confirmed in the response: `tags: ["launch-ready"]`.

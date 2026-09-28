@@ -1,0 +1,1 @@
+Done. Found one "Quarterly planning lunch" on Leo Park's calendar — Thursday, June 21, 2018, 12:00–1:00 PM (America/New_York, no recurrence). It had no location, so I set it to **Room 5B** and confirmed the change took effect.

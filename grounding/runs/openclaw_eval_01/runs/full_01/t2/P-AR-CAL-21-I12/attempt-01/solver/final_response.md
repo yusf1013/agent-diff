@@ -1,0 +1,1 @@
+There isn't one. I searched your whole calendar — the only "Client sync" (Wed Jun 21, 3:00–3:30 pm, Room 5A) is about reviewing the intern onboarding checklist, and nothing on the calendar mentions "Meridian" or "contract." I left everything untouched. If you want, I can create the Meridian sync or move the intern one to Room 4C — just say the word.

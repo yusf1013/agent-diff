@@ -65,6 +65,20 @@ BACKENDS = {
                  "provider_settings": {"timeoutSeconds": 600}},
 }
 TIMEOUT_SECONDS = 600  # OpenClaw's default agent timeout
+# What an attempt's agent can see of its own setup. OpenClaw writes the state directory's path (every skill's location,
+# the workspace, each workspace file's heading) and the agent id into every system prompt. The transfer study's
+# layout named both after the benchmark and the test (.../agentdiff-openclaw/<trial>/<case id>/attempt-01-…,
+# agentdiff-qwen), and the workspace's IDENTITY.md calls the agent "AgentDiff Qwen". On 2026-09-28 43% of an
+# evaluation run's trials said they were being tested, some reading the test's form from its id (openclaw_eval_01).
+# `neutral` (the judge layout) removes all of it: an opaque state directory, a plain agent id and name, and copies of
+# the curl shim and the fake clock under plain variable names. A guard then checks the first request for leftovers.
+NEUTRAL_STATE_ROOT = Path.home() / ".openclaw-state"
+NEUTRAL_AGENT_ID = "assistant"
+NEUTRAL_NAMES = {"AGENTDIFF_BACKEND_URL": "SVC_BASE_URL", "AGENTDIFF_ENV_ID": "SVC_ENV_ID",
+                 "AGENTDIFF_API_KEY": "SVC_API_KEY", "AGENTDIFF_FAKE_NOW": "CLOCK_START",
+                 "__agentdiffFakeClock": "__clockShift"}
+NEUTRAL_IDENTITY = {"AgentDiff Qwen": "Qwen"}
+LEAK_TOKENS = ("agentdiff", "agent_diff", "agent-diff", "pyproj", "openclaw-runs", "attempt-", "fixture")
 # The toy harness told the Calendar agent "Current Date/Time: Sunday, June 17, 2018 at 00:01 (midnight),
 # timezone America/Los_Angeles"; OpenClaw gets the same moment from its (shifted) clock instead.
 CALENDAR_NOW = datetime(2018, 6, 17, 7, 1, tzinfo=timezone.utc)
@@ -117,19 +131,42 @@ def apply_variant(workspace: Path, variant: str | None) -> None:
         path.write_text("".join(line for line in lines if line.strip() not in drop))
 
 
+def neutral_copy(source: Path, dest: Path, comment: str) -> Path:
+    """A copy of a harness file with its benchmark names replaced and its comment lines dropped (the shebang stays)."""
+    text = source.read_text()
+    for old, new in NEUTRAL_NAMES.items():
+        text = text.replace(old, new)
+    lines = [line for i, line in enumerate(text.splitlines(keepends=True))
+             if not line.lstrip().startswith(comment) or (i == 0 and line.startswith("#!"))]
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    dest.write_text("".join(lines))
+    dest.chmod(0o755)
+    return dest
+
+
 def build_state_dir(state: Path, route: str, domain: str, variant: str | None = None,
-                    backend: str = "purdue") -> dict:
-    """Fresh state directory with only agentdiff-qwen; returns the written configuration."""
+                    backend: str = "purdue", neutral: bool = False) -> dict:
+    """Fresh state directory with only agentdiff-qwen (renamed under `neutral`); returns the written configuration."""
     real = real_config()
     spec = BACKENDS[backend]
     agent = copy.deepcopy(next(a for a in real["agents"]["list"] if a["id"] == AGENT_ID))
-    workspace = state / f"workspace-{AGENT_ID}"
-    agent_dir = state / "agents" / AGENT_ID / "agent"
+    agent_id = NEUTRAL_AGENT_ID if neutral else AGENT_ID
+    workspace = state / f"workspace-{agent_id}"
+    agent_dir = state / "agents" / agent_id / "agent"
     shutil.copytree(Path(agent["workspace"]), workspace, ignore=shutil.ignore_patterns(".git", "memory", "sessions"))
     apply_variant(workspace, variant)
     agent_dir.mkdir(parents=True)
-    (state / "agents" / AGENT_ID / "sessions").mkdir(parents=True)
+    (state / "agents" / agent_id / "sessions").mkdir(parents=True)
     agent.update(workspace=str(workspace), agentDir=str(agent_dir))
+    if neutral:
+        agent.update(id=agent_id, name=agent_id)
+        for path in workspace.glob("*.md"):
+            text = path.read_text()
+            for old, new in NEUTRAL_IDENTITY.items():
+                text = text.replace(old, new)
+            path.write_text(text)
+        neutral_copy(SHIM_DIR / "curl", state / "bin" / "curl", "#")
+        neutral_copy(FAKE_CLOCK, state / "bin" / "clock.cjs", "//")
     defaults = {k: v for k, v in real["agents"].get("defaults", {}).items() if k not in ("model", "models", "workspace")}
     defaults["workspace"] = str(state / "workspace")
     if domain == "calendar":
@@ -144,7 +181,7 @@ def build_state_dir(state: Path, route: str, domain: str, variant: str | None = 
     provider["baseUrl"] = f"http://127.0.0.1:{spec['port']}/run/{route}/v1"
     provider["apiKey"] = "local-proxy"  # the proxy sends the real key; nothing secret is written here
     tools = copy.deepcopy(real.get("tools", {}))
-    tools.setdefault("exec", {})["pathPrepend"] = [str(SHIM_DIR)]
+    tools.setdefault("exec", {})["pathPrepend"] = [str(state / "bin" if neutral else SHIM_DIR)]
     config = {
         "agents": {"defaults": defaults, "list": [agent]},
         "models": {"providers": {spec["provider"]: provider}},
@@ -167,25 +204,44 @@ def register_route(token: str, log_dir: Path) -> Path:
     return path
 
 
-def process_env(state: Path, env_id: str, backend_url: str, domain: str, fake_now: datetime | None) -> dict:
+def process_env(state: Path, env_id: str, backend_url: str, domain: str, fake_now: datetime | None,
+                neutral: bool = False) -> dict:
+    name = (lambda n: NEUTRAL_NAMES[n]) if neutral else (lambda n: n)
     node_bin = str(Path(os.path.realpath(shutil.which("node") or "/usr/bin/node")).parent)
     env = {"HOME": str(Path.home()), "LANG": "C.UTF-8", "USER": os.getenv("USER", "yusf"),
            "PATH": os.pathsep.join([node_bin, str(Path.home() / ".npm-global/bin"), "/usr/local/bin", "/usr/bin", "/bin"]),
-           "OPENCLAW_STATE_DIR": str(state), "AGENTDIFF_BACKEND_URL": backend_url, "AGENTDIFF_ENV_ID": env_id}
+           "OPENCLAW_STATE_DIR": str(state), name("AGENTDIFF_BACKEND_URL"): backend_url,
+           name("AGENTDIFF_ENV_ID"): env_id}
     if domain == "calendar" and fake_now is not None:
-        env.update(TZ=CALENDAR_TZ, NODE_OPTIONS=f"--require {FAKE_CLOCK}",
-                   AGENTDIFF_FAKE_NOW=fake_now.isoformat().replace("+00:00", "Z"))
+        clock = state / "bin" / "clock.cjs" if neutral else FAKE_CLOCK
+        env.update({"TZ": CALENDAR_TZ, "NODE_OPTIONS": f"--require {clock}",
+                    name("AGENTDIFF_FAKE_NOW"): fake_now.isoformat().replace("+00:00", "Z")})
     return env
+
+
+def prompt_leaks(requests_dir: Path, case_id: str) -> list[str]:
+    """What the first model request (system prompt, tools and message) gives away of the test: the benchmark's or the
+    repository's names, the attempt's path, the case id or its scenario id."""
+    first = sorted(requests_dir.glob("0001.request.json*"))
+    if not first:
+        return ["no recorded request"]
+    raw = first[0].read_bytes()
+    body = (gzip.decompress(raw) if first[0].suffix == ".gz" else raw).decode("utf-8", "replace").lower()
+    scenario = re.sub(r"^(at|fp|p|uc|u|h)-", "", case_id.lower())
+    m = re.match(r"((?:[a-z]+\d?-)?[a-z]{3}-\d+)", scenario)
+    tokens = list(LEAK_TOKENS) + [case_id.lower()] + ([m.group(1)] if m else [])
+    return sorted({t for t in tokens if t in body})
 
 
 # ---------------------------------------------------------------- one OpenClaw turn
 
 
-def run_turn(state: Path, env: dict, message: str, timeout_s: int, out: Path, label: str) -> dict:
+def run_turn(state: Path, env: dict, message: str, timeout_s: int, out: Path, label: str,
+             agent_id: str = AGENT_ID) -> dict:
     """Send one message; return the parsed --json envelope and how the process ended."""
-    cmd = [OPENCLAW_BIN, "agent", "--agent", AGENT_ID, "--local", "--json", "--timeout", str(timeout_s),
+    cmd = [OPENCLAW_BIN, "agent", "--agent", agent_id, "--local", "--json", "--timeout", str(timeout_s),
            "--message", message]
-    workspace = state / f"workspace-{AGENT_ID}"
+    workspace = state / f"workspace-{agent_id}"
     started = time.time()
     proc = subprocess.Popen(cmd, cwd=workspace, env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                             start_new_session=True)
@@ -276,8 +332,8 @@ def run_turn(state: Path, env: dict, message: str, timeout_s: int, out: Path, la
 # ---------------------------------------------------------------- transcript -> steps
 
 
-def session_rows(state: Path) -> tuple[list[dict], list[Path]]:
-    sessions = sorted((state / "agents" / AGENT_ID / "sessions").glob("*.jsonl"))
+def session_rows(state: Path, agent_id: str = AGENT_ID) -> tuple[list[dict], list[Path]]:
+    sessions = sorted((state / "agents" / agent_id / "sessions").glob("*.jsonl"))
     main = [p for p in sessions if not p.name.endswith(".trajectory.jsonl")]
     rows = []
     for path in main:
@@ -471,11 +527,13 @@ def run_attempt(case: dict, attempt: Path, *, database_url: str, backend_url: st
     (solver_dir / "requests").mkdir(exist_ok=True)
     raw_dir = solver_dir / "openclaw" if layout == "judge" else solver_dir
     raw_dir.mkdir(exist_ok=True)
+    neutral = layout == "judge"  # the agent sees nothing of the benchmark or the test (see NEUTRAL_STATE_ROOT)
     engine = engine_for(database_url)
     client = AgentDiff(base_url=backend_url)
     env = run = prepared = None
     route_file = None
-    state = STATE_ROOT / attempt.parent.parent.name / attempt.parent.name / f"{attempt.name}-{uuid.uuid4().hex[:8]}"
+    state = NEUTRAL_STATE_ROOT / uuid.uuid4().hex[:16] if neutral else \
+        STATE_ROOT / attempt.parent.parent.name / attempt.parent.name / f"{attempt.name}-{uuid.uuid4().hex[:8]}"
     try:
         prepared = prepare(case, environment_dir / "preflight", database_url, backend_url)
         with ddl_lock():
@@ -493,15 +551,17 @@ def run_attempt(case: dict, attempt: Path, *, database_url: str, backend_url: st
         token = uuid.uuid4().hex[:24]
         route_file = register_route(token, solver_dir / "requests")
         state.mkdir(parents=True)
-        config = build_state_dir(state, token, domain, variant, backend)
+        config = build_state_dir(state, token, domain, variant, backend, neutral)
+        agent_id = config["agents"]["list"][0]["id"]
+        workspace = state / f"workspace-{agent_id}"
         fake_now = CALENDAR_NOW if domain == "calendar" else None
-        env_vars = process_env(state, env.environmentId, backend_url, domain, fake_now)
+        env_vars = process_env(state, env.environmentId, backend_url, domain, fake_now, neutral)
         prompt = PREFIX[domain] + case["prompt"]
         write(solver_dir / "config.json", {
             "harness": "openclaw", "openclaw_version": subprocess.run([OPENCLAW_BIN, "--version"], capture_output=True,
                                                                        text=True, env=env_vars).stdout.strip(),
-            "agent_id": AGENT_ID, "model": config["agents"]["list"][0]["model"],
-            "backend": backend, "layout": layout,
+            "agent_id": agent_id, "configured_agent": AGENT_ID, "neutral": neutral,
+            "model": config["agents"]["list"][0]["model"], "backend": backend, "layout": layout,
             "provider": {k: v for k, v in config["models"]["providers"][BACKENDS[backend]["provider"]].items()
                          if k != "apiKey"},
             "agent": config["agents"]["list"][0], "agents_defaults": config["agents"]["defaults"],
@@ -510,17 +570,17 @@ def run_attempt(case: dict, attempt: Path, *, database_url: str, backend_url: st
                           "rule": "sent when turn 1 changed no state and its reply asks the user a question"},
             "timeout_seconds_per_turn": timeout_s, "workspace_variant": variant,
             "fake_clock": {"start": fake_now.isoformat(), "timezone": CALENDAR_TZ} if fake_now else None,
-            "workspace_files": sorted(p.name for p in (state / f"workspace-{AGENT_ID}").iterdir()),
-            "skills_sha256": {str(p.relative_to(state / f"workspace-{AGENT_ID}" / "skills")):
-                              hashlib.sha256(p.read_bytes()).hexdigest()
-                              for p in sorted((state / f"workspace-{AGENT_ID}" / "skills").rglob("*.md"))},
-            "curl_shim_sha256": hashlib.sha256((SHIM_DIR / "curl").read_bytes()).hexdigest(),
+            "workspace_files": sorted(p.name for p in workspace.iterdir()),
+            "skills_sha256": {str(p.relative_to(workspace / "skills")): hashlib.sha256(p.read_bytes()).hexdigest()
+                              for p in sorted((workspace / "skills").rglob("*.md"))},
+            "curl_shim_sha256": hashlib.sha256((state / "bin" / "curl" if neutral else SHIM_DIR / "curl")
+                                               .read_bytes()).hexdigest(),
             "environment_id": env.environmentId, "run_id": run.runId, "state_dir": str(state),
             "case_sha256": case.get("case_sha256")})
         summary.update(status="solver_running", environment_id=env.environmentId)
         write(attempt / "execution_summary.json", summary)
 
-        turn1 = run_turn(state, env_vars, prompt, timeout_s, raw_dir, "turn1")
+        turn1 = run_turn(state, env_vars, prompt, timeout_s, raw_dir, "turn1", agent_id)
         after1 = export(domain, engine, schema)
         write(environment_dir / "final_state.json", after1)
         (solver_dir / "final_response.md").write_text(turn1["text"] + "\n")
@@ -531,8 +591,8 @@ def run_attempt(case: dict, attempt: Path, *, database_url: str, backend_url: st
         if followup and turn1["termination"] == "done" and not changed1 and asks:
             if fake_now is not None:
                 env_vars = process_env(state, env.environmentId, backend_url, domain,
-                                       fake_now + timedelta(seconds=turn1["duration_s"]))
-            turn2 = run_turn(state, env_vars, FOLLOW_UP, timeout_s, raw_dir, "turn2")
+                                       fake_now + timedelta(seconds=turn1["duration_s"]), neutral)
+            turn2 = run_turn(state, env_vars, FOLLOW_UP, timeout_s, raw_dir, "turn2", agent_id)
             write(environment_dir / "followup_state.json", export(domain, engine, schema))
             (solver_dir / "followup_response.md").write_text(turn2["text"] + "\n")
             turns.append(turn2)
@@ -543,8 +603,8 @@ def run_attempt(case: dict, attempt: Path, *, database_url: str, backend_url: st
             summary["diff_error"] = f"{type(exc).__name__}: {exc}"
         client.evaluate_run(runId=run.runId, expectedOutput={"assertions": []})
 
-        rows, _ = session_rows(state)
-        shutil.copytree(state / "agents" / AGENT_ID / "sessions", solver_dir / "openclaw_sessions",
+        rows, _ = session_rows(state, agent_id)
+        shutil.copytree(state / "agents" / agent_id / "sessions", solver_dir / "openclaw_sessions",
                         ignore=shutil.ignore_patterns("*.lock"))
         steps = steps_from_session(rows)
         record = {"test_id": case["case_id"], "question": prompt, "harness": "openclaw",
@@ -577,6 +637,10 @@ def run_attempt(case: dict, attempt: Path, *, database_url: str, backend_url: st
             # R2: our shared request budget, not the agent, ran the clock out.
             summary.update(status="infrastructure_error", error=f"R2 rate-limit timeout: the turn hit the {timeout_s} s "
                                                                 f"limit after {waited:.0f} s waiting for the shared rate limiter")
+        if neutral:  # the guard: the prompt must give away nothing of the benchmark or the test
+            flags["prompt_leaks"] = prompt_leaks(solver_dir / "requests", case["case_id"])
+            if flags["prompt_leaks"]:
+                summary.update(status="infrastructure_error", error=f"prompt leak: {flags['prompt_leaks']}")
     except Exception as exc:
         summary.update(status="infrastructure_error", error=f"{type(exc).__name__}: {exc}")
     finally:

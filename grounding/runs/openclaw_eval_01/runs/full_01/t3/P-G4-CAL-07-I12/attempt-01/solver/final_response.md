@@ -1,0 +1,1 @@
+There's only one Quarterly planning meeting this Thursday (June 21, 16:00–16:30), and Dana Whitfield's response on it is **tentative**, not declined. Since no meeting matches "declined by Dana," I didn't move anything. If you'd like me to move that Thursday one to Room 5B anyway, just say the word.

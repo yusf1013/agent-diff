@@ -1,0 +1,1 @@
+Done. I found the calendar matching your criteria — **Ops Rotation – NORAM** (`ops-noram@northwind.example`, "Weekly rotation for handling production incidents and **weekend on-call coverage** across engineering", owner role) — and patched its timezone to **America/New_York**. Verified via the API response, which now returns `America/New_York` for that calendar.

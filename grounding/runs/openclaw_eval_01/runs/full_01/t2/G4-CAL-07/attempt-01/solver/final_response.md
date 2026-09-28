@@ -1,0 +1,1 @@
+Done. The Quarterly planning meeting this Thursday (June 21, 10:00–11:00 AM PDT) that Dana Whitfield declined is now set to **Room 5B**. I picked that one specifically since you had a couple of same-named meetings Thursday — the others at 12:00, 2:00, and 4:00 PM were left untouched, and external attendees were notified of the location change.

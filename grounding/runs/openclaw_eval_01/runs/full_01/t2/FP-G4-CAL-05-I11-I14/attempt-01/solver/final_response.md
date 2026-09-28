@@ -1,0 +1,1 @@
+Done. Found it: the calendar whose actual name is **Team Travel** (`team-travel-board@northwind.example`) — it's one you own, though note your list shows it under a custom label "Travel Board". I've set it to **hidden** in your calendar list, so it no longer shows there (your events on it are untouched, and you can unhide it anytime).

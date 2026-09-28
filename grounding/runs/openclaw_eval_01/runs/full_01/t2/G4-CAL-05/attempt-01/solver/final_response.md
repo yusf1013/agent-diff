@@ -1,0 +1,1 @@
+Done. Hidden the **Team Travel** calendar (`team-travel@northwind.example`) from your calendar list. It was the one you own and was visible; it's now set to hidden while keeping events selected as before. (There's a second calendar also named "Team Travel" that was already hidden, so I left it untouched.)

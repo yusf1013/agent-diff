@@ -1,0 +1,1 @@
+Done. On Vendor Agreement.pdf, I set the due date to **July 15, 2026** on the task "Please redo the pricing table in Section 2." created by Dana Whitfield on June 3 (task ID 9101). I matched it by her email and the June 3 creation date, so it didn't touch the similar "redo pricing table" tasks by Leo Park or Dana White, or her own May 20 and June 4 versions of the task.

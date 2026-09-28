@@ -1,0 +1,1 @@
+Done. On **Vendor Agreement.pdf** (in the Contracts folder), the task *"Please redo the pricing table in Section 2."* created by **dana.whitfield@northwind.example** on June 3 is now due **July 15, 2026**.

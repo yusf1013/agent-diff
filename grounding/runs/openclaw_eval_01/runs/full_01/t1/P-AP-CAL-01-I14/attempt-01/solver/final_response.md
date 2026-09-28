@@ -1,0 +1,1 @@
+Done. The 'Client Success' calendar (`cs-east@northwind.example`) is now hidden from your calendar list — it won't appear there anymore. I left it unsubscribed-status aside as-is; the calendar itself still exists, so you can unhide or re-add it later if needed.

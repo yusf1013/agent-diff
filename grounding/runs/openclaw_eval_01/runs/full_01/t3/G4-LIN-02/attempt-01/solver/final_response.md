@@ -1,0 +1,1 @@
+Done. **WEB-1 "Fix checkout redirect loop"** (Web team, assigned to Maya Chen, due 2026-09-22, In Progress) had its estimate set from 2 to **5**. It was the only issue matching all the criteria — the other overdue Maya issues were mid-priority, not high.

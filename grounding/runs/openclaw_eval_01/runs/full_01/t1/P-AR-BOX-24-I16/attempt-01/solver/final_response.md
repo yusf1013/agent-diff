@@ -1,0 +1,1 @@
+There isn't one. On **Vendor Agreement.pdf** (in Contracts), the only task created by dana.whitfield@northwind.example on June 3 says *"Please add the missing signature page on the last sheet."* — nothing about a pricing table being redone. There's also a second task by Priya Nair (July 1) asking to confirm the effective date. So no due date was pushed.

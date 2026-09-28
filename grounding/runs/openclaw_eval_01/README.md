@@ -42,6 +42,34 @@ bare-loop results of Purdue's Qwen (autogen_01 and autogen_02) stay as a referen
   - G4-LIN-02's tests run only up to 2026-09-30 ("overdue" is relative to the real date), and go first;
   - "read before it runs" tests need `--read`.
 
+## The harness leaked the test: full_01 stopped, rerun as full_02
+
+- **What happened.** On 2026-09-28, 04:40 UTC, 535 trials into `full_01`, 232 of them (43%) remarked on being
+  tested ([test_awareness.py](test_awareness.py)). Some read the test's form from its id: "This is a test with an ID
+  like 'FP-AR-CAL-21-I11-I12.' It's designed to test precision/ambiguity handling", "This is probably a test
+  scenario (agentdiff)".
+- **The cause was this integration, not the tests.** OpenClaw writes its state folder's path into every system
+  prompt: each skill's location, the working directory, and the heading of each workspace file. That path was
+  `~/.openclaw-runs/agentdiff-openclaw/<trial>/<case id>/attempt-01-…`, the layout reused from
+  openclaw_transfer_01. The runtime line said `agent=agentdiff-qwen`, and the workspace's IDENTITY.md said
+  "AgentDiff Qwen".
+- **The fix** ([runtime](../../integrations/openclaw/runtime.py) `neutral`, which the judge layout turns on):
+  - an anonymous state folder (`~/.openclaw-state/<hex>`) and the agent id `assistant`;
+  - the name "Qwen";
+  - copies of the curl shim and the fake clock under plain variable names.
+
+  A guard checks every attempt's first request for the benchmark's and the repository's names, the attempt's path,
+  and the case and scenario ids. Any hit makes the attempt an infrastructure error.
+- **Kept as a record:** `full_01` (535 trials, stopped) and `smoke_01`, and their 28 blind labels. They are not
+  used for results.
+- **The rerun:** `full_02` has the same blind slots (seed 53, the same 60 trial and test pairs) and is labelled
+  afresh.
+- **For comparison:** the same model in the toy harness (Purdue, Phase 4) remarked on being tested in 11 of 221
+  and 1 of 261 trials.
+- **Other runs this affects** (noted, not fixed):
+  - openclaw_transfer_01 ran with the same paths and identity, with the pilot's case ids.
+  - The toy harness shows `"workspace_path": "/tmp/agent_diff_<hex>"` in every step's output, a weaker channel.
+
 ## Open finding: ids that name a record's role (for the PI)
 
 Found on 2026-09-27 while building the judge baselines. A Qwen trial of U-AP-LIN-07 reasoned "d-target … this is the
