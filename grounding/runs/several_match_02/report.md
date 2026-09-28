@@ -76,7 +76,7 @@ Four cover scenarios of fact_coverage_02: CAL-23, BOX-23, LIN-21, SLK-21 ([cover
 |---|---:|---:|---|
 | CAL-23 (events on my calendars) | 4 | 4 | — |
 | BOX-23 (files anywhere) | 5 | 4 | search at the largest page (200): a crowd over 200 |
-| SLK-21 (messages in one channel) | 8 | 3 | 5 read the channel 999 messages a page: over 999 messages |
+| SLK-21 (messages in one channel) | 8 | 3 | 4 read one page of 999 messages: over 999 messages. The three channel-list variants reduce to the named channel's page, since #deploys is public and live. 1 is not lazy for this request (every page of the named channel) |
 | LIN-21 (issues in one team) | 6 | 1 | 2 read 250 or 1,000 issues a page: over 250 issues. 3 are not lazy for this request (the team has no sub-teams; the filter expresses every condition) |
 
 **Qwen (3 trials a case):**
@@ -90,6 +90,8 @@ Four cover scenarios of fact_coverage_02: CAL-23, BOX-23, LIN-21, SLK-21 ([cover
   board" calendar and the hidden one.
   - Earlier requests that named the scope ("the calendars I own") were followed 65/65.
   - This one names no calendar, and the agent took the default container.
+  - Both trap targets sit on calendars the actor owns, so even the narrow reading "the calendars I own" includes
+    them. The misses are not contestable.
 - **Linear hard: 2/3.** One trial read the default 50 issues and missed the 51st.
 - **Box and Slack hard: complete.** Every trial searched or listed at the largest page, which is out of practical
   reach.

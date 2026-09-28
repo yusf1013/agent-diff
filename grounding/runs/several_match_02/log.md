@@ -417,7 +417,7 @@ each attempt keeps its `case.json`). H3 ran in `runs/c8b`.
 |---|---:|---:|---|
 | CAL-23 | 4 | 4 (H) | — |
 | BOX-23 | 5 | 3 (H), 4 (H2) | search at the largest page (200): needs a crowd of more than 200 hits |
-| SLK-21 | 8 | 2 (H), 3 (H2, H3) | 5 read #deploys 999 messages a page: need more than 999 messages |
+| SLK-21 | 8 | 2 (H), 3 (H2, H3) | 4 read one page of 999 messages: need more than 999. The three channel-list variants reduce to the named channel's page, since #deploys is public and live. 1 is not lazy for this request: every page of the named channel |
 | LIN-21 | 6 | 1 (H) | 2 read 250 or 1,000 issues a page: need more than 250 issues. 3 are not lazy for this request: the Web team is the whole scope (no sub-teams; Web Platform is the decoy's team), and the server filter can express every condition |
 
 On real covers the practical traps are:
@@ -448,6 +448,9 @@ folder 6/6; another owned calendar 0/3; hidden calendar 0/3; past the first page
   not visibility; the plain container match disambiguates, as the scoring rule intends. In cycles 3–7 containers
   never caught the agent (65/65), but those requests named the scope ("the calendars I own", "anywhere in the Finance
   folder"). This request names none, and the agent took the default container.
+  - **The trap targets are not contestable (check 8).** Both sit on calendars the actor owns. So even the narrow
+    reading that cycle 3 found uncontestable, "the calendars I own", includes them. The wider "my calendars", which
+    let trials take a writable team calendar, is not needed.
 - **Linear: one trial listed issues without `first` or `pageInfo`** and got the default 50.
 - **Box: every trial searched** at 100 or 200 results a page and read the condition from the results. H2's crowd
   (about 40 hits) fit on one such page. That is the largest-page shortcut, not covered in practice.
