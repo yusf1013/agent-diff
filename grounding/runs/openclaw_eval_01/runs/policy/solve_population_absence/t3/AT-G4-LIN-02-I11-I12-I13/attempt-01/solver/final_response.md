@@ -1,0 +1,1 @@
+Done. On the Web team, the only overdue issue assigned to Maya Chen is **WEB-2 – "Update footer links"** (due 2026-09-21, high-priority per the team's data). I set its estimate from 2 → **5**, and the update succeeded.

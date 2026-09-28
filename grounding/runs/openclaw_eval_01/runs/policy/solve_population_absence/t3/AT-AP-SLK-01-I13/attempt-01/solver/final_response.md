@@ -1,0 +1,1 @@
+Done — added :tada: to Deebo's (Farhan Malik) message "Just confirming, launch date March 3 works for us." in #launch-planning. Verified it's the right one: it had Nadia Brooks' :eyes: reaction already.

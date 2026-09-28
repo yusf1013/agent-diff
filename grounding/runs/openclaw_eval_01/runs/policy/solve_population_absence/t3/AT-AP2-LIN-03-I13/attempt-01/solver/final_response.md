@@ -1,0 +1,1 @@
+Done. Renamed team **GRA** (was "Growth Analytics", described as coordinating the Q3 OKR pilot rollout) to **Growth Pod** — it was the only team whose key starts with GR and whose description matched.

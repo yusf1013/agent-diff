@@ -1,0 +1,3 @@
+Done. The document is now titled **"Mobile Redesign Roadmap v2"** — verified via read-back (updated 2026-09-28 23:06 UTC): https://linear.app/northwind/document/473b79b0-c1da-4b30-9bcb-cfc38531ae79
+
+One thing worth flagging: there are two similarly-named projects in your workspace — **Mobile Redesign** and **Mobile App Redesign**. The project literally named "Mobile Redesign" has no roadmap document (just a "Team Charter" last edited by Dana Whitfield). The roadmap doc that Leo Park last edited is in **Mobile App Redesign**, so that's the one I updated ("Mobile App Redesign Roadmap" → "Mobile Redesign Roadmap v2"). If you actually meant a different document, let me know.

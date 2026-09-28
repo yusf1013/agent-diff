@@ -1,0 +1,1 @@
+Done. I found the calendar you own that matches — **Ops Rotation – EMEA** (its location field notes the weekend on-call coverage rota) — and changed its time zone from America/Los_Angeles to **America/New_York**. Confirmed in the API response.

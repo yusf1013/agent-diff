@@ -1,0 +1,1 @@
+Done. "Quarterly planning lunch" (Thu, Jun 21, 12:00–1:00 PM ET) on Leo Park's calendar now has its location set to Room 5B. The update was confirmed — sequence bumped to 1. No attendee notifications were sent since the event has no attendees listed.

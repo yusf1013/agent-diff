@@ -1,0 +1,1 @@
+Done. Set **WEB-2 "Improve payment retry logic"** to **Urgent** — that's the issue with Priya Nair's March 2 comment about the payment gateway timeout still causing failed charges (the only matching comment around March 3).

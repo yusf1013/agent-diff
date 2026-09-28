@@ -1,0 +1,1 @@
+Done — archived **#hr-general** (the private channel with "Onboarding new hires" in its topic and Diego Alvarez as a member). One note: it was the topic that mentioned onboarding, not the purpose — the purpose was "General HR announcements and holiday schedule." He's also in #hr-benefits, but that one is about benefits/401k, so I left it alone.

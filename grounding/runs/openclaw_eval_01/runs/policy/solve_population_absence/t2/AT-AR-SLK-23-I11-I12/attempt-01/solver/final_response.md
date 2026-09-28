@@ -1,0 +1,1 @@
+Done. Archived the private channel **#hr-general** (`CBTR7ZYJTUJ`) — it's the only private channel with onboarding in its description (topic: "Onboarding new hires") and Diego Alvarez as a member. Verified it now shows `is_archived: true`.

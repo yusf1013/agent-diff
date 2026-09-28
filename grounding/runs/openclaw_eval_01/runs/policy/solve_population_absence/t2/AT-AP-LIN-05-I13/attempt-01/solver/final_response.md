@@ -1,0 +1,1 @@
+Done. I found the comment Priya Nair left on March 3 about the payment gateway timeout ("The payment gateway timeout is causing failed charges again...") on **WEB-4 — "Add gateway timeout monitoring"** and set its priority to **Urgent**.

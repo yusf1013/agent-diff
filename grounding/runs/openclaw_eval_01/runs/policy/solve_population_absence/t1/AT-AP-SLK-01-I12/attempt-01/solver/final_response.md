@@ -1,0 +1,1 @@
+Done — :tada: added to Farhan Malik's "Launch date confirmed — March 3, no changes on our side." message in #launch-planning. It's the one Nadia Brooks had already flagged with :eyes:, and I confirmed both details before reacting.

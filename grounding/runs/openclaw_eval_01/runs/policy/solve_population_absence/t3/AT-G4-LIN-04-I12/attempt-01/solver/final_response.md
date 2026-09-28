@@ -1,0 +1,1 @@
+Done — set the estimate to 5 on **WEB-3 "Checkout crash on Safari"** (https://linear.app/northwind/issue/WEB-3). It was the only issue matching that title, so the PagerDuty crash-log detail from Maya Chen wasn't needed to disambiguate.

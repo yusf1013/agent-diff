@@ -1,0 +1,1 @@
+Done — the "Client sync" event (finalizing the Meridian contract) on Thu, Jun 21, 2:30–3:00 pm is now in **Room 4C**. It was previously in Room 3C; the other Meridian contract sync at 3:30–4:00 pm (Room 6D) was left unchanged.

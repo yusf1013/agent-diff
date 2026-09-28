@@ -1,0 +1,1 @@
+Done. Set the estimate to 5 on **WEB-2 — "Update footer links"** (Web team, assigned to Maya Chen, High priority, due 2026-09-21 — overdue). It was the only issue matching that filter; the other High-priority Maya Chen issues (WEB-3, WEB-4) aren't overdue.

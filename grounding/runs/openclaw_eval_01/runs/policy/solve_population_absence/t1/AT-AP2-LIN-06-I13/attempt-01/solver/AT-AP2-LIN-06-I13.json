@@ -1,0 +1,433 @@
+{
+  "test_id": "AT-AP2-LIN-06-I13",
+  "question": "In Linear: Rename the attachment titled \"Marketing brief\" on ENG-14 that links to Dropbox to \"Marketing brief (archived)\".",
+  "harness": "openclaw",
+  "termination": "done",
+  "final": "Done. The attachment on ENG-14 is now titled **\"Marketing brief (archived)\"** — verified via read-back: same attachment id, same Dropbox link (`https://files.example.com/vault/dropbox-sync/marketing-brief.pdf`), new title in place.",
+  "turns": [
+    {
+      "label": "turn1",
+      "message": "In Linear: Rename the attachment titled \"Marketing brief\" on ENG-14 that links to Dropbox to \"Marketing brief (archived)\".",
+      "text": "Done. The attachment on ENG-14 is now titled **\"Marketing brief (archived)\"** — verified via read-back: same attachment id, same Dropbox link (`https://files.example.com/vault/dropbox-sync/marketing-brief.pdf`), new title in place.",
+      "termination": "done",
+      "returncode": 0,
+      "killed": null,
+      "duration_s": 160.5,
+      "meta_error": null,
+      "stop_reason": "stop"
+    }
+  ],
+  "steps": [
+    {
+      "turn": 1,
+      "tool": "read",
+      "arguments": {
+        "path": "~/.openclaw-state/6890187c5e344c68/workspace-assistant/skills/linear/SKILL.md"
+      },
+      "action": "read {\"path\": \"~/.openclaw-state/6890187c5e344c68/workspace-assistant/skills/linear/SKILL.md\"}",
+      "text": "",
+      "thinking": "The user wants to rename the attachment of Linear issue ENG-14. Let's read the Linear skill first.",
+      "usage": {
+        "input": 4748,
+        "output": 83,
+        "cacheRead": 3920,
+        "cacheWrite": 0,
+        "reasoningTokens": 24,
+        "totalTokens": 8751,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "status": "success",
+        "stdout": "---\nname: linear\ndescription: \"Linear project management and issue tracking API. Use it for anything in the user's Linear account.\"\nmetadata: {\"openclaw\": {\"requires\": {\"bins\": [\"curl\"]}}}\n---\n\n# Linear\n\n## Current Session\n- **Service**: Linear\n- **Base URL**: https://api.linear.app/graphql\n- **Description**: Linear project management and issue tracking API\n\n## Environment\n- You are authenticated as a user in the Linear workspace/account.\n- Authentication is handled automatically via proxy. Use placeholder tokens like `<TOKEN>` where credentials would go.\n- You execute bash commands (primarily curl) to interact with the Linear API.\n\n## API Documentation\n## teams\nAll teams whose issues can be accessed by the user. This might be different from `administrableTeams`, which also includes teams whose settings can be changed by the user.\n\n## issues\nAll issues.\n\n## issue\nGet a single issue by ID.\n\n## workflowStates\nAll issue workflow states.\n\n## users\nAll users for the organization.\n\n## issueCreate\nCreates a new issue.\n\n## issueUpdate\nUpdates an issue.\n\n## commentCreate\nCreates a new comment.\n\n## teamCreate\nCreates a new team. The user who creates the team will automatically be added as a member to the newly created team.\n\n## issueLabelCreate\nCreates a new label.\n\n## issueLabels\nAll issue labels.\n\n## comments\nAll comments.\n\n## commentUpdate\nUpdates a comment.\n\n## commentDelete\nDeletes a comment.\n\n## issueLabelUpdate\nUpdates a label.\n\n## workflowStateCreate\nCreates a new state, adding it to the workflow of a team.\n\n## workflowStateArchive\nArchives a state. Only states with issues that have all been archived can be archived.\n\n## teamMembershipCreate\nCreates a new team membership.\n\n## issueRelationCreate\nCreates a new issue relation.\n"
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nThe user wants to rename the attachment of Linear issue ENG-14. Let's read the Linear skill first.\n</thinking>\n"
+          }
+        ]
+      }
+    },
+    {
+      "turn": 2,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -s https://api.linear.app/graphql -H 'Authorization: Bearer <TOKEN>' -H 'Content-Type: application/json' -d '{\"query\":\"{ issue(id: \\\"ENG-14\\\") { id identifier title attachments(first: 50) { nodes { id title url source } } } }\"}'"
+      },
+      "action": "curl -s https://api.linear.app/graphql -H 'Authorization: Bearer <TOKEN>' -H 'Content-Type: application/json' -d '{\"query\":\"{ issue(id: \\\"ENG-14\\\") { id identifier title attachments(first: 50) { nodes { id title url source } } } }\"}'",
+      "text": "",
+      "thinking": "The skill's API documentation is minimal — there's no mention of an attachment mutation. I need to investigate Linear's GraphQL API for attachment operations. Linear has an `attachments` query and, if I recall correctly, an `attachmentUpdate` mutation. Let me check.\n\nFirst, I'll find issue ENG-14 and its attachments. Linear's GraphQL API:\n\n```graphql\n{\n  issue(id: \"ENG-14\") {\n    id\n    identifier\n    title\n    attachments {\n      nodes {\n        id\n        title\n        url\n        source\n      }\n    }\n  }\n}\n```\n\nActually, I'm not 100% sure whether the `attachments` field exists on Issue. Let me check the Linear API. There's an `attachments` query at the top level: `attachments(filter: {...})`. As for issue attachments, I don't think there's an `attachments` field on Issue... no wait, does Linear's GraphQL API have `issue.attachments`? Let me check the Linear API docs.\n\nFrom my knowledge: does Linear's GraphQL API include an `attachments` field on the `Issue` type? Hmm. Linear's API docs (api.linear.app/docs) list the following:\n\nQueries: `attachment(id)`, `attachments(filter)`.\nMutations: `attachmentCreate`? `attachmentDelete`? `attachmentUpdate`?\n\nI remember Linear added attachment-related mutations: `attachmentCreate`, `attachmentDelete`, and possibly `attachmentUpdate`. Let me first explore by fetching the issue and seeing what fields are available. I can use introspection to find attachment-related fields and mutations.\n\nPlan:\n1. Fetch issue ENG-14: `curl -s https://api.linear.app/graphql -H 'Authorization: Bearer <TOKEN>' -H 'Content-Type: application/json' -d '{\"query\":\"{ issue(id: \\\"ENG-14\\\") { id identifier title } }\"}'`\n2. Check the Issue type's attachments field via introspection, or just try it.\n3. Find the attachment titled \"Marketing brief\" that links to Dropbox (the url contains dropbox).\n4. Run the `attachmentUpdate` mutation with a new title.\n\nLet's get started. I'll use placeholder tokens as instructed.\n\nFirst, let me check if the Issue type has an attachments field. I'll run introspection on the Issue type's fields.\n\nActually, let me do it in one go: first, fetch the issue by ID.",
+      "usage": {
+        "input": 520,
+        "output": 622,
+        "cacheRead": 8624,
+        "cacheWrite": 0,
+        "reasoningTokens": 528,
+        "totalTokens": 9766,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "status": "success",
+        "stdout": "{\"data\":null,\"errors\":[{\"message\":\"Cannot return null for non-nullable field AttachmentConnection.nodes.\",\"locations\":[{\"line\":1,\"column\":70}],\"path\":[\"issue\",\"attachments\",\"nodes\"]}]}"
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nThe skill's API documentation is minimal — there's no mention of an attachment mutation. I need to investigate Linear's GraphQL API for attachment operations. Linear has an `attachments` query and, if I recall correctly, an `attachmentUpdate` mutation. Let me check.\n\nFirst, I'll find issue ENG-14 and its attachments. Linear's GraphQL API:\n\n```graphql\n{\n  issue(id: \"ENG-14\") {\n    id\n    identifier\n    title\n    attachments {\n      nodes {\n        id\n        title\n        url\n        source\n      }\n    }\n  }\n}\n```\n\nActually, I'm not 100% sure whether the `attachments` field exists on Issue. Let me check the Linear API. There's an `attachments` query at the top level: `attachments(filter: {...})`. As for issue attachments, I don't think there's an `attachments` field on Issue... no wait, does Linear's GraphQL API have `issue.attachments`? Let me check the Linear API docs.\n\nFrom my knowledge: does Linear's GraphQL API include an `attachments` field on the `Issue` type? Hmm. Linear's API docs (api.linear.app/docs) list the following:\n\nQueries: `attachment(id)`, `attachments(filter)`.\nMutations: `attachmentCreate`? `attachmentDelete`? `attachmentUpdate`?\n\nI remember Linear added attachment-related mutations: `attachmentCreate`, `attachmentDelete`, and possibly `attachmentUpdate`. Let me first explore by fetching the issue and seeing what fields are available. I can use introspection to find attachment-related fields and mutations.\n\nPlan:\n1. Fetch issue ENG-14: `curl -s https://api.linear.app/graphql -H 'Authorization: Bearer <TOKEN>' -H 'Content-Type: application/json' -d '{\"query\":\"{ issue(id: \\\"ENG-14\\\") { id identifier title } }\"}'`\n2. Check the Issue type's attachments field via introspection, or just try it.\n3. Find the attachment titled \"Marketing brief\" that links to Dropbox (the url contains dropbox).\n4. Run the `attachmentUpdate` mutation with a new title.\n\nLet's get started. I'll use placeholder tokens as instructed.\n\nFirst, let me check if the Issue type has an attachments field. I'll run introspection on the Issue type's fields.\n\nActually, let me do it in one go: first, fetch the issue by ID.\n</thinking>\n"
+          }
+        ]
+      }
+    },
+    {
+      "turn": 3,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -s https://api.linear.app/graphql -H 'Authorization: Bearer <TOKEN>' -H 'Content-Type: application/json' -d '{\"query\":\"{ __type(name: \\\"Attachment\\\") { fields { name type { name kind ofType { name } } } } }\"}'"
+      },
+      "action": "curl -s https://api.linear.app/graphql -H 'Authorization: Bearer <TOKEN>' -H 'Content-Type: application/json' -d '{\"query\":\"{ __type(name: \\\"Attachment\\\") { fields { name type { name kind ofType { name } } } } }\"}'",
+      "text": "",
+      "thinking": "The attachments query errored out — probably a field mismatch in the GraphQL schema. Linear's Attachment type has the following fields: id, title, url, source, createdAt, updatedAt, size, mimeType, createdBy... Let me check the schema. Maybe \"attachments(first: 50)\" requires a different argument, or the field name is different. Let me try querying the issue's attachments more carefully, or check the schema using __schema.",
+      "usage": {
+        "input": 671,
+        "output": 176,
+        "cacheRead": 8624,
+        "cacheWrite": 0,
+        "reasoningTokens": 90,
+        "totalTokens": 9471,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "status": "success",
+        "stdout": "{\"data\":{\"__type\":{\"fields\":[{\"name\":\"archivedAt\",\"type\":{\"name\":\"DateTime\",\"kind\":\"SCALAR\",\"ofType\":null}},{\"name\":\"bodyData\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\",\"ofType\":null}},{\"name\":\"createdAt\",\"type\":{\"name\":null,\"kind\":\"NON_NULL\",\"ofType\":{\"name\":\"DateTime\"}}},{\"name\":\"creator\",\"type\":{\"name\":\"User\",\"kind\":\"OBJECT\",\"ofType\":null}},{\"name\":\"externalUserCreator\",\"type\":{\"name\":\"ExternalUser\",\"kind\":\"OBJECT\",\"ofType\":null}},{\"name\":\"groupBySource\",\"type\":{\"name\":null,\"kind\":\"NON_NULL\",\"ofType\":{\"name\":\"Boolean\"}}},{\"name\":\"id\",\"type\":{\"name\":null,\"kind\":\"NON_NULL\",\"ofType\":{\"name\":\"ID\"}}},{\"name\":\"issue\",\"type\":{\"name\":null,\"kind\":\"NON_NULL\",\"ofType\":{\"name\":\"Issue\"}}},{\"name\":\"metadata\",\"type\":{\"name\":null,\"kind\":\"NON_NULL\",\"ofType\":{\"name\":\"JSONObject\"}}},{\"name\":\"originalIssue\",\"type\":{\"name\":\"Issue\",\"kind\":\"OBJECT\",\"ofType\":null}},{\"name\":\"source\",\"type\":{\"name\":\"JSONObject\",\"kind\":\"SCALAR\",\"ofType\":null}},{\"name\":\"sourceType\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\",\"ofType\":null}},{\"name\":\"subtitle\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\",\"ofType\":null}},{\"name\":\"title\",\"type\":{\"name\":null,\"kind\":\"NON_NULL\",\"ofType\":{\"name\":\"String\"}}},{\"name\":\"updatedAt\",\"type\":{\"name\":null,\"kind\":\"NON_NULL\",\"ofType\":{\"name\":\"DateTime\"}}},{\"name\":\"url\",\"type\":{\"name\":null,\"kind\":\"NON_NULL\",\"ofType\":{\"name\":\"String\"}}}]}}}"
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nThe attachments query errored out — probably a field mismatch in the GraphQL schema. Linear's Attachment type has the following fields: id, title, url, source, createdAt, updatedAt, size, mimeType, createdBy... Let me check the schema. Maybe \"attachments(first: 50)\" requires a different argument, or the field name is different. Let me try querying the issue's attachments more carefully, or check the schema using __schema.\n</thinking>\n"
+          }
+        ]
+      }
+    },
+    {
+      "turn": 4,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -s https://api.linear.app/graphql -H 'Authorization: Bearer <TOKEN>' -H 'Content-Type: application/json' -d '{\"query\":\"{ issue(id: \\\"ENG-14\\\") { id identifier title url attachments(first: 50) { nodes { id title url source } } } }\"}'"
+      },
+      "action": "curl -s https://api.linear.app/graphql -H 'Authorization: Bearer <TOKEN>' -H 'Content-Type: application/json' -d '{\"query\":\"{ issue(id: \\\"ENG-14\\\") { id identifier title url attachments(first: 50) { nodes { id title url source } } } }\"}'",
+      "text": "",
+      "thinking": "The first query failed with \"Cannot return null for non-nullable field AttachmentConnection.nodes.\" This is strange — it's saying that nodes returned null. Maybe the issue lookup failed (ENG-14 not found?), and because issue is null, attachments also became null, resulting in the error. In fact, if issue is null, then attachments should be null, but… this error path indicates issue.attachments.nodes — meaning the attachments field was resolved but nodes was null? Or maybe the entire error is a cascade.\n\nLet me fetch the issue without attachments and check.",
+      "usage": {
+        "input": 1139,
+        "output": 211,
+        "cacheRead": 8624,
+        "cacheWrite": 0,
+        "reasoningTokens": 116,
+        "totalTokens": 9974,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "status": "success",
+        "stdout": "{\"data\":null,\"errors\":[{\"message\":\"Cannot return null for non-nullable field AttachmentConnection.nodes.\",\"locations\":[{\"line\":1,\"column\":74}],\"path\":[\"issue\",\"attachments\",\"nodes\"]}]}"
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nThe first query failed with \"Cannot return null for non-nullable field AttachmentConnection.nodes.\" This is strange — it's saying that nodes returned null. Maybe the issue lookup failed (ENG-14 not found?), and because issue is null, attachments also became null, resulting in the error. In fact, if issue is null, then attachments should be null, but… this error path indicates issue.attachments.nodes — meaning the attachments field was resolved but nodes was null? Or maybe the entire error is a cascade.\n\nLet me fetch the issue without attachments and check.\n</thinking>\n"
+          }
+        ]
+      }
+    },
+    {
+      "turn": 5,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -s https://api.linear.app/graphql -H 'Authorization: Bearer <TOKEN>' -H 'Content-Type: application/json' -d '{\"query\":\"{ __type(name: \\\"Issue\\\") { fields { name type { name kind ofType { name kind ofType { name } } } } } }\"}' | python3 -c \"import json,sys; d=json.load(sys.stdin); [print(f['name'], f['type']) for f in d['data']['__type']['fields'] if 'attach' in f['name'].lower() or 'file' in f['name'].lower() or 'link' in f['name'].lower() or 'comment' in f['name'].lower() or f['name'] in ('id','identifier','url','title')]\""
+      },
+      "action": "curl -s https://api.linear.app/graphql -H 'Authorization: Bearer <TOKEN>' -H 'Content-Type: application/json' -d '{\"query\":\"{ __type(name: \\\"Issue\\\") { fields { name type { name kind ofType { name kind ofType { name } } } } } }\"}' | python3 -c \"import json,sys; d=json.load(sys.stdin); [print(f['name'], f['type']) for f in d['data']['__type']['fields'] if 'attach' in f['name'].lower() or 'file' in f['name'].lower() or 'link' in f['name'].lower() or 'comment' in f['name'].lower() or f['name'] in ('id','identifier','url','title')]\"",
+      "text": "",
+      "thinking": "The attachments field exists on Issue, but it seems the nodes are null — maybe attachments are stored in a separate table and the connection isn't implemented server-side? Let me check the Issue type's fields around attachments. Actually, this error suggests that the server returns null for nodes. This might be a known quirk of the Linear API: attachments may only be accessible via a different query, or perhaps via \"issue.attachments\". Let me introspect the Issue type and see what the type of attachments is.",
+      "usage": {
+        "input": 507,
+        "output": 293,
+        "cacheRead": 9408,
+        "cacheWrite": 0,
+        "reasoningTokens": 103,
+        "totalTokens": 10208,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "status": "success",
+        "stdout": "attachments {'name': None, 'kind': 'NON_NULL', 'ofType': {'name': 'AttachmentConnection', 'kind': 'OBJECT', 'ofType': None}}\ncomments {'name': None, 'kind': 'NON_NULL', 'ofType': {'name': 'CommentConnection', 'kind': 'OBJECT', 'ofType': None}}\nformerAttachments {'name': None, 'kind': 'NON_NULL', 'ofType': {'name': 'AttachmentConnection', 'kind': 'OBJECT', 'ofType': None}}\nid {'name': None, 'kind': 'NON_NULL', 'ofType': {'name': 'ID', 'kind': 'SCALAR', 'ofType': None}}\nidentifier {'name': None, 'kind': 'NON_NULL', 'ofType': {'name': 'String', 'kind': 'SCALAR', 'ofType': None}}\nsourceComment {'name': 'Comment', 'kind': 'OBJECT', 'ofType': None}\ntitle {'name': None, 'kind': 'NON_NULL', 'ofType': {'name': 'String', 'kind': 'SCALAR', 'ofType': None}}\nurl {'name': None, 'kind': 'NON_NULL', 'ofType': {'name': 'String', 'kind': 'SCALAR', 'ofType': None}}"
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nThe attachments field exists on Issue, but it seems the nodes are null — maybe attachments are stored in a separate table and the connection isn't implemented server-side? Let me check the Issue type's fields around attachments. Actually, this error suggests that the server returns null for nodes. This might be a known quirk of the Linear API: attachments may only be accessible via a different query, or perhaps via \"issue.attachments\". Let me introspect the Issue type and see what the type of attachments is.\n</thinking>\n"
+          }
+        ]
+      }
+    },
+    {
+      "turn": 6,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -s https://api.linear.app/graphql -H 'Authorization: Bearer <TOKEN>' -H 'Content-Type: application/json' -d '{\"query\":\"{ attachments(first: 100) { nodes { id title url source issue { identifier } } } }\"}'"
+      },
+      "action": "curl -s https://api.linear.app/graphql -H 'Authorization: Bearer <TOKEN>' -H 'Content-Type: application/json' -d '{\"query\":\"{ attachments(first: 100) { nodes { id title url source issue { identifier } } } }\"}'",
+      "text": "",
+      "thinking": "The attachments query fails with the error \"Cannot return null for non-nullable field AttachmentConnection.nodes.\" This might be a quirk of the mock/proxy environment — perhaps the attachments field on the issue query isn't implemented, or maybe a different approach is needed. Let me try the `attachments` top-level query... I'll check which queries are available. I'll try the `attachment` query by ID, or try the `attachments` top-level.",
+      "usage": {
+        "input": 992,
+        "output": 178,
+        "cacheRead": 9408,
+        "cacheWrite": 0,
+        "reasoningTokens": 93,
+        "totalTokens": 10578,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "status": "success",
+        "stdout": "{\"data\":{\"attachments\":{\"nodes\":[{\"id\":\"a1fbec85-c269-49a9-90e8-242963e8906d\",\"title\":\"Marketing brief\",\"url\":\"https://files.example.com/vault/dropbox-sync/marketing-brief.pdf\",\"source\":{\"type\":\"api\"},\"issue\":{\"identifier\":\"ENG-14\"}},{\"id\":\"eb5cde33-5c1b-41c0-b6bd-fc6c2871fc30\",\"title\":\"Design mockups\",\"url\":\"https://www.figma.com/file/abcxyz/homepage\",\"source\":{\"type\":\"api\"},\"issue\":{\"identifier\":\"ENG-14\"}}]}}}"
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nThe attachments query fails with the error \"Cannot return null for non-nullable field AttachmentConnection.nodes.\" This might be a quirk of the mock/proxy environment — perhaps the attachments field on the issue query isn't implemented, or maybe a different approach is needed. Let me try the `attachments` top-level query... I'll check which queries are available. I'll try the `attachment` query by ID, or try the `attachments` top-level.\n</thinking>\n"
+          }
+        ]
+      }
+    },
+    {
+      "turn": 7,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -s https://api.linear.app/graphql -H 'Authorization: Bearer <TOKEN>' -H 'Content-Type: application/json' -d '{\"query\":\"{ __schema { mutationType { fields { name args { name type { name kind ofType { name } } } } } } }\"}' | python3 -c \"import json,sys; d=json.load(sys.stdin); [print(f['name'], [a['name'] for a in f['args']]) for f in d['data']['__schema']['mutationType']['fields']]\""
+      },
+      "action": "curl -s https://api.linear.app/graphql -H 'Authorization: Bearer <TOKEN>' -H 'Content-Type: application/json' -d '{\"query\":\"{ __schema { mutationType { fields { name args { name type { name kind ofType { name } } } } } } }\"}' | python3 -c \"import json,sys; d=json.load(sys.stdin); [print(f['name'], [a['name'] for a in f['args']]) for f in d['data']['__schema']['mutationType']['fields']]\"",
+      "text": "Found the attachment — id `a1fbec85-...`, \"Marketing brief\", pointing to the Dropbox-synced PDF on ENG-14. Now let me check what mutations are available for attachments:",
+      "thinking": "The attachments query works at the top level. The issue-level attachments query returns a non-null nodes error — probably the field is different in this mock. In any case, I found the attachment: id a1fbec85-c269-49a9-90e8-242963e8906d, title \"Marketing brief\", url https://files.example.com/vault/dropbox-sync/marketing-brief.pdf (Dropbox link), issue ENG-14.\n\nNext, I need to find a mutation to update the attachment title. Let me check the mutation types in the schema.",
+      "usage": {
+        "input": 462,
+        "output": 318,
+        "cacheRead": 10192,
+        "cacheWrite": 0,
+        "reasoningTokens": 133,
+        "totalTokens": 10972,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "status": "success",
+        "stdout": "agentActivityCreate ['input']\nagentActivityCreatePrompt ['input']\nagentSessionCreateOnComment ['input']\nagentSessionCreateOnIssue ['input']\nagentSessionUpdateExternalUrl ['id', 'input']\nairbyteIntegrationConnect ['input']\napiKeyCreate ['input']\napiKeyDelete ['id']\napiKeyUpdate ['id', 'input']\nattachmentCreate ['input']\nattachmentDelete ['id']\nattachmentLinkDiscord ['channelId', 'createAsUser', 'displayIconUrl', 'id', 'issueId', 'messageId', 'title', 'url']\nattachmentLinkFront ['conversationId', 'createAsUser', 'displayIconUrl', 'id', 'issueId', 'title']\nattachmentLinkGitHubIssue ['createAsUser', 'displayIconUrl', 'id', 'issueId', 'title', 'url']\nattachmentLinkGitHubPR ['createAsUser', 'displayIconUrl', 'id', 'issueId', 'linkKind', 'title', 'url']\nattachmentLinkGitLabMR ['createAsUser', 'displayIconUrl', 'id', 'issueId', 'number', 'projectPathWithNamespace', 'title', 'url']\nattachmentLinkIntercom ['conversationId', 'createAsUser', 'displayIconUrl', 'id', 'issueId', 'partId', 'title']\nattachmentLinkJiraIssue ['createAsUser', 'displayIconUrl', 'id', 'issueId', 'jiraIssueId', 'title', 'url']\nattachmentLinkSalesforce ['createAsUser', 'displayIconUrl', 'id', 'issueId', 'title', 'url']\nattachmentLinkSlack ['createAsUser', 'displayIconUrl', 'id', 'issueId', 'syncToCommentThread', 'title', 'url']\nattachmentLinkURL ['createAsUser', 'displayIconUrl', 'id', 'issueId', 'title', 'url']\nattachmentLinkZendesk ['createAsUser', 'displayIconUrl', 'id', 'issueId', 'ticketId', 'title', 'url']\nattachmentSyncToSlack ['id']\nattachmentUpdate ['id', 'input']\ncommentCreate ['input']\ncommentDelete ['id']\ncommentResolve ['id', 'resolvingCommentId']\ncommentUnresolve ['id']\ncommentUpdate ['id', 'input']\ncontactCreate ['input']\ncontactSalesCreate ['input']\ncreateCsvExportReport ['includePrivateTeamIds']\ncreateInitiativeUpdateReminder ['initiativeId', 'userId']\ncreateOrganizationFromOnboarding ['input', 'survey']\ncreateProjectUpdateReminder ['projectId', 'userId']\ncustomViewCreate ['input']\ncustomViewDelete ['id']\ncustomViewUpdate ['id', 'input']\ncustomerCreate ['input']\ncustomerDelete ['id']\ncustomerMerge ['sourceCustomerId', 'targetCustomerId']\ncustomerNeedArchive ['id']\ncustomerNeedCreate ['input']\ncustomerNeedCreateFromAttachment ['input']\ncustomerNeedDelete ['id', 'keepAttachment']\ncustomerNeedUnarchive ['id']\ncustomerNeedUpdate ['id', 'input']\ncustomerStatusCreate ['input']\ncustomerStatusDelete ['id']\ncustomerStatusUpdate ['id', 'input']\ncustomerTierCreate ['input']\ncustomerTierDelete ['id']\ncustomerTierUpdate ['id', 'input']\ncustomerUpdate ['id', 'input']\ncustomerUpsert ['input']\ncycleArchive ['id']\ncycleCreate ['input']\ncycleShiftAll ['input']\ncycleStartUpcomingCycleToday ['id']\ncycleUpdate ['id', 'input']\ndocumentCreate ['input']\ndocumentDelete ['id']\ndocumentUnarchive ['id']\ndocumentUpdate ['id', 'input']\nemailIntakeAddressCreate ['input']\nemailIntakeAddressDelete ['id']\nemailIntakeAddressRotate ['id']\nemailIntakeAddressUpdate ['id', 'input']\nemailTokenUserAccountAuth ['input']\nemailUnsubscribe ['input']\nemailUserAccountAuthChallenge ['input']\nemojiCreate ['input']\nemojiDelete ['id']\nentityExternalLinkCreate ['input']\nentityExternalLinkDelete ['id']\nentityExternalLinkUpdate ['id', 'input']\nfavoriteCreate ['input']\nfavoriteDelete ['id']\nfavoriteUpdate ['id', 'input']\nfileUpload ['contentType', 'filename', 'makePublic', 'metaData', 'size']\nfileUploadDangerouslyDelete ['assetUrl']\ngitAutomationStateCreate ['input']\ngitAutomationStateDelete ['id']\ngitAutomationStateUpdate ['id', 'input']\ngitAutomationTargetBranchCreate ['input']\ngitAutomationTargetBranchDelete ['id']\ngitAutomationTargetBranchUpdate ['id', 'input']\ngoogleUserAccountAuth ['input']\nimageUploadFromUrl ['url']\nimportFileUpload ['contentType', 'filename', 'metaData', 'size']\ninitiativeArchive ['id']\ninitiativeCreate ['input']\ninitiativeDelete ['id']\ninitiativeRelationCreate ['input']\ninitiativeRelationDelete ['id']\ninitiativeRelationUpdate ['id', 'input']\ninitiativeToProjectCreate ['input']\ninitiativeToProjectDelete ['id']\ninitiativeToProjectUpdate ['id', 'input']\ninitiativeUnarchive ['id']\ninitiativeUpdate ['id', 'input']\ninitiativeUpdateArchive ['id']\ninitiativeUpdateCreate ['input']\ninitiativeUpdateUnarchive ['id']\ninitiativeUpdateUpdate ['id', 'input']\nintegrationArchive ['id']\nintegrationAsksConnectChannel ['code', 'redirectUri']\nintegrationCustomerDataAttributesRefresh ['input']\nintegrationDelete ['id', 'skipInstallationDeletion']\nintegrationDiscord ['code', 'redirectUri']\nintegrationFigma ['code', 'redirectUri']\nintegrationFront ['code', 'redirectUri']\nintegrationGitHubEnterpriseServerConnect ['githubUrl', 'organizationName']\nintegrationGitHubPersonal ['code', 'codeAccess']\nintegrationGithubCommitCreate []\nintegrationGithubConnect ['code', 'codeAccess', 'installationId']\nintegrationGithubImportConnect ['code', 'installationId']\nintegrationGithubImportRefresh ['id']\nintegrationGitlabConnect ['accessToken', 'gitlabUrl']\nintegrationGong ['code', 'redirectUri']\nintegrationGoogleCalendarPersonalConnect ['code']\nintegrationGoogleSheets ['code']\nintegrationIntercom ['code', 'domainUrl', 'redirectUri']\nintegrationIntercomDelete []\nintegrationJiraPersonal ['accessToken', 'code']\nintegrationJiraUpdate ['input']\nintegrationLaunchDarklyConnect ['code', 'environment', 'projectKey']\nintegrationLaunchDarklyPersonalConnect ['code']\nintegrationOpsgenieConnect ['apiKey']\nintegrationOpsgenieRefreshScheduleMappings []\nintegrationPagerDutyConnect ['code', 'redirectUri']\nintegrationPagerDutyRefreshScheduleMappings []\nintegrationRequest ['input']\nintegrationSalesforce ['code', 'redirectUri', 'subdomain']\nintegrationSalesforceMetadataRefresh ['id']\nintegrationSentryConnect ['code', 'installationId', 'organizationSlug']\nintegrationSlack ['code', 'redirectUri', 'shouldUseV2Auth']\nintegrationSlackAsks ['code', 'redirectUri']\nintegrationSlackCustomViewNotifications ['code', 'customViewId', 'redirectUri']\nintegrationSlackCustomerChannelLink ['code', 'customerId', 'redirectUri']\nintegrationSlackImportEmojis ['code', 'redirectUri']\nintegrationSlackInitiativePost ['code', 'initiativeId', 'redirectUri']\nintegrationSlackOrAsksUpdateSlackTeamName ['integrationId']\nintegrationSlackOrgInitiativeUpdatesPost ['code', 'redirectUri']\nintegrationSlackOrgProjectUpdatesPost ['code', 'redirectUri']\nintegrationSlackPersonal ['code', 'redirectUri']\nintegrationSlackPost ['code', 'redirectUri', 'shouldUseV2Auth', 'teamId']\nintegrationSlackProjectPost ['code', 'projectId', 'redirectUri', 'service']\nintegrationTemplateCreate ['input']\nintegrationTemplateDelete ['id']\nintegrationUpdate ['id', 'input']\nintegrationZendesk ['code', 'redirectUri', 'scope', 'subdomain']\nintegrationsSettingsCreate ['input']\nintegrationsSettingsUpdate ['id', 'input']\nissueAddLabel ['id', 'labelId']\nissueArchive ['id', 'trash']\nissueBatchCreate ['input']\nissueBatchUpdate ['ids', 'input']\nissueCreate ['input']\nissueDelete ['id', 'permanentlyDelete']\nissueDescriptionUpdateFromFront ['description', 'id']\nissueExternalSyncDisable ['attachmentId']\nissueImportCreateAsana ['asanaTeamName', 'asanaToken', 'id', 'includeClosedIssues', 'instantProcess', 'teamId', 'teamName']\nissueImportCreateCSVJira ['csvUrl', 'jiraEmail', 'jiraHostname', 'jiraToken', 'teamId', 'teamName']\nissueImportCreateClubhouse ['clubhouseGroupName', 'clubhouseToken', 'id', 'includeClosedIssues', 'instantProcess', 'teamId', 'teamName']\nissueImportCreateGithub ['githubLabels', 'githubRepoIds', 'includeClosedIssues', 'instantProcess', 'teamId', 'teamName']\nissueImportCreateJira ['id', 'includeClosedIssues', 'instantProcess', 'jiraEmail', 'jiraHostname', 'jiraProject', 'jiraToken', 'jql', 'teamId', 'teamName']\nissueImportCreateLinearV2 ['id', 'linearSourceOrganizationId']\nissueImportDelete ['issueImportId']\nissueImportProcess ['issueImportId', 'mapping']\nissueImportUpdate ['id', 'input']\nissueLabelCreate ['input', 'replaceTeamLabels']\nissueLabelDelete ['id']\nissueLabelUpdate ['id', 'input', 'replaceTeamLabels']\nissueRelationCreate ['input', 'overrideCreatedAt']\nissueRelationDelete ['id']\nissueRelationUpdate ['id', 'input']\nissueReminder ['id', 'reminderAt']\nissueRemoveLabel ['id', 'labelId']\nissueSubscribe ['id', 'userEmail', 'userId']\nissueUnarchive ['id']\nissueUnsubscribe ['id', 'userEmail', 'userId']\nissueUpdate ['id', 'input']\njiraIntegrationConnect ['input']\njoinOrganizationFromOnboarding ['input']\nleaveOrganization ['organizationId']\nlogout ['reason']\nlogoutAllSessions ['reason']\nlogoutOtherSessions ['reason']\nlogoutSession ['sessionId']\nnotificationArchive ['id']\nnotificationArchiveAll ['input']\nnotificationCategoryChannelSubscriptionUpdate ['category', 'channel', 'subscribe']\nnotificationMarkReadAll ['input', 'readAt']\nnotificationMarkUnreadAll ['input']\nnotificationSnoozeAll ['input', 'snoozedUntilAt']\nnotificationSubscriptionCreate ['input']\nnotificationSubscriptionUpdate ['id', 'input']\nnotificationUnarchive ['id']\nnotificationUnsnoozeAll ['input', 'unsnoozedAt']\nnotificationUpdate ['id', 'input']\norganizationCancelDelete []\norganizationDelete ['input']\norganizationDeleteChallenge []\norganizationDomainClaim ['id']\norganizationDomainCreate ['input', 'triggerEmailVerification']\norganizationDomainDelete ['id']\norganizationDomainUpdate ['id', 'input']\norganizationDomainVerify ['input']\norganizationInviteCreate ['input']\norganizationInviteDelete ['id']\norganizationInviteUpdate ['id', 'input']\norganizationStartTrialForPlan ['input']\norganizationUpdate ['input']\npasskeyLoginFinish ['authId', 'response']\npasskeyLoginStart ['authId']\nprojectAddLabel ['id', 'labelId']\nprojectCreate ['connectSlackChannel', 'input']\nprojectDelete ['id']\nprojectLabelCreate ['input']\nprojectLabelDelete ['id']\nprojectLabelUpdate ['id', 'input']\nprojectMilestoneCreate ['input']\nprojectMilestoneDelete ['id']\nprojectMilestoneMove ['id', 'input']\nprojectMilestoneUpdate ['id', 'input']\nprojectReassignStatus ['newProjectStatusId', 'originalProjectStatusId']\nprojectRelationCreate ['input']\nprojectRelationDelete ['id']\nprojectRelationUpdate ['id', 'input']\nprojectRemoveLabel ['id', 'labelId']\nprojectStatusArchive ['id']\nprojectStatusCreate ['input']\nprojectStatusUnarchive ['id']\nprojectStatusUpdate ['id', 'input']\nprojectUnarchive ['id']\nprojectUpdate ['id', 'input']\nprojectUpdateArchive ['id']\nprojectUpdateCreate ['input']\nprojectUpdateUnarchive ['id']\nprojectUpdateUpdate ['id', 'input']\npushSubscriptionCreate ['input']\npushSubscriptionDelete ['id']\nreactionCreate ['input']\nreactionDelete ['id']\nrefreshGoogleSheetsData ['id', 'type']\nresendOrganizationInvite ['id']\nresendOrganizationInviteByEmail ['email']\nroadmapToProjectCreate ['input']\nroadmapToProjectDelete ['id']\nroadmapToProjectUpdate ['id', 'input']\nsamlTokenUserAccountAuth ['input']\nteamCreate ['copySettingsFromTeamId', 'input']\nteamCyclesDelete ['id']\nteamDelete ['id']\nteamKeyDelete ['id']\nteamMembershipCreate ['input']\nteamMembershipDelete ['alsoLeaveParentTeams', 'id']\nteamMembershipUpdate ['id', 'input']\nteamUnarchive ['id']\nteamUpdate ['id', 'input', 'mapping']\ntemplateCreate ['input']\ntemplateDelete ['id']\ntemplateUpdate ['id', 'input']\ntimeScheduleCreate ['input']\ntimeScheduleDelete ['id']\ntimeScheduleRefreshIntegrationSchedule ['id']\ntimeScheduleUpdate ['id', 'input']\ntimeScheduleUpsertExternal ['externalId', 'input']\ntriageResponsibilityCreate ['input']\ntriageResponsibilityDelete ['id']\ntriageResponsibilityUpdate ['id', 'input']\nupdateIntegrationSlackScopes ['code', 'integrationId', 'redirectUri']\nuserDemoteAdmin ['id']\nuserDemoteMember ['id']\nuserDiscordConnect ['code', 'redirectUri']\nuserExternalUserDisconnect ['service']\nuserFlagUpdate ['flag', 'operation']\nuserPromoteAdmin ['id']\nuserPromoteMember ['id']\nuserSettingsFlagsReset ['flags']\nuserSettingsUpdate ['id', 'input']\nuserSuspend ['id']\nuserUnlinkFromIdentityProvider ['id']\nuserUnsuspend ['id']\nuserUpdate ['id', 'input']\nviewPreferencesCreate ['input']\nviewPreferencesDelete ['id']\nviewPreferencesUpdate ['id', 'input']\nwebhookCreate ['input']\nwebhookDelete ['id']\nwebhookUpdate ['id', 'input']\nworkflowStateArchive ['id']\nworkflowStateCreate ['input']\nworkflowStateUpdate ['id', 'input']"
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nThe attachments query works at the top level. The issue-level attachments query returns a non-null nodes error — probably the field is different in this mock. In any case, I found the attachment: id a1fbec85-c269-49a9-90e8-242963e8906d, title \"Marketing brief\", url https://files.example.com/vault/dropbox-sync/marketing-brief.pdf (Dropbox link), issue ENG-14.\n\nNext, I need to find a mutation to update the attachment title. Let me check the mutation types in the schema.\n</thinking>\nFound the attachment — id `a1fbec85-...`, \"Marketing brief\", pointing to the Dropbox-synced PDF on ENG-14. Now let me check what mutations are available for attachments:"
+          }
+        ]
+      }
+    },
+    {
+      "turn": 8,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -s https://api.linear.app/graphql -H 'Authorization: Bearer <TOKEN>' -H 'Content-Type: application/json' -d '{\"query\":\"{ __type(name: \\\"AttachmentUpdateInput\\\") { inputFields { name type { name kind ofType { name } } } } }\"}'"
+      },
+      "action": "curl -s https://api.linear.app/graphql -H 'Authorization: Bearer <TOKEN>' -H 'Content-Type: application/json' -d '{\"query\":\"{ __type(name: \\\"AttachmentUpdateInput\\\") { inputFields { name type { name kind ofType { name } } } } }\"}'",
+      "text": "`attachmentUpdate` exists. Let me check its input shape, then rename:",
+      "thinking": "`attachmentUpdate` exists. Let's check its input type.",
+      "usage": {
+        "input": 3818,
+        "output": 120,
+        "cacheRead": 10192,
+        "cacheWrite": 0,
+        "reasoningTokens": 14,
+        "totalTokens": 14130,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "status": "success",
+        "stdout": "{\"data\":{\"__type\":{\"inputFields\":[{\"name\":\"iconUrl\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\",\"ofType\":null}},{\"name\":\"metadata\",\"type\":{\"name\":\"JSONObject\",\"kind\":\"SCALAR\",\"ofType\":null}},{\"name\":\"subtitle\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\",\"ofType\":null}},{\"name\":\"title\",\"type\":{\"name\":null,\"kind\":\"NON_NULL\",\"ofType\":{\"name\":\"String\"}}}]}}}"
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\n`attachmentUpdate` exists. Let's check its input type.\n</thinking>\n`attachmentUpdate` exists. Let me check its input shape, then rename:"
+          }
+        ]
+      }
+    },
+    {
+      "turn": 9,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -s https://api.linear.app/graphql -H 'Authorization: Bearer <TOKEN>' -H 'Content-Type: application/json' -d '{\"query\":\"mutation { attachmentUpdate(id: \\\"a1fbec85-c269-49a9-90e8-242963e8906d\\\", input: { title: \\\"Marketing brief (archived)\\\" }) { id title } }\"}'"
+      },
+      "action": "curl -s https://api.linear.app/graphql -H 'Authorization: Bearer <TOKEN>' -H 'Content-Type: application/json' -d '{\"query\":\"mutation { attachmentUpdate(id: \\\"a1fbec85-c269-49a9-90e8-242963e8906d\\\", input: { title: \\\"Marketing brief (archived)\\\" }) { id title } }\"}'",
+      "text": "",
+      "thinking": "The `attachmentUpdate` mutation takes an `id` and an input containing a `title` field. Now I'll rename the attachment.",
+      "usage": {
+        "input": 900,
+        "output": 151,
+        "cacheRead": 13328,
+        "cacheWrite": 0,
+        "reasoningTokens": 29,
+        "totalTokens": 14379,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "status": "success",
+        "stdout": "{\"errors\":[{\"message\":\"Cannot query field 'id' on type 'AttachmentPayload'.\",\"locations\":[{\"line\":1,\"column\":123}]},{\"message\":\"Cannot query field 'title' on type 'AttachmentPayload'.\",\"locations\":[{\"line\":1,\"column\":126}]}]}"
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nThe `attachmentUpdate` mutation takes an `id` and an input containing a `title` field. Now I'll rename the attachment.\n</thinking>\n"
+          }
+        ]
+      }
+    },
+    {
+      "turn": 10,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -s https://api.linear.app/graphql -H 'Authorization: Bearer <TOKEN>' -H 'Content-Type: application/json' -d '{\"query\":\"mutation { attachmentUpdate(id: \\\"a1fbec85-c269-49a9-90e8-242963e8906d\\\", input: { title: \\\"Marketing brief (archived)\\\" }) { success } }\"}' && curl -s https://api.linear.app/graphql -H 'Authorization: Bearer <TOKEN>' -H 'Content-Type: application/json' -d '{\"query\":\"{ attachment(id: \\\"a1fbec85-c269-49a9-90e8-242963e8906d\\\") { id title url issue { identifier } } }\"}'"
+      },
+      "action": "curl -s https://api.linear.app/graphql -H 'Authorization: Bearer <TOKEN>' -H 'Content-Type: application/json' -d '{\"query\":\"mutation { attachmentUpdate(id: \\\"a1fbec85-c269-49a9-90e8-242963e8906d\\\", input: { title: \\\"Marketing brief (archived)\\\" }) { success } }\"}' && curl -s https://api.linear.app/graphql -H 'Authorization: Bearer <TOKEN>' -H 'Content-Type: application/json' -d '{\"query\":\"{ attachment(id: \\\"a1fbec85-c269-49a9-90e8-242963e8906d\\\") { id title url issue { identifier } } }\"}'",
+      "text": "",
+      "thinking": "The payload doesn't include an attachment. Let me check the payload's fields and re-query the attachment for verification.",
+      "usage": {
+        "input": 313,
+        "output": 230,
+        "cacheRead": 14112,
+        "cacheWrite": 0,
+        "reasoningTokens": 24,
+        "totalTokens": 14655,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "status": "success",
+        "stdout": "{\"data\":null,\"errors\":[{\"message\":\"Cannot return null for non-nullable field AttachmentPayload.success.\",\"locations\":[{\"line\":1,\"column\":123}],\"path\":[\"attachmentUpdate\",\"success\"]}]}{\"data\":{\"attachment\":{\"id\":\"a1fbec85-c269-49a9-90e8-242963e8906d\",\"title\":\"Marketing brief (archived)\",\"url\":\"https://files.example.com/vault/dropbox-sync/marketing-brief.pdf\",\"issue\":{\"identifier\":\"ENG-14\"}}}}"
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nThe payload doesn't include an attachment. Let me check the payload's fields and re-query the attachment for verification.\n</thinking>\n"
+          }
+        ]
+      }
+    },
+    {
+      "turn": 11,
+      "tool": null,
+      "text": "Done. The attachment on ENG-14 is now titled **\"Marketing brief (archived)\"** — verified via read-back: same attachment id, same Dropbox link (`https://files.example.com/vault/dropbox-sync/marketing-brief.pdf`), new title in place.",
+      "thinking": "The payload field selection failed (this mock API's payload type seems to be weird), but the rename itself actually went through — the read-back confirmed the following: attachment on ENG-14, title \"Marketing brief (archived)\", same Dropbox URL.",
+      "usage": {
+        "input": 654,
+        "output": 112,
+        "cacheRead": 14112,
+        "cacheWrite": 0,
+        "reasoningTokens": 52,
+        "totalTokens": 14878,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nThe payload field selection failed (this mock API's payload type seems to be weird), but the rename itself actually went through — the read-back confirmed the following: attachment on ENG-14, title \"Marketing brief (archived)\", same Dropbox URL.\n</thinking>\nDone. The attachment on ENG-14 is now titled **\"Marketing brief (archived)\"** — verified via read-back: same attachment id, same Dropbox link (`https://files.example.com/vault/dropbox-sync/marketing-brief.pdf`), new title in place."
+          }
+        ]
+      }
+    }
+  ],
+  "followup_steps": []
+}

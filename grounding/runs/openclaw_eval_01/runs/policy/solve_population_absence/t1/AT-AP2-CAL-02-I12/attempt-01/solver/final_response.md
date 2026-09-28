@@ -1,0 +1,1 @@
+Done — the 'Design Team' calendar is now hidden in your calendar list (the one shared with Kenji Sato as writer, no sharing changes made). Just note: since it's a calendar you own rather than one you subscribe to, "hide" here sets its hidden state; if you want it to stay unchecked in the UI instead, I can flip that off.

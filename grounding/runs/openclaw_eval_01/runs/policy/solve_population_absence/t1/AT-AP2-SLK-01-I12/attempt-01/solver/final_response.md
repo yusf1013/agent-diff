@@ -1,0 +1,1 @@
+Done ✅ — added :eyes: to Diego Alvarez's "The launch date is confirmed for October 12." in #product-launch. I verified it was the right message first: it already had the 👍 from @priya.sharma and the 🎉 from Metrics Bot, exactly as described.

@@ -1,0 +1,1 @@
+Done. Set "Sprint retrospective follow-up" in Room 5B (created by Kenji Sato, Jun 21, 2–3 PM) to red — colorId 11, the red event color. It was the only retrospective event on your calendar, so that's the one I matched.

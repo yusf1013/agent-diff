@@ -1,0 +1,1 @@
+No archived channels to restore — the checkout outage incident channel (`#incidents-checkout-live`, topic: "Live checkout outage monitoring") is already unarchived and active. I checked all public, private, and group DM channels in the workspace; the only other incident channel is `#incidents-auth`, also active. Nothing was needed.

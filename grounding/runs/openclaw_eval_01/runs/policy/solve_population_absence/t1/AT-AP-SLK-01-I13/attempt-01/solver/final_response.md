@@ -1,0 +1,1 @@
+Done — added :tada: to Farhan Malik (Deebo)'s message in #launch-planning confirming the March 3 launch date, right next to the :eyes: Nadia already left. Verified it was the correct message (author UX0FHH6C2HS, existing reaction from UH8Z22GMMTW) before reacting.

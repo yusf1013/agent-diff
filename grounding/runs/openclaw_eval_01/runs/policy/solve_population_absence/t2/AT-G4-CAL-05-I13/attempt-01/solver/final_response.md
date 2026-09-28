@@ -1,0 +1,1 @@
+Done — "Team Travel" is now hidden from your Google Calendar list. It's still there and you still own it; you can unhide it anytime from the calendar list (☰ → check/unhide under the calendars section, or ask me to re-show it).

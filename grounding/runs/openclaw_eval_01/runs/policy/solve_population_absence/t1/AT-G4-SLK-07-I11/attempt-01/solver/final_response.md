@@ -1,0 +1,3 @@
+Done. One note for accuracy: the private channel `deploy-queue` (the only private channel in the workspace, and the one containing the gateway rollback discussion) is the channel I updated — its topic is now set to **"Post-release monitoring"** (was "Release coordination").
+
+Small clarification: the gateway rollback message in that channel ("The gateway rollback runbook still needs a second reviewer before Friday.") was actually posted by **Leo Park**, not Diego. Diego (UJ8I74LTF4P) created the channel and posted the deploy checklist message. I assumed you meant this channel since it's the clear match for "gateway rollback," but if you had a different channel in mind, let me know and I'll fix it.

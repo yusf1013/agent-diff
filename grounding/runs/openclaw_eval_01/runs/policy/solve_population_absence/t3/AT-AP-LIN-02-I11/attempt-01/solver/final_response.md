@@ -1,0 +1,1 @@
+Done. Bumped **GRC-2 "Security review: Admin console"** from High to **Urgent** — confirmed it's assigned to Priya Chen (p.chen@vendorworks.example). There's also a GRC-5 security review (Network access) assigned to Dana Whitfield, but that wasn't the one you meant.

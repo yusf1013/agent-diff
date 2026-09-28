@@ -1,0 +1,1 @@
+Done — "Team Travel" (the one you own) is now hidden from your calendar list. I verified it's set to hidden; its events stay intact, they just won't appear in your Google Calendar UI list. You can unhide it anytime via Settings → Calendar settings → select the calendar, or just ask me.

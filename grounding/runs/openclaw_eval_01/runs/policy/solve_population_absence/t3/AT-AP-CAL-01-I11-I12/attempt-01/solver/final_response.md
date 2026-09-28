@@ -1,0 +1,1 @@
+Done — I found the calendar (it's actually titled **Client Success Renewals**) and set it to hidden in your calendar list. It's now confirmed as `hidden: true` (and still unchecked), so it won't show up in your list at all anymore. Its events remain untouched.
