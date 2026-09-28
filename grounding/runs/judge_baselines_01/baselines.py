@@ -190,16 +190,19 @@ def group(item: dict) -> str:
     return "phase1" if item["label_file"] in {p.name for p in (A2 / "eval/labels_phase1").glob("*.json")} else "blind"
 
 
-def flawed_tests() -> dict[str, str]:
-    """Tests of Qwen's recorded runs to leave out ("flawed is flawed"), from roadmap_01's known defects: an entry
-    whose advice starts with "leave out", matched by test id or scenario."""
+def flawed_tests(field: str = "for_new_agents") -> dict[str, str]:
+    """Tests to leave out ("flawed is flawed"), from roadmap_01's known defects: an entry whose action starts with
+    "leave out" (or, for the frozen suite, "dropped"), matched by test id or scenario. `for_new_agents` applies to
+    Qwen's recorded runs; `frozen_suite` to OpenClaw's, which ran the rebuilt G4-CAL-06."""
     doc = json.loads((RUNS / "roadmap_01" / "known_defects.json").read_text())
     return {e["id"]: e["kind"] for part in ("curated", "from_the_witness_check") for e in doc[part]
-            if e["for_new_agents"].startswith("leave out")}
+            if e.get(field, "").startswith(("leave out", "dropped"))}
 
 
 def is_flawed(key: str, flawed: dict[str, str]) -> str | None:
     from grounding.runs.openclaw_eval_01.run import scenario_of
+    if key.startswith(f"{OC}/"):
+        flawed = flawed_tests("frozen_suite")
     test = key.split("/")[-1]
     return flawed.get(test) or flawed.get(scenario_of(test))
 

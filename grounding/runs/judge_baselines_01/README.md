@@ -72,3 +72,36 @@ J2 gave 1 void verdict here: U-LIN-23 is labelled incomplete, and J2 said not es
 - **Cost:** J0 $11.29 at list and $0.79 billed; J1 $11.19 and $0.74. One call of each was retried.
 - **Not yet decided:** the tests whose seed ids name a record's role
   ([openclaw_eval_01](../openclaw_eval_01/README.md)) are still in, pending the PI's decision.
+
+## A second agent: OpenClaw's blind samples (2026-09-28)
+
+OpenClaw with the self-hosted Qwen (roadmap 6a, [openclaw_eval_01](../openclaw_eval_01/README.md)) has 185 blind
+labels, all written before any verdict: 60 on the regular suite and 125 on the policy stage's looks.
+- **In the trial list:** their keys carry the study's name, because its policy looks reuse autogen_02's run names.
+  They are scored as their own group, `openclaw`, and the groups above stay Qwen's, unchanged.
+- **Left out:** no known defect touches them. They ran the frozen suite, so they take the known-defects list's
+  `frozen_suite` actions.
+- **What remains:** 178 usable trials, 94 of them mistakes by the labels. That is closer to balanced than Qwen's
+  set.
+
+| Judge | TP | FP | FN | TN | Precision | Recall |
+|---|---:|---:|---:|---:|---:|---:|
+| J0 | 85 | 1 | 9 | 83 | 0.988 | 0.904 |
+| J1 | 86 | 2 | 8 | 82 | 0.977 | 0.915 |
+| J2 (judge v2) | 92 | 0 | 0 | 84 | 1.000 | 1.000 |
+
+J2 voided 2 trials as artifacts, where my labels have mistakes (see openclaw_eval_01's corrections).
+
+- **The naive judges do much better here than on Qwen** (recall 0.90 and 0.92, against 0.72 and 0.75).
+  - **A likely reason:** OpenClaw's agent usually says what is wrong. By my label notes, at least 58 of its 94
+    failures disclose the mismatch or the other matches in the reply ("its key is actually PTN, not something
+    starting with GR").
+  - **What the naive judges still miss:** silent failures, above all underspecified ones where the agent acted on
+    one match and never mentioned the others.
+- **The false alarms:**
+  - **J0 and J1 both flag AT-AP2-LIN-01-I11 t3.** The trial reported the absence correctly, but its probe changed
+    a project's priority and failed to restore it. "Mistake" in J0's prompt covers acting on a record the request
+    does not mean, and a stray write on an unrelated record reads as one; my labels count grounding only.
+  - **J1 also flags G4-SLK-08 t3.** It read "my message" as the human user's, where the replica's convention is
+    that the acting bot is the user.
+- **Cost of the 178 new calls each:** J0 $5.71 at list and $0.42 billed; J1 $6.31 and $0.46.

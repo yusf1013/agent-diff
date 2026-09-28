@@ -157,6 +157,6 @@ the final runs use one frozen version.
 | 5 | Investigations | in progress (separate session, branch `exp/investigations-01`) | – |
 | 6a | OpenClaw × self-hosted Qwen, frozen suite | done (2026-09-28). Regular suite: 94 of 436 tests expose a fact, 60 facts at detect@3 (adjusted by the validity reviews). Policy stage: no cell policy-level (6 not, 2 undecided), where Purdue's Qwen in the toy harness was policy-level in all 8. Judge v2 agrees with 183 of 185 blind labels. `full_01` was stopped, since the harness leaked the test ids; `full_02` is the run. Findings for the PI are in the README. | [openclaw_eval_01](../runs/openclaw_eval_01/README.md) |
 | 6b | The remaining briefs on OpenClaw | not started | – |
-| 6c | Judge baselines | done for Qwen's 429 labels (2026-09-28): on the blind samples, recall is 0.72 for J0, 0.75 for J1 and 1.00 for judge v2, all at precision ≥ 0.99. OpenClaw's labels are added after 6a. | [judge_baselines_01](../runs/judge_baselines_01/README.md) |
+| 6c | Judge baselines | done (2026-09-28). On Qwen's 429 labels, over the blind samples, recall is 0.72 for J0, 0.75 for J1 and 1.00 for judge v2, all at precision ≥ 0.99. On OpenClaw's 178 usable blind labels it is 0.90 for J0, 0.92 for J1 and 1.00 for judge v2, at precision ≥ 0.98. OpenClaw's agent usually says what is wrong, which a naive judge can read. | [judge_baselines_01](../runs/judge_baselines_01/README.md) |
 | 6d | Generator baselines | not started | – |
 | 6e | Reports | not started | – |
