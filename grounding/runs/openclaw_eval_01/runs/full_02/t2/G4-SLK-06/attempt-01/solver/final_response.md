@@ -1,0 +1,1 @@
+Done 👍 — added a thumbsup to Diego Alvarez's message "Gateway rollback is done, error rate is back to normal." in #deployments. That one had exactly 3 👀 reactions (Leo, Omar, Priya) — the other gateway rollback messages had 5, 2, or 1 eyes, so this was the match. Verified: it now shows thumbsup ×1 and eyes ×3.

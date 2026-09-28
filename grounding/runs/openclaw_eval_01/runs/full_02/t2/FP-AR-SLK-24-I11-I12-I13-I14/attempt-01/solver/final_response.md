@@ -1,0 +1,1 @@
+Checked #incidents and #payments-oncall: the payment gateway timeout messages in #incidents were posted by Maya, Omar, Leo, and Diego — but the only members of #payments-oncall are Aisha and Priya (plus the bot). None of them posted a payment gateway timeout message in #incidents, so there's no message to react to.

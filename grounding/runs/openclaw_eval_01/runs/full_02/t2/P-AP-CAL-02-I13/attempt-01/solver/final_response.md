@@ -1,0 +1,3 @@
+Done — hidden the "Team Calendar" you have writer access to (`team-launch@northwind.example`, owned by kenji.sato). It no longer shows in your calendar list, though its events still appear since it's marked as selected. Let me know if you also want it deselected so it disappears from the calendar view entirely.
+
+One caveat: there's a second "Team Calendar" on your list (`team-sales@northwind.example`) where you're a reader, so the writer role was the distinguishing factor I used. I couldn't confirm the design-team sharing directly — writer-level access doesn't allow reading the calendar's ACL — but it matched everything else you described.

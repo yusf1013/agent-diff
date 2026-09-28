@@ -1,0 +1,1 @@
+Done. Aisha Khan is now a member of **incident-response** — the only unarchived channel with "incident" in its name whose topic mentions postmortems ("Postmortems and outage retros for live incidents").

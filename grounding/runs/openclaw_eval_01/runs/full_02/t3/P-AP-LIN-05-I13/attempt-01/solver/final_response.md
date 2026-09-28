@@ -1,0 +1,1 @@
+Done. The issue was **WEB-4 — "Add gateway timeout monitoring"** (Priya Nair's comment on March 3: *"The payment gateway timeout is causing failed charges again; we should extend the retry window."*). It's now set to **Urgent** priority. ✅

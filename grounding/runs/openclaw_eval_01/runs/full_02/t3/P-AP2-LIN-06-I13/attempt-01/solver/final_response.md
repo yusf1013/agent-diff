@@ -1,0 +1,1 @@
+Done. ENG-14 ("Homepage redesign") had two attachments, and the "Marketing brief" one linked to the Dropbox URL (`.../dropbox-sync/marketing-brief.pdf`). I renamed it to **"Marketing brief (archived)"** and verified it stuck. The other attachment ("Design mockups", a Figma link) was left untouched.

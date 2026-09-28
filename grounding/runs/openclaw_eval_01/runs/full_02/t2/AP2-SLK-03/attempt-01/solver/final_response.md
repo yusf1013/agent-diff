@@ -1,0 +1,1 @@
+Done — added 🚀 to Leo Park's message in #incidents ("Update: payment gateway outage — rollback deployed, monitoring error rates now."), which is the one Diego Alvarez reacted to with 🔥. Verified the reaction is in place.

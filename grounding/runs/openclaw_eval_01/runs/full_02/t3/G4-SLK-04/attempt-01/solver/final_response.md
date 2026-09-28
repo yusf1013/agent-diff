@@ -1,0 +1,1 @@
+Done 👀 — added the eyes reaction to Maya Chen's rollback-steps launch checklist card in #launch-readiness ("halt deploys → restore snapshot → verify health"). There was a plain-text message of the same checklist earlier, but I reacted to the actual card (block-based post).

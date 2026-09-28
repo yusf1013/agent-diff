@@ -1,0 +1,1 @@
+Done. In #incidents, the deploy-freeze message with exactly 4 replies was Diego's thread ("Are we still under the deploy freeze until Friday?") — Leo's and Maya's freeze posts only had 3 replies each. I've invited Diego to #incident-response.

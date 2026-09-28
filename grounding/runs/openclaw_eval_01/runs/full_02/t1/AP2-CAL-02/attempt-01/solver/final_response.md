@@ -1,0 +1,1 @@
+Done. I found two calendars named "Design Team" in your list — the one shared with Kenji Sato as a writer (`design-team@northwind.example`) is now hidden. The other one (`design-sync@northwind.example`, where Kenji is only a reader) is still visible, in case that's the one you actually meant.

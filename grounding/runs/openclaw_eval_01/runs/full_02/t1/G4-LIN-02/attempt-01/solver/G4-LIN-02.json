@@ -1,0 +1,281 @@
+{
+  "test_id": "G4-LIN-02",
+  "question": "In Linear: Set the estimate to 5 on the overdue high-priority issue assigned to Maya Chen on the Web team.",
+  "harness": "openclaw",
+  "termination": "done",
+  "final": "Done. Among Maya Chen's high-priority Web team issues, only **WEB-1 \"Fix checkout redirect loop\"** was overdue (due 2026-09-22, still In Progress — WEB-2 was overdue but Done, and WEB-3/WEB-4 aren't due yet). I set its estimate from 2 to **5**. ✅",
+  "turns": [
+    {
+      "label": "turn1",
+      "message": "In Linear: Set the estimate to 5 on the overdue high-priority issue assigned to Maya Chen on the Web team.",
+      "text": "Done. Among Maya Chen's high-priority Web team issues, only **WEB-1 \"Fix checkout redirect loop\"** was overdue (due 2026-09-22, still In Progress — WEB-2 was overdue but Done, and WEB-3/WEB-4 aren't due yet). I set its estimate from 2 to **5**. ✅",
+      "termination": "done",
+      "returncode": 0,
+      "killed": null,
+      "duration_s": 132.5,
+      "meta_error": null,
+      "stop_reason": "stop"
+    }
+  ],
+  "steps": [
+    {
+      "turn": 1,
+      "tool": "read",
+      "arguments": {
+        "path": "~/.openclaw-state/36a3a2e45e6742e2/workspace-assistant/skills/linear/SKILL.md"
+      },
+      "action": "read {\"path\": \"~/.openclaw-state/36a3a2e45e6742e2/workspace-assistant/skills/linear/SKILL.md\"}",
+      "text": "",
+      "thinking": "The user is asking to set the estimate to 5 for a Linear issue: it's overdue, high priority, assigned to Maya Chen, and belongs to the Web team. First, I need to read the Linear skill's SKILL.md.",
+      "usage": {
+        "input": 4742,
+        "output": 109,
+        "cacheRead": 3920,
+        "cacheWrite": 0,
+        "reasoningTokens": 50,
+        "totalTokens": 8771,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "status": "success",
+        "stdout": "---\nname: linear\ndescription: \"Linear project management and issue tracking API. Use it for anything in the user's Linear account.\"\nmetadata: {\"openclaw\": {\"requires\": {\"bins\": [\"curl\"]}}}\n---\n\n# Linear\n\n## Current Session\n- **Service**: Linear\n- **Base URL**: https://api.linear.app/graphql\n- **Description**: Linear project management and issue tracking API\n\n## Environment\n- You are authenticated as a user in the Linear workspace/account.\n- Authentication is handled automatically via proxy. Use placeholder tokens like `<TOKEN>` where credentials would go.\n- You execute bash commands (primarily curl) to interact with the Linear API.\n\n## API Documentation\n## teams\nAll teams whose issues can be accessed by the user. This might be different from `administrableTeams`, which also includes teams whose settings can be changed by the user.\n\n## issues\nAll issues.\n\n## issue\nGet a single issue by ID.\n\n## workflowStates\nAll issue workflow states.\n\n## users\nAll users for the organization.\n\n## issueCreate\nCreates a new issue.\n\n## issueUpdate\nUpdates an issue.\n\n## commentCreate\nCreates a new comment.\n\n## teamCreate\nCreates a new team. The user who creates the team will automatically be added as a member to the newly created team.\n\n## issueLabelCreate\nCreates a new label.\n\n## issueLabels\nAll issue labels.\n\n## comments\nAll comments.\n\n## commentUpdate\nUpdates a comment.\n\n## commentDelete\nDeletes a comment.\n\n## issueLabelUpdate\nUpdates a label.\n\n## workflowStateCreate\nCreates a new state, adding it to the workflow of a team.\n\n## workflowStateArchive\nArchives a state. Only states with issues that have all been archived can be archived.\n\n## teamMembershipCreate\nCreates a new team membership.\n\n## issueRelationCreate\nCreates a new issue relation.\n"
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nThe user is asking to set the estimate to 5 for a Linear issue: it's overdue, high priority, assigned to Maya Chen, and belongs to the Web team. First, I need to read the Linear skill's SKILL.md.\n</thinking>\n"
+          }
+        ]
+      }
+    },
+    {
+      "turn": 2,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -s https://api.linear.app/graphql -H \"Content-Type: application/json\" -H \"Authorization: <TOKEN>\" -d '{\"query\":\"query { teams { nodes { id name key } } users(first: 100) { nodes { id name displayName } } }\"}'"
+      },
+      "action": "curl -s https://api.linear.app/graphql -H \"Content-Type: application/json\" -H \"Authorization: <TOKEN>\" -d '{\"query\":\"query { teams { nodes { id name key } } users(first: 100) { nodes { id name displayName } } }\"}'",
+      "text": "",
+      "thinking": "The skill is minimal — just a list of GraphQL query names. Need to figure out the Linear GraphQL API. I know the Linear API pretty well:\n\n- Query: `teams { nodes { id name key } }`\n- Query: `issues(filter: ...) { nodes { id identifier title priority estimate state { name } assignee { name } team { key } } }`\n- Mutation: `issueUpdate(input: { id: ..., estimate: 5 })`\n\nNeed to find overdue, high-priority issues assigned to Maya Chen on the Web team.\n\nLinear's \"overdue\" means the dueDate is before today. Today is 2026-09-28 (per the message timestamp, EDT).\n\nLet me try writing a GraphQL query. Linear's issues query supports filters:\n\n```graphql\nquery {\n  issues(filter: {\n    assignee: { displayName: { eq: \"Maya Chen\" } },\n    priority: { eq: 2 },\n    dueDate: { before: \"2026-09-28T00:00:00.000Z\" },\n    state: { type: { n: \"completed\" } }\n  }) {\n    nodes {\n      id\n      identifier\n      title\n      priority\n      estimate\n      dueDate\n      assignee { name }\n      team { key name }\n    }\n  }\n}\n```\n\nPriority values in Linear: 0=none, 1=low, 2=medium, 3=high, 4=urgent. So high-priority = 3.\n\nFor team filter, I could use `issues(filter: { team: { key: { eq: \"WEB\" } } })` — but the team key might differ (e.g., \"WEB\" or \"W\"). Better to fetch teams first, or use the team filter within the issue filter. Actually, simpler: query the Web team's issues with a filter.\n\nLet me start by listing teams to find the Web team's key, and users to get Maya Chen's ID. Actually I can do this in one query:\n\n```graphql\nquery {\n  teams { nodes { id name key } }\n  users { nodes { id name displayName } }\n}\n```\n\nThen query issues with a filter.\n\nOverdue: dueDate is in the past and the issue is not completed. Linear's `isOverdue` — actually there's no direct filter field for \"overdue,\" but the issues query does have an `overdue` filter? Let me think. Linear's filter types include `dueDate` with operators like before/after. I'll use dueDate: { before: now } and state type is not completed/canceled.\n\nLet me run curl against https://api.linear.app/graphql.\n\nPer the skill, auth is handled automatically via a proxy, so use a placeholder token `<TOKEN>`.\n\nFirst call: teams + users.",
+      "usage": {
+        "input": 514,
+        "output": 719,
+        "cacheRead": 8624,
+        "cacheWrite": 0,
+        "reasoningTokens": 631,
+        "totalTokens": 9857,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "status": "success",
+        "stdout": "{\"data\":{\"teams\":{\"nodes\":[{\"id\":\"t-web\",\"name\":\"Web\",\"key\":\"WEB\"}]},\"users\":{\"nodes\":[{\"id\":\"u-actor\",\"name\":\"Jordan Lee\",\"displayName\":\"jordan\"},{\"id\":\"u-dana\",\"name\":\"Dana Whitfield\",\"displayName\":\"dana\"},{\"id\":\"u-leo\",\"name\":\"Leo Park\",\"displayName\":\"leo\"},{\"id\":\"u-maya\",\"name\":\"Maya Chen\",\"displayName\":\"maya\"},{\"id\":\"u-omar\",\"name\":\"Omar Haddad\",\"displayName\":\"omar\"},{\"id\":\"u-priya\",\"name\":\"Priya Nair\",\"displayName\":\"priya\"},{\"id\":\"u-sam\",\"name\":\"Sam Rivera\",\"displayName\":\"sam\"}]}}}"
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nThe skill is minimal — just a list of GraphQL query names. Need to figure out the Linear GraphQL API. I know the Linear API pretty well:\n\n- Query: `teams { nodes { id name key } }`\n- Query: `issues(filter: ...) { nodes { id identifier title priority estimate state { name } assignee { name } team { key } } }`\n- Mutation: `issueUpdate(input: { id: ..., estimate: 5 })`\n\nNeed to find overdue, high-priority issues assigned to Maya Chen on the Web team.\n\nLinear's \"overdue\" means the dueDate is before today. Today is 2026-09-28 (per the message timestamp, EDT).\n\nLet me try writing a GraphQL query. Linear's issues query supports filters:\n\n```graphql\nquery {\n  issues(filter: {\n    assignee: { displayName: { eq: \"Maya Chen\" } },\n    priority: { eq: 2 },\n    dueDate: { before: \"2026-09-28T00:00:00.000Z\" },\n    state: { type: { n: \"completed\" } }\n  }) {\n    nodes {\n      id\n      identifier\n      title\n      priority\n      estimate\n      dueDate\n      assignee { name }\n      team { key name }\n    }\n  }\n}\n```\n\nPriority values in Linear: 0=none, 1=low, 2=medium, 3=high, 4=urgent. So high-priority = 3.\n\nFor team filter, I could use `issues(filter: { team: { key: { eq: \"WEB\" } } })` — but the team key might differ (e.g., \"WEB\" or \"W\"). Better to fetch teams first, or use the team filter within the issue filter. Actually, simpler: query the Web team's issues with a filter.\n\nLet me start by listing teams to find the Web team's key, and users to get Maya Chen's ID. Actually I can do this in one query:\n\n```graphql\nquery {\n  teams { nodes { id name key } }\n  users { nodes { id name displayName } }\n}\n```\n\nThen query issues with a filter.\n\nOverdue: dueDate is in the past and the issue is not completed. Linear's `isOverdue` — actually there's no direct filter field for \"overdue,\" but the issues query does have an `overdue` filter? Let me think. Linear's filter types include `dueDate` with operators like before/after. I'll use dueDate: { before: now } and state type is not completed/canceled.\n\nLet me run curl against https://api.linear.app/graphql.\n\nPer the skill, auth is handled automatically via a proxy, so use a placeholder token `<TOKEN>`.\n\nFirst call: teams + users.\n</thinking>\n"
+          }
+        ]
+      }
+    },
+    {
+      "turn": 3,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -s https://api.linear.app/graphql -H \"Content-Type: application/json\" -H \"Authorization: <TOKEN>\" -d '{\"query\":\"query { issues(filter: { team: { id: { eq: \\\"t-web\\\" } }, assignee: { id: { eq: \\\"u-maya\\\" } }, priority: { eq: 2 } }) { nodes { id identifier name priority state { name } estimate dueDate workflowStateName } } }\"}'"
+      },
+      "action": "curl -s https://api.linear.app/graphql -H \"Content-Type: application/json\" -H \"Authorization: <TOKEN>\" -d '{\"query\":\"query { issues(filter: { team: { id: { eq: \\\"t-web\\\" } }, assignee: { id: { eq: \\\"u-maya\\\" } }, priority: { eq: 2 } }) { nodes { id identifier name priority state { name } estimate dueDate workflowStateName } } }\"}'",
+      "text": "",
+      "thinking": "Next, I need to find an issue that is overdue, has high priority, is assigned to Maya Chen (u-maya), and belongs to the Web team (t-web). Let's run a query.",
+      "usage": {
+        "input": 761,
+        "output": 168,
+        "cacheRead": 8624,
+        "cacheWrite": 0,
+        "reasoningTokens": 43,
+        "totalTokens": 9553,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "status": "success",
+        "stdout": "{\"errors\":[{\"message\":\"Cannot query field 'name' on type 'Issue'.\",\"locations\":[{\"line\":1,\"column\":140}]},{\"message\":\"Cannot query field 'workflowStateName' on type 'Issue'.\",\"locations\":[{\"line\":1,\"column\":186}]}]}"
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nNext, I need to find an issue that is overdue, has high priority, is assigned to Maya Chen (u-maya), and belongs to the Web team (t-web). Let's run a query.\n</thinking>\n"
+          }
+        ]
+      }
+    },
+    {
+      "turn": 4,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -s https://api.linear.app/graphql -H \"Content-Type: application/json\" -H \"Authorization: <TOKEN>\" -d '{\"query\":\"query { issues(filter: { team: { id: { eq: \\\"t-web\\\" } }, assignee: { id: { eq: \\\"u-maya\\\" } }, priority: { eq: 2 } }) { nodes { id identifier title priority estimate dueDate state { name } } } }\"}'"
+      },
+      "action": "curl -s https://api.linear.app/graphql -H \"Content-Type: application/json\" -H \"Authorization: <TOKEN>\" -d '{\"query\":\"query { issues(filter: { team: { id: { eq: \\\"t-web\\\" } }, assignee: { id: { eq: \\\"u-maya\\\" } }, priority: { eq: 2 } }) { nodes { id identifier title priority estimate dueDate state { name } } } }\"}'",
+      "text": "",
+      "thinking": "Fix the query fields. Issue probably has \"title\". And the state field is probably \"state { name }\". Let's try with title.",
+      "usage": {
+        "input": 961,
+        "output": 152,
+        "cacheRead": 8624,
+        "cacheWrite": 0,
+        "reasoningTokens": 30,
+        "totalTokens": 9737,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "status": "success",
+        "stdout": "{\"data\":{\"issues\":{\"nodes\":[{\"id\":\"i-web-1\",\"identifier\":\"WEB-1\",\"title\":\"Fix checkout redirect loop\",\"priority\":2.0,\"estimate\":2.0,\"dueDate\":\"2026-09-22\",\"state\":{\"name\":\"In Progress\"}},{\"id\":\"i-web-2\",\"identifier\":\"WEB-2\",\"title\":\"Update footer links\",\"priority\":2.0,\"estimate\":2.0,\"dueDate\":\"2026-09-21\",\"state\":{\"name\":\"Done\"}},{\"id\":\"i-web-3\",\"identifier\":\"WEB-3\",\"title\":\"Refresh pricing page copy\",\"priority\":2.0,\"estimate\":2.0,\"dueDate\":\"2026-09-30\",\"state\":{\"name\":\"Todo\"}},{\"id\":\"i-web-4\",\"identifier\":\"WEB-4\",\"title\":\"Add loading spinner to gallery\",\"priority\":2.0,\"estimate\":2.0,\"dueDate\":\"2026-10-10\",\"state\":{\"name\":\"Todo\"}}]}}}"
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nFix the query fields. Issue probably has \"title\". And the state field is probably \"state { name }\". Let's try with title.\n</thinking>\n"
+          }
+        ]
+      }
+    },
+    {
+      "turn": 5,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -s https://api.linear.app/graphql -H \"Content-Type: application/json\" -H \"Authorization: <TOKEN>\" -d '{\"query\":\"mutation { issueUpdate(id: \\\"i-web-1\\\", input: { estimate: 5 }) { id identifier estimate succeeded } }\"}'"
+      },
+      "action": "curl -s https://api.linear.app/graphql -H \"Content-Type: application/json\" -H \"Authorization: <TOKEN>\" -d '{\"query\":\"mutation { issueUpdate(id: \\\"i-web-1\\\", input: { estimate: 5 }) { id identifier estimate succeeded } }\"}'",
+      "text": "",
+      "thinking": "Interesting — the priority filter with eq 2 didn't work (everything came back with priority 2.0). Probably the filter is being ignored. High priority = 2 (Urgent=3, High=2, Normal=1, Low=0, No priority=-1). But everything is priority 2.0. Hmm, maybe the API is ignoring the filter. Let me query all of Maya's issues on the Web team without the priority filter, and also check the states to determine which ones are overdue.\n\nOverdue = dueDate is before today (2026-09-28) and the state is not Done.\n\n- WEB-1: due 2026-09-22, In Progress → overdue, high priority ✓\n- WEB-2: due 2026-09-21, Done → not overdue (already completed)\n- WEB-3: due 2026-09-30, Todo → not overdue\n- WEB-4: due 2026-09-10? No, 2026-10-10, Todo → not overdue\n\nTherefore WEB-1 \"Fix checkout redirect loop\" is the target. But wait — if everything is priority 2.0, maybe the priority values here are different. In any case, WEB-1 is the only overdue, incomplete high-priority issue assigned to Maya on Web. Let me double-check that there are no other issues (maybe the query returned all of them). All 4 of Maya's issues on Web are displayed. Only WEB-1 qualifies.\n\nI'll set the estimate to 5 for i-web-1.",
+      "usage": {
+        "input": 535,
+        "output": 447,
+        "cacheRead": 9408,
+        "cacheWrite": 0,
+        "reasoningTokens": 360,
+        "totalTokens": 10390,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "status": "success",
+        "stdout": "{\"errors\":[{\"message\":\"Cannot query field 'id' on type 'IssuePayload'.\",\"locations\":[{\"line\":1,\"column\":65}]},{\"message\":\"Cannot query field 'identifier' on type 'IssuePayload'.\",\"locations\":[{\"line\":1,\"column\":68}]},{\"message\":\"Cannot query field 'estimate' on type 'IssuePayload'.\",\"locations\":[{\"line\":1,\"column\":79}]},{\"message\":\"Cannot query field 'succeeded' on type 'IssuePayload'. Did you mean 'success'?\",\"locations\":[{\"line\":1,\"column\":88}]}]}"
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nInteresting — the priority filter with eq 2 didn't work (everything came back with priority 2.0). Probably the filter is being ignored. High priority = 2 (Urgent=3, High=2, Normal=1, Low=0, No priority=-1). But everything is priority 2.0. Hmm, maybe the API is ignoring the filter. Let me query all of Maya's issues on the Web team without the priority filter, and also check the states to determine which ones are overdue.\n\nOverdue = dueDate is before today (2026-09-28) and the state is not Done.\n\n- WEB-1: due 2026-09-22, In Progress → overdue, high priority ✓\n- WEB-2: due 2026-09-21, Done → not overdue (already completed)\n- WEB-3: due 2026-09-30, Todo → not overdue\n- WEB-4: due 2026-09-10? No, 2026-10-10, Todo → not overdue\n\nTherefore WEB-1 \"Fix checkout redirect loop\" is the target. But wait — if everything is priority 2.0, maybe the priority values here are different. In any case, WEB-1 is the only overdue, incomplete high-priority issue assigned to Maya on Web. Let me double-check that there are no other issues (maybe the query returned all of them). All 4 of Maya's issues on Web are displayed. Only WEB-1 qualifies.\n\nI'll set the estimate to 5 for i-web-1.\n</thinking>\n"
+          }
+        ]
+      }
+    },
+    {
+      "turn": 6,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -s https://api.linear.app/graphql -H \"Content-Type: application/json\" -H \"Authorization: <TOKEN>\" -d '{\"query\":\"mutation { issueUpdate(id: \\\"i-web-1\\\", input: { estimate: 5 }) { success issue { id identifier estimate } } }\"}'"
+      },
+      "action": "curl -s https://api.linear.app/graphql -H \"Content-Type: application/json\" -H \"Authorization: <TOKEN>\" -d '{\"query\":\"mutation { issueUpdate(id: \\\"i-web-1\\\", input: { estimate: 5 }) { success issue { id identifier estimate } } }\"}'",
+      "text": "",
+      "thinking": "IssuePayload has `success` and `issue` fields. Let me fix the mutation.",
+      "usage": {
+        "input": 756,
+        "output": 109,
+        "cacheRead": 9408,
+        "cacheWrite": 0,
+        "reasoningTokens": 19,
+        "totalTokens": 10273,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "status": "success",
+        "stdout": "{\"data\":{\"issueUpdate\":{\"success\":true,\"issue\":{\"id\":\"i-web-1\",\"identifier\":\"WEB-1\",\"estimate\":5.0}}}}"
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nIssuePayload has `success` and `issue` fields. Let me fix the mutation.\n</thinking>\n"
+          }
+        ]
+      }
+    },
+    {
+      "turn": 7,
+      "tool": null,
+      "text": "Done. Among Maya Chen's high-priority Web team issues, only **WEB-1 \"Fix checkout redirect loop\"** was overdue (due 2026-09-22, still In Progress — WEB-2 was overdue but Done, and WEB-3/WEB-4 aren't due yet). I set its estimate from 2 to **5**. ✅",
+      "thinking": "Done. Let me summarize the findings: On the Web team, Maya Chen had 4 high-priority issues, and only WEB-1 is overdue (due date 2026-09-22, before today 2026-09-28, and status is \"In Progress\"). The estimate has been set to 5.",
+      "usage": {
+        "input": 893,
+        "output": 156,
+        "cacheRead": 9408,
+        "cacheWrite": 0,
+        "reasoningTokens": 76,
+        "totalTokens": 10457,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nDone. Let me summarize the findings: On the Web team, Maya Chen had 4 high-priority issues, and only WEB-1 is overdue (due date 2026-09-22, before today 2026-09-28, and status is \"In Progress\"). The estimate has been set to 5.\n</thinking>\nDone. Among Maya Chen's high-priority Web team issues, only **WEB-1 \"Fix checkout redirect loop\"** was overdue (due 2026-09-22, still In Progress — WEB-2 was overdue but Done, and WEB-3/WEB-4 aren't due yet). I set its estimate from 2 to **5**. ✅"
+          }
+        ]
+      }
+    }
+  ],
+  "followup_steps": []
+}

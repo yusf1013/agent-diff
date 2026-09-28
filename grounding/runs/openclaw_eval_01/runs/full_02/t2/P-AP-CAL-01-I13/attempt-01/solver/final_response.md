@@ -1,0 +1,1 @@
+Done ✅ — **Client Success** is now hidden from your calendar list. It won't show up there anymore, though its events are untouched. If you'd like it fully deselected too (it still reads as "show events" on your account), just say the word.

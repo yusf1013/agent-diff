@@ -1,0 +1,1 @@
+Done — the Budget review with Maya Chen on Thursday June 21 (10:00–11:00 AM) now has its location set to **Room 5B**, and Maya was notified of the change. (Left the Friday budget review with Sam Rivera untouched.)

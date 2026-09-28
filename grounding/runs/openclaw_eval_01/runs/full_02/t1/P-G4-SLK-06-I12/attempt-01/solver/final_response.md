@@ -1,0 +1,1 @@
+I checked Diego Alvarez's message about the gateway rollback in #deployments ("Gateway rollback completed, keeping an eye on the dashboards.") — it has exactly **2** 👀 eyes reactions (U_LEO and U_PRIYA), not 3. So I did **not** add the thumbsup. Let me know if you want me to go ahead anyway.

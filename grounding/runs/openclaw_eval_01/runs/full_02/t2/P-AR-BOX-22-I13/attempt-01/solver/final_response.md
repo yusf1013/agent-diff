@@ -1,0 +1,1 @@
+Done. I found the Client Docs hub last updated by Dana Whitfield (hub updated 2026-06-20; there's an older second "Client Docs" hub that Sam Rivera last touched — I used Dana's). The file "Vendor Agreement.pdf" (id 9103, in the Client Docs folder) had no tags before, so I added `renewed` to it. Confirmed in the API response: `tags: ["renewed"]`.

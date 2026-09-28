@@ -1,0 +1,1 @@
+Done — added ✅ to Diego's message "Wrapping up the gateway rollback, still watching error rates." in #incidents (the one with 4 replies in its thread). Note: his earlier "Finished the gateway rollback..." message had 6 replies, so I went with the one matching your criteria.

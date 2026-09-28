@@ -1,0 +1,1 @@
+No match. There is exactly one deploy-freeze message in #incidents — U_LEO's "Reminder: deploy freeze starts Monday for all services." — but its thread has **3 replies** (per `reply_count` and the threaded messages), not 4. Since no message meets the "4 replies" condition, I didn't invite anyone. If you'd like me to invite U_LEO anyway, just say the word.

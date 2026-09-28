@@ -1,0 +1,1 @@
+There isn't one — Leo Park's calendar (America/New_York) has no quarterly planning lunch on any Thursday. I searched the calendar for "planning," "lunch," and the June–August window; it's empty, so there's nothing to move to Room 5B.

@@ -1,0 +1,1 @@
+There's no message from Leo Park in #incidents — I checked the full channel history (it's actually completely empty) and ran a workspace-wide search for anything from Leo, both returned zero results. So there's nothing to react to.

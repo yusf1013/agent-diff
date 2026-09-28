@@ -1,0 +1,1 @@
+Done — added :eyes: to Diego's message "The launch date is confirmed for October 12." in #product-launch. It was the only matching message, and it already had @priya.sharma's :thumbsup: and Metrics Bot's :tada: as you described.

@@ -1,0 +1,1 @@
+Done. The **Fall Kickoff** cycle on the WEB team (starts Sep 29, includes WEB-1 "Checkout timeout on payment retry" assigned to Sam Rivera) now ends **October 20** instead of October 13. Verified via API: `startsAt: 2026-09-29, endsAt: 2026-10-20`.

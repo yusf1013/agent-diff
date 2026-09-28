@@ -1,0 +1,1 @@
+Nope — no match. In #incidents I found four payment-gateway-timeout messages, from Maya, Omar, Leo, and Diego. The only humans in #payments-oncall are Aisha and Priya, so none of those messages were posted by a #payments-oncall member. Nothing to react to.

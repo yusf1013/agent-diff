@@ -1,0 +1,1 @@
+Done. Added **Q3 roadmap.pdf** to the **Product launch - Retail** hub (created by Maya Chen) — it now contains both Brand guidelines.pdf and the Q3 roadmap. Verified the hub contents after the update.

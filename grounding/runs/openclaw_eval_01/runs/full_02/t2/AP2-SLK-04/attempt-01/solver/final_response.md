@@ -1,0 +1,1 @@
+Done ✅ — added a check reaction to Diego's message "Posted the gateway rollback notes for the postmortem." in #incidents. That's the one matching both criteria: mentions the gateway rollback and has exactly 4 replies in its thread.

@@ -1,0 +1,3 @@
+There isn't one. I looked in Linear for a security review ticket assigned to Priya Chen from vendorworks.example (priya.chen@vendorworks.example), and found nothing — in fact, no issues are assigned to her at all right now. I also checked the other "Priya Chen" accounts (different email domains) in case of an identity mix-up, and none of them have a security review ticket either.
+
+One possible near-miss: there's a **Priyanka Chen** (priyanka.chen@vendorworks.example) — different first name, so I didn't touch anything, but let me know if that could be who you meant and I'll dig into her tickets.

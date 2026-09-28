@@ -1,0 +1,1 @@
+Done — the **Client Success** calendar (shared with you by maya.chen@northwind.example) is now hidden, so it won't show up in your calendar list anymore. I also set it to unselected, which matches the unchecked state you had. You can unhide it later from the "More" section in Google Calendar's sidebar if you ever need it back.

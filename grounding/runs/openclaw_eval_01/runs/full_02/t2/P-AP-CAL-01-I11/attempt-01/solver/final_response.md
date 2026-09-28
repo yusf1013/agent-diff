@@ -1,0 +1,1 @@
+Done. I found "Client Success Renewals" (cs-renewals@northwind.example) — the only calendar with "Client Success" in the name — and set it to hidden. It's now `hidden: true` and still unchecked, so it won't appear in your calendar list at all. If it was a different calendar you meant, let me know and I'll sort it out.

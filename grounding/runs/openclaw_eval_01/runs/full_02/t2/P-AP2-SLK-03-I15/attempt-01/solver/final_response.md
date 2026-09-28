@@ -1,0 +1,1 @@
+No such message exists. I checked #incidents — its only recent message is Aisha's standup reminder — and also ran workspace-wide searches for "payment gateway outage", "payment gateway", "outage", and "payment" across all channels: zero matches. There's no Diego Alvarez message with a 🔥 reaction anywhere, so I didn't add a reaction.

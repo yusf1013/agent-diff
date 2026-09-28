@@ -1,0 +1,1 @@
+Done. Your workspace has four hubs all titled "Product Launch," but only hub **8100** contained the **Field Photos** folder + **Launch Plan.pdf** (the others held Studio Photos, a contact sheet, or a Launch Budget instead). I set its description to **"Archived launch kit"** and confirmed the update went through.

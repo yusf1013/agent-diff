@@ -1,0 +1,1 @@
+Done. Among Maya Chen's high-priority Web team issues, only **WEB-1 "Fix checkout redirect loop"** was overdue (due 2026-09-22, still In Progress — WEB-2 was overdue but Done, and WEB-3/WEB-4 aren't due yet). I set its estimate from 2 to **5**. ✅

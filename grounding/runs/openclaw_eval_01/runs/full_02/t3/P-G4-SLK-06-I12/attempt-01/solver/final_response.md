@@ -1,0 +1,1 @@
+Found the message — Diego's "Gateway rollback completed, keeping an eye on the dashboards" in #deployments — but it only has 2 eyes reactions (Leo and Priya), not 3. So I left it alone. Want me to react anyway?

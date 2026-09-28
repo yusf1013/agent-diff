@@ -1,0 +1,1 @@
+No match — I can't react. The only payment gateway timeout message in #incidents is from **Maya** ("FYI, seeing intermittent payment gateway timeout warnings in staging."), and she's not a member of #payments-oncall. That channel's members are a bot, Aisha, and Priya. So I left it alone as instructed.

@@ -1,0 +1,1 @@
+There's one Thursday vendor sync — **"Vendor sync: Labeling" on Thu June 21, 1:30–2:00 PM** — but Dana Whitfield is a *required* attendee there, not optional. There's no Thursday vendor sync with her as optional, so I haven't moved anything.

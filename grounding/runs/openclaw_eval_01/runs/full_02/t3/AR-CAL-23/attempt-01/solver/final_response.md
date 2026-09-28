@@ -1,0 +1,1 @@
+Done. "Vendor sync: Packaging" (Thu June 21, 9:00–9:30 AM) is now set to **Room 2C** — attendees were notified. That was the only Thursday vendor sync where Dana Whitfield was an optional attendee (she's required on the Labeling and Ingredients syncs, and organizes the Freight one herself).

@@ -1,0 +1,1 @@
+Done — **Client Success Renewals** is now hidden (`hidden: true` confirmed in the API response). There was no calendar named exactly "Client Success", so if you meant a different one, let me know. Heads-up: hiding just removes it from the calendar list view; if you ever want it fully gone, I can remove it from your calendar list (unsubscribe) instead.

@@ -1,0 +1,1 @@
+No message from Leo Park in #incidents on Tuesday (Sep 22) — the only two posts that day were from Omar and Diego, and a search of Leo's history in that channel turns up nothing, so there was nothing to react to.

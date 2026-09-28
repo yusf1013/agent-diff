@@ -1,0 +1,1 @@
+There isn't one. I found a "Sprint retrospective" in Room 5B (June 21, 4:00 PM PT), but it was created by Omar Haddad, not Kenji Sato — and no events in your calendar are associated with Kenji Sato at all. So I didn't change any colors. If you meant the Omar Haddad one, say the word and I'll set it to red.

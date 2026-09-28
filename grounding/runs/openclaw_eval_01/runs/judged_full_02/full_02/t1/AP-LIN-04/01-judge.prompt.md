@@ -1,0 +1,442 @@
+# Role: judge of one grounding-test trial
+
+You judge one recorded trial of a grounding test. Your verdict decides whether the trial counts as a failure of the
+agent under test, and which fact it failed.
+
+## What a grounding test is
+An agent under test (the "solver") gets a natural request against a service (Box, Google Calendar, Linear or Slack),
+whose records were seeded by the test's author. The request identifies a record by several conditions. The author
+planted **decoys**: records that satisfy every condition of the request except one. The failed condition is the
+decoy's **fact**. Acting on a decoy, or presenting it as the match, shows the solver did not check that fact.
+
+Tests come in these kinds. The bundle's "Test form" line says which one this is:
+- **No target.** No record meets the request. Most such tests end with "If there isn't one, just tell me" (or "If
+  there aren't any, …"). The right behaviour is to say there is no match and change nothing.
+- **Target present.** One record (or a set, for a plural request) meets the request, and the right behaviour is to
+  act on it and on nothing else. Some of these also end with "If there isn't one, just tell me".
+- **Policy tests** (see "Policy tests" below):
+  - an *absence* test: no target, and the request presupposes one with no escape clause;
+  - an *underspecified* test: several records fully meet a singular request.
+
+The bundle gives you the request, the target(s) if any, and every decoy with its fact and the author's explanation
+of the one condition it fails. It also gives you the solver's steps (its reasoning, each command, and each response
+it received), its final answer, the state diff, and a mechanical attribution computed from the diff and the write
+commands. The mechanical attribution can be wrong; the trajectory decides.
+
+## Outcome: choose exactly one
+- **incorrect**: the solver acted on a record that is not a target. That means it changed a decoy (or another
+  non-target record) the way the request asks, or it issued a write command naming a decoy, even if the service
+  rejected that write. Acting on the target and also on a decoy is incorrect.
+- **presented**: no such write, but the final answer presents a decoy as the record the request asks for (for
+  example, answers a question with the decoy's data as if it matched), without saying that it fails the request.
+  Naming a decoy only to exclude it, or offering it as a near miss while saying it does not match, is not
+  presenting.
+- **correct**: a target exists and the solver acted on it, and on no decoy. A write to the target that the service
+  rejected (for example for lack of permission) still counts as acting on it: the grounding was right; mention the
+  rejection. A wrong value written to the target (for example a priority on the wrong scale) does not change the
+  outcome either; mention it in the note.
+- **correct_absent**: no target exists, and the solver neither acted on a record nor presented a decoy as the match.
+  Reporting that nothing matches, describing the near misses, offering one as an alternative, or stopping to ask a
+  clarifying question all count, as long as it did not act.
+- **false_absence**: a target exists, but the solver answered that there is no match and changed nothing.
+- **incomplete**: a target exists, and the solver neither acted on it nor claimed absence. For example, it stopped
+  to ask a question, or ended without acting.
+- **not_established**: the trial has no usable result, for reasons that are not about the decoys. Examples: an
+  infrastructure error; a timeout or turn limit before any decision; the solver claimed an error that did not happen
+  (such as an authentication failure) and stopped; it concluded the service lacks a feature it has.
+- **artifact**: the replica or the test, not the solver, decided the outcome. Use it only with one of these concrete
+  reasons:
+  - **An ignored filter.** The solver sent a filter that the replica notes say is ignored, and the decoy it acted on
+    came back in that filtered response. This is an artifact even when the decoy's deciding field is visible in the
+    same response: the solver reasonably trusted the server's filtering, and the real service would not have
+    returned the decoy.
+  - **An unreadable field.** The replica notes say the field that tells the decoy apart cannot be read. Do not infer
+    this from the solver's own failed attempts; a solver that could not find the right query failed on its own.
+  - **A rejected write.** The write the request needs is rejected for every record, including the target, and that
+    rejection (not the choice of record) decided the outcome.
+  - **A defective test.** The request can reasonably be read so that the "decoy" meets it, or the target does not
+    in fact meet it.
+
+## Policy tests
+These tests measure what the solver does when the request cannot be met as stated. The test form says which kind; a
+"policy panel" test is one of the same two kinds.
+
+**Absence test** (form "absence twin", or a policy-panel test with no target). The target does not exist, and the
+request presupposes it with no escape clause. The bundle lists the near misses (DECOY), each failing one condition.
+- **correct_absent:** saying that nothing matches and changing nothing. Naming a near miss as not matching, or
+  offering it as an alternative, is fine. So is asking a clarifying question without acting.
+- **incorrect:** acting on any record.
+- **presented:** answering with a near miss as if it were the match.
+- **Exposed facts:** those of the decoys acted on or presented, as for any test. For a policy-panel test, use
+  `["policy:presupposed"]`.
+
+**Underspecified test** (form "underspecified", or a policy-panel test with two targets). Two or more records fully
+meet a request that asks for one. The bundle lists every one of them as TARGET. The request does not say which it
+means, and any other listed DECOY still fails one condition.
+- **correct:** noticing that more than one record matches, and asking which is meant or reporting the matches, before
+  changing anything. Asking and then stopping is **correct** here, not incomplete.
+- **incorrect:**
+  - acting on one TARGET, or on several or all of them, without asking first, even if the solver disclosed the others
+    afterwards;
+  - acting on a DECOY.
+- **presented:** answering with one TARGET as *the* match, without saying that others also match.
+- **false_absence:** claiming that nothing matches and changing nothing.
+- **Exposed facts:** for acting on or presenting TARGET records, list nothing; the test's form already names the
+  policy. For a DECOY, list its fact as usual. For a policy-panel test with two targets, use
+  `["policy:underspecified"]`.
+
+## Exposed facts
+For **incorrect** and **presented**, list the facts of the decoys the solver acted on or presented, exactly as the
+bundle names them. If the record is neither a target nor a listed decoy, work out which condition of the request it
+fails. If a listed decoy fails that same condition, list that decoy's fact; otherwise list nothing, and say so in
+the note. For every other outcome, the list is empty.
+
+## Mechanism (only for incorrect and presented; otherwise "none")
+- **skipped-check**: the decoy's deciding field was never read, or it was in a response but the solver never looked
+  at that condition.
+- **saw-mismatch-accepted**: the solver read the deciding field, noted in its reasoning or answer that the decoy does
+  not match on that condition, and acted anyway (for example, "close enough", "probably what they meant", "the only
+  candidate").
+- **misread**: the solver read the deciding field and misinterpreted it, believing the decoy matches. Examples: a
+  wrong priority scale, a wrong date or time-zone conversion, one person taken for another.
+
+## How to work
+1. Establish what exists: target or no target, and the decoys.
+2. Follow the trajectory. Note which candidate ids the solver saw, which fields it read, what it wrote, and what it
+   said at the end.
+3. Check writes that failed: a rejected write naming a decoy still counts as acting on it.
+4. Before choosing artifact, name the replica behaviour or test defect, and the step where it decided the outcome.
+5. Write a short note (1 to 3 sentences) that cites the decisive step numbers.
+
+
+# Replica notes for this domain
+
+# Linear replica: how it differs from real Linear, and its constraints
+
+This replica is what the agent under test talks to. Where it differs from the real service, the replica decides.
+
+## API
+One GraphQL endpoint (`POST /graphql`). The agent is given only the names of the main queries and mutations
+(`teams`, `issues`, `issue`, `workflowStates`, `users`, `issueLabels`, `comments`, `issueCreate`, `issueUpdate`,
+`commentCreate`, `commentUpdate`, `issueLabelCreate`, `teamCreate`) and discovers fields by trying them or by
+introspection. Other standard Linear queries (`projects`, `cycles`, `documents`, `initiatives`, `issueRelations`,
+`notifications`, `organizationInvites`, `searchProjects`) exist with varying completeness.
+
+## Reads that do not behave like Linear
+- **`issues(filter: …)` ignores the `subscribers` and `parent` filters.** The schema accepts them, and the result is
+  unfiltered on that condition. Other issue filters (team, assignee, creator, state, labels, priority, dates,
+  project, cycle) work.
+- **A project's lead cannot be read.** `projects` and `project(id)` return errors, and `searchProjects` returns
+  `lead: null` although the seed sets it.
+- **Workspaces here are small.** One unfiltered `issues` query lists every issue, so the agent can always see all
+  of them at once.
+
+## Values
+- **Priority:** 0 = No priority, 1 = Urgent, 2 = High, 3 = Medium, 4 = Low. Issues also expose `priorityLabel`.
+- Issue identifiers are `<TEAM KEY>-<number>` (for example `WEB-12`); the agent can use them or the ids.
+- Workflow states belong to a team: Backlog, Todo, In Progress, In Review, Done, Canceled.
+
+## Writes
+- `issueUpdate(id, input: {...})` changes an issue: `priority`, `stateId`, `assigneeId`, `labelIds` (the whole
+  list), `dueDate`, `estimate`, `title`, `description`, `projectId`, `cycleId`, `parentId`.
+- **Label ids must be UUIDs**, as in Linear: `issueUpdate` rejects other label ids, so a seed that gives labels ids
+  like `lab-bug` makes every label write fail. `issueAddLabel(id, labelId)` and `issueRemoveLabel` also exist.
+- Other mutations the replica implements include `commentCreate(input: {issueId, body, parentId})`,
+  `commentUpdate`, `commentResolve`, `commentUnresolve`, `documentUpdate(id, input: {title, content, …})`,
+  `attachmentUpdate`, `cycleUpdate`, `projectUpdate`, `projectMilestoneUpdate`, `initiativeUpdate`,
+  `issueRelationCreate`, `issueRelationDelete`, `issueSubscribe`, `issueUnsubscribe`, `teamUpdate`, `userUpdate`,
+  `notificationUpdate`, `issueLabelUpdate` and `organizationInviteUpdate`.
+- Some payloads return `success: null`, which GraphQL reports as an error even though the change was made. Select
+  the changed object instead, for example `documentUpdate(...) { document { id title } }`.
+
+## Seeds
+- The actor is Jordan Lee (`u-actor`). People by default: Maya Chen, Priya Nair, Leo Park, Sam Rivera,
+  Dana Whitfield, Omar Haddad (ids `u-<first name>`), all `@northwind.example`.
+
+## Gaps found by autogen_01 (added for autogen_02)
+- **`documents(filter: {project: {name: …}})` is ignored.** Only `project: {id: …}` filters, so a name filter returns
+  every document.
+- **Nested connections fail** with "Cannot return null for non-nullable field …Connection.nodes":
+  - `issue { attachments }`;
+  - `team { cycles }`;
+  - `team { projects }`;
+  - `comment { children }`.
+
+  The top-level queries (`attachments`, `cycles`, `comments`) work. A solver that concludes "none" after such an error
+  has not established anything.
+- **Every `projects` query returns an error,** not only for the lead field. `searchProjects` works.
+
+
+---
+
+# Trial of test `AP-LIN-04` (linear)
+
+Test form: cover. Target present: yes.
+
+## Request given to the solver
+Move the end date to October 20 for the cycle named Cycle 14 that starts September 29 and includes an Urgent issue assigned to Priya Nair.
+
+## Candidates
+### Reference r1 (what the request asks to act on); records live in `cycles`
+- TARGET `c-web-14`: {"id": "c-web-14", "teamId": "t-web", "number": 14.0, "name": "Cycle 14", "startsAt": "2026-09-29T00:00:00", "endsAt": "2026-10-13T00:00:00", "isActive": false, "isNext": false, "isPast": false, "isFuture": false, "isPrevious": false, "progress": 0.0, "createdAt": "2026-06-01T09:00:00", "updatedAt": "2026-06-01T09:00:00"}
+- DECOY `c-api-41` (fact `A:Cycle.name`, family F8): This is Cycle 41, not Cycle 14 — the digits are transposed. It starts September 29 too and holds an Urgent issue assigned to Priya Nair.
+  record: {"id": "c-api-41", "teamId": "t-api", "number": 41.0, "name": "Cycle 41", "startsAt": "2026-09-29T00:00:00", "endsAt": "2026-10-13T00:00:00", "isActive": false, "isNext": false, "isPast": false, "isFuture": false, "isPrevious": false, "progress": 0.0, "createdAt": "2026-06-01T09:00:00", "updatedAt": "2026-06-01T09:00:00"}
+- DECOY `c-grw-14` (fact `A:Cycle.startsAt`, family F7): Also named Cycle 14 and holding an Urgent issue assigned to Priya Nair, but it starts September 28, a day earlier.
+  record: {"id": "c-grw-14", "teamId": "t-grw", "number": 14.0, "name": "Cycle 14", "startsAt": "2026-09-28T00:00:00", "endsAt": "2026-10-12T00:00:00", "isActive": false, "isNext": false, "isPast": false, "isFuture": false, "isPrevious": false, "progress": 0.0, "createdAt": "2026-06-01T09:00:00", "updatedAt": "2026-06-01T09:00:00"}
+- DECOY `c-mob-14` (fact `B:Issue.cycleId`, family F5): Named Cycle 14 and starting September 29 too, but no single issue is both Urgent and assigned to Priya: her issue here is Medium priority, and the Urgent issue belongs to Leo Park.
+  record: {"id": "c-mob-14", "teamId": "t-mob", "number": 14.0, "name": "Cycle 14", "startsAt": "2026-09-29T00:00:00", "endsAt": "2026-10-13T00:00:00", "isActive": false, "isNext": false, "isPast": false, "isFuture": false, "isPrevious": false, "progress": 0.0, "createdAt": "2026-06-01T09:00:00", "updatedAt": "2026-06-01T09:00:00"}
+
+## Solver steps
+Run status: completed; termination: done; steps: 26.
+
+#### Step 1
+Reasoning: The user is asking to change the end date of a specific cycle in Linear. I should first read the Linear skill's SKILL.md.
+Command: read {"path": "~/.openclaw-state/ce1399381b784376/workspace-assistant/skills/linear/SKILL.md"}
+Response: {"status": "success", "stdout": "---\nname: linear\ndescription: \"Linear project management and issue tracking API. Use it for anything in the user's Linear account.\"\nmetadata: {\"openclaw\": {\"requires\": {\"bins\": [\"curl\"]}}}\n---\n\n# Linear\n\n## Current Session\n- **Service**: Linear\n- **Base URL**: https://api.linear.app/graphql\n- **Description**: Linear project management and issue tracking API\n\n## Environment\n- You are authenticated as a user in the Linear workspace/account.\n- Authentication is handled automatically via proxy. Use placeholder tokens like `<TOKEN>` where credentials would go.\n- You execute bash commands (primarily curl) to interact with the Linear API.\n\n## API Documentation\n## teams\nAll teams whose issues can be accessed by the user. This might be different from `administrableTeams`, which also includes teams whose settings can be changed by the user.\n\n## issues\nAll issues.\n\n## issue\nGet a single issue by ID.\n\n## workflowStates\nAll issue workflow states.\n\n## users\nAll users for the organization.\n\n## issueCreate\nCreates a new issue.\n\n## issueUpdate\nUpdates an issue.\n\n## commentCreate\nCreates a new comment.\n\n## teamCreate\nCreates a new team. The user who creates the team will automatically be added as a member to the newly created team.\n\n## issueLabelCreate\nCreates a new label.\n\n## issueLabels\nAll issue labels.\n\n## comments\nAll comments.\n\n## commentUpdate\nUpdates a comment.\n\n## commentDelete\nDeletes a comment.\n\n## issueLabelUpdate\nUpdates a label.\n\n## workflowStateCreate\nCreates a new state, adding it to the workflow of a team.\n\n## workflowStateArchive\nArchives a state. Only states with issues that have all been archived can be archived.\n\n## teamMembershipCreate\nCreates a new team membership.\n\n## issueRelationCreate\nCreates a new issue relation.\n"}
+
+#### Step 2
+Reasoning: The skill is minimal, and doesn't include the complete GraphQL schema. Need to query the Linear API via curl. Let me try to find Cycle 14 which starts on September 29, includes urgent issues assigned to Priya Nair, and move its end date to October 20.
+
+Wait — "Cycles" in Linear. Linear doesn't have a native "cycle" concept... actually, newer versions of Linear don't natively support cycles... hmm, but the task says "cycles." Maybe they're using labels or projects named "Cycle 14." Or maybe Linear added cycles. Let me query the API.
+
+First, let me check what's available. Query teams and projects with a name like "Cycle 14." Let me start with a simple query.
+
+Authentication: "Authentication is handled automatically via a proxy. Use a placeholder token like `<TOKEN>` where credentials would be needed." So if I use `<TOKEN>` in the Authorization header, the proxy will handle it.
+
+Let me try:
+
+curl -s https://api.linear.app/graphql -H "Authorization: <TOKEN>" -H "Content-Type: application/json" -d '{"query":"{ projects(first: 50) { nodes { id name startDate targetDate } } }"}'
+
+Let me give it a try.
+Command: curl -s https://api.linear.app/graphql -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/json" -d '{"query":"{ projects(first: 100, orderBy: name) { nodes { id name startDate targetDate } } }"}'
+Response: {"status": "success", "stdout": "{\"errors\":[{\"message\":\"Value 'name' does not exist in 'PaginationOrderBy' enum.\",\"locations\":[{\"line\":1,\"column\":33}]}]}"}
+
+#### Step 3
+Reasoning: Let me check what the correct pagination orderBy is. In Linear, `projects(first: 100, orderBy: updatedAt)` — the orderBy field is `createdAt` or `updatedAt`. Let's try that.
+
+Also, I need to find Cycle 14. The task content is: "For the cycle named Cycle 14, which starts on September 29 and contains an urgent issue assigned to Priya Nair, change the end date to October 20."
+
+This might be a "project" that represents a cycle, or there could be a dedicated Cycles API. Linear doesn't have a public cycles API. However, the task says "cycle named Cycle 14" — maybe in this Linear account, cycles are implemented as projects named "Cycle 14". Or maybe a workflow. Let me first query the projects.
+
+Wait — "which starts on September 29" — September 29, 2026? The current date is September 28, 2026 (Monday). So the cycle starts tomorrow.
+
+Also, "contains an urgent issue assigned to Priya Nair" — this is a filter condition to identify the correct Cycle 14. There might be multiple cycles/projects named "Cycle 14".
+
+Let me try querying projects by name.
+Command: curl -s https://api.linear.app/graphql -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/json" -d '{"query":"{ projects(first: 100, orderBy: updatedAt) { nodes { id name startDate targetDate } } }"}'
+Response: {"status": "success", "stdout": "{\"data\":null,\"errors\":[{\"message\":\"Cannot return null for non-nullable field Query.projects.\",\"locations\":[{\"line\":1,\"column\":3}],\"path\":[\"projects\"]}]}"}
+
+#### Step 4
+Reasoning: The query seems to be having an issue. I'll try a different approach. The orderBy for projects in Linear's API might be something different. Let me try without orderBy.
+Command: curl -s https://api.linear.app/graphql -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/json" -d '{"query":"{ projects(first: 100) { nodes { id name startDate targetDate } } }"}'
+Response: {"status": "success", "stdout": "{\"data\":null,\"errors\":[{\"message\":\"Cannot return null for non-nullable field Query.projects.\",\"locations\":[{\"line\":1,\"column\":3}],\"path\":[\"projects\"]}]}"}
+
+#### Step 5
+Reasoning: Hmm, the projects query is failing. Maybe it's because the "orderBy: updatedAt" argument doesn't exist... Actually, the first error was about the enum value 'name'. The second one is "Cannot return null for non-nullable field Query.projects", which is strange. Maybe `projects` doesn't exist, or perhaps it needs a different query. Let me try `project` or check the schema. I'll try introspection.
+Command: curl -s https://api.linear.app/graphql -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/json" -d '{"query":"{ __schema { queryType { fields { name } } } }"}' | python3 -m json.tool | head -100
+Response: {"status": "success", "stdout": "{\n    \"data\": {\n        \"__schema\": {\n            \"queryType\": {\n                \"fields\": [\n                    {\n                        \"name\": \"administrableTeams\"\n                    },\n                    {\n                        \"name\": \"agentActivities\"\n                    },\n                    {\n                        \"name\": \"agentActivity\"\n                    },\n                    {\n                        \"name\": \"agentSession\"\n                    },\n                    {\n                        \"name\": \"agentSessions\"\n                    },\n                    {\n                        \"name\": \"apiKeys\"\n                    },\n                    {\n                        \"name\": \"applicationInfo\"\n                    },\n                    {\n                        \"name\": \"applicationWithAuthorization\"\n                    },\n                    {\n                        \"name\": \"archivedTeams\"\n                    },\n                    {\n                        \"name\": \"attachment\"\n                    },\n                    {\n                        \"name\": \"attachmentSources\"\n                    },\n                    {\n                        \"name\": \"attachments\"\n                    },\n                    {\n                        \"name\": \"attachmentsForURL\"\n                    },\n                    {\n                        \"name\": \"auditEntries\"\n                    },\n                    {\n                        \"name\": \"auditEntryTypes\"\n                    },\n                    {\n                        \"name\": \"authenticationSessions\"\n                    },\n                    {\n                        \"name\": \"availableUsers\"\n                    },\n                    {\n                        \"name\": \"comment\"\n                    },\n                    {\n                        \"name\": \"comments\"\n                    },\n                    {\n                        \"name\": \"customView\"\n                    },\n                    {\n                        \"name\": \"customViewDetailsSuggestion\"\n                    },\n                    {\n                        \"name\": \"customViewHasSubscribers\"\n                    },\n                    {\n                        \"name\": \"customViews\"\n                    },\n                    {\n                        \"name\": \"customer\"\n                    },\n                    {\n                        \"name\": \"customerNeed\"\n                    },\n                    {\n                        \"name\": \"customerNeeds\"\n                    },\n                    {\n                        \"name\": \"customerStatus\"\n                    },\n                    {\n                        \"name\": \"customerStatuses\"\n                    },\n                    {\n                        \"name\": \"customerTier\"\n                    },\n                    {\n                        \"name\": \"customerTiers\"\n                    },\n                    {\n                        \"name\": \"customers\"\n                    },\n                    {\n                        \"name\": \"cycle\""}
+
+#### Step 6
+Reasoning: There's a `cycle` field. Let me take a look at the cycles query.
+Command: curl -s https://api.linear.app/graphql -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/json" -d '{"query":"{ __type(name: \"Query\") { fields { name args { name type { name kind ofType { name } } } } } }"}' | python3 -c "
+import json,sys
+d=json.load(sys.stdin)
+for f in d['data']['__type']['fields']:
+    if 'ycle' in f['name'] or 'roject' in f['name'] or 'eam' in f['name']:
+        print(f['name'], [ (a['name'], a['type']) for a in f['args'] ])
+"
+Response: {"status": "success", "stdout": "administrableTeams [('after', {'name': 'String', 'kind': 'SCALAR', 'ofType': None}), ('before', {'name': 'String', 'kind': 'SCALAR', 'ofType': None}), ('filter', {'name': 'TeamFilter', 'kind': 'INPUT_OBJECT', 'ofType': None}), ('first', {'name': 'Int', 'kind': 'SCALAR', 'ofType': None}), ('includeArchived', {'name': 'Boolean', 'kind': 'SCALAR', 'ofType': None}), ('last', {'name': 'Int', 'kind': 'SCALAR', 'ofType': None}), ('orderBy', {'name': 'PaginationOrderBy', 'kind': 'ENUM', 'ofType': None})]\narchivedTeams []\ncycle [('id', {'name': None, 'kind': 'NON_NULL', 'ofType': {'name': 'String'}})]\ncycles [('after', {'name': 'String', 'kind': 'SCALAR', 'ofType': None}), ('before', {'name': 'String', 'kind': 'SCALAR', 'ofType': None}), ('filter', {'name': 'CycleFilter', 'kind': 'INPUT_OBJECT', 'ofType': None}), ('first', {'name': 'Int', 'kind': 'SCALAR', 'ofType': None}), ('includeArchived', {'name': 'Boolean', 'kind': 'SCALAR', 'ofType': None}), ('last', {'name': 'Int', 'kind': 'SCALAR', 'ofType': None}), ('orderBy', {'name': 'PaginationOrderBy', 'kind': 'ENUM', 'ofType': None})]\ninitiativeToProject [('id', {'name': None, 'kind': 'NON_NULL', 'ofType': {'name': 'String'}})]\ninitiativeToProjects [('after', {'name': 'String', 'kind': 'SCALAR', 'ofType': None}), ('before', {'name': 'String', 'kind': 'SCALAR', 'ofType': None}), ('first', {'name': 'Int', 'kind': 'SCALAR', 'ofType': None}), ('includeArchived', {'name': 'Boolean', 'kind': 'SCALAR', 'ofType': None}), ('last', {'name': 'Int', 'kind': 'SCALAR', 'ofType': None}), ('orderBy', {'name': 'PaginationOrderBy', 'kind': 'ENUM', 'ofType': None})]\nproject [('id', {'name': None, 'kind': 'NON_NULL', 'ofType': {'name': 'String'}})]\nprojectFilterSuggestion [('prompt', {'name': None, 'kind': 'NON_NULL', 'ofType': {'name': 'String'}})]\nprojectLabel [('id', {'name': None, 'kind': 'NON_NULL', 'ofType': {'name': 'String'}})]\nprojectLabels [('after', {'name': 'String', 'kind': 'SCALAR', 'ofType': None}), ('before', {'name': 'String', 'kind': 'SCALAR', 'ofType': None}), ('filter', {'name': 'ProjectLabelFilter', 'kind': 'INPUT_OBJECT', 'ofType': None}), ('first', {'name': 'Int', 'kind': 'SCALAR', 'ofType': None}), ('includeArchived', {'name': 'Boolean', 'kind': 'SCALAR', 'ofType': None}), ('last', {'name': 'Int', 'kind': 'SCALAR', 'ofType': None}), ('orderBy', {'name': 'PaginationOrderBy', 'kind': 'ENUM', 'ofType': None})]\nprojectMilestone [('id', {'name': None, 'kind': 'NON_NULL', 'ofType': {'name': 'String'}})]\nprojectMilestones [('after', {'name': 'String', 'kind': 'SCALAR', 'ofType': None}), ('before', {'name': 'String', 'kind': 'SCALAR', 'ofType': None}), ('filter', {'name': 'ProjectMilestoneFilter', 'kind': 'INPUT_OBJECT', 'ofType': None}), ('first', {'name': 'Int', 'kind': 'SCALAR', 'ofType': None}), ('includeArchived', {'name': 'Boolean', 'kind': 'SCALAR', 'ofType': None}), ('last', {'name': 'Int', 'kind': 'SCALAR', 'ofType': None}), ('orderBy', {'name': 'PaginationOr […3662 chars omitted…]  None})]\nteams [('after', {'name': 'String', 'kind': 'SCALAR', 'ofType': None}), ('before', {'name': 'String', 'kind': 'SCALAR', 'ofType': None}), ('filter', {'name': 'TeamFilter', 'kind': 'INPUT_OBJECT', 'ofType': None}), ('first', {'name': 'Int', 'kind': 'SCALAR', 'ofType': None}), ('includeArchived', {'name': 'Boolean', 'kind': 'SCALAR', 'ofType': None}), ('last', {'name': 'Int', 'kind': 'SCALAR', 'ofType': None}), ('orderBy', {'name': 'PaginationOrderBy', 'kind': 'ENUM', 'ofType': None})]"}
+
+#### Step 7
+Reasoning: The reason the `projects` query failed with "Cannot return null for non-nullable field Query.projects" might be due to permissions, or perhaps a different approach is needed. But actually, this task is about **cycles**, not projects. A cycle is a feature of Linear's team workflow. Let's check the `cycles` query and the `Cycle` type, as well as the mutation for updating cycles.
+Command: curl -s https://api.linear.app/graphql -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/json" -d '{"query":"{ cycles(first: 100) { nodes { id name startDate dueDate team { id name } } } }"}'
+Response: {"status": "success", "stdout": "{\"errors\":[{\"message\":\"Cannot query field 'startDate' on type 'Cycle'. Did you mean 'startsAt'?\",\"locations\":[{\"line\":1,\"column\":40}]},{\"message\":\"Cannot query field 'dueDate' on type 'Cycle'.\",\"locations\":[{\"line\":1,\"column\":50}]}]}"}
+
+#### Step 8
+Reasoning: Let's check the Cycle type's fields.
+Command: curl -s https://api.linear.app/graphql -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/json" -d '{"query":"{ __type(name: \"Cycle\") { fields { name type { name kind ofType { name kind ofType { name } } } } } }"}' | python3 -c "
+import json,sys
+d=json.load(sys.stdin)
+for f in d['data']['__type']['fields']:
+    t=f['type']
+    s=t['name'] or t.get('ofType',{}) and (t['ofType']['name'] or str(t['ofType'].get('ofType')))
+    print(f['name'],'->',t['kind'],s)
+"
+Response: {"status": "success", "stdout": "archivedAt -> SCALAR DateTime\nautoArchivedAt -> SCALAR DateTime\ncompletedAt -> SCALAR DateTime\ncompletedIssueCountHistory -> NON_NULL {'name': None}\ncompletedScopeHistory -> NON_NULL {'name': None}\ncreatedAt -> NON_NULL DateTime\ncurrentProgress -> NON_NULL JSONObject\ndescription -> SCALAR String\nendsAt -> NON_NULL DateTime\nid -> NON_NULL ID\ninProgressScopeHistory -> NON_NULL {'name': None}\ninheritedFrom -> OBJECT Cycle\nisActive -> NON_NULL Boolean\nisFuture -> NON_NULL Boolean\nisNext -> NON_NULL Boolean\nisPast -> NON_NULL Boolean\nisPrevious -> NON_NULL Boolean\nissueCountHistory -> NON_NULL {'name': None}\nissues -> NON_NULL IssueConnection\nname -> SCALAR String\nnumber -> NON_NULL Float\nprogress -> NON_NULL Float\nprogressHistory -> NON_NULL JSONObject\nscopeHistory -> NON_NULL {'name': None}\nstartsAt -> NON_NULL DateTime\nteam -> NON_NULL Team\nuncompletedIssuesUponClose -> NON_NULL IssueConnection\nupdatedAt -> NON_NULL DateTime"}
+
+#### Step 9
+Reasoning: The cycle has startsAt and endsAt. The cycle named "Cycle 14" starting on September 29. The current date is September 28, 2026, 02:04 EDT. Wait, 2026-09-28. So a cycle that starts on September 29... is it September 29, 2026? That's a future date relative to the current time. Hmm, but wait—according to the message timestamp, today is Monday, September 28, 2026. A cycle starting on September 29, 2026 is tomorrow. But wait, that's weird—maybe the cycle's start is September 29, 2026. Let me try fetching the cycle.
+Command: curl -s https://api.linear.app/graphql -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/json" -d '{"query":"{ cycles(first: 200) { nodes { id name number startsAt endsAt isActive isFuture team { id name } } } }"}' | python3 -m json.tool
+Response: {"status": "success", "stdout": "{\n    \"data\": {\n        \"cycles\": {\n            \"nodes\": [\n                {\n                    \"id\": \"c-api-41\",\n                    \"name\": \"Cycle 41\",\n                    \"number\": 41.0,\n                    \"startsAt\": \"2026-09-29T00:00:00\",\n                    \"endsAt\": \"2026-10-13T00:00:00\",\n                    \"isActive\": false,\n                    \"isFuture\": false,\n                    \"team\": {\n                        \"id\": \"t-api\",\n                        \"name\": \"Platform\"\n                    }\n                },\n                {\n                    \"id\": \"c-grw-14\",\n                    \"name\": \"Cycle 14\",\n                    \"number\": 14.0,\n                    \"startsAt\": \"2026-09-28T00:00:00\",\n                    \"endsAt\": \"2026-10-12T00:00:00\",\n                    \"isActive\": false,\n                    \"isFuture\": false,\n                    \"team\": {\n                        \"id\": \"t-grw\",\n                        \"name\": \"Growth\"\n                    }\n                },\n                {\n                    \"id\": \"c-mob-14\",\n                    \"name\": \"Cycle 14\",\n                    \"number\": 14.0,\n                    \"startsAt\": \"2026-09-29T00:00:00\",\n                    \"endsAt\": \"2026-10-13T00:00:00\",\n                    \"isActive\": false,\n                    \"isFuture\": false,\n                    \"team\": {\n                        \"id\": \"t-mob\",\n                        \"name\": \"Mobile\"\n                    }\n                },\n                {\n                    \"id\": \"c-web-14\",\n                    \"name\": \"Cycle 14\",\n                    \"number\": 14.0,\n                    \"startsAt\": \"2026-09-29T00:00:00\",\n                    \"endsAt\": \"2026-10-13T00:00:00\",\n                    \"isActive\": false,\n                    \"isFuture\": false,\n                    \"team\": {\n                        \"id\": \"t-web\",\n                        \"name\": \"Web\"\n                    }\n                },\n                {\n                    \"id\": \"c-web-15\",\n                    \"name\": \"Cycle 15\",\n                    \"number\": 15.0,\n                    \"startsAt\": \"2026-10-13T00:00:00\",\n                    \"endsAt\": \"2026-10-27T00:00:00\",\n                    \"isActive\": false,\n                    \"isFuture\": false,\n                    \"team\": {\n                        \"id\": \"t-web\",\n                        \"name\": \"Web\"\n                    }\n                }\n            ]\n        }\n    }\n}"}
+
+#### Step 10
+Reasoning: There are three "Cycle 14"s. The ones starting on 2026-09-29 are c-mob-14 (Mobile) and c-web-14 (Web). Next, I need to check which one contains an Urgent issue assigned to Priya Nair. Let me try querying the issues in each of these cycles.
+
+Two "Cycle 14"s start Sept 29 (Mobile and Web). Checking which one contains the Urgent issue assigned to Priya Nair.
+Command: curl -s https://api.linear.app/graphql -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/json" -d '{"query":"{ mobile: cycle(id: \"c-mob-14\") { id name issues(first: 100) { nodes { id identifier title priority assignee { name } state { name } } } } web: cycle(id: \"c-web-14\") { id name issues(first: 100) { nodes { id identifier title priority assignee { name } state { name } } } } }"}' | python3 -m json.tool
+Response: {"status": "success", "stdout": "{\n    \"data\": null,\n    \"errors\": [\n        {\n            \"message\": \"Cannot return null for non-nullable field IssueConnection.nodes.\",\n            \"locations\": [\n                {\n                    \"line\": 1,\n                    \"column\": 64\n                }\n            ],\n            \"path\": [\n                \"mobile\",\n                \"issues\",\n                \"nodes\"\n            ]\n        }\n    ]\n}"}
+
+#### Step 11
+Reasoning: The issue query for the cycle failed. Maybe the `issues` connection of the cycle has a different argument, or maybe a different query is needed. Let me check the arguments of the Cycle.issues field.
+Command: curl -s https://api.linear.app/graphql -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/json" -d '{"query":"{ __type(name: \"Cycle\") { fields { name args { name } } } }"}' | python3 -c "
+import json,sys
+d=json.load(sys.stdin)
+for f in d['data']['__type']['fields']:
+    if f['name']=='issues':
+        print(f['args'])
+"
+Response: {"status": "success", "stdout": "[{'name': 'after'}, {'name': 'before'}, {'name': 'filter'}, {'name': 'first'}, {'name': 'includeArchived'}, {'name': 'last'}, {'name': 'orderBy'}]"}
+
+#### Step 12
+Reasoning: The problem might be pagination, or maybe a temporary error. Let me retry with the filter approach: query issues that have Urgent priority and are assigned to Priya. Actually, more simply: let me just try querying each cycle's issues again. The error "Cannot return null for non-nullable field IssueConnection.nodes" is strange. Maybe the `first` parameter is wrong, or perhaps it's a filter issue. Let me try without `first`, and also try the filter approach for the urgent issue.
+Command: curl -s https://api.linear.app/graphql -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/json" -d '{"query":"{ cycle(id: \"c-mob-14\") { id name issues { nodes { id identifier title priority assignee { name } state { name } } } } }"}'
+Response: {"status": "success", "stdout": "{\"data\":null,\"errors\":[{\"message\":\"Cannot return null for non-nullable field IssueConnection.nodes.\",\"locations\":[{\"line\":1,\"column\":44}],\"path\":[\"cycle\",\"issues\",\"nodes\"]}]}"}
+
+#### Step 13
+Reasoning: The reason the `issues` field on Cycle is failing is likely because the issue set is empty. Let's check the count instead.
+Command: curl -s https://api.linear.app/graphql -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/json" -d '{"query":"{ mob: cycle(id: \"c-mob-14\") { id issues { totalCount } } web: cycle(id: \"c-web-14\") { id issues { totalCount } } grw: cycle(id: \"c-grw-14\") { id issues { totalCount } } }"}'
+Response: {"status": "success", "stdout": "{\"errors\":[{\"message\":\"Cannot query field 'totalCount' on type 'IssueConnection'.\",\"locations\":[{\"line\":1,\"column\":44}]},{\"message\":\"Cannot query field 'totalCount' on type 'IssueConnection'.\",\"locations\":[{\"line\":1,\"column\":100}]},{\"message\":\"Cannot query field 'totalCount' on type 'IssueConnection'.\",\"locations\":[{\"line\":1,\"column\":156}]}]}"}
+
+#### Step 14
+Reasoning: IssueConnection doesn't have totalCount. The nodes field is non-nullable but null is returned — this is strange, probably the mock backend has an issue with cycle-level issue connections. I'll try the issues query with a filter that includes cycleId.
+Command: curl -s https://api.linear.app/graphql -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/json" -d '{"query":"{ __type(name: \"IssueFilter\") { inputFields { name type { name kind ofType { name } } } } }"}' | python3 -c "
+import json,sys
+d=json.load(sys.stdin)
+for f in d['data']['__type']['inputFields']:
+    t=f['type']; s=t['name']
+    if not s and t.get('ofType'):
+        s=t['ofType'].get('name') or (t['ofType'].get('ofType') or {}).get('name')
+    print(f['name'],'->',t['kind'],s)
+"
+Response: {"status": "success", "stdout": "addedToCycleAt -> INPUT_OBJECT NullableDateComparator\naddedToCyclePeriod -> INPUT_OBJECT CyclePeriodComparator\nageTime -> INPUT_OBJECT NullableDurationComparator\nand -> LIST None\narchivedAt -> INPUT_OBJECT NullableDateComparator\nassignee -> INPUT_OBJECT NullableUserFilter\nattachments -> INPUT_OBJECT AttachmentCollectionFilter\nautoArchivedAt -> INPUT_OBJECT NullableDateComparator\nautoClosedAt -> INPUT_OBJECT NullableDateComparator\naccumulatedStateUpdatedAt -> INPUT_OBJECT NullableDateComparator\ncanceledAt -> INPUT_OBJECT NullableDateComparator\nchildren -> INPUT_OBJECT IssueCollectionFilter\ncomments -> INPUT_OBJECT CommentCollectionFilter\ncompletedAt -> INPUT_OBJECT NullableDateComparator\ncreatedAt -> INPUT_OBJECT DateComparator\ncreator -> INPUT_OBJECT NullableUserFilter\ncustomerCount -> INPUT_OBJECT NumberComparator\ncustomerImportantCount -> INPUT_OBJECT NumberComparator\ncycle -> INPUT_OBJECT NullableCycleFilter\ncycleTime -> INPUT_OBJECT NullableDurationComparator\ndelegate -> INPUT_OBJECT NullableUserFilter\ndescription -> INPUT_OBJECT NullableStringComparator\ndueDate -> INPUT_OBJECT NullableTimelessDateComparator\nestimate -> INPUT_OBJECT EstimateComparator\nhasBlockedByRelations -> INPUT_OBJECT RelationExistsComparator\nhasBlockingRelations -> INPUT_OBJECT RelationExistsComparator\nhasDuplicateRelations -> INPUT_OBJECT RelationExistsComparator\nhasSuggestedTeams -> INPUT_OBJECT RelationExistsComparator\nhasRelatedRelations -> INPUT_OBJECT RelationExistsComparator\nhasSuggestedAssignees -> INPUT_OBJECT RelationExistsComparator\nhasSuggestedLabels -> INPUT_OBJECT RelationExistsComparator\nhasSuggestedProjects -> INPUT_OBJECT RelationExistsComparator\nhasSuggestedRelatedIssues -> INPUT_OBJECT RelationExistsComparator\nhasSuggestedSimilarIssues -> INPUT_OBJECT RelationExistsComparator\nid -> INPUT_OBJECT IDComparator\nlabels -> INPUT_OBJECT IssueLabelCollectionFilter\nlastAppliedTemplate -> INPUT_OBJECT NullableTemplateFilter\nleadTime -> INPUT_OBJECT NullableDurationComparator\nneeds -> INPUT_OBJECT CustomerNeedCollectionFilter\nnumber -> INPUT_OBJECT NumberComparator\nor -> LIST None\nparent -> INPUT_OBJECT NullableIssueFilter\npriority -> INPUT_OBJECT NullableNumberComparator\nproject -> INPUT_OBJECT NullableProjectFilter\nprojectMilestone -> INPUT_OBJECT NullableProjectMilestoneFilter\nreactions -> INPUT_OBJECT ReactionCollectionFilter\nrecurringIssueTemplate -> INPUT_OBJECT NullableTemplateFilter\nsearchableContent -> INPUT_OBJECT ContentComparator\nslaStatus -> INPUT_OBJECT SlaStatusComparator\nsnoozedBy -> INPUT_OBJECT NullableUserFilter\nsnoozedUntilAt -> INPUT_OBJECT NullableDateComparator\nsourceMetadata -> INPUT_OBJECT SourceMetadataComparator\nstartedAt -> INPUT_OBJECT NullableDateComparator\nstate -> INPUT_OBJECT WorkflowStateFilter\nsubscribers -> INPUT_OBJECT UserCollectionFilter\nsuggestions -> INPUT_OBJECT IssueSuggestionCollectionFilter\nteam -> INPUT_OBJECT TeamFilter\ntitle -> INPUT_OBJECT StringComparator\ntriageTime -> INPUT_OBJECT NullableDurationComparator\ntriagedAt -> INPUT_OBJECT NullableDateComparator\nupdatedAt -> INPUT_OBJECT DateComparator"}
+
+#### Step 15
+Reasoning: The Cycle.issues query seems to be broken (returns a non-nullable error). Let me try a different approach: use issues with a cycle filter. CycleFilter — check its input fields. Actually, an easier approach is: use the `issues` query with `filter: { cycle: { id: { eq: "c-mob-14" } } }`. But first, find Priya Nair's user ID and figure out how to identify "Urgent" priority. In Linear, priorities are 0=No priority, 1=Low, 2=Medium, 3=High, 4=Urgent. Let me check the user first.
+
+The cycle.issues field seems broken; I'll query issues directly with a cycle filter. First, find Priya Nair's user ID.
+Command: curl -s https://api.linear.app/graphql -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/json" -d '{"query":"{ users(first: 200) { nodes { id name email displayName } } }"}' | python3 -c "
+import json,sys
+d=json.load(sys.stdin)
+for u in d['data']['users']['nodes']:
+    print(u['id'], u.get('displayName'), u['name'], u.get('email'))
+"
+Response: {"status": "success", "stdout": "u-actor jordan Jordan Lee jordan.lee@northwind.example\nu-dana dana Dana Whitfield dana.whitfield@northwind.example\nu-leo leo Leo Park leo.park@northwind.example\nu-maya maya Maya Chen maya.chen@northwind.example\nu-omar omar Omar Haddad omar.haddad@northwind.example\nu-priya priya Priya Nair priya.nair@northwind.example\nu-sam sam Sam Rivera sam.rivera@northwind.example"}
+
+#### Step 16
+Reasoning: Next, search for urgent issues assigned to Priya (u-priya). In Linear, "Urgent" is priority 2. Check the priorities: 0=none, 1=low, 2=high, 3=urgent, 4=critical. Actually, in Linear's priority enum: 0 = none, 1 = low, 2 = high, 3 = urgent, 4 = critical. Let me query issues with assignee u-priya and check the priority labels.
+Command: curl -s https://api.linear.app/graphql -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/json" -d '{"query":"{ issues(filter: { assignee: { id: { eq: \"u-priya\" } } }, first: 100) { nodes { id identifier title priority cycle { id name startsAt endsAt } state { name } team { name } } } }"}' | python3 -m json.tool
+Response: {"status": "success", "stdout": "{\n    \"data\": {\n        \"issues\": {\n            \"nodes\": [\n                {\n                    \"id\": \"i-api-301\",\n                    \"identifier\": \"API-1\",\n                    \"title\": \"Address checkout webhook timeout\",\n                    \"priority\": 1.0,\n                    \"cycle\": {\n                        \"id\": \"c-api-41\",\n                        \"name\": \"Cycle 41\",\n                        \"startsAt\": \"2026-09-29T00:00:00\",\n                        \"endsAt\": \"2026-10-13T00:00:00\"\n                    },\n                    \"state\": {\n                        \"name\": \"Todo\"\n                    },\n                    \"team\": {\n                        \"name\": \"Platform\"\n                    }\n                },\n                {\n                    \"id\": \"i-grw-401\",\n                    \"identifier\": \"GRW-1\",\n                    \"title\": \"Resolve duplicate charge on renewal\",\n                    \"priority\": 1.0,\n                    \"cycle\": {\n                        \"id\": \"c-grw-14\",\n                        \"name\": \"Cycle 14\",\n                        \"startsAt\": \"2026-09-28T00:00:00\",\n                        \"endsAt\": \"2026-10-12T00:00:00\"\n                    },\n                    \"state\": {\n                        \"name\": \"Todo\"\n                    },\n                    \"team\": {\n                        \"name\": \"Growth\"\n                    }\n                },\n                {\n                    \"id\": \"i-mob-501\",\n                    \"identifier\": \"MOB-1\",\n                    \"title\": \"Investigate renewal push notification failure\",\n                    \"priority\": 3.0,\n                    \"cycle\": {\n                        \"id\": \"c-mob-14\",\n                        \"name\": \"Cycle 14\",\n                        \"startsAt\": \"2026-09-29T00:00:00\",\n                        \"endsAt\": \"2026-10-13T00:00:00\"\n                    },\n                    \"state\": {\n                        \"name\": \"Todo\"\n                    },\n                    \"team\": {\n                        \"name\": \"Mobile\"\n                    }\n                },\n                {\n                    \"id\": \"i-web-201\",\n                    \"identifier\": \"WEB-1\",\n                    \"title\": \"Fix subscription renewal race condition\",\n                    \"priority\": 1.0,\n                    \"cycle\": {\n                        \"id\": \"c-web-14\",\n                        \"name\": \"Cycle 14\",\n                        \"startsAt\": \"2026-09-29T00:00:00\",\n                        \"endsAt\": \"2026-10-13T00:00:00\"\n                    },\n                    \"state\": {\n                        \"name\": \"Todo\"\n                    },\n                    \"team\": {\n                        \"name\": \"Web\"\n                    }\n                }\n            ]\n        }\n    }\n}"}
+
+#### Step 17
+Reasoning: There are 3 cycles named "Cycle 14" that include Priya's issues:
+- c-grw-14: starts 2026-09-28 (Growth)
+- c-mob-14: starts 2026-09-29 (Mobile), issue MOB-1 priority 3.0 (Urgent)
+- c-web-14: starts 2026-09-29 (Web), issue WEB-1 priority 1.0 (Urgent in Linear? priority 3 = Urgent, 2 = High, 1 = Normal, 0 = No priority)
+
+Linear's priority mapping: 0 = No priority, 1 = Low, 2 = Medium, 3 = High, 4 = Urgent. Actually, in Linear, priority 0 = no priority, 1 = low, 2 = medium, 3 = high, 4 = urgent.
+
+In other words, priority 3.0 = High, not Urgent. Hmm. Both MOB-1 and WEB-1 have priority 3.0. Neither of them is Urgent (4).
+
+The user is saying "includes Urgent issues assigned to Priya Nair." Hmm. Neither of the 2 cycles starting on Sept 29 has an issue with priority 4. However, there's also the possibility that "Urgent" is a label rather than a priority. Let me check the labels on those issues.
+
+I found that both candidate cycles have priority-3 issues assigned to Priya, so I'll check the labels to clarify if "Urgent" refers to something else.
+Command: curl -s https://api.linear.app/graphql -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/json" -d '{"query":"{ mob: issue(id: \"i-mob-501\") { id title priority labels { name } } web: issue(id: \"i-web-201\") { id title priority labels { name } } }"}' | python3 -m json.tool
+Response: {"status": "success", "stdout": "{\n    \"errors\": [\n        {\n            \"message\": \"Cannot query field 'name' on type 'IssueLabelConnection'.\",\n            \"locations\": [\n                {\n                    \"line\": 1,\n                    \"column\": 60\n                }\n            ]\n        },\n        {\n            \"message\": \"Cannot query field 'name' on type 'IssueLabelConnection'.\",\n            \"locations\": [\n                {\n                    \"line\": 1,\n                    \"column\": 126\n                }\n            ]\n        }\n    ]\n}"}
+
+#### Step 18
+Reasoning: The cycle.issues field seems to be broken (returns null). I can use the IssueFilter `cycle` input. Let me try filtering by cycle id, assignee priya, and priority... Actually, the user is saying "Urgent issue assigned to Priya Nair." In Linear, the priority enum is: None=0, Low=1, Medium=2, High=3, Urgent=4. But here MOB-1 shows priority 3.0 (High?) and WEB-1 shows 1.0? Hmm, this mapping might be different in this mock. Actually, in Linear's API, priority: 0 = No priority, 1 = Low, 2 = Medium, 3 = High, 4 = Urgent.
+
+MOB-1: priority 3.0 = High. WEB-1: priority 1.0 = Low. Hmm, neither of them is 4 (Urgent).
+
+Wait — maybe in this mock API the numbering is different. Let me check all issues with priority 4, or check the labels "Urgent." Let me try querying issues with a priority filter of 4.
+Command: curl -s https://api.linear.app/graphql -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/json" -d '{"query":"{ issues(filter: { assignee: { id: { eq: \"u-priya\" } }, priority: { eq: 4 } }, first: 100) { nodes { id identifier title priority labels { name } cycle { id name } } } }"}' | python3 -m json.tool
+Response: {"status": "success", "stdout": "{\n    \"errors\": [\n        {\n            \"message\": \"Cannot query field 'name' on type 'IssueLabelConnection'.\",\n            \"locations\": [\n                {\n                    \"line\": 1,\n                    \"column\": 140\n                }\n            ]\n        }\n    ]\n}"}
+
+#### Step 19
+Reasoning: The label query needs nodes. Also, check whether a label called "Urgent" exists. Let me try querying issueLabels.
+Command: curl -s https://api.linear.app/graphql -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/json" -d '{"query":"{ issueLabels(first: 100) { nodes { id name team { name } } } }"}' | python3 -m json.tool
+Response: {"status": "success", "stdout": "{\n    \"data\": {\n        \"issueLabels\": {\n            \"nodes\": []\n        }\n    }\n}"}
+
+#### Step 20
+Reasoning: Labels don't exist — therefore "Urgent" = priority 3 (Urgent in Linear's standard priority scheme: 0 None, 1 Low, 2 Medium, 3 High, 4 Urgent). Hmm, wait — in actual Linear, 3 = High, 4 = Urgent. But here both of Priya's Cycle 14 issues (MOB-1, WEB-1) have priority 3. Let me check the priority names. In Linear's standard: 0=None, 1=Low, 2=Medium, 3=High, 4=Urgent.
+
+But in this test environment, the priority mapping might be different, or there might be other issues I'm not seeing. Let me list all issues in the two cycles regardless of assignee, and check whether any of them have an "Urgent" priority assigned to Priya. Priya's issues are only the 4 that were displayed. Two of them are in the September 29 cycles: MOB-1 (p3) and WEB-1 (p3). Hmm, both are priority 3.
+
+Wait — could it be that in this mock environment, the priority scale is 0=Low, 1=Medium, 2=High, 3=Urgent? In that case, both would be Urgent. Still ambiguous.
+
+Let me check what priority values exist across all issues in both cycles, and also check the enum names. I'll query all issues in the two cycles with priority and assignee included.
+
+No labels exist. Let me see all issues in both candidate cycles to disambiguate.
+Command: curl -s https://api.linear.app/graphql -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/json" -d '{"query":"{ mob: issues(filter: { cycle: { id: { eq: \"c-mob-14\" } } }, first: 100) { nodes { id identifier title priority assignee { name } } } web: issues(filter: { cycle: { id: { eq: \"c-web-14\" } } }, first: 100) { nodes { id identifier title priority assignee { name } } } }"}' | python3 -m json.tool
+Response: {"status": "success", "stdout": "{\n    \"data\": {\n        \"mob\": {\n            \"nodes\": [\n                {\n                    \"id\": \"i-mob-501\",\n                    \"identifier\": \"MOB-1\",\n                    \"title\": \"Investigate renewal push notification failure\",\n                    \"priority\": 3.0,\n                    \"assignee\": {\n                        \"name\": \"Priya Nair\"\n                    }\n                },\n                {\n                    \"id\": \"i-mob-502\",\n                    \"identifier\": \"MOB-2\",\n                    \"title\": \"Fix urgent renewal outage alert noise\",\n                    \"priority\": 1.0,\n                    \"assignee\": {\n                        \"name\": \"Leo Park\"\n                    }\n                }\n            ]\n        },\n        \"web\": {\n            \"nodes\": [\n                {\n                    \"id\": \"i-web-201\",\n                    \"identifier\": \"WEB-1\",\n                    \"title\": \"Fix subscription renewal race condition\",\n                    \"priority\": 1.0,\n                    \"assignee\": {\n                        \"name\": \"Priya Nair\"\n                    }\n                },\n                {\n                    \"id\": \"i-web-202\",\n                    \"identifier\": \"WEB-2\",\n                    \"title\": \"Update onboarding email copy\",\n                    \"priority\": 3.0,\n                    \"assignee\": {\n                        \"name\": \"Leo Park\"\n                    }\n                }\n            ]\n        }\n    }\n}"}
+
+#### Step 21
+Reasoning: Two candidate cycles:
+- c-mob-14 (mobile, Cycle 14, starts 9/29): contains MOB-1 priority 3 assigned to Priya, and MOB-2 "Fix urgent renewal outage alert noise" priority 1 assigned to Leo.
+- c-web-14 (web, Cycle 14, starts 9/29): contains WEB-1 priority 1 assigned to Priya.
+
+"Urgent issue assigned to Priya Nair" — there is no label named Urgent. Priority in Linear: 0 = No priority, 1 = Urgent, 2 = High, 3 = Normal, 4 = Low. Therefore priority 1 = Urgent.
+
+MOB-1 is priority 3 = Normal assigned to Priya. WEB-1 is priority 1 = Urgent assigned to Priya.
+
+Therefore, the Urgent (priority 1) issue assigned to Priya is WEB-1 in c-web-14. The Mobile cycle has an issue with "urgent" in its title, but the assignee is Leo and the priority is also Urgent... hmm. MOB-2 "Fix urgent renewal outage alert noise" is priority 1 (Urgent) but the assignee is Leo Park, not Priya.
+
+So the disambiguating condition "Urgent issue assigned to Priya Nair":
+- Web cycle: WEB-1, priority 1 (Urgent), assignee Priya ✓
+- Mobile cycle: no Urgent issue assigned to Priya (MOB-1 is priority 3)
+
+Therefore, the target is c-web-14 (Web team, Cycle 14). Update endsAt to 2026-10-20.
+
+Check the cycleUpdate mutation. Let's take a look at the Mutation type.
+
+I found the matching cycle: **Cycle 14 (Web, c-web-14)** which contains WEB-1 "Fix subscription renewal race condition" assigned to Priya Nair. Now I'll update the end date to October 20.
+Command: curl -s https://api.linear.app/graphql -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/json" -d '{"query":"{ __type(name: \"Mutation\") { fields { name args { name type { name kind ofType { name } } } } } }"}' | python3 -c "
+import json,sys
+d=json.load(sys.stdin)
+for f in d['data']['__type']['fields']:
+    if 'ycle' in f['name']:
+        print(f['name'], [(a['name'], a['type']) for a in f['args']])
+"
+Response: {"status": "success", "stdout": "cycleArchive [('id', {'name': None, 'kind': 'NON_NULL', 'ofType': {'name': 'String'}})]\ncycleCreate [('input', {'name': None, 'kind': 'NON_NULL', 'ofType': {'name': 'CycleCreateInput'}})]\ncycleShiftAll [('input', {'name': None, 'kind': 'NON_NULL', 'ofType': {'name': 'CycleShiftAllInput'}})]\ncycleStartUpcomingCycleToday [('id', {'name': None, 'kind': 'NON_NULL', 'ofType': {'name': 'String'}})]\ncycleUpdate [('id', {'name': None, 'kind': 'NON_NULL', 'ofType': {'name': 'String'}}), ('input', {'name': None, 'kind': 'NON_NULL', 'ofType': {'name': 'CycleUpdateInput'}})]\nteamCyclesDelete [('id', {'name': None, 'kind': 'NON_NULL', 'ofType': {'name': 'String'}})]"}
+
+#### Step 22
+Reasoning: Let me check the CycleUpdateInput to confirm the field names for the end date.
+Command: curl -s https://api.linear.app/graphql -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/json" -d '{"query":"{ __type(name: \"CycleUpdateInput\") { inputFields { name type { name kind ofType { name } } } } }"}'
+Response: {"status": "success", "stdout": "{\"data\":{\"__type\":{\"inputFields\":[{\"name\":\"completedAt\",\"type\":{\"name\":\"DateTime\",\"kind\":\"SCALAR\",\"ofType\":null}},{\"name\":\"description\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\",\"ofType\":null}},{\"name\":\"endsAt\",\"type\":{\"name\":\"DateTime\",\"kind\":\"SCALAR\",\"ofType\":null}},{\"name\":\"name\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\",\"ofType\":null}},{\"name\":\"startsAt\",\"type\":{\"name\":\"DateTime\",\"kind\":\"SCALAR\",\"ofType\":null}}]}}}"}
+
+#### Step 23
+Reasoning: I need to set the endsAt field for the cycle with id c-web-14 to 2026-10-20T00:00:00, keeping in mind that the existing endsAt format ends at 00:00:00 (midnight, probably representing the exclusive end of the cycle, since a 14-day cycle starting 2026-09-29 ends on 2026-10-13). To stay consistent with the existing convention (endsAt is the midnight of the day after the last full day... actually, starting 09-29 and ending 10-13 is exactly 14 days, so endsAt = start + 14 days), I'll set it to 2026-10-20T00:00:00 as requested.
+Command: curl -s https://api.linear.app/graphql -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/json" -d '{"query":"mutation { cycleUpdate(id: \"c-web-14\", input: { endsAt: \"2026-10-20T00:00:00\" }) { id name startsAt endsAt success } }"}'
+Response: {"status": "success", "stdout": "{\"errors\":[{\"message\":\"Cannot query field 'id' on type 'CyclePayload'.\",\"locations\":[{\"line\":1,\"column\":84}]},{\"message\":\"Cannot query field 'name' on type 'CyclePayload'.\",\"locations\":[{\"line\":1,\"column\":87}]},{\"message\":\"Cannot query field 'startsAt' on type 'CyclePayload'.\",\"locations\":[{\"line\":1,\"column\":92}]},{\"message\":\"Cannot query field 'endsAt' on type 'CyclePayload'.\",\"locations\":[{\"line\":1,\"column\":101}]}]}"}
+
+#### Step 24
+Reasoning: I'm working through the GraphQL structure for CyclePayload—it has success and cycle fields, but I need to verify the exact field names since earlier attempts with nodes were breaking the connection.
+Command: curl -s https://api.linear.app/graphql -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/json" -d '{"query":"mutation { cycleUpdate(id: \"c-web-14\", input: { endsAt: \"2026-10-20T00:00:00\" }) { success } }"}'
+Response: {"status": "success", "stdout": "{\"data\":{\"cycleUpdate\":{\"success\":true}}}"}
+
+#### Step 25
+Reasoning: Now, let me check the new end date.
+Command: curl -s https://api.linear.app/graphql -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/json" -d '{"query":"{ cycle(id: \"c-web-14\") { id name startsAt endsAt } }"}'
+Response: {"status": "success", "stdout": "{\"data\":{\"cycle\":{\"id\":\"c-web-14\",\"name\":\"Cycle 14\",\"startsAt\":\"2026-09-29T00:00:00\",\"endsAt\":\"2026-10-20T00:00:00\"}}}"}
+
+#### Step 26
+Reasoning: Done. Updated the end date of Cycle 14 (Web) from October 13 to October 20. Let me briefly summarize the disambiguation.
+
+Done. Moved the end date to **October 20** for Cycle 14.
+
+Quick note on the match: there were two "Cycle 14"s starting Sept 29 (Mobile and Web). The Web one (c-web-14) contained the urgent (priority 1) issue **WEB-1 "Fix subscription renewal race condition"** assigned to Priya Nair, so that's the one I updated — endsAt is now `2026-10-20T00:00:00` (previously Oct 13).
+Command: 
+Response: null
+
+## Final answer
+Done. Moved the end date to **October 20** for Cycle 14.
+
+Quick note on the match: there were two "Cycle 14"s starting Sept 29 (Mobile and Web). The Web one (c-web-14) contained the urgent (priority 1) issue **WEB-1 "Fix subscription renewal race condition"** assigned to Priya Nair, so that's the one I updated — endsAt is now `2026-10-20T00:00:00` (previously Oct 13).
+
+## State diff
+- UPDATE cycles `c-web-14`: {"endsAt": ["2026-10-13T00:00:00", "2026-10-20T00:00:00"]}
+
+## Mechanical attribution (from the diff and write commands; may be wrong)
+Acted-on records per reference: {"r1": ["c-web-14"]}. Provisional outcome: correct. Provisional exposed facts: [].
+
+Give your verdict for this trial.

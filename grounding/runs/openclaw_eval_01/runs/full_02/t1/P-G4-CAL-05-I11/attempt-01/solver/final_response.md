@@ -1,0 +1,1 @@
+Done. I found "Travel Board" (team-travel-board@northwind.example) — the calendar you own that matches your "Team Travel" label — and set it to hidden in your calendar list. It's no longer shown, though its events will still appear in your calendar view since it remains selected; let me know if you want it fully deselected/unchecked too.

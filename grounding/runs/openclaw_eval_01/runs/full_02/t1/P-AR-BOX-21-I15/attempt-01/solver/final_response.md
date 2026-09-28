@@ -1,0 +1,1 @@
+Nope — no such folder. The **Legal Hold** collection contains only one item: a file named **Insurance A.pdf**. There are no folders in it at all, so nothing matches the created-on-June 3 / Priya-modified / 3-items criteria. Nothing was tagged.

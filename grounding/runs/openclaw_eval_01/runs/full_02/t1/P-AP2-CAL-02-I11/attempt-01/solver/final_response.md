@@ -1,0 +1,1 @@
+I checked your calendar list (including hidden and deleted entries) — you only have two calendars there: your primary one (jordan.lee@northwind.example) and **Marketing**. There's no calendar named "Design Team" in your list, so there's nothing to hide. If it was ever shared with Kenji Sato, it's not on your calendar list under that name (or any other), so no action was taken.

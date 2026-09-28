@@ -1,0 +1,1 @@
+Done. I moved **Vendor sync: Packaging** (Thu June 21, 9:00–9:30 AM) to **Room 2C** — that was the only Thursday vendor sync with Dana Whitfield as an optional attendee (on the others she's either the organizer or required). Attendee notifications were sent.

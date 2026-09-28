@@ -1,0 +1,1 @@
+Done. The **Product Launch** hub (id 8100) that contains the Field Photos folder and Launch Plan.pdf now has its description set to **"Archived launch kit"**. (There were four same-titled hubs — I matched by contents: the other one with a Field Photos folder held Launch Budget.pdf instead, so it was excluded.)

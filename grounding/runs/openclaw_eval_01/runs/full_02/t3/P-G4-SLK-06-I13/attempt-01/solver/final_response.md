@@ -1,0 +1,1 @@
+Found Diego's message — "Gateway rollback finished ahead of schedule." in #deployments — but it currently has **5 eyes reactions** (Aisha, Leo, Maya, Omar, Priya), not exactly 3. So per your condition, I didn't add a thumbsup. Let me know if you want me to react anyway.

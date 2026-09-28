@@ -1,0 +1,1 @@
+Found it and done. The deploy-freeze message in #incidents — "Reminder: deploy freeze starts Monday for all services." — was posted by **Leo Park** (@leo.park). Note: its thread had 3 replies (4 messages including the original), but it's the only deploy-freeze post in the channel, so this was clearly the one. I've invited him to #incident-response. ✅

@@ -1,0 +1,1 @@
+Nope — I checked the thread in #launch-prep. The "Reply here once you've signed off on tonight's payments launch checklist" thread only has one reply so far: Omar Haddad's "Signed off on my end, checklist looks good." Leo Park hasn't replied in that thread, so there's nothing for me to react to.

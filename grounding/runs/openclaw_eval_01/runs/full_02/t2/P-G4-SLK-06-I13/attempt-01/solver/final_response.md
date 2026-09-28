@@ -1,0 +1,1 @@
+Didn't add it — the condition wasn't met. Diego Alvarez's gateway rollback message in #deployments ("Gateway rollback finished ahead of schedule.") has **5** eyes reactions (Aisha, Leo, Maya, Omar, Priya), not 3. Let me know if you still want the thumbsup added.

@@ -1,0 +1,1 @@
+There isn't one. Your calendar list has only two calendars — your personal one (jordan.lee@northwind.example) and **Marketing** — and neither has any sharing rules at all (no writer access for Kenji Sato, no one else either). So there's no 'Design Team' calendar to hide; nothing was changed.

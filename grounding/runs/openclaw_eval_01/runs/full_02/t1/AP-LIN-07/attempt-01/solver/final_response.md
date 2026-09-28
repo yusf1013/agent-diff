@@ -1,0 +1,1 @@
+Done. Renamed the Growth team's "Draft notes" document about the referral program pilot to **"Referral pilot — launch notes"** (verified: title now reads "Referral pilot — launch notes"). I left the other Growth "Draft notes" (office move logistics) untouched.

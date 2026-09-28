@@ -1,0 +1,1 @@
+Done. There were two "Client Docs" hubs in your Box account — I used the one Dana Whitfield last updated (June 20). I found **Vendor Agreement.pdf** (not the draft) inside it and added the tag `renewed`. The file's tags now show `["renewed"]`, updated with an ETag check so no conflicting edits were clobbered.

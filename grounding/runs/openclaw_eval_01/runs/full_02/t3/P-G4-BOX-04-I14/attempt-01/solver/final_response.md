@@ -1,0 +1,1 @@
+Done. The PDF **"Q3 budget variance.pdf"** in Budget Reviews had a review task created by Leo Park and assigned to Maya Chen, with her resolution state "approved" — so it matched. Added the **q3-signoff** tag to it (the file had no prior tags).

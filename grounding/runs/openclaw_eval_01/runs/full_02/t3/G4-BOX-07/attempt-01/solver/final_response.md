@@ -1,0 +1,1 @@
+Done. There were four "Product Launch" hubs in Box — I checked each one's contents and updated the one that contains both the **Field Photos** folder and the **Launch Plan.pdf** file (hub id 8100). Its description is now "Archived launch kit".

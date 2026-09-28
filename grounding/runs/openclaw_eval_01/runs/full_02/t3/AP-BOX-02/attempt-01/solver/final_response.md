@@ -1,0 +1,1 @@
+Done. Added the **needs-legal-review** tag to **Vendor Agreement.pdf** (in Procurement) — created by Dana Whitfield on June 3, with Priya Nair's "Approved the terms in section 4." comment on June 10. Tag confirmed in the API response.

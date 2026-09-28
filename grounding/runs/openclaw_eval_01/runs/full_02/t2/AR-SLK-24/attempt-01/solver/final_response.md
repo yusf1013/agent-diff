@@ -1,0 +1,1 @@
+Done 👀 — added the eyes reaction to Aisha's message in #incidents about the 504s tied to the payment gateway timeout after the last deploy. She's the only #payments-oncall member who posted a payment gateway timeout message there (the others — Maya, Omar, Leo, Diego — aren't in that channel).

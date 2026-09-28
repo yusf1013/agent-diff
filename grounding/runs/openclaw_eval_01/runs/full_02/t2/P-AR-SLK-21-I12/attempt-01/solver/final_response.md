@@ -1,0 +1,1 @@
+There's no message from Leo Park in #incidents on Tuesday (Sep 22). The only message in that channel from that day was from Omar — "I'm looking into the DB connection pool now." — so I didn't react to anything.

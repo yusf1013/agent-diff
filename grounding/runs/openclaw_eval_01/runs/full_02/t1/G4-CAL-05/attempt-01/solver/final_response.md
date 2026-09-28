@@ -1,0 +1,1 @@
+Done — "Team Travel" (`team-travel@northwind.example`) is now hidden from your calendar list. (Note: there was a second calendar with the same name that was already hidden, so no change was needed for that one.)

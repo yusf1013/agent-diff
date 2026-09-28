@@ -1,0 +1,1 @@
+Done. The attachment on ENG-14 (Homepage redesign) — the one linking to `https://www.dropbox.com/s/9f8g7h3s2mv/marketing-brief.pdf` — is now titled **"Marketing brief (archived)"**. Verified with a follow-up read; there were other "Marketing brief" attachments on different issues (ENG-15, MOB-14), but I left those untouched.

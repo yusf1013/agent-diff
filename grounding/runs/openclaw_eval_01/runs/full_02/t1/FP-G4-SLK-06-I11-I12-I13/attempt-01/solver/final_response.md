@@ -1,0 +1,1 @@
+I checked #deployments — Diego has three gateway rollback messages there, but none of them have any reactions on them (no 👀 at all, let alone exactly 3). So no message matched your condition, and I didn't add a thumbsup. Want me to add it to one of them anyway?

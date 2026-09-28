@@ -1,0 +1,1 @@
+No match. The only Done-state Web issue assigned to Priya Nair completed on Oct 2, 2026 is **WEB-3**, but its description says "Follow the standard release checklist." — no mention of a rollback window. Since it doesn't meet all your conditions, I didn't change its priority. If you meant WEB-3 anyway, say the word and I'll set it to Urgent.

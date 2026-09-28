@@ -1,0 +1,1 @@
+Done — added 👀 to Ana Torre's "Release cut is ready" message in #releases. There were two messages with that exact text from ana.torre@northwind.example, but only one had a bot reaction (Deploy Bot's 🎉) — that's the one I reacted to.

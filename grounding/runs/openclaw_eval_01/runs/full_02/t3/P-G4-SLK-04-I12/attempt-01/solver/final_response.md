@@ -1,0 +1,1 @@
+I checked #launch-readiness — there's no launch checklist card from Maya Chen listing rollback steps. Her card is a verification checklist (confirm monitors, note owners), and the only other cards are from Leo (cleanup steps) and Diego (handoff notes). A search for "rollback" across the workspace also came up empty, so there's nothing to react to.

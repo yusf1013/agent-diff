@@ -1,0 +1,1 @@
+Nope — I checked the #launch-prep thread ("Reply here once you've signed off on tonight's payments launch checklist," started by Diego Alvarez). The only reply in it is from Omar Haddad: "Signed off on my end, checklist looks good." Leo Park (leo.park) hasn't replied there — in fact, he has no messages in the channel at all, so there's nothing to react to. Nothing was changed.

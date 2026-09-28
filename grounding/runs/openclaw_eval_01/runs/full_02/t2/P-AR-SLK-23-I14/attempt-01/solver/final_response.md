@@ -1,0 +1,1 @@
+✅ Archived **#onboarding-design-pod** — purpose: "Onboarding new hires for the design pod," with Diego Alvarez as a member. (The other onboarding channel, #orientation-schedule, didn't have him, so it was left alone.)

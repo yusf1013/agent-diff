@@ -1,0 +1,1 @@
+Done 🚀 Added a rocket reaction to Leo's "Update: payment gateway outage — rollback deployed, monitoring error rates now" message in #incidents — that's the outage message Diego Alvarez reacted to with fire. Verified it's there now (rocket + fire on that message).

@@ -1,0 +1,1 @@
+No match. The only PDF in the Product Specs folder is **Payment Redesign Spec.pdf** (id 8217) — its description is "Design spec for the payment redesign flow" (no mention of the mobile redesign), and it's 3,000,000 bytes (~2.9 MB), so it also fails the under-2 MB condition. The file named "Mobile Redesign Specs" is an .xlsx, not a PDF. I didn't add any tags.

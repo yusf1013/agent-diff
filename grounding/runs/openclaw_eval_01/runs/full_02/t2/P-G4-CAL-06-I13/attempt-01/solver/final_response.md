@@ -1,0 +1,1 @@
+I checked Leo Park's calendar (cal-leo-park@northwind.example, time zone America/New_York) — it's completely empty, so there's no Thursday quarterly planning lunch (or any other event) on it. Nothing to move.

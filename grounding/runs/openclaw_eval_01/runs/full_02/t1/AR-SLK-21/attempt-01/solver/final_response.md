@@ -1,0 +1,1 @@
+Done ✅ Reacted with :eyes: to Leo Park's message in #incidents from Tuesday (Sep 22, 08:10 EDT): "Rolled back the payment gateway config after the spike." — verified the reaction is live on the message.

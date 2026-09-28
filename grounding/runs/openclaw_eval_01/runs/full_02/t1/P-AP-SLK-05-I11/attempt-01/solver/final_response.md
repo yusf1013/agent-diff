@@ -1,0 +1,1 @@
+Checked: the only channels in the workspace are `beta-ops` (4 members) and `random-chat` (3 members), and the workspace owner (Nina Torres) isn't a member of either. So there's no channel she belongs to with exactly four members — nothing was archived.

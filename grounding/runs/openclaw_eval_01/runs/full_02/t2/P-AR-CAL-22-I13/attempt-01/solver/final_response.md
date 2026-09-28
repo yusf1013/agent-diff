@@ -1,0 +1,1 @@
+Nope — there's no matching calendar. The only Ops Rotation calendar you own is **"Ops Rotation – LATAM"**, and its description is "Tracks quarterly maintenance windows for LATAM data centers." — nothing about weekend on-call coverage. So I didn't change anything. Let me know if you'd like the timezone changed on that one instead.

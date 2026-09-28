@@ -1,0 +1,1 @@
+Done. The deploy-freeze message in #incidents was Omar Haddad's (the "Status update on the payments rollout" post with the heads-up block — exactly 4 thread replies, all his rollout updates). I've invited him to #incident-response; the channel now has 2 members.

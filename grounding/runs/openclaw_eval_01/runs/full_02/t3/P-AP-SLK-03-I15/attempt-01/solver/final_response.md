@@ -1,0 +1,1 @@
+There's no message about a rollout timeline in #eng-updates — I checked the channel history (only two messages there, neither related) and ran a search for "rollout timeline" in the channel, which returned zero results. So I didn't add the reaction.

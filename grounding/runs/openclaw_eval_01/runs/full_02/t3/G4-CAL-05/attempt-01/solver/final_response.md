@@ -1,0 +1,1 @@
+Done — hid **Team Travel** (`team-travel@northwind.example`), the one you own. Note you also have a separate **Team Travel** shared calendar (`team-travel-ext@...`, role: writer) which I left visible. Say the word if you want that hidden too.

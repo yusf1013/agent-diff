@@ -1,0 +1,1 @@
+Done — set the topic of the **#release-ops** private channel (where Diego Alvarez posted the gateway rollback message: "Gateway rollback finished on prod, the error rate is back to baseline.") to **Post-release monitoring**, and verified it took.

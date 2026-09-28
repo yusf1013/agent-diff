@@ -1,0 +1,1 @@
+There isn't one. The only private channel with a gateway-rollback message is `#deploy-queue`, and that message ("The gateway rollback runbook still needs a second reviewer before Friday.") is from Leo Park, not Diego Alvarez. Diego's only message in that channel is about Friday's deploy checklist — nothing about the gateway rollback. So I didn't change any topic.

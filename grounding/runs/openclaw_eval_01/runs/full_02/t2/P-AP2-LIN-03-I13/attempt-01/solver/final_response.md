@@ -1,0 +1,1 @@
+Nope, no match. The team whose key starts with GR is **Growth Analytics** (key `GRA`) with the Q3 OKR pilot rollout description — but it's **public**. The only private team is Sales (key `SLS`), whose description doesn't mention the Q3 OKR pilot. So I didn't rename anything.

@@ -1,0 +1,1 @@
+Done — unarchived **#incident-checkout** (topic: "Checkout outage retro notes and resolution timeline"). There was also #incidents-auth, but that one's for the auth rate-limiting incident and was never archived.

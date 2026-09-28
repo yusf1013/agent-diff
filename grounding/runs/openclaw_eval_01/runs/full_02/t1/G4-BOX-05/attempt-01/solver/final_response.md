@@ -1,0 +1,1 @@
+Done. I found **Q3 revenue summary.pdf** in the Finance Reports folder — the only PDF owned by Maya Chen that was last modified by Leo Park — and added the tag **q3-close** to it. Confirmed the tag is now on the file.

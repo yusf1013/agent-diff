@@ -1,0 +1,1 @@
+Nope — no such message in #incidents. I pulled the full channel history (only 6 messages total) and searched for "freeze"; the only thread with 4 replies is Omar's "Status update on the payments rollout" thread, which isn't about a deploy freeze. So I didn't invite anyone to #incident-response. If the message is elsewhere or very old, tell me where and I'll dig again.

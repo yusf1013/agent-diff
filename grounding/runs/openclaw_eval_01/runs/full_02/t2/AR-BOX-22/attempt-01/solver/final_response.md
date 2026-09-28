@@ -1,0 +1,1 @@
+Done. Added the tag **renewed** to `Vendor Agreement.pdf` in the "Client Docs" hub that Dana Whitfield last updated (hub 9001, last updated 2026-06-20 — note there's a second "Client Docs" hub last updated by Sam Rivera, which I left alone). The file had no prior tags, and the API confirmed it now shows `tags: ["renewed"]`.

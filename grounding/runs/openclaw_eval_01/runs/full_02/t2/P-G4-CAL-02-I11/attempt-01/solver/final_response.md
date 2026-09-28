@@ -1,0 +1,1 @@
+I couldn't find a sprint retrospective in Room 5B created by Kenji Sato. The closest match is "Sprint retrospective follow-up" (Room 5B, created by Kenji Sato, June 21 at 2 PM), but since that's a different event, I left it untouched. Let me know if you actually meant that one.

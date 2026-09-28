@@ -1,0 +1,1 @@
+Done — there was one: **"Client Success Renewals"** (`cs-renewals@northwind.example`). It's now hidden, so it won't appear in your calendar list anymore (events on it stay untouched, and you can unhide it anytime from the calendar list settings).

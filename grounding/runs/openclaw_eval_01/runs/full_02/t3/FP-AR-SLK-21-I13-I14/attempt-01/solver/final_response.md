@@ -1,0 +1,1 @@
+Nope — I checked. #incidents had no messages at all on Tuesday (Sep 22), and searching Leo Park's posts in that channel turns up zero. Nothing to react to, so I left it alone. If you can point me at the message or an approximate time (maybe a different day?), I'll add the :eyes: right away.

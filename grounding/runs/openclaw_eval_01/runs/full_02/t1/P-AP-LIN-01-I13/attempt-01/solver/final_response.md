@@ -1,0 +1,1 @@
+No such issue exists. I found exactly one Web issue in **Done** assigned to Priya Nair that was completed on October 2, 2026 — **WEB-3 "Payment migration verification"** — but its description just says "Follow the standard release checklist." No description mentions a rollback window, so I left the priority untouched (it's currently High).

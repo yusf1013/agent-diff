@@ -1,0 +1,1 @@
+Done — 'Client Success' (cs-east@northwind.example) is now hidden from your calendar list. It won't show up in the list anymore, though it's still subscribed, so you can unhide it anytime if you want it back.

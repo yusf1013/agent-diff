@@ -1,0 +1,1 @@
+I checked #incidents and there's no payment gateway outage message to react to. The channel only has a single message (Aisha's standup reminder, no threads), and a search for "payment gateway outage" in the channel came up empty — so Diego's fire reaction isn't attached to anything I can find either. Nothing was reacted to.

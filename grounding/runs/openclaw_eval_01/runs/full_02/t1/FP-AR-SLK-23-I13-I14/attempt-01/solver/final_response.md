@@ -1,0 +1,1 @@
+No matching channel found. I checked all private channels in your Slack workspace (including archived ones) — there's only one: **#budget-planning** (purpose: "Quarterly budget planning and forecast reviews"). Its purpose doesn't mention onboarding, so there's nothing to archive.

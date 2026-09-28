@@ -1,0 +1,1 @@
+No luck — Leo Park hasn't posted in #incidents. The channel's entire history is just two messages from Tuesday, both from others (Diego asking about checkout latency at 11:30, Omar looking into the DB connection pool at 12:40). Nothing from Leo, so there's nothing to react to.

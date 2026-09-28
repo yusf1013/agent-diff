@@ -1,0 +1,1 @@
+Nope — no match. There's exactly one payment gateway outage message in #incidents (Priya: "Payment gateway outage: latency graphs attached, still watching."), and Diego Alvarez reacted to it with 👀 eyes, not 🔥 fire. So no rocket added.

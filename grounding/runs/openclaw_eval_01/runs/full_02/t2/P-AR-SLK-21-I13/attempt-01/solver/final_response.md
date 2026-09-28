@@ -1,0 +1,1 @@
+I checked — there's nothing to react to. Leo Park hasn't posted in #incidents (or anywhere else in the workspace) on Tuesday. The #incidents channel is completely empty, and a workspace-wide search for his messages returns zero results.

@@ -1,0 +1,1 @@
+✅ Done — small wrinkle, though: your 1:1 DM with Maya is actually empty. Her deploy checklist message ("Deploy checklist for Friday is ready: env, flags, rollback plan. Leo looping you in.") is in the group DM **maya-leo-group** (you, Maya, and Leo). I added the 👀 reaction to it there.

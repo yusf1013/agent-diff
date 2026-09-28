@@ -1,0 +1,1 @@
+I checked your Box account: the **Legal Hold** collection exists (id 9600) but contains **zero items**. Since no folders are in that collection at all, there's no folder matching your criteria (created June 3, 2026, last modified by Priya Nair, 3 direct items), and I didn't add the tag.

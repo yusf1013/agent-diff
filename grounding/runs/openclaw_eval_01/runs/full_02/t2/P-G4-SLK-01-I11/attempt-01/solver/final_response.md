@@ -1,0 +1,1 @@
+Done 👀 — added the eyes reaction to Ana Torres's "Release cut is ready" message in #releases (it already had the bot's 🎉). One small note: her email is actually ana.torres@northwind.example — "torre" without the s didn't match anything.
