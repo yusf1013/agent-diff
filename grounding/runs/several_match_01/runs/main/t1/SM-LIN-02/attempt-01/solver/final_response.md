@@ -1,0 +1,1 @@
+Assigned all 4 open Bug issues in the Payments team and its sub-teams (Payments Mobile, Payments Web) to Priya Nair: PAY-1, PAY-2, PAYM-1, and PAYW-1. Correctly excluded non-Bug issues (PAY-4, PAYM-2), closed issues (PAY-3 Done, PAYW-2 Canceled), and out-of-scope team issues (PLAT-1).
