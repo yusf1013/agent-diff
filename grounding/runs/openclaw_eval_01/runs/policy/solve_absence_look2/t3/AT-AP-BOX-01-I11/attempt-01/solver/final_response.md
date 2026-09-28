@@ -1,0 +1,3 @@
+Done. Added the **ready-for-review** tag to **Discovery Custodian Files** (folder 9002) in the Legal Archive — confirmed in the updated response (`tags: ["ready-for-review"]`, etag 59).
+
+One caveat: of the two subfolders in the Legal Archive, this is the only one with a shared link open to anyone (`access: open`) and modified after Aug 15, 2026 (2026-08-18). The other, Discovery Working Notes, has no shared link at all, so 9002 is clearly the intended match. However, its reported size is 760,000,000 bytes (760 MB decimal / ~728 MiB), just short of 800 MB. If you expected it to be over 800 MB, let me know — but given the other two criteria, I'm confident this was the right folder.

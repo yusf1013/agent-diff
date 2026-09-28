@@ -1,0 +1,1 @@
+Done. I found the "Client Docs" hub last updated by Dana Whitfield (there are two hubs with that name; the other one was last touched by Sam Rivera), and the `Vendor Agreement.pdf` in it is the one created/owned by Dana (file ID 9103). Added the `renewed` tag and verified — the file now shows `tags: ["renewed"]`.

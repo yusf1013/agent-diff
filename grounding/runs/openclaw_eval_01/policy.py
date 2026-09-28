@@ -18,7 +18,9 @@ this study's agent. No unit is drawn again and no order changes.
 - **A look** writes its cases to runs/policy/<mode>_look<N>/<domain>/: the cell's valid units between the previous
   look and this one (11, 18, 25). Run them with run.py (3 trials), judge them with judge v2, then `decide`.
 - **decide** gives each cell's statistic and decision by autogen_02's rules (`sampler.cell_stats` on one pre-chosen
-  trial per unit, looks after 11, 18 and 25 valid units), from this study's verdicts only.
+  trial per unit, looks after 11, 18 and 25 valid units), from this study's verdicts only. As in autogen_02's
+  `sampler.decide`, a cell still undecided at 25 goes on to its last valid unit, and once Phase 4's units are in, each
+  writer's units are also reported apart (amendment 5).
 """
 from __future__ import annotations
 
@@ -143,6 +145,11 @@ def decide(mode: str, verdict_dirs: list[Path]) -> dict:
         else:
             decision = "continue to the next look"
         result[cell] = {**stats, "valid_units": len(valid), "look_reached": reached, "decision": decision}
+        if any(u.get("source") == "phase4" for u in valid[:reached]):  # amendment 5: the two writers' units apart
+            for name, keep in (("phase3_only", lambda u: u.get("source") != "phase4"),
+                               ("phase4_only", lambda u: u.get("source") == "phase4")):
+                part = sampler.cell_stats([u for u in valid[:reached] if keep(u)], outcomes)
+                result[cell][name] = {k: part[k] for k in ("draws", "failures", "rate", "lower_90", "upper_90")}
     return result
 
 

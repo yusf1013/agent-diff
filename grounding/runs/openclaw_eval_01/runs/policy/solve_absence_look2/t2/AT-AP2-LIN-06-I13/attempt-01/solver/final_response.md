@@ -1,0 +1,1 @@
+Done. The attachment on ENG-14 (Homepage redesign) — the one linking to the Dropbox-synced file at `https://files.example.com/vault/dropbox-sync/marketing-brief.pdf` — is now titled **"Marketing brief (archived)"**. Verified via read-back; the rename is live as of just now.
