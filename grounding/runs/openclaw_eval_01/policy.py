@@ -34,7 +34,8 @@ this study's agent. No unit is drawn again and no order changes.
   validity by `rulings.test_exclusion`), except Box units the first pass already ran. Box's ids are numbers, so its
   units are unchanged and their first-pass verdicts stand.
 - **decide-population** applies the working rule, fixed here before the runs (`pooled_decision`): all runs of every
-  valid unit count, and units, not runs, are the independent draws. Verdicts come from --verdicts, and for Box units
+  valid unit count, and units, not runs, are the independent draws. A trial whose solver ran out its 8-minute budget
+  (limiter waits excluded) is a failure, not a void (the PI, 2026-09-28, before any population verdict). Verdicts come from --verdicts, and for Box units
   from --first-pass. It also writes the other readings the step-5 investigation compares (`readings`).
 """
 from __future__ import annotations
@@ -179,6 +180,30 @@ SIXB_UNITS = HERE.parent / "completion_01" / "suite" / "units"
 EXTENSION = OUT / "plan_extension.json"
 EXTENSION_SEED = 2026092803
 THRESHOLD, ALPHA, RESAMPLES, SEED = 0.8, 0.10, 20_000, 20260928
+BUDGET_S = 480  # the PI, 2026-09-28: a solver that runs out 8 minutes (limiter waits excluded) fails the trial
+
+
+def over_budget(attempt: Path) -> bool:
+    """The trial ran out the solver's 8-minute budget: its turn's time minus rate-limiter waits passed 480 s. OpenClaw's
+    own limit is 600 s, so a trial can pass the budget and still finish; it counts as timed out all the same."""
+    summary = json.loads((attempt / "execution_summary.json").read_text())
+    if summary.get("status") != "completed":
+        return False
+    turn = (summary.get("turn_durations_s") or [0])[0]
+    return turn - ((summary.get("usage") or {}).get("limiter_wait_s") or 0) > BUDGET_S
+
+
+def population_outcomes(verdict_dirs: list[Path]) -> dict:
+    """unit -> {trial: outcome} from judge v2's verdicts, with every trial over the solver's budget counted as a
+    failure ("incorrect"): judge v2 calls a timeout not_established, which would void it."""
+    out = sampler.verdict_outcomes(verdict_dirs)
+    for d in verdict_dirs:
+        for path in d.glob("*/*/*/verdict.json"):
+            v = json.loads(path.read_text())
+            attempt = Path(v.get("attempt", ""))
+            if attempt.exists() and over_budget(attempt):
+                out[path.parent.name][path.parent.parent.name] = "incorrect"
+    return out
 
 
 def unit_case(u: dict) -> dict:
@@ -349,8 +374,8 @@ def population_6b(mode: str) -> Path:
 
 def decide_population(mode: str, verdict_dirs: list[Path], first_pass_dirs: list[Path]) -> dict:
     doc = population_plan(mode)
-    outcomes = sampler.verdict_outcomes(verdict_dirs)
-    earlier = sampler.verdict_outcomes(first_pass_dirs)
+    outcomes = population_outcomes(verdict_dirs)
+    earlier = population_outcomes(first_pass_dirs)
     ran = first_pass_units(mode)
     result = {}
     for cell, seq in doc["cells"].items():

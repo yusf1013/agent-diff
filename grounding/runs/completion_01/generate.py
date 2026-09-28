@@ -22,8 +22,14 @@ HERE = Path(__file__).resolve().parent
 
 
 def main():
-    sys.argv = ["generate", "--briefs", str(HERE / "inputs" / "briefs_6b.json"), "--run", str(HERE / "runs" / "gen_01"),
-                *sys.argv[1:]]
+    args = sys.argv[1:]
+    name = "gen_01"
+    if "--run-name" in args:  # a later run (gen_02: the briefs Muse's 402s stopped), so earlier attempts stay
+        i = args.index("--run-name")
+        name = args[i + 1]
+        del args[i:i + 2]
+    sys.argv = ["generate", "--briefs", str(HERE / "inputs" / "briefs_6b.json"), "--run", str(HERE / "runs" / name),
+                *args]
     orchestrate.main()
 
 
