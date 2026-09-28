@@ -44,3 +44,24 @@ probes 76 of 279; F1-F8 probes 67/223, F0 probes 9/56):
 - **Content ablation:** plain twins of 12 of our probes that exposed a fact on OpenClaw, same request and seed, the
   substitute removed ([plain_twins.py](plain_twins.py), [plain_pick.json](plain_pick.json)), run beside the
   unchanged originals the same day. Of the facts our probes expose, how many would a plain near miss expose too?
+
+### Cycle 2's reading, fixed before any of its results (2026-09-28, 15:05)
+
+Five cells, all on OpenClaw with the self-hosted Qwen, 3 trials per test:
+
+| Cell | Content | Form | Source |
+|---|---|---|---|
+| a | N0's (mostly plain) | target present | `n0/runs/gen_01/solve_01` |
+| b | N0's | probe (target removed, absence permitted) | `n0/runs/gen_01/probe_form` |
+| c | ours, with the substitute | probe | `ablation` run, the unchanged originals |
+| d | ours, made plain | probe | `ablation` run, the twins |
+| e | ours: covers against probes | both | existing: 2 of 77 covers and 76 of 279 probes expose a fact; F0 probes 9 of 56 |
+
+How the results will be read:
+- **If b exposes near zero** (as a does), the form alone does not make N0's near misses bite: the substitute carries
+  the exposure.
+- **If b lands near our F0 probes' rate (about 16%)**, the form carries most of it, and the substitute adds the rest
+  (F1-F8 probes expose about 30%).
+- **c against d** is the within-test effect of the substitute on facts our probes already exposed. The sample is 12
+  pairs × 3 trials, so only a large gap counts (for example, c failing at least three times as often as d). A smaller
+  gap is reported as inconclusive, not as "no effect".
