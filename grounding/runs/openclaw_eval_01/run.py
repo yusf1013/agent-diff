@@ -16,8 +16,9 @@ Each trial writes <out>/t<k>/<case_id>/attempt-XX, as fact_coverage_02's runner 
 - **the judge's layout** (raw OpenClaw files under solver/openclaw/, steps in the toy record format);
 - **no "Yes, go ahead." follow-up:** the judge grades turn 1.
 
-Known defects (roadmap_01/known_defects.json, `frozen_suite`) are applied to the selected tests:
-- "leave out" and "dropped by the derivation" never run;
+Known defects (roadmap_01/known_defects.json, `frozen_suite`) and the PI's near-miss rulings (rulings.py) are
+applied to the selected tests:
+- "leave out", "dropped by the derivation", and a test the rulings leave out never run;
 - "keep until DATE" runs only up to that local date, checked again as each attempt starts;
 - "read before it runs" runs only when listed with --read.
 
@@ -41,6 +42,7 @@ from grounding.integrations.agentdiff.runtime import write
 from grounding.integrations.openclaw import runtime as oc
 from grounding.integrations.openclaw.purdue_proxy import SELFHOST_PORT
 from grounding.paths import REPO_ROOT
+from grounding.runs.openclaw_eval_01 import rulings
 
 HERE = Path(__file__).resolve().parent
 SUITE = HERE / "suite" / "cases"
@@ -86,8 +88,11 @@ def select(cases_dir: Path, wanted: list[str] | None, read: set[str], today: dat
     for case_id, item in cases.items():
         action = action_for(case_id, actions)
         until = date_limit(action)
+        ruled = rulings.test_exclusion(item[0])
         if action.startswith(("leave out", "dropped")):
             left_out[case_id] = action
+        elif ruled:
+            left_out[case_id] = ruled
         elif action.startswith("read before") and case_id not in read:
             left_out[case_id] = f"{action} (not listed with --read)"
         elif until and today > until:

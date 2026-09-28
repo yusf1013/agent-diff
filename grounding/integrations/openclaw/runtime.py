@@ -212,11 +212,21 @@ def process_env(state: Path, env_id: str, backend_url: str, domain: str, fake_no
            "PATH": os.pathsep.join([node_bin, str(Path.home() / ".npm-global/bin"), "/usr/local/bin", "/usr/bin", "/bin"]),
            "OPENCLAW_STATE_DIR": str(state), name("AGENTDIFF_BACKEND_URL"): backend_url,
            name("AGENTDIFF_ENV_ID"): env_id}
-    if domain == "calendar" and fake_now is not None:
+    if fake_now is not None:
         clock = state / "bin" / "clock.cjs" if neutral else FAKE_CLOCK
-        env.update({"TZ": CALENDAR_TZ, "NODE_OPTIONS": f"--require {clock}",
+        env.update({"NODE_OPTIONS": f"--require {clock}",
                     name("AGENTDIFF_FAKE_NOW"): fake_now.isoformat().replace("+00:00", "Z")})
+        if domain == "calendar":  # other domains keep the machine's zone, as they ran before clocks
+            env["TZ"] = CALENDAR_TZ
     return env
+
+
+def case_clock(case: dict) -> datetime | None:
+    """The instant the agent's clock starts at: the test's own `clock` (a test that is only right on some days;
+    roadmap, 2026-09-28), else Calendar's fixed day, else None (the real clock)."""
+    if case.get("clock"):
+        return datetime.fromisoformat(case["clock"]["now"].replace("Z", "+00:00"))
+    return CALENDAR_NOW if case["domain"] == "calendar" else None
 
 
 def prompt_leaks(requests_dir: Path, case_id: str) -> list[str]:
@@ -403,13 +413,16 @@ def compactions(rows: list[dict]) -> int:
     return sum(1 for r in rows if r.get("type") == "compaction" or "compaction" in str(r.get("customType", "")))
 
 
-def clock_scan(steps: list[dict], replies: list[str]) -> list[dict]:
-    """Places where a Calendar run could see the real (2026) clock: time commands and real-year text."""
+def clock_scan(steps: list[dict], replies: list[str], real_year: bool = True) -> list[dict]:
+    """Places where a run on a shifted clock could see the real one: time commands, and for Calendar (whose clock
+    is in 2018) real-year text. A clock in the real year has no such text check."""
     found = []
     for i, step in enumerate(steps):
         action = step.get("action") or ""
         if step.get("tool") == "exec" and TIME_COMMANDS.search(action):
             found.append({"step": i, "kind": "time_command", "action": action[:300]})
+        if not real_year:
+            continue
         observed = (step.get("observation") or {}).get("stdout", "")
         if REAL_YEAR.search(observed):
             found.append({"step": i, "kind": "real_year_in_tool_output",
@@ -418,7 +431,7 @@ def clock_scan(steps: list[dict], replies: list[str]) -> list[dict]:
         if REAL_YEAR.search(said):
             found.append({"step": i, "kind": "real_year_in_model_text",
                           "sample": said[max(0, REAL_YEAR.search(said).start() - 80):][:200]})
-    for reply in replies:
+    for reply in replies if real_year else []:
         if REAL_YEAR.search(reply or ""):
             found.append({"step": None, "kind": "real_year_in_reply"})
     return found
@@ -554,7 +567,7 @@ def run_attempt(case: dict, attempt: Path, *, database_url: str, backend_url: st
         config = build_state_dir(state, token, domain, variant, backend, neutral)
         agent_id = config["agents"]["list"][0]["id"]
         workspace = state / f"workspace-{agent_id}"
-        fake_now = CALENDAR_NOW if domain == "calendar" else None
+        fake_now = case_clock(case)
         env_vars = process_env(state, env.environmentId, backend_url, domain, fake_now, neutral)
         prompt = PREFIX[domain] + case["prompt"]
         write(solver_dir / "config.json", {
@@ -569,7 +582,8 @@ def run_attempt(case: dict, attempt: Path, *, database_url: str, backend_url: st
             "follow_up": {"enabled": followup, "message": FOLLOW_UP,
                           "rule": "sent when turn 1 changed no state and its reply asks the user a question"},
             "timeout_seconds_per_turn": timeout_s, "workspace_variant": variant,
-            "fake_clock": {"start": fake_now.isoformat(), "timezone": CALENDAR_TZ} if fake_now else None,
+            "fake_clock": {"start": fake_now.isoformat(), "timezone": CALENDAR_TZ if domain == "calendar"
+                           else "the machine's"} if fake_now else None,
             "workspace_files": sorted(p.name for p in workspace.iterdir()),
             "skills_sha256": {str(p.relative_to(workspace / "skills")): hashlib.sha256(p.read_bytes()).hexdigest()
                               for p in sorted((workspace / "skills").rglob("*.md"))},
@@ -618,8 +632,8 @@ def run_attempt(case: dict, attempt: Path, *, database_url: str, backend_url: st
         flags = {"compactions": compactions(rows), "tool_calls_turn1": len([s for s in record["steps"] if s.get("tool")]),
                  "read_skill": sorted({Path(s["arguments"].get("path", "")).parent.name for s in steps
                                        if s.get("tool") == "read" and str(s.get("arguments", {}).get("path", "")).endswith("SKILL.md")})}
-        if domain == "calendar":
-            flags["clock_suspects"] = clock_scan(steps, [t["text"] for t in turns])
+        if fake_now is not None:
+            flags["clock_suspects"] = clock_scan(steps, [t["text"] for t in turns], real_year=domain == "calendar")
         summary.update(status="completed", termination=turn1["termination"], followup=followup_info, flags=flags,
                        turns=flags["tool_calls_turn1"], usage=proxy_usage(solver_dir / "requests"),
                        turn_durations_s=[t["duration_s"] for t in turns])
