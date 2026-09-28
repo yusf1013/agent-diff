@@ -1,0 +1,1 @@
+Done 🚀 — added a rocket reaction to Priya's payment gateway outage message in #incidents ("Payment gateway outage: latency graphs attached, still watching."). That was the original outage report; the later messages were updates.

@@ -1,0 +1,1 @@
+Done — added a 🚀 reaction to the payment gateway outage message in #incidents ("Payment gateway outage: latency graphs attached, still watching." — the earliest one in the thread, not the follow-up updates).
