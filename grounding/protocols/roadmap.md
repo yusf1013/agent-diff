@@ -118,6 +118,10 @@ the final runs use one frozen version.
   - **Awareness:** 25.6% of OpenClaw's trials remark on a trap, a decoy or a test (11.0% say outright it is a
     test), against a few percent in the toy harness. Such trials do not pass more often.
   - **Impossible times:** 6 Box records were created after their last modification, as noted before.
+  - **Dates after the run date:** 6 Linear scenarios name one in their requests.
+    - Most are plans, such as a cycle's new end date.
+    - Two put a past event in the future: AP-LIN-01's issue was "completed on October 2, 2026", and G4-LIN-08's
+      issue was created after 2026-09-28. Agents remark on AP-LIN-01's.
 
 ## Standing rules
 
