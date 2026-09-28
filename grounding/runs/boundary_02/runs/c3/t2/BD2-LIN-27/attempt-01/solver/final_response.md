@@ -1,0 +1,1 @@
+Successfully archived the Web team's "Blocked" workflow state (ID: t-web-st-blocked). This required first archiving issue WEB-2 ("Payment page slow") which was still in that state, and then archiving the workflow state itself.

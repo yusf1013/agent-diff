@@ -1,0 +1,1 @@
+Successfully moved the "On-call handoff" event to Maya's team calendar (maya-team@northwind.example) with the same time (2018-06-19 09:00–09:30 AM PT). Note: The original event in Leo's on-call calendar could not be deleted because the current user only has reader access to that calendar. The event now exists on Maya's team calendar as requested.

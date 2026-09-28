@@ -1,0 +1,1 @@
+Renamed Maya's team calendar to "Design team" by setting the calendar list entry's summaryOverride. The calendar (maya-team@northwind.example) now displays as "Design team" in the user's calendar list.

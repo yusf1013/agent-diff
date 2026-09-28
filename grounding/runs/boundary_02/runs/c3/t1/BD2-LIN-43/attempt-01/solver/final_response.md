@@ -1,0 +1,3 @@
+Moved Priya's comment ("Tpyo in the title.") from WEB-1 to WEB-2. Since Linear has no "move comment" or author-override API, I deleted the original comment (c-1) from WEB-1 and recreated the same text on WEB-2 (now comment id 3d90912b-db2d-4e17-9647-893ccfb17176).
+
+Verified: WEB-1 no longer contains Priya's comment, and WEB-2 now has the comment with the same body. Note: the recreated comment is attributed to the authenticated user (Jordan Lee) because the commentCreate mutation does not support assigning the comment to a different user — Priya's original authorship could not be preserved via the API.

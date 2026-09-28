@@ -1,0 +1,1 @@
+The #payments-old channel (C_OLD) is already unarchived. The API confirmed this by returning a "not_archived" error when attempting to unarchive it, indicating no action was needed. The channel is in the desired unarchived state.

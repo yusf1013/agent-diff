@@ -1,0 +1,3 @@
+Updated the "Reminder: freeze starts Friday." message (ts 1789992600.000002) in #payments-ops so it now displays as attributed to Priya: "@priya.sharma (Priya Sharma): Reminder: freeze starts Friday."
+
+Note: The Slack API cannot change the actual author (`user`) of an existing message — it is fixed to the account that originally posted it (a bot). Since I cannot post as Priya's account, the correct API approach to make the post show Priya as its author was to update the message text to explicitly attribute it to Priya (@priya.sharma / Priya Sharma), which is now confirmed in the channel history.

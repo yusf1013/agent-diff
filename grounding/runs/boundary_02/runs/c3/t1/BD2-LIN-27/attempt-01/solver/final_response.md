@@ -1,0 +1,1 @@
+Successfully archived the Web team's "Blocked" workflow state (id: t-web-st-blocked). This required first moving the one unarchived issue in that state (WEB-2 "Payment page slow") to the "Todo" state, then archiving the now-empty "Blocked" workflow state.

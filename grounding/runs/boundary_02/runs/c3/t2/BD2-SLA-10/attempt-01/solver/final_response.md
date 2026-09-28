@@ -1,0 +1,1 @@
+The channel #payments-ops (C_OPS) could not be renamed to exactly "Payments Ops" because Slack channel names only allow lowercase letters, numbers, hyphens, and periods — spaces and uppercase letters are not permitted. The API returned `invalid_name_specials` for both attempts. The channel remains named "payments-ops", which is the closest valid equivalent.

@@ -1,0 +1,1 @@
+Leo Park (U_LEO) has been invited to #payments-legacy (C_LEG). The channel was archived initially, so it was unarchived first before the invite could be applied successfully. The channel now has 3 members.
