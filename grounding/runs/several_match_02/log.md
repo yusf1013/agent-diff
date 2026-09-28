@@ -326,14 +326,15 @@ Both defeat every lazy strategy on their seeds.
 Recall by placement: visible 15/15; container 10/10; beyond a page 7/10; private channel 1/5.
 
 **What was learned:**
-- **Combining placements catches more than each placement alone.**
+- **The combined tests caught the agent more often than the single-placement tests did.** Counts side by side:
   - Beyond-a-page matches: 20/20 found when they were the test's only placement (cycle 6); 7/10 here.
   - Private channels: 4 of 6 valid trials found them in cycles 3–4, 1 of 5 here (1 of 4 without the mock's miss).
 
-  With several channels to cover, the agent was less careful on each respect. Combining serves two ends: fewer
-  tests, and a stronger one.
-- **Where a paging agent still misses:** the last item of a listing whose length is just past a round page. One trial
-  paged with a smaller second page and stopped short of `total_count`.
+  The comparison is small (5 trials a test), and the requests differ in wording and kind: a channel-level request
+  against a message request over several channels. So it suggests, and does not show, that combining makes a test
+  stronger as well as saving tests. Five more trials of each run next (`runs/c7b`).
+- **A candidate placement:** the last item of a listing whose length is just past a round page. One trial paged with a
+  smaller second page and stopped short of `total_count`. That is one trial, not a finding.
 - **The hiding places that catch Qwen, over all cycles:**
   - behind a visibility default (hidden calendars, private channels): caught in most trials;
   - beyond the largest page, only in combination (3 of 10) or at the list's end (1 of 5);
