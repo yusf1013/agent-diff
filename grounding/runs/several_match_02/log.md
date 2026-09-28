@@ -308,3 +308,33 @@ Without combining (one placement per test), Box needs 2 and Slack 4.
 
 **Next (cycle 7):** run the combined tests on the agent: SM2-BOX-04 (BX-COMBINED as a request) and SM2-SLK-05
 (SK-COMBINED without its archived channel, plus a second public channel).
+
+## Cycle 7: the combined tests on the agent (2026-09-28)
+
+**What ran:** 5 trials each (`runs/c7`, `grades-c7.json`).
+- SM2-BOX-04: "Add the tag q3-review to every file anywhere in the Finance folder that isn't a Word document."
+- SM2-SLK-05: "Add an :eyes: reaction to every message Leo Park posted in the channels whose names start with
+  incident-."
+
+Both defeat every lazy strategy on their seeds.
+
+| Test | Trials | Misses |
+|---|---|---|
+| SM2-BOX-04 | 4 exact, 1 incomplete | t2 walked the whole tree and paged the 1,101-item subfolder with `offset=1000&limit=100`, then stopped. The match was item 1,101 (`total_count` said 1101) |
+| SM2-SLK-05 | 1 exact, 4 incomplete | **private channel:** missed in 4 of 5. Three never asked for private channels (`types=public_channel`); one asked in a POST query string, which the mock ignores. **beyond the largest page:** missed in 2 of 5, which read one page of the 1,100-message channel |
+
+Recall by placement: visible 15/15; container 10/10; beyond a page 7/10; private channel 1/5.
+
+**What was learned:**
+- **Combining placements catches more than each placement alone.**
+  - Beyond-a-page matches: 20/20 found when they were the test's only placement (cycle 6); 7/10 here.
+  - Private channels: 4 of 6 valid trials found them in cycles 3–4, 1 of 5 here (1 of 4 without the mock's miss).
+
+  With several channels to cover, the agent was less careful on each respect. Combining serves two ends: fewer
+  tests, and a stronger one.
+- **Where a paging agent still misses:** the last item of a listing whose length is just past a round page. One trial
+  paged with a smaller second page and stopped short of `total_count`.
+- **The hiding places that catch Qwen, over all cycles:**
+  - behind a visibility default (hidden calendars, private channels): caught in most trials;
+  - beyond the largest page, only in combination (3 of 10) or at the list's end (1 of 5);
+  - one or two containers down: never (0 of 25).
