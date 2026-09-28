@@ -7,7 +7,8 @@ Your working directory holds:
 - `brief.json`: the scenario id, the domain, and the facts your scenario must test;
 - `docs/method.md`: what a scenario is and the rules it must follow. Read it first;
 - `docs/format.md`: the exact format of `scenario.json`, including the query language;
-- `examples/`: two complete, annotated scenarios by an expert, from other facts. Match their standard;
+- `examples/`: two complete, annotated scenarios by an expert, from other facts. Match their standard, not their
+  content: your request, names, values and records are your own, designed for your facts;
 - `domain/`:
   - `facts.json`: the fact catalog with substitute menus;
   - `replica.md`: how the service replica behaves and what it rejects;

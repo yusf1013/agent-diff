@@ -78,6 +78,18 @@ the hand-made scenarios share nothing distinctive with the prompts.
   3. Keep the 9 existing scenarios, since they are valid tests, and disclose the copying. G4-BOX-05 could be
      regenerated if the report's generator numbers should exclude a near copy.
 
+**The PI's reading (2026-09-27).**
+- Not a validity threat. The writer's output is automation's output, and few-shot examples are allowed.
+- Worth a small improvement that avoids the copying without changing performance.
+
+Applied the same day:
+- **`writer.md`** now says to match the examples' standard, not their content: the request, names, values and records
+  are the writer's own, designed for its facts.
+- **The examples themselves are unchanged,** apart from finding 5. They are fact_coverage_01's hand-built pilot cases
+  BOX-01 and CAL-01; the kit's self-test checks that they reproduce those seeds, and it still passes.
+- **Still unmeasured:** whether the line stops the copying without lowering acceptance. The next generation run
+  (roadmap step 4) will show it.
+
 ### 4. "Make the near miss tempting" is learned agent behaviour
 
 This section of `method.md` (method v2, autogen_01) tells the writer where an agent "looks first" (names, titles, what
@@ -96,6 +108,9 @@ returns the decoy too.
   hint. It is in [known_defects.json](known_defects.json).
 - **Proposed:** remove the parenthesis from the example. The F4 decoy it guards still works, because "directly in"
   states the condition.
+- **Applied on 2026-09-27** with the PI's go-ahead for small fixes of known defects: the request and its condition
+  now read "directly in the Finance Reports folder". The kit's self-test passes: the seed is unchanged and every
+  defect check still fires.
 
 ### 6. The other prompts
 

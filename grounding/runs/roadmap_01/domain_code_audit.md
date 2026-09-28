@@ -87,3 +87,14 @@ is an input by design.
    unreadable deciding value (the observability check), so the list could be kept from their findings.
 
 None of these blocks adding a domain. Items 2 and 4 are small refactors; items 1, 3 and 5 are choices to discuss.
+
+## The PI's reading (2026-09-27)
+
+- **Inputs:** hand-written lists supplied to the pipeline, such as the read probes (item 3) and the unique fields
+  (item 4), count as part of its input, like the domain model.
+  - They are small, so they are not a worry.
+  - To remove them from the input later, we can test whether simple prompting of an LLM or coding agent, followed by
+    some processing of ours, yields the same lists.
+- **Derivation:** what can be detected reliably, such as the replica-gap exclusions (item 5), is a quality-of-life
+  improvement. It would then be derived as part of the automation instead of being supplied as input.
+- **Principles:** communicating through principles, backed by few-shot examples, is fine.

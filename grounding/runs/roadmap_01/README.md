@@ -49,7 +49,10 @@ From the loose ends (fixes found by autogen_02):
 From the overfit audit:
 
 5. Tell the writer not to reuse the examples' names, values or phrasing; give the examples distinctive values.
+   **Done 2026-09-27 (one line in `writer.md`).** The PI: not a validity threat, a small improvement. The examples
+   are unchanged; the next generation run shows the effect.
 6. Remove "(not in its subfolders)" from the Box example; it breaks the method's own rule 4.
+   **Done 2026-09-27;** the kit's self-test passes.
 7. State where the method's "make the near miss tempting" heuristics came from (the pilot runs).
 8. Keep the 9 copied scenarios and disclose it, or regenerate G4-BOX-05.
 9. Restate one line of Slack's replica notes as a fact about the mock.
