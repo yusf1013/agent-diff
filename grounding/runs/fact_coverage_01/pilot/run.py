@@ -146,6 +146,11 @@ async def main_async(args):
                                            "same-size successor listed by Purdue on 2026-09-23",
                              "turn_limit": smoke.TURN_LIMIT, "timeout_seconds": smoke.EPISODE_TIMEOUT_SECONDS,
                              "ceiling_seconds": smoke.EPISODE_CEILING_SECONDS, "clock": smoke.CLOCK_RULE,
+                             "solver_backend": os.getenv("SOLVER_BACKEND", "purdue"),
+                             "solver_base_url": os.getenv("PURDUE_BASE_URL") or
+                             "Purdue GenAI Studio (the client's default)",
+                             "rate_limit_file": os.getenv("PURDUE_RATE_LIMIT_FILE"),
+                             "rate_limit_per_minute": os.getenv("PURDUE_RATE_LIMIT_PER_MINUTE"),
                              "trials_per_case": 1, "prepare_only": args.prepare_only,
                              "cases": {c["case_id"]: c["case_sha256"] for c, _ in items},
                              "solver_context_excludes": ["references", "claims", "cards", "private", "coverage_claims"],
@@ -167,7 +172,8 @@ def main():
                              "time (Purdue waiting excluded), so such a cut is normally graded, not retried; a cut by "
                              "the wall ceiling is an infrastructure error (--retry-infrastructure)")
     parser.add_argument("--concurrency", type=int, default=3)
-    parser.add_argument("--model", default="qwen3.8:27b")
+    parser.add_argument("--model", default=os.environ.get("SOLVER_MODEL", "qwen3.8:27b"),
+                        help="Purdue's qwen3.8:27b; the launcher's SOLVER_BACKEND=selfhost sets qwen3.8-27b")
     parser.add_argument("--database-url", default="postgresql://postgres@127.0.0.1:15432/agentdiff_campaign")
     parser.add_argument("--base-url", default="http://127.0.0.1:18001")
     args = parser.parse_args()

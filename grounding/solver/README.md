@@ -30,6 +30,27 @@ Export `GENAI_API_KEY` from the existing local credential store without printing
 
 The local AgentDiff backend must serve `http://127.0.0.1:18001` against the same database. Docker must have the `agent-diff-slack-executor` image; despite its name, the executor supports all four services. Calendar also requires `DATABASE_URL` at import time. Check an existing server before starting another; do not restart or clean up a server owned by another campaign.
 
+## The self-hosted Qwen
+
+Since 2026-09-27 the same Qwen3.8-27B also runs on the lab's GPUs (`~/qwen-selfhost`, served as `qwen3.8-27b`, about
+7.5 times Purdue's throughput). Through `grounding/runs/fact_coverage_02/launch.py`, select it with
+`SOLVER_BACKEND=selfhost`. The launcher then:
+- reads the key from `~/qwen-selfhost/secrets/api_key` (not `grounding/.env`, whose Purdue key would otherwise replace
+  it);
+- points the Purdue client at `http://127.0.0.1:18000/v1/chat/completions`;
+- sets the model name;
+- sets a rate limiter shared by every session on this machine (`/tmp/qwen_selfhost_rate_limit.json`, 110 requests a
+  minute; `SELFHOST_RATE_LIMIT_PER_MINUTE` changes it).
+
+Two rules:
+- **Don't disable that limiter (`PURDUE_RATE_LIMIT_DISABLE=1`) while others use the server.** The launcher refuses it.
+  Time a request waits on the limiter stays off the trial's time budget (the agent clock); time queued inside the server
+  counts against it.
+- **Keep at most about 48 trials in flight per session.** The server does best at about 96 in all.
+
+Each run's `plan.json` records the backend, endpoint and limiter. The self-host has the same weights and vLLM version
+as Purdue, but Purdue's precision and sampling settings are unknown. Calibrate before comparing numbers across the two.
+
 ## Commands
 
 Offline adapter checks (no provider calls):

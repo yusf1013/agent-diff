@@ -6,13 +6,17 @@ is the agent's and is graded, not retried. Earlier runs retried every timeout (`
 
     python grounding/runs/fact_coverage_02/launch.py grounding.runs.autogen_02.kit.solve --cases-dir DIR --out RUN \
         [--cases ID ...] [--trials 3]
+    SOLVER_BACKEND=selfhost python grounding/runs/fact_coverage_02/launch.py grounding.runs.autogen_02.kit.solve ... \
+        --concurrency 24     # the self-hosted Qwen; keep at most about 48 in flight per session
 
-Uses fact_coverage_02's runner and the shared Purdue rate limiter, exactly as autogen_01's queue did. Solver runs wait
-for any other solver run in progress, so two runs never compete for the limit.
+Uses fact_coverage_02's runner and the backend's shared rate limiter, as autogen_01's queue did. A Purdue run waits for
+any other Purdue run in progress, so two runs never compete for its small limit. A self-hosted run never waits: every
+session's requests pass the same limiter (since 2026-09-27; see fact_coverage_02/launch.py).
 """
 from __future__ import annotations
 
 import argparse
+import os
 import subprocess
 import sys
 import time
@@ -23,9 +27,34 @@ from grounding.paths import REPO_ROOT
 LAUNCH = [sys.executable, str(REPO_ROOT / "grounding/runs/fact_coverage_02/launch.py")]
 
 
+def backend_of(pid: str) -> str:
+    """The solver backend a running process was started with (SOLVER_BACKEND in its environment; Purdue if absent or
+    unreadable)."""
+    try:
+        env = Path(f"/proc/{pid}/environ").read_bytes().split(b"\0")
+    except OSError:
+        return "purdue"
+    for item in env:
+        if item.startswith(b"SOLVER_BACKEND="):
+            return item.split(b"=", 1)[1].decode()
+    return "purdue"
+
+
+def busy(ps_lines, own_backend: str, backend=backend_of) -> bool:
+    """Purdue runs go one at a time, since they share a small rate limit. Self-hosted runs never wait: the shared
+    limiter paces every session on the machine (fact_coverage_02/launch.py)."""
+    if own_backend == "selfhost":
+        return False
+    for line in ps_lines:
+        pid, _, args = line.strip().partition(" ")
+        if "fact_coverage_02.run" in args and "--out" in args and backend(pid) != "selfhost":
+            return True
+    return False
+
+
 def solver_busy() -> bool:
-    out = subprocess.run(["ps", "-eo", "args"], capture_output=True, text=True).stdout
-    return any("fact_coverage_02.run" in line and "--out" in line for line in out.splitlines())
+    out = subprocess.run(["ps", "-eo", "pid,args"], capture_output=True, text=True).stdout
+    return busy(out.splitlines()[1:], os.environ.get("SOLVER_BACKEND", "purdue"))
 
 
 def main():

@@ -52,6 +52,9 @@ def write_plan(out: Path, args, items, trial: int):
         "trial": trial, "trials_per_case": args.trials, "prepare_only": args.prepare_only,
         "cases_dir": str(args.cases_dir.relative_to(REPO_ROOT)),
         "rate_limit_per_minute": os.getenv("PURDUE_RATE_LIMIT_PER_MINUTE"),
+        "solver_backend": os.getenv("SOLVER_BACKEND", "purdue"),
+        "solver_base_url": os.getenv("PURDUE_BASE_URL") or "Purdue GenAI Studio (the client's default)",
+        "rate_limit_file": os.getenv("PURDUE_RATE_LIMIT_FILE"),
         "cases": {c["case_id"]: c["case_sha256"] for c, _ in items},
         "solver_context_excludes": ["references", "claims", "cards", "private", "coverage_claims"],
         "judgment": "manual review of trajectory, final answer and diff; no evaluator or native score"})
@@ -94,7 +97,8 @@ def main():
     parser.add_argument("--pairs", nargs="*",
                         help="Run only these trial/case pairs, e.g. t2/LIN-05 (retry just the trials with no result)")
     parser.add_argument("--concurrency", type=int, default=6)
-    parser.add_argument("--model", default="qwen3.8:27b")
+    parser.add_argument("--model", default=os.environ.get("SOLVER_MODEL", "qwen3.8:27b"),
+                        help="Purdue's qwen3.8:27b; the launcher's SOLVER_BACKEND=selfhost sets qwen3.8-27b")
     parser.add_argument("--database-url", default="postgresql://postgres@127.0.0.1:15432/agentdiff_campaign")
     parser.add_argument("--base-url", default="http://127.0.0.1:18001")
     args = parser.parse_args()
