@@ -131,6 +131,11 @@ agent-owned failures.
   - The replica notes say that "none" after such an error establishes nothing.
   - Whether each of these passes was earned needs reading. A probe's pass there may not certify that the near miss
     was rejected.
+- **A harness mechanism the dev set lacks** (found in several_match_01). The executor rewrites API URLs only in its
+  bash-level `curl` function. An agent that calls the API from a Python script (`subprocess`, `urllib`) reaches no
+  service and gets empty responses.
+  - It happened once in about 2,360 recorded trials (SM-CAL-01 t3); the agent's time budget ran out.
+  - A trace scan can flag it mechanically: a script-level HTTP call followed by an empty response.
 - **Label granularity.** The SLK-21 and LIN-25 labels mark every trial of the flawed scenario `artifact`, including
   trials where the flaw never came into play (for example a correct "none" that never tried the reaction). That
   matches the PI's rule that flawed is flawed, and it is why test-level scoring is the right view for
