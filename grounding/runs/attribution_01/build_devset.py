@@ -54,8 +54,10 @@ OVERRIDES = {
     r"method_pilot/t2/P-LIN-09-I13$": ("agent", ["harness"], True, "the 40-turn limit is the agent's own budget "
                                        "(turns exclude waiting); it ran out without an answer or a write"),
     r"b1/t2/LIN-02-TOLD$": ("agent", [], False, "stopped after one schema error, claiming an authentication error"),
-    r"(FP-LIN-22-I12-I13-I14|P-LIN-07-I12)$": ("agent", [], False, "claimed Linear has no documents without "
-        "looking; the replica serves the documents query, and the solver's prompt names no endpoints"),
+    # Reason corrected 2026-09-27 22:59 (plan.md amendments): the solver's prompt lists 19 Linear operations and
+    # omits documents and projects; the owner stays as committed, and the trials are in contested.json.
+    r"(FP-LIN-22-I12-I13-I14|P-LIN-07-I12)$": ("agent", [], False, "claimed Linear has no documents; the replica "
+        "serves the documents query, and the solver's prompt lists 19 operations without documents or projects"),
     r"/U-G4-CAL-06-Calendar_data_owner$": ("agent", ["test-construction"], True, "moved one of four matches "
         "without asking; the scenario's seed gives every event a Los Angeles zone (known defect), which may bear on "
         "which calendars it took to be on New York time"),

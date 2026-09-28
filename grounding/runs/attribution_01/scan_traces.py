@@ -204,8 +204,14 @@ def scan(att: Path) -> dict:
     seed = json.loads(seed_p.read_text()) if seed_p.exists() else {}
     question = d.get("question") or ""
     final = str(d.get("final") or "")
+    case_p = att / "case.json"
+    has_target = (json.loads(case_p.read_text()).get("form") != "absent") if case_p.exists() else True
+    asks = "?" in question or bool(re.match(r"\s*(which|what|who|how|list|tell)\b", question, re.I))
+    concluded_none = bool(re.search(r"\b(no|none|not found|couldn't find|could not find|doesn't exist|does not "
+                                    r"exist|there (is|are) no)\b", final, re.I))
     items = acted_on(att)
     hits, naive, cf = [], [], []
+    first_seen: dict[str, int] = {}  # item -> the first step whose response mentions it
     for i, s in enumerate(d.get("steps") or [], 1):
         a = s.get("action") or ""
         a = a if isinstance(a, str) else json.dumps(a)
@@ -218,14 +224,19 @@ def scan(att: Path) -> dict:
                 hits.append({"step": i, "gap": gap, "returned_acted_on": back})
                 if back:
                     naive.append(("mock", gap, i))
-                if any(v is True for v in back.values()):
+                # the ignored filter introduced the item: the agent had not seen it before this response
+                if any(v is True and first_seen.get(t, i) == i for t, v in back.items()):
                     cf.append(("mock", gap, i))
+        for t in items or presented(o, final):
+            if mentions(o, t):
+                first_seen.setdefault(t, i)
         for gap, test in FAILING.items():
             if test(a, o):
                 hits.append({"step": i, "gap": gap})
                 naive.append(("mock", gap, i))
-                if not items:
-                    cf.append(("mock", gap + ", then no change", i))
+                # the test has a target, and the agent concluded none: changed nothing, or answered "none"
+                if has_target and (concluded_none if asks else not items):
+                    cf.append(("mock", gap + ", then concluded none", i))
         rej = rejected(a, o, question, seed)
         if rej:
             hits.append({"step": i, "gap": rej[0], "test_to_blame": rej[1]})
@@ -238,7 +249,8 @@ def scan(att: Path) -> dict:
         if term != "turn_limit" and not items:  # a turn limit is the agent's own budget; a prior write decided
             cf.append(("harness", f"termination {term} before any change", None))
     top = lambda fl: (Counter(f[0] for f in fl).most_common(1) or [[None]])[0][0]
-    return {"attempt": att.relative_to(RUNS).as_posix(), "termination": term, "acted_on": sorted(items),
+    return {"attempt": att.relative_to(RUNS).as_posix(), "termination": term, "has_target": has_target,
+            "acted_on": sorted(items),
             "hits": hits, "naive": [list(f) for f in naive], "counterfactual": [list(f) for f in cf],
             "named_naive": top(naive), "named_counterfactual": top(cf)}
 

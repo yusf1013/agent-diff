@@ -87,3 +87,29 @@ A judge error is not an owner of the trial. It is scored separately, as the judg
 - **Denominators are small outside `agent`** (distinct tests): test-wording 7, test-construction 10 (2 scenarios),
   mock 8 (5 mechanisms), harness 2. The report gives counts by distinct test as well as by trial, since one
   scenario (SLK-21) supplies 21 of the 30 test-construction trials.
+
+**2026-09-27 22:59 EDT, after sources 1–3 were scored (owners unchanged):**
+- **Verdict pairing.** Two Phase 3 labels describe a first attempt that the runner's retry later superseded
+  (`autogen_02/eval/labels_phase3/attempts.json`). The development set now pairs them with v2's verdicts on that
+  attempt (`judge2_phase3_attempt01`), and the trace scan reads that attempt. Before, both were paired with v2's
+  verdicts on the retry (`incorrect`); now they are `not_established` and `correct_absent`. A field-by-field
+  comparison against commit ca8ae46c6 confirms that no owner changed.
+- **Source 3 is in-sample.** The gap list and the naive rule come from the replica notes alone. The counterfactual
+  rule was refined by inspecting development-set failures:
+  - the real-service check per gap;
+  - own ids for changed rows (a parent folder id in the diff caused false flags);
+  - items the final answer names, when nothing changed;
+  - the first-appearance condition;
+  - a failing query counts only when the test has a target and the agent concluded none;
+  - a turn limit is the agent's own budget;
+  - the singular `eventType` parameter.
+
+  Its scores are therefore development-set scores, not a test.
+- **Contested cases.** Evidence contests the owners of 10 trials. `contested.json` lists them with both readings,
+  for the PI to rule on:
+  - the ignored-filter cases, C1 and C2;
+  - three "Linear has no documents" trials, C3.
+
+  C3 was found by checking an override's facts: its reason said that the solver's prompt names no endpoints.
+  The prompt in fact lists 19 Linear operations and none for documents or projects. The reason text is corrected;
+  the committed owner stays for the primary scores.
