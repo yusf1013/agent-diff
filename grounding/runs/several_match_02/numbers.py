@@ -16,10 +16,18 @@ import json
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
+# Invalid although a thorough strategy retrieves every match: the runner counts retrieval, and on these seeds the
+# condition's field is not in what the thorough route returns (cycle 5).
+INVALID = {
+    "SM2-BOX-02": "the Box replica's folder listing leaves out modified_by whatever `fields` asks for",
+    "SM2-SLK-03": "the Slack replica's history leaves out reactions",
+}
 
 
 def defeats(r: dict) -> set[str] | None:
     """The lazy strategies this probe defeats, or None if it is invalid (no thorough strategy finds every match)."""
+    if r["probe"] in INVALID:
+        return None
     s = r["strategies"]
     if not any(v.get("thorough") and not v.get("missed") and "error" not in v for v in s.values()):
         return None

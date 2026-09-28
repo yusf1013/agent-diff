@@ -80,6 +80,22 @@ def box_list_paged(api, fid, limit=1000):
             return found
 
 
+def box_tree_paged(api, fid, limit=1000):
+    """Every page of every folder in the tree."""
+    found, queue = set(), [fid]
+    while queue:
+        f, offset = queue.pop(0), 0
+        while True:
+            body = api({"method": "GET", "path": f"/folders/{f}/items", "params": {"limit": limit, "offset": offset}})
+            entries = body.get("entries", [])
+            found |= ids_in(entries)
+            queue += [x["id"] for x in entries if x.get("type") == "folder"]
+            offset += len(entries)
+            if not entries or offset >= int(body.get("total_count", 0)):
+                break
+    return found
+
+
 def box_search(api, query, **params):
     return api({"method": "GET", "path": "/search", "params": {"query": query, "type": "file", **params}})
 
@@ -94,8 +110,11 @@ BOX = {
         api, e["ext"], file_extensions=e["ext"], ancestor_folder_ids=e["folder"], limit=200))),
     "search person's name under folder (limit 200)": (False, lambda api, e: ids_in(box_search(
         api, e.get("person", "Leo"), ancestor_folder_ids=e["folder"], limit=200))),
-    "list tree (limit 1000) [thorough]": (True, lambda api, e: box_tree(api, e["folder"])),
-    "list named, every page (limit 1000) [thorough]": (True, lambda api, e: box_list_paged(api, e["folder"])),
+    # Cycle 6: a route thorough in one respect only is lazy in the other (the tree, one page per folder; every
+    # page, one folder). The thorough route covers both.
+    "list tree, one page per folder (limit 1000)": (False, lambda api, e: box_tree(api, e["folder"])),
+    "list named, every page (limit 1000)": (False, lambda api, e: box_list_paged(api, e["folder"])),
+    "list tree, every page (limit 1000) [thorough]": (True, lambda api, e: box_tree_paged(api, e["folder"])),
 }
 
 
@@ -193,7 +212,7 @@ def slk_hist_paged(api, channel, limit=999):
             return found
 
 
-def slk_hist_matching(api, e, types, **extra):
+def slk_hist_matching(api, e, types, every_page=False, **extra):
     found = set()
     params = {"limit": 1000, **extra}
     if types:
@@ -201,7 +220,8 @@ def slk_hist_matching(api, e, types, **extra):
     body = slk(api, "conversations.list", **params)
     for ch in body.get("channels", []):
         if ch.get("name", "").startswith(e["prefix"]):
-            found |= ids_in(slk(api, "conversations.history", channel=ch["id"], limit=999))
+            found |= slk_hist_paged(api, ch["id"]) if every_page else \
+                ids_in(slk(api, "conversations.history", channel=ch["id"], limit=999))
     return found
 
 
@@ -233,10 +253,12 @@ SLACK = {
     "channel list (default types) -> history": (False, lambda api, e: slk_hist_matching(api, e, None)),
     "channel list (exclude archived) -> history": (False, lambda api, e: slk_hist_matching(
         api, e, "public_channel,private_channel", exclude_archived="true")),
-    "channel list (public+private) -> history [thorough]": (True, lambda api, e: slk_hist_matching(
+    # Cycle 6: as for Box, the thorough route covers private channels and every page.
+    "channel list (public+private) -> one page of history": (False, lambda api, e: slk_hist_matching(
         api, e, "public_channel,private_channel")),
-    "named channel history, every page (limit 999) [thorough]": (True, lambda api, e: slk_hist_paged(
-        api, e["channel"])),
+    "named channel history, every page (limit 999)": (False, lambda api, e: slk_hist_paged(api, e["channel"])),
+    "channel list (public+private) -> every page of history [thorough]": (True, lambda api, e: slk_hist_matching(
+        api, e, "public_channel,private_channel", every_page=True)),
 }
 def slk_hist_all(api, types):
     """Every conversation of the given types (all of them, no name filter) -> its history."""

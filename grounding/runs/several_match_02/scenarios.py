@@ -392,7 +392,86 @@ def slk_pages():
     }, {"@t1": "P", "@t2": "P", "@t3": "V", "@t4": "V"}
 
 
-SCENARIOS = [box, cal, lin, slk, cal_owned_wording, cal_explicit_hidden, slk_explicit_private, box_pages, slk_pages]
+def box_pages_pdf():
+    """SM2-BOX-02's folder with a condition the listing shows. Cycle 5 found that the Box replica's folder listing
+    returns only the mini fields, whatever `fields` asks for, so the last modifier took one call per file. The file
+    type is in every listed name, so two pages of listing answer the request."""
+    s, _ = box_pages()
+    contracts = node("box_folders", [filt("f_folder", "name", "eq", "Contracts", "A:Folder.name")])
+    query = {"table": "box_files", "filters": [filt("f_ext", "extension", "eq", "pdf", "A:File.extension")],
+             "edges": [edge("e_parent", "parent_id", "id", contracts, "R:File.parent_id")]}
+    seed = [["file", {**row, "name": "Zeta NDA.pdf"}] if kind == "file" and row["id"] == "8204" else [kind, row]
+            for kind, row in s["seed"]]
+    return {
+        **s, "scenario_id": "SM2-BOX-03", "seed": seed,
+        "request": "Add the tag legal-hold to every PDF in the Contracts folder.",
+        "conditions": [
+            {"id": "c1", "text": "every PDF", "facts": ["A:File.extension"]},
+            {"id": "c2", "text": "in the Contracts folder", "facts": ["R:File.parent_id", "A:Folder.name"]},
+        ],
+        "reference": {
+            **s["reference"], "target": ["8201", "8211", "8203", "8204"], "query": query,
+            "decoys": [
+                {"witness": "8202", "fact": "A:File.extension", "family": "F0",
+                 "mutation": {"type": "DROP", "target": "f_ext"},
+                 "explanation": "In the Contracts folder, but a Word document."},
+                {"witness": "8212", "fact": "A:Folder.name", "family": "F0", "substitute": "Folder named Contracts Archive",
+                 "mutation": {"type": "SUB", "target": "e_parent", "replacement": edge(
+                     "e_parent", "parent_id", "id", node("box_folders", [filt("x", "name", "eq", "Contracts Archive")]))},
+                 "explanation": "A PDF, but in Contracts Archive."},
+            ],
+        },
+    }, {"8201": "V", "8211": "V", "8203": "P", "8204": "P"}
+
+
+def slk_pages_author():
+    """SM2-SLK-03's channel with a condition history shows. Cycle 5 found that the Slack replica's history returns
+    no reactions, so Leo's :rocket: took one call per message. The author is in every history message (and search's
+    `from:` finds them too), so two pages of history answer the request."""
+    s, _ = slk_pages()
+    leo = node("users", [filt("f_author", "real_name", "eq", "Leo Park", "A:User.real_name")])
+    query = {"table": "messages", "key": ["message_id"], "filters": [],
+             "edges": [edge("e_chan", "channel_id", "channel_id",
+                            node("channels", [filt("f_chan", "channel_name", "eq", "deploys",
+                                                   "A:Conversation.channel_name")]), "R:messages.channel_id"),
+                       edge("e_author", "user_id", "user_id", leo, "R:messages.user_id")]}
+    seed = []
+    for kind, row in s["seed"]:
+        if kind == "reaction":  # this test's condition is the author
+            continue
+        if kind == "message" and row.get("ref") in ("t1", "t2", "t3", "t4", "nm_chan"):
+            row = {**row, "author": "leo", "text": row["text"].replace("Deployed", "Leo deployed")
+                   if row.get("ref") != "nm_chan" else row["text"]}
+        elif kind == "message" and row.get("ref") == "nm_priya":
+            row = {**row, "author": "priya", "text": "Leo, can you check the build before 6 pm?"}
+        elif kind == "message" and row.get("ref") == "nm_tada":
+            row = {k: v for k, v in row.items() if k != "ref"}
+        seed.append([kind, row])
+    return {
+        **s, "scenario_id": "SM2-SLK-04", "seed": seed,
+        "request": "Add an :eyes: reaction to every message Leo Park posted in #deploys.",
+        "conditions": [
+            {"id": "c1", "text": "every message in #deploys", "facts": ["R:messages.channel_id",
+                                                                     "A:Conversation.channel_name"]},
+            {"id": "c2", "text": "that Leo Park posted", "facts": ["R:messages.user_id", "A:User.real_name"]},
+        ],
+        "reference": {
+            **s["reference"], "query": query,
+            "decoys": [
+                {"witness": "@nm_priya", "fact": "A:User.real_name", "family": "F0",
+                 "mutation": {"type": "DROP", "target": "f_author"},
+                 "explanation": "A #deploys message addressed to Leo, but posted by Priya Sharma."},
+                {"witness": "@nm_chan", "fact": "A:Conversation.channel_name", "family": "F0",
+                 "mutation": {"type": "DROP", "target": "f_chan"},
+                 "explanation": "Posted by Leo, but in #deploys-staging."},
+            ],
+        },
+        "strategy_entry": {"prefix": "deploys", "search": "build", "channel": "C_DEP"},
+    }, {"@t1": "P", "@t2": "P", "@t3": "V", "@t4": "V"}
+
+
+SCENARIOS = [box, cal, lin, slk, cal_owned_wording, cal_explicit_hidden, slk_explicit_private, box_pages, slk_pages,
+             box_pages_pdf, slk_pages_author]
 
 
 def main():
