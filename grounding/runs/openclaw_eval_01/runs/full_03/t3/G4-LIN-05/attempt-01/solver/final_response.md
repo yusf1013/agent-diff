@@ -1,0 +1,1 @@
+Done. Set the estimate to **3** on **WEB-1** — "Checkout hangs on promo code apply" — assigned to Maya Chen in the Web team's Cycle 12 (Oct 5–12). It was previously estimated at 1; verified the change went through.

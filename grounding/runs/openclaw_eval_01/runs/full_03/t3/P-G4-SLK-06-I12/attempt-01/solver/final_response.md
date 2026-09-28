@@ -1,0 +1,1 @@
+Found Diego Alvarez's message in #deployments — "Gateway rollback completed, keeping an eye on the dashboards." — but it doesn't have exactly 3 eyes reactions. It currently has **2** eyes reactions, so per your instruction I haven't added the thumbsup. Want me to go ahead and add it anyway?

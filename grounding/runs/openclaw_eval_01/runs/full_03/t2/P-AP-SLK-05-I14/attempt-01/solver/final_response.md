@@ -1,0 +1,1 @@
+No match. The workspace owner (Nina Torres) belongs to exactly one channel: **#epsilon-ops**, and it currently has **3 members**, not 4. So there's no channel meeting the criteria — nothing was archived.

@@ -1,0 +1,1 @@
+I checked — Leo Park hasn't posted in #incidents on Tuesday (Sept 22). The only message in that channel at all is one from Diego Alvarez about checkout latency, and a workspace-wide search for Leo's messages in #incidents also came up empty. Nothing to react to.

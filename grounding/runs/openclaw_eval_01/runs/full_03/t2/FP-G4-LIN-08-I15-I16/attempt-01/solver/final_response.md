@@ -1,0 +1,1 @@
+There isn't one. MOB-42 ("Checkout crash on launch") has only a single sub-issue: MOB-57 "Polish saved-card search" — 5 points, due October 22, currently priority 4 (No priority). Nothing with a 3-point estimate or an October 15 due date, so I didn't change anything.

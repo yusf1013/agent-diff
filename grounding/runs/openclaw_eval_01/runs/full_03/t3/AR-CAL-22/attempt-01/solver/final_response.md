@@ -1,0 +1,1 @@
+Done. **Ops Rotation – NORAM** now uses the **America/New_York** timezone. I identified it by matching the "weekend on-call coverage" description among the calendars you own (the APAC, LATAM, and EMEA rotation calendars had different descriptions, and their owners weren't flagged as yours in the list either — the API confirmed you're the data owner of this one).

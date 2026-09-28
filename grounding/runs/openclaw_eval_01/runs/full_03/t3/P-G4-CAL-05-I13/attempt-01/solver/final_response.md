@@ -1,0 +1,1 @@
+There's no "Team Travel" calendar in your calendar list at all — the only calendars there are **Quarterly Reviews** (read access) and **Social** (write access). Nothing you own, and nothing with that name, so there's nothing to hide.

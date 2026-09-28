@@ -1,0 +1,1 @@
+No such issue exists. In Web's Cycle 4, the only issue in the Atlas project is **WEB-2 "Refresh help-center illustrations"** — assigned to Leo Park (the other Cycle 4 issue, WEB-8, is in Beacon and assigned to Sam Rivera). There's no issue assigned to Maya Chen there, so I haven't changed anything.

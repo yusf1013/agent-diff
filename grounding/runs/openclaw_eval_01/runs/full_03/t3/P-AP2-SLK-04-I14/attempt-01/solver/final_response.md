@@ -1,0 +1,1 @@
+I couldn't find a message matching your description. There's only one message from Diego in #incidents mentioning the gateway — "Wrapping up the gateway rollback, still watching error rates." (posted ~17:40) — but its thread has **3 replies**, not 4. Since it doesn't match the criteria, I haven't added the reaction. If you want the checkmark on that one anyway, just say the word.

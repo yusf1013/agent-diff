@@ -1,0 +1,1 @@
+Done 👀 — added the eyes reaction to the payment gateway timeout message in #incidents (the 504s on checkout one), posted by UCSQXSCO8QP, who's a member of #payments-oncall. The other timeout messages in that channel were from people not in #payments-oncall.

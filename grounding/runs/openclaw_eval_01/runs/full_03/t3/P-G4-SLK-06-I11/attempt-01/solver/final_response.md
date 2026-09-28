@@ -1,0 +1,1 @@
+Found Diego Alvarez's gateway rollback message in #deployments ("Gateway rollback looks good from my side, confirming."), but I did **not** add the reaction — it doesn't match the condition. It has exactly **1 eyes** reaction, not 3 (it also has 1 tada and 1 thumbsup). If you want the thumbsup anyway, just say the word.

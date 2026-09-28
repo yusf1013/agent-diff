@@ -1,0 +1,1 @@
+Done — added 👀 to Diego Alvarez's "The launch date is confirmed for October 12." message in #product-launch. It was the right one of three identical messages: the only one with the :thumbsup: from Priya Sharma and :tada: from Metrics Bot. Verified the reaction is live.

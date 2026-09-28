@@ -1,0 +1,1 @@
+I checked #incidents — there's no message from Leo Park on Tuesday (Sept 22). In fact, the only message in that channel since Sept 14 is one from Omar Haddad ("I'm looking into the DB connection pool now."), and Leo Park hasn't posted anything there this week. Nothing to react to.

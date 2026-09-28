@@ -1,0 +1,1 @@
+Done. The deploy freeze message in #incidents — "Update: extending the deploy freeze another week." — was posted by **Maya Chen** (her thread has the parent + 3 replies, 4 messages total, so that's the one). She wasn't in #incident-response, so I invited her — she's now a member (channel went from 1 to 2 members).

@@ -1,0 +1,1 @@
+Done 👀 — found Maya Chen's launch checklist card in #launch-readiness with the rollback steps ("halt deploys → restore snapshot → verify health") and added the eyes reaction to it. Verified it's on the message.

@@ -1,0 +1,1 @@
+Done. The "Fall Kickoff Retro" cycle (the one starting Sep 29 that contains MOB-1 "Checkout timeout on Apple Pay sheet" assigned to Sam Rivera) now runs **Sep 29 → Oct 20, 2026**, extended from its previous Oct 13 end date.

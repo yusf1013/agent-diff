@@ -1,0 +1,1 @@
+Done. Diego Alvarez's gateway rollback message was in the private channel **release-ops** ("Gateway rollback finished on prod, the error rate is back to baseline.") — I set its topic to **Post-release monitoring**.

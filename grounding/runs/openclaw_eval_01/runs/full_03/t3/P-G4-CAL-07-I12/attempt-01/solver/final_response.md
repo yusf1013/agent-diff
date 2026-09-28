@@ -1,0 +1,1 @@
+No such meeting found. This Thursday (June 21) has one "Quarterly planning" event at 4:00–4:30 PM, but Dana Whitfield's response is **tentative**, not declined — so it doesn't match. No other quarterly planning events that day. Want me to move it anyway, or did you mean a different meeting/date?

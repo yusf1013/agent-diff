@@ -1,0 +1,1 @@
+Checked — there's no such issue. In the Atlas project on Web's Cycle 4, the only issue is **WEB-2**, assigned to **Leo Park** (not Maya Chen). I also verified that Maya Chen has no issues assigned to her anywhere in the workspace, so there's nothing to flip to High priority.

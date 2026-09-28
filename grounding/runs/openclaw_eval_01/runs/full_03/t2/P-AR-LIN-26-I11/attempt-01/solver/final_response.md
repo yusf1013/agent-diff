@@ -1,0 +1,1 @@
+There's one "Design system audit" issue in the Web team — WEB-2 (currently in Todo, priority None) — but it has no subscribers at all, including Sam Rivera. Since the issue didn't match your condition, I left the priority unchanged. Let me know if you want me to set it to Urgent anyway.

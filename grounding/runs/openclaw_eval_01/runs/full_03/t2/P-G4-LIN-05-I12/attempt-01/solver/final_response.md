@@ -1,0 +1,1 @@
+There isn't one. The Web team's cycle ending October 12 (Cycle 12, Oct 5–12) has no issues at all. Maya Chen's only open issue — WEB-3 "Receipt email shows wrong total" — is in Cycle 13, which ends October 19. Want me to set the estimate on that one instead?

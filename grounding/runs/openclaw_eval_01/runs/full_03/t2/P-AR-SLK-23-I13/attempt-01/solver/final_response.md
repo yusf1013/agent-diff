@@ -1,0 +1,1 @@
+No such channel — the only private channel in the workspace is **#budget-planning** (purpose: "Quarterly budget planning and forecast reviews"), which doesn't mention onboarding and Diego Alvarez isn't a member. Nothing to archive.

@@ -1,0 +1,1 @@
+Found it — the 'Client Success' calendar (shared with you by dana.whitfield) is now hidden from your calendar list, so it'll stop showing up altogether. You can un-hide it anytime from your calendar settings if you ever want it back.

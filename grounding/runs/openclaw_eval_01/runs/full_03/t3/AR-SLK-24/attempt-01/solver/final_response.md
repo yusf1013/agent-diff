@@ -1,0 +1,1 @@
+Done 👀 — added the eyes reaction to UCSQXSCO8QP's message in #incidents: "Seeing 504s tied to a payment gateway timeout on checkout after the last deploy." That author is the only one of the payment-gateway-timeout posts who's also in #payments-oncall.

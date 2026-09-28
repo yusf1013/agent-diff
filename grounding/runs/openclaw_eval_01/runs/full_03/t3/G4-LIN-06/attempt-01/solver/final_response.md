@@ -1,0 +1,1 @@
+Done. Set the estimate to **3** on **WEB-1** "Checkout button unresponsive on Safari" — the Todo issue in the Web team assigned to Maya Chen with the Bug (Web) label. It was previously estimated at 2.

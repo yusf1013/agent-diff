@@ -1,0 +1,1 @@
+Done. The **Client sync** (finalizing the Meridian contract renewal terms) on **Thu, June 21, 3:00–3:30 PM** has been moved from Room 8B to **Room 4C**. External attendees will be notified of the change.

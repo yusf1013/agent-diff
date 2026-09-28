@@ -1,0 +1,243 @@
+{
+  "test_id": "P-G4-LIN-02-I13",
+  "question": "In Linear: Set the estimate to 5 on the overdue high-priority issue assigned to Maya Chen on the Web team. If there isn't one, just tell me.",
+  "harness": "openclaw",
+  "termination": "done",
+  "final": "No such issue exists — I checked Maya Chen's issues on the Web team:\n\n- **WEB-4** — \"Add loading spinner to gallery\" — High priority, but due **2026-10-10** (not overdue), currently in Todo with estimate 2.\n\nThat's her only issue on the Web team, so there's no overdue high-priority one to set an estimate on. Nothing was changed.",
+  "turns": [
+    {
+      "label": "turn1",
+      "message": "In Linear: Set the estimate to 5 on the overdue high-priority issue assigned to Maya Chen on the Web team. If there isn't one, just tell me.",
+      "text": "No such issue exists — I checked Maya Chen's issues on the Web team:\n\n- **WEB-4** — \"Add loading spinner to gallery\" — High priority, but due **2026-10-10** (not overdue), currently in Todo with estimate 2.\n\nThat's her only issue on the Web team, so there's no overdue high-priority one to set an estimate on. Nothing was changed.",
+      "termination": "done",
+      "returncode": 0,
+      "killed": null,
+      "duration_s": 182.7,
+      "meta_error": null,
+      "stop_reason": "stop"
+    }
+  ],
+  "steps": [
+    {
+      "turn": 1,
+      "tool": "read",
+      "arguments": {
+        "path": "~/.openclaw-state/6e3dcbe472954179/workspace-assistant/skills/linear/SKILL.md"
+      },
+      "action": "read {\"path\": \"~/.openclaw-state/6e3dcbe472954179/workspace-assistant/skills/linear/SKILL.md\"}",
+      "text": "",
+      "thinking": "The user is asking to set the estimate to 5 on a high-priority overdue issue assigned to Maya Chen on the Web team in Linear. First, since this is a Linear task, I need to read the Linear skill.",
+      "usage": {
+        "input": 4732,
+        "output": 104,
+        "cacheRead": 3920,
+        "cacheWrite": 0,
+        "reasoningTokens": 47,
+        "totalTokens": 8756,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "status": "success",
+        "stdout": "---\nname: linear\ndescription: \"Linear project management and issue tracking API. Use it for anything in the user's Linear account.\"\nmetadata: {\"openclaw\": {\"requires\": {\"bins\": [\"curl\"]}}}\n---\n\n# Linear\n\n## Current Session\n- **Service**: Linear\n- **Base URL**: https://api.linear.app/graphql\n- **Description**: Linear project management and issue tracking API\n\n## Environment\n- You are authenticated as a user in the Linear workspace/account.\n- Authentication is handled automatically via proxy. Use placeholder tokens like `<TOKEN>` where credentials would go.\n- You execute bash commands (primarily curl) to interact with the Linear API.\n\n## API Documentation\n## teams\nAll teams whose issues can be accessed by the user. This might be different from `administrableTeams`, which also includes teams whose settings can be changed by the user.\n\n## issues\nAll issues.\n\n## issue\nGet a single issue by ID.\n\n## workflowStates\nAll issue workflow states.\n\n## users\nAll users for the organization.\n\n## issueCreate\nCreates a new issue.\n\n## issueUpdate\nUpdates an issue.\n\n## commentCreate\nCreates a new comment.\n\n## teamCreate\nCreates a new team. The user who creates the team will automatically be added as a member to the newly created team.\n\n## issueLabelCreate\nCreates a new label.\n\n## issueLabels\nAll issue labels.\n\n## comments\nAll comments.\n\n## commentUpdate\nUpdates a comment.\n\n## commentDelete\nDeletes a comment.\n\n## issueLabelUpdate\nUpdates a label.\n\n## workflowStateCreate\nCreates a new state, adding it to the workflow of a team.\n\n## workflowStateArchive\nArchives a state. Only states with issues that have all been archived can be archived.\n\n## teamMembershipCreate\nCreates a new team membership.\n\n## issueRelationCreate\nCreates a new issue relation.\n"
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nThe user is asking to set the estimate to 5 on a high-priority overdue issue assigned to Maya Chen on the Web team in Linear. First, since this is a Linear task, I need to read the Linear skill.\n</thinking>\n"
+          }
+        ]
+      }
+    },
+    {
+      "turn": 2,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -s -X POST https://api.linear.app/graphql -H \"Authorization: Bearer <TOKEN>\" -H \"Content-Type: application/json\" -d '{\"query\":\"{ users(filter: { name: { contains: \\\"Maya\\\" } }) { nodes { id name email } } teams { nodes { id key name } } }\"}'"
+      },
+      "action": "curl -s -X POST https://api.linear.app/graphql -H \"Authorization: Bearer <TOKEN>\" -H \"Content-Type: application/json\" -d '{\"query\":\"{ users(filter: { name: { contains: \\\"Maya\\\" } }) { nodes { id name email } } teams { nodes { id key name } } }\"}'",
+      "text": "",
+      "thinking": "SKILL.md is a bit vague — it says authentication is done via proxy, and to use placeholder tokens like `<TOKEN>` where credentials would normally go. In other words, I should probably use curl against https://api.linear.app/graphql with the `<TOKEN>` placeholder, and the proxy will handle authentication.\n\nWhat needs to be found: overdue, high-priority, assigned to Maya Chen, issues on the Web team.\n\nFirst, let me query the Web team, Maya Chen's user ID, and the priority. Linear's priorities: 0=none, 1=urgent, 2=high, 3=medium, 4=low. So high priority = 2.\n\nOverdue: state is not completed/canceled, and dueDate is before today (2026-09-25).\n\nLet me write a GraphQL query:\n\n```graphql\n{\n  team(key: \"WEB\") {\n    id\n    key\n    name\n    issues(filter: { assignee: { id: { eq: \"MAYA_ID\" } }, priority: { eq: 2 } }, first: 50) {\n      nodes {\n        id\n        identifier\n        title\n        priority\n        dueDate\n        state { name type }\n        assignee { name }\n        workflowStates... \n      }\n    }\n  }\n  users(filter: { name: { contains: \"Maya\" } }) { nodes { id name } }\n}\n```\n\nActually, the filter for assignee should be by user ID. First I need Maya Chen's ID. I could combine both into one query: get the user and team. Let me run one query to fetch users matching \"Maya\" and the team with key WEB.\n\nTeam key — the \"Web team\" key is probably \"WEB\". Let me try.\n\nOne query:\n\n```graphql\n{\n  users(filter: { name: { contains: \"Maya\" } }) {\n    nodes { id name email }\n  }\n  teams {\n    nodes { id key name }\n  }\n}\n```\n\nThen, the second query with the filter.\n\nRegarding authentication: the skill says \"authentication is handled automatically via the proxy. Use placeholder tokens like <TOKEN> where credentials would normally go.\" So I just need to do curl with the Authorization: Bearer <TOKEN> header. The proxy intercepts it.\n\nAlright, let's execute.",
+      "usage": {
+        "input": 502,
+        "output": 617,
+        "cacheRead": 8624,
+        "cacheWrite": 0,
+        "reasoningTokens": 518,
+        "totalTokens": 9743,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "status": "success",
+        "stdout": "{\"data\":{\"users\":{\"nodes\":[{\"id\":\"7b01ef76-fddc-4de2-8ecd-01028e576ba7\",\"name\":\"Maya Chen\",\"email\":\"maya.chen@northwind.example\"}]},\"teams\":{\"nodes\":[{\"id\":\"ada06563-091f-41d5-9fa0-1c23ab6d274d\",\"key\":\"WEB\",\"name\":\"Web\"}]}}}"
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nSKILL.md is a bit vague — it says authentication is done via proxy, and to use placeholder tokens like `<TOKEN>` where credentials would normally go. In other words, I should probably use curl against https://api.linear.app/graphql with the `<TOKEN>` placeholder, and the proxy will handle authentication.\n\nWhat needs to be found: overdue, high-priority, assigned to Maya Chen, issues on the Web team.\n\nFirst, let me query the Web team, Maya Chen's user ID, and the priority. Linear's priorities: 0=none, 1=urgent, 2=high, 3=medium, 4=low. So high priority = 2.\n\nOverdue: state is not completed/canceled, and dueDate is before today (2026-09-25).\n\nLet me write a GraphQL query:\n\n```graphql\n{\n  team(key: \"WEB\") {\n    id\n    key\n    name\n    issues(filter: { assignee: { id: { eq: \"MAYA_ID\" } }, priority: { eq: 2 } }, first: 50) {\n      nodes {\n        id\n        identifier\n        title\n        priority\n        dueDate\n        state { name type }\n        assignee { name }\n        workflowStates... \n      }\n    }\n  }\n  users(filter: { name: { contains: \"Maya\" } }) { nodes { id name } }\n}\n```\n\nActually, the filter for assignee should be by user ID. First I need Maya Chen's ID. I could combine both into one query: get the user and team. Let me run one query to fetch users matching \"Maya\" and the team with key WEB.\n\nTeam key — the \"Web team\" key is probably \"WEB\". Let me try.\n\nOne query:\n\n```graphql\n{\n  users(filter: { name: { contains: \"Maya\" } }) {\n    nodes { id name email }\n  }\n  teams {\n    nodes { id key name }\n  }\n}\n```\n\nThen, the second query with the filter.\n\nRegarding authentication: the skill says \"authentication is handled automatically via the proxy. Use placeholder tokens like <TOKEN> where credentials would normally go.\" So I just need to do curl with the Authorization: Bearer <TOKEN> header. The proxy intercepts it.\n\nAlright, let's execute.\n</thinking>\n"
+          }
+        ]
+      }
+    },
+    {
+      "turn": 3,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -s -X POST https://api.linear.app/graphql -H \"Authorization: Bearer <TOKEN>\" -H \"Content-Type: application/json\" -d '{\"query\":\"{ issues(filter: { team: { key: { eq: \\\"WEB\\\" } }, assignee: { id: { eq: \\\"7b01ef76-fddc-4de2-8ecd-01028e576ba7\\\" } }, priority: { eq: 2 }, dueDate: { lt: \\\"2026-09-25T23:59:59Z\\\" } }) { nodes { id identifier title priority dueDate estimate workflowState { id name type } state { id name } } } }\"}'"
+      },
+      "action": "curl -s -X POST https://api.linear.app/graphql -H \"Authorization: Bearer <TOKEN>\" -H \"Content-Type: application/json\" -d '{\"query\":\"{ issues(filter: { team: { key: { eq: \\\"WEB\\\" } }, assignee: { id: { eq: \\\"7b01ef76-fddc-4de2-8ecd-01028e576ba7\\\" } }, priority: { eq: 2 }, dueDate: { lt: \\\"2026-09-25T23:59:59Z\\\" } }) { nodes { id identifier title priority dueDate estimate workflowState { id name type } state { id name } } } }\"}'",
+      "text": "",
+      "thinking": "Okay, let me search for issues. Overdue means dueDate < today (2026-09-25). High priority. Linear's priority values are 0 (No priority), 1 (Urgent), 2 (High), 3 (Medium), 4 (Low). So priority = 2 is \"High\". Let me query issues on the Web team assigned to Maya Chen with priority 2 and dueDate before today. Also, I need to consider workflow state — overdue issues are usually in an active (non-completed, non-canceled) state. First, let me fetch the data and then decide.",
+      "usage": {
+        "input": 722,
+        "output": 321,
+        "cacheRead": 8624,
+        "cacheWrite": 0,
+        "reasoningTokens": 133,
+        "totalTokens": 9667,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "status": "success",
+        "stdout": "{\"errors\":[{\"message\":\"Cannot query field 'workflowState' on type 'Issue'.\",\"locations\":[{\"line\":1,\"column\":236}]}]}"
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nOkay, let me search for issues. Overdue means dueDate < today (2026-09-25). High priority. Linear's priority values are 0 (No priority), 1 (Urgent), 2 (High), 3 (Medium), 4 (Low). So priority = 2 is \"High\". Let me query issues on the Web team assigned to Maya Chen with priority 2 and dueDate before today. Also, I need to consider workflow state — overdue issues are usually in an active (non-completed, non-canceled) state. First, let me fetch the data and then decide.\n</thinking>\n"
+          }
+        ]
+      }
+    },
+    {
+      "turn": 4,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -s -X POST https://api.linear.app/graphql -H \"Authorization: Bearer <TOKEN>\" -H \"Content-Type: application/json\" -d '{\"query\":\"{ issues(filter: { team: { key: { eq: \\\"WEB\\\" } }, assignee: { id: { eq: \\\"7b01ef76-fddc-4de2-8ecd-01028e576ba7\\\" } }, priority: { eq: 2 }, dueDate: { lt: \\\"2026-09-25T23:59:59Z\\\" } }) { nodes { id identifier title priority dueDate estimate state { id name } } } }\"}'"
+      },
+      "action": "curl -s -X POST https://api.linear.app/graphql -H \"Authorization: Bearer <TOKEN>\" -H \"Content-Type: application/json\" -d '{\"query\":\"{ issues(filter: { team: { key: { eq: \\\"WEB\\\" } }, assignee: { id: { eq: \\\"7b01ef76-fddc-4de2-8ecd-01028e576ba7\\\" } }, priority: { eq: 2 }, dueDate: { lt: \\\"2026-09-25T23:59:59Z\\\" } }) { nodes { id identifier title priority dueDate estimate state { id name } } } }\"}'",
+      "text": "",
+      "thinking": "Let's fix the query — `state` is the correct field. Also, note that in Linear's priority, 2 = High. Let me double-check: Linear's priorities are 0 = No priority, 1 = Low, 2 = High, 3 = Urgent. Actually, the standard is: 0 = none, 1 = low, 2 = high, 3 = urgent. Right.",
+      "usage": {
+        "input": 957,
+        "output": 269,
+        "cacheRead": 8624,
+        "cacheWrite": 0,
+        "reasoningTokens": 88,
+        "totalTokens": 9850,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "status": "success",
+        "stdout": "{\"data\":{\"issues\":{\"nodes\":[]}}}"
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nLet's fix the query — `state` is the correct field. Also, note that in Linear's priority, 2 = High. Let me double-check: Linear's priorities are 0 = No priority, 1 = Low, 2 = High, 3 = Urgent. Actually, the standard is: 0 = none, 1 = low, 2 = high, 3 = urgent. Right.\n</thinking>\n"
+          }
+        ]
+      }
+    },
+    {
+      "turn": 5,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -s -X POST https://api.linear.app/graphql -H \"Authorization: Bearer <TOKEN>\" -H \"Content-Type: application/json\" -d '{\"query\":\"{ issues(filter: { team: { key: { eq: \\\"WEB\\\" } }, assignee: { id: { eq: \\\"7b01ef76-fddc-4de2-8ecd-01028e576ba7\\\" } } }) { nodes { id identifier title priority dueDate estimate state { id name } } } }\"}'"
+      },
+      "action": "curl -s -X POST https://api.linear.app/graphql -H \"Authorization: Bearer <TOKEN>\" -H \"Content-Type: application/json\" -d '{\"query\":\"{ issues(filter: { team: { key: { eq: \\\"WEB\\\" } }, assignee: { id: { eq: \\\"7b01ef76-fddc-4de2-8ecd-01028e576ba7\\\" } } }) { nodes { id identifier title priority dueDate estimate state { id name } } } }\"}'",
+      "text": "No results on the first pass — let me broaden the query to check all of Maya's Web issues before concluding.",
+      "thinking": "No issues were found with priority 2 (high). Let's verify the priority mapping in Linear. In Linear, priority 1 = urgent, 2 = high, 3 = medium, 4 = low. So 2 is high, correct.\n\nBut wait—maybe my understanding of the priority enum is wrong. Let's check: Linear's priorities are: 0 = none, 1 = urgent, 2 = high, 3 = medium, 4 = low. Yes, that's right.\n\nAlso, \"overdue\"—the issue's due date has passed. Today is 2026-09-25. The filter dueDate lt 2026-09-25T23:59:59Z—hmm, this is including today's date. An issue with a due date of 2026-09-25 would only be overdue if today's date has passed. Actually, the current time is 12:00 EDT on 2026-09-25, so an issue with a due date of 2026-09-25 hasn't passed yet (assuming the due date is at end of day). To be safe, let's use lt 2026-09-25 (i.e., strictly before today). But there might not be any results anyway.\n\nLet's broaden the scope: to be thorough, I'll query all of Maya Chen's issues on the Web team without a priority filter, and check for high-priority ones that are overdue. Let me try running a query without the priority filter and see what comes back.",
+      "usage": {
+        "input": 378,
+        "output": 522,
+        "cacheRead": 9408,
+        "cacheWrite": 0,
+        "reasoningTokens": 354,
+        "totalTokens": 10308,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "status": "success",
+        "stdout": "{\"data\":{\"issues\":{\"nodes\":[{\"id\":\"9130bc99-d742-4d29-9caf-ae64fe8ed164\",\"identifier\":\"WEB-4\",\"title\":\"Add loading spinner to gallery\",\"priority\":2.0,\"dueDate\":\"2026-10-10\",\"estimate\":2.0,\"state\":{\"id\":\"c45ec62a-75e9-4ca9-9495-ea629d9602f2\",\"name\":\"Todo\"}}]}}}"
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nNo issues were found with priority 2 (high). Let's verify the priority mapping in Linear. In Linear, priority 1 = urgent, 2 = high, 3 = medium, 4 = low. So 2 is high, correct.\n\nBut wait—maybe my understanding of the priority enum is wrong. Let's check: Linear's priorities are: 0 = none, 1 = urgent, 2 = high, 3 = medium, 4 = low. Yes, that's right.\n\nAlso, \"overdue\"—the issue's due date has passed. Today is 2026-09-25. The filter dueDate lt 2026-09-25T23:59:59Z—hmm, this is including today's date. An issue with a due date of 2026-09-25 would only be overdue if today's date has passed. Actually, the current time is 12:00 EDT on 2026-09-25, so an issue with a due date of 2026-09-25 hasn't passed yet (assuming the due date is at end of day). To be safe, let's use lt 2026-09-25 (i.e., strictly before today). But there might not be any results anyway.\n\nLet's broaden the scope: to be thorough, I'll query all of Maya Chen's issues on the Web team without a priority filter, and check for high-priority ones that are overdue. Let me try running a query without the priority filter and see what comes back.\n</thinking>\nNo results on the first pass — let me broaden the query to check all of Maya's Web issues before concluding."
+          }
+        ]
+      }
+    },
+    {
+      "turn": 6,
+      "tool": null,
+      "text": "No such issue exists — I checked Maya Chen's issues on the Web team:\n\n- **WEB-4** — \"Add loading spinner to gallery\" — High priority, but due **2026-10-10** (not overdue), currently in Todo with estimate 2.\n\nThat's her only issue on the Web team, so there's no overdue high-priority one to set an estimate on. Nothing was changed.",
+      "thinking": "Let me analyze this:\n\n- Maya Chen (id 7b01ef76...) has only one Web issue: WEB-4 \"Add loading spinner to gallery\"\n- priority 2.0 = High ✓\n- dueDate 2026-10-10 = not overdue (today is 2026-09-25)\n- state is Todo\n\nSo, there are no overdue high-priority issues assigned to Maya Chen on the Web team. The only high-priority issue (WEB-4) is due 2026-10-10, which is in the future, not overdue.\n\nPer instructions: \"If there isn't one, just tell me.\" So I should tell them.",
+      "usage": {
+        "input": 684,
+        "output": 254,
+        "cacheRead": 9408,
+        "cacheWrite": 0,
+        "reasoningTokens": 160,
+        "totalTokens": 10346,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nLet me analyze this:\n\n- Maya Chen (id 7b01ef76...) has only one Web issue: WEB-4 \"Add loading spinner to gallery\"\n- priority 2.0 = High ✓\n- dueDate 2026-10-10 = not overdue (today is 2026-09-25)\n- state is Todo\n\nSo, there are no overdue high-priority issues assigned to Maya Chen on the Web team. The only high-priority issue (WEB-4) is due 2026-10-10, which is in the future, not overdue.\n\nPer instructions: \"If there isn't one, just tell me.\" So I should tell them.\n</thinking>\nNo such issue exists — I checked Maya Chen's issues on the Web team:\n\n- **WEB-4** — \"Add loading spinner to gallery\" — High priority, but due **2026-10-10** (not overdue), currently in Todo with estimate 2.\n\nThat's her only issue on the Web team, so there's no overdue high-priority one to set an estimate on. Nothing was changed."
+          }
+        ]
+      }
+    }
+  ],
+  "followup_steps": []
+}

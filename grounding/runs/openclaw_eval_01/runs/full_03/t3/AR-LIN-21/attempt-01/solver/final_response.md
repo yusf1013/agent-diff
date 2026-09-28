@@ -1,0 +1,1 @@
+Done — set **Urgent** on **WEB-1 "Login timeout on SSO redirect"** (created June 3rd by Maya Chen in the Web team). I initially set Medium by mistake on the first attempt, but the follow-up update corrected it; final state is confirmed as Urgent.

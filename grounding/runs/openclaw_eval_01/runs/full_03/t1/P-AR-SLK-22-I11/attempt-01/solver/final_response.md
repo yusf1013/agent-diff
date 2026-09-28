@@ -1,0 +1,1 @@
+I checked #launch-prep — the thread on tonight's payments launch checklist (started by Diego Alvarez) only has one reply, from **Omar Haddad** ("Signed off on my end, checklist looks good."). There's no reply from Leo Park in that thread, so I didn't add the reaction. Want me to react to Omar's sign-off instead, or nudge Leo?

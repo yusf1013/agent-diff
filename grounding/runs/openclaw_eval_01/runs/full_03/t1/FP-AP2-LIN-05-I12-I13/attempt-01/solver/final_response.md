@@ -1,0 +1,1 @@
+I checked Linear — there's no such issue. The full comment history (only 3 comments in the workspace) shows Priya's API-timeout comments were posted on Sept 20 (WEB-4) and Sept 21 (WEB-3), with nothing posted on September 22, and no thread where Leo marked something resolved on that date. So I haven't changed any priorities.

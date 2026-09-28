@@ -1,0 +1,1 @@
+Done. Found the cycle **Fall Kickoff Retro** (Mobile team), which starts Sept 29 and contains MOB-1 "Checkout timeout on Apple Pay sheet" assigned to Sam Rivera. Its end date was October 13 — I pushed it to **October 20**.

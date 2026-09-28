@@ -1,0 +1,1 @@
+There isn't one that matches. The only Quarterly planning meeting this Thursday (June 21, 2:00–3:00 PM) has Dana Whitfield listed as **accepted** — it was Omar Haddad who declined. Since the description didn't match, I didn't move it. Let me know if you'd like it moved to Room 5B anyway, or if you're thinking of a different day or meeting.

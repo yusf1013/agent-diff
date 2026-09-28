@@ -1,0 +1,1 @@
+Done ✅ Found it on the "Leo Park" calendar (New York time): **Quarterly planning lunch**, Thursday June 21, 12:00–1:00 PM. It had no location set, so I updated it to **Room 5B** and verified the change stuck.

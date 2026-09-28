@@ -1,0 +1,1 @@
+No match. The only non-archived channel with "incident" in its name is `incident-comms`, but its topic is "Live incident chatter and status updates" — no postmortems mentioned. (There's also `incident-2019-retro` whose topic is about archived project artifacts, but it's archived.) So I haven't sent any invite — let me know if you'd like Aisha invited to `incident-comms` anyway.

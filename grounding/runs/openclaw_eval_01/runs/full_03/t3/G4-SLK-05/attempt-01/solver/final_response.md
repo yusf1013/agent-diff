@@ -1,0 +1,1 @@
+Done 👀 — added the eyes reaction to Maya Chen's message about the deploy checklist in your DM with her. Verified it's on the message ("Deploy checklist for Friday is ready: env, flags, rollback plan.").

@@ -1,0 +1,1 @@
+I checked: there are 4 messages about payment gateway timeouts in #incidents (from maya.chen, omar.haddad, leo.park, and diego.alvarez), but none of those people are members of #payments-oncall (its members are aisha.khan, priya.sharma, and the bot). So no match — no reaction was added.

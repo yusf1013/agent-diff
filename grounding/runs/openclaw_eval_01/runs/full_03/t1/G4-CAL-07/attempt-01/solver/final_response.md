@@ -1,0 +1,1 @@
+Done. There were four "Quarterly planning" meetings this Thursday — the one Dana Whitfield declined is the **10:00–11:00 AM** one, and I've set its location to **Room 5B**. Attendees were notified of the update.

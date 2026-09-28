@@ -1,0 +1,1 @@
+No match. The only non-archived channel with "incident" in its name is **incident-comms** (topic: "Live incident chatter and status updates"), which doesn't mention postmortems — and that's the only incident-named channel in the workspace, so there's no channel to invite Aisha to.

@@ -1,0 +1,1 @@
+Done — the checked "Product Team" calendar (owned by priya.nair@northwind.example) is now renamed to **Eng Product Sync**. Note there's a second "Product Team" calendar in your list (owned by dana.whitfield) that isn't checked, so I left that one alone.

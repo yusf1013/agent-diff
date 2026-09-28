@@ -1,0 +1,1 @@
+There isn't one. The only rollout timeline message in #eng-updates is Priya's own post ("Rollout timeline slipped by one day, more soon."), and its 👀 reaction came from Omar Haddad, not Priya. So no message matches "Priya reacted with eyes," and I didn't add the rocket.

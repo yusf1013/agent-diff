@@ -1,0 +1,1 @@
+Leo Park didn't post anything in #incidents on Tuesday (Sep 22) — I checked the channel history and its threads. The only messages that day were Omar Haddad's ("Anyone seeing elevated latency on checkout?") and Diego Alvarez's ("I'm looking into the DB connection pool now."), so there was nothing to react to. Want me to react to one of those instead?

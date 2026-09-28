@@ -1,0 +1,1 @@
+Done 👀 — Maya Chen's "Launch checklist: rollback steps — 1) halt deploys 2) restore snapshot 3) verify health" message in #launch-readiness now has an eyes reaction. (The other two checklist cards in that channel are handoff notes and cleanup steps, so I left those alone.)

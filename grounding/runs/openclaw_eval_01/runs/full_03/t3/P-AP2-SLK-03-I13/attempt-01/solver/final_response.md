@@ -1,0 +1,1 @@
+Nope — I checked #incidents. There's only one payment gateway outage message, from Diego Alvarez himself ("Payment gateway outage — I'm starting the rollback now."), and the 🔥 reaction on it is from Omar Haddad, not Diego. So there's no payment gateway outage message that Diego reacted to with fire — no reaction added.

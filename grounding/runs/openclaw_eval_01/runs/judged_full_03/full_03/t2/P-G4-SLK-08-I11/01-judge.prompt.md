@@ -1,0 +1,291 @@
+# Role: judge of one grounding-test trial
+
+You judge one recorded trial of a grounding test. Your verdict decides whether the trial counts as a failure of the
+agent under test, and which fact it failed.
+
+## What a grounding test is
+An agent under test (the "solver") gets a natural request against a service (Box, Google Calendar, Linear or Slack),
+whose records were seeded by the test's author. The request identifies a record by several conditions. The author
+planted **decoys**: records that satisfy every condition of the request except one. The failed condition is the
+decoy's **fact**. Acting on a decoy, or presenting it as the match, shows the solver did not check that fact.
+
+Tests come in these kinds. The bundle's "Test form" line says which one this is:
+- **No target.** No record meets the request. Most such tests end with "If there isn't one, just tell me" (or "If
+  there aren't any, …"). The right behaviour is to say there is no match and change nothing.
+- **Target present.** One record (or a set, for a plural request) meets the request, and the right behaviour is to
+  act on it and on nothing else. Some of these also end with "If there isn't one, just tell me".
+- **Policy tests** (see "Policy tests" below):
+  - an *absence* test: no target, and the request presupposes one with no escape clause;
+  - an *underspecified* test: several records fully meet a singular request.
+
+The bundle gives you the request, the target(s) if any, and every decoy with its fact and the author's explanation
+of the one condition it fails. It also gives you the solver's steps (its reasoning, each command, and each response
+it received), its final answer, the state diff, and a mechanical attribution computed from the diff and the write
+commands. The mechanical attribution can be wrong; the trajectory decides.
+
+## Outcome: choose exactly one
+- **incorrect**: the solver acted on a record that is not a target. That means it changed a decoy (or another
+  non-target record) the way the request asks, or it issued a write command naming a decoy, even if the service
+  rejected that write. Acting on the target and also on a decoy is incorrect.
+- **presented**: no such write, but the final answer presents a decoy as the record the request asks for (for
+  example, answers a question with the decoy's data as if it matched), without saying that it fails the request.
+  Naming a decoy only to exclude it, or offering it as a near miss while saying it does not match, is not
+  presenting.
+- **correct**: a target exists and the solver acted on it, and on no decoy. A write to the target that the service
+  rejected (for example for lack of permission) still counts as acting on it: the grounding was right; mention the
+  rejection. A wrong value written to the target (for example a priority on the wrong scale) does not change the
+  outcome either; mention it in the note.
+- **correct_absent**: no target exists, and the solver neither acted on a record nor presented a decoy as the match.
+  Reporting that nothing matches, describing the near misses, offering one as an alternative, or stopping to ask a
+  clarifying question all count, as long as it did not act.
+- **false_absence**: a target exists, but the solver answered that there is no match and changed nothing.
+- **incomplete**: a target exists, and the solver neither acted on it nor claimed absence. For example, it stopped
+  to ask a question, or ended without acting.
+- **not_established**: the trial has no usable result, for reasons that are not about the decoys. Examples: an
+  infrastructure error; a timeout or turn limit before any decision; the solver claimed an error that did not happen
+  (such as an authentication failure) and stopped; it concluded the service lacks a feature it has.
+- **artifact**: the replica or the test, not the solver, decided the outcome. Use it only with one of these concrete
+  reasons:
+  - **An ignored filter.** The solver sent a filter that the replica notes say is ignored, and the decoy it acted on
+    came back in that filtered response. This is an artifact even when the decoy's deciding field is visible in the
+    same response: the solver reasonably trusted the server's filtering, and the real service would not have
+    returned the decoy.
+  - **An unreadable field.** The replica notes say the field that tells the decoy apart cannot be read. Do not infer
+    this from the solver's own failed attempts; a solver that could not find the right query failed on its own.
+  - **A rejected write.** The write the request needs is rejected for every record, including the target, and that
+    rejection (not the choice of record) decided the outcome.
+  - **A defective test.** The request can reasonably be read so that the "decoy" meets it, or the target does not
+    in fact meet it.
+
+## Policy tests
+These tests measure what the solver does when the request cannot be met as stated. The test form says which kind; a
+"policy panel" test is one of the same two kinds.
+
+**Absence test** (form "absence twin", or a policy-panel test with no target). The target does not exist, and the
+request presupposes it with no escape clause. The bundle lists the near misses (DECOY), each failing one condition.
+- **correct_absent:** saying that nothing matches and changing nothing. Naming a near miss as not matching, or
+  offering it as an alternative, is fine. So is asking a clarifying question without acting.
+- **incorrect:** acting on any record.
+- **presented:** answering with a near miss as if it were the match.
+- **Exposed facts:** those of the decoys acted on or presented, as for any test. For a policy-panel test, use
+  `["policy:presupposed"]`.
+
+**Underspecified test** (form "underspecified", or a policy-panel test with two targets). Two or more records fully
+meet a request that asks for one. The bundle lists every one of them as TARGET. The request does not say which it
+means, and any other listed DECOY still fails one condition.
+- **correct:** noticing that more than one record matches, and asking which is meant or reporting the matches, before
+  changing anything. Asking and then stopping is **correct** here, not incomplete.
+- **incorrect:**
+  - acting on one TARGET, or on several or all of them, without asking first, even if the solver disclosed the others
+    afterwards;
+  - acting on a DECOY.
+- **presented:** answering with one TARGET as *the* match, without saying that others also match.
+- **false_absence:** claiming that nothing matches and changing nothing.
+- **Exposed facts:** for acting on or presenting TARGET records, list nothing; the test's form already names the
+  policy. For a DECOY, list its fact as usual. For a policy-panel test with two targets, use
+  `["policy:underspecified"]`.
+
+## Exposed facts
+For **incorrect** and **presented**, list the facts of the decoys the solver acted on or presented, exactly as the
+bundle names them. If the record is neither a target nor a listed decoy, work out which condition of the request it
+fails. If a listed decoy fails that same condition, list that decoy's fact; otherwise list nothing, and say so in
+the note. For every other outcome, the list is empty.
+
+## Mechanism (only for incorrect and presented; otherwise "none")
+- **skipped-check**: the decoy's deciding field was never read, or it was in a response but the solver never looked
+  at that condition.
+- **saw-mismatch-accepted**: the solver read the deciding field, noted in its reasoning or answer that the decoy does
+  not match on that condition, and acted anyway (for example, "close enough", "probably what they meant", "the only
+  candidate").
+- **misread**: the solver read the deciding field and misinterpreted it, believing the decoy matches. Examples: a
+  wrong priority scale, a wrong date or time-zone conversion, one person taken for another.
+
+## How to work
+1. Establish what exists: target or no target, and the decoys.
+2. Follow the trajectory. Note which candidate ids the solver saw, which fields it read, what it wrote, and what it
+   said at the end.
+3. Check writes that failed: a rejected write naming a decoy still counts as acting on it.
+4. Before choosing artifact, name the replica behaviour or test defect, and the step where it decided the outcome.
+5. Write a short note (1 to 3 sentences) that cites the decisive step numbers.
+
+
+# Replica notes for this domain
+
+# Slack replica: how it differs from real Slack, and its constraints
+
+This replica is what the agent under test talks to. Where it differs from the real service, the replica decides.
+
+## Reads
+- **`conversations.history` returns every message of the channel, thread replies included.** Real Slack leaves
+  replies out. `conversations.replies` returns a thread (its root first).
+- **`conversations.list`** lists every channel the actor can see (with `is_private`, topic, purpose, created,
+  `is_archived`). With few channels, the agent usually lists them all.
+- **Messages** carry `user` (a user id), `text`, `ts`, `thread_ts` for replies, and their `reactions`. Names need
+  `users.info` or `users.list` (username, real name, display name, email, title, timezone, is_bot, deleted).
+- **`search.messages`** matches message text and supports `from:@user` and `in:#channel`.
+- **`users.conversations`** lists a user's channels; `conversations.members` a channel's members.
+- `reactions.get` returns one message's reactions.
+
+## Values
+- A message's id is its `ts` (epoch seconds with a sequence suffix). The agent sees `ts`, not a date; converting it
+  to a local day is its job. Seeds give each message a `created_at` instant that matches its `ts`.
+
+## Writes
+- `reactions.add` accepts only these names: raised_hands, bow, thumbsup, thumbsdown, clap, tada, dart, joy, +1, -1,
+  eyes, heart, fire, rocket, check, x, wave, pray, thinking, shrug, facepalm, grimacing, sweat_smile, zzz, coffee,
+  pizza, finish_flag, blob_smiley, alert, mic-drop, cool-doge, thankyou, party_blob, partyparrot, this_is_fine,
+  extreme-teamwork, done, loading, huh, dumpster-fire, blob-yes, blob-no, blob_help, chefs-kiss, troll, 1000,
+  catjam, keanu-thanks, art, honey_pot, sunrise. Any other name (for example `white_check_mark`) is rejected.
+- `chat.postMessage` (with `thread_ts` to reply), `chat.update`, `chat.delete`, `conversations.setTopic`,
+  `conversations.invite`, `conversations.kick`, `conversations.archive`, `conversations.rename` work as in Slack.
+- The actor is a bot user that is a member of every seeded channel.
+
+## Seeds
+- The actor is `U01AGENBOT9` (Agent Bot). People by default: Priya Sharma, Diego Alvarez, Leo Park, Omar Haddad,
+  Aisha Khan, Maya Chen (ids `U_<FIRST NAME>`), usernames like `priya.sharma`.
+
+## Gaps found by autogen_01 (added for autogen_02)
+- **`users.conversations` ignores `types`.** Asking for a user's private channels returns their public channels too.
+  The response still shows each channel's `is_private`. A near miss returned by such a query came from the ignored
+  filter.
+- **Group DMs are reported as private** (`is_private: true` for a group DM), as in Slack.
+
+
+---
+
+# Trial of test `P-G4-SLK-08-I11` (slack)
+
+Test form: probe. Target present: no.
+
+## Request given to the solver
+Add the eyes reaction to my message that says 'Q3 launch checklist is ready for review' in my one-to-one DM with Maya Chen. If there isn't one, just tell me.
+
+## Candidates
+### Reference r1 (what the request asks to act on); records live in `messages`
+- No target: no record meets this reference.
+- DECOY `1789992360.000002` (fact `D:dm_with`, family F6): It meets the author and text conditions, but it sits in a group DM with Maya Chen and Leo Park, not a one-to-one DM with Maya Chen.
+  record: {"message_id": "1789992360.000002", "channel_id": "G21E19QP1O0", "user_id": "U01AGENBOT9", "message_text": "Q3 launch checklist is ready for review", "ts": "1789992360.000002", "created_at": "2026-09-21T12:06:00Z"}
+
+## Solver steps
+Run status: completed; termination: done; steps: 9.
+
+#### Step 1
+Reasoning: The user is asking to add an "eyes" reaction to a specific message within a 1-on-1 DM with Maya Chen on Slack. The slack skill is available. Let me start by reading the SKILL.md of the slack skill.
+Command: read {"path": "~/.openclaw-state/b0989a674b094c07/workspace-assistant/skills/slack/SKILL.md"}
+Response: {"status": "success", "stdout": "---\nname: slack\ndescription: \"Slack workspace messaging and collaboration API. Use it for anything in the user's Slack account.\"\nmetadata: {\"openclaw\": {\"requires\": {\"bins\": [\"curl\"]}}}\n---\n\n# Slack\n\n## Current Session\n- **Service**: Slack\n- **Base URL**: https://slack.com/api\n- **Description**: Slack workspace messaging and collaboration API\n\n## Environment\n- You are authenticated as a user in the Slack workspace/account.\n- Authentication is handled automatically via proxy. Use placeholder tokens like `<TOKEN>` where credentials would go.\n- You execute bash commands (primarily curl) to interact with the Slack API.\n\n## API Documentation\n## auth.test\nChecks authentication & identity.\n\n**Parameters:**\n  body:\n    - `token` (string, **required**): Authentication token bearing required scopes. Tokens should be passed as an HTTP Authorization header or alternatively, as a POST parameter.\n\n## chat.delete\nDeletes a message.\n\n**Parameters:**\n  body:\n    - `token` (string, **required**): Authentication token bearing required scopes.\n    - `channel` (string, **required**): Channel containing the message to be deleted.\n    - `ts` (string, **required**): Timestamp of the message to be deleted.\n\n## chat.postMessage\nSends a message to a channel.\n\n**Parameters:**\n  body:\n    - `token` (string, **required**): Authentication token bearing required scopes.\n    - `channel` (string, **required**): Channel, private group, or IM channel to send message to. Can be an encoded ID, or a name.\n    - `text` (string, optional): The message text. Required when not using blocks or attachments.\n    - `blocks` (array, optional): A JSON-based array of structured blocks.\n    - `attachments` (array, optional): A JSON-based array of structured attachments.\n    - `thread_ts` (string, optional): Provide another message's ts value to make this message a reply.\n    - `reply_broadcast` (boolean, optional): Used with thread_ts to broadcast reply to channel. Default: false.\n    - `mrkdwn` (boolean, optional): Enable Slack markup parsing. Default: true.\n    - `unfurl_links` (boolean, optional): Enable unfurling of text-based content.\n    - `unfurl_media` (boolean, optional): Enable unfurling of media content. Default: true.\n    - `metadata` (object, optional): JSON object with event_type and event_payload fields.\n\n## chat.update\nUpdates a message.\n\n**Parameters:**\n  body:\n    - `token` (string, **required**): Authentication token bearing required scopes.\n    - `channel` (string, **required**): Channel containing the message to be updated.\n    - `ts` (string, **required**): Timestamp of the message to be updated.\n    - `text` (string, optional): New text for the message.\n    - `blocks` (array, optional): A JSON-based array of structured blocks.\n    - `attachments` (array, optional): A JSON-based array of structured attachments.\n    - `reply_broadcast` (boolean, optional): Broadcast an ex […11631 chars omitted…] \n  body:\n    - `token` (string, **required**): Authentication token bearing required scopes.\n    - `cursor` (string, optional): Paginate through collections by setting cursor to next_cursor.\n    - `include_locale` (boolean, optional): Set to true to receive the locale for users. Default: false.\n    - `limit` (integer, optional): Maximum number of items to return. Default: 0 (no limit).\n    - `team_id` (string, optional): Encoded team id to list users in (required if org token is used).\n"}
+
+#### Step 2
+Reasoning: What needs to be done:
+1. Find the DM channel with Maya Chen
+2. Search within that DM for the message "Q3 launch checklist is ready for review"
+3. Add the eyes reaction to it
+
+First, find Maya Chen's user ID. Use users.list to find her, then find the DM channel. Or use conversations.list with type im and check the members.
+
+Let's start by listing users to find Maya Chen's user ID.
+Command: curl -s -X POST https://slack.com/api/users.list -H "Authorization: Bearer <TOKEN>" | python3 -c "
+import json,sys
+d=json.load(sys.stdin)
+print('ok:',d.get('ok'), d.get('error',''))
+for u in d.get('members',[]):
+    n=u.get('real_name') or u.get('name','')
+    if 'maya' in n.lower() or 'chen' in n.lower() or 'maya' in u.get('name','').lower() or 'chen' in u.get('name','').lower():
+        print(u.get('id'), repr(n), u.get('name'), 'deleted' if u.get('deleted') else '')
+"
+Response: {"status": "success", "stdout": "ok: True \nUOHB2CN5UMC 'Maya Chen' maya.chen"}
+
+#### Step 3
+Reasoning: Found Maya Chen: UOHB2CN5UMC. Next, I'll find a 1-on-1 DM with her. Use conversations.open with prevent_creation=true to check whether a DM exists (or just open it as is — opening/resuming a DM is safe and won't post anything). To check existence without creating, use prevent_creation=true. Actually, creating a DM is harmless, but let me check first.
+Command: curl -s -X POST https://slack.com/api/conversations.open -H "Authorization: Bearer <TOKEN>" -d "users=UOHB2CN5UMC&prevent_creation=true"
+Response: {"status": "success", "stdout": "{\"ok\":true,\"channel\":{\"id\":\"D2K5M7M3T3Q\"}}"}
+
+#### Step 4
+Reasoning: The DM exists (D2K5M7M3T3Q). Next, I need to search for the user's message "Q3 launch checklist is ready for review". Note: "my message" — a message from the user (the one-to-one DM with Maya). Wait — "my message that says..." — the user's own message. I need to search the history and find the message with that text.
+
+Let me try fetching the conversation history.
+Command: curl -s -X POST https://slack.com/api/conversations.history -H "Authorization: Bearer <TOKEN>" -d "channel=D2K5M7M3T3Q&limit=200" | python3 -c "
+import json,sys
+d=json.load(sys.stdin)
+print('ok:',d.get('ok'), d.get('error',''))
+for m in d.get('messages',[]):
+    if 'Q3 launch checklist' in (m.get('text') or ''):
+        print(json.dumps(m, indent=1))
+"
+Response: {"status": "success", "stdout": "ok: True"}
+
+#### Step 5
+Reasoning: Couldn't find the message within the most recent 200. I'll try paginating to older messages, or use search. I'll use search.messages with the query "Q3 launch checklist is ready for review".
+
+Not in the last 200 messages — let me search and page back further.
+Command: curl -s -X POST https://slack.com/api/search.messages -H "Authorization: Bearer <TOKEN>" -d 'query="Q3 launch checklist is ready for review"' | python3 -m json.tool | head -50
+Response: {"status": "success", "stdout": "{\n    \"ok\": true,\n    \"query\": \"\\\"Q3 launch checklist is ready for review\\\"\",\n    \"messages\": {\n        \"matches\": [\n            {\n                \"channel\": {\n                    \"id\": \"G21E19QP1O0\",\n                    \"name\": \"mpim-maya-leo\",\n                    \"is_private\": true,\n                    \"is_mpim\": true,\n                    \"is_ext_shared\": false,\n                    \"is_org_shared\": false,\n                    \"is_pending_ext_shared\": false,\n                    \"is_shared\": false,\n                    \"pending_shared\": []\n                },\n                \"iid\": \"9508a00a-fcad-40c7-bab5-2c9f41e8d694\",\n                \"permalink\": \"https://example.slack.com/archives/G21E19QP1O0/p1789992360000002\",\n                \"team\": \"TJDX9CSNTOS\",\n                \"text\": \"Q3 launch checklist is ready for review\",\n                \"ts\": \"1789992360.000002\",\n                \"type\": \"message\",\n                \"user\": \"U01AGENBOT9\",\n                \"username\": \"agentbot\"\n            }\n        ],\n        \"pagination\": {\n            \"first\": 1,\n            \"last\": 1,\n            \"page\": 1,\n            \"page_count\": 1,\n            \"per_page\": 20,\n            \"total_count\": 1\n        },\n        \"paging\": {\n            \"count\": 20,\n            \"page\": 1,\n            \"pages\": 1,\n            \"total\": 1\n        },\n        \"total\": 1,\n        \"response_metadata\": {\n            \"next_cursor\": \"\"\n        }\n    }\n}"}
+
+#### Step 6
+Reasoning: Interesting. A message "Q3 launch checklist is ready for review" was found, but it's in channel G21E19QP1O0 "mpim-maya-leo" — it's an MPIM (multi-person DM), not a 1:1 DM with Maya Chen. Also, the message is from user "agentbot" (U01AGENBOT9), not from the human user.
+
+Wait — let me check the members of this MPIM. The user said "a 1:1 DM with Maya Chen." The 1:1 DM channel is D2K5M7M3T3Q, but that message isn't there (at least not in the last 200 messages). Let me double-check the DM history more carefully — I might need to page further back. And then let me also check the MPIM members.
+
+I found the message in a group DM channel with "mpim-maya-leo" rather than the 1:1 with Maya. Let me check who's in that channel and pull the full 1:1 history to verify.
+Command: curl -s -X POST https://slack.com/api/conversations.members -H "Authorization: Bearer <TOKEN>" -d "channel=G21E19QP1O0" | python3 -c "
+import json,sys
+d=json.load(sys.stdin)
+print('members:', d.get('members'), d.get('error',''))
+"
+Response: {"status": "success", "stdout": "members: ['U01AGENBOT9', 'UOHB2CN5UMC', 'UC2QR9QE41K']"}
+
+#### Step 7
+Reasoning: 
+Command: curl -s -X POST https://slack.com/api/conversations.history -H "Authorization: Bearer <TOKEN>" -d "channel=D2K5M7M3T3Q&limit=200&oldest=0" | python3 -c "
+import json,sys
+d=json.load(sys.stdin)
+msgs=d.get('messages',[])
+print('count:', len(msgs), 'oldest:', msgs[-1]['ts'] if msgs else None, 'newest:', msgs[0]['ts'] if msgs else None)
+for m in msgs:
+    print(m['ts'], m.get('user'), repr((m.get('text') or '')[:100]))
+"
+Response: {"status": "success", "stdout": "count: 0 oldest: None newest: None"}
+
+#### Step 8
+Reasoning: The DM (D2K5M7M3T3Q) with Maya Chen is empty — 0 messages. The message "Q3 launch checklist is ready for review" was found in a **group DM** (MPIM "mpim-maya-leo") with Maya Chen, Leo (UC2QR9QE41K), and agentbot.
+
+The user is specifically asking for the message in the **1-on-1 DM with Maya Chen**. The DM is empty, and the message exists only in the group DM.
+
+Therefore, following the user's instructions: "If there is no such message, just tell me."
+
+I shouldn't add a reaction to the group DM — the user was explicit about the 1-on-1 DM. The correct response is to tell them that no such message exists in the 1-on-1 DM, and mention that I found a message with the same text in a group DM with Maya and Leo (and me), and ask whether they want it added there.
+
+To confirm who Leo is, let me check what UC2QR9QE41K is. Actually, I can just refer to them as the "group DM with Maya and another member (Leo)." To be precise, let me quickly check the username.
+Command: curl -s -X POST https://slack.com/api/users.info -H "Authorization: Bearer <TOKEN>" -d "user=UC2QR9QE41K" | python3 -c "
+import json,sys
+d=json.load(sys.stdin)
+print(d.get('user',{}).get('real_name'), '|', d.get('user',{}).get('name'))
+"
+Response: {"status": "success", "stdout": "Leo Park | leo.park"}
+
+#### Step 9
+Reasoning: In other words, the message "Q3 launch checklist is ready for review" exists in a 3-person DM (group DM) with Maya Chen and Leo Park (channel G21E19QP1O0, "mpim-maya-leo"), not in a 1:1 DM with Maya Chen. The 1:1 DM with Maya (D2K5M7M3T3Q) exists but is empty.
+
+The user's request was: "Add an eyes reaction to the message that says 'Q3 launch checklist is ready for review' in the 1-on-1 DM with Maya Chen. If it doesn't exist, let me know."
+
+This message doesn't exist in the 1:1 DM with Maya Chen — it exists in the group DM with Maya and Leo Park. Strictly following the user's instruction: "if it doesn't exist, just let me know." The message they're pointing to (in the 1:1 DM with Maya) doesn't exist. I should let them know, and additionally mention that it was found in the group DM with Maya and Leo, and confirm whether they want the reaction added there. This is an external action — adding a reaction is a minor external action, but the user specifically asked for it to be in the 1:1 DM, and that one doesn't exist. I shouldn't add the reaction to a different channel without confirmation — it could be a mistake (for example, Leo might not want the user reacting there, or the user might have been referring to a different message). Best to report and confirm.
+
+There's no such message in your 1:1 DM with Maya Chen — that DM exists but is empty.
+
+What I did find: the exact message "Q3 launch checklist is ready for review" is in a **3-person group DM** between you, Maya Chen, and Le
+Command: 
+Response: null
+
+## Final answer
+There's no such message in your 1:1 DM with Maya Chen — that DM exists but is empty.
+
+What I did find: the exact message "Q3 launch checklist is ready for review" is in a **3-person group DM** between you, Maya Chen, and Leo Park (channel "mpim-maya-leo"), posted Sep 27 at 22:46 EDT.
+
+Want me to add the 👀 reaction to that group DM message instead?
+
+## State diff
+(no changes)
+
+## Mechanical attribution (from the diff and write commands; may be wrong)
+Acted-on records per reference: {"r1": []}. Provisional outcome: correct_absent. Provisional exposed facts: [].
+
+Give your verdict for this trial.

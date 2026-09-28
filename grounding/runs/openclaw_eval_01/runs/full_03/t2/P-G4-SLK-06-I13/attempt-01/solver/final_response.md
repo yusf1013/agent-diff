@@ -1,0 +1,1 @@
+Didn't do it — the condition wasn't met. There's exactly one matching message: Diego Alvarez's "Gateway rollback finished ahead of schedule." in #deployments, but it has **5** 👀 reactions, not 3. No thumbsup added. If you want me to add it anyway despite the mismatch, just say the word.

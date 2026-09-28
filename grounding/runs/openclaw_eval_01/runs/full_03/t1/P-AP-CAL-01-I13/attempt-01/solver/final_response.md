@@ -1,0 +1,1 @@
+Done — "Client Success" is now hidden from your calendar list, so it won't show up there anymore. Its events also stay out of your calendar view (it was still set to "selected" in the API, which I left as-is since you said you'd already unchecked it in the UI — let me know if you want me to sync that too).

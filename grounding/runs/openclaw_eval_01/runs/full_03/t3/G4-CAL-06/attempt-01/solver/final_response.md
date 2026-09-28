@@ -1,0 +1,1 @@
+Done ✅ The "Quarterly planning lunch" on Leo Park's calendar (Thursday, June 21, 2018, 12:00–1:00 PM New York time) now has its location set to **Room 5B**.

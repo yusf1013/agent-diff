@@ -1,0 +1,1 @@
+I checked #launch-readiness — Maya Chen has one launch checklist card, but it lists the rollout steps (open flags, ramp traffic, monitor errors), not rollback steps. I also searched the channel and its threads for any rollback card — none exist. No reaction added.

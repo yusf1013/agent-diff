@@ -1,0 +1,1 @@
+Nope, no reaction needed. There's exactly one payment gateway timeout message in #incidents ("Another payment gateway timeout, this time hitting the refunds endpoint."), posted by omar.haddad — and Omar isn't a member of #payments-oncall (members are only U01AGENBOT9, UCSQXSCO8QP, U2VXWM7OP2O). So I didn't react.

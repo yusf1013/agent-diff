@@ -1,0 +1,1 @@
+Done — added the 👀 reaction. One note though: the tada reaction on that message was from **Diego Alvarez** (a human user, diego.alvarez@northwind.example), not a bot. Everything else matched exactly (Ana Torre's "Release cut is ready" in #releases, and it was the only such message in the workspace), so I went ahead. If you actually wanted a different message, let me know.

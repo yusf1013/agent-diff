@@ -1,0 +1,1 @@
+Done. Set **MOB-50** "Fix Apple Pay sheet layout" (3pt, due Oct 15) to **High** priority — it's the only 3-point sub-issue of MOB-42 due on October 15. (MOB-42's other sub-issues: MOB-51 2pt, MOB-52 5pt — also due Oct 15, but different estimates; MOB-53 is 3pt but due Oct 16.)

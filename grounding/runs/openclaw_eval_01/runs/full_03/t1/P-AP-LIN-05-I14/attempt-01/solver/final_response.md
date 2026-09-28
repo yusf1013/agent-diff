@@ -1,0 +1,1 @@
+Nope, no such issue. Priya Nair's comment on March 3 (on WEB-5 "Redesign checkout confirmation screen") was about reworking onboarding tooltip copy — not the payment gateway. The only payment gateway timeout comment from that day was posted by Leo Park, also on WEB-5. Since the conditions don't match, I didn't change anything.

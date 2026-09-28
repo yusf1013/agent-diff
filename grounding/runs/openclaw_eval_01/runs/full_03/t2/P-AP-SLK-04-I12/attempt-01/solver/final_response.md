@@ -1,0 +1,1 @@
+I checked #incidents — no such message exists. The full history there is just six messages (printer question, cake announcement, payments-launch thanks, etc.), and searches for "deploy", "freeze", and "deploy freeze" in the channel return zero matches. Nothing got invited, so let me know if you'd like me to look elsewhere.

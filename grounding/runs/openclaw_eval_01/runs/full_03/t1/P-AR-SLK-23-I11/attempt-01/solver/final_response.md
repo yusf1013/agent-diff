@@ -1,0 +1,1 @@
+Done — I archived **`hr-general`** (private channel, ID `CBTR7ZYJTUJ`). Its topic was "Onboarding new hires" and Diego Alvarez (USCL1TYIAOL) is a member. It was the only private channel he belongs to, so there were no other candidates.

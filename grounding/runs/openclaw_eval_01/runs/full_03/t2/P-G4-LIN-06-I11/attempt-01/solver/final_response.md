@@ -1,0 +1,1 @@
+No matching issue found. Maya Chen has exactly one issue in the Web team — WEB-3 "Search results pagination broken", which is in the Todo state but has no labels at all, so it doesn't carry the Web team's Bug label. Per your instructions, I'm leaving the estimate untouched.

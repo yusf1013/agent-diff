@@ -1,0 +1,1 @@
+Nope — no such message exists in #incidents. The channel only has 5 messages total, none of them mention a gateway rollback, and none have threads (all have 0 replies). Diego's two messages there are about the payment queue latency spike and watching dashboards. I didn't add a reaction.

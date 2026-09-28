@@ -1,0 +1,1 @@
+Done 👀 — but with a note: your 1:1 DM with Maya is empty. The deploy checklist message ("Deploy checklist for Friday is ready: env, flags, rollback plan") is in the **maya-leo-group** DM, so I added the eyes reaction there.

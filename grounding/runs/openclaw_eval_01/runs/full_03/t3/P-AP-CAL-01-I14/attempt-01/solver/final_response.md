@@ -1,0 +1,1 @@
+Done ✅ The 'Client Success' calendar is now hidden from your calendar list. It was still subscribed (that's why it kept showing up even though you unchecked it) — I've set it to hidden, so it'll disappear from the list. Its events remain untouched; if you ever want it back, just unhide or re-add it.

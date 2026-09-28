@@ -1,0 +1,1 @@
+I checked Linear — the Web team's cycle ending Oct 12 is **Cycle 12** (Oct 5–12), and it contains no issues at all, let alone any assigned to Maya Chen. Her open Web issues sit in Cycle 11 (ends Oct 5, WEB-2) and Cycle 13 (ends Oct 19, WEB-3), so I didn't change any estimates.

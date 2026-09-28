@@ -1,0 +1,1 @@
+No reaction added. Diego Alvarez's gateway rollback message in #deployments ("Gateway rollback finished ahead of schedule.") exists, but it has **5** 👀 reactions, not exactly 3 — so it doesn't match your condition. The only other message in the channel is a deploy-freeze notice. Let me know if you'd like me to react anyway, or if you meant a different message.

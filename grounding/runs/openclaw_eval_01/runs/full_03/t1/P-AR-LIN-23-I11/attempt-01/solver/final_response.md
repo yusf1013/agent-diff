@@ -1,0 +1,1 @@
+Done. Found it on WEB-7 ("Investigate flaky checkout tests"): Sam Rivera's comment from Aug 3 — *"Payment retry attempts still time out under load; can we add a backoff?"* — which was resolved on Aug 4. I've reopened it (it's back to unresolved), so it should show as an open thread again on [WEB-7](https://linear.app/northwind/issue/WEB-7).

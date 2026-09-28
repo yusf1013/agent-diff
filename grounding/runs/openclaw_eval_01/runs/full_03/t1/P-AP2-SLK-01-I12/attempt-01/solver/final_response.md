@@ -1,0 +1,1 @@
+Done 👀 — I found Diego's message in #product-launch ("The launch date is confirmed for October 12.") and verified it had the :thumbsup: from Priya Sharma and the :tada: from Metrics Bot, then added the :eyes: reaction.

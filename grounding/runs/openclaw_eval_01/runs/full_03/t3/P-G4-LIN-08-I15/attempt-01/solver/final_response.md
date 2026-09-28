@@ -1,0 +1,1 @@
+MOB-42 ("Checkout crash on launch") has only one sub-issue: MOB-57 "Polish saved-card search" — it's a 5-point issue due October 22, not 3 points due October 15. No matching sub-issue exists, so I didn't change anything.

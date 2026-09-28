@@ -1,0 +1,243 @@
+{
+  "test_id": "P-AR-LIN-26-I11",
+  "question": "In Linear: In the Web team, set the priority to Urgent for the Design system audit issue that Sam Rivera is subscribed to. If there isn't one, just tell me.",
+  "harness": "openclaw",
+  "termination": "done",
+  "final": "There's one \"Design system audit\" issue in the Web team — WEB-2 (currently in Todo, priority None) — but it has no subscribers at all, including Sam Rivera. Since the issue didn't match your condition, I left the priority unchanged. Let me know if you want me to set it to Urgent anyway.",
+  "turns": [
+    {
+      "label": "turn1",
+      "message": "In Linear: In the Web team, set the priority to Urgent for the Design system audit issue that Sam Rivera is subscribed to. If there isn't one, just tell me.",
+      "text": "There's one \"Design system audit\" issue in the Web team — WEB-2 (currently in Todo, priority None) — but it has no subscribers at all, including Sam Rivera. Since the issue didn't match your condition, I left the priority unchanged. Let me know if you want me to set it to Urgent anyway.",
+      "termination": "done",
+      "returncode": 0,
+      "killed": null,
+      "duration_s": 142.3,
+      "meta_error": null,
+      "stop_reason": "stop"
+    }
+  ],
+  "steps": [
+    {
+      "turn": 1,
+      "tool": "read",
+      "arguments": {
+        "path": "~/.openclaw-state/3b71b722afbc4761/workspace-assistant/skills/linear/SKILL.md"
+      },
+      "action": "read {\"path\": \"~/.openclaw-state/3b71b722afbc4761/workspace-assistant/skills/linear/SKILL.md\"}",
+      "text": "",
+      "thinking": "The user is asking me to find the \"Design System Audit\" issue within the Linear Web team that Sam Rivera is subscribed to, and set its priority to \"Urgent\". First, let me read Linear's SKILL.md.",
+      "usage": {
+        "input": 4735,
+        "output": 105,
+        "cacheRead": 3920,
+        "cacheWrite": 0,
+        "reasoningTokens": 48,
+        "totalTokens": 8760,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "status": "success",
+        "stdout": "---\nname: linear\ndescription: \"Linear project management and issue tracking API. Use it for anything in the user's Linear account.\"\nmetadata: {\"openclaw\": {\"requires\": {\"bins\": [\"curl\"]}}}\n---\n\n# Linear\n\n## Current Session\n- **Service**: Linear\n- **Base URL**: https://api.linear.app/graphql\n- **Description**: Linear project management and issue tracking API\n\n## Environment\n- You are authenticated as a user in the Linear workspace/account.\n- Authentication is handled automatically via proxy. Use placeholder tokens like `<TOKEN>` where credentials would go.\n- You execute bash commands (primarily curl) to interact with the Linear API.\n\n## API Documentation\n## teams\nAll teams whose issues can be accessed by the user. This might be different from `administrableTeams`, which also includes teams whose settings can be changed by the user.\n\n## issues\nAll issues.\n\n## issue\nGet a single issue by ID.\n\n## workflowStates\nAll issue workflow states.\n\n## users\nAll users for the organization.\n\n## issueCreate\nCreates a new issue.\n\n## issueUpdate\nUpdates an issue.\n\n## commentCreate\nCreates a new comment.\n\n## teamCreate\nCreates a new team. The user who creates the team will automatically be added as a member to the newly created team.\n\n## issueLabelCreate\nCreates a new label.\n\n## issueLabels\nAll issue labels.\n\n## comments\nAll comments.\n\n## commentUpdate\nUpdates a comment.\n\n## commentDelete\nDeletes a comment.\n\n## issueLabelUpdate\nUpdates a label.\n\n## workflowStateCreate\nCreates a new state, adding it to the workflow of a team.\n\n## workflowStateArchive\nArchives a state. Only states with issues that have all been archived can be archived.\n\n## teamMembershipCreate\nCreates a new team membership.\n\n## issueRelationCreate\nCreates a new issue relation.\n"
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nThe user is asking me to find the \"Design System Audit\" issue within the Linear Web team that Sam Rivera is subscribed to, and set its priority to \"Urgent\". First, let me read Linear's SKILL.md.\n</thinking>\n"
+          }
+        ]
+      }
+    },
+    {
+      "turn": 2,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -sS https://api.linear.app/graphql -H 'Content-Type: application/json' -d '{\"query\":\"{ users { nodes { id name displayName email } } teams { nodes { id key name } } }\"}'"
+      },
+      "action": "curl -sS https://api.linear.app/graphql -H 'Content-Type: application/json' -d '{\"query\":\"{ users { nodes { id name displayName email } } teams { nodes { id key name } } }\"}'",
+      "text": "",
+      "thinking": "The skill describes a Linear GraphQL API. I need to find issues in the \"Web\" team related to a \"Design system audit\" that Sam Rivera is subscribed to. Let me construct a GraphQL query.\n\nFirst, let me find the user Sam Rivera and the Web team. Linear API:\n\n```graphql\n{\n  teams(key: \"WEB\") { ... }\n  users { nodes { id name email displayName } }\n}\n```\n\nActually, to find issues that Sam is subscribed to, I can query issues filtered by team and search for \"Design system audit\". Let me try this:\n\n```graphql\n{\n  teams(where: {name: {_eq: \"Web\"}}) {\n    id key name\n    issues(filter: {q: {contains: \"Design system audit\"}}) {\n      nodes { id identifier title priority url subscriber... }\n    }\n  }\n}\n```\n\nActually, for Linear's issue filter, `q` searches by title/description. Subscribers: I don't think issue nodes have a direct \"subscribers\" field. Hmm. Does Linear's Issue type have a `subscriber` field? Let me think. Linear's GraphQL schema has a `SubscribedUser` type... Actually, I don't remember exactly. Is there an `issueSubscribers` field? Hmm.\n\nLinear's GraphQL API: the Issue type has fields like id, identifier, title, description, priority, state, assignee, project, team, url, labels, subscribers... I'm not 100% sure. I think there's a `subscriber` field? Anyway, let me try and check the error message.\n\nBetter approach: query users by name Sam Rivera to get the user ID, then query the Web team's issues with a filter on `q` for \"Design system audit\". Then check the subscribers for each issue.\n\nLet me try the following:\n\n```graphql\n{\n  users(includeInactive: true) {\n    nodes {\n      id\n      name\n      displayName\n      email\n    }\n  }\n  teams(where: {name: {_eq: \"Web\"}}) {\n    id\n    key\n    name\n  }\n}\n```\n\nThen:\n\n```graphql\n{\n  team(id: \"...\") {\n    id\n    key\n    name\n    issues(filter: {q: {_eq: \"Design system audit\"}, archived: {_eq: false}}) {\n      nodes {\n        id\n        identifier\n        title\n        priority\n        url\n      }\n    }\n  }\n}\n```\n\nFor subscribers, I can try adding a `subscribers` field... actually, I recall that in Linear's GraphQL there's `Issue.subscriber`? Not sure. Let me try querying it and see the error. Or maybe there's a `subscriber` field on the issue that returns a single user? Hmm.\n\nActually, I recall that Linear's API has `issueSubscribers`? No... anyway, let me just try it. The error message will tell me what's available.\n\nLet me start by first finding the user and the team.",
+      "usage": {
+        "input": 505,
+        "output": 734,
+        "cacheRead": 8624,
+        "cacheWrite": 0,
+        "reasoningTokens": 660,
+        "totalTokens": 9863,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "status": "success",
+        "stdout": "{\"data\":{\"users\":{\"nodes\":[{\"id\":\"3ccb6764-2157-4544-a0ab-6cd739bfb191\",\"name\":\"Dana Whitfield\",\"displayName\":\"dana\",\"email\":\"dana.whitfield@northwind.example\"},{\"id\":\"452917bc-c62a-4751-8971-0d156ba01ccd\",\"name\":\"Omar Haddad\",\"displayName\":\"omar\",\"email\":\"omar.haddad@northwind.example\"},{\"id\":\"509c610d-0f96-41f1-903b-745bacb51d02\",\"name\":\"Priya Nair\",\"displayName\":\"priya\",\"email\":\"priya.nair@northwind.example\"},{\"id\":\"88daccae-883b-4941-ba0c-2bb99ca82aa7\",\"name\":\"Maya Chen\",\"displayName\":\"maya\",\"email\":\"maya.chen@northwind.example\"},{\"id\":\"c0cdfbe2-b4e7-4acf-a35b-ceaeaee31b51\",\"name\":\"Sam Rivera\",\"displayName\":\"sam\",\"email\":\"sam.rivera@northwind.example\"},{\"id\":\"c31ff7cb-29e2-4f27-b43e-79cfbab9b0ae\",\"name\":\"Leo Park\",\"displayName\":\"leo\",\"email\":\"leo.park@northwind.example\"},{\"id\":\"u-actor\",\"name\":\"Jordan Lee\",\"displayName\":\"jordan\",\"email\":\"jordan.lee@northwind.example\"}]},\"teams\":{\"nodes\":[{\"id\":\"b03cbce1-2687-4498-b48d-baa328744e91\",\"key\":\"MOB\",\"name\":\"Mobile\"},{\"id\":\"d74cbc81-5fd7-4bf1-b467-dd4dd863ced5\",\"key\":\"WEB\",\"name\":\"Web\"}]}}}"
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nThe skill describes a Linear GraphQL API. I need to find issues in the \"Web\" team related to a \"Design system audit\" that Sam Rivera is subscribed to. Let me construct a GraphQL query.\n\nFirst, let me find the user Sam Rivera and the Web team. Linear API:\n\n```graphql\n{\n  teams(key: \"WEB\") { ... }\n  users { nodes { id name email displayName } }\n}\n```\n\nActually, to find issues that Sam is subscribed to, I can query issues filtered by team and search for \"Design system audit\". Let me try this:\n\n```graphql\n{\n  teams(where: {name: {_eq: \"Web\"}}) {\n    id key name\n    issues(filter: {q: {contains: \"Design system audit\"}}) {\n      nodes { id identifier title priority url subscriber... }\n    }\n  }\n}\n```\n\nActually, for Linear's issue filter, `q` searches by title/description. Subscribers: I don't think issue nodes have a direct \"subscribers\" field. Hmm. Does Linear's Issue type have a `subscriber` field? Let me think. Linear's GraphQL schema has a `SubscribedUser` type... Actually, I don't remember exactly. Is there an `issueSubscribers` field? Hmm.\n\nLinear's GraphQL API: the Issue type has fields like id, identifier, title, description, priority, state, assignee, project, team, url, labels, subscribers... I'm not 100% sure. I think there's a `subscriber` field? Anyway, let me try and check the error message.\n\nBetter approach: query users by name Sam Rivera to get the user ID, then query the Web team's issues with a filter on `q` for \"Design system audit\". Then check the subscribers for each issue.\n\nLet me try the following:\n\n```graphql\n{\n  users(includeInactive: true) {\n    nodes {\n      id\n      name\n      displayName\n      email\n    }\n  }\n  teams(where: {name: {_eq: \"Web\"}}) {\n    id\n    key\n    name\n  }\n}\n```\n\nThen:\n\n```graphql\n{\n  team(id: \"...\") {\n    id\n    key\n    name\n    issues(filter: {q: {_eq: \"Design system audit\"}, archived: {_eq: false}}) {\n      nodes {\n        id\n        identifier\n        title\n        priority\n        url\n      }\n    }\n  }\n}\n```\n\nFor subscribers, I can try adding a `subscribers` field... actually, I recall that in Linear's GraphQL there's `Issue.subscriber`? Not sure. Let me try querying it and see the error. Or maybe there's a `subscriber` field on the issue that returns a single user? Hmm.\n\nActually, I recall that Linear's API has `issueSubscribers`? No... anyway, let me just try it. The error message will tell me what's available.\n\nLet me start by first finding the user and the team.\n</thinking>\n"
+          }
+        ]
+      }
+    },
+    {
+      "turn": 3,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -sS https://api.linear.app/graphql -H 'Content-Type: application/json' -d '{\"query\":\"{ issues(filter: {team: {key: {eq: \\\"WEB\\\"}}, title: {contains: \\\"Design system audit\\\"}}, first: 50) { nodes { id identifier title priority subscribers { nodes { id name } } state { name } } } }\"}'"
+      },
+      "action": "curl -sS https://api.linear.app/graphql -H 'Content-Type: application/json' -d '{\"query\":\"{ issues(filter: {team: {key: {eq: \\\"WEB\\\"}}, title: {contains: \\\"Design system audit\\\"}}, first: 50) { nodes { id identifier title priority subscribers { nodes { id name } } state { name } } } }\"}'",
+      "text": "",
+      "thinking": "Web team ID: d74cbc81-5fd7-4bf1-b467-dd4dd863ced5 (key WEB). Sam Rivera ID: c0cdfbe2-b4e7-4acf-a35b-ceaeaee31b51.\n\nNext, search for issues on the Web team that match \"Design system audit\" and are subscribed to by Sam Rivera. Use a GraphQL query that includes the subscribers filter or the issue's subscribers field. Linear GraphQL: issues(filter: {team: {key: {eq: \"WEB\"}}, title: {contains: \"Design system audit\"}, subscribers: {some: {id: {eq: ...}}}}). Actually, does the IssueFilter in the filter input have a \"subscribers\" field? Is there a `subscribers` filter in the Linear API's IssueFilter input? Let me recall: IssueFilter has assignee, subscribers (some/every/not), labels, etc. Yes, IssueFilter includes `subscribers: UserFilter`. Let me try querying the title with contains and the subscribers filter, then check the results afterward.",
+      "usage": {
+        "input": 1037,
+        "output": 345,
+        "cacheRead": 8624,
+        "cacheWrite": 0,
+        "reasoningTokens": 236,
+        "totalTokens": 10006,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "status": "success",
+        "stdout": "{\"data\":{\"issues\":{\"nodes\":[{\"id\":\"41db7a4a-b5bc-4972-8058-cdb7458c8880\",\"identifier\":\"WEB-2\",\"title\":\"Design system audit\",\"priority\":0.0,\"subscribers\":{\"nodes\":[]},\"state\":{\"name\":\"Todo\"}}]}}}"
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nWeb team ID: d74cbc81-5fd7-4bf1-b467-dd4dd863ced5 (key WEB). Sam Rivera ID: c0cdfbe2-b4e7-4acf-a35b-ceaeaee31b51.\n\nNext, search for issues on the Web team that match \"Design system audit\" and are subscribed to by Sam Rivera. Use a GraphQL query that includes the subscribers filter or the issue's subscribers field. Linear GraphQL: issues(filter: {team: {key: {eq: \"WEB\"}}, title: {contains: \"Design system audit\"}, subscribers: {some: {id: {eq: ...}}}}). Actually, does the IssueFilter in the filter input have a \"subscribers\" field? Is there a `subscribers` filter in the Linear API's IssueFilter input? Let me recall: IssueFilter has assignee, subscribers (some/every/not), labels, etc. Yes, IssueFilter includes `subscribers: UserFilter`. Let me try querying the title with contains and the subscribers filter, then check the results afterward.\n</thinking>\n"
+          }
+        ]
+      }
+    },
+    {
+      "turn": 4,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -sS https://api.linear.app/graphql -H 'Content-Type: application/json' -d '{\"query\":\"{ issues(filter: {id: {eq: \\\"41db7a4a-b5bc-4972-8058-cdb7458c8880\\\"}}, first: 1) { nodes { identifier title subscribers(first: 20) { nodes { id name email } totalCount } } } }\"}'"
+      },
+      "action": "curl -sS https://api.linear.app/graphql -H 'Content-Type: application/json' -d '{\"query\":\"{ issues(filter: {id: {eq: \\\"41db7a4a-b5bc-4972-8058-cdb7458c8880\\\"}}, first: 1) { nodes { identifier title subscribers(first: 20) { nodes { id name email } totalCount } } } }\"}'",
+      "text": "I found WEB-2 but its subscriber list came back empty, so I'll verify this directly to make sure it's not a query artifact.",
+      "thinking": "There's one issue \"Design system audit\" (WEB-2), but its subscriber list is empty — Sam Rivera isn't subscribed. The user said, \"Set the priority to Urgent on the Design system audit issue that Sam Rivera is subscribed to. If there isn't one, just tell me.\"\n\nHmm — the subscriber query returned empty. Maybe the subscribers connection has a limit, or the query isn't returning subscribers correctly. Let me double-check — maybe subscribers require an explicit first: parameter, or maybe the API needs different handling. I'll try re-querying with a specific user subscription filter to confirm.",
+      "usage": {
+        "input": 451,
+        "output": 281,
+        "cacheRead": 9408,
+        "cacheWrite": 0,
+        "reasoningTokens": 125,
+        "totalTokens": 10140,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "status": "success",
+        "stdout": "{\"errors\":[{\"message\":\"Cannot query field 'totalCount' on type 'UserConnection'.\",\"locations\":[{\"line\":1,\"column\":156}]}]}"
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nThere's one issue \"Design system audit\" (WEB-2), but its subscriber list is empty — Sam Rivera isn't subscribed. The user said, \"Set the priority to Urgent on the Design system audit issue that Sam Rivera is subscribed to. If there isn't one, just tell me.\"\n\nHmm — the subscriber query returned empty. Maybe the subscribers connection has a limit, or the query isn't returning subscribers correctly. Let me double-check — maybe subscribers require an explicit first: parameter, or maybe the API needs different handling. I'll try re-querying with a specific user subscription filter to confirm.\n</thinking>\nI found WEB-2 but its subscriber list came back empty, so I'll verify this directly to make sure it's not a query artifact."
+          }
+        ]
+      }
+    },
+    {
+      "turn": 5,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -sS https://api.linear.app/graphql -H 'Content-Type: application/json' -d '{\"query\":\"{ issues(filter: {id: {eq: \\\"41db7a4a-b5bc-4972-8058-cdb7458c8880\\\"}}, first: 1) { nodes { identifier title subscribers(first: 20) { nodes { id name email } } } } }\"}'"
+      },
+      "action": "curl -sS https://api.linear.app/graphql -H 'Content-Type: application/json' -d '{\"query\":\"{ issues(filter: {id: {eq: \\\"41db7a4a-b5bc-4972-8058-cdb7458c8880\\\"}}, first: 1) { nodes { identifier title subscribers(first: 20) { nodes { id name email } } } } }\"}'",
+      "text": "",
+      "thinking": "Let's fix the query.",
+      "usage": {
+        "input": 654,
+        "output": 132,
+        "cacheRead": 9408,
+        "cacheWrite": 0,
+        "reasoningTokens": 7,
+        "totalTokens": 10194,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "status": "success",
+        "stdout": "{\"data\":{\"issues\":{\"nodes\":[{\"identifier\":\"WEB-2\",\"title\":\"Design system audit\",\"subscribers\":{\"nodes\":[]}}]}}}"
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nLet's fix the query.\n</thinking>\n"
+          }
+        ]
+      }
+    },
+    {
+      "turn": 6,
+      "tool": null,
+      "text": "There's one \"Design system audit\" issue in the Web team — WEB-2 (currently in Todo, priority None) — but it has no subscribers at all, including Sam Rivera. Since the issue didn't match your condition, I left the priority unchanged. Let me know if you want me to set it to Urgent anyway.",
+      "thinking": "The WEB team's \"Design System Audit\" issue (WEB-2) exists, but it has no subscribers. Just to be safe, let me double-check — maybe there's another issue whose title contains \"Design System Audit\" with a different capitalization. My filter was using `contains` against the title, which is case-insensitive in Linear. Only one matched.\n\nI'll also confirm that Sam Rivera's ID exists: c0cdfbe2-b4e7-4acf-a35b-ceaeaee31b51. The subscriber list is empty, so Sam isn't subscribed.\n\nFollowing the user's instructions: \"If there isn't one, just tell me.\" Therefore, I should report that the issue exists, but no one — including Sam Rivera — is subscribed, so I didn't change the priority.\n\nI should not change the priority, since the condition (that Sam Rivera is subscribed) isn't met. I'll tell them that.",
+      "usage": {
+        "input": 822,
+        "output": 271,
+        "cacheRead": 9408,
+        "cacheWrite": 0,
+        "reasoningTokens": 200,
+        "totalTokens": 10501,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nThe WEB team's \"Design System Audit\" issue (WEB-2) exists, but it has no subscribers. Just to be safe, let me double-check — maybe there's another issue whose title contains \"Design System Audit\" with a different capitalization. My filter was using `contains` against the title, which is case-insensitive in Linear. Only one matched.\n\nI'll also confirm that Sam Rivera's ID exists: c0cdfbe2-b4e7-4acf-a35b-ceaeaee31b51. The subscriber list is empty, so Sam isn't subscribed.\n\nFollowing the user's instructions: \"If there isn't one, just tell me.\" Therefore, I should report that the issue exists, but no one — including Sam Rivera — is subscribed, so I didn't change the priority.\n\nI should not change the priority, since the condition (that Sam Rivera is subscribed) isn't met. I'll tell them that.\n</thinking>\nThere's one \"Design system audit\" issue in the Web team — WEB-2 (currently in Todo, priority None) — but it has no subscribers at all, including Sam Rivera. Since the issue didn't match your condition, I left the priority unchanged. Let me know if you want me to set it to Urgent anyway."
+          }
+        ]
+      }
+    }
+  ],
+  "followup_steps": []
+}

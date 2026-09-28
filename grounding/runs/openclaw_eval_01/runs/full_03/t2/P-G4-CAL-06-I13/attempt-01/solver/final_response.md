@@ -1,0 +1,1 @@
+There isn't one. I checked Leo Park's calendar (`c_ecbdae1140a90d7e32f95b9fa6@group.calendar.google.com`, timezone America/New_York) and it's completely empty — no quarterly planning lunch, no other events at all, and nothing on Thursday June 21st either (verified via event list, free-busy, and deleted events). Nothing to move.

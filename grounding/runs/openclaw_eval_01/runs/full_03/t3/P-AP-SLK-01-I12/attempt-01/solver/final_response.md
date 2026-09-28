@@ -1,0 +1,1 @@
+Done. I found Farhan Malik's (Farhan (Ops)) message in #launch-planning — "Launch date confirmed — March 3, no changes on our side." — it already had Nadia's :eyes: on it, and I've added a :tada: to it.

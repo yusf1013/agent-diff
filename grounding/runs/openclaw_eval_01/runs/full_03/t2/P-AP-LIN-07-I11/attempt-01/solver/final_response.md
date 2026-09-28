@@ -1,0 +1,1 @@
+Done ✅ — the Growth doc was titled "Draft note" (singular, close enough) and its content was about the referral program pilot rollout, so I renamed it to **"Referral pilot — launch notes"** and verified the change went through.

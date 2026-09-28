@@ -1,0 +1,1 @@
+Found it: **Team Travel** (`c_4f89f14b9aaa6d282b3f1c2f2b@group.calendar.google.com`, owned by you) — and it's already set to hidden in your calendar list, so no change was needed. If you're still seeing it on screen, a refresh should make it disappear; let me know if it's still showing and I'll dig in.

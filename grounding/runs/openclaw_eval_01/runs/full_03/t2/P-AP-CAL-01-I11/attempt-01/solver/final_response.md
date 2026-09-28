@@ -1,0 +1,1 @@
+Done. There was no calendar with the exact name "Client Success," but there was **"Client Success Renewals"** — a shared calendar you had already unchecked. I've now hidden it, so it no longer appears in your calendar list at all. The calendar and its events are untouched — it can be unhidden anytime if you want it back.

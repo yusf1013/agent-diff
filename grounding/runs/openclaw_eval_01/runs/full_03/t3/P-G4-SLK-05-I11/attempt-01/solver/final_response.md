@@ -1,0 +1,1 @@
+I checked your DM with Maya Chen, but the conversation is empty — there are no messages in it at all, so there's no deploy checklist message to react to. I didn't add the eyes reaction. If she sent it somewhere else (a channel or thread), point me there and I'll add it.

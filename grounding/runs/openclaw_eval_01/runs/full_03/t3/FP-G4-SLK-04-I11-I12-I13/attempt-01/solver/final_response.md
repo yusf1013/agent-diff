@@ -1,0 +1,1 @@
+Done 👀 — Maya Chen's card in #launch-readiness listing the rollback steps ("1) halt deploys 2) restore snapshot 3) verify health") now has an eyes reaction on it. I checked the other cards in the channel (rollout steps, handoff notes, cleanup steps, verification) and hers was the only one covering rollback.

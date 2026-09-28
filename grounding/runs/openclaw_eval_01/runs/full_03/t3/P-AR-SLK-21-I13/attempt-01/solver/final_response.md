@@ -1,0 +1,1 @@
+I checked #incidents — there's no message from Leo Park on Tuesday (Sept 22). In fact, the channel's full history is empty, and a workspace-wide search for any of his messages turned up nothing either. So there was nothing to react to.

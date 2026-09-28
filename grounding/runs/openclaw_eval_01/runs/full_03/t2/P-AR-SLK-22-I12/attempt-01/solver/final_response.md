@@ -1,0 +1,1 @@
+There isn't one. In #launch-prep, the thread about tonight's payments launch checklist ("Reply here once you've signed off on tonight's payments launch checklist" — Diego, 4:05pm) has zero replies, and Leo Park's only message in the channel is the 6pm reminder, which has no thread. No reply of his to react to, so I didn't add anything.

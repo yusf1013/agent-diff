@@ -1,0 +1,1 @@
+Done. One small note: the Growth doc was actually titled **"Draft note"** (singular, not "Draft notes"), and it mentions the referral program pilot rollout for Q4 — so I'm confident that's the one. It's now renamed to **"Referral pilot — launch notes"** on the Growth (GRO) team.

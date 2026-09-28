@@ -1,0 +1,1 @@
+Leo Park didn't post anything in #incidents on Tuesday (Sept 22) — so there's nothing to react to. The channel's history is actually completely empty (zero messages at any time), and I confirmed Leo is a channel member, so it's not a permissions issue.

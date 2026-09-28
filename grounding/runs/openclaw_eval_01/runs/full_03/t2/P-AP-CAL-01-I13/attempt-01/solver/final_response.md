@@ -1,0 +1,1 @@
+Done — found it and hid it. The 'Client Success' calendar is now hidden from your calendar list (and I set it to unselected too, so its events won't show in the UI either). It'll stop appearing in your list now; the calendar itself and its events are untouched, so you can unhide it anytime.

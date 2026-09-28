@@ -1,0 +1,1 @@
+Done ✅ — **WEB-3 "Checkout hangs for guest users on Safari"** (Web Platform team, assigned to Priya Nair) is now set to **Urgent** priority. It was the only matching issue in the team — no Cycle 4 milestone is attached, but it matched every other detail exactly.

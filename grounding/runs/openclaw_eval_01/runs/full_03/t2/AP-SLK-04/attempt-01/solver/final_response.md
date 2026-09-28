@@ -1,0 +1,1 @@
+Done. Diego Alvarez (@Diego) posted the deploy-freeze message in #incidents — "Are we still under the deploy freeze until Friday?" — and it's the one with 4 replies. He's now invited to #incident-response.

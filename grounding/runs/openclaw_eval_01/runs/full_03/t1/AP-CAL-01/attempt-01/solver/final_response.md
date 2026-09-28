@@ -1,0 +1,1 @@
+Done. The **Client Success** calendar (the one you'd already unchecked) is now hidden — `hidden: true` — so it will no longer appear in your calendar list. Your other Client Success–named calendars (the selected one and "Client Success Renewals") are untouched.

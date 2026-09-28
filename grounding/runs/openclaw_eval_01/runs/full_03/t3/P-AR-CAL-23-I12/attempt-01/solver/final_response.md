@@ -1,0 +1,1 @@
+No such event found. On Thursday, June 21 there's one vendor sync — **"Vendor sync: Printing"** at 12:00–12:30 PM — but its optional attendee is **Dana White**, not Dana Whitfield. I didn't move anything; let me know if that's the one you meant and I'll set the location to Room 2C.
