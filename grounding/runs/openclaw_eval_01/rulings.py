@@ -7,6 +7,9 @@ learn which tests and trials count; the manual validity reviews are evidence beh
   become a match keeps it); or when it is a form a valid near miss's ruling leaves out (C_BILLING's and
   ev_budget_free's absence twins).
 - **A trial does not count** when every record it acted on is a flawed near miss of its scenario.
+- **A trial runs out the solver's budget** (the PI, 2026-09-28) when its agent time, rate-limiter waits excluded,
+  passes 8 minutes: it is the solver's failure, not re-run. A policy unit's trial is "incorrect"; a regular test's
+  trial exposes no fact.
 - Near misses are ruled by their original ids; suite_opaque/ids/<scenario>.json (6a) and
   ../completion_01/suite/ids/<scenario>.json (6b) give their opaque ones.
 """
@@ -21,6 +24,17 @@ HERE = Path(__file__).resolve().parent
 KNOWN_DEFECTS = HERE.parent / "roadmap_01" / "known_defects.json"
 ID_DIRS = (HERE / "suite_opaque" / "ids", HERE.parent / "completion_01" / "suite" / "ids")  # 6a's scenarios, 6b's
 FORMS = (("AT-", "absence twin"), ("UC-", "clone"), ("U-", "underspecified"), ("FP-", "fact probe"), ("P-", "probe"))
+BUDGET_S = 480  # the PI, 2026-09-28: a solver that runs out 8 minutes (limiter waits excluded) fails the trial
+
+
+def over_budget(attempt: Path) -> bool:
+    """The trial ran out the solver's 8-minute budget: its turn's time minus rate-limiter waits passed 480 s. OpenClaw's
+    own limit is 600 s, so a trial can pass the budget and still finish; it counts as timed out all the same."""
+    summary = json.loads((attempt / "execution_summary.json").read_text())
+    if summary.get("status") != "completed":
+        return False
+    turn = (summary.get("turn_durations_s") or [0])[0]
+    return turn - ((summary.get("usage") or {}).get("limiter_wait_s") or 0) > BUDGET_S
 
 
 def scenario_of(case_id: str) -> str:

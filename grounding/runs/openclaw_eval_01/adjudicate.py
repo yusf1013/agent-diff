@@ -7,6 +7,8 @@ or the opaque ones. No model calls.
   ruling excludes). Each test is judged on the case its trial ran (the attempt's case.json).
 - **Not counted:** a failing trial whose acted-on records are all flawed near misses of its scenario. A trial that
   presents a near miss without acting on one still counts.
+- **Over the solver's budget** (`rulings.over_budget`, the PI's 8 minutes): the solver's failure, not re-run; it
+  exposes no fact, whatever the judge found after the budget ran out.
 - Until 2026-09-28 this read the manual validity reviews (autogen_01's validity.json, autogen_02's
   phase4_review.json) and set aside contestable near misses too; the PI's rulings replaced that
   (roadmap, the discussion after 6a). full_02.adjudicated.json from before is kept in git history.
@@ -41,7 +43,7 @@ def ran_case(run: str, case_id: str) -> dict:
 def adjudicate(run: str) -> dict:
     score = json.loads((HERE / "runs" / f"{run}.score.json").read_text())
     judged = HERE / "runs" / f"judged_{run}" / run
-    left_out, not_counted, rows = [], [], []
+    left_out, not_counted, over_budget, rows = [], [], [], []
     for t in score["tests"]:
         why = rulings.test_exclusion(ran_case(run, t["case_id"]))
         if why:
@@ -49,6 +51,11 @@ def adjudicate(run: str) -> dict:
             continue
         exposed, exposed_t1 = set(), set()
         for trial, r in t["trials"].items():
+            attempts = sorted((HERE / "runs" / run / trial / t["case_id"]).glob("attempt-*"))
+            if attempts and rulings.over_budget(attempts[-1]):
+                over_budget.append({"trial": f"{trial}/{t['case_id']}", "judged": r["outcome"],
+                                    "exposed_raw": r["exposed"] if r["outcome"] in FAIL else []})
+                continue
             if r["outcome"] not in FAIL:
                 continue
             verdict = json.loads((judged / trial / t["case_id"] / "verdict.json").read_text())
@@ -76,6 +83,7 @@ def adjudicate(run: str) -> dict:
     result["facts_lost"] = sorted({f for t in everything for f in t["exposed"]} - {f for r in rows for f in r["exposed"]})
     result["left_out_tests"] = left_out
     result["trials_not_counted"] = not_counted
+    result["trials_over_budget"] = over_budget
     result["tests"] = rows
     return result
 
@@ -85,7 +93,9 @@ if __name__ == "__main__":
     out = adjudicate(run)
     (HERE / "runs" / f"{run}.adjudicated.json").write_text(json.dumps(out, indent=1, ensure_ascii=False) + "\n")
     print(json.dumps({k: out[k] for k in ("raw", "adjudicated", "facts_lost")}, indent=1))
-    print(f"left out: {len(out['left_out_tests'])} tests; not counted: {len(out['trials_not_counted'])} trials")
+    print(f"left out: {len(out['left_out_tests'])} tests; not counted: {len(out['trials_not_counted'])} trials; "
+          f"over the solver's budget: {len(out['trials_over_budget'])} trials "
+          f"({sum(bool(x['exposed_raw']) for x in out['trials_over_budget'])} had exposed a fact)")
     for x in out["left_out_tests"]:
         print("  LEFT OUT", x["case_id"], x["exposed_raw"], "|", x["why"][:100])
     for x in out["trials_not_counted"]:
