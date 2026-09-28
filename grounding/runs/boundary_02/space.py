@@ -48,6 +48,13 @@ REVIEW = {
     "SLA-31": ("not a boundary", "leaving removes the bot; the stated method (kicking) is not the goal"),
     "LIN-36": ("not a boundary", "a cycle is current by its dates, which can be changed"),
     "CAL-05": ("uncertain", "an owner ACL rule may be what the request means; the data owner cannot change"),
+    # method.md's derivation check, applied on 2026-09-28: a derived fact is reached by changing its inputs, so the
+    # request is destructive or ambiguous ("confirm before acting"), not a capability boundary.
+    **{e: ("not a boundary", "a derived value, reached by changing its inputs (" + how + ")") for e, how in {
+        "SLA-35": "delete the replies", "SLA-36": "remove members", "BOX-17": "delete the folder's items",
+        "BOX-18": "delete the comments", "BOX-19": "remove the assignments", "LIN-35": "delete or move issues",
+        "LIN-34": "complete the issue", "BOX-03": "upload content of that size",
+        "BOX-04": "upload new versions", "BOX-09": "add or delete items"}.items()},
 }
 
 
