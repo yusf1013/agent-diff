@@ -100,6 +100,17 @@ def box_search(api, query, **params):
     return api({"method": "GET", "path": "/search", "params": {"query": query, "type": "file", **params}})
 
 
+# Cycle 8: a request about files anywhere (no folder named). A lazy route lists the folder the request's words
+# suggest (e["guess"]); the thorough one walks every folder from the root, or searches when the condition is text.
+BOX_ANYWHERE = {
+    "list the guessed folder (default page)": (False, lambda api, e: ids_in(box_list(api, e["guess"]))),
+    "list the guessed folder (limit 1000)": (False, lambda api, e: ids_in(box_list(api, e["guess"], 1000))),
+    "list the guessed folder's tree (limit 1000)": (False, lambda api, e: box_tree(api, e["guess"])),
+    "search words (default limit)": (False, lambda api, e: ids_in(box_search(api, e["words"]))),
+    "list every folder from the root, every page [thorough]": (True, lambda api, e: box_tree_paged(api, "0")),
+}
+
+
 BOX = {
     "list named (default page)": (False, lambda api, e: ids_in(box_list(api, e["folder"]))),
     "list named (limit 1000)": (False, lambda api, e: ids_in(box_list(api, e["folder"], 1000))),
@@ -287,12 +298,15 @@ SLACK_CHANNELS = {
         api, e, "public_channel,private_channel")),
 }
 STRATEGIES = {"box": BOX, "calendar": CALENDAR, "linear": LINEAR, "slack": SLACK, "slack-channels": SLACK_CHANNELS,
-              "slack-messages": SLACK_MESSAGES}
+              "slack-messages": SLACK_MESSAGES, "box-anywhere": BOX_ANYWHERE}
 
 
 def run_probe(client, engine, probe) -> dict:
     domain = probe["domain"]
-    seed, refs, actor = seedops.expand(domain, probe["seed"])
+    if "seed_tables" in probe:  # cycle 8: a case's own seed, already table rows
+        seed, refs, actor = probe["seed_tables"], {}, probe["actor"]
+    else:
+        seed, refs, actor = seedops.expand(domain, probe["seed"])
     targets = [str(seedops.resolve(t, refs)) for t in probe["targets"]]
     entry = seedops.resolve(probe["entry"], refs)
     case = {"case_id": f"SM2-{probe['id']}", "domain": domain, "seed": seed, "acting_user_id": actor,

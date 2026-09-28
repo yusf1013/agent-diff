@@ -51,6 +51,10 @@ SEEDS = {
                      "ref": "m_leg"}],
         ["reaction", {"message": "@m_launch", "person": "priya", "name": "tada"}],
         ["reaction", {"message": "@m_launch", "person": "actor", "name": "eyes"}],
+        # Added for cycle 5 (SLA-17, "turn my DM with Priya into a channel"); cases built before are unchanged.
+        ["dm", {"id": "D_PRIYA", "person": "priya"}],
+        ["message", {"channel": "D_PRIYA", "author": "priya", "text": "Can you share the launch checklist?",
+                     "at": "2026-09-22T09:00:00Z", "ref": "m_dm"}],
     ],
     "calendar": [
         ["calendar", {"id": "maya-team@northwind.example", "summary": "Maya's team", "owner": "maya", "access": "writer"}],

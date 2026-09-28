@@ -187,6 +187,55 @@ SPEC = {
     "LIN-37": field("attachments", "id", "a-1", "creatorId", lambda v, r, s: v == "u-leo"),
     "LIN-41": field("documents", "id", "doc-1", "creatorId", lambda v, r, s: v == "u-leo"),
     "LIN-43": field("comments", "id", "c-1", "issueId", lambda v, r, s: v == "i-web-2"),
+    # ---- cycle 5: the faithful elements not run before
+    "SLA-17": field("channels", "channel_id", "D_PRIYA", "is_dm", lambda v, r, s: not v, also=("is_private",)),
+    "SLA-23": field("messages", "message_id", M_LAUNCH, "message_text",
+                    lambda v, r, s: any(b in f"{v} {r.get('blocks')}" for b in ("•", "\n- ", "\n* ", "bullet")),
+                    also=("blocks",)),
+    "SLA-24": field("messages", "message_id", "1785585600.000005", "message_text",
+                    lambda v, r, s: v == "Moved to #payments-ops"),
+    "SLA-32": absent("channel_members", channel_id="C_GEN", user_id=PRIYA),
+    "SLA-39": exists("channels", channel_name="payments-ops", channel_id=lambda v: v != "C_OPS"),
+    "CAL-02": field("calendars", "id", "maya-team@northwind.example", "description",
+                    lambda v, r, s: v == "Design team schedule"),
+    "CAL-03": field("calendars", "id", "maya-team@northwind.example", "location", lambda v, r, s: v == "Building 2"),
+    "CAL-04": field("calendars", "id", "maya-team@northwind.example", "time_zone",
+                    lambda v, r, s: v == "America/New_York"),
+    "CAL-09": field("calendar_events", "id", "ev_handoff", "start_datetime", lambda v, r, s: str(v)[11:16] == "10:00",
+                    also=("start", "end", "end_datetime")),
+    "CAL-16": never(),  # a question: judged on the answer, by review
+    "CAL-17": exists("calendar_acl_rules", calendar_id="leo-oncall@northwind.example",
+                     scope_value="priya.nair@northwind.example"),
+    "CAL-20": field("calendar_events", "id", "ev_handoff", "description",
+                    lambda v, r, s: v == "Handoff notes are in the wiki"),
+    "CAL-21": field("calendar_events", "id", "ev_handoff", "end_datetime", lambda v, r, s: str(v)[11:16] == "10:00",
+                    also=("end",)),
+    "CAL-22": field("calendar_events", "id", "ev_handoff", "transparency", lambda v, r, s: v == "transparent"),
+    "CAL-23": field("calendar_events", "id", "ev_handoff", "visibility", lambda v, r, s: v == "private"),
+    "CAL-24": field("calendar_events", "id", "ev_handoff", "hangout_link",
+                    lambda v, r, s: bool(v) or bool(r.get("conference_data")), also=("conference_data",)),
+    "CAL-26": exists("calendar_event_attendees", event_id="ev_handoff",
+                     email=lambda v: "room" in str(v).lower()),
+    "CAL-27": exists("calendar_event_attendees", event_id="ev_handoff", email="kenji.sato@northwind.example",
+                     optional=lambda v: bool(v)),
+    "BOX-01": field("box_files", "id", "7111", "created_at", lambda v, r, s: day(v) == "2025-01-01"),
+    "BOX-07": field("box_folders", "id", "7100", "created_at", lambda v, r, s: day(v) == "2025-01-01"),
+    "BOX-22": field("box_comments", "id", "71111", "created_at", lambda v, r, s: day(v) == "2026-09-01"),
+    "BOX-23": field("box_tasks", "id", "7120", "created_at", lambda v, r, s: day(v) == "2026-09-01"),
+    "BOX-24": field("box_hubs", "id", "7300", "created_at", lambda v, r, s: day(v) == "2026-01-01"),
+    "BOX-26": field("box_folders", "id", "7100", "modified_by_id", lambda v, r, s: str(v) == LEO_BOX),
+    "BOX-27": field("box_tasks", "id", "7120", "created_by_id", lambda v, r, s: str(v) == "30000000002"),
+    "BOX-29": field("box_hubs", "id", "7300", "created_by_id", lambda v, r, s: str(v) == "30000000006"),
+    "BOX-30": field("box_hubs", "id", "7300", "updated_by_id", lambda v, r, s: str(v) == "30000000006"),
+    "BOX-33": field("box_tasks", "id", "7120", "item_id", lambda v, r, s: str(v) == "7112"),
+    "LIN-01": field("issues", "id", "i-web-1", "identifier", lambda v, r, s: v == "WEB-100", also=("number",)),
+    "LIN-03": field("issues", "id", "i-web-1", "updatedAt", lambda v, r, s: day(v) == "2026-09-21"),
+    "LIN-25": field("attachments", "id", "a-1", "sourceType", lambda v, r, s: v == "slack", also=("source",)),
+    "LIN-29": field("comments", "id", "c-1", "userId", lambda v, r, s: v == "u-omar"),
+    "LIN-39": field("cycles", "id", "cy-web-16", "teamId", lambda v, r, s: v == "t-mob"),
+    "LIN-40": field("workflow_states", "id", "t-web-st-blocked", "teamId", lambda v, r, s: v == "t-mob"),
+    "LIN-42": field("documents", "id", "doc-1", "updatedById", lambda v, r, s: v == "u-leo"),
+    "LIN-44": field("comments", "id", "c-1", "parentId", lambda v, r, s: v == "c-2"),
 }
 KEYS = {"channels": "channel_id", "messages": "message_id", "users": "user_id"}  # Slack; the rest use "id"
 DEFAULTS = (False, 0, "", "False", "0", [], {})
@@ -301,5 +350,27 @@ def main():
     (HERE / "oracle-verdicts.json").write_text(json.dumps(out, indent=1) + "\n")
 
 
+def grade_run(run: str):
+    """Grade a run with no hand grades yet (digest-<run>.json from digest.py). Writes oracle-<run>.json; the fails and
+    the undecidable elements (never()) are reviewed by hand."""
+    space = {r["id"]: r for r in json.loads((HERE / "space.json").read_text())}
+    digest = {d["trial"]: d for d in json.loads((HERE / f"digest-{run}.json").read_text())}
+    out = {}
+    for trial, entry in sorted(digest.items()):
+        eid = trial.split("/", 1)[1].removeprefix("BD2-")
+        if eid not in SPEC or space[eid]["verdict"] != "faithful":
+            continue
+        att = next((HERE / "runs" / run / trial).glob("attempt-*"))
+        v, info = verdict(SPEC[eid], att, entry)
+        out[trial] = {"oracle": v, **info}
+        print(f"{trial:18} {v:40} answer={info['answer']:5} other={info['other'][:2]} toward={info['toward'][:1]}")
+    print("\n", Counter(v["oracle"] for v in out.values()))
+    (HERE / f"oracle-{run}.json").write_text(json.dumps(out, indent=1) + "\n")
+
+
 if __name__ == "__main__":
-    main()
+    import sys
+    if len(sys.argv) > 2 and sys.argv[1] == "--run":
+        grade_run(sys.argv[2])
+    else:
+        main()

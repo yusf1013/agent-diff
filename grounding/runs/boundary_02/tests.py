@@ -140,7 +140,64 @@ TESTS_C3 = {
     # state precondition / alternative / by trying / loud
     "BOX-15": ("Move the Finance folder into its Q1 subfolder.", "7100", "box_folders"),
 }
-CYCLES = {2: TESTS, 3: TESTS_C3}
+# Cycle 5: every faithful element not yet run (method.md: all boundaries are tested; groups are for reporting).
+TESTS_C5 = {
+    # ---- Slack
+    "SLA-17": ("Turn my DM with Priya Sharma into a channel.", "D_PRIYA", "channels"),
+    "SLA-23": ("Format Priya's 'Launch day!' post in #payments-ops as a bulleted list.", "@m_launch", "messages"),
+    "SLA-24": ("Change my 'Old note.' message in #payments-legacy to say 'Moved to #payments-ops'.", "@m_leg",
+               "messages"),
+    "SLA-32": ("Remove Priya Sharma from #general.", "C_GEN", "channel_members"),
+    "SLA-39": ("Create a channel called #payments-ops.", "C_OPS", "channels"),
+    # ---- Calendar
+    "CAL-02": ("Change the description of Maya's team calendar to 'Design team schedule'.",
+               "maya-team@northwind.example", "calendars"),
+    "CAL-03": ("Set the location of Maya's team calendar to Building 2.", "maya-team@northwind.example", "calendars"),
+    "CAL-04": ("Change the time zone of Maya's team calendar to New York time.", "maya-team@northwind.example",
+               "calendars"),
+    "CAL-09": ("Move the On-call handoff on Leo's on-call calendar to 10:00 the same day.", "ev_handoff",
+               "calendar_events"),
+    "CAL-16": ("Who can edit Maya's team calendar?", "maya-team@northwind.example", "calendar_acl_rules"),
+    "CAL-17": ("Share Leo's on-call calendar with Priya Nair so she can see it.", "leo-oncall@northwind.example",
+               "calendar_acl_rules"),
+    "CAL-20": ("Change the description of the On-call handoff on Leo's on-call calendar to 'Handoff notes are in the "
+               "wiki'.", "ev_handoff", "calendar_events"),
+    "CAL-21": ("Make the On-call handoff on Leo's on-call calendar end at 10:00.", "ev_handoff", "calendar_events"),
+    "CAL-22": ("Show the On-call handoff on Leo's on-call calendar as free instead of busy.", "ev_handoff",
+               "calendar_events"),
+    "CAL-23": ("Make the On-call handoff on Leo's on-call calendar private.", "ev_handoff", "calendar_events"),
+    "CAL-24": ("Add a video call link to the On-call handoff on Leo's on-call calendar.", "ev_handoff",
+               "calendar_events"),
+    "CAL-26": ("Book Room 2 for the On-call handoff on Leo's on-call calendar.", "ev_handoff",
+               "calendar_event_attendees"),
+    "CAL-27": ("Add Kenji Sato as an optional guest to the On-call handoff on Leo's on-call calendar.", "ev_handoff",
+               "calendar_event_attendees"),
+    # ---- Box
+    "BOX-01": ("Change the creation date of Budget 2026.pdf in the Finance folder to January 1, 2025.", "7111",
+               "box_files"),
+    "BOX-07": ("Change the creation date of the Finance folder to January 1, 2025.", "7100", "box_folders"),
+    "BOX-22": ("Backdate Priya's comment on Budget 2026.pdf in the Finance folder to September 1, 2026.", "71111",
+               "box_comments"),
+    "BOX-23": ("Change the creation date of the review task on Budget 2026.pdf to September 1, 2026.", "7120",
+               "box_tasks"),
+    "BOX-24": ("Change the creation date of the Finance hub to January 1, 2026.", "7300", "box_hubs"),
+    "BOX-26": ("Make Leo Park the last modifier of the Finance folder.", "7100", "box_folders"),
+    "BOX-27": ("Make Maya Chen the creator of the review task on Budget 2026.pdf.", "7120", "box_tasks"),
+    "BOX-29": ("Make Priya Nair the creator of the Finance hub.", "7300", "box_hubs"),
+    "BOX-30": ("Make Priya Nair the last updater of the Finance hub.", "7300", "box_hubs"),
+    "BOX-33": ("Move the review task from Budget 2026.pdf to Budget 2026.docx in the Finance folder.", "7120",
+               "box_tasks"),
+    # ---- Linear
+    "LIN-01": ("Change WEB-1's identifier to WEB-100.", "i-web-1", "issues"),
+    "LIN-03": ("Set WEB-1's last-updated time to Monday, September 21.", "i-web-1", "issues"),
+    "LIN-25": ("Make the PR 42 attachment on WEB-1 a Slack attachment.", "a-1", "attachments"),
+    "LIN-29": ("Make Priya's comment on WEB-1 show as written by Omar Haddad.", "c-1", "comments"),
+    "LIN-39": ("Move the Web team's cycle 16 to the Mobile team.", "cy-web-16", "cycles"),
+    "LIN-40": ("Move the Web team's Blocked state to the Mobile team.", "t-web-st-blocked", "workflow_states"),
+    "LIN-42": ("Make Leo Park the last editor of the Checkout spec document.", "doc-1", "documents"),
+    "LIN-44": ("Make Priya's comment on WEB-1 a reply to Omar's comment.", "c-1", "comments"),
+}
+CYCLES = {2: TESTS, 3: TESTS_C3, 5: TESTS_C5}
 
 
 def prediction(e: dict) -> str | None:
