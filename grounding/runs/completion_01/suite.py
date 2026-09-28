@@ -1,4 +1,4 @@
-"""Roadmap 6b's suite: the accepted scenarios of runs/gen_01 with opaque ids and test-side clocks, built as
+"""Roadmap 6b's suite: the accepted scenarios of the generation runs (runs/gen_*) with opaque ids and test-side clocks, built as
 openclaw_eval_01/opaque_suite.py built 6a's (the discussion after 6a, 2026-09-28). No model or replica calls.
 
     python grounding/runs/fact_coverage_02/launch.py grounding.runs.completion_01.suite
@@ -31,7 +31,7 @@ from grounding.runs.autogen_01.kit.derive import digest
 from grounding.runs.openclaw_eval_01 import materialize, rulings
 
 HERE = Path(__file__).resolve().parent
-GEN = HERE / "runs" / "gen_01"
+GENS = sorted((HERE / "runs").glob("gen_*"))
 OUT = HERE / "suite"
 EVENT = re.compile(r"^(created|updated|modified|completed|canceled|cancelled|archived|resolved|trashed|deleted|edited|"
                    r"started|last_?seen|content_created|content_modified)(_at|At)?$", re.I)
@@ -62,10 +62,10 @@ def events(case: dict) -> list[datetime]:
     return out
 
 
-def written_at() -> dict[str, datetime]:
-    """scenario -> the time of its last writer call."""
+def written_at(gen: Path) -> dict[str, datetime]:
+    """scenario -> the time of its last writer call in one generation run."""
     out = {}
-    for line in (GEN / "calls.jsonl").read_text().splitlines():
+    for line in (gen / "calls.jsonl").read_text().splitlines():
         call = json.loads(line)
         if call.get("role") == "writer":
             t = datetime.fromisoformat(call["utc"])
@@ -84,12 +84,12 @@ def clock_for(case: dict, written: datetime) -> dict | None:
 
 
 def main():
-    written = written_at()
     check = {"scenarios": 0, "tests": 0, "dropped": [], "ids_replaced": 0, "clocks": {}, "skipped": {}, "failures": []}
     fail = check["failures"].append
     tests_out, index, mappings = [], [], {}
-    for case_path in sorted(GEN.glob("*/case.json")):
+    for case_path in sorted(p for gen in GENS for p in gen.glob("*/case.json")):
         folder = case_path.parent
+        GEN, written = folder.parent, written_at(folder.parent)
         outcome = json.loads((folder / "outcome.json").read_text())
         sid = outcome["scenario_id"]
         if outcome.get("status") != "accepted":
@@ -139,15 +139,16 @@ def main():
                 opaque["case_sha256"] = digest({k: v for k, v in opaque.items() if k != "case_sha256"})
             tests_out.append(opaque)
             index.append({"case_id": test["case_id"], "domain": case["domain"], **meta,
-                          "source": "completion_01/runs/gen_01", "ran_on_qwen": False,
+                          "source": f"completion_01/runs/{GEN.name}", "ran_on_qwen": False,
                           "case_sha256": opaque["case_sha256"]})
     print(json.dumps({k: v for k, v in check.items() if k not in ("failures", "clocks")}, indent=1))
     if check["failures"]:
         for f in check["failures"][:60]:
             print("FAIL", f)
         raise SystemExit(f"{len(check['failures'])} failures; nothing written")
-    if OUT.exists():
-        shutil.rmtree(OUT)
+    for sub in ("cases", "ids"):  # the units (policy_units.py) stay
+        if (OUT / sub).exists():
+            shutil.rmtree(OUT / sub)
     for t in tests_out:
         path = OUT / "cases" / t["domain"] / f"{t['case_id']}.json"
         path.parent.mkdir(parents=True, exist_ok=True)

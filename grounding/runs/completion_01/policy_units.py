@@ -28,7 +28,7 @@ SUITE = HERE / "suite"
 
 def accepted_cases() -> list[dict]:
     out = []
-    for outcome in sorted(GEN.glob("*/outcome.json")):
+    for outcome in sorted(q for gen in sorted((HERE / "runs").glob("gen_*")) for q in gen.glob("*/outcome.json")):
         if json.loads(outcome.read_text()).get("status") != "accepted":
             continue
         case = json.loads((outcome.parent / "case.json").read_text())
