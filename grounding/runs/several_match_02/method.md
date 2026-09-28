@@ -171,8 +171,10 @@ probes.
 
 ## What the automation provides
 
-- **The route table** per service, as data.
-- **Shortcuts generated from it.** Today they are hand-coded functions in `strategies.py`.
+- **The route table** per service, as data. [route_table.py](route_table.py) holds it for the four replicas.
+- **Shortcuts generated from it.** route_table.py's rules, which name no service, generate all 30 hand-coded
+  shortcuts and 9 the investigation never tried. One of the 9, Box's search at its largest page, is the shortcut
+  cycle 8b had to add by hand. The runner still executes hand-coded functions in `strategies.py`.
 - **Trap seeding** from the behaviour-to-trap map. Today the seeds are written by hand.
-- **The condition-visibility check.** Today it is done by eye.
+- **The condition-visibility check** and the time-zone check. Today they are done by eye.
 - **The other checks**, as in the kit.
