@@ -1,0 +1,1 @@
+There's no channel named `launch-plan` in your Slack workspace. The closest one is **#launch-plans** (C_LPS, plural) — if that's the one you meant, say the word and I'll rename it to `launch-plan-2026`.

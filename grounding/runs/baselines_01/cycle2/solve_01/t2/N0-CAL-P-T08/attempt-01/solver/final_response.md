@@ -1,0 +1,1 @@
+Nope — I can't find a dentist appointment on Thursday (or anywhere in the week of Jun 18–24). Your calendar only has your primary calendar (jordan.lee@northwind.example), and a search for "dentist" across it turns up nothing, so there's nothing to rename. If it's stored somewhere else or under a different name, tell me and I'll dig further.

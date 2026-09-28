@@ -24,7 +24,10 @@ def diff_lines(attempt: Path) -> list[str]:
     diff = json.loads(path.read_text())["diff"]
     out = []
     skip = {"etag", "sequence_id", "modified_at", "updated_at", "updatedAt", "content_modified_at", "created_at"}
+    noise = {"calendar_sync_tokens"}  # the replica writes one per listing; never a grounding act
     for row in diff.get("inserts", []):
+        if row.get("__table__") in noise:
+            continue
         out.append(f"+ {row.get('__table__')}: {short({k: v for k, v in row.items() if k != '__table__'}, 400)}")
     for row in diff.get("updates", []):
         before, after = row.get("before", {}), row.get("after", {})

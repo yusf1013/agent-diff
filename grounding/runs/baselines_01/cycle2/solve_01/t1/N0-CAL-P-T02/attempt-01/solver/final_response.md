@@ -1,0 +1,1 @@
+There's no afternoon 1:1 with Sam on Wednesday, so I didn't change anything. The only 1:1 with Sam this week is Wednesday June 20 at 10:00 AM (Room A). If you meant that one, say the word and I'll set its location to Room B.

@@ -1,0 +1,1 @@
+The Web team doesn't have a 'Bug' label — in fact, it has no labels at all. The only 'Bug' label in the workspace belongs to the API team. Want me to rename that one, or create a 'Defect' label for Web instead?

@@ -1,0 +1,1 @@
+Done — archived **#hr-general** (C_HRGEN). It was the only private channel mentioning "onboarding new hires" (in its topic) with Diego Alvarez as a member. Confirmed the archive call returned `ok: true`.

@@ -1,0 +1,1 @@
+Done. I found one matching private channel — **#hr-general** (purpose: "Onboarding new hires," members: Agent Bot, Diego Alvarez, Leo Park) — and archived it. The other private channel, #budget-planning, didn't match.

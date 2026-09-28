@@ -1,0 +1,1 @@
+There's no Word version of the Proposal in your Box account — I searched the whole account and the only Proposal file is `Proposal.pdf` in the Proposals folder. Nothing was deleted; the PDF is untouched.

@@ -1,0 +1,1 @@
+I couldn't find a design review organized by Omar. Your calendar only has one design review event — "Design review" on June 21, 10:00 AM — and it's organized by Priya Nair, not Omar. So I didn't change anything. Let me know if you meant Priya's event instead.

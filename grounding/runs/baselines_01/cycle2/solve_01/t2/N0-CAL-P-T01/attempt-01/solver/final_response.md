@@ -1,0 +1,1 @@
+There's no lunch with Priya on Friday, June 22 — in fact, your calendar has no events at all on that day (only one calendar exists: jordan.lee@northwind.example). If you'd like, I can create a lunch event with Priya for that day.
