@@ -1,0 +1,1 @@
+Reopened. The "payment retries timing out under load" thread on WEB-7 (Sam Rivera's comment from Aug 3) is now unresolved again. The other thread (Leo Park's on the flickering spinner) was already open and left as-is.

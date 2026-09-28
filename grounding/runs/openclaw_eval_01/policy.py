@@ -16,7 +16,8 @@ this study's agent. No unit is drawn again and no order changes.
   the derivation's own `_finish`, which re-runs the reference check. A check requires that nothing else changed, and
   its absence twins must equal the ones `policy.absence_twins` derives from the rebuilt case.
 - **A look** writes its cases to runs/policy/<mode>_look<N>/<domain>/: the cell's valid units between the previous
-  look and this one (11, 18, 25). Run them with run.py (3 trials), judge them with judge v2, then `decide`.
+  look and this one (11, 18, 25; look 4 is the rest of the cell's valid units). Run them with run.py (3 trials),
+  judge them with judge v2, then `decide`.
 - **decide** gives each cell's statistic and decision by autogen_02's rules (`sampler.cell_stats` on one pre-chosen
   trial per unit, looks after 11, 18 and 25 valid units), from this study's verdicts only. As in autogen_02's
   `sampler.decide`, a cell still undecided at 25 goes on to its last valid unit, and once Phase 4's units are in, each
@@ -89,19 +90,23 @@ def rebuilt_unit(u: dict, recorded: dict) -> dict:
 
 
 def look(mode: str, n: int, cells: list[str] | None, read: set[str]) -> Path:
+    """Look n's units per cell: positions 1-11, 12-18 and 19-25; look 4 is the rest of a cell's valid units, the
+    sampler's last boundary for a cell still undecided at 25."""
     doc = plan(mode)
-    bounds = [0] + doc["looks"]
+    bounds = [0] + doc["looks"] + [None]
     dest = OUT / f"{mode}_look{n}"
     if dest.exists():
         raise SystemExit(f"{dest} exists")
     actions = runner.defect_actions()
-    written, unread, left = [], [], {}
+    written, unread, left, positions = [], [], {}, {}
     for cell, seq in doc["cells"].items():
         if cells and cell not in cells:
             continue
         kept, left_out = valid_units(seq, actions)
         left.update(left_out)
-        for u in kept[bounds[n - 1]:bounds[n]]:
+        chosen = kept[bounds[n - 1]:bounds[n]]
+        positions[cell] = [bounds[n - 1] + 1, bounds[n - 1] + len(chosen)]
+        for u in chosen:
             if runner.action_for(u["unit"], actions).startswith("read before") and u["unit"] not in read:
                 unread.append(u["unit"])
             written.append(u)
@@ -114,7 +119,7 @@ def look(mode: str, n: int, cells: list[str] | None, read: set[str]) -> Path:
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(json.dumps(case, indent=1, ensure_ascii=False) + "\n")
     (dest / "look.json").write_text(json.dumps({
-        "mode": mode, "look": n, "positions": [bounds[n - 1] + 1, bounds[n]], "cells": cells or sorted(doc["cells"]),
+        "mode": mode, "look": n, "positions": positions, "cells": cells or sorted(doc["cells"]),
         "units": [u["unit"] for u in written], "left_out_in_order": left, "read": sorted(read),
         "rebuilt": [u["unit"] for u in written if u["scenario"] in REBUILT], "date": date.today().isoformat()},
         indent=1) + "\n")
@@ -158,7 +163,7 @@ def main():
     sub = parser.add_subparsers(dest="cmd", required=True)
     lk = sub.add_parser("look")
     lk.add_argument("mode", choices=["absence", "underspecified"])
-    lk.add_argument("n", type=int, choices=[1, 2, 3])
+    lk.add_argument("n", type=int, choices=[1, 2, 3, 4])
     lk.add_argument("--cells", nargs="+")
     lk.add_argument("--read", nargs="*", default=[])
     dc = sub.add_parser("decide")

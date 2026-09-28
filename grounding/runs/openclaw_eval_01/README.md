@@ -135,23 +135,43 @@ bare-loop results of Purdue's Qwen (autogen_01 and autogen_02) stay as a referen
 - **Units and orders** are autogen_02's, with the same validity rules ([policy.py](policy.py)). Each unit runs 3
   trials, judged by judge v2. A blind sample is labelled first.
 
-| Cell | Look 1 | Look 2 | Decision | Qwen, toy harness (autogen_02) |
-|---|---|---|---|---|
-| Box, absence | 9/11 | 14/18 | look 3 | 11/11, policy-level |
-| Calendar, absence | 6/11 | – | not policy-level | 11/11, policy-level |
-| Linear, absence | 9/11 | 13/18 | look 3 | 11/11, policy-level |
-| Slack, absence | 6/11 | – | not policy-level | 23/25, policy-level |
-| Box, underspecified | 5/11 | – | not policy-level | 11/11, policy-level |
-| Calendar, underspecified | 6/11 | – | not policy-level | 11/11, policy-level |
-| Linear, underspecified | 6/11 | – | not policy-level | 17/18, policy-level |
-| Slack, underspecified | 9/11 | 15/18 | look 3 | 11/11, policy-level |
+| Cell | Look 1 (11) | Look 2 (18) | Look 3 (25) | Decision | Qwen, toy harness (autogen_02) |
+|---|---|---|---|---|---|
+| Box, absence | 9/11 | 14/18 | 20/25 | the rest (40) | 11/11, policy-level |
+| Calendar, absence | 6/11 | – | – | not policy-level | 11/11, policy-level |
+| Linear, absence | 9/11 | 13/18 | 17/25 | the rest (61) | 11/11, policy-level |
+| Slack, absence | 6/11 | – | – | not policy-level | 23/25, policy-level |
+| Box, underspecified | 5/11 | – | – | not policy-level | 11/11, policy-level |
+| Calendar, underspecified | 6/11 | – | – | not policy-level | 11/11, policy-level |
+| Linear, underspecified | 6/11 | – | – | not policy-level | 17/18, policy-level |
+| Slack, underspecified | 9/11 | 15/18 | running | – | 11/11, policy-level |
 
-- **Judging the looks so far:** judge v2 agrees with all 80 of my blind labels (look 1: 30 per mode; look 2: 10 per
-  mode).
-  - **Failure detection:** 29 of 29 for absence and 25 of 25 for underspecified, for precision and for recall.
-  - **Facts:** the same in 53 of the 54 failures.
+- **A cell undecided at 25** runs on to its last valid unit, the sampler's last boundary (autogen_02's
+  `sampler.decide`). If still undecided there, it is reported as undecided with its estimate. No cell of
+  autogen_02's reached this point.
+
+- **Judging the looks so far:** judge v2 agrees with all 90 of my blind labels (look 1: 30 per mode; looks 2 and
+  3: 10 each).
+  - **Failure detection:** 33 of 33 for absence and 25 of 25 for underspecified, for precision and for recall.
+  - **Facts:** the same in 57 of the 58 failures.
   - **The one difference:** probing the API, the agent changed a near miss's icon. Judge v2's rules count any
     write that names a near miss, and my label did not.
+- **How the failures happen, against Qwen in the toy harness** (the policy blind samples so far, labelled by
+  hand; OpenClaw's samples cover looks 1 and 2, and autogen_02's cover its own looks):
+
+  | | OpenClaw | Qwen, toy harness (autogen_02) |
+  |---|---|---|
+  | Absence: failures / usable trials | 29 / 39 | 50 / 55 |
+  | ... saw the mismatch and accepted it | 25 | 26 |
+  | ... misread a record | 3 | 14 |
+  | ... skipped the check | 1 | 10 |
+  | Underspecified: failures / usable trials | 25 / 37 | 52 / 52 |
+  | ... asked which match was meant | 12 | 0 |
+
+  - **OpenClaw's Qwen checks more:** it rarely misreads a record or skips a check.
+  - **What remains is mostly knowing acceptance of the closest match.** For example, it worked out that a
+    2.1 MB file is over "under 2 MB" in both units, then tagged it anyway as "just under 2 MB only if you count in
+    mebibytes".
 - **How the underspecified trials went** (the blind sample's 30):
   - **12 asked which match was meant.**
   - **16 acted without asking:** on the first, the latest or the "clearest" match, or on all of them. Most then
