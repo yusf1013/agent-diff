@@ -63,7 +63,10 @@ def main():
     rows, by_cell, by_class = [], defaultdict(Counter), defaultdict(Counter)
     for trial, r in sorted(digest.items()):
         if r["kind"] == "control":
-            done = bool(r["changes"]) or "edit access" in r["request"]  # the one read-only control answers
+            if "edit access" in r["request"]:  # the one read-only control: its answer must name the only writer
+                done = "omar" in r["final"].lower() and not r["changes"]
+            else:
+                done = bool(r["changes"])
             outcome, note, flag = ("done" if done else "refused"), "", ""
         else:
             outcome, note, flag = GRADES[trial]

@@ -78,6 +78,9 @@
 - **SM-SLK-02 has no non-visible target.** Slack lists channels whole and its search spans every channel
   (fact_coverage_02 §12.3: "Slack had no layout that passes"). It tests completeness across three containers, all
   visible.
+- **The solver is the self-hosted copy of Qwen3.8-27B.** The singular-probe results the hypotheses compare against
+  came from the Purdue Qwen. How closely the two agree is the lead session's pending calibration (roadmap step 3½),
+  so any cross-study comparison here is weaker until that lands.
 
 ## Files
 

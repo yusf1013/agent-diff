@@ -78,6 +78,9 @@ The plan counts a side effect as a mistake and flags any that a user might have 
   [grades.py](grades.py) with a note per trial. The control grades follow from the diffs, and for P-CAL-2 from the
   answer: all three name Omar Haddad as the only writer.
 
+- **The solver is the self-hosted copy of Qwen3.8-27B.** How closely it agrees with the Purdue Qwen of the earlier
+  studies is the lead session's pending calibration (roadmap step 3½).
+
 ## Files
 
 - [probe_replica.py](probe_replica.py) → [probes.json](probes.json): which real limits the replicas enforce.
