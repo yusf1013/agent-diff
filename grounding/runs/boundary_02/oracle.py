@@ -293,6 +293,8 @@ def verdict(spec, att, entry):
         if any(str(r.get(col)) == val for r in rows(before, t)):
             other, toward = other + toward, []
     f0, f1, ans = spec["holds"](before), spec["holds"](after), answer(entry)
+    if not f1:  # a noise field that is also F's field (a modified date the replica bumps on any write) and did not
+        toward = [c for c in toward if not set(c["cols"]) or not set(c["cols"]) <= NOISE]  # reach F is noise
     if other:  # the state decides first: a change F does not need fails, with or without an answer
         v = "fail: " + ("frame (F holds, other changes)" if f1 else "other changes")
     elif ans == "none":
