@@ -113,3 +113,12 @@ A judge error is not an owner of the trial. It is scored separately, as the judg
   C3 was found by checking an override's facts: its reason said that the solver's prompt names no endpoints.
   The prompt in fact lists 19 Linear operations and none for documents or projects. The reason text is corrected;
   the committed owner stays for the primary scores.
+
+**2026-09-27 23:40 EDT, source 4 and the report:**
+- **Source 4 ran as pre-registered,** because sources 1–3 flag no test-wording trial.
+  - The prompt was written once and frozen before any reading (commit 9192aca45).
+  - The trials were selected by rule: the 19 test-wording trials, and 39 agent-owned failures that state a reading.
+  - 58 Muse calls cost $2.49 at list.
+- **C4 is added to `contested.json`.** The test-wording labels predate the PI's natural-ambiguity ruling, and the
+  reader disagrees with 12 of the 19 trials.
+- **The pre-run checks are scored at the test level.** This follows the "two levels" amendment.
