@@ -38,9 +38,10 @@ has three parts:
    - **Not defeatable here:** Linear's two list-everything shortcuts, because the replica caps no page size.
 
 For the agent (the feedback loop, not the design answer):
-- Qwen was caught mainly behind visibility defaults.
-- Pagination caught it only inside a combined test.
-- Containers never caught it.
+- Qwen was caught mainly behind visibility defaults: 13 of 31 such matches found when the request did not name the
+  hidden part, 13 of 13 when it did.
+- Pagination caught it only inside a combined test: 14 of 20 found, against 20 of 20 alone.
+- Containers never caught it: 65 of 65 found.
 
 ## Method
 
@@ -60,7 +61,7 @@ For the agent (the feedback loop, not the design answer):
   | 3–4 | four lazy-proof tests (tree, hidden calendar, sub-teams, private channels) | 30 |
   | 5 | controls that name the hidden part; pagination beyond the largest page (void) | 20 |
   | 6 | pagination with a condition the listing shows; the numbers redone; combined seeds | 10 |
-  | 7 | the combined tests | 20 |
+  | 7, 7b | the combined tests, 10 trials each | 20 |
 
   Every test was built and pre-checked by the kit (seed, reference, near misses, replica rules), run 5 times, and
   graded by id from the diff. Routes were read from the trajectories ([routes.py](routes.py)).
@@ -127,18 +128,24 @@ Qwen on the self-host, targets acted on out of targets, valid tests only. The mi
 
 | Placement | Found | Tests |
 |---|---:|---|
-| Visible | 115/115 | all |
-| One or two containers down (subfolders, sub-teams, another channel) | 55/55 | SM2-BOX-01, SM2-LIN-01, the Calendar tests, SM2-BOX-04, SM2-SLK-05 |
+| Visible | 130/130 | all |
+| One or two containers down (subfolders, sub-teams, another channel) | 65/65 | SM2-BOX-01, SM2-LIN-01, the Calendar tests, SM2-BOX-04, SM2-SLK-05 |
 | Beyond the largest page, as the only placement | 20/20 | SM2-BOX-03, SM2-SLK-04 |
-| Beyond the largest page, inside a combined test | 7/10 | SM2-BOX-04 (1 miss: paged a 1,101-item subfolder with a 100-item second page and stopped at 1,100), SM2-SLK-05 (2 read one page) |
-| **Behind a visibility default, the request not naming it** | **9/26** | hidden calendar 0/10 (SM2-CAL-01, -02); private channels 8/12 (SM2-SLK-01), 1/4 (SM2-SLK-05) |
+| Beyond the largest page, inside a combined test | 14/20 | SM2-BOX-04 6/10, SM2-SLK-05 8/10 |
+| **Behind a visibility default, the request not naming it** | **13/31** | hidden calendar 0/10 (SM2-CAL-01, -02); private channels 8/12 alone (SM2-SLK-01), 5/9 combined (SM2-SLK-05) |
 | Behind a visibility default, the request naming it (control) | 13/13 | SM2-CAL-03, SM2-SLK-02 |
 
-- **Near misses acted on:** 3 of 60 valid trials, all in SM2-CAL-01. Its contestable "my calendars" let the agent
+- **Pagination catches the agent only inside a combined test:** 20/20 found alone, 14/20 combined, over 10 trials a
+  test.
+  - Every combined-test miss was a paging mistake, not a failure to page.
+  - The mistakes: a 100-item second page from offset 1000 that stopped one item short of `total_count` (3 trials);
+    one page of history (2); a loop on `next_marker` without asking for markers (2).
+- **The private-channel rate does not change with combining** (8/12 alone, 5/9 combined). A first run of 5 trials
+  suggested otherwise; the second 5 did not bear it out.
+- **Near misses acted on:** 3 of 70 valid trials, all in SM2-CAL-01. Its contestable "my calendars" let the agent
   take Maya's writable calendar as its own. None after the wording became "the calendars I own".
-- **The combined tests caught the agent more often than single placements:** SM2-SLK-05 was exact in 1 of 5. The
-  comparison is small, and the kinds of request differ. [cycle 7b: to be added]
-- **A candidate placement, seen once:** the last item of a listing just past a round page.
+- **A candidate placement:** the last item of a listing just past a round page. 3 of the 4 Box misses stopped at a
+  round offset one item short of the end. It needs a test of its own.
 
 ## Table 4: replica gaps met (reported, not fixed)
 
@@ -148,6 +155,7 @@ Qwen on the self-host, targets acted on out of targets, valid tests only. The mi
 | Box folder listings return the mini fields whatever `fields` asks for (`_filter_fields` keeps only keys present); real Box expands `fields` | voided SM2-BOX-02 (the last modifier took 1,150 calls) | any test whose condition is a non-mini field of a listed item |
 | Slack `conversations.history` omits `reactions`; real Slack includes them | voided SM2-SLK-03 (Leo's :rocket: took 1,100 calls) | any test about reactions over a long history |
 | Linear accepts any `first`; real Linear caps pages (250) | two list-everything strategies cannot be defeated | pagination tests in Linear |
+| Box folder listings have no marker pagination (`usemarker`); real Box has it | none here: the two marker loops never asked for markers | an agent that pages by marker gets one page |
 
 ## Limits
 
@@ -166,5 +174,5 @@ Qwen on the self-host, targets acted on out of targets, valid tests only. The mi
 - [scenarios.py](scenarios.py) → `scenarios/`, built by [build.py](build.py) into `cases/` and `checks/`;
 - [strategies.py](strategies.py) and [probes.py](probes.py) → `matrix.json`; [numbers.py](numbers.py) →
   `numbers.json`;
-- [grade.py](grade.py) → `grades-c3.json` … `grades-c7.json`; [routes.py](routes.py) for routes;
+- [grade.py](grade.py) → `grades-c3.json` … `grades-c7b.json`; [routes.py](routes.py) for routes;
 - runs: `runs/c3` … `runs/c7b`, with `runs_c*.log`.

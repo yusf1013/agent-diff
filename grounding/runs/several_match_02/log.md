@@ -335,6 +335,33 @@ Recall by placement: visible 15/15; container 10/10; beyond a page 7/10; private
   stronger as well as saving tests. Five more trials of each run next (`runs/c7b`).
 - **A candidate placement:** the last item of a listing whose length is just past a round page. One trial paged with a
   smaller second page and stopped short of `total_count`. That is one trial, not a finding.
+
+## Cycle 7b: five more trials of each combined test (2026-09-28)
+
+**Why:** cycle 7's comparison rested on 5 trials a test.
+
+**What ran:** 5 more trials each (`runs/c7b`, `grades-c7b.json`).
+
+| Test | Cycle 7 | Cycle 7b | Pooled |
+|---|---|---|---|
+| SM2-BOX-04 | 4 exact | 2 exact | 6/10 exact; the match beyond the subfolder's first 1000 items found 6/10 |
+| SM2-SLK-05 | 1 exact | 4 exact | 5/10 exact; private channel 5/10 (5/9 without the mock's miss); beyond the largest page 8/10 |
+
+**The four Box misses** were all paging mistakes on the 1,101-item subfolder, with `total_count` ignored each time:
+- twice, a 100-item second page from offset 1000, which stopped at item 1,100;
+- twice, a loop on `next_marker` without `usemarker=true`. In offset mode no marker comes back, real Box
+  included, so the loop ended after one page.
+
+**The private-channel miss** never asked for private channels.
+
+**What was learned (revising cycle 7):**
+- **Beyond the largest page: 20/20 alone, 14/20 inside a combined test.** The difference holds with 10 trials a
+  test. Every combined-test miss was the agent paging wrongly, not failing to page at all.
+- **Private channels: about the same alone (8/12, SM2-SLK-01) and combined (5/9).** Cycle 7's 1 of 4 was small-sample
+  noise. The visibility default catches the agent in both settings.
+- **The candidate placement recurs:** 2 of the 4 Box misses stopped at a round offset, one item short of the end.
+- **Also:** the Box replica has no marker pagination for folder items (it has it only for hubs). No trial here was
+  hurt by it: the two marker loops never asked for markers. But an agent that did ask would meet the gap.
 - **The hiding places that catch Qwen, over all cycles:**
   - behind a visibility default (hidden calendars, private channels): caught in most trials;
   - beyond the largest page, only in combination (3 of 10) or at the list's end (1 of 5);

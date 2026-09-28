@@ -1,0 +1,1 @@
+Added the tag "q3-review" to all 3 non-Word files found anywhere in the Finance folder tree: Budget 2026.pdf (5111), Cash forecast.xlsx (5112), and Travel receipts June.pdf (5114). The 1001 Word documents (Board memo.docx and 1000 supplier terms .docx files) were correctly excluded.
