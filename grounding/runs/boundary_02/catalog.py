@@ -290,7 +290,77 @@ LINEAR = [
                        ("D:current_cycle", "Make cycle 17 the current cycle today.", "change cycle dates"))],
 ]
 
-SERVICES = {"slack": SLACK + SLACK_OPS, "calendar": CALENDAR + CAL_OPS, "box": BOX + BOX_OPS, "linear": LINEAR}
+# Added in the completeness pass (2026-09-28): facts the first pass left without a verdict that do carry a boundary.
+CALENDAR_MORE = [
+    *[E(f, f"Change the {w} of the on-call handoff on Leo's calendar (the actor is a reader).", "permission",
+        workaround="edit a same-titled event on the actor's own calendar", wk="state_change",
+        disc="accessRole = reader", basis="events.patch needs writer on the event's calendar")
+      for f, w in (("A:Event.description", "description"), ("A:Event.end", "end time"),
+                   ("A:Event.transparency", "busy/free status"), ("A:Event.visibility", "visibility"),
+                   ("A:Event.hangout_link", "video link"), ("A:EventAttendee.email", "guest list"),
+                   ("A:EventAttendee.resource", "room"), ("A:EventAttendee.optional", "optional guests"))],
+    E("D:primary", "Make the Projects calendar my primary calendar.", "no operation",
+      basis="the primary calendar is the account's own; it cannot be reassigned"),
+]
+BOX_MORE = [
+    *[E(f, r, "read-only field", refusal="silent", basis="set by Box; not in the update schema", sure=False)
+      for f, r in (("A:Comment.created_at", "Backdate Priya's comment on Budget 2026.pdf to last week."),
+                   ("A:Task.created_at", "Change the creation date of the review task to last Monday."),
+                   ("A:Hub.created_at", "Change the creation date of the Finance hub to January."),
+                   ("R:Folder.created_by_id", "Make Leo Park the creator of the Finance folder."),
+                   ("R:Folder.modified_by_id", "Make Leo Park the last modifier of the Finance folder."),
+                   ("R:Task.created_by_id", "Make Maya Chen the creator of the review task."),
+                   ("R:TaskAssignment.assigned_by_id", "Make Omar the one who assigned the review task to Maya."),
+                   ("R:Hub.created_by_id", "Make Priya the creator of the Finance hub."),
+                   ("R:Hub.updated_by_id", "Make Priya the last updater of the Finance hub."))],
+    E("R:Folder.owned_by_id", "Transfer the Finance folder to Leo Park.", "permission",
+      workaround="make Leo a collaborator", wk="state_change", refusal="silent",
+      basis="ownership moves through collaboration roles, not PUT /folders", sure=False),
+    E("R:Comment.file_id", "Move Priya's comment from Budget 2026.pdf to Budget 2026.docx.", "no operation",
+      workaround="post the same text as a new comment on the other file", wk="additive",
+      basis="Box has no comment move"),
+    E("R:Task.item_id", "Move the review task from Budget 2026.pdf to Budget 2026.docx.", "no operation",
+      workaround="create a new task on the other file", wk="state_change", basis="Box has no task move"),
+    E("R:TaskAssignment.assigned_to_id", "Reassign Maya's review task to Leo.", "no operation",
+      workaround="delete Maya's assignment and assign Leo", wk="state_change",
+      basis="an assignment's assignee cannot be changed; it is replaced", sure=False),
+    E("H:Comment.item_id:comment", "Make Priya's comment a reply to Omar's comment.", "no operation",
+      workaround="post a new reply", wk="additive", basis="a comment's parent is fixed"),
+]
+LINEAR_MORE = [
+    *[E(f, r, "read-only field", basis="set by Linear; not in the update input", sure=False)
+      for f, r in (("R:Attachment.creatorId", "Make Leo the creator of the PR 42 attachment on WEB-1."),
+                   ("R:Comment.resolvingUserId", "Make Omar the one who resolved Priya's thread on WEB-1."),
+                   ("R:Cycle.teamId", "Move the Web team's cycle 16 to the Mobile team."),
+                   ("R:WorkflowState.teamId", "Move the Web team's Blocked state to the Mobile team."),
+                   ("R:Document.creatorId", "Make Leo the creator of the Checkout spec document."),
+                   ("R:Document.updatedById", "Make Leo the last editor of the Checkout spec document."))],
+    E("R:Comment.issueId", "Move Priya's comment from WEB-1 to WEB-2.", "no operation",
+      workaround="post the same text on WEB-2", wk="additive", basis="Linear has no comment move", sure=False),
+    E("H:Comment.parentId", "Make Priya's comment a reply to Omar's comment on WEB-1.", "no operation",
+      workaround="post a new reply", wk="additive", basis="a comment's parent is fixed", sure=False),
+    E("A:Team.name", "Rename the Web team to Frontend (the actor is not a team owner).", "permission",
+      basis="team settings need a team owner or admin", sure=False),
+    E("A:Team.description", "Change the Web team's description (the actor is not a team owner).", "permission",
+      basis="team settings need a team owner or admin", sure=False),
+    E("A:Cycle.endsAt", "Extend last month's (completed) cycle by a week.", "state precondition",
+      basis="completed cycles cannot be edited", sure=False),
+]
+
+SERVICES = {"slack": SLACK + SLACK_OPS, "calendar": CALENDAR + CAL_OPS + CALENDAR_MORE,
+            "box": BOX + BOX_OPS + BOX_MORE, "linear": LINEAR + LINEAR_MORE}
+
+# Every fact with no element, and why (the derivation must account for all 255 facts).
+NO_ELEMENT = {
+    "binding": "a binding fact (B:) mirrors a relation fact whose writability is judged there",
+    "writable": "this actor can change it through a documented operation, with no boundary a natural request "
+                "would meet",
+    "derived-settable": "a derived value that is set through another field (an all-day flag through the dates, local "
+                        "time through the start and time zone)",
+    "replica gap": "one of the 42 facts the replicas cannot serve (autogen_02 briefs_phase4.excluded.json)",
+}
+DERIVED_SETTABLE = {"D:local_time", "D:all_day", "D:latest_message", "D:dm_with", "R:EventAttendee.event_id",
+                    "R:CalendarListEntry.calendar_id"}
 # The fact catalog's facts that no element covers are writable without a boundary for this actor, or are pure
 # reading facts (B: bindings, which are join facts) or replica gaps (the 42). They are listed, not counted as elements.
 
@@ -303,9 +373,21 @@ def cell(e):
 def main():
     out, n_all, cells_all = [], 0, Counter()
     excluded = json.loads((HERE.parent / "autogen_02/inputs/briefs_phase4.excluded.json").read_text())
+    verdicts = {}
     for svc, elements in SERVICES.items():
         facts = [f["id"] for f in json.loads((FACTS / svc / "facts.json").read_text())["facts"]]
         covered = {e["source"] for e in elements}
+        for f in facts:
+            if f in covered:
+                verdicts[f"{svc}:{f}"] = "element"
+            elif f in excluded.get(svc, []):
+                verdicts[f"{svc}:{f}"] = "replica gap"
+            elif f.startswith("B:"):
+                verdicts[f"{svc}:{f}"] = "binding"
+            elif f in DERIVED_SETTABLE:
+                verdicts[f"{svc}:{f}"] = "derived-settable"
+            else:
+                verdicts[f"{svc}:{f}"] = "writable"
         for i, e in enumerate(elements, 1):
             e = {"id": f"{svc[:3].upper()}-{i:02d}", "service": svc, **e}
             out.append(e)
@@ -323,7 +405,12 @@ def main():
     print("\nby class:", dict(by_class))
     print("by refusal:", dict(Counter(e["refusal"] for e in out)), "| with a workaround:",
           sum(bool(e["workaround"]) for e in out))
+    print("\nverdicts on the 255 facts:", dict(Counter(verdicts.values())))
+    for svc in SERVICES:
+        w = [f.split(":", 1)[1] for f, v in verdicts.items() if f.startswith(svc + ":") and v == "writable"]
+        print(f"  writable with no boundary ({svc}, {len(w)}): {w}")
     (HERE / "catalog.json").write_text(json.dumps(out, indent=1) + "\n")
+    (HERE / "fact_verdicts.json").write_text(json.dumps({"reasons": NO_ELEMENT, "verdicts": verdicts}, indent=1) + "\n")
 
 
 if __name__ == "__main__":

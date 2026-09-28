@@ -19,7 +19,7 @@ import sys
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-IGNORE = {"calendar_sync_tokens"}
+IGNORE = {"calendar_sync_tokens", "box_collections"}  # box_collections: the replica creates Favorites on a read
 NOISE = {"etag", "updated_at", "updatedAt", "sequence", "modified_at", "content_modified_at", "editedAt"}
 REFUSED = ('"ok": false', '"ok":false', '"errors"', '"status": 4', "403", "409", "Insufficient permissions",
            "not_archived", "is_archived", "cant_", "invalid_name", "unsupported_endpoint", "name_taken",

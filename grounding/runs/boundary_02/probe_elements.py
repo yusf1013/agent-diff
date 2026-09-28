@@ -80,6 +80,9 @@ SEEDS = {
         ["comment", {"id": "71111", "file": "7111", "author": "PN", "message": "Totals look of."}],
         ["task", {"id": "7120", "file": "7111", "creator": "JL", "message": "Review the contract", "action": "review"}],
         ["assign", {"id": "7121", "task": "7120", "to": "MC", "by": "JL"}],
+        # added for the completeness pass (after the cycle 2 cases were written from this seed)
+        ["comment", {"id": "71112", "file": "7111", "author": "OH", "message": "Numbers updated."}],
+        ["hub", {"id": "7300", "title": "Finance hub", "creator": "JL"}],
     ],
     "linear": [
         ["team", {"id": "t-web", "name": "Web", "key": "WEB"}], ["team", {"id": "t-mob", "name": "Mobile", "key": "MOB"}],
@@ -102,6 +105,11 @@ SEEDS = {
         ["attachment", {"id": "a-1", "issue": "i-web-1", "title": "PR 42", "url": "https://github.com/x/y/pull/42",
                         "source": "github"}],
         ["relation", {"id": "r-1", "issue": "i-web-1", "related": "i-web-2", "type": "blocks"}],
+        # added for the completeness pass (after the cycle 2 cases were written from this seed)
+        ["cycle", {"id": "cy-web-16", "team": "t-web", "number": 16, "starts": "2026-09-20T00:00:00",
+                   "ends": "2026-10-04T00:00:00", "active": True}],
+        ["document", {"id": "doc-1", "title": "Checkout spec", "creator": "maya", "team": "t-web"}],
+        ["comment", {"id": "c-2", "issue": "i-web-1", "author": "omar", "body": "On it."}],
     ],
 }
 
@@ -231,6 +239,43 @@ CALLS = {
     "LIN-31": gql('mutation { issueUpdate(id: "i-web-1", input: {cycleId: "cy-mob-3"}) { issue { id } } }'),
     "LIN-32": gql('mutation { issueUpdate(id: "i-web-1", input: {parentId: "i-web-3"}) { issue { id } } }'),
     "LIN-33": gql('mutation { teamUpdate(id: "t-web", input: {parentId: "t-webx"}) { team { id } } }'),
+    # completeness pass
+    **{f"CAL-{n}": rest("PATCH", "/calendars/leo-oncall@northwind.example/events/ev_handoff", body)
+       for n, body in ((20, {"description": "Moved"}),
+                       (21, {"end": {"dateTime": "2018-06-19T09:45:00-07:00"}}),
+                       (22, {"transparency": "transparent"}), (23, {"visibility": "private"}),
+                       (24, {"hangoutLink": "https://meet.example/abc"}),
+                       (25, {"attendees": [{"email": "priya.nair@northwind.example"}]}),
+                       (26, {"attendees": [{"email": "room2@resource.northwind.example", "resource": True}]}),
+                       (27, {"attendees": [{"email": "kenji.sato@northwind.example", "optional": True}]}))},
+    "CAL-28": rest("PATCH", "/users/me/calendarList/projects@northwind.example", {"primary": True}),
+    "BOX-22": rest("PUT", "/comments/71111", {"created_at": "2026-09-01T00:00:00Z"}),
+    "BOX-23": rest("PUT", "/tasks/7120", {"created_at": "2026-09-01T00:00:00Z"}),
+    "BOX-24": {"method": "PUT", "path": "/hubs/7300", "body": {"created_at": "2026-01-01T00:00:00Z"},
+               "headers": {"box-version": "2025.0"}},
+    "BOX-25": rest("PUT", "/folders/7100", {"created_by": {"id": "30000000005"}}),
+    "BOX-26": rest("PUT", "/folders/7100", {"modified_by": {"id": "30000000005"}}),
+    "BOX-27": rest("PUT", "/tasks/7120", {"created_by": {"id": "30000000002"}}),
+    "BOX-28": rest("PUT", "/task_assignments/7121", {"assigned_by": {"id": "30000000007"}}),
+    "BOX-29": {"method": "PUT", "path": "/hubs/7300", "body": {"created_by": {"id": "30000000006"}},
+               "headers": {"box-version": "2025.0"}},
+    "BOX-30": {"method": "PUT", "path": "/hubs/7300", "body": {"updated_by": {"id": "30000000006"}},
+               "headers": {"box-version": "2025.0"}},
+    "BOX-31": rest("PUT", "/folders/7100", {"owned_by": {"id": "30000000005"}}),
+    "BOX-32": rest("PUT", "/comments/71111", {"item": {"id": "7112", "type": "file"}}),
+    "BOX-33": rest("PUT", "/tasks/7120", {"item": {"id": "7112", "type": "file"}}),
+    "BOX-35": rest("PUT", "/comments/71111", {"item": {"id": "71112", "type": "comment"}}),
+    "LIN-37": gql('mutation { attachmentUpdate(id: "a-1", input: {title: "PR 42", creatorId: "u-leo"}) { success } }'),
+    "LIN-38": gql('mutation { commentUpdate(id: "c-1", input: {resolvingUserId: "u-omar"}) { success } }'),
+    "LIN-39": gql('mutation { cycleUpdate(id: "cy-web-16", input: {teamId: "t-mob"}) { success } }'),
+    "LIN-40": gql('mutation { workflowStateUpdate(id: "t-web-st-blocked", input: {teamId: "t-mob"}) { success } }'),
+    "LIN-41": gql('mutation { documentUpdate(id: "doc-1", input: {creatorId: "u-leo"}) { document { id } } }'),
+    "LIN-42": gql('mutation { documentUpdate(id: "doc-1", input: {updatedById: "u-leo"}) { document { id } } }'),
+    "LIN-43": gql('mutation { commentUpdate(id: "c-1", input: {issueId: "i-web-2"}) { success } }'),
+    "LIN-44": gql('mutation { commentUpdate(id: "c-1", input: {parentId: "c-2"}) { success } }'),
+    "LIN-45": gql('mutation { teamUpdate(id: "t-web", input: {name: "Frontend"}) { team { id name } } }'),
+    "LIN-46": gql('mutation { teamUpdate(id: "t-web", input: {description: "Web things"}) { team { id } } }'),
+    "LIN-47": gql('mutation { cycleUpdate(id: "cy-web-15", input: {endsAt: "2026-08-22T00:00:00Z"}) { success } }'),
 }
 
 
