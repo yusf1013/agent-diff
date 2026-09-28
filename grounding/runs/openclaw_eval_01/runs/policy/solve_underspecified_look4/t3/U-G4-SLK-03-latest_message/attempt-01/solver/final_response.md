@@ -1,0 +1,1 @@
+Done 👀 — added the eyes reaction to Diego Alvarez's latest gateway rollback message in #deployments ("Gateway rollback complete, traffic is recovering."). That one was part of the rollback update thread, so it's the one that fits "the" message. If you meant his other two rollback updates ("halfway done" / "starting now"), say the word and I'll react to those too.

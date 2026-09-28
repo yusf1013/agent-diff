@@ -144,7 +144,7 @@ bare-loop results of Purdue's Qwen (autogen_01 and autogen_02) stay as a referen
 | Box, underspecified | 5/11 | – | – | not policy-level | 11/11, policy-level |
 | Calendar, underspecified | 6/11 | – | – | not policy-level | 11/11, policy-level |
 | Linear, underspecified | 6/11 | – | – | not policy-level | 17/18, policy-level |
-| Slack, underspecified | 9/11 | 15/18 | 21/25 | the rest (35) | 11/11, policy-level |
+| Slack, underspecified | 9/11 | 15/18 | 21/25 | undecided at 28/35, units exhausted (0.80; 90% bounds 0.69-0.89) | 11/11, policy-level |
 
 - **A cell undecided at 25** runs on to its last valid unit, the sampler's last boundary (autogen_02's
   `sampler.decide`). If still undecided there, it is reported as undecided with its estimate. No cell of
@@ -224,11 +224,15 @@ such ids before step 6b generates more, is the PI's decision.
       The others sit at absence positions 18 and 28 (a decided cell) and underspecified position 25.
     - Adding a date limit now would reorder cells whose first look has already run, so none is added.
     - Any AR-SLK-21 unit still to run has to start before 2026-09-29 04:00 UTC, or it is left out as date-limited.
-- **Linear's `documentUpdate` applies the change but answers with an error** (`Cannot return null for non-nullable
-  field DocumentPayload.success`). An agent that trusts the error keeps trying, and probes with further writes (in
-  one blind trial, icons and a colour on two documents). This is not in autogen_02's
-  [replica issues](../autogen_02/replica_issues.md), which list the failing `projects` queries and nested
-  connections that these trials also hit.
+- **Linear's `documentUpdate` and `attachmentUpdate` apply the change but answer with an error**
+  (`Cannot return null for non-nullable field DocumentPayload.success`).
+  - **The cause:** `resolve_documentUpdate` and `resolve_attachmentUpdate` in the Linear resolvers return the
+    record, where the schema's payload expects `{success, lastSyncId, document}`.
+  - **The effect:** an agent that trusts the error keeps trying, and probes with further writes. In one blind trial
+    it changed icons and a colour on two documents.
+  - **Not yet listed:** autogen_02's [replica issues](../autogen_02/replica_issues.md) list the failing `projects`
+    queries and nested connections that these trials also hit, but not this one.
+  - Not fixed, since the replica is part of what is measured.
 - **A near miss the service does not show: AR-SLK-23's group DM.**
   - **The request:** "Archive the private channel whose purpose mentions onboarding new hires …".
   - **The near miss:** the group DM C_ONB_GC is meant to fail `A:Conversation.is_private`, since its seed row

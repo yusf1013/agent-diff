@@ -1,0 +1,1 @@
+Done 👀 — added the eyes reaction to the latest payment gateway timeout message in #incidents ("FYI, seeing intermittent payment gateway timeout warnings in staging." — 07:00 EDT). There were a few other payment-gateway-timeout messages in that channel; let me know if you meant one of those instead.

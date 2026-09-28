@@ -1,0 +1,1 @@
+Done 👍 — added thumbsup reactions to Diego Alvarez's messages about the gateway rollback in #deployments (there were 4 in that short burst, so I reacted to all of them, including "Gateway rollback finished ahead of schedule." and "Gateway rollback is done, error rate is back to normal.").
