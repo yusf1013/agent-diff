@@ -1,0 +1,1 @@
+Could not set the location: I only have "reader" access to Leo's on-call calendar (leo-oncall@northwind.example), so the API returned 403 Insufficient permissions when trying to update the "On-call handoff" event (ev_handoff) location to "Room 2". Write access to that calendar is required to make this change.

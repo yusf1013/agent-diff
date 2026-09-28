@@ -1,0 +1,1 @@
+Successfully moved Budget 2026.pdf (ID: 7111) from the Finance folder to the Archive folder. Since a file with the same name already existed in the Archive folder, the moved file was renamed to "Budget 2026 (1).pdf" to resolve the conflict. The file is now located in Archive > Budget 2026 (1).pdf.

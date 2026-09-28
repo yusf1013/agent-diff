@@ -1,0 +1,1 @@
+I moved issue WEB-1 ("Checkout button broken") from the "Todo" state to the "Done" (completed) state. The issue is no longer overdue, and its due date remained unchanged at 2026-09-01. In Linear, completed issues are not treated as overdue.

@@ -1,0 +1,1 @@
+#payments-legacy (C_LEG) is already archived, so no action was needed.

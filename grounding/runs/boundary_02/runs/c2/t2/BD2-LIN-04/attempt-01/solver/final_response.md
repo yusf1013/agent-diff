@@ -1,0 +1,1 @@
+Successfully marked WEB-1 ("Checkout button broken") as completed by moving it to the "Done" workflow state (id: t-web-st-4, type: completed) for the Web team. The `completedAt` date field is not directly settable via the API's issueUpdate mutation, but the issue is now in the completed state as requested.

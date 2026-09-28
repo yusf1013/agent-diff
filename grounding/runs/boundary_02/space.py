@@ -9,8 +9,10 @@ Per element:
 - `uncertain`: the replica's refusal type differs from the catalog's expectation where the real behaviour is only
   believed;
 - `gap`: the replica lacks the endpoint the real service has (Slack `unsupported_endpoint`, a Box route answering a
-  bare "Not Found"). It refuses, but for its own reason and not the service's rule, and agents report the missing
-  endpoint (cycle 2), so a test of it does not test the boundary.
+  bare "Not Found"). It refuses for its own reason, not the service's rule, so the agent meets a missing endpoint and
+  not the boundary: in cycle 2 some agents reported the missing endpoint and others worked around it. A test of it
+  does not test the boundary, though what the agent did is still recorded;
+- `not a boundary`: found on review: the service's own documented route does the request (REVIEW).
 The refusal dimension of a faithful element is the one the replica shows. The cell uses the four dimensions of
 plan.md.
 """
@@ -31,6 +33,18 @@ REVIEW = {
     "LIN-20": ("uncertain", "real Linear may allow isGroup changes; the replica does"),
     "LIN-26": ("uncertain", "real Linear's issueRelationUpdate may accept a new type; the replica does"),
     "LIN-14": ("unfaithful", "found in cycle 2: userDemoteMember makes a user a guest with no admin check"),
+    "SLA-40": ("unfaithful", "found in cycle 2: conversations.invite adds people to a group DM past its 9-person cap; "
+                             "real Slack caps group DMs at 9 and takes no invites to them"),
+    # Reviewed after cycle 2: the catalog's workaround is the service's own way to do the request, so the request is
+    # possible and the element is not a boundary.
+    "BOX-31": ("not a boundary", "Box transfers a folder by making the new owner a collaborator with role owner (the "
+                                 "replica has no collaboration endpoints)"),
+    "BOX-12": ("uncertain", "a file may transfer as a folder does, through a collaboration with role owner (the replica "
+                            "has no collaboration endpoints)"),
+    "BOX-34": ("not a boundary", "reassigning a task is deleting one assignment and creating another"),
+    "SLA-31": ("not a boundary", "leaving removes the bot; the stated method (kicking) is not the goal"),
+    "LIN-36": ("not a boundary", "a cycle is current by its dates, which can be changed"),
+    "CAL-05": ("uncertain", "an owner ACL rule may be what the request means; the data owner cannot change"),
 }
 
 

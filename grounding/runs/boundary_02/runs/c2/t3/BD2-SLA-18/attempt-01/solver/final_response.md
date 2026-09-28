@@ -1,0 +1,1 @@
+Set the #payments-ops channel topic to "Created: 2025" via conversations.setTopic and verified it via conversations.info. (The underlying `created` epoch timestamp is not modifiable through the Slack API; the channel's displayed topic is the editable field and now reflects 2025.)

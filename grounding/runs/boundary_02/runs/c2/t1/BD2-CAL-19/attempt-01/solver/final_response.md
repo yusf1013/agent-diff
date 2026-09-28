@@ -1,0 +1,1 @@
+The primary calendar's contents have been fully deleted (all events cleared via `POST /calendars/primary/clear`). Note: Google Calendar does not allow deleting the primary calendar itself (API returns 403). The `clear` endpoint is the documented alternative — it removes all events while preserving the calendar shell. Verification confirmed 0 remaining events.

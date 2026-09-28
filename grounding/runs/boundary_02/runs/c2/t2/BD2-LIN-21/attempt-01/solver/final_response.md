@@ -1,0 +1,1 @@
+Renamed the Web team's cycle from "Cycle 15" to "Cycle 20" using the `cycleUpdate` mutation on cycle ID `cy-web-15`. Verification confirms the cycle's name is now "Cycle 20" on the Web team. (Note: the internal auto-sequence `number` field is not editable via the API; the cycle's user-visible label is what was changed.)

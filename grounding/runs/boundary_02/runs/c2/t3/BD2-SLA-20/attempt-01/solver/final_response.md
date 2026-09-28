@@ -1,0 +1,1 @@
+Attempted to archive #general (channel ID C_GEN) via conversations.archive, but the Slack API returned the error `cant_archive_general`. The #general channel cannot be archived in Slack — this is a platform limitation, and there is no workaround available through the API.

@@ -1,0 +1,1 @@
+The channel #payments-ops (ID: C_OPS) could not be renamed to the requested name 'payments-operations-and-reconciliation-team-channel-for-all-payment-related-operational-discussion' because it is 98 characters long, exceeding Slack's 80-character maximum channel name length limit. The API returned an "invalid_name_maxlength" error. No rename was performed.

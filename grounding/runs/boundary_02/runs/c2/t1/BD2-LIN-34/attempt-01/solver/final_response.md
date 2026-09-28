@@ -1,0 +1,1 @@
+WEB-1 was moved from "Todo" to "Done" (a completed workflow state) without changing its due date (2026-09-01). This resolves the overdue status because issues in a completed state are no longer treated as overdue.
