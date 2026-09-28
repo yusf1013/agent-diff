@@ -222,6 +222,77 @@ def from_scenarios():
     return out
 
 
+def box_combined():
+    """Cycle 6: one seed with every Box placement, under a condition the listing shows and search cannot express
+    (not a Word document; the matches are PDFs and spreadsheets): 2 in the named folder, 1 two levels down, and 1
+    beyond the first 1000 items of a large subfolder."""
+    seed = [["folder", {"id": "5100", "name": "Finance"}],
+            ["folder", {"id": "5102", "name": "Q2", "parent": "5100"}],
+            ["folder", {"id": "5103", "name": "Receipts", "parent": "5102"}],
+            ["folder", {"id": "5104", "name": "Supplier terms", "parent": "5100"}],
+            ["file", {"id": "5111", "name": "Budget 2026.pdf", "parent": "5100"}],
+            ["file", {"id": "5112", "name": "Cash forecast.xlsx", "parent": "5100"}],
+            ["file", {"id": "5121", "name": "Board memo.docx", "parent": "5100"}],
+            ["file", {"id": "5114", "name": "Travel receipts June.pdf", "parent": "5103"}],
+            ["file", {"id": "5115", "name": "Zeta rates.xlsx", "parent": "5104"}]]
+    seed += [["file", {"id": str(90000 + i), "name": f"S-{i:04d} supplier terms.docx", "parent": "5104"}]
+             for i in range(1, 1101)]
+    return {"id": "BX-COMBINED", "domain": "box",
+            "place": "every placement in one seed: 2 in the named folder, 1 two levels down, 1 beyond the first 1000 "
+                     "items of a subfolder; the condition (not a Word document) no search expresses",
+            "seed": seed, "targets": ["5111", "5112", "5114", "5115"],
+            "entry": {"folder": "5100", "words": "Finance", "ext": "pdf", "person": "Leo Park"}}
+
+
+def slk_combined():
+    """Cycle 6: one seed with every placement for a request about messages in a set of channels (incident-*), under
+    a condition history shows (the author): 1 in a public channel's newest page, 1 beyond its largest page, 1 in a
+    private channel, 1 in an archived channel. Search words that name no condition are crowded out."""
+    members = ["omar", "leo", "priya"]
+    seed = [["channel", {"id": "C_IDB", "name": "incident-db", "members": members}],
+            ["channel", {"id": "C_IPY", "name": "incident-payments", "members": members, "private": True}],
+            ["channel", {"id": "C_IOLD", "name": "incident-2025", "members": members, "set": {"is_archived": True}}],
+            ["channel", {"id": "C_GEN", "name": "general", "members": members}]]
+
+    def at(i):  # message i of 1100 in incident-db, one every 30 minutes from 2026-07-01
+        m = 30 * (i - 1)
+        return f"2026-{7 + m // (60 * 24 * 31):02d}-{1 + (m // (60 * 24)) % 31:02d}T{(m // 60) % 24:02d}:{m % 60:02d}:00Z"
+    for i in range(1, 1101):
+        ref = {20: "t2", 1090: "t1"}.get(i)
+        msg = {"channel": "C_IDB", "author": "leo" if ref else ["omar", "priya"][i % 2],
+               "text": f"Rollback check {i} logged.", "at": at(i)}
+        if ref:
+            msg["ref"] = ref
+        seed.append(["message", msg])
+    seed += [["message", {"channel": "C_IPY", "author": "leo", "text": "Rollback check for payments logged.",
+                          "at": "2026-09-10T12:00:00Z", "ref": "t3"}],
+             ["message", {"channel": "C_IOLD", "author": "leo", "text": "Rollback check from last year.",
+                          "at": "2025-11-02T12:00:00Z", "ref": "t4"}],
+             ["message", {"channel": "C_GEN", "author": "leo", "text": "Rollback check done everywhere.",
+                          "at": "2026-09-11T12:00:00Z"}]]
+    return {"id": "SK-COMBINED", "domain": "slack",
+            "place": "every placement in one seed: newest page, beyond the largest page, a private channel, an "
+                     "archived channel; the condition (the author) is in every history message",
+            "seed": seed, "targets": ["@t1", "@t2", "@t3", "@t4"],
+            "entry": {"prefix": "incident-", "search": "rollback", "channel": "C_IDB"}}
+
+
+def lin_combined():
+    """Cycle 6: LN-SUBTEAM's sub-teams with 70 more issues in the named team, so the default page of 50 leaves
+    matches out too (the oldest two and the newest two)."""
+    base = lin_subteam()
+    created = {"i-pay-1": "2026-01-01T09:00:00", "i-pay-2": "2026-01-02T09:00:00",
+               "i-paym-1": "2026-06-01T09:00:00", "i-payw-1": "2026-06-02T09:00:00"}
+    seed = [[k, {**r, "created": created[r["id"]]}] if k == "issue" and r["id"] in created else [k, r]
+            for k, r in base["seed"]]
+    seed += [["issue", {"id": f"i-pay-f{i:02d}", "team": "t-pay", "title": f"Payments task {i}",
+                        "created": f"2026-{2 + (i - 1) // 28:02d}-{1 + (i - 1) % 28:02d}T09:00:00"}]
+             for i in range(1, 71)]
+    return {**base, "id": "LN-COMBINED", "seed": seed,
+            "place": "sub-teams and a 75-issue named team: the oldest 2 matches in the named team, the newest 2 in "
+                     "its sub-teams"}
+
+
 PROBES = [box_tree(), box_page(), calendars(False), calendars(True), lin_page(), lin_subteam(), slk_private(),
           slk_history(False), slk_history(True), box_tree_modifier(), lin_subteam_big(), slk_channels(),
-          slk_archived(), slk_dms()] + from_scenarios()
+          slk_archived(), slk_dms(), box_combined(), slk_combined(), lin_combined()] + from_scenarios()
