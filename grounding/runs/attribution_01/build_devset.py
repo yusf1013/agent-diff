@@ -22,9 +22,9 @@ A2 = RUNS / "autogen_02"
 LABEL_FILES = sorted((A2 / "eval/labels_phase1").glob("*.json")) + \
               sorted(p for p in (A2 / "eval/labels_phase3").glob("*.json") if p.name != "attempts.json") + \
               sorted((A2 / "eval/labels_phase4").glob("*.json")) + [RUNS / "fact_coverage_02/manual_labels.json"]
-JUDGES = {  # judge -> verdict folders
-    "v2": ["autogen_02/runs/judge2_phase1", "autogen_02/runs/judge2_phase3", "autogen_02/runs/judge2_panel",
-           "autogen_02/runs/judge2_phase4_policy", "autogen_02/runs/phase4/judged"],
+JUDGES = {  # judge -> verdict folders; an earlier folder wins a key (the labelled attempt's verdicts come first)
+    "v2": ["autogen_02/runs/judge2_phase3_attempt01", "autogen_02/runs/judge2_phase1", "autogen_02/runs/judge2_phase3",
+           "autogen_02/runs/judge2_panel", "autogen_02/runs/judge2_phase4_policy", "autogen_02/runs/phase4/judged"],
     "v1_muse": ["autogen_02/runs/muse_judge_dev", "autogen_02/runs/judge1_phase1"],
     "v1_sonnet": ["autogen_01/runs/judge_dev_02", "autogen_01/runs/judge_test_01"],  # Claude Code Sonnet agents
 }
@@ -99,6 +99,7 @@ def verdicts():
                 out.setdefault(judge, {}).setdefault(v["key"], {"outcome": v.get("outcome"),
                                                                 "exposed": v.get("exposed", []),
                                                                 "note": (v.get("note") or "")[:400],
+                                                                "artifact_reason": v.get("artifact_reason") or "",
                                                                 "folder": folder})
     return out
 
