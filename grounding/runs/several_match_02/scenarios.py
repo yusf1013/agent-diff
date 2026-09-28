@@ -1,0 +1,269 @@
+"""Cycle 3 tests: one per service, each hiding matches in the lazy-proof place that cycles 1-2 found.
+
+    python grounding/runs/several_match_02/scenarios.py      # writes scenarios/<id>.json and placements.json
+
+Placement classes: V visible on the natural first query; C1/C2 one or two levels into a container the scope
+includes; H behind a visibility default (a hidden calendar, a private channel). Near misses fail one condition each.
+Each scenario also records `strategy_entry`: the parameters the strategy runner uses to check, on the built seed,
+that every lazy strategy misses a match (probes.py loads them).
+"""
+from __future__ import annotations
+
+import json
+from pathlib import Path
+
+from grounding.runs.several_match_01.scenarios import edge, filt, node
+
+HERE = Path(__file__).resolve().parent
+A = "jordan.lee@northwind.example"
+
+
+def box():
+    leo = node("box_users", [filt("f_mod", "name", "eq", "Leo Park", "A:User.name")])
+    finance = node("box_folders", [filt("f_folder", "name", "eq", "Finance", "A:Folder.name")])
+    in_finance = edge("e_parent", "parent_id", "id",
+                      node("box_folders", [], [edge("e_anc", "parent_id", "id", finance, "H:Folder.parent_id",
+                                                    closure="star")]), "R:File.parent_id")
+    query = {"table": "box_files", "filters": [],
+             "edges": [edge("e_mod", "modified_by_id", "id", leo, "R:File.modified_by_id"), in_finance]}
+    seed = [["folder", {"id": "6100", "name": "Finance"}],
+            ["folder", {"id": "6101", "name": "Q1", "parent": "6100"}],
+            ["folder", {"id": "6102", "name": "Q2", "parent": "6100"}],
+            ["folder", {"id": "6103", "name": "Receipts", "parent": "6102"}],
+            ["folder", {"id": "6104", "name": "Finance Archive"}],
+            ["file", {"id": "6111", "name": "Budget 2026.pdf", "parent": "6100", "creator": "MC", "modifier": "LP"}],
+            ["file", {"id": "6112", "name": "Cash forecast.xlsx", "parent": "6100", "creator": "DW", "modifier": "LP"}],
+            ["file", {"id": "6113", "name": "Q1 close summary.docx", "parent": "6101", "creator": "PN",
+                      "modifier": "LP"}],
+            ["file", {"id": "6114", "name": "Q2 plan.xlsx", "parent": "6102", "creator": "OH", "modifier": "LP"}],
+            ["file", {"id": "6115", "name": "Travel receipts June.pdf", "parent": "6103", "creator": "SR",
+                      "modifier": "LP"}],
+            ["file", {"id": "6121", "name": "Headcount plan.xlsx", "parent": "6100", "creator": "LP", "modifier": "MC"}],
+            ["file", {"id": "6122", "name": "Audit notes.docx", "parent": "6104", "creator": "MC", "modifier": "LP"}],
+            ["file", {"id": "6123", "name": "Vendor list.pdf", "parent": "6102", "creator": "LP", "modifier": "DW"}],
+            ["file", {"id": "6131", "name": "Invoices.xlsx", "parent": "6101", "creator": "DW", "modifier": "DW"}],
+            ["file", {"id": "6132", "name": "Q2 forecast.pdf", "parent": "6102", "creator": "PN", "modifier": "PN"}],
+            ["file", {"id": "6133", "name": "Hotel receipts May.pdf", "parent": "6103", "creator": "OH",
+                      "modifier": "OH"}]]
+    creator_leo = lambda: edge("e_mod", "created_by_id", "id", node("box_users", [filt("x", "name", "eq", "Leo Park")]))
+    return {
+        "scenario_id": "SM2-BOX-01", "domain": "box",
+        "request": "Add the tag q3-review to every file anywhere in the Finance folder that Leo Park modified last.",
+        "answer": "all", "seed": seed,
+        "conditions": [
+            {"id": "c1", "text": "every file anywhere in the Finance folder",
+             "facts": ["R:File.parent_id", "A:Folder.name", "H:Folder.parent_id"]},
+            {"id": "c2", "text": "that Leo Park modified last", "facts": ["R:File.modified_by_id", "A:User.name"]},
+        ],
+        "reference": {
+            "name": "the files to tag", "target": ["6111", "6112", "6113", "6114", "6115"], "query": query,
+            "decoys": [
+                {"witness": "6121", "fact": "R:File.modified_by_id", "family": "F1", "substitute": "File.created_by_id",
+                 "mutation": {"type": "SUB", "target": "e_mod", "replacement": creator_leo()},
+                 "explanation": "In Finance; Leo Park created it, but Maya Chen modified it last."},
+                {"witness": "6123", "fact": "R:File.modified_by_id", "family": "F1", "substitute": "File.created_by_id",
+                 "mutation": {"type": "SUB", "target": "e_mod", "replacement": creator_leo()},
+                 "explanation": "In Finance/Q2; Leo Park created it, but Dana Whitfield modified it last."},
+                {"witness": "6122", "fact": "A:Folder.name", "family": "F0", "substitute": "Folder named Finance Archive",
+                 "mutation": {"type": "SUB", "target": "e_parent",
+                              "replacement": edge("e_parent", "parent_id", "id",
+                                                  node("box_folders", [filt("x", "name", "eq", "Finance Archive")]))},
+                 "explanation": "Leo Park modified it last, but it is in the separate Finance Archive folder."},
+            ],
+            "effect": {"table": "box_files", "changes": ["update"]}, "written": ["box_files.tags"],
+        },
+        "write": {"method": "PUT", "path": "/files/6111", "body": {"tags": ["q3-review"]}},
+        "strategy_entry": {"folder": "6100", "words": "Finance", "ext": "pdf", "person": "Leo Park"},
+    }, {"6111": "V", "6112": "V", "6113": "C1", "6114": "C1", "6115": "C2"}
+
+
+def cal():
+    owned = node("calendars", [filt("f_owner", "data_owner", "eq", A, "A:Calendar.data_owner")])
+    query = {"table": "calendar_events",
+             "filters": [filt("f_title", "summary", "eq", "Vendor sync", "A:Event.summary"),
+                         filt("f_from", "start_datetime", "ge", "2018-06-18T00:00:00", "A:Event.start"),
+                         filt("f_to", "start_datetime", "lt", "2018-06-23T00:00:00")],
+             "edges": [edge("e_cal", "calendar_id", "id", owned, "R:Event.calendar_id")]}
+    ev = lambda i, c, day, hour, title="Vendor sync", **kw: ["event", {
+        "id": i, "calendar": c, "summary": title, "start": f"2018-06-{day}T{hour}:00:00",
+        "end": f"2018-06-{day}T{hour}:30:00", **kw}]
+    seed = [["calendar", {"id": "projects@northwind.example", "summary": "Projects"}],
+            ["calendar", {"id": "vendors@northwind.example", "summary": "Vendors", "hidden": True}],
+            ["calendar", {"id": "maya-team@northwind.example", "summary": "Maya's team", "owner": "maya",
+                          "access": "writer"}],
+            ev("ev_vs_mon", "primary", "18", "10"), ev("ev_vs_wed", "primary", "20", "10"),
+            ev("ev_vs_proj", "projects@northwind.example", "19", "14"),
+            ev("ev_vs_vend", "vendors@northwind.example", "21", "09"),
+            ev("ev_vs_late", "primary", "25", "10"),
+            ev("ev_vs_maya", "maya-team@northwind.example", "19", "11", organizer="maya"),
+            ev("ev_vs_prep", "primary", "20", "09", title="Vendor sync prep"),
+            ev("ev_budget", "primary", "19", "15", title="Budget review"),
+            ev("ev_demo", "projects@northwind.example", "21", "13", title="Sprint demo"),
+            ev("ev_onboard", "vendors@northwind.example", "20", "11", title="Supplier onboarding")]
+    return {
+        "scenario_id": "SM2-CAL-01", "domain": "calendar",
+        "request": "Delete every 'Vendor sync' event from Monday, June 18 through Friday, June 22 on my calendars.",
+        "answer": "all", "seed": seed,
+        "conditions": [
+            {"id": "c1", "text": "every 'Vendor sync' event", "facts": ["A:Event.summary"]},
+            {"id": "c2", "text": "from Monday, June 18 through Friday, June 22", "facts": ["A:Event.start"]},
+            {"id": "c3", "text": "on my calendars", "facts": ["R:Event.calendar_id", "A:Calendar.data_owner"]},
+        ],
+        "reference": {
+            "name": "the Vendor sync events to delete",
+            "target": ["ev_vs_mon", "ev_vs_wed", "ev_vs_proj", "ev_vs_vend"], "query": query,
+            "decoys": [
+                {"witness": "ev_vs_late", "fact": "A:Event.start", "family": "F0",
+                 "mutation": {"type": "DROP", "target": "f_to"},
+                 "explanation": "A Vendor sync on the primary calendar, but on Monday, June 25."},
+                {"witness": "ev_vs_maya", "fact": "A:Calendar.data_owner", "family": "F0",
+                 "mutation": {"type": "DROP", "target": "f_owner"},
+                 "explanation": "A Vendor sync that week, on Maya Chen's calendar, which the actor can edit but does "
+                                "not own."},
+                {"witness": "ev_vs_prep", "fact": "A:Event.summary", "family": "F0",
+                 "mutation": {"type": "DROP", "target": "f_title"},
+                 "explanation": "On the primary calendar that week, but titled 'Vendor sync prep'."},
+            ],
+            "effect": {"table": "calendar_events", "changes": ["update", "delete"]}, "written": [],
+        },
+        "write": {"method": "DELETE", "path": f"/calendars/{A}/events/ev_vs_mon"},
+        "strategy_entry": {"from": "2018-06-18T00:00:00-07:00", "to": "2018-06-23T00:00:00-07:00", "q": "Vendor sync"},
+    }, {"ev_vs_mon": "V", "ev_vs_wed": "V", "ev_vs_proj": "C1", "ev_vs_vend": "H"}
+
+
+def lin():
+    payments = node("teams", [filt("f_team", "name", "eq", "Payments", "A:Team.name")])
+    in_payments = edge("e_team", "teamId", "id",
+                       node("teams", [], [edge("e_anc", "parentId", "id", payments, "H:Team.parentId",
+                                               closure="star")]), "R:Issue.teamId")
+    bug = edge("e_label", "id", "issue_id",
+               node("issue_label_issue_association", [], [edge("e_lab", "issue_label_id", "id",
+                    node("issue_labels", [filt("f_label", "name", "eq", "Bug", "A:IssueLabel.name")]))]),
+               "R:issue_label_issue_association")
+    state = edge("e_state", "stateId", "id",
+                 node("workflow_states", [filt("f_open", "type", "not_in", ["completed", "canceled"],
+                                               "A:WorkflowState.type")]), "R:Issue.stateId")
+    query = {"table": "issues", "filters": [], "edges": [state, bug, in_payments]}
+    seed = [["team", {"id": "t-pay", "name": "Payments", "key": "PAY"}],
+            ["team", {"id": "t-paym", "name": "Payments Mobile", "key": "PAYM", "parent": "t-pay"}],
+            ["team", {"id": "t-pios", "name": "Payments iOS", "key": "PIOS", "parent": "t-paym"}],
+            ["team", {"id": "t-payw", "name": "Payments Web", "key": "PAYW", "parent": "t-pay"}],
+            ["team", {"id": "t-plat", "name": "Platform", "key": "PLAT"}],
+            ["label", {"name": "Bug", "ref": "bug"}], ["label", {"name": "Feature", "ref": "feature"}],
+            ["issue", {"id": "i-pay-1", "team": "t-pay", "title": "Refund totals off by one cent", "state": "Todo",
+                       "assignee": "leo", "labels": ["@bug"]}],
+            ["issue", {"id": "i-pay-2", "team": "t-pay", "title": "Duplicate charge on retry", "state": "In Progress",
+                       "assignee": "dana", "labels": ["@bug"]}],
+            ["issue", {"id": "i-paym-1", "team": "t-paym", "title": "Wallet sheet closes on rotate", "state": "Todo",
+                       "assignee": "omar", "labels": ["@bug"]}],
+            ["issue", {"id": "i-pios-1", "team": "t-pios", "title": "Apple Pay button misaligned", "state": "Todo",
+                       "labels": ["@bug"]}],
+            ["issue", {"id": "i-payw-1", "team": "t-payw", "title": "Card field loses focus", "state": "Todo",
+                       "assignee": "maya", "labels": ["@bug"]}],
+            ["issue", {"id": "i-pay-3", "team": "t-pay", "title": "Payout report timezone wrong", "state": "Done",
+                       "assignee": "leo", "labels": ["@bug"]}],
+            ["issue", {"id": "i-pay-4", "team": "t-pay", "title": "Support split payments", "state": "Todo",
+                       "assignee": "dana", "labels": ["@feature"]}],
+            ["issue", {"id": "i-plat-1", "team": "t-plat", "title": "Payment worker leaks connections",
+                       "state": "Todo", "assignee": "omar", "labels": ["@bug"]}]]
+    people = ["maya", "leo", "dana", "omar", "sam"]
+    for i in range(1, 21):
+        seed.append(["issue", {"id": f"i-plat-f{i:02d}", "team": "t-plat", "title": f"Platform chore {i}",
+                               "state": ["Todo", "In Progress", "Done", "Backlog"][i % 4], "assignee": people[i % 5],
+                               "labels": ["@feature"] if i % 3 else []}])
+    return {
+        "scenario_id": "SM2-LIN-01", "domain": "linear",
+        "request": "Assign every open Bug issue in the Payments team or any team under it to Priya Nair.",
+        "answer": "all", "seed": seed,
+        "conditions": [
+            {"id": "c1", "text": "every open", "facts": ["R:Issue.stateId", "A:WorkflowState.type"]},
+            {"id": "c2", "text": "Bug issue", "facts": ["R:issue_label_issue_association", "A:IssueLabel.name"]},
+            {"id": "c3", "text": "in the Payments team or any team under it",
+             "facts": ["R:Issue.teamId", "A:Team.name", "H:Team.parentId"]},
+        ],
+        "reference": {
+            "name": "the issues to assign",
+            "target": ["i-pay-1", "i-pay-2", "i-paym-1", "i-pios-1", "i-payw-1"], "query": query,
+            "decoys": [
+                {"witness": "i-pay-3", "fact": "A:WorkflowState.type", "family": "F0",
+                 "mutation": {"type": "DROP", "target": "f_open"}, "explanation": "A Payments bug, but already Done."},
+                {"witness": "i-pay-4", "fact": "A:IssueLabel.name", "family": "F0",
+                 "mutation": {"type": "DROP", "target": "f_label"},
+                 "explanation": "An open Payments issue labelled Feature, not Bug."},
+                {"witness": "i-plat-1", "fact": "H:Team.parentId", "family": "F0",
+                 "mutation": {"type": "DROP", "target": "f_team"},
+                 "explanation": "An open Bug about payments, but in Platform, which is not under Payments."},
+            ],
+            "effect": {"table": "issues", "changes": ["update"]}, "written": ["issues.assigneeId"],
+        },
+        "write": {"graphql": "mutation { issueUpdate(id: \"i-pay-1\", input: {assigneeId: \"u-priya\"}) "
+                             "{ issue { id assignee { name } } } }"},
+        "strategy_entry": {"team": "Payments", "filtered": (
+            '{ issues(first: 250, filter: {team: {name: {eq: "Payments"}}, labels: {some: {name: {eq: "Bug"}}}, '
+            'state: {type: {nin: ["completed", "canceled"]}}}) { nodes { id } } }')},
+    }, {"i-pay-1": "V", "i-pay-2": "V", "i-paym-1": "C1", "i-payw-1": "C1", "i-pios-1": "C2"}
+
+
+def slk():
+    query = {"table": "channels", "key": ["channel_id"],
+             "filters": [filt("f_topic", "topic_text", "contains_ci", "q3 migration", "A:Conversation.topic_text")],
+             "edges": []}
+    members = ["omar", "leo", "priya"]
+    chans = [("C_MIG1", "infra-migration", False, "Tracking the Q3 migration cutover", ""),
+             ("C_MIG2", "db-upgrade", False, "Q3 migration: database steps", ""),
+             ("C_MIG3", "payments-cutover", True, "Payments track of the Q3 migration", ""),
+             ("C_MIG4", "auth-cutover", True, "Auth work for the Q3 migration", ""),
+             ("C_NM1", "migration-planning", False, "Planning notes", "Planning the Q3 migration"),
+             ("C_NM2", "q4-prep", False, "Q4 migration prep", ""),
+             ("C_GEN", "general", False, "Company announcements", ""),
+             ("C_RND", "random", False, "Anything goes", "")]
+    seed = [["channel", {"id": c, "name": n, "members": members, "private": p, "topic": t, "purpose": pu}]
+            for c, n, p, t, pu in chans]
+    seed += [["message", {"channel": c, "author": "omar", "text": "Kickoff notes are in the shared doc.",
+                          "at": f"2026-09-1{i}T12:00:00Z"}] for i, (c, *_rest) in enumerate(chans[:5], 1)]
+    return {
+        "scenario_id": "SM2-SLK-01", "domain": "slack",
+        "request": "Invite Aisha Khan to every channel whose topic mentions the Q3 migration.",
+        "answer": "all", "seed": seed,
+        "conditions": [{"id": "c1", "text": "every channel whose topic mentions the Q3 migration",
+                        "facts": ["A:Conversation.topic_text"]}],
+        "reference": {
+            "name": "the channels to invite Aisha to", "target": ["C_MIG1", "C_MIG2", "C_MIG3", "C_MIG4"],
+            "query": query,
+            "decoys": [
+                {"witness": "C_NM1", "fact": "A:Conversation.topic_text", "family": "F1",
+                 "substitute": "Conversation.purpose_text",
+                 "mutation": {"type": "REPLACE", "note": "the purpose instead of the topic",
+                              "query": {"table": "channels", "key": ["channel_id"], "edges": [],
+                                        "filters": [filt("x", "purpose_text", "contains_ci", "q3 migration")]}},
+                 "explanation": "Its purpose mentions the Q3 migration; its topic is 'Planning notes'."},
+                {"witness": "C_NM2", "fact": "A:Conversation.topic_text", "family": "F0",
+                 "mutation": {"type": "DROP", "target": "f_topic"},
+                 "explanation": "Its topic mentions the Q4 migration, not Q3."},
+            ],
+            "effect": {"table": "channel_members", "changes": ["insert"], "key": ["channel_id", "user_id"],
+                       "field": "channel_id"},
+            "written": [],
+        },
+        "write": {"slack": "conversations.invite", "params": {"channel": "C_MIG1", "users": "U_AISHA"}},
+        "strategy_entry": {"topic": "Q3 migration"},
+    }, {"C_MIG1": "V", "C_MIG2": "V", "C_MIG3": "H", "C_MIG4": "H"}
+
+
+SCENARIOS = [box, cal, lin, slk]
+
+
+def main():
+    out = HERE / "scenarios"
+    out.mkdir(exist_ok=True)
+    placements = {}
+    for make in SCENARIOS:
+        s, place = make()
+        (out / f"{s['scenario_id']}.json").write_text(json.dumps(s, indent=1) + "\n")
+        placements[s["scenario_id"]] = place
+        print(s["scenario_id"], "targets", len(s["reference"]["target"]), "near misses", len(s["reference"]["decoys"]))
+    (HERE / "placements.json").write_text(json.dumps(placements, indent=1) + "\n")
+
+
+if __name__ == "__main__":
+    main()

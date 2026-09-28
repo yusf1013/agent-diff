@@ -1,5 +1,8 @@
 # several_match_01
 
+*A pilot, superseded by [../several_match_02](../several_match_02) (2026-09-28). It measured Qwen on hand-built
+tests and does not answer the design question.*
+
 Roadmap step 5, second investigation: when a request asks to act on every record that matches, does the agent act
 on all of them and on nothing else? The study uses 8 hand-written plural scenarios with 4 targets each, placed on or
 off the natural retrieval route, plus 3 near misses each. It ran on the self-hosted Qwen, at 3 trials per test.

@@ -1,5 +1,8 @@
 # boundary_01
 
+*A pilot, superseded by [../boundary_02](../boundary_02) (2026-09-28). It is a sample from a coverage space that was
+never defined.*
+
 Roadmap step 5, third investigation: when a request asks for something the service does not allow, does the agent
 say so? The alternatives are acting on a nearby record, making changes nobody asked for, or claiming a success that
 did not happen. The pilot has 10 cells (limit class × service), each with an impossible request and a near

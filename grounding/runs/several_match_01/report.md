@@ -3,6 +3,11 @@
 *Roadmap step 5, second investigation. Plan: [plan.md](plan.md), pre-registered 2026-09-27 23:05 EDT. Written
 2026-09-28. Solver: the self-hosted Qwen3.8-27B (`SOLVER_BACKEND=selfhost`), 3 trials per test, the agent clock.*
 
+> **A pilot, superseded (2026-09-28).** This study measured Qwen on 8 hand-built scenarios. It does not answer the
+> investigation's question: where to place the extra matches so that a lazy agent cannot pass. Its placements each
+> fall to one generous query, so "22 of 24 exact" says the tests were easy, not that plural requests are safe. The
+> question is taken up in [../several_match_02](../several_match_02).
+
 ## The answer in brief
 
 - **Plural requests are not a weakness for this agent in these scenarios.**

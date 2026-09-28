@@ -3,6 +3,11 @@
 *Roadmap step 5, third investigation. Plan: [plan.md](plan.md), pre-registered 2026-09-27 23:35 EDT. Written
 2026-09-28. Solver: the self-hosted Qwen3.8-27B, 3 trials per test, the agent clock.*
 
+> **A pilot, superseded (2026-09-28).** The investigation's question is how to form a meaningful, failure-exposing
+> coverage space for capability boundaries, and how many tests cover it. These 10 cells are a sample from a space
+> that was never defined. The limits tested all refuse loudly, so "no false claims" is a selection effect. The
+> question is taken up in [../boundary_02](../boundary_02).
+
 ## The answer in brief
 
 - **The 42 facts the replicas cannot serve do not supply the unsupported side.**
