@@ -60,6 +60,14 @@ examples use neutral ids (`ev_dr_checkout`), and no check or note in the kit cov
 These tests run as they are. Whether they are flawed or weak but valid, and whether the kit should check seeds for
 such ids before step 6b generates more, is the PI's decision.
 
+**A related weakness: times the services never produce.**
+- **What:** 6 Box records, in 29 tests of 5 scenarios, were created after their last modification
+  ([impossible_times.py](impossible_times.py)). 3 are near misses whose deciding fact is a date.
+- **Agents notice:** in the blind sample, OpenClaw's Qwen called one "likely an intentionally planted trap in the
+  test", and remarked on another.
+- **Precedent:** the PI rated G4-BOX-03's implausible near miss "weak but valid". A build check could reject such
+  seeds.
+
 ## Commands
 
 ```bash

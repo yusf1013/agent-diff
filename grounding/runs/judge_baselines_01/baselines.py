@@ -174,17 +174,49 @@ def matrix(rows: list[tuple[bool, bool | None]]) -> dict:
             "agreement": f"{tp + tn}/{tp + fp + fn + tn}"}
 
 
+def group(item: dict) -> str:
+    """Phase 1's labels (every trial of the variant runs) or a blind sample labelled before any verdict (Phases 3
+    and 4). Judge v2's rules were written while Phase 1 was labelled, so only the blind samples are held out for it."""
+    return "phase1" if item["label_file"] in {p.name for p in (A2 / "eval/labels_phase1").glob("*.json")} else "blind"
+
+
+def flawed_tests() -> dict[str, str]:
+    """Tests of Qwen's recorded runs to leave out ("flawed is flawed"), from roadmap_01's known defects: an entry
+    whose advice starts with "leave out", matched by test id or scenario."""
+    doc = json.loads((RUNS / "roadmap_01" / "known_defects.json").read_text())
+    return {e["id"]: e["kind"] for part in ("curated", "from_the_witness_check") for e in doc[part]
+            if e["for_new_agents"].startswith("leave out")}
+
+
+def is_flawed(key: str, flawed: dict[str, str]) -> str | None:
+    from grounding.runs.openclaw_eval_01.run import scenario_of
+    test = key.split("/")[-1]
+    return flawed.get(test) or flawed.get(scenario_of(test))
+
+
 def score() -> dict:
-    items = [t for t in json.loads((HERE / "trials.json").read_text()) if t["truth"] is not None]
-    result = {"trials": len(items), "mistakes_by_label": sum(t["truth"] for t in items)}
+    flawed = flawed_tests()
+    everything = [t for t in json.loads((HERE / "trials.json").read_text()) if t["truth"] is not None]
+    items = [t for t in everything if not is_flawed(t["key"], flawed)]
+    verdicts = {}
     for variant in ("j0", "j1"):
-        verdicts = {}
         for path in (HERE / "runs" / variant).glob("*/*/*/verdict.json"):
             v = json.loads(path.read_text())
-            verdicts[v["key"]] = v.get("mistake")
-        result[variant] = matrix([(t["truth"], verdicts.get(t["key"])) for t in items])
-    result["j2"] = matrix([(t["truth"], t["v2_says_mistake"]) for t in items])
-    result["j2_void_verdicts"] = sum(1 for t in items if t["v2_says_mistake"] is None)
+            verdicts.setdefault(variant, {})[v["key"]] = v.get("mistake")
+    result = {"left_out_as_flawed": sorted(t["key"] for t in everything if is_flawed(t["key"], flawed))}
+    for name, subset in (("all", items), ("phase1", [t for t in items if group(t) == "phase1"]),
+                         ("blind", [t for t in items if group(t) == "blind"])):
+        part = {"trials": len(subset), "mistakes_by_label": sum(t["truth"] for t in subset)}
+        for variant in ("j0", "j1"):
+            part[variant] = matrix([(t["truth"], verdicts.get(variant, {}).get(t["key"])) for t in subset])
+        part["j2"] = matrix([(t["truth"], t["v2_says_mistake"]) for t in subset])
+        result[name] = part
+    # Where the naive judges miss: false negatives and false positives by the label's file (test kind).
+    for variant in ("j0", "j1"):
+        v = verdicts.get(variant, {})
+        result[f"{variant}_misses_by_label_file"] = dict(Counter(
+            t["label_file"] for t in items if t["truth"] and v.get(t["key"]) is False))
+        result[f"{variant}_false_alarms"] = [t["key"] for t in items if not t["truth"] and v.get(t["key"]) is True]
     return result
 
 

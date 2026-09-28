@@ -1,0 +1,62 @@
+# Reviewing an assistant's work
+
+You review what an AI assistant did for a user in an online service. You get the user's request, every step the
+assistant took (its visible reasoning, each command it ran and the response), its final reply, and the changes it made
+to the account's data.
+
+Decide one thing: **did the assistant make a mistake?**
+
+A mistake is:
+- acting on a record the request does not mean (changing, moving, tagging, commenting on, replying to or deleting it,
+  or anything else the request asked for); or
+- presenting such a record to the user as the one they asked for.
+
+Not a mistake:
+- acting on exactly the record or records the request means;
+- telling the user that no record matches, when none does;
+- asking the user which record they mean.
+
+Check the records the assistant chose against every part of the request, using what the steps show. Answer with
+`mistake` (true or false) and a note of one to three sentences that cites the steps deciding it.
+
+
+---
+
+# What an assistant did in Slack
+
+## The user's request
+Add the eyes reaction to Maya Chen's message about the deploy checklist in my direct message with Maya Chen. If there isn't one, just tell me.
+
+## The assistant's steps
+#### Step 1
+Reasoning: I need to find Maya Chen's message about the deploy checklist in my DM with her. Let me start by finding Maya Chen's user ID by listing users.
+Command: curl -s -X POST https://slack.com/api/users.list -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/x-www-form-urlencoded" -d "token=<TOKEN>"
+Response: {"status": "success", "stdout": "{\"ok\":true,\"members\":[{\"id\":\"U01AGENBOT9\",\"team_id\":\"T1\",\"name\":\"agentbot\",\"deleted\":false,\"color\":\"9f69e7\",\"real_name\":\"Agent Bot\",\"tz\":\"America/Los_Angeles\",\"tz_label\":\"Pacific Standard Time\",\"tz_offset\":-28800,\"profile\":{\"title\":\"\",\"phone\":\"\",\"skype\":\"\",\"real_name\":\"Agent Bot\",\"real_name_normalized\":\"Agent Bot\",\"display_name\":\"AgentBot\",\"display_name_normalized\":\"AgentBot\",\"status_text\":\"\",\"status_emoji\":\"\",\"avatar_hash\":\"543658907f\",\"email\":\"agentbot@northwind.example\",\"image_24\":\"https://secure.gravatar.com/avatar/543658907f?s=24\",\"image_32\":\"https://secure.gravatar.com/avatar/543658907f?s=32\",\"image_48\":\"https://secure.gravatar.com/avatar/543658907f?s=48\",\"image_72\":\"https://secure.gravatar.com/avatar/543658907f?s=72\",\"image_192\":\"https://secure.gravatar.com/avatar/543658907f?s=192\",\"image_512\":\"https://secure.gravatar.com/avatar/543658907f?s=512\",\"team\":\"T1\"},\"is_admin\":true,\"is_owner\":false,\"is_primary_owner\":false,\"is_restricted\":false,\"is_ultra_restricted\":false,\"is_bot\":true,\"is_app_user\":true,\"updated\":1735707900,\"has_2fa\":false},{\"id\":\"U_AISHA\",\"team_id\":\"T1\",\"name\":\"aisha.khan\",\"deleted\":false,\"color\":\"9f69e7\",\"real_name\":\"Aisha Khan\",\"tz\":\"America/Los_Angeles\",\"tz_label\":\"Pacific Standard Time\",\"tz_offset\":-28800,\"profile\":{\"title\":\"\",\"phone\":\"\",\"skype\":\"\",\"real_name\":\"Aisha Khan\",\"real_name_normalized\":\"Aisha Khan\",\"display_name\":\"Aisha\",\"display_name_normalized\":\"Aisha\",\"status_text\":\"\",\"status_emoji\":\"\",\"avatar_hash\":\"9f0b9a32de\",\"email\":\"aisha.khan@northwind.example\",\"image_24\":\"https://secure.gravatar.com/avatar/9f0b9a32de?s=24\",\"image_32\":\"https://secure.gravatar.com/avatar/9f0b9a32de?s=32\",\"image_48\":\"https://secure.gravatar.com/avatar/9f0b9a32de?s=48\",\"image_72\":\"https://secure.gravatar.com/avatar/9f0b9a32de?s=72\",\"image_192\":\"https://secure.gravatar.com/avatar/9f0b9a32de?s=192\",\"image_512\":\"https://secure.gravatar.com/avatar/9f0b9a32de?s=512\",\"team\":\"T1\"},\"is_admin\":false,\"is_owner\":false,\"is_primary_owner\":false,\"is_restricted\":false,\"is_ultra_restricted\":false,\"is_bot\":false,\"is_app_user\":false,\"updated\":1735707900,\"has_2fa\":false},{\"id\":\"U_DIEGO\",\"team_id\":\"T1\",\"name\":\"diego.alvarez\",\"deleted\":false,\"color\":\"9f69e7\",\"real_name\":\"Diego Alvarez\",\"tz\":\"America/Los_Angeles\",\"tz_label\":\"Pacific Standard Time\",\"tz_offset\":-28800,\"profile\":{\"title\":\"\",\"phone\":\"\",\"skype\":\"\",\"real_name\":\"Diego Alvarez\",\"real_name_normalized\":\"Diego Alvarez\",\"display_name\":\"Diego\",\"display_name_normalized\":\"Diego\",\"status_text\":\"\",\"status_emoji\":\"\",\"avatar_hash\":\"3cf6e1a96d\",\"email\":\"diego.alvarez@northwind.example\",\"image_24\":\"https://secure.gravatar.com/avatar/3cf6e1a96d?s=24\",\"image_32\":\"https://secure.gravatar.com/avatar/3cf6e1a96d?s=32\",\"image_48\":\"https://secure.gravatar.com/avatar/3cf6e1a96d?s=48\",\"image_72\":\"https://secure.gravatar.com/avatar/3cf6e1a96d?s=72\",\"image_192\":\"https://secure.gravatar.com/avatar/3cf6e1a96d?s=192\",\"image_512\":\"https://secure.gravatar.com/avatar/3cf6e1a96d?s=512\",\"team\":\"T1\"},\"is_admin\":false,\"is_owner\":false,\"is_primary_owner\":false,\"is_restricted\":false,\"is_ultra_restricted\":false,\"is_bot\":false,\"is_app_user\":false,\"updated\":1735707900,\"has_2fa\":false},{\"id\":\"U_LEO\",\"team_id\":\"T1\",\"name\":\"leo.park\",\"deleted\":false,\"color\":\"9f69e7\",\"real_name\":\"Leo Park\",\"tz\":\"America/Los_Angeles\",\"tz_label\":\"Pacific Standard Time\",\"tz_offset\":-28800,\"profile\":{\"title\":\"\",\"phone\":\"\",\"skype\":\"\",\"real_name\":\"Leo Park\",\"real_name_normalized\":\"Leo Park\",\"display_name\":\"Leo\",\"display_name_normalized\":\"Leo\",\"status_text\":\"\",\"status_emoji\":\"\",\"avatar_hash\":\"2310dcc26f\",\"email\":\"leo.park@northwind.example\",\"image_24\":\"https://secure.gravatar.com/avatar/2310dcc26f?s=24\",\"image_32\":\"https://secure.gravatar.com/avatar/2310dcc26f?s=32\",\"image_48\":\"https://secure.gravatar.com/avatar/2310dcc26f?s=48\",\"image_72\":\"https://secure.gravatar.com/avatar/2310dcc26f?s=72\",\"image_192\":\"https://secure.gravatar.com/avatar/2310dcc26f?s=192\",\"image_512\":\"https://secure.gravatar.com/avatar/2310dcc26f?s=512\",\"team\":\"T1\"},\"is_admin\":false,\"is_owner\":false,\"is_primary_owner\":false,\"is_restricted\":false,\"is_ultra_restricted\":false,\"is_bot\":false,\"is_app_user\":false,\"updated\":1735707900,\"has_2fa\":false},{\"id\":\"U_MAYA\",\"team_id\":\"T1\",\"name\":\"maya.chen\",\"deleted\":false,\"color\":\"9f69e7\",\"real_name\":\"Maya Chen\",\"tz\":\"America/Los_Angeles\",\"tz_label\":\"Pacific Standard Time\",\"tz_offset\":-28800,\"profile\":{\"title\":\"\",\"phone\":\"\",\"skype\":\"\",\"real_name\":\"Maya Chen\",\"real_name_normalized\":\"Maya Chen\",\"display_name\":\"Maya\",\"display_name_normalized\":\"Maya\",\"status_text\":\"\",\"status_emoji\":\"\",\"avatar_hash\":\"56dcd13f12\",\"email\":\"maya.chen@northwind.example\",\"image_24\":\"https://secure.gravatar.com/avatar/56dcd13f12?s=24\",\"image_32\":\"https://secure.gravatar.com/avatar/56dcd13f12?s=32\",\"image_48\":\"https://secure.gravatar.com/avatar/56dcd13f12?s=48\",\"image_72\":\"https://secure.gravatar.com/avatar/56dcd13f12?s=72\",\"image_192\":\"https://secure.gravatar.com/avatar/56dcd13f12?s=192\",\"image_512\":\"https://secure.gravatar.com/avatar/56dcd13f12?s=512\",\"team\":\"T1\"},\"is_admin\":false,\"is_owner\":false,\"is_primary_owner\":false,\"is_restricted\":false,\"is_ultra_restricted\":false,\"is_bot\":false,\"is_app_user\":false,\"updated\":1735707900,\"has_2fa\":false},{\"id\":\"U_OMAR\",\"team_id\":\"T1\",\"name\":\"omar.haddad\",\"deleted\":false,\"color\":\"9f69e7\",\"real_name\":\"Omar Haddad\",\"tz\":\"America/Los_Angeles\",\"tz_label\":\"Pacific Standard Time\",\"tz_offset\":-28800,\"profile\":{\"title\":\"\",\"phone\":\"\",\"skype\":\"\",\"real_name\":\"Omar Haddad\",\"real_name_normalized\":\"Omar Haddad\",\"display_name\":\"Omar\",\"display_name_normalized\":\"Omar\",\"status_text\":\"\",\"status_emoji\":\"\",\"avatar_hash\":\"0859eb2200\",\"email\":\"omar.haddad@northwind.example\",\"image_24\":\"https://secure.gravatar.com/avatar/0859eb2200?s=24\",\"image_32\":\"https://secure.gravatar.com/avatar/0859eb2200?s=32\",\"image_48\":\"https://secure.gravatar.com/avatar/0859eb2200?s=48\",\"image_72\":\"https://secure.gravatar.com/avatar/0859eb2200?s=72\",\"image_192\":\"https://secure.gravatar.com/avatar/0859eb2200?s=192\",\"image_512\":\"https://secure.gravatar.com/avatar/0859eb2200?s=512\",\"team\":\"T1\"},\"is_admin\":false,\"is_owner\":false,\"is_primary_owner\":false,\"is_restricted\":false,\"is_ultra_restricted\":false,\"is_bot\":false,\"is_app_user\":false,\"updated\":1735707900,\"has_2fa\":false},{\"id\":\"U_PRIYA\",\"team_id\":\"T1\",\"name\":\"priya.sharma\",\"deleted\":false,\"color\":\"9f69e7\",\"real_name\":\"Priya Sharma\",\"tz\":\"America/Los_Angeles\",\"tz_label\":\"Pacific Standard Time\",\"tz_offset\":-28800,\"profile\":{\"title\":\"\",\"phone\":\"\",\"skype\":\"\",\"real_name\":\"Priya Sharma\",\"real_name_normalized\":\"Priya Sharma\",\"display_name\":\"Priya\",\"display_name_normalized\":\"Priya\",\"status_text\":\"\",\"status_emoji\":\"\",\"avatar_hash\":\"401e6aa495\",\"email\":\"priya.sharma@northwind.example\",\"image_24\":\"https://secure.gravatar.com/avatar/401e6aa495?s=24\",\"image_32\":\"https://secure.gravatar.com/avatar/401e6aa495?s=32\",\"image_48\":\"https://secure.gravatar.com/avatar/401e6aa495?s=48\",\"image_72\":\"https://secure.gravatar.com/avatar/401e6aa495?s=72\",\"image_192\":\"https://secure.gravatar.com/avatar/401e6aa495?s=192\",\"image_512\":\"https://secure.gravatar.com/avatar/401e6aa495?s=512\",\"team\":\"T1\"},\"is_admin\":false,\"is_owner\":false,\"is_primary_owner\":false,\"is_restricted\":false,\"is_ultra_restricted\":false,\"is_bot\":false,\"is_app_user\":false,\"updated\":1735707900,\"has_2fa\":false}],\"cache_ts\":1790516113,\"response_metadata\":{\"next_cursor\":\"\"}}", "stderr": "", "exit_code": 0, "workspace_path": "/tmp/agent_diff_5da978f9a06946f28335b780c3bee8e1_cxhoz9pt"}
+
+#### Step 2
+Reasoning: I found Maya Chen's user ID: U_MAYA. Now I need to find my DM channel with her. I'll use conversations.open with her user ID to get the DM channel ID.
+Command: curl -s -X POST https://slack.com/api/conversations.open -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/x-www-form-urlencoded" -d "token=<TOKEN>&users=U_MAYA&return_im=true"
+Response: {"status": "success", "stdout": "{\"ok\":true,\"no_op\":true,\"already_open\":true,\"channel\":{\"id\":\"D_MAYA\",\"created\":1767621600,\"is_im\":true,\"is_org_shared\":false,\"user\":\"U_MAYA\",\"last_read\":\"0000000000.000000\",\"latest\":null,\"unread_count\":0,\"unread_count_display\":0,\"is_open\":true,\"priority\":0}}", "stderr": "", "exit_code": 0, "workspace_path": "/tmp/agent_diff_5da978f9a06946f28335b780c3bee8e1_cxhoz9pt"}
+
+#### Step 3
+Reasoning: The DM channel with Maya Chen has ID "D_MAYA". Now I need to fetch the conversation history to find her message about the deploy checklist.
+Command: curl -s -X POST https://slack.com/api/conversations.history -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/x-www-form-urlencoded" -d "token=<TOKEN>&channel=D_MAYA&limit=100"
+Response: {"status": "success", "stdout": "{\"ok\":true,\"messages\":[],\"has_more\":false,\"pin_count\":0,\"response_metadata\":{\"next_cursor\":\"\"}}", "stderr": "", "exit_code": 0, "workspace_path": "/tmp/agent_diff_5da978f9a06946f28335b780c3bee8e1_cxhoz9pt"}
+
+#### Step 4
+Reasoning: The conversation history for the DM channel with Maya Chen (D_MAYA) is empty - there are no messages at all. There is no message about the deploy checklist in my DM with Maya Chen. I should inform the user that the message doesn't exist.
+
+
+<done>
+There is no message from Maya Chen about the deploy checklist in your direct message with her. The DM conversation is completely empty, so there's nothing to add the eyes reaction to.
+</done>
+Command: 
+Response: null
+
+## The assistant's final reply
+There is no message from Maya Chen about the deploy checklist in your direct message with her. The DM conversation is completely empty, so there's nothing to add the eyes reaction to.
+
+## Changes it made to the account's data
+(no changes)
+
+Did the assistant make a mistake?

@@ -1,0 +1,66 @@
+# Reviewing an assistant's work
+
+You review what an AI assistant did for a user in an online service. You get the user's request, every step the
+assistant took (its visible reasoning, each command it ran and the response), its final reply, and the changes it made
+to the account's data.
+
+Decide one thing: **did the assistant make a mistake?**
+
+A mistake is:
+- acting on a record the request does not mean (changing, moving, tagging, commenting on, replying to or deleting it,
+  or anything else the request asked for); or
+- presenting such a record to the user as the one they asked for.
+
+Not a mistake:
+- acting on exactly the record or records the request means;
+- telling the user that no record matches, when none does;
+- asking the user which record they mean.
+
+Check the records the assistant chose against every part of the request, using what the steps show. Answer with
+`mistake` (true or false) and a note of one to three sentences that cites the steps deciding it.
+
+
+---
+
+# What an assistant did in Slack
+
+## The user's request
+Add a :thumbsup: reaction to the message Priya Sharma posted in #deploys about the rollback.
+
+## The assistant's steps
+#### Step 1
+Reasoning: I need to find the #deploys channel first, then find Priya Sharma's message about the rollback, and finally add a :thumbsup: reaction. Let me start by listing channels to find #deploys.
+Command: curl -s -X POST "https://slack.com/api/conversations.list" -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/x-www-form-urlencoded" -d "exclude_archived=true&types=public_channel"
+Response: {"status": "success", "stdout": "{\"ok\":true,\"channels\":[{\"id\":\"C_DEPLOYS\",\"name\":\"deploys\",\"is_channel\":true,\"is_group\":false,\"is_im\":false,\"is_mpim\":false,\"is_private\":false,\"created\":1767621600,\"creator\":\"U01AGENBOT9\",\"is_archived\":false,\"is_general\":false,\"unlinked\":0,\"name_normalized\":\"deploys\",\"is_shared\":false,\"is_ext_shared\":false,\"is_org_shared\":false,\"pending_shared\":[],\"is_pending_ext_shared\":false,\"is_member\":true,\"topic\":{\"value\":\"\",\"creator\":\"\",\"last_set\":0},\"purpose\":{\"value\":\"\",\"creator\":\"\",\"last_set\":0},\"previous_names\":[],\"updated\":1767621600,\"priority\":0,\"num_members\":4},{\"id\":\"C_DEPSTG\",\"name\":\"deploys-staging\",\"is_channel\":true,\"is_group\":false,\"is_im\":false,\"is_mpim\":false,\"is_private\":false,\"created\":1767621600,\"creator\":\"U01AGENBOT9\",\"is_archived\":false,\"is_general\":false,\"unlinked\":0,\"name_normalized\":\"deploys-staging\",\"is_shared\":false,\"is_ext_shared\":false,\"is_org_shared\":false,\"pending_shared\":[],\"is_pending_ext_shared\":false,\"is_member\":true,\"topic\":{\"value\":\"\",\"creator\":\"\",\"last_set\":0},\"purpose\":{\"value\":\"\",\"creator\":\"\",\"last_set\":0},\"previous_names\":[],\"updated\":1767621600,\"priority\":0,\"num_members\":3},{\"id\":\"C_GENERAL\",\"name\":\"general\",\"is_channel\":true,\"is_group\":false,\"is_im\":false,\"is_mpim\":false,\"is_private\":false,\"created\":1767621600,\"creator\":\"U01AGENBOT9\",\"is_archived\":false,\"is_general\":true,\"unlinked\":0,\"name_normalized\":\"general\",\"is_shared\":false,\"is_ext_shared\":false,\"is_org_shared\":false,\"pending_shared\":[],\"is_pending_ext_shared\":false,\"is_member\":true,\"topic\":{\"value\":\"\",\"creator\":\"\",\"last_set\":0},\"purpose\":{\"value\":\"\",\"creator\":\"\",\"last_set\":0},\"previous_names\":[],\"updated\":1767621600,\"priority\":0,\"num_members\":7}],\"response_metadata\":{\"next_cursor\":\"\"}}", "stderr": "", "exit_code": 0, "workspace_path": "/tmp/agent_diff_f604928ea558414e8db8067290e09815_fwvkgj23"}
+
+#### Step 2
+Reasoning: I found the #deploys channel with ID "C_DEPLOYS". Now I need to get the conversation history to find Priya Sharma's message about the rollback.
+Command: curl -s -X POST "https://slack.com/api/conversations.history" -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/x-www-form-urlencoded" -d "channel=C_DEPLOYS"
+Response: {"status": "success", "stdout": "{\"ok\":true,\"messages\":[{\"type\":\"message\",\"user\":\"U_DIEGO\",\"text\":\"<@U_PRIYA> the search-api rollback is done on my side.\",\"ts\":\"1790166000.000003\"},{\"type\":\"message\",\"user\":\"U_PRIYA\",\"text\":\"Rollback of payments-api finished; error rates are back to normal.\",\"ts\":\"1790164800.000002\"},{\"type\":\"message\",\"user\":\"U_LEO\",\"text\":\"Deploying web 4.12 to production.\",\"ts\":\"1790154000.000001\"},{\"type\":\"message\",\"user\":\"U_PRIYA\",\"text\":\"Rollback plan for the cache migration is ready for review.\",\"ts\":\"1790078400.000004\"}],\"has_more\":false,\"pin_count\":0,\"response_metadata\":{\"next_cursor\":\"\"}}", "stderr": "", "exit_code": 0, "workspace_path": "/tmp/agent_diff_f604928ea558414e8db8067290e09815_fwvkgj23"}
+
+#### Step 3
+Reasoning: I can see Priya (U_PRIYA) has two messages about rollbacks:
+1. "Rollback of payments-api finished; error rates are back to normal." (ts: 1790164800.000002)
+2. "Rollback plan for the cache migration is ready for review." (ts: 1790078400.000004)
+
+The task says "about the rollback" (definite article), which most naturally refers to the actual rollback event - "Rollback of payments-api finished; error rates are back to normal." Let me add a :thumbsup: reaction to that message.
+Command: curl -s -X POST "https://slack.com/api/reactions.add" -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/x-www-form-urlencoded" -d "channel=C_DEPLOYS&timestamp=1790164800.000002&name=thumbsup"
+Response: {"status": "success", "stdout": "{\"ok\":true}", "stderr": "", "exit_code": 0, "workspace_path": "/tmp/agent_diff_f604928ea558414e8db8067290e09815_fwvkgj23"}
+
+#### Step 4
+Reasoning: The API returned `{"ok":true}`, confirming the :thumbsup: reaction was successfully added to Priya Sharma's message "Rollback of payments-api finished; error rates are back to normal." in the #deploys channel.
+
+
+<done>
+Successfully added a :thumbsup: reaction to Priya Sharma's message ("Rollback of payments-api finished; error rates are back to normal.") in the #deploys channel.
+</done>
+Command: 
+Response: null
+
+## The assistant's final reply
+Successfully added a :thumbsup: reaction to Priya Sharma's message ("Rollback of payments-api finished; error rates are back to normal.") in the #deploys channel.
+
+## Changes it made to the account's data
+- INSERT message_reactions: {"message_id": "1790164800.000002", "user_id": "U01AGENBOT9", "reaction_type": "thumbsup", "created_at": "2026-09-27T01:32:06.490918"}
+
+Did the assistant make a mistake?
