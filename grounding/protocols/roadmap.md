@@ -98,6 +98,11 @@ the final runs use one frozen version.
   share of failing trials within 10 points, and each test's majority outcome agreeing on at least 80% of tests.
   After the reorder the Purdue-Qwen row is a reference only, and no calibration is scheduled. It would separate the
   host's effect from the harness's where OpenClaw's numbers stand beside that row. To be decided with the PI.
+- **Open: seed ids that name a record's role** (`ev_target`, `doc-decoy1`; found 2026-09-27,
+  [openclaw_eval_01](../runs/openclaw_eval_01/README.md)). Agents can read them through the APIs. The finding
+  covers 13 scenarios: 24 regular tests and 34 policy units. To decide with the PI:
+  - whether they are flawed or weak but valid;
+  - whether the kit checks for them before 6b.
 
 ## Standing rules
 

@@ -42,6 +42,24 @@ bare-loop results of Purdue's Qwen (autogen_01 and autogen_02) stay as a referen
   - G4-LIN-02's tests run only up to 2026-09-30 ("overdue" is relative to the real date), and go first;
   - "read before it runs" tests need `--read`.
 
+## Open finding: ids that name a record's role (for the PI)
+
+Found on 2026-09-27 while building the judge baselines. A Qwen trial of U-AP-LIN-07 reasoned "d-target … this is the
+clear target". Some writers gave records ids such as `ev_target`, `i-target` or `doc-decoy1`. The services' APIs
+return these ids, so the agent under test can read them, which makes them a hint only a test would give. The worked
+examples use neutral ids (`ev_dr_checkout`), and no check or note in the kit covers this.
+[role_ids.py](role_ids.py) lists them ([role_ids.json](role_ids.json)):
+- **Where:** 13 scenarios, all of autogen_01's arms and Phase 4 alike.
+- **Frozen suite:** 24 tests, of which 13 are covers, 8 probes and 3 fact probes.
+- **Policy units:** 5 absence twins and 29 drop-F variants, 8 of them in this run's first look.
+- **Which way the bias runs:**
+  - A target or near miss named by its id lets an agent that reads ids pass without checking, which hides failures.
+  - A match named "…target" among several matches invites acting without asking, which adds underspecified
+    failures.
+
+These tests run as they are. Whether they are flawed or weak but valid, and whether the kit should check seeds for
+such ids before step 6b generates more, is the PI's decision.
+
 ## Commands
 
 ```bash
