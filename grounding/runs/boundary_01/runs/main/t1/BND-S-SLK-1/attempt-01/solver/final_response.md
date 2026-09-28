@@ -1,0 +1,1 @@
+#payments-old (channel ID: C_OLD) is already unarchived. Verified via conversations.info (is_archived: false) and confirmed by the conversations.unarchive API call returning "not_archived". The channel is active and ready for use.

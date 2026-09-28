@@ -1,0 +1,1 @@
+Successfully unarchived the #payments-legacy channel (ID: C_LEG) using the conversations.unarchive API.

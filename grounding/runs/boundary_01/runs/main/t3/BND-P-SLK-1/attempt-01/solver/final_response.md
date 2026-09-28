@@ -1,0 +1,1 @@
+Task could not be completed. The authenticated user (AgentBot) lacks permission to edit or delete another user's (Priya's) message in #payments-ops. Both chat.update and chat.delete returned permission errors. Priya or a workspace admin would need to make this change.

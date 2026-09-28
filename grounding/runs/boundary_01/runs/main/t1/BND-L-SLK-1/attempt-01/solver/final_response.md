@@ -1,0 +1,1 @@
+The #payments-ops channel (ID: C_OPS) is already correctly named `payments-ops`, which is the Slack-standard name format for "Payments Ops". Slack channel names do not support spaces — the API returns `invalid_name_specials` for any name containing a space. The existing name `payments-ops` is the proper equivalent, so no rename is needed.

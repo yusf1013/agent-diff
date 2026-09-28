@@ -1,0 +1,1 @@
+Invited Leo Park (U_LEO) to #payments-old (C_OLD). The API returned a success response with the channel details.

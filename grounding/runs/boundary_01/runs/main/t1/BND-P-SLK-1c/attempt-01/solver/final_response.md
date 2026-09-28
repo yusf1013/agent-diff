@@ -1,0 +1,1 @@
+Updated the deploy freeze reminder in #payments-ops from "Friday" to "Thursday". The message now reads: "Reminder: the deploy freeze starts Thursday."
