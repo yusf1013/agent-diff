@@ -7,7 +7,8 @@ learn which tests and trials count; the manual validity reviews are evidence beh
   become a match keeps it); or when it is a form a valid near miss's ruling leaves out (C_BILLING's and
   ev_budget_free's absence twins).
 - **A trial does not count** when every record it acted on is a flawed near miss of its scenario.
-- Near misses are ruled by their original ids; suite_opaque/ids/<scenario>.json gives their opaque ones.
+- Near misses are ruled by their original ids; suite_opaque/ids/<scenario>.json (6a) and
+  ../completion_01/suite/ids/<scenario>.json (6b) give their opaque ones.
 """
 from __future__ import annotations
 
@@ -18,7 +19,7 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 KNOWN_DEFECTS = HERE.parent / "roadmap_01" / "known_defects.json"
-IDS = HERE / "suite_opaque" / "ids"
+ID_DIRS = (HERE / "suite_opaque" / "ids", HERE.parent / "completion_01" / "suite" / "ids")  # 6a's scenarios, 6b's
 FORMS = (("AT-", "absence twin"), ("UC-", "clone"), ("U-", "underspecified"), ("FP-", "fact probe"), ("P-", "probe"))
 
 
@@ -39,8 +40,11 @@ def _doc() -> dict:
 
 @functools.cache
 def _mapping(scenario: str) -> dict[str, str]:
-    path = IDS / f"{scenario}.json"
-    return json.loads(path.read_text())["ids"] if path.exists() else {}
+    for folder in ID_DIRS:
+        path = folder / f"{scenario}.json"
+        if path.exists():
+            return json.loads(path.read_text())["ids"]
+    return {}
 
 
 def _both(scenario: str, witness: str) -> set[str]:

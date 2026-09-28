@@ -1,11 +1,13 @@
 """The regular suite's re-run with opaque ids and test-side clocks (the discussion after 6a, 2026-09-28). No model
 or replica calls.
 
-    python grounding/runs/fact_coverage_02/launch.py grounding.runs.openclaw_eval_01.rerun
+    python grounding/runs/fact_coverage_02/launch.py grounding.runs.openclaw_eval_01.rerun [index]
 
 Copies the Calendar, Linear and Slack tests of suite_opaque/cases that the rulings keep (`rulings.test_exclusion`,
 the known defects' "leave out" and "dropped") to runs/full_03_cases/<domain>/, so the blind sample is drawn from
-exactly the tests that run, and writes the list with the ones left out and why. Box's tests are unchanged (their ids
+exactly the tests that run, and writes the list with the ones left out and why. `index` (also run by default)
+writes the run's suite index, runs/full_03_cases/suite.json, which judge v2's selection and the score read: the
+suite's index restricted to these tests, with their opaque digests. Box's tests are unchanged (their ids
 are numbers) and keep full_02's results.
 """
 from __future__ import annotations
@@ -19,6 +21,13 @@ HERE = Path(__file__).resolve().parent
 SOURCE = HERE / "suite_opaque" / "cases"
 DEST = HERE / "runs" / "full_03_cases"
 DOMAINS = ("calendar", "linear", "slack")
+
+
+def index():
+    kept = set(json.loads((DEST.parent / "full_03_cases.json").read_text())["tests"])
+    rows = [m for m in json.loads((SOURCE / "suite.json").read_text()) if m["case_id"] in kept]
+    (DEST / "suite.json").write_text(json.dumps(rows, indent=1) + "\n")
+    print(f"index: {len(rows)} tests -> {(DEST / 'suite.json').relative_to(HERE)}")
 
 
 def main():
@@ -45,4 +54,9 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    import sys
+    if sys.argv[1:] == ["index"]:
+        index()
+    else:
+        main()
+        index()
