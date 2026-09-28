@@ -1,0 +1,1 @@
+Done. The bot named **Helper** (`helper.bot`, `U_HELPBOT` — verified as a bot, not the human) is removed from #support. The human Helper (`U_HELPER`) is still in the channel, and I've confirmed the current member list: just Agent Bot and Helper remaining.

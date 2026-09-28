@@ -1,0 +1,1 @@
+Done. I updated the description of the "Regional schedule" calendar on Tokyo time (regional-tokyo@northwind.example) to "Regional marketing schedule" — confirmed in the API response. The other "Regional schedule" calendar (Los Angeles time) was left untouched.

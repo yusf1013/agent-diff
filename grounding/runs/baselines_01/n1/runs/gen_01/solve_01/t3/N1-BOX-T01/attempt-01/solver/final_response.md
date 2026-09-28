@@ -1,0 +1,1 @@
+Done. There were two `Q3 Report.pdf` files in Box (one in Finance, one in Archive) — I used the one last modified in August (Finance folder, modified 2026-08-14) and added the comment **"Ready for audit"** to it.

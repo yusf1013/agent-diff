@@ -7,7 +7,8 @@
 - **Policy failures:** failing trials whose label names a policy (acting when a presupposed match is missing, or on
   one of several full matches without asking); they expose no fact.
 - **Value errors:** trials on the right record with a wrong written value, outside the grounding scope.
-- With REVIEW.json, trials of tests the review found invalid are counted apart.
+- With REVIEW.json, trials of tests the review found invalid are counted apart, and so are those of tests listed in
+  runtime_flaws.json beside the labels (flaws found while labelling).
 """
 from __future__ import annotations
 
@@ -24,6 +25,9 @@ def main():
     invalid = set()
     if len(sys.argv) > 2:
         invalid = {r["test"] for r in json.loads(Path(sys.argv[2]).read_text()) if not r.get("valid", True)}
+    runtime = Path(sys.argv[1]).parent / "runtime_flaws.json"  # flaws found while labelling the runs
+    if runtime.exists():
+        invalid |= {k for k in json.loads(runtime.read_text()) if not k.startswith("_")}
     by_test = defaultdict(dict)
     for key, label in labels.items():
         _, trial, case = key.split("/")

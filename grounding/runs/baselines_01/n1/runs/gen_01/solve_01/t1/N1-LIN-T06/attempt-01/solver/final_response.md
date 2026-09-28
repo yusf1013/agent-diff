@@ -1,0 +1,1 @@
+Done. Added the comment **'Legal signed off.'** to **WEB-1 – Data retention policy** in the **Apollo** project — the only project whose **Launch** milestone is targeted for 2026-11-01 (Zephyr has a "Polish" milestone on that date, but its Launch is 2026-10-15). The mutation confirmed success with the comment created at 19:57 UTC.

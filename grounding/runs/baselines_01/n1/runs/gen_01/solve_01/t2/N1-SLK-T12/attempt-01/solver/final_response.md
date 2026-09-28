@@ -1,0 +1,1 @@
+I checked #empty — there's no message to delete. The channel's history is completely empty (confirmed via `conversations.history` and `conversations.info`, which shows `latest: null`), so there's no latest message there. Nothing was deleted.

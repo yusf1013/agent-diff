@@ -1,0 +1,1 @@
+Done — the 'Partner sync' calendar where you have reader access is now hidden from your calendar list. (Heads up: there's also a second 'Partner sync' calendar where you have writer access — I left that one visible since you only asked about the reader one. Let me know if you want it hidden too.)

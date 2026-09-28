@@ -1,0 +1,1 @@
+Done — the **Helper Bot** (user ID `U_HELPBOT`, display name "Helper", `is_bot: true`) is removed from #support. The human **Helper** (`U_HELPER`, regular account) is untouched and still in the channel. Verified the member list afterwards: only the original member and the human Helper remain.

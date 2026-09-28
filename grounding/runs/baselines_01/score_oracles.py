@@ -35,6 +35,9 @@ def main():
     gen = Path(sys.argv[1]).resolve()
     labels = {k: v for k, v in json.loads((gen / "labels.json").read_text()).items() if not k.startswith("_")}
     review = {r["test"]: r for r in json.loads((gen / "review.json").read_text())}
+    if (gen / "runtime_flaws.json").exists():  # flaws found while labelling count as well ("flawed is flawed")
+        for test in (k for k in json.loads((gen / "runtime_flaws.json").read_text()) if not k.startswith("_")):
+            review.setdefault(test, {})["valid"] = False
     oracles = {}
     if (gen / "assertions.json").exists():
         oracles["assertions"] = {f"solve_01/{k}": (not v["passed"]) if v.get("passed") is not None else None

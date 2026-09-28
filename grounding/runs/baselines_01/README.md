@@ -30,11 +30,36 @@ the full comparison is out of scope.
   fewer attempts in flight.
 - **Discipline:** hand labels before any verdict; failed attempts kept; every model call's usage recorded.
 
+**Result:** [report.md](report.md), the answers to the four questions and the proposal for the full comparison.
+
 ## Layout
 
 | Path | What |
 |---|---|
+| [report.md](report.md) | The answers and the proposal |
 | [log.md](log.md) | The cycle log: what changed, what ran, what was learned |
-| `q4/` | Question 4: why the judge baselines came out close |
+| [q4/](q4/README.md) | Question 4: why the judge baselines came out close |
+| [n0/](n0/) | N0, "ask your coding agent": inputs, generator, review rules and review, run, labels, oracles |
+| [n1/](n1/) | N1, N0 plus our facts: inputs, review, run, labels, flaws found at run time |
+| [cycle2/](cycle2/) | The form and content ablations: cases, run, labels |
+| `ablation/`, [plain_twins.py](plain_twins.py) | The plain twins of our probes and the originals they pair with |
+| [ours.py](ours.py), [machinery.py](machinery.py), [compare.py](compare.py) | Our side from existing records, the machinery's catches, the report's tables |
 
-Further folders are added per cycle and listed here.
+## Commands
+
+Run from the repository root; `L="/home/yusf/PyProj/agent-diff/backend/.venv/bin/python grounding/runs/fact_coverage_02/launch.py"`.
+
+```bash
+$L grounding.runs.baselines_01.n0.make_inputs                         # N0's inputs (n1/make_inputs.py adds the facts)
+AUTOGEN_BACKEND=muse $L grounding.runs.baselines_01.n0.generate --run NAME [--inputs DIR --generator N1]
+SOLVER_BACKEND=selfhost $L grounding.runs.openclaw_eval_01.run --out RUN --cases-dir SUITE --trials 3 --concurrency 12
+python3 grounding/runs/baselines_01/label_view.py RUN CASE --brief    # labelling, before any verdict
+$L grounding.runs.baselines_01.assertions RUN --out GEN/assertions.json
+python3 grounding/runs/baselines_01/trials_of.py RUN > GEN/trials.json
+AUTOGEN_BACKEND=muse $L grounding.runs.baselines_01.judges run plain_expected|j0 --trials GEN/trials.json --out GEN/judged_<variant>
+python3 grounding/runs/baselines_01/score_oracles.py GEN
+python3 grounding/runs/baselines_01/compare.py
+```
+
+N1's two LLM oracles did not run: Muse answered HTTP 402 (billing) from 16:13. The failed calls are kept in
+`n1/runs/gen_01/judged_*.failed-402-billing`; the two `judges` commands above rerun them once billing works.

@@ -67,3 +67,42 @@ How the results will be read:
 - **c against d** is the within-test effect of the substitute on facts our probes already exposed. The sample is 12
   pairs × 3 trials, so only a large gap counts (for example, c failing at least three times as often as d). A smaller
   gap is reported as inconclusive, not as "no effect".
+
+## 2026-09-28 14:19–15:34: cycle 1 and cycle 2 results
+
+**Cycle 1, N0 on OpenClaw** (`n0/runs/gen_01`, all 144 trials labelled before any verdict):
+- 5 of 48 tests fail (10 of 144 trials), every one the generic absence policy: the request presupposes a record that
+  does not exist, and the agent acts on something anyway (or creates the missing channel). **No fact is exposed.**
+- 7 trials wrote a wrong value to the right record (Linear priority scale, a duplicate membership), outside the
+  grounding scope.
+- The naive pipeline's own oracles, against the labels ([oracles.score.json](n0/runs/gen_01/oracles.score.json)):
+  - assertions (AgentDiff's): precision 0.28, recall 0.70 on grounding mistakes, plus 9 failures reported on the 3
+    invalid tests;
+  - a plain judge given the test's `expected`: precision 0.77, recall 1.00, plus the same 9;
+  - J0: 0.83 and 1.00, none on the invalid tests.
+- Found at run time, not in my review: the Slack replica has no `white_check_mark` reaction (N0-SLK-T06's assertion
+  can never pass); strict assertions fail correct trials whenever a bookkeeping column also changes (a file's
+  `path` on a move, Linear's `priorityLabel`).
+
+**Cycle 2** (`cycle2/solve_01`, 156 trials, labelled before any verdict), read as fixed at 14:28:
+- **Form (cell b):** N0's own near misses in probe form: 7 of 83 trials fail; 4 of 28 tests expose a fact
+  (A:Hub.description, A:EventAttendee.email, A:Calendar.summary, R:issue_label_issue_association). In cover form
+  (cell a) none of 36 did. 4 of 28 is 14%, near our F0 probes' 16%: **the probe form carries a large part.**
+- **Content (cells c and d):** 12 of our exposing probes against plain twins: ALT 27/36 failing trials, PLAIN 7/36;
+  12 pairs fail at least once with the substitute, 3 without it. **The gap passes the fixed bar (3×).**
+  - Two pairs (G4-BOX-01-I11, I12) fail in both arms for another reason: OpenClaw's agent reads "the PDF ... with a
+    top-level comment by Dana Whitfield saying 'approved for launch'" as tag-and-comment, tags the only PDF and
+    sometimes posts the comment itself. Without them: ALT 21/30, PLAIN 2/30.
+  - **For the PI:** the frozen suite's exposures on these two probes are then not the facts' (H and B); a natural
+    reading changes the task. This looks like the "natural reading" flaw (group B) and is not decided here.
+
+## 2026-09-28 15:34–16:16: N1 on OpenClaw, and the report
+
+- **N1** (`n1/runs/gen_01`, 144 trials, labelled before any verdict): 2 of 48 tests fail (6 trials), both the absence
+  policy; **no fact exposed**. Every target-present test passed, including its splits and levels. 3 more flaws surfaced
+  at run time (a seed that does not install, an unreadable hub-item adder with a removal the replica does not support,
+  a rename the actor may not make): [runtime_flaws.json](n1/runs/gen_01/runtime_flaws.json).
+- **N1's assertions:** precision 0.15, recall 1.00, plus 18 failures reported on invalid tests.
+- **Muse billing:** from 16:13 every Muse call returns HTTP 402 "Billing verification failed". N1's plain and J0
+  judges were stopped after 41 failed calls (no cost); kept as `judged_*.failed-402-billing`.
+- **The report:** [report.md](report.md). Total Muse spend of the study: $14.13 at list, $1.02 billed (every `calls.jsonl` under the study).

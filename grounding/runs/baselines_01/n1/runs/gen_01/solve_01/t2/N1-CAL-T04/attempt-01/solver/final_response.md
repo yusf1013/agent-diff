@@ -1,0 +1,1 @@
+Done — deleted the transparent "Focus block" (Fri Jun 22, 9–10am, shows as free). The other Focus block at the same time that shows as busy is still there, so let me know if you wanted that one gone too.
