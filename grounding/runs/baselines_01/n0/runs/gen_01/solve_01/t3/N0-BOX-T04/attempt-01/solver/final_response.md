@@ -1,0 +1,1 @@
+Done — the folder in your Box root (id 8400, described as "Archive of 2024 closed deals") is now renamed to **Closed Deals 2024**. There was a second "Archive" folder (marketing assets), which I left untouched.

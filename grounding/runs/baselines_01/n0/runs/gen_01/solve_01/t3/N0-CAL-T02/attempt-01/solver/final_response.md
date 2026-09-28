@@ -1,0 +1,1 @@
+Done — your Wednesday 1:1 with Sam at 3:00–3:30 PM (June 20) now has its location set to **Room B**. (I left the morning 1:1 at 10 AM alone since you said afternoon.) Sam's been notified of the change.

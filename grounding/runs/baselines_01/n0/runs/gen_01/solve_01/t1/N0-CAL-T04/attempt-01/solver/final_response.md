@@ -1,0 +1,1 @@
+Done — the Project kickoff with Maya (Thu Jun 21, 9:00–10:00 AM) now has its location set to **Main Hall** (was Room A). Note there's a separate kickoff with Omar at 2 PM that day — I left that one untouched.

@@ -1,0 +1,1 @@
+Done ✅ There were two folders named "Archive" in Box — I renamed the one described as "Archive of 2024 closed deals" (in All Files) to **Closed Deals 2024**. The other one (2024 marketing assets) is untouched.

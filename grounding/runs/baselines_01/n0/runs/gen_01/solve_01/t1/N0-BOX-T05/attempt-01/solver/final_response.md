@@ -1,0 +1,1 @@
+Done. Posted the comment on Maya Chen's **Budget 2026.xlsx** (in the Budgets folder — I picked her file over the identically-named one owned by Maya Lopez). Comment confirmed live, posted as Jordan Lee.

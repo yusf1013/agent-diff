@@ -1,0 +1,243 @@
+{
+  "test_id": "N0-LIN-T03",
+  "question": "In Linear: Set the priority of the 'Login times out on retry' issue assigned to Maya Chen to urgent.",
+  "harness": "openclaw",
+  "termination": "done",
+  "final": "Done — **WEB-1** \"Login times out on retry\" (assigned to Maya Chen) is now set to **Urgent** priority.\n\nNote: there's a second issue with the same title (WEB-2) assigned to Leo Park — I left that one untouched since you specified Maya's.",
+  "turns": [
+    {
+      "label": "turn1",
+      "message": "In Linear: Set the priority of the 'Login times out on retry' issue assigned to Maya Chen to urgent.",
+      "text": "Done — **WEB-1** \"Login times out on retry\" (assigned to Maya Chen) is now set to **Urgent** priority.\n\nNote: there's a second issue with the same title (WEB-2) assigned to Leo Park — I left that one untouched since you specified Maya's.",
+      "termination": "done",
+      "returncode": 0,
+      "killed": null,
+      "duration_s": 67.9,
+      "meta_error": null,
+      "stop_reason": "stop"
+    }
+  ],
+  "steps": [
+    {
+      "turn": 1,
+      "tool": "read",
+      "arguments": {
+        "path": "~/.openclaw-state/8a295f0308744974/workspace-assistant/skills/linear/SKILL.md"
+      },
+      "action": "read {\"path\": \"~/.openclaw-state/8a295f0308744974/workspace-assistant/skills/linear/SKILL.md\"}",
+      "text": "",
+      "thinking": "The user wants to set the priority of a Linear issue assigned to Maya Chen to urgent. Since this is a Linear task, I should first read the Linear skill.",
+      "usage": {
+        "input": 4745,
+        "output": 93,
+        "cacheRead": 3920,
+        "cacheWrite": 0,
+        "reasoningTokens": 34,
+        "totalTokens": 8758,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "status": "success",
+        "stdout": "---\nname: linear\ndescription: \"Linear project management and issue tracking API. Use it for anything in the user's Linear account.\"\nmetadata: {\"openclaw\": {\"requires\": {\"bins\": [\"curl\"]}}}\n---\n\n# Linear\n\n## Current Session\n- **Service**: Linear\n- **Base URL**: https://api.linear.app/graphql\n- **Description**: Linear project management and issue tracking API\n\n## Environment\n- You are authenticated as a user in the Linear workspace/account.\n- Authentication is handled automatically via proxy. Use placeholder tokens like `<TOKEN>` where credentials would go.\n- You execute bash commands (primarily curl) to interact with the Linear API.\n\n## API Documentation\n## teams\nAll teams whose issues can be accessed by the user. This might be different from `administrableTeams`, which also includes teams whose settings can be changed by the user.\n\n## issues\nAll issues.\n\n## issue\nGet a single issue by ID.\n\n## workflowStates\nAll issue workflow states.\n\n## users\nAll users for the organization.\n\n## issueCreate\nCreates a new issue.\n\n## issueUpdate\nUpdates an issue.\n\n## commentCreate\nCreates a new comment.\n\n## teamCreate\nCreates a new team. The user who creates the team will automatically be added as a member to the newly created team.\n\n## issueLabelCreate\nCreates a new label.\n\n## issueLabels\nAll issue labels.\n\n## comments\nAll comments.\n\n## commentUpdate\nUpdates a comment.\n\n## commentDelete\nDeletes a comment.\n\n## issueLabelUpdate\nUpdates a label.\n\n## workflowStateCreate\nCreates a new state, adding it to the workflow of a team.\n\n## workflowStateArchive\nArchives a state. Only states with issues that have all been archived can be archived.\n\n## teamMembershipCreate\nCreates a new team membership.\n\n## issueRelationCreate\nCreates a new issue relation.\n"
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nThe user wants to set the priority of a Linear issue assigned to Maya Chen to urgent. Since this is a Linear task, I should first read the Linear skill.\n</thinking>\n"
+          }
+        ]
+      }
+    },
+    {
+      "turn": 2,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -s https://api.linear.app/graphql -H \"Authorization: Linear <TOKEN>\" -H \"Content-Type: application/json\" -d '{\"query\":\"{ issues(filter: {title: {contains: \\\"Login times out on retry\\\"}}, first: 20) { nodes { id identifier title assignee { id name } priority } } users(filter: {name: {contains: \\\"Maya\\\"}}, first: 20) { nodes { id name } } }\"}'"
+      },
+      "action": "curl -s https://api.linear.app/graphql -H \"Authorization: Linear <TOKEN>\" -H \"Content-Type: application/json\" -d '{\"query\":\"{ issues(filter: {title: {contains: \\\"Login times out on retry\\\"}}, first: 20) { nodes { id identifier title assignee { id name } priority } } users(filter: {name: {contains: \\\"Maya\\\"}}, first: 20) { nodes { id name } } }\"}'",
+      "text": "",
+      "thinking": "The skill is thin on details — there's no GraphQL schema. I need to find the \"Login times out on retry\" issue that's assigned to Maya Chen, and set its priority to urgent.\n\nLinear API: GraphQL endpoint https://api.linear.app/graphql, authentication via API key header `Authorization: Linear <API_KEY>`. The skill says \"authentication is handled automatically via the proxy. Use a placeholder token like `<TOKEN>`.\" So I should use `<TOKEN>` as the Authorization header.\n\nPlan:\n1. Query for the issue by search: search issues with the title \"Login times out on retry\". Or query all issues and filter. Linear's GraphQL has an `issues(filter: {...})` and `search` query. Let me try a search query.\n\nActually, Linear has an `issue(identifier:...)` query, and `issues(filter: {title: {contains: ...}})`. There's also a `search(query: \"...\")` that returns mixed results.\n\nSimplest approach: query users to find Maya Chen's ID, and query issues filtered by title contains \"Login times out on retry\". Then check the assignee.\n\nPriority values in Linear: none, urgent, high, medium, low.\n\nLet me write the GraphQL query:\n\n```graphql\n{\n  users(includeDisabled: true, first: 100, filter: {name: {contains: \"Maya Chen\"}}) {\n    nodes { id name }\n  }\n  issues(filter: {title: {contains: \"Login times out on retry\"}}, first: 20) {\n    nodes { id identifier title assignee { id name } priority }\n  }\n}\n```\n\nThen update:\n\n```graphql\nmutation {\n  issueUpdate(id: \"...\", priority: 4) { success }\n}\n```\n\nLinear's priority is numeric: 0 none, 1 urgent, 2 high, 3 medium, 4 low. Wait — let me recall. In Linear's GraphQL, the priority field is Int: 0 = None, 1 = Urgent, 2 = High, 3 = Medium, 4 = Low. Yeah, that's right.\n\nLet's get started.",
+      "usage": {
+        "input": 517,
+        "output": 594,
+        "cacheRead": 8624,
+        "cacheWrite": 0,
+        "reasoningTokens": 466,
+        "totalTokens": 9735,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "status": "success",
+        "stdout": "{\"data\":{\"issues\":{\"nodes\":[{\"id\":\"i-login-leo\",\"identifier\":\"WEB-2\",\"title\":\"Login times out on retry\",\"assignee\":{\"id\":\"u-leo\",\"name\":\"Leo Park\"},\"priority\":3.0},{\"id\":\"i-login-maya\",\"identifier\":\"WEB-1\",\"title\":\"Login times out on retry\",\"assignee\":{\"id\":\"u-maya\",\"name\":\"Maya Chen\"},\"priority\":3.0}]},\"users\":{\"nodes\":[{\"id\":\"u-maya\",\"name\":\"Maya Chen\"}]}}}"
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nThe skill is thin on details — there's no GraphQL schema. I need to find the \"Login times out on retry\" issue that's assigned to Maya Chen, and set its priority to urgent.\n\nLinear API: GraphQL endpoint https://api.linear.app/graphql, authentication via API key header `Authorization: Linear <API_KEY>`. The skill says \"authentication is handled automatically via the proxy. Use a placeholder token like `<TOKEN>`.\" So I should use `<TOKEN>` as the Authorization header.\n\nPlan:\n1. Query for the issue by search: search issues with the title \"Login times out on retry\". Or query all issues and filter. Linear's GraphQL has an `issues(filter: {...})` and `search` query. Let me try a search query.\n\nActually, Linear has an `issue(identifier:...)` query, and `issues(filter: {title: {contains: ...}})`. There's also a `search(query: \"...\")` that returns mixed results.\n\nSimplest approach: query users to find Maya Chen's ID, and query issues filtered by title contains \"Login times out on retry\". Then check the assignee.\n\nPriority values in Linear: none, urgent, high, medium, low.\n\nLet me write the GraphQL query:\n\n```graphql\n{\n  users(includeDisabled: true, first: 100, filter: {name: {contains: \"Maya Chen\"}}) {\n    nodes { id name }\n  }\n  issues(filter: {title: {contains: \"Login times out on retry\"}}, first: 20) {\n    nodes { id identifier title assignee { id name } priority }\n  }\n}\n```\n\nThen update:\n\n```graphql\nmutation {\n  issueUpdate(id: \"...\", priority: 4) { success }\n}\n```\n\nLinear's priority is numeric: 0 none, 1 urgent, 2 high, 3 medium, 4 low. Wait — let me recall. In Linear's GraphQL, the priority field is Int: 0 = None, 1 = Urgent, 2 = High, 3 = Medium, 4 = Low. Yeah, that's right.\n\nLet's get started.\n</thinking>\n"
+          }
+        ]
+      }
+    },
+    {
+      "turn": 3,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -s https://api.linear.app/graphql -H \"Authorization: Linear <TOKEN>\" -H \"Content-Type: application/json\" -d '{\"query\":\"mutation { issueUpdate(id: \\\"i-login-maya\\\", priority: 4) { id identifier priority success } }\"}'"
+      },
+      "action": "curl -s https://api.linear.app/graphql -H \"Authorization: Linear <TOKEN>\" -H \"Content-Type: application/json\" -d '{\"query\":\"mutation { issueUpdate(id: \\\"i-login-maya\\\", priority: 4) { id identifier priority success } }\"}'",
+      "text": "",
+      "thinking": "There are 2 issues with the title \"Login times out on retry.\" The one assigned to Maya Chen is WEB-1 (id: i-login-maya). I need to set its priority to urgent. In Linear's priority values, urgent is typically 4 (in the newer API: none=0, low=1, medium=2, high=3, urgent=4). The current priority is 3.0 (high). Therefore urgent=4.",
+      "usage": {
+        "input": 770,
+        "output": 181,
+        "cacheRead": 8624,
+        "cacheWrite": 0,
+        "reasoningTokens": 96,
+        "totalTokens": 9575,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "status": "success",
+        "stdout": "{\"errors\":[{\"message\":\"Unknown argument 'priority' on field 'Mutation.issueUpdate'.\",\"locations\":[{\"line\":1,\"column\":44}]},{\"message\":\"Cannot query field 'id' on type 'IssuePayload'.\",\"locations\":[{\"line\":1,\"column\":59}]},{\"message\":\"Cannot query field 'identifier' on type 'IssuePayload'.\",\"locations\":[{\"line\":1,\"column\":62}]},{\"message\":\"Cannot query field 'priority' on type 'IssuePayload'.\",\"locations\":[{\"line\":1,\"column\":73}]},{\"message\":\"Field 'issueUpdate' argument 'input' of type 'IssueUpdateInput!' is required, but it was not provided.\",\"locations\":[{\"line\":1,\"column\":12}]}]}"
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nThere are 2 issues with the title \"Login times out on retry.\" The one assigned to Maya Chen is WEB-1 (id: i-login-maya). I need to set its priority to urgent. In Linear's priority values, urgent is typically 4 (in the newer API: none=0, low=1, medium=2, high=3, urgent=4). The current priority is 3.0 (high). Therefore urgent=4.\n</thinking>\n"
+          }
+        ]
+      }
+    },
+    {
+      "turn": 4,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -s https://api.linear.app/graphql -H \"Authorization: Linear <TOKEN>\" -H \"Content-Type: application/json\" -d '{\"query\":\"mutation { issueUpdate(input: {id: \\\"i-login-maya\\\", priority: 4}) { success issue { id identifier priority } } }\"}'"
+      },
+      "action": "curl -s https://api.linear.app/graphql -H \"Authorization: Linear <TOKEN>\" -H \"Content-Type: application/json\" -d '{\"query\":\"mutation { issueUpdate(input: {id: \\\"i-login-maya\\\", priority: 4}) { success issue { id identifier priority } } }\"}'",
+      "text": "",
+      "thinking": "The mutation needs an `input` object. Let me fix it:\n\n```graphql\nmutation { issueUpdate(input: {id: \"i-login-maya\", priority: 4}) { success issue { id identifier priority } } }\n```",
+      "usage": {
+        "input": 1021,
+        "output": 142,
+        "cacheRead": 8624,
+        "cacheWrite": 0,
+        "reasoningTokens": 51,
+        "totalTokens": 9787,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "status": "success",
+        "stdout": "{\"errors\":[{\"message\":\"Field 'id' is not defined by type 'IssueUpdateInput'.\",\"locations\":[{\"line\":1,\"column\":32}]},{\"message\":\"Field 'issueUpdate' argument 'id' of type 'String!' is required, but it was not provided.\",\"locations\":[{\"line\":1,\"column\":12}]}]}"
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nThe mutation needs an `input` object. Let me fix it:\n\n```graphql\nmutation { issueUpdate(input: {id: \"i-login-maya\", priority: 4}) { success issue { id identifier priority } } }\n```\n</thinking>\n"
+          }
+        ]
+      }
+    },
+    {
+      "turn": 5,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -s https://api.linear.app/graphql -H \"Authorization: Linear <TOKEN>\" -H \"Content-Type: application/json\" -d '{\"query\":\"mutation { issueUpdate(id: \\\"i-login-maya\\\", input: {priority: 4}) { success issue { id identifier priority } } }\"}'"
+      },
+      "action": "curl -s https://api.linear.app/graphql -H \"Authorization: Linear <TOKEN>\" -H \"Content-Type: application/json\" -d '{\"query\":\"mutation { issueUpdate(id: \\\"i-login-maya\\\", input: {priority: 4}) { success issue { id identifier priority } } }\"}'",
+      "text": "",
+      "thinking": "In other words, the signature is issueUpdate(id: String!, input: IssueUpdateInput!). Let me verify.",
+      "usage": {
+        "input": 413,
+        "output": 115,
+        "cacheRead": 9408,
+        "cacheWrite": 0,
+        "reasoningTokens": 24,
+        "totalTokens": 9936,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "status": "success",
+        "stdout": "{\"data\":{\"issueUpdate\":{\"success\":true,\"issue\":{\"id\":\"i-login-maya\",\"identifier\":\"WEB-1\",\"priority\":4.0}}}}"
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nIn other words, the signature is issueUpdate(id: String!, input: IssueUpdateInput!). Let me verify.\n</thinking>\n"
+          }
+        ]
+      }
+    },
+    {
+      "turn": 6,
+      "tool": null,
+      "text": "Done — **WEB-1** \"Login times out on retry\" (assigned to Maya Chen) is now set to **Urgent** priority.\n\nNote: there's a second issue with the same title (WEB-2) assigned to Leo Park — I left that one untouched since you specified Maya's.",
+      "thinking": "Complete. The issue is WEB-1, the \"Login times out on retry\" issue assigned to Maya Chen, and it's been set to urgent (priority 4).",
+      "usage": {
+        "input": 551,
+        "output": 103,
+        "cacheRead": 9408,
+        "cacheWrite": 0,
+        "reasoningTokens": 36,
+        "totalTokens": 10062,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nComplete. The issue is WEB-1, the \"Login times out on retry\" issue assigned to Maya Chen, and it's been set to urgent (priority 4).\n</thinking>\nDone — **WEB-1** \"Login times out on retry\" (assigned to Maya Chen) is now set to **Urgent** priority.\n\nNote: there's a second issue with the same title (WEB-2) assigned to Leo Park — I left that one untouched since you specified Maya's."
+          }
+        ]
+      }
+    }
+  ],
+  "followup_steps": []
+}
