@@ -1,0 +1,1 @@
+Assigned every open Bug issue in the Payments team and all teams under it (Payments Mobile, Payments Web, Payments iOS) to Priya Nair. 5 issues were updated: PAY-1, PAY-2, PAYM-1, PAYW-1, and PIOS-1. All assignments were verified via a follow-up query confirming Priya Nair is now the assignee on each.

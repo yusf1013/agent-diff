@@ -111,9 +111,94 @@ therefore counted together. From cycle 1 it matches by id only.
   bot is in (private and archived included) and matches the text.
 
 **The candidate lazy-proof placements, one per service, for agent tests (cycle 3):**
+- see below.
+
+## Cycle 3: four lazy-proof tests on the self-host (2026-09-28)
+
+**What ran:** SM2-BOX-01, SM2-CAL-01, SM2-LIN-01 and SM2-SLK-01, built and checked by the kit (build.py, checks/).
+On their own seeds the strategy runner confirms that every lazy strategy misses a match and the thorough one finds
+all. 5 trials each on the self-hosted Qwen: runs/c3, graded in grades-c3.json, routes read with routes.py.
+
+| Placement class | Targets acted on |
+|---|---|
+| V (visible) | 40/40 |
+| C1, C2 (one or two levels into a folder tree or team tree the request states) | 35/35 |
+| **H (behind a visibility default: a hidden owned calendar, private channels)** | **2/15** |
+
+| Test | Trials | What happened |
+|---|---|---|
+| SM2-BOX-01 (tree, last modifier) | 5 exact | listed every subfolder with `limit=1000` |
+| SM2-LIN-01 (sub-teams, depth 2) | 5 exact | read the team tree, then filtered on every team id |
+| SM2-CAL-01 (hidden owned calendar) | 0 exact: 2 incomplete, 3 both | never asked for hidden calendars (`showHidden`), in 5 of 5; also deleted the Vendor sync on Maya's writable calendar in 3 of 5 |
+| SM2-SLK-01 (private channels) | 1 exact, 4 incomplete | see the mock gap below |
+
+**What was learned:**
+- **The structural hiding places do not catch this agent.** When the request states the scope ("anywhere in the
+  Finance folder", "or any team under it"), Qwen walks the whole tree, every time. They still defeat every lazy
+  strategy, so they remain valid tests for lazier agents.
+- **Visibility defaults catch it.** A calendar the actor owns but has hidden, and private channels, are left out by
+  the API's defaults unless the agent asks. Qwen asked in 1 of 10 trials.
+- **A mock gap inside the Slack result.** The Slack replica reads a POST's arguments from the body only. A POST
+  whose arguments are in the URL's query string gets the defaults (`_get_params_async`).
+  - Real Slack accepts arguments in the query string.
+  - Two of the four Slack misses (t2, t4) asked for `types=public_channel,private_channel` that way and got only
+    public channels. Those misses are the mock's.
+  - The genuine misses are t1 and t3, which never asked for private channels: 2 of the 3 trials that were not
+    affected by the gap.
+  - Across all 1,044 recorded Slack trials, 27 (2.6%) sent a POST with arguments only in the query string. This is a
+    benchmark-wide mock gap to report, not to fix here.
+- **"On my calendars" is contestable.** Three trials counted Maya's team calendar, which the actor can edit but does
+  not own, as "my calendar". The pilot's "the calendars I own" had no such error. Cycle 4 uses "the calendars I own".
+
+**Next (cycle 4):**
+- (planned) SM2-CAL-01 with "the calendars I own";
+- SM2-SLK-01 again, with more trials, graded per trial for whether the agent asked for private channels and whether
+  the mock honoured it;
+- more visibility defaults, mechanically first: group DMs and DMs in a message-level Slack request (search may
+  cover them), and archived Linear issues.
+
 - **Box:** a folder tree (depth 1 and 2), with a condition listings show but search cannot express (the last
   modifier).
 - **Calendar:** an owned calendar that is hidden in the calendar list.
 - **Linear:** sub-teams (depth 1 and 2), with the scope stated. The stated scope hands the hiding place to the
   agent, which is recorded.
 - **Slack:** a request about channels, with private channels in scope.
+
+## Cycle 4: the Calendar wording, more Slack trials, and DMs (2026-09-28)
+
+**What changed:**
+- SM2-CAL-02 is SM2-CAL-01 with "on the calendars I own" instead of "on my calendars".
+- SM2-SLK-01 ran again.
+- A mechanical probe, SK-DMS, tests a message-level request with no channel scope: matches in public channels, a
+  group DM and a DM.
+- The grader now matches records by id only. Cycle 3's "first seen" for the hidden event was a shared title, not
+  the event; every H miss is in fact "never retrieved".
+
+**What ran:** 5 trials each of SM2-CAL-02 and SM2-SLK-01 (runs/c4, grades-c4.json).
+
+| Test | Trials | What happened |
+|---|---|---|
+| SM2-CAL-02 (hidden owned calendar, "the calendars I own") | 5 incomplete | every trial listed calendars with `minAccessRole=owner` and no `showHidden`; the hidden calendar was never retrieved; no near miss acted on |
+| SM2-SLK-01, again | 3 exact, 2 incomplete | all five asked for private channels. The two misses asked only in a POST query string, which the mock ignores |
+
+**The two tests over both cycles:**
+- **Hidden owned calendar:** missed in 10 of 10 trials.
+  - Qwen enumerates the calendars it owns, but never asks for hidden ones.
+  - With "the calendars I own", the near miss on Maya's writable calendar is never acted on (0/5, against 3/5 with
+    "my calendars").
+- **Private channels:** 4 exact and 2 genuine misses (never asked) in the 6 trials the mock gap did not affect. The
+  other 4 trials asked correctly and were defeated by the mock.
+
+**SK-DMS (mechanical):** the replica's search covers group DMs and DMs, so a text condition finds them all. Only
+channel-list routes that do not ask for `mpim,im` miss them. A DM is a hiding place only for requests that search
+cannot express.
+
+**What was learned:**
+- **Where to put the extra matches so that this agent cannot pass: behind a visibility default the request's scope
+  includes but does not name.**
+  - A hidden calendar the user owns: 10/10 missed.
+  - Private channels, for a request about channels: 2 of 6 valid trials missed.
+- **Stated structural scopes are followed:**
+  - folder trees and sub-team trees: 0 misses in 10 trials;
+  - owned calendars that are visible: 0 misses in 10.
+- **The hidden-calendar result does not depend on the contestable wording.** It holds with "the calendars I own".

@@ -77,6 +77,17 @@ def box():
     }, {"6111": "V", "6112": "V", "6113": "C1", "6114": "C1", "6115": "C2"}
 
 
+def cal_owned_wording():
+    """Cycle 4: SM2-CAL-01 with the scope stated as "the calendars I own" (cycle 3's "my calendars" was contestable
+    for a calendar the actor can edit but does not own). Everything else is unchanged."""
+    s, place = cal()
+    s = {**s, "scenario_id": "SM2-CAL-02",
+         "request": "Delete every 'Vendor sync' event from Monday, June 18 through Friday, June 22 on the calendars "
+                    "I own.",
+         "conditions": [{**c, "text": "on the calendars I own"} if c["id"] == "c3" else c for c in s["conditions"]]}
+    return s, place
+
+
 def cal():
     owned = node("calendars", [filt("f_owner", "data_owner", "eq", A, "A:Calendar.data_owner")])
     query = {"table": "calendar_events",
@@ -250,7 +261,7 @@ def slk():
     }, {"C_MIG1": "V", "C_MIG2": "V", "C_MIG3": "H", "C_MIG4": "H"}
 
 
-SCENARIOS = [box, cal, lin, slk]
+SCENARIOS = [box, cal, lin, slk, cal_owned_wording]
 
 
 def main():

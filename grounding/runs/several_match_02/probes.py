@@ -190,6 +190,23 @@ def slk_archived():
             "entry": {"prefix": "deploys", "search": "payments-api", "channel": "C_DEP"}}
 
 
+# ------------------------------------------------------------------ cycle 4
+def slk_dms():
+    """A message-level request with no channel scope: 2 matches in public channels, 1 in a group DM, 1 in a DM."""
+    seed = [["channel", {"id": "C_OPS", "name": "payments-ops", "members": ["priya", "diego"]}],
+            ["channel", {"id": "C_INC", "name": "incidents", "members": ["priya", "leo"]}],
+            ["channel", {"id": "G_TRIO", "name": "mpdm-priya--leo--bot", "members": ["priya", "leo"], "gc": True,
+                         "private": True}],
+            ["dm", {"id": "D_PRIYA", "person": "priya"}]]
+    msgs = [("C_OPS", "t1"), ("C_INC", "t2"), ("G_TRIO", "t3"), ("D_PRIYA", "t4")]
+    for n, (ch, ref) in enumerate(msgs):
+        seed.append(["message", {"channel": ch, "author": "priya", "text": f"Rollback plan step {n + 1} is ready.",
+                                 "at": f"2026-09-21T12:0{n}:00Z", "ref": ref}])
+    return {"id": "SK-DMS", "domain": "slack", "strategies": "slack-messages",
+            "place": "a message request with no channel scope: 2 matches in public channels, 1 in a group DM, 1 in "
+                     "a DM", "seed": seed, "targets": ["@t1", "@t2", "@t3", "@t4"], "entry": {"search": "rollback"}}
+
+
 def from_scenarios():
     """The built tests' own seeds (cycle 3 on): check on each that every lazy strategy misses a match."""
     import json
@@ -207,4 +224,4 @@ def from_scenarios():
 
 PROBES = [box_tree(), box_page(), calendars(False), calendars(True), lin_page(), lin_subteam(), slk_private(),
           slk_history(False), slk_history(True), box_tree_modifier(), lin_subteam_big(), slk_channels(),
-          slk_archived()] + from_scenarios()
+          slk_archived(), slk_dms()] + from_scenarios()

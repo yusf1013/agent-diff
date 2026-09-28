@@ -1,0 +1,1 @@
+Deleted all three 'Vendor sync' events from June 18–22, 2018 across your owned calendars (primary and Projects): ev_vs_mon (Jun 18), ev_vs_wed (Jun 20) from your primary calendar, and ev_vs_proj (Jun 19) from the Projects calendar. The "Vendor sync prep" event was left untouched since it is a different event name.

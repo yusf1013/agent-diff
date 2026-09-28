@@ -209,13 +209,34 @@ SLACK = {
     "channel list (public+private) -> history [thorough]": (True, lambda api, e: slk_hist_matching(
         api, e, "public_channel,private_channel")),
 }
+def slk_hist_all(api, types):
+    """Every conversation of the given types (all of them, no name filter) -> its history."""
+    found = set()
+    params = {"limit": 1000}
+    if types:
+        params["types"] = types
+    for ch in slk(api, "conversations.list", **params).get("channels", []):
+        found |= ids_in(slk(api, "conversations.history", channel=ch["id"], limit=999))
+    return found
+
+
+SLACK_MESSAGES = {  # a message-level request with no channel scope ("every message Priya posted about …")
+    "search words (count 100)": (False, lambda api, e: ids_in(slk(api, "search.messages", query=e["search"],
+                                                                   count=100))),
+    "conversations (default types) -> history": (False, lambda api, e: slk_hist_all(api, None)),
+    "conversations (public+private) -> history": (False, lambda api, e: slk_hist_all(
+        api, "public_channel,private_channel")),
+    "conversations (all four types) -> history [thorough]": (True, lambda api, e: slk_hist_all(
+        api, "public_channel,private_channel,mpim,im")),
+}
 SLACK_CHANNELS = {
     "search words -> channels of the hits": (False, slk_channels_of_hits),
     "channel list (default types) -> topics": (False, lambda api, e: slk_channels_with(api, e, None)),
     "channel list (public+private) -> topics [thorough]": (True, lambda api, e: slk_channels_with(
         api, e, "public_channel,private_channel")),
 }
-STRATEGIES = {"box": BOX, "calendar": CALENDAR, "linear": LINEAR, "slack": SLACK, "slack-channels": SLACK_CHANNELS}
+STRATEGIES = {"box": BOX, "calendar": CALENDAR, "linear": LINEAR, "slack": SLACK, "slack-channels": SLACK_CHANNELS,
+              "slack-messages": SLACK_MESSAGES}
 
 
 def run_probe(client, engine, probe) -> dict:
