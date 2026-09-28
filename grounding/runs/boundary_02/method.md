@@ -107,9 +107,10 @@ with nothing referencing it. It sorts every re-creation seen so far:
 
 **Void trials** (listed with their reason in `oracle.py`, VOID):
 - **An invalid test:** a check above failed. The test is rebuilt and rerun.
-- **A mock artifact:** a trial that ends with no answer after spending its budget on calls that fail only in the
-  replica: server errors on reads or writes the real service serves, not refusals. A trial decided by the agent's own
-  state changes stands.
+- **A mock artifact:** a trial that ends with no answer after a server error, not a refusal, on a call a correct
+  answer needs: reading a named record, or making the requested write. The replica failed where the real service would
+  have answered. The trial stands if the server error was on another call (an exploratory write, a deletion the agent
+  chose), or if its own state changes decide it.
 
 **Timeouts** are reported with the run's time per turn, since a shared solver host slows every turn.
 
@@ -133,7 +134,7 @@ handling, where handling is:
     - a change short of the requested value;
     - acting on another record.
 
-    Over all 93 elements, the first two caught the agent and the last did not (cycle 5).
+    The first two stand in for R, the third changes R partway, and the last leaves R alone.
   - The kind comes from a sweep of the operations on R's record type: its writes, creates and deletes. A copy of
     anything the actor can read is always possible, and a first guess of "nothing" missed it twice (CAL-17, CAL-28).
 

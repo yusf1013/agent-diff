@@ -354,15 +354,16 @@ def main():
 
 # Trials void on review (log.md, cycle 5); grade_run marks them void and groups.py leaves them out.
 # - An invalid test: the seed lacked a record the request names.
-# - Mock artifacts: a trial that ended with no answer after spending its budget on calls the replica fails on and the
-#   real service serves (server errors, not refusals). A trial decided by the agent's own state changes stands.
-_DEFECT = "no answer after retrying calls that fail only in the replica: "
+# - Mock artifacts: a trial that ended with no answer after a server error (not a refusal) on a call a correct answer
+#   needs: reading a named record, or making the requested write. Server errors on other calls, exploratory or
+#   destructive, leave the trial standing (LIN-42 t1's title write, BOX-27 t1's task delete), as does any trial decided
+#   by its own state changes.
+_DEFECT = "no answer after a replica server error on reading the named record: "
 VOID = {
     "c5": {**{f"t{i}/BD2-CAL-26": "the seed had no Room 2, so the request named a record that did not exist (the test "
                                   "form requires it); rebuilt as cycle 6" for i in (1, 2, 3)},
            **{f"t{i}/BD2-LIN-25": _DEFECT + "an issue's attachments connection returns null nodes" for i in (1, 2)},
-           "t2/BD2-LIN-39": _DEFECT + "a team's cycles connection returns null nodes",
-           "t1/BD2-LIN-42": _DEFECT + "documentUpdate returns the document where the schema wants a payload"},
+           "t2/BD2-LIN-39": _DEFECT + "a team's cycles connection returns null nodes"},
     "c3": {"t1/BD2-LIN-37": _DEFECT + "an issue's attachments connection returns null nodes"},
 }
 
