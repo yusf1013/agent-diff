@@ -87,20 +87,25 @@ bare-loop results of Purdue's Qwen (autogen_01 and autogen_02) stay as a referen
   - **The 2 disagreements** are trials the judge voided as artifacts. One is a near miss that the validity review
     marks contestable. In the other, the replica reports a group DM as private, which my label missed
     ([corrections.json](eval/labels_full_02/corrections.json)).
-- **Score** ([full_02.score.json](runs/full_02.score.json)):
-  - 104 of 438 tests expose a fact;
-  - 65 facts at detect@3 (51 without contested near misses) and 48 at detect@1;
-  - 23 trials are void.
+- **Score:** 94 of 436 tests expose a fact, with 60 facts at detect@3 and 44 at detect@1. 23 trials are void.
+  - **Adjusted by the manual validity reviews** ([adjudicate.py](adjudicate.py),
+    [full_02.adjudicated.json](runs/full_02.adjudicated.json)), as autogen_01 reported its arms. These are
+    autogen_01's review and autogen_02's review of Phase 4:
+    - the 2 tests of AR-LIN-25, a scenario the review judged invalid, are left out;
+    - 23 failing trials are not counted, because every record they acted on is a near miss the reviews judged
+      contestable (20) or invalid (3 trials of P-AP-SLK-02-I11). 5 facts drop out with them.
+  - **Unadjusted** ([full_02.score.json](runs/full_02.score.json)): 104 of 438 tests, 65 facts at detect@3 and 48 at
+    detect@1. Leaving out instead the near misses that the reader flagged as contestable gives 51 at detect@3.
 
   | | Tests | Exposing a fact | Facts at detect@3 | Facts at detect@1 |
   |---|---|---|---|---|
   | Box | 96 | 24 | 18 | 14 |
-  | Calendar | 86 | 23 | 14 | 10 |
-  | Linear | 145 | 31 | 19 | 13 |
-  | Slack | 111 | 26 | 15 | 11 |
-  | Covers | 78 | 4 | 4 | 3 |
-  | Probes | 280 | 83 | 63 | 46 |
-  | Fact probes | 80 | 17 | 17 | 8 |
+  | Calendar | 86 | 22 | 13 | 9 |
+  | Linear | 143 | 27 | 18 | 12 |
+  | Slack | 111 | 21 | 12 | 9 |
+  | Covers | 77 | 2 | 2 | 2 |
+  | Probes | 279 | 76 | 58 | 42 |
+  | Fact probes | 80 | 16 | 16 | 7 |
 
 - **How the failures happen** (the blind sample's 8 failures, by hand):
   - **4 saw the mismatch and accepted it.** For example, the agent renamed a document after noting it "was
