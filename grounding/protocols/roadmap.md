@@ -69,7 +69,8 @@ the final runs use one frozen version.
 6. **Final evaluation:**
    - **6a. OpenClaw with the self-hosted Qwen, on the frozen generated suite.**
      - **Settings:** the model's real limits (131k context, 8k output); no "Yes, go ahead." follow-up turn.
-     - **Size:** the full suite at 3 trials, plus the policy stage's sequential looks.
+     - **Size:** the full suite at 3 trials, plus the policy stage: its sequential looks first, then (after the
+       discussion of 2026-09-28) every valid policy test, 3 trials each.
      - **Known defects** are left out.
      - **A blind sample** is drawn and labelled before any verdict.
      - **The integration code** from openclaw_transfer_01 is reused; its runs are not.
@@ -86,12 +87,28 @@ the final runs use one frozen version.
      - **Runs:** on OpenClaw, compared under fact_coverage_02's decision D5.
    - **6e. Reports:** OpenClaw for first-time readers; the system (generation and judging); the baselines.
 
-## Decisions (2026-09-28, discussion after 6a; in progress)
+## Decisions (2026-09-28, discussion after 6a; closed the same day)
 
 - **Seed ids that leak the answer make a test flawed** (a validity issue). Ids that merely are not random are a
   quality issue.
-  - The pipeline will prevent them with an automated check before 6b.
-  - The affected scenarios are regenerated through the fixed pipeline.
+  - **The fix is mechanical, not a burden on the writer.** A script gives every made-up id a random-looking id in
+    the service's own format, the same way throughout a test: its data, its answer key and its near misses.
+    People's emails, the agent's own id and ids that are already numbers stay.
+  - If the script proves reliable on every test, it is used everywhere: on all tests, and on new scenarios as a
+    pipeline step. Otherwise it only rescues the tests whose ids leak.
+  - Tests where a leak may have mattered are re-run with the new ids, not regenerated. With the script reliable,
+    that is every Calendar, Linear and Slack test. Box ids are already numbers, so Box keeps its results.
+- **Dates are controlled on the test side.** A test that is only right on certain days runs with the agent's clock
+  set to such a day, as Calendar tests already do (Sunday, June 17, 2018). Nothing waits for the real date.
+  - AR-SLK-21 ("posted … on Tuesday") and G4-LIN-02 ("overdue") get 2026-09-25. AP-LIN-01 (an issue "completed on
+    October 2, 2026") gets 2026-10-05, and G4-LIN-08 (a near miss created on 2026-10-15) gets 2026-10-16. Their
+    date limits go.
+  - New scenarios get the day they were written, or a later day if their data has an event after it.
+  - Records created after their last modification (6 Box records) stay weak but valid, as G4-BOX-03 is. No new
+    check.
+- **AR-BOX-21 is valid.** The agent can check the "Legal Hold" collection and its members through the API. That
+  real Box has only a Favorites collection, and that the replica shows every collection as "Favorites" in an
+  item's details, are matters of the mock, not of the test.
 - **Near misses the manual reviews ruled out:** those the agent cannot check, and those a natural reading of the
   request includes, are flawed (groups A and B). The ambiguous ones (group C), case by case:
   - **AP-SLK-02's C_BILLING:** valid in the cover and the two probes. Its absence twin stays out, because the
@@ -99,12 +116,17 @@ the final runs use one frozen version.
   - **AP-CAL-02's team-brand and team-ops:** valid.
   - **AP2-SLK-01's bot near miss:** flawed, since the request's own naming supports both readings. This includes
     the two underspecified units that keep it.
-  - **G4-CAL-01's free copy:** valid as worded, but the scenario is flawed for its ids (`ev_budget_free` and
-    others).
-  - **AP-LIN-07:** flawed for its ids.
+  - **G4-CAL-01's free copy:** valid as worded. Its absence twin stays out, as before.
+  - **AP-LIN-07's d-team-f1** (my ruling, for the PI to overrule): valid once the ids are opaque. It has no team
+    and is filed under the "Customer Acquisition" project, which no data links to Growth. Only its project's id
+    (`pr-growth`, also in the project's slug and URL) suggested Growth.
+  - A flawed near miss takes out the probe and the policy units that hold it. A cover or fact probe that holds it
+    stays, and a run whose only mistake is acting on it does not count.
 - **The policy statistic** uses all runs, with tests as the independent units (see the investigation in step 5).
+  It is decided on each cell's full set of valid tests, and its computation is fixed before the runs.
 - **The full set of policy tests runs on OpenClaw**, whatever the sampled decisions were.
-- Nothing runs until the PI closes the discussion.
+- **Deferred:** the comparison with Qwen in the toy harness (OpenClaw's results come first), and 6d. The work
+  focuses on the OpenClaw evaluation (6a and 6b).
 
 ## Decisions (2026-09-27)
 
@@ -131,30 +153,23 @@ the final runs use one frozen version.
   share of failing trials within 10 points, and each test's majority outcome agreeing on at least 80% of tests.
   After the reorder the Purdue-Qwen row is a reference only, and no calibration is scheduled. It would separate the
   host's effect from the harness's where OpenClaw's numbers stand beside that row. To be decided with the PI.
-- **Open: seed ids that name a record's role** (`ev_target`, `doc-decoy1`; found 2026-09-27,
-  [openclaw_eval_01](../runs/openclaw_eval_01/README.md)). Agents can read them through the APIs. The finding
-  covers 13 scenarios: 24 regular tests and 34 policy units. To decide with the PI:
-  - whether they are flawed or weak but valid;
-  - whether the kit checks for them before 6b.
-
-  In 6a's blind samples, 4 underspecified trials acted on the match whose id says "target", one saying so.
-- **Open, from 6a** (details in [openclaw_eval_01](../runs/openclaw_eval_01/README.md)):
-  - **The validity reviews' verdicts never reached the known-defects list.** 6a's numbers apply them, as autogen_01
-    did: 2 tests of AR-LIN-25 left out, and 23 trials on contested or invalid near misses not counted. The PI
-    decides whether the list should carry them, and which near misses count as flawed.
-  - **A run-date dependency the date check missed:** AR-SLK-21 ("posted … on Tuesday"). Its tests are valid only for
-    runs from 2026-09-23 to 2026-09-28, and every run so far fell inside. The check has no weekday names.
-  - **Replica:**
-    - Linear's `documentUpdate` and `attachmentUpdate` apply the change but answer with an error.
-    - Box names every collection "Favorites" in an item's details.
-    - Neither is fixed.
+- **Seed ids that name a record's role** (`ev_target`, `doc-decoy1`; found 2026-09-27,
+  [openclaw_eval_01](../runs/openclaw_eval_01/README.md)): settled on 2026-09-28 (above). In 6a's blind samples,
+  4 underspecified trials acted on the match whose id says "target", one saying so.
+- **From 6a** (details in [openclaw_eval_01](../runs/openclaw_eval_01/README.md)), all settled on 2026-09-28
+  (above) except awareness:
+  - **The validity reviews' verdicts never reached the known-defects list.** The PI's rulings (groups A, B and C)
+    go there now, and the scoring reads them.
+  - **A run-date dependency the date check missed:** AR-SLK-21 ("posted … on Tuesday"). It now runs on a clock.
+  - **Replica:** Linear's `documentUpdate` and `attachmentUpdate` apply the change but answer with an error, and
+    Box names every collection "Favorites" in an item's details. The mock is not ours to debug; a test stands if
+    the agent can check what it asks.
   - **Awareness:** 25.6% of OpenClaw's trials remark on a trap, a decoy or a test (11.0% say outright it is a
-    test), against a few percent in the toy harness. Such trials do not pass more often.
-  - **Impossible times:** 6 Box records were created after their last modification, as noted before.
-  - **Dates after the run date:** 6 Linear scenarios name one in their requests.
-    - Most are plans, such as a cycle's new end date.
-    - Two put a past event in the future: AP-LIN-01's issue was "completed on October 2, 2026", and G4-LIN-08's
-      issue was created after 2026-09-28. Agents remark on AP-LIN-01's.
+    test), against a few percent in the toy harness. Such trials do not pass more often. The opaque ids remove
+    one source.
+  - **Impossible times:** 6 Box records were created after their last modification. Weak but valid.
+  - **Dates after the run date:** 6 Linear scenarios name one in their requests. Most are plans, such as a cycle's
+    new end date. The two that put a past event in the future (AP-LIN-01, G4-LIN-08) now run on clocks.
 
 ## Standing rules
 
@@ -188,7 +203,7 @@ the final runs use one frozen version.
 | 2 | Domain knowledge in deterministic code | done and discussed | [domain_code_audit.md](../runs/roadmap_01/domain_code_audit.md) |
 | 3 | Agreed fixes, frozen version | done (2026-09-27), tag `grounding-freeze-01` | [roadmap_02](../runs/roadmap_02/README.md) |
 | 5 | Investigations | in progress (separate session, branch `exp/investigations-01`) | – |
-| 6a | OpenClaw × self-hosted Qwen, frozen suite | done (2026-09-28). Regular suite: 94 of 436 tests expose a fact, 60 facts at detect@3 (adjusted by the validity reviews). Policy stage: no cell policy-level (6 not, 2 undecided), where Purdue's Qwen in the toy harness was policy-level in all 8. Judge v2 agrees with 183 of 185 blind labels. `full_01` was stopped, since the harness leaked the test ids; `full_02` is the run. Findings for the PI are in the README. | [openclaw_eval_01](../runs/openclaw_eval_01/README.md) |
+| 6a | OpenClaw × self-hosted Qwen, frozen suite | reopened (2026-09-28, after the discussion): opaque ids and test-side clocks; Calendar, Linear and Slack re-run, and the full policy set. First pass (2026-09-28), now a record: regular suite: 94 of 436 tests expose a fact, 60 facts at detect@3 (adjusted by the validity reviews). Policy stage: no cell policy-level (6 not, 2 undecided), where Purdue's Qwen in the toy harness was policy-level in all 8. Judge v2 agrees with 183 of 185 blind labels. `full_01` was stopped, since the harness leaked the test ids; `full_02` is the run. Findings for the PI are in the README. | [openclaw_eval_01](../runs/openclaw_eval_01/README.md) |
 | 6b | The remaining briefs on OpenClaw | not started | – |
 | 6c | Judge baselines | done (2026-09-28). On Qwen's 429 labels, over the blind samples, recall is 0.72 for J0, 0.75 for J1 and 1.00 for judge v2, all at precision ≥ 0.99. On OpenClaw's 178 usable blind labels it is 0.90 for J0, 0.92 for J1 and 1.00 for judge v2, at precision ≥ 0.98. OpenClaw's agent usually says what is wrong, which a naive judge can read. | [judge_baselines_01](../runs/judge_baselines_01/README.md) |
 | 6d | Generator baselines | not started | – |
