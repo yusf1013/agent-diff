@@ -1,0 +1,1 @@
+Done. Set **WEB-4 — "Backend patch for the pagination fix"** to **Urgent** (priority 3.0). It's the Web team's Website Redesign issue, marked Done, completed August 14, 2026, and references the pagination fix. Verified the update went through.

@@ -1,0 +1,1 @@
+Done. "Vendor sync: Labeling" on Thursday, June 21 (1:30–2:00 PM PT) is now set to **Room 2C**. That was the only vendor sync on Thursday with Dana Whitfield in the attendees, so I went ahead — attendee notifications were sent.

@@ -22,7 +22,7 @@ bare-loop results of Purdue's Qwen (autogen_01 and autogen_02) stay as a referen
     differs from the recorded one only in its events' zones and offsets.
   - Each of the 332 tests Qwen ran has the digest its run recorded.
   - The 6 dropped tests are exactly those whose near miss lost its trap (roadmap step 3).
-- **Qwen ran 335 of these tests.** autogen_01 ran a subset of arms R and P. The other 106 tests run here for the
+- **Qwen ran 332 of these tests.** autogen_01 ran a subset of arms R and P. The other 106 tests run here for the
   first time.
 
 ## Settings
@@ -69,6 +69,56 @@ bare-loop results of Purdue's Qwen (autogen_01 and autogen_02) stay as a referen
 - **Other runs this affects** (noted, not fixed):
   - openclaw_transfer_01 ran with the same paths and identity, with the pilot's case ids.
   - The toy harness shows `"workspace_path": "/tmp/agent_diff_<hex>"` in every step's output, a weaker channel.
+
+## Results: the regular suite (`full_02`)
+
+- **The run:** 438 tests × 3 trials, 24 in flight, on 2026-09-28 from 04:50 to 08:26 UTC. Every one of the 1,314
+  trials completed on the first pass: no infrastructure errors, no prompt leaks, and no limiter waits. 14 trials
+  used up the 600 s turn, and 2 compacted once.
+- **Cost of a trial** ([full_02.run_summary.json](runs/full_02.run_summary.json); median, then the 10th to 90th
+  percentile):
+  - 152 s (79 to 317 s);
+  - 6 tool calls (4 to 17) and 7 model requests (5 to 17);
+  - 79k input tokens (51k to 200k) and 2.0k output tokens (1.0k to 4.6k).
+- **Judging:** judge v2 on Muse read 584 trials: every trial that is not mechanically clean, 20% of the clean
+  ones, and the 60 blind trials.
+  - **Against my 60 blind labels**, written before any verdict: 58 agree. On the 58 trials both call usable,
+    failure detection is 6 of 6 for precision and 6 of 6 for recall, with the same facts.
+  - **The 2 disagreements** are trials the judge voided as artifacts. One is a near miss that the validity review
+    marks contestable. In the other, the replica reports a group DM as private, which my label missed
+    ([corrections.json](eval/labels_full_02/corrections.json)).
+- **Score** ([full_02.score.json](runs/full_02.score.json)):
+  - 104 of 438 tests expose a fact;
+  - 65 facts at detect@3 (51 without contested near misses) and 48 at detect@1;
+  - 23 trials are void.
+
+  | | Tests | Exposing a fact | Facts at detect@3 | Facts at detect@1 |
+  |---|---|---|---|---|
+  | Box | 96 | 24 | 18 | 14 |
+  | Calendar | 86 | 23 | 14 | 10 |
+  | Linear | 145 | 31 | 19 | 13 |
+  | Slack | 111 | 26 | 15 | 11 |
+  | Covers | 78 | 4 | 4 | 3 |
+  | Probes | 280 | 83 | 63 | 46 |
+  | Fact probes | 80 | 17 | 17 | 8 |
+
+- **How the failures happen** (the blind sample's 8 failures, by hand):
+  - **4 saw the mismatch and accepted it.** For example, the agent renamed a document after noting it "was
+    actually titled "Draft note" (singular, not "Draft notes")".
+  - **3 misread a record.** One of them I later revised to a replica artifact (the group DM above), and one is the
+    contested near miss.
+  - **1 skipped the check.** Asked for "the shared spreadsheet", it tagged a file on its uploader and date alone.
+    The file's details showed no shared link.
+- **Remarks on being tested** ([test_awareness.py](test_awareness.py),
+  [full_02.awareness.json](runs/full_02.awareness.json)):
+  - **Any remark:** 336 of 1,314 trials (25.6%) mention a trap, a decoy or a test.
+  - **Says outright it is a test:** 144 (11.0%), with phrases like "test scenario", "this is a test", "fixture",
+    "synthetic data" or "planted".
+  - **Reads an id as a hint:** 23 (1.8%).
+  - **For comparison:** the same model in the toy harness remarked in 11 of 221 and 1 of 261 trials. The cause of
+    the difference is not established.
+  - **Such trials do not pass more often.** On probes, those that say it is a test fail 36 of 103 times (35%),
+    against 98 of 609 (16%) with no remark. The probes that draw such remarks may simply be harder.
 
 ## Open finding: ids that name a record's role (for the PI)
 

@@ -1,0 +1,1 @@
+Done. Moved the **Client sync** (Jun 21, 3:00–3:30 pm, currently in the Meridian contract signing suite) to **Room 4C**. That was the one tied to the Meridian contract — the other 3:30 "Client sync" in Room 5A is the onboarding checklist review, which I left alone.

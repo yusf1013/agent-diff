@@ -1,0 +1,1 @@
+Done. I identified the calendar as **Ops Rotation – EMEA** (`ops-emea@northwind.example`) — you own it, and it's the one with "Weekend on-call coverage rota posted here every Friday" noted (in its location field). Its timezone is now set to **America/New_York** (was America/Los_Angeles).

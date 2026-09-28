@@ -1,0 +1,1 @@
+Done. **Vendor sync: Ingredients** (Thu 6/21, 3:00–3:30 PM) is now set to **Room 2C**, and Dana (required) and Leo (optional) got notified of the change. It was the only vendor sync on Thursday — the other one (Freight) is next Thursday.

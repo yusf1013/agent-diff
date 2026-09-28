@@ -1,0 +1,1 @@
+Done. **Ops Rotation – EMEA** (`ops-emea@northwind.example`) — the calendar whose location field mentions "Weekend on-call coverage" — now has its time zone set to `America/New_York`, up from `America/Los_Angeles`. The API response confirms the change.

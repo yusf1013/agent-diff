@@ -1,0 +1,1 @@
+Done. Added the `needs-legal-review` tag to **Vendor Agreement Renewal.pdf** (Procurement folder) — the only file by Dana Whitfield with a June 3 date and a Priya Nair comment on June 10 ("Renewal terms look fine."). Tag confirmed applied.

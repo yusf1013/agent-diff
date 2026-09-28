@@ -1,0 +1,1 @@
+Done. Added 🎉 to Farhan Malik's message in #launch-planning ("Launch date confirmed — March 3, no changes on our side.") — the one Nadia Brooks had already flagged with 👀. Both reactions are now showing on it.

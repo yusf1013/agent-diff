@@ -1,0 +1,1 @@
+Done ✅ — added a check reaction to Diego's message in #incidents: "Finished the gateway rollback about ten minutes ago." That was the matching thread with 4 visible replies (5 total in the thread per the API). Confirmed the reaction is on the message.

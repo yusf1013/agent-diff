@@ -1,0 +1,1 @@
+Done. The **Client sync** at 3:00–3:30 pm (Thu, June 21) — the one at the Meridian contract signing suite — is now in **Room 4C**. Guests were notified. The other "Client sync" (intern onboarding, Room 5A) was left untouched.
