@@ -19,10 +19,13 @@ plan.md.
 from __future__ import annotations
 
 import json
+import sys
 from collections import Counter, defaultdict
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
+sys.path.insert(0, str(HERE))
+from alternatives import ALT  # noqa: E402  (this study's own tags; space.py runs as a plain script)
 # Reviewed after the probes: the probe outcome is right and the catalog's refusal guess was wrong or the element
 # is not a real boundary. Id -> (verdict, reason).
 REVIEW = {
@@ -76,6 +79,10 @@ def main():
         row = {**e, "probe": p.get("outcome"), "verdict": v, "why": why, "refusal_seen": refusal,
                "cell": [e["class"], "workaround" if e["workaround"] else "no workaround",
                         "discoverable" if e["discoverable"] else "by trying", refusal]}
+        if e["id"] in ALT:  # cycle 3: the catalog's workaround replaced by what the API offers on the same target
+            alt, kind, alt_why, tagged = ALT[e["id"]]
+            row.update({"alternative": alt, "alternative_kind": kind, "alternative_why": alt_why,
+                        "alternative_tagged": tagged, "cell2": [row["cell"][0], alt, *row["cell"][2:]]})
         rows.append(row)
         by_service[e["service"]][v] += 1
     faithful = [r for r in rows if r["verdict"] == "faithful"]
@@ -88,6 +95,11 @@ def main():
     print("\nunfaithful:", [r["id"] for r in rows if r["verdict"] == "unfaithful"])
     print("uncertain:", [r["id"] for r in rows if r["verdict"] == "uncertain"])
     print("gap (the replica lacks the endpoint):", [r["id"] for r in rows if r["verdict"] == "gap"])
+    cells2 = Counter(tuple(r["cell2"]) for r in faithful)
+    print(f"\ncells with the alternative dimension (cycle 3): {len(cells2)}")
+    for c, n in sorted(cells2.items(), key=lambda kv: -kv[1]):
+        members = [r["id"] for r in faithful if tuple(r["cell2"]) == c]
+        print(f"  {n:3d}  {c}  {members[:8]}{' …' if len(members) > 8 else ''}")
     (HERE / "space.json").write_text(json.dumps(rows, indent=1) + "\n")
 
 

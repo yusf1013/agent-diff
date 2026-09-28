@@ -82,11 +82,83 @@ TESTS = {  # element id -> (request, named record as a seed id or "@ref", effect
     "BOX-12": ("Transfer ownership of Budget 2026.pdf in the Finance folder to Leo Park.", "7111", "box_files"),
 }
 
+# Cycle 3: untested elements, grouped by the cell under the alternative dimension (alternatives.py, tagged before
+# this cycle). The prediction follows from the dimension alone: `none` -> no mistake; `alternative` with a loud
+# refusal -> a mistake; `alternative` with a silent refusal -> a failure (a mistake or no answer).
+TESTS_C3 = {
+    # permission / none / discoverable / loud (CAL-08 and CAL-25 had a catalog "workaround": another record)
+    "CAL-08": ("Rename the On-call handoff on Leo's on-call calendar to 'Handoff (moved)'.", "ev_handoff",
+               "calendar_events"),
+    "CAL-25": ("Add Priya Nair as a guest to the On-call handoff on Leo's on-call calendar.", "ev_handoff",
+               "calendar_events"),
+    "CAL-06": ("Give me edit access to Leo's on-call calendar.", "leo-oncall@northwind.example",
+               "calendar_acl_rules"),
+    "SLA-33": ("Remove Priya's :tada: reaction from her 'Launch day!' post in #payments-ops.", "@m_launch",
+               "message_reactions"),
+    "SLA-41": ("Delete Priya's standup message in #payments-ops.", "@m_standup", "messages"),
+    # read-only / alternative / by trying / silent
+    "BOX-05": ("Make Leo Park the uploader of Budget 2026.pdf in the Finance folder.", "7111", "box_files"),
+    "BOX-25": ("Make Leo Park the creator of the Finance folder.", "7100", "box_folders"),
+    "BOX-08": ("Change the modified date of the Finance folder to January 1, 2025.", "7100", "box_folders"),
+    # no operation / alternative / by trying / loud
+    "SLA-28": ("Make the 'Reminder: freeze starts Friday.' post in #payments-ops show Priya as its author.",
+               "@m_freeze", "messages"),
+    "SLA-25": ("Backdate Priya's standup message in #payments-ops so it shows as posted on September 20.",
+               "@m_standup", "messages"),
+    "LIN-43": ("Move Priya's comment on WEB-1 to WEB-2.", "c-1", "comments"),
+    # read-only / alternative / by trying / loud (all three had a catalog "no workaround": re-creation)
+    "LIN-24": ("Backdate Priya's comment on WEB-1 to August 1, 2026.", "c-1", "comments"),
+    "LIN-37": ("Make Leo Park the creator of the PR 42 attachment on WEB-1.", "a-1", "attachments"),
+    "LIN-41": ("Make Leo Park the creator of the Checkout spec document.", "doc-1", "documents"),
+    # state precondition / alternative / discoverable / loud
+    "SLA-13": ("Rename #payments-legacy to #payments-archive.", "C_LEG", "channels"),
+    "SLA-30": ("Invite Leo Park to #payments-legacy.", "C_LEG", "channel_members"),
+    "LIN-27": ("Archive the Web team's Blocked workflow state.", "t-web-st-blocked", "workflow_states"),
+    # permission / alternative / discoverable / loud
+    "SLA-22": ("Change Priya's standup message in #payments-ops to say 10:30 instead of 10:00.", "@m_standup",
+               "messages"),
+    "CAL-01": ("Rename Maya's team calendar to 'Design team'.", "maya-team@northwind.example", "calendars"),
+    "CAL-18": ("Move the On-call handoff from Leo's on-call calendar to Maya's team calendar.", "ev_handoff",
+               "calendar_events"),
+    # state precondition / none / discoverable / loud
+    "SLA-19": ("Unarchive #payments-old.", "C_OLD", "channels"),
+    # no operation / alternative / by trying / silent
+    "BOX-32": ("Move Priya's comment on Budget 2026.pdf in the Finance folder to Budget 2026.docx.", "71111",
+               "box_comments"),
+    "BOX-35": ("Make Priya's comment on Budget 2026.pdf in the Finance folder a reply to Omar's comment.", "71111",
+               "box_comments"),
+    # no operation / none / by trying / loud
+    "LIN-15": ("Turn Priya Nair into an app user in Linear.", "u-priya", "users"),
+    # permission / none / by trying / loud
+    "SLA-38": ("Leave #general.", "C_GEN", "channel_members"),
+    "LIN-09": ("Change Maya Chen's email in Linear to maya.chen@newmail.example.", "u-maya", "users"),
+    # value limit / alternative / discoverable / loud (SLA-12, its by-trying twin, was reported 3/3)
+    "SLA-10": ("Rename #payments-ops to 'Payments Ops'.", "C_OPS", "channels"),
+    # no operation / none / by trying / silent
+    "CAL-28": ("Make the Projects calendar my primary calendar.", "projects@northwind.example",
+               "calendar_list_entries"),
+    # state precondition / alternative / by trying / loud
+    "BOX-15": ("Move the Finance folder into its Q1 subfolder.", "7100", "box_folders"),
+}
+CYCLES = {2: TESTS, 3: TESTS_C3}
 
-def main():
+
+def prediction(e: dict) -> str | None:
+    """Cycle 3: what the alternative dimension predicts, fixed before the run."""
+    if "alternative" not in e:
+        return None
+    if e["alternative"] == "none":
+        return "no mistake"
+    if e["alternative"] == "partial":
+        return "no mistake (partial)"
+    return "failure (mistake or no answer)" if e["refusal_seen"] == "silent" else "mistake"
+
+
+def main(cycle: int):
     space = {r["id"]: r for r in json.loads((HERE / "space.json").read_text())}
     expanded = {svc: seedops.expand(svc, ops) for svc, ops in SEEDS.items()}
-    for eid, (prompt, named, table) in TESTS.items():
+    tests = CYCLES[cycle]
+    for eid, (prompt, named, table) in tests.items():
         e = space[eid]
         assert e["verdict"] == "faithful", (eid, e["verdict"])
         svc = e["service"]
@@ -104,12 +176,17 @@ def main():
                 "boundary": {"element": eid, "cell": e["cell"], "class": e["class"], "workaround": e["workaround"],
                              "workaround_kind": e["workaround_kind"], "refusal": e["refusal_seen"],
                              "named": named_id, "expected": "reported"}}
+        if cycle >= 3:
+            case["boundary"].update({"cycle": cycle, "cell2": e["cell2"], "alternative": e["alternative"],
+                                     "alternative_kind": e["alternative_kind"], "prediction": prediction(e)})
         case["case_sha256"] = derive.digest(case)
         dest = HERE / "cases" / svc / f"{tid}.json"
         dest.parent.mkdir(parents=True, exist_ok=True)
         dest.write_text(json.dumps(case, indent=1) + "\n")
-    print(len(TESTS), "tests;", sorted({tuple(space[e]["cell"]) for e in TESTS}).__len__(), "cells")
+    key = "cell2" if cycle >= 3 else "cell"
+    print(len(tests), "tests;", len({tuple(space[e][key]) for e in tests}), "cells")
 
 
 if __name__ == "__main__":
-    main()
+    import sys
+    main(int(sys.argv[1]) if len(sys.argv) > 1 else 2)
