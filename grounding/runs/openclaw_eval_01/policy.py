@@ -175,11 +175,48 @@ def decide(mode: str, verdict_dirs: list[Path]) -> dict:
 # ------------------------------------------------------------------ the full population (after 2026-09-28)
 
 OPAQUE_UNITS = HERE / "suite_opaque" / "units"
+SIXB_UNITS = HERE.parent / "completion_01" / "suite" / "units"
+EXTENSION = OUT / "plan_extension.json"
+EXTENSION_SEED = 2026092803
 THRESHOLD, ALPHA, RESAMPLES, SEED = 0.8, 0.10, 20_000, 20260928
 
 
 def unit_case(u: dict) -> dict:
-    return json.loads((OPAQUE_UNITS / u["domain"] / f"{u['unit']}.json").read_text())
+    folder = SIXB_UNITS if u.get("source") == "completion_01" else OPAQUE_UNITS
+    return json.loads((folder / u["domain"] / f"{u['unit']}.json").read_text())
+
+
+def population_plan(mode: str) -> dict:
+    """autogen_02's plan with roadmap 6b's units (completion_01) appended to each cell (plan_extension.json)."""
+    doc = plan(mode)
+    ext = json.loads(EXTENSION.read_text()) if EXTENSION.exists() else {}
+    for cell, seq in ext.get("cells", {}).items():
+        if cell.endswith("/" + mode):
+            doc["cells"].setdefault(cell, []).extend(seq)
+    return doc
+
+
+def extend(mode: str) -> None:
+    """Append 6b's units of one mode to each cell's order, as amendment 5 appended Phase 4's: after the existing
+    order, in their own stratified order (seed recorded). Done once per mode, before any of their verdicts."""
+    ext = json.loads(EXTENSION.read_text()) if EXTENSION.exists() else {"cells": {}, "done": {}}
+    if mode in ext["done"]:
+        raise SystemExit(f"{mode} is already extended: the order is fixed once")
+    listed = json.loads((SIXB_UNITS.parent / "units.json").read_text())["units"]
+    cells: dict[str, list] = {}
+    for u in listed:
+        if u["mode"] == mode:
+            cells.setdefault(f"{u['domain']}/{mode}", []).append(u)
+    base = plan(mode)["cells"]
+    added = {}
+    for cell in sorted(cells):
+        start = len(base.get(cell, []))
+        order = sampler.stratified_order(cells[cell], EXTENSION_SEED + sum(map(ord, cell)))
+        ext["cells"][cell] = [{**u, "position": start + i, "source": "completion_01"} for i, u in enumerate(order, 1)]
+        added[cell] = len(order)
+    ext["done"][mode] = {"seed": EXTENSION_SEED, "at": date.today().isoformat(), "added": added}
+    EXTENSION.write_text(json.dumps(ext, indent=1) + "\n")
+    print(f"{mode}: appended {added}")
 
 
 def population_units(seq: list[dict]) -> tuple[list[dict], dict[str, str]]:
@@ -287,8 +324,31 @@ def readings(valid: list[dict], outcomes: dict, looks: list[int]) -> dict:
             "spread": sampler.cell_stats(valid, outcomes)["spread"]}
 
 
+def population_6b(mode: str) -> Path:
+    """Roadmap 6b's valid units of one mode (appended by `extend`) as their own cases folder, to run after the
+    6a population."""
+    dest = OUT / f"population_6b_{mode}"
+    if dest.exists():
+        raise SystemExit(f"{dest} exists")
+    ext = json.loads(EXTENSION.read_text())
+    record = {"mode": mode, "units": [], "left_out": {}}
+    for cell, seq in ext["cells"].items():
+        if not cell.endswith("/" + mode):
+            continue
+        kept, left_out = population_units(seq)
+        record["left_out"].update(left_out)
+        for u in kept:
+            path = dest / u["domain"] / f"{u['unit']}.json"
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(json.dumps(unit_case(u), indent=1, ensure_ascii=False) + "\n")
+            record["units"].append(u["unit"])
+    (dest / "population.json").write_text(json.dumps(record, indent=1) + "\n")
+    print(f"{mode}: {len(record['units'])} 6b units to run, {len(record['left_out'])} left out -> {dest}")
+    return dest
+
+
 def decide_population(mode: str, verdict_dirs: list[Path], first_pass_dirs: list[Path]) -> dict:
-    doc = plan(mode)
+    doc = population_plan(mode)
     outcomes = sampler.verdict_outcomes(verdict_dirs)
     earlier = sampler.verdict_outcomes(first_pass_dirs)
     ran = first_pass_units(mode)
@@ -325,6 +385,10 @@ def main():
     sub = parser.add_subparsers(dest="cmd", required=True)
     pp = sub.add_parser("population")
     pp.add_argument("mode", choices=["absence", "underspecified"])
+    ex = sub.add_parser("extend")
+    ex.add_argument("mode", choices=["absence", "underspecified"])
+    p6 = sub.add_parser("population-6b")
+    p6.add_argument("mode", choices=["absence", "underspecified"])
     dp = sub.add_parser("decide-population")
     dp.add_argument("mode", choices=["absence", "underspecified"])
     dp.add_argument("--verdicts", type=Path, nargs="+", required=True)
@@ -340,6 +404,10 @@ def main():
     args = parser.parse_args()
     if args.cmd == "population":
         population(args.mode)
+    elif args.cmd == "extend":
+        extend(args.mode)
+    elif args.cmd == "population-6b":
+        population_6b(args.mode)
     elif args.cmd == "decide-population":
         result = decide_population(args.mode, [p.resolve() for p in args.verdicts],
                                    [p.resolve() for p in args.first_pass])
