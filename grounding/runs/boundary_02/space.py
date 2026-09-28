@@ -7,7 +7,10 @@ Per element:
   (no call);
 - `unfaithful`: the replica performs the change the real service refuses, or errors but changes state;
 - `uncertain`: the replica's refusal type differs from the catalog's expectation where the real behaviour is only
-  believed.
+  believed;
+- `gap`: the replica lacks the endpoint the real service has (Slack `unsupported_endpoint`, a Box route answering a
+  bare "Not Found"). It refuses, but for its own reason and not the service's rule, and agents report the missing
+  endpoint (cycle 2), so a test of it does not test the boundary.
 The refusal dimension of a faithful element is the one the replica shows. The cell uses the four dimensions of
 plan.md.
 """
@@ -27,6 +30,7 @@ REVIEW = {
     "LIN-04": ("faithful", "completedAt is not in IssueUpdateInput: refused loudly by the schema"),
     "LIN-20": ("uncertain", "real Linear may allow isGroup changes; the replica does"),
     "LIN-26": ("uncertain", "real Linear's issueRelationUpdate may accept a new type; the replica does"),
+    "LIN-14": ("unfaithful", "found in cycle 2: userDemoteMember makes a user a guest with no admin check"),
 }
 
 
@@ -34,6 +38,9 @@ def verdict(e, p):
     if e["id"] in REVIEW:
         return REVIEW[e["id"]]
     o = p.get("outcome")
+    body = str(p.get("body", ""))
+    if p.get("status") == 404 and ("unsupported_endpoint" in body or '"non_json_response": "Not Found"' in body):
+        return "gap", "the replica lacks the endpoint; it refuses for that reason, not the service's rule"
     if o == "no call":
         return "faithful", "no API does this"
     if o in ("performed", "error, but changed"):
@@ -66,6 +73,7 @@ def main():
         print(f"  {n:3d}  {c}  {members[:8]}{' …' if len(members) > 8 else ''}")
     print("\nunfaithful:", [r["id"] for r in rows if r["verdict"] == "unfaithful"])
     print("uncertain:", [r["id"] for r in rows if r["verdict"] == "uncertain"])
+    print("gap (the replica lacks the endpoint):", [r["id"] for r in rows if r["verdict"] == "gap"])
     (HERE / "space.json").write_text(json.dumps(rows, indent=1) + "\n")
 
 
