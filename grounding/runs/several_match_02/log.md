@@ -357,6 +357,9 @@ Recall by placement: visible 15/15; container 10/10; beyond a page 7/10; private
 **What was learned (revising cycle 7):**
 - **Beyond the largest page: 20/20 alone, 14/20 inside a combined test.** The difference holds with 10 trials a
   test. Every combined-test miss was the agent paging wrongly, not failing to page at all.
+  - In the combined tests the page to overflow was a subfolder's or a second channel's, not the named one's.
+  - So two readings fit: combining weakens the agent, or paging a nested container is where it slips. A test that
+    puts the long listing in a subfolder, with no other placement, would tell them apart.
 - **Private channels: about the same alone (8/12, SM2-SLK-01) and combined (5/9).** Cycle 7's 1 of 4 was small-sample
   noise. The visibility default catches the agent in both settings.
 - **The candidate placement recurs:** 2 of the 4 Box misses stopped at a round offset, one item short of the end.

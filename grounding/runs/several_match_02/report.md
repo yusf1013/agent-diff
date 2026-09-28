@@ -40,7 +40,8 @@ has three parts:
 For the agent (the feedback loop, not the design answer):
 - Qwen was caught mainly behind visibility defaults: 13 of 31 such matches found when the request did not name the
   hidden part, 13 of 13 when it did.
-- Pagination caught it only inside a combined test: 14 of 20 found, against 20 of 20 alone.
+- Pagination caught it only in the combined tests: 14 of 20 found, against 20 of 20 when paging was the only
+  placement. There the page to overflow was a subfolder's or a second channel's, not the named one's (see table 3).
 - Containers never caught it: 65 of 65 found.
 
 ## Method
@@ -103,7 +104,8 @@ Mechanical: every strategy run as API calls against every probe seed (`matrix.js
 | | channel list, `exclude_archived` → history | a match in an archived channel (read requests only) |
 | | channel list (public and private) → one page of history | a match beyond the largest page |
 | | search by words (default or 100 results) | a condition search cannot express, or more hits than one search page |
-| Slack: requests about channels | search → the channels of the hits; channel list (default types) | a private channel (topics are not searched) |
+| Slack: requests about channels | search → the channels of the hits | any request about channels: search does not cover topics |
+| | channel list (default types) | a private channel |
 | Slack: messages anywhere | conversations of default types, or public and private → history | a match in a group DM or a DM |
 
 ## Table 2: the number of tests
@@ -119,6 +121,8 @@ Mechanical: every strategy run as API calls against every probe seed (`matrix.js
 
 - **Six tests** defeat every strategy that the replica lets be defeated. Box, Calendar and Linear had one kind of
   request enumerated each; more kinds would add tests.
+- **Slack's 12** are 12 distinct strategy names over 13 table entries: "search words (count 100)" appears for two
+  kinds of request.
 - **Without combining** (one placement per test): Box 2, Calendar 1, Linear 2, Slack 4.
 
 ## Table 3: what caught the agent
@@ -130,13 +134,15 @@ Qwen on the self-host, targets acted on out of targets, valid tests only. The mi
 |---|---:|---|
 | Visible | 130/130 | all |
 | One or two containers down (subfolders, sub-teams, another channel) | 65/65 | SM2-BOX-01, SM2-LIN-01, the Calendar tests, SM2-BOX-04, SM2-SLK-05 |
-| Beyond the largest page, as the only placement | 20/20 | SM2-BOX-03, SM2-SLK-04 |
-| Beyond the largest page, inside a combined test | 14/20 | SM2-BOX-04 6/10, SM2-SLK-05 8/10 |
+| Beyond the largest page of the named folder or channel (the only placement) | 20/20 | SM2-BOX-03, SM2-SLK-04 |
+| Beyond the largest page of a subfolder, or of one of several channels in scope (combined tests) | 14/20 | SM2-BOX-04 6/10, SM2-SLK-05 8/10 |
 | **Behind a visibility default, the request not naming it** | **13/31** | hidden calendar 0/10 (SM2-CAL-01, -02); private channels 8/12 alone (SM2-SLK-01), 5/9 combined (SM2-SLK-05) |
 | Behind a visibility default, the request naming it (control) | 13/13 | SM2-CAL-03, SM2-SLK-02 |
 
-- **Pagination catches the agent only inside a combined test:** 20/20 found alone, 14/20 combined, over 10 trials a
-  test.
+- **Pagination caught the agent only in the combined tests:** 20/20 found alone, 14/20 combined, over 10 trials a
+  test. Two readings fit, and these tests cannot tell them apart:
+  - combining the placements weakens the agent;
+  - paging a nested container (a subfolder; a second channel) is where it slips, combined or not.
   - Every combined-test miss was a paging mistake, not a failure to page.
   - The mistakes: a 100-item second page from offset 1000 that stopped one item short of `total_count` (3 trials);
     one page of history (2); a loop on `next_marker` without asking for markers (2).

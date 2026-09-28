@@ -4,6 +4,8 @@
 Muse. It runs in cycles; [log.md](log.md) records each one. This plan states the question and the method; findings go
 in the log, and the report at the end.*
 
+**Report: [report.md](report.md)** (cycles 1–3, 2026-09-28).
+
 ## The question
 
 The PI: "how do we form a coverage space, and the numbers, what number of tests would be required to cover them",

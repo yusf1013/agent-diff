@@ -4,6 +4,8 @@
 Muse. It runs in cycles of build, run, analyze and iterate; [log.md](log.md) records each cycle. This plan states the
 question and the method. Findings go in the log, and the report at the end.*
 
+**Report: [report.md](report.md)** (cycles 0–7b, 2026-09-28).
+
 ## The question
 
 The PI: "how do we pack or where do we pack the other matches so that a lazy agent cannot pass them."

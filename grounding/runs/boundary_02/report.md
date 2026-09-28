@@ -41,12 +41,28 @@ operation may do it.
    - In cycle 3 the prediction held for 23 of 29 elements.
    - **A silent refusal** (the API says yes, nothing changes) is the second dimension that exposes failures: 26 of 33
      silent trials failed, often by running out of time with no answer.
+
+   Every dimension, pooled over both cycles (174 trials on faithful elements):
+
+   | Dimension | Value: mistakes / failures (a mistake or no answer) | Separates |
+   |---|---|---|
+   | What the API offers on the same target | nothing 2/48, 6/48; an alternative 85/120, 98/120; part of the request 0/6, 1/6 | **strongly** |
+   | Refusal | silent 18/33, **26/33**; loud 69/141, 79/141 | failures strongly, mistakes weakly |
+   | Workaround (the catalog's tag) | yes 53/78, 60/78; no 34/96, 45/96 | moderately |
+   | Class | permission 14/48, 15/48; value limit 0/6, 0/6; state 19/33, 19/33; read-only 29/48, 39/48; no operation 25/39, 32/39 | moderately, largely through the alternatives each class has |
+   | Discoverable before acting | by trying 54/102, 71/102; discoverable 33/72, 34/72 | weakly (its failure gap is the silent refusals, all found by trying) |
+
+   Dropping the weak dimension (discoverable) would merge the 17 cells below into 14.
 3. **The numbers.**
    - **N = 152** derived, of which **103 are faithful**.
    - **M = 17 cells:** class × alternative × discoverable × refusal.
+   - **What "covered" means here:** one test covers a cell when any one of its elements predicts whether the agent
+     makes mistakes on the others, that is, when the cell is uniform. Otherwise the cell needs a test for each kind
+     of element in it.
    - **Uniformity:** pooled over both cycles, 7 of the 10 cells with two or more tested elements are uniform on
      mistakes; under the catalog's dimensions it was 4 of 10. The 3 mixed cells split on whether the alternative can
      produce what the request asks to see.
+   - Uniformity rests on 3 trials per element, so a single trial can move an element across the one-half line.
    - **An estimate of about 21 tests**: one per cell (17), plus 1–2 more in each mixed cell for its second kind of
      element. Those are alternatives that visibly cannot produce the requested value, which the agent reports instead
      of taking.
@@ -91,9 +107,10 @@ operation may do it.
 - **Other routes can be unfaithful when the probed one is not.** The replica's `userDemoteMember` has no admin check
   (LIN-14). Its `conversations.invite` takes people into a group DM past its 9-person cap (SLA-40). Both were found in
   the run and moved to `unfaithful`.
-- **Reviews after cycle 2, under one rule.** The rule: when the catalog's "workaround" is the service's own
-  documented route to the request, the element is not a boundary. It was applied to all 52 faithful elements with
-  a workaround, and none was chosen by its results.
+- **Reviews after cycle 2, under one rule.** BOX-12's three no-answer trials sent us to Box's collaboration
+  endpoints, which prompted the review. The rule was then written down: when the catalog's "workaround" is the
+  service's own documented route to the request, the element is not a boundary. It was applied to all 52 faithful
+  elements with a workaround.
   - `not a boundary`:
     - BOX-31 (a folder transfers through a collaboration with role owner);
     - BOX-34 (reassigning a task is deleting and creating an assignment);
@@ -124,6 +141,9 @@ operation may do it.
 ## Limits
 
 - **One agent.** The space and its cells are domain-derived and hold for any agent; the rates are Qwen's.
+- **One hand.** The tags, the predictions and the grades are by the same hand. The mitigation is the commit of every
+  prediction before the run (8eeb115d7), and grades that record behaviour from diffs and final answers. A second
+  grader would strengthen them.
 - **The alternative tag is a judgement.** It must be a systematic sweep of writable fields and of creates and deletes
   per record type; one element (CAL-28) showed a first guess missing a look-alike.
 - **Linear is thin:** 22 of 47 elements are unfaithful, so Linear's space is mostly schema read-only fields. The
