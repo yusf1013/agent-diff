@@ -1,6 +1,8 @@
 """Analyze hand-graded boundary trials: exposure per cell and per dimension, and uniformity within cells.
 
-    python grounding/runs/boundary_02/analyze.py grades-c2.json
+    python grounding/runs/boundary_02/analyze.py grades-c2.json                  # the catalog's cells
+    python grounding/runs/boundary_02/analyze.py --cell2 grades-c3.json          # cells with the alternative dimension
+    python grounding/runs/boundary_02/analyze.py --cell2 grades-c2.json grades-c3.json   # both cycles together
 
 The grades file maps each trial ("t1/BD2-SLA-05") to [outcome, note, *flags]. A grade describes what the agent did;
 whether the trial tests a boundary comes from the element's verdict in space.json. Outcomes (plan.md):
@@ -9,7 +11,9 @@ whether the trial tests a boundary comes from the element's verdict in space.jso
 - no_answer: the agent's time budget ran out with no answer; a failure to report, kept apart;
 - performed: the replica let the request through (an unfaithful element, found in the run).
 Flags: `reversed` (a workaround the agent undid, such as unarchive, set, re-archive), `claimed` (it opened with
-success though the request did not go through).
+success though the request did not go through), `tried` (it attempted a workaround the service refused).
+With --cell2, cells are space.json's `cell2` (the catalog's workaround replaced by the alternative dimension,
+alternatives.py). Several grades files are pooled; a trial key must not repeat across them.
 
 Only trials of faithful elements count toward the rates. The others (gap, unfaithful, uncertain) are listed apart
 with what the agents did. Per element it takes two shares: `mistake` (a mistake) and `fail` (a mistake or no answer).
@@ -46,11 +50,12 @@ def uniform(els: dict, key: str) -> str:
     return "uniform" if all(above) or not any(above) else "MIXED"
 
 
-def main(grades_file: Path):
-    grades = json.loads(grades_file.read_text())
+def main(grades_files: list[Path], key: str = "cell"):
+    grades = [(f.stem, t, g) for f in grades_files for t, g in json.loads(f.read_text()).items()]
     space = {r["id"]: r for r in json.loads((HERE / "space.json").read_text())}
+    dimensions = DIMENSIONS if key == "cell" else ("class", "alternative", "discoverable", "refusal")
     per_element, outside = defaultdict(Counter), defaultdict(Counter)
-    for trial, (outcome, _note, *flags) in grades.items():
+    for _src, trial, (outcome, _note, *flags) in grades:
         eid = trial.split("/", 1)[1].removeprefix("BD2-")
         c = per_element[eid] if space[eid]["verdict"] == "faithful" else outside[eid]
         c[outcome] += 1
@@ -58,7 +63,7 @@ def main(grades_file: Path):
             c[f"flag:{f}"] += 1
     cells = defaultdict(dict)
     for eid, c in per_element.items():
-        cells[tuple(space[eid]["cell"])][eid] = shares(c)
+        cells[tuple(space[eid][key])][eid] = shares(c)
     out = {"not a boundary test": {e: {"verdict": space[e]["verdict"], "outcomes": dict(c)}
                                    for e, c in sorted(outside.items())},
            "cells": [], "dimensions": {}}
@@ -67,12 +72,12 @@ def main(grades_file: Path):
         print(f"  {e} ({v['verdict']}): {v['outcomes']}")
     print("\ncell | uniform on mistake, on fail | per element: mistake / fail share over its trials")
     for cell, els in sorted(cells.items(), key=lambda kv: -max(v["fail"] for v in kv[1].values())):
-        size = sum(1 for r in space.values() if r["verdict"] == "faithful" and tuple(r["cell"]) == cell)
+        size = sum(1 for r in space.values() if r["verdict"] == "faithful" and tuple(r[key]) == cell)
         u = {"mistake": uniform(els, "mistake"), "fail": uniform(els, "fail")}
         out["cells"].append({"cell": cell, "faithful elements": size, "elements": els, "uniform": u})
         print(f"{' / '.join(cell):58} [{len(els)} of {size}] {u['mistake']:11} {u['fail']:11} " +
               "  ".join(f"{e} {v['mistake']:.0%}/{v['fail']:.0%}" for e, v in sorted(els.items())))
-    for i, dim in enumerate(DIMENSIONS):
+    for i, dim in enumerate(dimensions):
         agg = defaultdict(lambda: [0.0, 0.0, 0.0, 0])
         for cell, els in cells.items():
             for v in els.values():
@@ -87,8 +92,11 @@ def main(grades_file: Path):
         print(f"\n{dim}: " + "; ".join(f"{k}: mistake {m:.0f}/{n}, fail {f:.0f}/{n}"
                                        + (f" (reversed not counted: {r:.0f}/{n})" if r != m else "")
                                        for k, (m, f, r, n) in sorted(agg.items())))
-    (HERE / f"analysis-{grades_file.stem}.json").write_text(json.dumps(out, indent=1, default=list) + "\n")
+    name = "+".join(f.stem for f in grades_files) + ("" if key == "cell" else "-cell2")
+    (HERE / f"analysis-{name}.json").write_text(json.dumps(out, indent=1, default=list) + "\n")
 
 
 if __name__ == "__main__":
-    main(Path(sys.argv[1]))
+    args = sys.argv[1:]
+    cell2 = "--cell2" in args
+    main([Path(a) for a in args if a != "--cell2"], "cell2" if cell2 else "cell")

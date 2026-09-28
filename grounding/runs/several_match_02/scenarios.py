@@ -470,8 +470,96 @@ def slk_pages_author():
     }, {"@t1": "P", "@t2": "P", "@t3": "V", "@t4": "V"}
 
 
+def box_combined():
+    """Cycle 6: every Box placement in one test (probes.BX-COMBINED): 2 in the named folder, 1 two levels down, 1
+    beyond the first 1000 items of a subfolder. The condition, not a Word document, is in every listed name and no
+    search expresses it."""
+    from grounding.runs.several_match_02.probes import box_combined as probe
+    finance = node("box_folders", [filt("f_folder", "name", "eq", "Finance", "A:Folder.name")])
+    in_finance = edge("e_parent", "parent_id", "id",
+                      node("box_folders", [], [edge("e_anc", "parent_id", "id", finance, "H:Folder.parent_id",
+                                                    closure="star")]), "R:File.parent_id")
+    query = {"table": "box_files", "filters": [filt("f_ext", "extension", "ne", "docx", "A:File.extension")],
+             "edges": [in_finance]}
+    seed = probe()["seed"] + [["folder", {"id": "5200", "name": "Marketing"}],
+                              ["file", {"id": "5201", "name": "Launch plan.pdf", "parent": "5200"}]]
+    return {
+        "scenario_id": "SM2-BOX-04", "domain": "box",
+        "request": "Add the tag q3-review to every file anywhere in the Finance folder that isn't a Word document.",
+        "answer": "all", "seed": seed,
+        "conditions": [
+            {"id": "c1", "text": "every file anywhere in the Finance folder",
+             "facts": ["R:File.parent_id", "A:Folder.name", "H:Folder.parent_id"]},
+            {"id": "c2", "text": "that isn't a Word document", "facts": ["A:File.extension"]},
+        ],
+        "reference": {
+            "name": "the files to tag", "target": ["5111", "5112", "5114", "5115"], "query": query,
+            "decoys": [
+                {"witness": "5121", "fact": "A:File.extension", "family": "F0",
+                 "mutation": {"type": "DROP", "target": "f_ext"},
+                 "explanation": "In the Finance folder, but a Word document."},
+                {"witness": "5201", "fact": "A:Folder.name", "family": "F0",
+                 "mutation": {"type": "DROP", "target": "f_folder"},
+                 "explanation": "Not a Word document, but in the Marketing folder."},
+            ],
+            "effect": {"table": "box_files", "changes": ["update"]}, "written": ["box_files.tags"],
+        },
+        "write": {"method": "PUT", "path": "/files/5111", "body": {"tags": ["q3-review"]}},
+        "strategy_entry": {"folder": "5100", "words": "Finance", "ext": "pdf", "person": "Leo Park"},
+    }, {"5111": "V", "5112": "V", "5114": "C2", "5115": "C1+P"}
+
+
+def slk_combined():
+    """Cycle 6: every placement a Slack write request allows in one test (probes.SK-COMBINED without its archived
+    channel: an archived channel takes no reactions, so leaving it out is right for a write): the newest page, beyond
+    the largest page, a private channel, and a second public channel."""
+    from grounding.runs.several_match_02.probes import slk_combined as probe
+    leo = node("users", [filt("f_author", "real_name", "eq", "Leo Park", "A:User.real_name")])
+    query = {"table": "messages", "key": ["message_id"], "filters": [],
+             "edges": [edge("e_chan", "channel_id", "channel_id",
+                            node("channels", [filt("f_chan", "channel_name", "contains_ci", "incident-",
+                                                   "A:Conversation.channel_name")]), "R:messages.channel_id"),
+                       edge("e_author", "user_id", "user_id", leo, "R:messages.user_id")]}
+    seed = [[k, r] for k, r in probe()["seed"] if not (k == "channel" and r["id"] == "C_IOLD")
+            and not (k == "message" and r["channel"] in ("C_IOLD", "C_GEN"))]
+    seed += [["channel", {"id": "C_IAU", "name": "incident-auth", "members": ["omar", "leo", "priya"]}],
+             ["message", {"channel": "C_IAU", "author": "leo", "text": "Rollback check for auth logged.",
+                          "at": "2026-09-12T12:00:00Z", "ref": "t4"}],
+             ["message", {"channel": "C_GEN", "author": "leo", "text": "Rollback check done everywhere.",
+                          "at": "2026-09-11T12:00:00Z", "ref": "nm_chan"}],
+             ["message", {"channel": "C_IDB", "author": "priya", "text": "Leo, can you log the rollback check?",
+                          "at": "2026-09-15T18:00:00Z", "ref": "nm_author"}]]
+    return {
+        "scenario_id": "SM2-SLK-05", "domain": "slack",
+        "request": "Add an :eyes: reaction to every message Leo Park posted in the channels whose names start with "
+                   "incident-.",
+        "answer": "all", "seed": seed,
+        "conditions": [
+            {"id": "c1", "text": "in the channels whose names start with incident-",
+             "facts": ["R:messages.channel_id", "A:Conversation.channel_name"]},
+            {"id": "c2", "text": "every message Leo Park posted", "facts": ["R:messages.user_id", "A:User.real_name"]},
+        ],
+        "reference": {
+            "name": "the messages to react to", "target": ["@t1", "@t2", "@t3", "@t4"], "query": query,
+            "decoys": [
+                {"witness": "@nm_author", "fact": "A:User.real_name", "family": "F0",
+                 "mutation": {"type": "DROP", "target": "f_author"},
+                 "explanation": "In #incident-db and addressed to Leo, but posted by Priya Sharma."},
+                {"witness": "@nm_chan", "fact": "A:Conversation.channel_name", "family": "F0",
+                 "mutation": {"type": "DROP", "target": "f_chan"},
+                 "explanation": "Posted by Leo, but in #general."},
+            ],
+            "effect": {"table": "message_reactions", "changes": ["insert"],
+                       "key": ["message_id", "user_id", "reaction_type"], "field": "message_id"},
+            "written": [],
+        },
+        "write": {"slack": "reactions.add", "params": {"channel": "C_IDB", "timestamp": "@t1", "name": "eyes"}},
+        "strategy_entry": {"prefix": "incident-", "search": "rollback", "channel": "C_IDB"},
+    }, {"@t1": "V", "@t2": "P", "@t3": "H", "@t4": "C"}
+
+
 SCENARIOS = [box, cal, lin, slk, cal_owned_wording, cal_explicit_hidden, slk_explicit_private, box_pages, slk_pages,
-             box_pages_pdf, slk_pages_author]
+             box_pages_pdf, slk_pages_author, box_combined, slk_combined]
 
 
 def main():
