@@ -44,8 +44,10 @@ replica calls. Each fix was checked on its own against the snapshot before it:
 
 ## What the freeze covers
 
-- **Frozen:** the generation kit (prompts, method notes, examples, domain inputs, checks, seed builders, derivation),
-  judge v2, and the known-defects list, as of tag `grounding-freeze-01`.
+- **Frozen:** the generation kit (prompts, method notes, examples, domain inputs, checks, seed builders, derivation)
+  and judge v2, as of tag `grounding-freeze-01`.
+- **Growing:** the known-defects list. By "flawed is flawed", a defect found later is added whenever it is found.
+  Since the tag, each entry also says what the frozen suite does with it (`frozen_suite`).
 - **Added on top for step 6:** integration code, such as the OpenClaw runner and its trajectory conversion. It changes
   how an agent is run, not how tests are made or judged.
 

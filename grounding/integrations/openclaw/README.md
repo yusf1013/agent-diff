@@ -26,6 +26,23 @@ PURDUE_RATE_LIMIT_PER_MINUTE=20 PYTHONPATH=$PWD setsid nohup \
 The agent then also works interactively, e.g. `openclaw agent --agent agentdiff-qwen --local -m "hello"`
 (it needs the proxy running; its API skills need a run's environment variables to reach AgentDiff).
 
+## The self-hosted Qwen (since 2026-09-27)
+
+`runtime.run_attempt(..., backend="selfhost")` points the attempt at the self-hosted Qwen (`qwen3.8-27b`, see
+[grounding/solver/README.md](../../solver/README.md)). It writes a `selfhost` provider into the attempt's own
+configuration, made from the `purdue` entry, with the model's real limits (131,072-token context, 8,192 output). The
+user's `~/.openclaw/openclaw.json` is not changed. Requests go through a second proxy on port 18778, started through
+the launcher, which supplies the self-host's key, endpoint and the rate limiter every session shares:
+
+```bash
+SOLVER_BACKEND=selfhost python grounding/runs/fact_coverage_02/launch.py \
+  grounding.integrations.openclaw.purdue_proxy --backend selfhost
+```
+
+`layout="judge"` writes what judge v2 and the scoring read: OpenClaw's raw turn files under `solver/openclaw/`, and
+the record's steps in the toy harness's format (`judge_steps`). [openclaw_eval_01](../../runs/openclaw_eval_01/README.md)
+runs both.
+
 ## Differences from the toy harness that are part of the treatment
 
 - OpenClaw's own system prompt, workspace files (`AGENTS.md`: "When in doubt, ask", "Ask first: … anything that

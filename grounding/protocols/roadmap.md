@@ -94,6 +94,10 @@ the final runs use one frozen version.
   | The method and the pipeline | – | – | ✓ |
 
 - **The self-host** is a measuring tool. Remaining tests are re-run as needed for the reported numbers.
+- **Open: calibrating the self-host against Purdue.** The rule was agreed before the reorder: on Phase 4 batch 1, the
+  share of failing trials within 10 points, and each test's majority outcome agreeing on at least 80% of tests.
+  After the reorder the Purdue-Qwen row is a reference only, and no calibration is scheduled. It would separate the
+  host's effect from the harness's where OpenClaw's numbers stand beside that row. To be decided with the PI.
 
 ## Standing rules
 
@@ -127,7 +131,7 @@ the final runs use one frozen version.
 | 2 | Domain knowledge in deterministic code | done and discussed | [domain_code_audit.md](../runs/roadmap_01/domain_code_audit.md) |
 | 3 | Agreed fixes, frozen version | done (2026-09-27), tag `grounding-freeze-01` | [roadmap_02](../runs/roadmap_02/README.md) |
 | 5 | Investigations | in progress (separate session, branch `exp/investigations-01`) | – |
-| 6a | OpenClaw × self-hosted Qwen, frozen suite | not started | – |
+| 6a | OpenClaw × self-hosted Qwen, frozen suite | in progress: suite materialized, setup, smoke run | [openclaw_eval_01](../runs/openclaw_eval_01/README.md) |
 | 6b | The remaining briefs on OpenClaw | not started | – |
 | 6c | Judge baselines | not started | – |
 | 6d | Generator baselines | not started | – |

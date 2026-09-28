@@ -165,6 +165,25 @@ CURATED = [
 ]
 
 
+# What the frozen suite of roadmap step 6 does with each entry (the runners read this field), where it differs from
+# the historical advice: probes the derivation now drops never reach a suite, and G4-CAL-06 is rebuilt.
+FROZEN_SUITE = {"P-G4-LIN-01-I13": "dropped by the derivation", "G4-LIN-02": "keep until 2026-09-30",
+                "G4-CAL-06": "keep (rebuilt with the fixed seed)"}
+
+
+def frozen_action(entry: dict) -> str:
+    """keep | leave out | read before it runs | dropped by the derivation | keep until YYYY-MM-DD."""
+    if entry["id"] in FROZEN_SUITE:
+        return FROZEN_SUITE[entry["id"]]
+    advice = entry["for_new_agents"]
+    if "the derivation drops it" in advice:
+        return "dropped by the derivation"
+    for action in ("keep", "leave out", "read before it runs"):
+        if advice.startswith(action):
+            return action
+    raise ValueError(f"no frozen-suite action for {entry['id']}: {advice!r}")
+
+
 # My reading of the flags outside Calendar (2026-09-27), per scenario.
 DATE_FLAG_REVIEW = {
     "G4-LIN-02": "depends on the run date (curated above)",
@@ -192,9 +211,12 @@ def main():
                      "`for_new_agents` (the name is historical) is the action for every agent's results: by the "
                      "decision 'flawed is flawed', a test to leave out is left out of all results, Qwen's recorded "
                      "ones included, and counted as flawed in the generation numbers; when it was found is a "
-                     "footnote. 'Weak but valid' tests are kept. This list is also the start of the "
-                     "failure-attribution development set (roadmap step 5).",
-           "curated": CURATED, "from_the_witness_check": computed,
+                     "footnote. 'Weak but valid' tests are kept. `frozen_suite` is what the frozen suite of roadmap "
+                     "step 6 does with the entry: keep, leave out, read before it runs, dropped by the derivation, "
+                     "or keep until a date. This list is also the start of the failure-attribution development set "
+                     "(roadmap step 5).",
+           "curated": [{**e, "frozen_suite": frozen_action(e)} for e in CURATED],
+           "from_the_witness_check": [{**e, "frozen_suite": frozen_action(e)} for e in computed],
            "date_flags_outside_calendar": [
                {**f, "review": DATE_FLAG_REVIEW.get(scenario_of(f["case_id"]), "not reviewed yet")}
                for f in flags if not f["anchored"]]}

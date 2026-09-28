@@ -1,6 +1,12 @@
-"""Local OpenAI-compatible proxy between OpenClaw and Purdue GenAI Studio.
+"""Local OpenAI-compatible proxy between OpenClaw and Purdue GenAI Studio, or the self-hosted Qwen.
 
     PURDUE_GENAI_STUDIO_API_KEY=... python -m grounding.integrations.openclaw.purdue_proxy [--port 18777]
+    SOLVER_BACKEND=selfhost python grounding/runs/fact_coverage_02/launch.py \
+        grounding.integrations.openclaw.purdue_proxy --backend selfhost      # port 18778
+
+With `--backend selfhost` (since 2026-09-27) the proxy forwards to the self-hosted Qwen. It must run through the
+launcher, which supplies the self-host's key (GENAI_API_KEY, read from its secrets file), its endpoint and the rate
+limiter every session on this machine shares (grounding/solver/README.md). The Purdue key is never read then.
 
 Why it exists:
 - Purdue ends every streamed response by closing the connection without the final
@@ -38,6 +44,7 @@ from grounding.solver.slack.purdue_rate_limit import _budget, _reserve, _state_p
 
 UPSTREAM = "https://genai.rcac.purdue.edu/api"
 DEFAULT_PORT = 18777
+SELFHOST_PORT = 18778
 RETRY_STATUSES = {429, 500, 502, 503, 504}
 # Purdue signals rate limiting with HTTP 400 and one of these phrases (as PurdueClient handles it).
 TRANSIENT_400 = ("rate limit", "server connection error", "overloaded")
@@ -125,6 +132,7 @@ class Handler(BaseHTTPRequestHandler):
     server_version = "agentdiff-purdue-proxy/1"
     client: httpx.Client
     api_key: str
+    upstream: str = UPSTREAM
     metadata_log: Path
 
     def log_message(self, fmt, *args):  # keep stdout quiet; metadata goes to files
@@ -150,7 +158,7 @@ class Handler(BaseHTTPRequestHandler):
             return
         length = int(self.headers.get("Content-Length") or 0)
         body = self.rfile.read(length) if length else b""
-        url = UPSTREAM + path[len("/v1"):]
+        url = self.upstream + path[len("/v1"):]
         meta = {"started": now_iso(), "method": method, "path": path, "attempts": []}
         index = run_log.next_index() if run_log else None
         if run_log:
@@ -282,21 +290,47 @@ class Handler(BaseHTTPRequestHandler):
         self.wfile.write(data)
 
 
+def selfhost_upstream(env=os.environ) -> str:
+    """The self-host's /v1 base, from the endpoint the launcher sets for the solver (.../v1/chat/completions)."""
+    if env.get("SOLVER_BACKEND") != "selfhost":
+        sys.exit("--backend selfhost runs through the launcher: SOLVER_BACKEND=selfhost python "
+                 "grounding/runs/fact_coverage_02/launch.py grounding.integrations.openclaw.purdue_proxy --backend selfhost")
+    if env.get("PURDUE_RATE_LIMIT_DISABLE") == "1":
+        sys.exit("the self-host's rate limiter is shared by every session on this machine; unset PURDUE_RATE_LIMIT_DISABLE")
+    endpoint = env.get("PURDUE_BASE_URL", "")
+    if not endpoint.endswith("/chat/completions"):
+        sys.exit(f"unexpected self-host endpoint {endpoint!r}")
+    return endpoint[:-len("/chat/completions")]
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("--port", type=int, default=int(os.getenv("OPENCLAW_PURDUE_PROXY_PORT", DEFAULT_PORT)))
+    parser.add_argument("--backend", choices=("purdue", "selfhost"), default="purdue")
+    parser.add_argument("--port", type=int)
     args = parser.parse_args()
-    key = os.getenv("PURDUE_GENAI_STUDIO_API_KEY") or os.getenv("GENAI_API_KEY")
+    if args.backend == "selfhost":
+        upstream = selfhost_upstream()
+        key = os.getenv("GENAI_API_KEY")  # the launcher's, from the self-host's secrets file
+        port = args.port or SELFHOST_PORT
+        log_name = "requests-selfhost.jsonl"
+    else:
+        upstream = UPSTREAM
+        key = os.getenv("PURDUE_GENAI_STUDIO_API_KEY") or os.getenv("GENAI_API_KEY")
+        port = args.port or int(os.getenv("OPENCLAW_PURDUE_PROXY_PORT", DEFAULT_PORT))
+        log_name = "requests.jsonl"
     if not key:
-        sys.exit("PURDUE_GENAI_STUDIO_API_KEY (or GENAI_API_KEY) is not set")
+        sys.exit("no API key: PURDUE_GENAI_STUDIO_API_KEY (or GENAI_API_KEY) for Purdue, the launcher's for the self-host")
     routes_dir().mkdir(parents=True, exist_ok=True)
     Handler.api_key = key
+    Handler.upstream = upstream
     Handler.client = httpx.Client(timeout=httpx.Timeout(300.0, connect=30.0), http2=False)
-    Handler.metadata_log = runtime_dir() / "requests.jsonl"
+    Handler.metadata_log = runtime_dir() / log_name
     ThreadingHTTPServer.request_queue_size = 64
-    server = ThreadingHTTPServer(("127.0.0.1", args.port), Handler)
+    server = ThreadingHTTPServer(("127.0.0.1", port), Handler)
     server.daemon_threads = True
-    print(f"purdue proxy on http://127.0.0.1:{args.port}/v1 -> {UPSTREAM}; routes in {routes_dir()}", flush=True)
+    limiter = "off" if os.getenv("PURDUE_RATE_LIMIT_DISABLE") == "1" else f"{_budget()}/min in {_state_path()}"
+    print(f"{args.backend} proxy on http://127.0.0.1:{port}/v1 -> {upstream}; limiter {limiter}; "
+          f"routes in {routes_dir()}", flush=True)
     server.serve_forever()
 
 

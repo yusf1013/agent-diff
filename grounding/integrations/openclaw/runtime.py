@@ -39,7 +39,7 @@ from grounding.integrations.agentdiff import custom_runtime, runtime
 from grounding.integrations.agentdiff import smoke_runtime as smoke
 from grounding.integrations.agentdiff.runtime import ddl_lock, digest, engine_for, environment_schema, write
 from grounding.integrations.openclaw.patterns import QUESTION
-from grounding.integrations.openclaw.purdue_proxy import DEFAULT_PORT, routes_dir
+from grounding.integrations.openclaw.purdue_proxy import DEFAULT_PORT, SELFHOST_PORT, routes_dir
 
 AGENT_ID = "agentdiff-qwen"
 REAL_STATE = Path.home() / ".openclaw"
@@ -50,6 +50,20 @@ FAKE_CLOCK = HERE / "fake_clock.cjs"
 OPENCLAW_BIN = shutil.which("openclaw") or str(Path.home() / ".npm-global/bin/openclaw")
 PREFIX = {"slack": "In Slack: ", "box": "In Box: ", "calendar": "In Google Calendar: ", "linear": "In Linear: "}
 FOLLOW_UP = "Yes, go ahead."
+# Where the agent's model requests go. "purdue" keeps agentdiff-qwen's configured model and provider entry. "selfhost"
+# (since 2026-09-27) writes a provider for the self-hosted Qwen into each attempt's own configuration, from the purdue
+# entry, with the served model's real limits (vLLM's max-model-len 131072; output capped at 8192 as on Purdue). The
+# user's ~/.openclaw/openclaw.json is not changed. Both go through a local proxy, which holds the real key.
+# The self-host generates about 24 tokens a second per conversation (fewer under load), so a full 8,192-token output
+# takes over 300 s, the purdue entry's cap on one provider request. Its requests may take the whole turn instead
+# (TIMEOUT_SECONDS), so the turn's clock is the only one that binds.
+BACKENDS = {
+    "purdue": {"provider": "purdue", "port": DEFAULT_PORT, "model": None, "provider_settings": {}},
+    "selfhost": {"provider": "selfhost", "port": SELFHOST_PORT,
+                 "model": {"id": "qwen3.8-27b", "name": "Qwen 3.8 27B (self-hosted)", "contextWindow": 131072,
+                           "maxTokens": 8192},
+                 "provider_settings": {"timeoutSeconds": 600}},
+}
 TIMEOUT_SECONDS = 600  # OpenClaw's default agent timeout
 # The toy harness told the Calendar agent "Current Date/Time: Sunday, June 17, 2018 at 00:01 (midnight),
 # timezone America/Los_Angeles"; OpenClaw gets the same moment from its (shifted) clock instead.
@@ -103,9 +117,11 @@ def apply_variant(workspace: Path, variant: str | None) -> None:
         path.write_text("".join(line for line in lines if line.strip() not in drop))
 
 
-def build_state_dir(state: Path, route: str, domain: str, variant: str | None = None) -> dict:
+def build_state_dir(state: Path, route: str, domain: str, variant: str | None = None,
+                    backend: str = "purdue") -> dict:
     """Fresh state directory with only agentdiff-qwen; returns the written configuration."""
     real = real_config()
+    spec = BACKENDS[backend]
     agent = copy.deepcopy(next(a for a in real["agents"]["list"] if a["id"] == AGENT_ID))
     workspace = state / f"workspace-{AGENT_ID}"
     agent_dir = state / "agents" / AGENT_ID / "agent"
@@ -119,13 +135,19 @@ def build_state_dir(state: Path, route: str, domain: str, variant: str | None = 
     if domain == "calendar":
         defaults["userTimezone"] = CALENDAR_TZ
     provider = copy.deepcopy(real["models"]["providers"]["purdue"])
-    provider["baseUrl"] = f"http://127.0.0.1:{DEFAULT_PORT}/run/{route}/v1"
+    if spec["model"]:
+        model = copy.deepcopy(provider["models"][0])
+        model.update(spec["model"])
+        provider["models"] = [model]
+        agent["model"] = {"primary": f"{spec['provider']}/{model['id']}", "fallbacks": []}
+    provider.update(spec["provider_settings"])
+    provider["baseUrl"] = f"http://127.0.0.1:{spec['port']}/run/{route}/v1"
     provider["apiKey"] = "local-proxy"  # the proxy sends the real key; nothing secret is written here
     tools = copy.deepcopy(real.get("tools", {}))
     tools.setdefault("exec", {})["pathPrepend"] = [str(SHIM_DIR)]
     config = {
         "agents": {"defaults": defaults, "list": [agent]},
-        "models": {"providers": {"purdue": provider}},
+        "models": {"providers": {spec["provider"]: provider}},
         "tools": tools,
         "skills": copy.deepcopy(real.get("skills", {})),
         "plugins": {"entries": {"memory-core": copy.deepcopy(
@@ -301,6 +323,26 @@ def steps_from_session(rows: list[dict]) -> list[dict]:
     return steps
 
 
+def judge_steps(steps: list[dict]) -> list[dict]:
+    """Steps in the toy harness's record format, which the judge's bundle and the scoring read: `turn` numbers the
+    step, `response.content` carries the visible reasoning (the model's thinking, then its text, as the toy's
+    ReAct text did), `observation` is {status, stdout}. OpenClaw's own fields stay alongside; `user_turn` is the
+    conversation turn. The input steps are not changed."""
+    out = []
+    for number, step in enumerate(steps, 1):
+        new = dict(step, user_turn=step.get("turn"), turn=number)
+        thinking, text = step.get("thinking") or "", step.get("text") or ""
+        visible = (f"<thinking>\n{thinking}\n</thinking>\n" if thinking else "") + text
+        new["response"] = {"content": [{"type": "text", "text": visible}]}
+        if step.get("compaction"):
+            new["action"], new["observation"] = "", {"status": "success", "stdout": "(OpenClaw compacted the conversation)"}
+        elif isinstance(step.get("observation"), dict):
+            obs = step["observation"]
+            new["observation"] = {"status": "error" if obs.get("is_error") else "success", "stdout": obs.get("stdout", "")}
+        out.append(new)
+    return out
+
+
 def compactions(rows: list[dict]) -> int:
     return sum(1 for r in rows if r.get("type") == "compaction" or "compaction" in str(r.get("customType", "")))
 
@@ -414,14 +456,21 @@ def cleanup_template(case: dict, prepared: dict, database_url: str) -> None:
 
 def run_attempt(case: dict, attempt: Path, *, database_url: str, backend_url: str,
                 timeout_s: int = TIMEOUT_SECONDS, followup: bool = True, keep_state: bool = False,
-                summary: dict | None = None, variant: str | None = None) -> dict:
-    """Run one case through OpenClaw; write evidence under `attempt`; return the execution summary."""
+                summary: dict | None = None, variant: str | None = None, backend: str = "purdue",
+                layout: str = "transfer") -> dict:
+    """Run one case through OpenClaw; write evidence under `attempt`; return the execution summary.
+
+    `layout="judge"` (roadmap step 6) writes what the judge and scoring read: OpenClaw's raw turn files go under
+    solver/openclaw/ (the readers take the first solver/*.json as the record), and the record's steps take the toy
+    harness's format (`judge_steps`). The default keeps openclaw_transfer_01's layout."""
     from agent_diff import AgentDiff
     domain = case["domain"]
     summary = summary if summary is not None else {}
     environment_dir, solver_dir = attempt / "environment", attempt / "solver"
     solver_dir.mkdir(parents=True, exist_ok=True)
     (solver_dir / "requests").mkdir(exist_ok=True)
+    raw_dir = solver_dir / "openclaw" if layout == "judge" else solver_dir
+    raw_dir.mkdir(exist_ok=True)
     engine = engine_for(database_url)
     client = AgentDiff(base_url=backend_url)
     env = run = prepared = None
@@ -444,7 +493,7 @@ def run_attempt(case: dict, attempt: Path, *, database_url: str, backend_url: st
         token = uuid.uuid4().hex[:24]
         route_file = register_route(token, solver_dir / "requests")
         state.mkdir(parents=True)
-        config = build_state_dir(state, token, domain, variant)
+        config = build_state_dir(state, token, domain, variant, backend)
         fake_now = CALENDAR_NOW if domain == "calendar" else None
         env_vars = process_env(state, env.environmentId, backend_url, domain, fake_now)
         prompt = PREFIX[domain] + case["prompt"]
@@ -452,7 +501,9 @@ def run_attempt(case: dict, attempt: Path, *, database_url: str, backend_url: st
             "harness": "openclaw", "openclaw_version": subprocess.run([OPENCLAW_BIN, "--version"], capture_output=True,
                                                                        text=True, env=env_vars).stdout.strip(),
             "agent_id": AGENT_ID, "model": config["agents"]["list"][0]["model"],
-            "provider": {k: v for k, v in config["models"]["providers"]["purdue"].items() if k != "apiKey"},
+            "backend": backend, "layout": layout,
+            "provider": {k: v for k, v in config["models"]["providers"][BACKENDS[backend]["provider"]].items()
+                         if k != "apiKey"},
             "agent": config["agents"]["list"][0], "agents_defaults": config["agents"]["defaults"],
             "tools": config["tools"], "prompt": prompt, "prompt_prefix": PREFIX[domain],
             "follow_up": {"enabled": followup, "message": FOLLOW_UP,
@@ -469,7 +520,7 @@ def run_attempt(case: dict, attempt: Path, *, database_url: str, backend_url: st
         summary.update(status="solver_running", environment_id=env.environmentId)
         write(attempt / "execution_summary.json", summary)
 
-        turn1 = run_turn(state, env_vars, prompt, timeout_s, solver_dir, "turn1")
+        turn1 = run_turn(state, env_vars, prompt, timeout_s, raw_dir, "turn1")
         after1 = export(domain, engine, schema)
         write(environment_dir / "final_state.json", after1)
         (solver_dir / "final_response.md").write_text(turn1["text"] + "\n")
@@ -481,7 +532,7 @@ def run_attempt(case: dict, attempt: Path, *, database_url: str, backend_url: st
             if fake_now is not None:
                 env_vars = process_env(state, env.environmentId, backend_url, domain,
                                        fake_now + timedelta(seconds=turn1["duration_s"]))
-            turn2 = run_turn(state, env_vars, FOLLOW_UP, timeout_s, solver_dir, "turn2")
+            turn2 = run_turn(state, env_vars, FOLLOW_UP, timeout_s, raw_dir, "turn2")
             write(environment_dir / "followup_state.json", export(domain, engine, schema))
             (solver_dir / "followup_response.md").write_text(turn2["text"] + "\n")
             turns.append(turn2)
@@ -500,6 +551,9 @@ def run_attempt(case: dict, attempt: Path, *, database_url: str, backend_url: st
                   "termination": turn1["termination"], "final": turn1["text"], "turns": turns,
                   "steps": [s for s in steps if s.get("turn", 1) <= 1],
                   "followup_steps": [s for s in steps if s.get("turn", 1) > 1]}
+        if layout == "judge":
+            record["steps"] = judge_steps(record["steps"])
+            record["followup_steps"] = judge_steps(record["followup_steps"])
         write(solver_dir / f"{case['case_id']}.json", record)
         flags = {"compactions": compactions(rows), "tool_calls_turn1": len([s for s in record["steps"] if s.get("tool")]),
                  "read_skill": sorted({Path(s["arguments"].get("path", "")).parent.name for s in steps
