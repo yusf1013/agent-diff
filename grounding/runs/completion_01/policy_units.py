@@ -1,10 +1,11 @@
 """Roadmap 6b's policy units, built as 6a's were: the absence twins of the accepted scenarios (autogen_02's
-mechanical derivation, `sampler.absence_units`) and, with --dropf DIR, the accepted drop-F variants of a derivation
-run on Muse (`sampler.dropf_units`, one unit per dropped condition). Each unit gets its scenario's opaque ids (the
-mapping in suite/ids/, extended by any id only the unit holds) and clock, and must pass `opaque_ids.check`. No model
-calls.
+mechanical derivation, `sampler.absence_units`) and, with --dropf DIR [DIR ...], the accepted drop-F variants of
+derivation runs on Muse (`sampler.dropf_units`, one unit per dropped condition; a condition an earlier run already
+derived is the same test). Every accepted variant must have my read in eval/variant_review.json, and one I read as
+invalid must be left out by the rulings. Each unit gets its scenario's opaque ids (the mapping in suite/ids/,
+extended by any id only the unit holds) and clock, and must pass `opaque_ids.check`. No model calls.
 
-    python grounding/runs/fact_coverage_02/launch.py grounding.runs.completion_01.policy_units [--dropf DIR]
+    python grounding/runs/fact_coverage_02/launch.py grounding.runs.completion_01.policy_units [--dropf DIR ...]
 
 Writes suite/units/<domain>/<unit>.json and suite/units.json: every unit with its mode, scenario and facts, the ones
 the derivation excluded and why, and the ones the rulings leave out (`openclaw_eval_01/rulings.py`).
@@ -24,6 +25,7 @@ from grounding.runs.openclaw_eval_01 import rulings
 HERE = Path(__file__).resolve().parent
 GEN = HERE / "runs" / "gen_01"
 SUITE = HERE / "suite"
+REVIEW = HERE / "eval" / "variant_review.json"
 
 
 def accepted_cases() -> list[dict]:
@@ -37,14 +39,48 @@ def accepted_cases() -> list[dict]:
     return out
 
 
+def dropf_units(dirs: list[Path]) -> tuple[list[dict], list[dict]]:
+    """`sampler.dropf_units` over several derivation runs, in order (dropf_02 derived again the jobs whose variant a
+    colliding job overwrote in dropf_01). A condition an earlier run already derived is the same test."""
+    units, excluded, seen = [], [], {}
+    for folder in dirs:
+        more, more_excluded = sampler.dropf_units(folder)
+        for u in more:
+            record = json.loads((folder / u["unit"] / "record.json").read_text())
+            key = (u["scenario"], tuple(record.get("dropped_keys") or []))
+            if key in seen:
+                seen[key]["also_for"] = seen[key].get("also_for", []) + [record["fact"]]
+                continue
+            seen[key] = u
+            units.append(u)
+        excluded += more_excluded
+    return units, excluded
+
+
+def unread(units: list[dict]) -> list[str]:
+    """The drop-F units without my read, or read as invalid and not left out by the rulings."""
+    reads = json.loads(REVIEW.read_text())["dropf"] if REVIEW.exists() else {}
+    out = []
+    for u in units:
+        read = reads.get(u["unit"])
+        if read is None:
+            out.append(f"{u['unit']}: not read")
+        elif not read["valid"] and not rulings.test_exclusion(u["_case"]):
+            out.append(f"{u['unit']}: read as invalid but the rulings keep it (add it to known_defects)")
+    return out
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--dropf", type=Path)
+    parser.add_argument("--dropf", type=Path, nargs="+", default=[])
     args = parser.parse_args()
     check = json.loads((SUITE / "check.json").read_text())
     units, excluded = sampler.absence_units(accepted_cases())
     if args.dropf:
-        more, more_excluded = sampler.dropf_units(args.dropf.resolve())
+        more, more_excluded = dropf_units([d.resolve() for d in args.dropf])
+        problems = unread(more)
+        if problems:
+            raise SystemExit("drop-F variants not cleared by my read:\n" + "\n".join(problems))
         units, excluded = units + more, excluded + more_excluded
     failures, written, left_out = [], [], {}
     for u in units:

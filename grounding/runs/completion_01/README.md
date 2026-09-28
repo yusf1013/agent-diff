@@ -11,7 +11,7 @@ that OpenClaw's evaluation ([openclaw_eval_01](../openclaw_eval_01/README.md)) c
 | [eval/review.json](eval/review.json) | My validity review of every accepted scenario |
 | [suite.py](suite.py), `suite/` | The suite: the accepted scenarios' tests with opaque ids and clocks |
 | [policy_units.py](policy_units.py), `suite/units/` | The policy units (absence twins; drop-F variants once derived) |
-| [variants.py](variants.py), `runs/dropf_01/` | autogen_02's drop-F derivation on these scenarios |
+| [variants.py](variants.py), `runs/dropf_01/`, `runs/dropf_02/` | autogen_02's drop-F derivation on these scenarios, and the jobs a naming collision lost |
 
 ## The briefs
 
@@ -68,5 +68,28 @@ run, and every Muse-written policy variant a manual read.
   keep (`runs/full_04_cases`) and the 68 absence units they keep (`runs/policy/population_6b_absence`), 3 trials
   each. The blind samples, 30 trials each (seeds 5308 and 5309), were drawn before the runs; they replace the first
   draws (seeds 5306 and 5307, over gen_01's 16 scenarios), which were never used.
-- **Underspecified units** come from the drop-F derivation (`variants.py`, `runs/dropf_01`), each accepted variant
-  read by me before it runs.
+- **51 underspecified units** from the drop-F variants below (one unit per dropped condition; two pairs of variants
+  share a condition), 49 kept by the rulings: appended to the policy order (`plan_extension.json`) and run after
+  6b's absence units, with a blind sample of 30 trials (seed 5310).
+
+## The drop-F variants (`runs/dropf_01`, `runs/dropf_02`, 2026-09-28)
+
+- **autogen_02's derivation, unchanged** ([variants.py](variants.py)), on the 23 scenarios: 70 jobs, one per fact.
+  48 accepted, 11 declined by the writer, 5 rejected, 1 not derivable by code. 267 Muse calls, $10.39 at list price,
+  $0.68 billed.
+- **A naming collision lost 5 jobs.** The derivation named a variant by its table and field without the fact's kind,
+  so two facts of one column (`R:File.parent_id` and `B:File.parent_id`) wrote into one folder, and the job that
+  finished second overwrote the first one's record. In those 5 folders the two jobs' writer and reader logs are
+  mixed, and `U-G4-CAL-08-Event_calendar_id` keeps the first job's `variant.json` beside the second job's declined
+  record (unused: only accepted records count). `variants2.dropf_id` now adds the kind to such ids; no other id
+  changes. The 5 lost jobs were derived again into `runs/dropf_02` before 6b's order was fixed: all 5 accepted
+  (18 calls, $0.78 at list price, $0.05 billed). The same collision cost autogen_02's Phase 4 derivation 2 facts
+  (G4-CAL-07's `B:EventAttendee.event_id`, G4-LIN-06's `B:issue_label_issue_association`) and Phase 3 none; 6a's
+  population stays as it was fixed.
+- **My read** ([eval/variant_review.json](eval/variant_review.json)) of all 53 accepted variants: 51 valid, 2 not
+  (G4-CAL-10's status and room variants keep the flawed near miss `ev_sprint_fakelink` and are left out by the
+  rulings). One read was of a variant later overwritten; it is corrected, with the earlier read kept.
+  `policy_units.py` refuses a variant without a read.
+- **Same request, two units:** G4-LIN-14's two assignee variants (conditions `e_ass` and `e_ass`+`f_who`) have the
+  same request, and G4-LIN-11's two membership variants the same matches. By the rule of one unit per condition each
+  pair is two units, as Phase 3's AP-SLK-03 pair was.

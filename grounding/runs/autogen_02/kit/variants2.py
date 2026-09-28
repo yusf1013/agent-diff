@@ -130,10 +130,21 @@ def _dropf_prompt(case: dict, meta: dict) -> str:
             "Remove the marked condition from the request, following the rules.")
 
 
+def dropf_id(case: dict, fact: str) -> str:
+    """U-<scenario>-<table>_<field>. A fact that shares its table.field with another fact of the scenario (R: and B:
+    of one column) also carries its kind, so the two variants do not write into one folder (found in roadmap 6b,
+    2026-09-28, where the later job overwrote the earlier one's record; no other id changes)."""
+    field = fact.split(":")[-1]
+    vid = f"U-{case['case_id']}-{field.replace('.', '_')}"
+    if any(f != fact and f.split(":")[-1] == field for f in facts_of(case)):
+        vid += f"-{fact.split(':')[0]}"
+    return vid
+
+
 def derive_dropf(case: dict, fact: str, out: Path, calls_log: Path) -> dict:
     """One drop-F variant, written and checked; returns its record (written to out/<id>/record.json)."""
     _, meta = drop_f(case, fact, None, semantic=True)
-    vid = f"U-{case['case_id']}-{fact.split(':')[-1].replace('.', '_')}"
+    vid = dropf_id(case, fact)
     dest = out / vid
     dest.mkdir(parents=True, exist_ok=True)
     record = {"id": vid, "scenario": case["case_id"], "domain": case["domain"], "fact": fact,
