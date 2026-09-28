@@ -1,0 +1,123 @@
+{
+ "scenario_id": "G4-LIN-14",
+ "domain": "linear",
+ "request": "Set the priority of the private Engineering subteam's high-priority issue in the Atlas project assigned to Maya to Urgent.",
+ "answer": "one",
+ "seed": [
+  ["team", {"id": "t-eng", "name": "Engineering", "key": "ENG", "set": {"private": false}}],
+  ["team", {"id": "t-platform", "name": "Platform", "key": "PLA", "parent": "t-eng", "set": {"private": true}}],
+  ["team", {"id": "t-growth", "name": "Growth", "key": "GRO", "parent": "t-eng", "set": {"private": true}}],
+  ["team", {"id": "t-mobile", "name": "Mobile", "key": "MOB", "parent": "t-eng", "set": {"private": true}}],
+  ["team", {"id": "t-infra", "name": "Infra", "key": "INF", "parent": "t-eng", "set": {"private": true}}],
+  ["team", {"id": "t-design", "name": "Design", "key": "DES", "parent": "t-eng", "set": {"private": false}}],
+  ["team", {"id": "t-support", "name": "Support", "key": "SUP", "set": {"private": false}}],
+  ["project", {"id": "p-atlas", "name": "Atlas"}],
+  ["project", {"id": "p-beacon", "name": "Beacon"}],
+  ["issue", {"id": "i-plat-1", "team": "t-platform", "title": "Checkout latency regression", "assignee": "maya", "priority": 2, "project": "p-atlas"}],
+  ["issue", {"id": "i-gro-1", "team": "t-growth", "title": "Onboarding funnel drop-off", "assignee": "leo", "priority": 2, "project": "p-atlas"}],
+  ["issue", {"id": "i-gro-2", "team": "t-growth", "title": "Push notification copy refresh", "assignee": "maya", "priority": 2, "project": "p-beacon"}],
+  ["issue", {"id": "i-mob-1", "team": "t-mobile", "title": "Update help-center screenshots", "assignee": "maya", "priority": 4, "project": "p-beacon"}],
+  ["issue", {"id": "i-mob-2", "team": "t-mobile", "title": "Crash on offline launch", "assignee": "leo", "priority": 2, "project": "p-atlas"}],
+  ["issue", {"id": "i-inf-1", "team": "t-infra", "title": "Database connection pool saturation", "assignee": "leo", "priority": 2, "project": "p-beacon"}],
+  ["issue", {"id": "i-inf-2", "team": "t-infra", "title": "Add verbose logging to nightly sync", "assignee": "maya", "priority": 4, "project": "p-atlas"}],
+  ["issue", {"id": "i-des-1", "team": "t-design", "title": "Empty-state illustration pass", "assignee": "maya", "priority": 2, "project": "p-atlas"}],
+  ["issue", {"id": "i-sup-1", "team": "t-support", "title": "Triage stale support tickets", "assignee": "leo", "priority": 4, "project": "p-beacon"}]
+ ],
+ "conditions": [
+  {
+   "id": "c1",
+   "text": "the private Engineering subteam's",
+   "facts": ["R:Issue.teamId", "A:Team.private", "H:Team.parentId", "A:Team.name"]
+  },
+  {
+   "id": "c2",
+   "text": "high-priority issue in the Atlas project assigned to Maya",
+   "facts": ["B:Issue.teamId", "B:Issue.projectId", "B:Issue.assigneeId", "R:Issue.projectId", "R:Issue.assigneeId", "A:Issue.priority"]
+  }
+ ],
+ "reference": {
+  "name": "the issue to escalate",
+  "target": ["i-plat-1"],
+  "query": {
+   "table": "issues",
+   "edges": [
+    {
+     "key": "e_team",
+     "join": {"parent": "teamId", "child": "id", "op": "eq"},
+     "fact": "R:Issue.teamId",
+     "node": {
+      "table": "teams",
+      "filters": [
+       {"key": "f_priv", "field": "private", "op": "eq", "value": true, "fact": "A:Team.private"}
+      ],
+      "edges": [
+       {
+        "key": "e_par",
+        "join": {"parent": "parentId", "child": "id", "op": "eq"},
+        "fact": "H:Team.parentId",
+        "node": {
+         "table": "teams",
+         "filters": [
+          {"key": "f_eng", "field": "name", "op": "eq", "value": "Engineering", "fact": "A:Team.name"}
+         ],
+         "edges": []
+        }
+       },
+       {
+        "key": "e_tiss",
+        "join": {"parent": "id", "child": "teamId", "op": "eq"},
+        "fact": "B:Issue.teamId",
+        "node": {
+         "table": "issues",
+         "filters": [
+          {"key": "f_proj", "field": "projectId", "op": "eq", "value": "p-atlas", "fact": "R:Issue.projectId"},
+          {"key": "f_ass", "field": "assigneeId", "op": "eq", "value": "u-maya", "fact": "R:Issue.assigneeId"},
+          {"key": "f_pri", "field": "priority", "op": "eq", "value": 2, "fact": "A:Issue.priority"}
+         ],
+         "edges": []
+        }
+       }
+      ]
+     }
+    }
+   ]
+  },
+  "decoys": [
+   {
+    "witness": "i-gro-1",
+    "fact": "B:Issue.teamId",
+    "family": "F5",
+    "substitute": "the project condition and the assignee/priority conditions met by two different issues of the team",
+    "mutation": {"type": "SPLIT", "target": "e_tiss", "groups": [["f_proj"], ["f_ass", "f_pri"]]},
+    "explanation": "On the Growth subteam the Atlas issue is Leo's high-priority one while Maya's issue sits in Beacon, so no one issue of the team is all three."
+   },
+   {
+    "witness": "i-mob-1",
+    "fact": "B:Issue.projectId",
+    "family": "F5",
+    "substitute": "Maya's issue and the high-priority Atlas issue are two different issues of the team",
+    "mutation": {"type": "SPLIT", "target": "e_tiss", "groups": [["f_ass"], ["f_proj", "f_pri"]]},
+    "explanation": "On the Mobile subteam Maya's issue is a low-priority Beacon issue while the high-priority Atlas issue is Leo's, so no one Atlas issue of the team is both Maya's and high-priority."
+   },
+   {
+    "witness": "i-inf-1",
+    "fact": "B:Issue.assigneeId",
+    "family": "F5",
+    "substitute": "the high-priority issue and Maya's Atlas issue are two different issues of the team",
+    "mutation": {"type": "SPLIT", "target": "e_tiss", "groups": [["f_pri"], ["f_proj", "f_ass"]]},
+    "explanation": "On the Infra subteam the high-priority issue is Leo's Beacon one while Maya's Atlas issue is low priority, so no one issue assigned to Maya is high-priority."
+   },
+   {
+    "witness": "i-des-1",
+    "fact": "A:Team.private",
+    "family": "F0",
+    "substitute": "a public subteam",
+    "mutation": {"type": "DROP", "target": "f_priv"},
+    "explanation": "The Design subteam has the qualifying high-priority Atlas issue assigned to Maya, but it is a public subteam, not a private one."
+   }
+  ],
+  "effect": {"table": "issues", "changes": ["update"]},
+  "written": ["issues.priority"]
+ },
+ "write": {"graphql": "mutation { issueUpdate(id: \"i-plat-1\", input: {priority: 1}) { issue { id priority } } }"}
+}

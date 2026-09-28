@@ -20,6 +20,20 @@ that OpenClaw's evaluation ([openclaw_eval_01](../openclaw_eval_01/README.md)) c
   (`autogen_01/runs/gen_dev_02`), so the replicas serve these facts; they were used to develop the method and so
   never counted as coverage. Phase 4 drew only facts no autogen_01 brief had used, which left these 12 out.
 
+## The generation run (`runs/gen_01`, 2026-09-28)
+
+- **16 accepted:** G4-BOX-02, 09, 11, 12, 13, 14; G4-CAL-09; G4-LIN-09, 10, 11, 12, 13, 15, 16, 17, 19.
+- **2 rejected** by the cold reader after 3 rounds: G4-BOX-10, G4-LIN-18.
+- **8 not generated:** from about 19:14 UTC Muse refused every call with HTTP 402 (payment required), so the writer
+  of G4-BOX-15, G4-CAL-08, G4-CAL-10, G4-LIN-03, G4-LIN-14, G4-LIN-20, G4-LIN-21 and G4-SLK-09 never ran to the end.
+  These are infrastructure failures, to be generated once Muse answers again, not failed briefs.
+- **Cost:** 127 Muse calls, $13.32 at list price, $0.75 billed.
+- **My validity review** ([eval/review.json](eval/review.json)) of the 16 accepted scenarios: 14 valid, 2 weak but
+  valid (contrived: G4-LIN-12's five users named Rae Ellison; G4-LIN-16's "the active human admin"). Two rulings
+  are borderline and flagged for the PI: G4-LIN-15's two sub-team near misses (an issue of Platform Mobile, a
+  sub-team of Platform, is not "in the Platform team", though Linear shows sub-team issues in the parent's views),
+  ruled as G4-LIN-11's Delta near miss (owning the parent team is not owning its sub-team).
+
 ## How the suite is built
 
 As 6a's after the discussion of 2026-09-28: the generator is unchanged and the writer is asked about neither ids nor

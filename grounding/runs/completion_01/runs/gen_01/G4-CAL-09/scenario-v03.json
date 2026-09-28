@@ -1,0 +1,65 @@
+{
+ "scenario_id": "G4-CAL-09",
+ "domain": "calendar",
+ "request": "Set the location to Room 5B for the all-day team offsite on Thursday, June 21 that Omar Haddad accepted.",
+ "answer": "one",
+ "seed": [
+  ["event", {"id": "ev_offsite", "calendar": "primary", "summary": "Team offsite", "all_day": true, "start": "2018-06-21", "end": "2018-06-22", "attendees": [["omar", "accepted"], ["priya", "accepted"]]}],
+  ["event", {"id": "ev_offsite_timed", "calendar": "primary", "summary": "Team offsite", "start": "2018-06-21T10:00:00", "end": "2018-06-21T11:00:00", "attendees": [["omar", "accepted"]]}],
+  ["event", {"id": "ev_offsite_nextday", "calendar": "primary", "summary": "Team offsite", "all_day": true, "start": "2018-06-22", "end": "2018-06-23", "attendees": [["omar", "accepted"]]}],
+  ["event", {"id": "ev_offsite_split", "calendar": "primary", "summary": "Team offsite", "all_day": true, "start": "2018-06-21", "end": "2018-06-22", "attendees": [["omar", "needsAction"], ["maya", "accepted"]]}],
+  ["event", {"id": "ev_offsite_debrief", "calendar": "primary", "summary": "Team offsite debrief", "all_day": true, "start": "2018-06-21", "end": "2018-06-22", "attendees": [["omar", "accepted"]]}],
+  ["event", {"id": "ev_bg_budget", "calendar": "primary", "summary": "Budget review", "start": "2018-06-22T10:00:00", "end": "2018-06-22T11:00:00", "attendees": [["maya", "accepted"]]}],
+  ["event", {"id": "ev_bg_lunch", "calendar": "primary", "summary": "Team lunch", "all_day": true, "start": "2018-06-23", "end": "2018-06-24", "attendees": [["omar", "declined"]]}]
+ ],
+ "conditions": [
+  {"id": "c1", "text": "the team offsite", "facts": ["A:Event.summary"]},
+  {"id": "c2", "text": "all-day on Thursday, June 21", "facts": ["A:Event.start", "D:all_day"]},
+  {"id": "c3", "text": "that Omar Haddad accepted", "facts": ["B:EventAttendee.event_id", "A:EventAttendee.response_status", "R:EventAttendee.event_id"]}
+ ],
+ "reference": {
+  "name": "the offsite to update",
+  "target": ["ev_offsite"],
+  "query": {
+   "table": "calendar_events",
+   "filters": [
+    {"key": "f_title", "field": "summary", "op": "eq", "value": "Team offsite", "fact": "A:Event.summary"},
+    {"key": "f_from", "field": "start_date", "op": "ge", "value": "2018-06-21", "fact": "D:all_day"},
+    {"key": "f_to", "field": "start_date", "op": "lt", "value": "2018-06-22"}
+   ],
+   "edges": [
+    {"key": "e_att", "join": {"parent": "id", "child": "event_id", "op": "eq"}, "fact": "B:EventAttendee.event_id",
+     "node": {"table": "calendar_event_attendees", "filters": [
+       {"key": "f_att", "field": "email", "op": "eq", "value": "omar.haddad@northwind.example"},
+       {"key": "f_rsvp", "field": "response_status", "op": "eq", "value": "accepted", "fact": "A:EventAttendee.response_status"}], "edges": []}}
+   ]
+  },
+  "decoys": [
+   {"witness": "ev_offsite_timed", "fact": "D:all_day", "family": "F6", "substitute": "a timed meeting on the same date",
+    "mutation": {"type": "REPLACE", "note": "date view replaced by dateTime view", "query": {
+      "table": "calendar_events",
+      "filters": [
+       {"key": "f_title", "field": "summary", "op": "eq", "value": "Team offsite", "fact": "A:Event.summary"},
+       {"key": "f_from", "field": "start_datetime", "op": "ge", "value": "2018-06-21T00:00:00"},
+       {"key": "f_to", "field": "start_datetime", "op": "lt", "value": "2018-06-22T00:00:00"}],
+      "edges": [
+       {"key": "e_att", "join": {"parent": "id", "child": "event_id", "op": "eq"},
+        "node": {"table": "calendar_event_attendees", "filters": [
+          {"key": "f_att", "field": "email", "op": "eq", "value": "omar.haddad@northwind.example"},
+          {"key": "f_rsvp", "field": "response_status", "op": "eq", "value": "accepted"}], "edges": []}}]}},
+    "explanation": "It is a timed meeting at 10 am on June 21, not an all-day event."},
+   {"witness": "ev_offsite_nextday", "fact": "D:all_day", "family": "F7", "substitute": "the adjacent day",
+    "mutation": {"type": "DROP", "target": "f_to"},
+    "explanation": "It is all-day but on Friday, June 22, the adjacent day."},
+   {"witness": "ev_offsite_split", "fact": "B:EventAttendee.event_id", "family": "F5", "substitute": "the person and the accepted response on different attendees",
+    "mutation": {"type": "SPLIT", "target": "e_att", "groups": [["f_att"], ["f_rsvp"]]},
+    "explanation": "Omar is an attendee but has not accepted; Maya is the one who accepted."},
+   {"witness": "ev_offsite_debrief", "fact": "A:Event.summary", "family": "F8", "substitute": "an event whose title contains the requested words with extra words",
+    "mutation": {"type": "DROP", "target": "f_title"},
+    "explanation": "A similarly named event whose title contains the requested words, not the team offsite itself."}
+  ],
+  "effect": {"table": "calendar_events", "changes": ["update"]},
+  "written": ["calendar_events.location"]
+ },
+ "write": {"method": "PATCH", "path": "/calendars/primary/events/ev_offsite", "body": {"location": "Room 5B"}}
+}

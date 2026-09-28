@@ -1,0 +1,68 @@
+{
+ "scenario_id": "G4-LIN-09",
+ "domain": "linear",
+ "request": "Set the estimate to 5 on the issue assigned to Priya Nair in the Mobile team's completed Review state.",
+ "answer": "one",
+ "seed": [
+  ["team", {"id": "t-mob", "name": "Mobile", "key": "MOB"}],
+  ["team", {"id": "t-mweb", "name": "Mobile Web", "key": "MBW"}],
+  ["row", {"table": "workflow_states", "values": {"id": "ws-mob-launch", "teamId": "t-mob", "name": "Launch Review", "type": "completed"}}],
+  ["row", {"table": "workflow_states", "values": {"id": "ws-mob-final", "teamId": "t-mob", "name": "Final Review", "type": "started"}}],
+  ["row", {"table": "workflow_states", "values": {"id": "ws-mob-done", "teamId": "t-mob", "name": "Completed", "type": "completed"}}],
+  ["row", {"table": "workflow_states", "values": {"id": "ws-mweb-launch", "teamId": "t-mweb", "name": "Launch Review", "type": "completed"}}],
+  ["issue", {"id": "i-mob-1", "team": "t-mob", "title": "Fix crash on photo upload", "state": "Launch Review", "assignee": "priya", "estimate": 2}],
+  ["issue", {"id": "i-mob-2", "team": "t-mob", "title": "Update empty-state illustration copy", "state": "Completed", "assignee": "priya"}],
+  ["issue", {"id": "i-mob-3", "team": "t-mob", "title": "Localize paywall screen", "state": "Final Review", "assignee": "priya"}],
+  ["issue", {"id": "i-mweb-1", "team": "t-mweb", "title": "Throttle image prefetch on slow networks", "state": "Launch Review", "assignee": "priya"}],
+  ["issue", {"id": "i-mob-bg1", "team": "t-mob", "title": "Draft API deprecation notice", "state": "Todo", "assignee": "leo"}],
+  ["issue", {"id": "i-mweb-bg1", "team": "t-mweb", "title": "Refresh onboarding illustrations", "state": "Done", "assignee": "priya"}]
+ ],
+ "conditions": [
+  {"id": "c1", "text": "assigned to Priya Nair", "facts": ["R:Issue.assigneeId", "A:User.name"]},
+  {"id": "c2", "text": "in the Mobile team's", "facts": ["R:WorkflowState.teamId", "A:Team.name"]},
+  {"id": "c3", "text": "completed", "facts": ["A:WorkflowState.type"]},
+  {"id": "c4", "text": "Review state", "facts": ["R:Issue.stateId", "A:WorkflowState.name"]}
+ ],
+ "reference": {
+  "name": "the issue to estimate",
+  "target": ["i-mob-1"],
+  "query": {
+   "table": "issues",
+   "key": ["id"],
+   "filters": [],
+   "edges": [
+    {"key": "e_assignee", "join": {"parent": "assigneeId", "child": "id", "op": "eq"}, "fact": "R:Issue.assigneeId",
+     "node": {"table": "users",
+              "filters": [{"key": "f_assignee", "field": "name", "op": "eq", "value": "Priya Nair", "fact": "A:User.name"}],
+              "edges": []}},
+    {"key": "e_state", "join": {"parent": "stateId", "child": "id", "op": "eq"}, "fact": "R:Issue.stateId",
+     "node": {"table": "workflow_states",
+              "filters": [
+               {"key": "f_name", "field": "name", "op": "contains_ci", "value": "Review", "fact": "A:WorkflowState.name"},
+               {"key": "f_type", "field": "type", "op": "eq", "value": "completed", "fact": "A:WorkflowState.type"}],
+              "edges": [
+               {"key": "e_team", "join": {"parent": "teamId", "child": "id", "op": "eq"}, "fact": "R:WorkflowState.teamId",
+                "node": {"table": "teams",
+                         "filters": [{"key": "f_team", "field": "name", "op": "eq", "value": "Mobile", "fact": "A:Team.name"}],
+                         "edges": []}}]}}
+   ]
+  },
+  "decoys": [
+   {"witness": "i-mob-2", "fact": "A:WorkflowState.name", "family": "F1",
+    "substitute": "a state whose name is the requested type word ('Completed')",
+    "mutation": {"type": "DROP", "target": "f_name"},
+    "explanation": "It meets the assignee, team and type conditions, but its state is named 'Completed', not a Review state."},
+   {"witness": "i-mob-3", "fact": "A:WorkflowState.type", "family": "F7",
+    "substitute": "the adjacent lifecycle state (started) instead of completed",
+    "mutation": {"type": "DROP", "target": "f_type"},
+    "explanation": "It is Priya's issue in the Mobile team's 'Final Review' state, but that state is started, not completed."},
+   {"witness": "i-mweb-1", "fact": "R:WorkflowState.teamId", "family": "F8",
+    "substitute": "same-named 'Launch Review' state of the Mobile Web team",
+    "mutation": {"type": "DROP", "target": "f_team"},
+    "explanation": "It is Priya's issue in a completed 'Launch Review' state, but that state belongs to the Mobile Web team, not Mobile."}
+  ],
+  "effect": {"table": "issues", "changes": ["update"]},
+  "written": ["issues.estimate"]
+ },
+ "write": {"graphql": "mutation { issueUpdate(id: \"i-mob-1\", input: {estimate: 5}) { success } }"}
+}
