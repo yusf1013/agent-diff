@@ -1,0 +1,1 @@
+There aren’t any Web team issues about the login redirect that Omar Haddad created on September 10. The only matching topic found is WEB-3, “Login redirect ignores locale,” created on September 11, so I did not assign it to Priya Nair.

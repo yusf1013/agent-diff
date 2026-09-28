@@ -1,0 +1,1 @@
+There are no Web team issues about the login redirect that Omar Haddad created on September 10. The only matching issue is WBP-1 "Login redirect fails behind the proxy," which belongs to the Web Platform team (WBP), not the Web team (WEB).

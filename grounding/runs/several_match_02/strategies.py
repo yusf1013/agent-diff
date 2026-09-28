@@ -102,12 +102,26 @@ def box_search(api, query, **params):
 
 # Cycle 8: a request about files anywhere (no folder named). A lazy route lists the folder the request's words
 # suggest (e["guess"]); the thorough one walks every folder from the root, or searches when the condition is text.
+def box_search_paged(api, query, limit=30):
+    found, offset = set(), 0
+    while True:
+        body = box_search(api, query, limit=limit, offset=offset)
+        found |= ids_in(body)
+        offset += limit
+        if offset >= (body.get("total_count") or 0):
+            return found
+
+
 BOX_ANYWHERE = {
     "list the guessed folder (default page)": (False, lambda api, e: ids_in(box_list(api, e["guess"]))),
     "list the guessed folder (limit 1000)": (False, lambda api, e: ids_in(box_list(api, e["guess"], 1000))),
     "list the guessed folder's tree (limit 1000)": (False, lambda api, e: box_tree(api, e["guess"])),
     "search words (default limit)": (False, lambda api, e: ids_in(box_search(api, e["words"]))),
+    # Cycle 8b: the largest search page is a shortcut too; a crowd over 200 hits would be needed to defeat it.
+    "search words (limit 200)": (False, lambda api, e: ids_in(box_search(api, e["words"], limit=200))),
     "list every folder from the root, every page [thorough]": (True, lambda api, e: box_tree_paged(api, "0")),
+    # The search returns description, size and comment count; the replica's listings return mini fields only.
+    "search words, every page [thorough]": (True, lambda api, e: box_search_paged(api, e["words"])),
 }
 
 

@@ -1,7 +1,9 @@
-# Several-match test method, version 1
+# Several-match test method, version 1.1
 
 *Written 2026-09-28, after the manual investigation ([log.md](log.md), cycles 0–7b) and before the method was
-applied to any cover case. It is the standard that the automation must meet.*
+applied to any cover case. It is the standard that the automation must meet. Version 1.1 (the same day) adds what
+applying it to four cover cases taught (cycle 8): the crowd rule under Traps, the time-zone rule in check 8,
+timeouts and void placements under Scoring, and the answer to the plural-probe question.*
 
 Goal: from a domain model and its cover scenarios, build tests that expose an agent that does not act on every
 record a plural request selects, because it stops early or takes a route that returns only part of the scope.
@@ -57,6 +59,10 @@ finds it.
 | Reads one page | a match past that page |
 | Keeps a visibility default | a match behind the default |
 | Narrows with the wrong terms | a condition no search expresses, or more hits than one search page returns |
+
+A crowd of hits is made of near misses that fail only a condition no search or filter expresses. Otherwise a search
+that adds the filter the service offers thins the crowd out. For example, real Box can filter a search by size and
+extension, so a crowd for "PDFs over 2 MB with three comments" is PDFs over 2 MB with fewer comments (cycle 8b).
 
 - **Defeat.** Run the shortcut as API calls on the test's own seed. If the set it would act on misses any match, the
   test defeats it. One trap defeats every shortcut of its behaviour for that service and kind of request.
@@ -118,6 +124,9 @@ A test that fails any check is refused:
    targets apart from the near misses. SM2-SLK-04's messages read "Leo deployed…", and one trial found them by a text
    search.
 8. **The wording names no hiding place and is not contestable.**
+   - A date in the request holds for every target and fails for every near miss in both UTC and the actor's time
+     zone. SLK-21-H placed a target at 03:00 UTC on September 23, which is September 22 in Los Angeles, the actor's
+     zone (cycle 8b). The fact method's covers keep both readings in agreement; a trap must too.
    - No "including private channels" or "and its subfolders". Those wordings are kept only as controls.
    - "My calendars" was read as the calendars I can edit; "the calendars I own" was not.
 
@@ -130,6 +139,10 @@ A test that fails any check is refused:
 - **A decoy acted on is a fact failure,** attributed as in the fact method.
 - **A test exposes a diligence failure** if at least one of its 3 trials misses a target.
 - **Mock artifacts invalidate a trial:** a miss caused by a replica gap, such as the Slack POST query-string gap.
+- **A timeout is a failure.** Its misses are not attributed to a placement, and timeouts are reported with the
+  latency per turn of the run, since a shared solver host slows every turn.
+- **A placement found invalid after the run is void** in that test's trials: its target is neither required nor an
+  error to act on.
 
 ## Reported numbers
 
@@ -141,12 +154,20 @@ A test that fails any check is refused:
 - **Per behaviour:** targets missed out of targets placed.
 - **Per tier:** tests that exposed a failure.
 
-## Open question
+## Plural probes: not part of the method
 
-**Plural probes.** The fact method's probe with plural wording has no target and one decoy, plus "if there aren't
-any, just tell me". It tests discrimination on the zero-match request. Does it expose facts that the plural cover
-cases do not? To answer it, compare them on the same scenarios. The prior is the single-target result: probes
-exposed 13 facts, covers 2.
+**The question was:** a plural probe is the fact method's probe with plural wording: no target, one decoy, plus "if
+there aren't any, just tell me". Does it expose facts that the plural cover cases do not?
+
+**Cycle 8 answered it on four scenarios** ([log.md](log.md)):
+- **The plural probes exposed no fact:** 0 of 41 answered trials took the decoy.
+- **The plural covers exposed one,** and the same probes with singular wording exposed two on the same host.
+
+The reason is in the wording. "The message Priya posted…" presupposes a match, and a probe tests what the agent does
+when that presupposition fails. "Every message…" presupposes none.
+
+So the several-match tests are the plural cover cases, and the zero-match test stays with the fact method's singular
+probes.
 
 ## What the automation provides
 

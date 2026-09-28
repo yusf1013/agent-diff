@@ -1,0 +1,1 @@
+There are no Web team issues about the login redirect that Omar Haddad created on September 10. Omar's only matching issue — "Login redirect opens the browser" (created 2026-09-10) — is on the **Mobile** (MOB) team, not the Web team.

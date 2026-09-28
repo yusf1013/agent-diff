@@ -1,0 +1,3 @@
+There are no messages from Priya Sharma in #deploys on September 23 about the rollback, so I didn't add any reactions.
+
+The only rollback-related message from her in that channel is from **September 22** (not the 23rd): "Rollback plan for the cache migration is ready for review." If you'd like me to thumb-up that one instead (or adjust the date range), just let me know.

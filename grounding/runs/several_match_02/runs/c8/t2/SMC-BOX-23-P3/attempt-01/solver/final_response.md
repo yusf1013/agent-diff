@@ -1,0 +1,1 @@
+No contract PDFs qualified. The only match was "Initech NDA.pdf" — its description mentions the Initech renewal and its size (2,600,000 bytes ≈ 2.48 MB) is over 2 MB, but it has only 2 comments, which falls short of the required three. No tag was added.

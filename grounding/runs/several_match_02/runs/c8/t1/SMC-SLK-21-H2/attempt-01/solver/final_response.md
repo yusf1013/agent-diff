@@ -1,0 +1,1 @@
+Added a :thumbsup: reaction to all 3 messages Priya Sharma posted in #deploys on September 23 about the rollback (the payments-api rollback start, halfway, and finished messages). Her cache-migration rollback plan message was excluded as it was posted on September 22.

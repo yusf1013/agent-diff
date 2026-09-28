@@ -1,0 +1,1 @@
+There is no architecture review scheduled for Friday, June 22, 2018 that Kenji Sato (kenji.sato@northwind.example) attends. In fact, there are no events at all on your primary calendar that Friday, and no events with Kenji as an attendee anywhere in the coming week. Nothing to delete.

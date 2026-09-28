@@ -369,3 +369,149 @@ Recall by placement: visible 15/15; container 10/10; beyond a page 7/10; private
   - behind a visibility default (hidden calendars, private channels): caught in most trials;
   - beyond the largest page, only in combination (3 of 10) or at the list's end (1 of 5);
   - one or two containers down: never (0 of 25).
+
+## Cycle 8: the method on four cover cases of the fact method (2026-09-28)
+
+**The question.** Method v1 ([method.md](method.md)) was written from purpose-built seeds. Does it build valid
+tests from the fact method's own cover scenarios? How far do its traps reach there? And does a plural probe add
+anything over the plural covers (method.md, "Open question")?
+
+**What was built** ([covers.py](covers.py); checks in [covers_check.py](covers_check.py), `covers_check.json`).
+Four cover scenarios of fact_coverage_02 whose request is meaningfully plural:
+
+| Scenario | Plural request | Hard-tier traps |
+|---|---|---|
+| CAL-23 | "Delete Friday's architecture reviews that Kenji Sato (kenji.sato@northwind.example) attends as an optional guest." | a target on another owned calendar ("Architecture board", visible); one on a hidden owned calendar |
+| BOX-23 | "Add the tag renewal to every contract PDF whose description mentions the Initech renewal, that is larger than 2 MB and has at least three comments." | a target one folder down (Contracts/2026); one in another folder (Legal) |
+| LIN-21 | "Assign to Priya Nair every Web team issue about the login redirect that Omar Haddad created on September 10." | a target past the first 50 issues (44 older Web issues) |
+| SLK-21 | "Add a :thumbsup: reaction to every message Priya Sharma posted in #deploys on September 23 about the rollback." | a target past the first 100 messages of #deploys (150 posts that day) |
+
+- Per scenario: the easy tier E (3 targets in plain view), the hard tier H (2 in plain view plus the traps), and
+  the fact method's probes of the scenario with plural wording (P1…, 12 probes; the seed and the one decoy
+  unchanged, "the" → "every", "If there isn't one" → "If there aren't any").
+- The covers' conditions and decoys are unchanged. All 22 cases passed the fact checks and the preflight.
+
+**Cycle 8b: two construction errors, found by check 2 and by one trial.**
+1. **Check 2 failed for the one-page search in two hard cases.**
+   - BOX-23-H: the condition is text that search expresses, and all its hits fit on Box's default search page (30).
+   - SLK-21-H: its 25 rollback drills overflowed Slack's default search page (20), but not the largest (100).
+
+   H2 adds a crowd of hits that fail the condition. For Box: 32 "Initech renewal redline" PDFs over 2 MB with
+   fewer than three comments, so that real Box's size and extension filters keep them too. For Slack: every
+   #deploys post mentions the rollback.
+2. **SLK-21-H's paged target was on another day in the actor's time zone.** It sat at 03:00 UTC on September 23:
+   20:00 on September 22 in Los Angeles, the actor's zone per `users.list`. It was found when one trial timed out
+   while converting the timestamps to Los Angeles time. The cover had kept its target and its date decoy where both
+   readings agree; the trap did not.
+   - The placement is void in H and H2 (`grade_covers.py`, VOID): its target is neither required nor an error.
+   - H3 moves it to 07:10 UTC (00:10 on September 23 in Los Angeles), with H2's crowd. H3 passes every check.
+   - The other scenarios hold in both readings: Linear's dates sit between 08:00 and 18:00 UTC, and Calendar's
+     events carry the calendar's own zone, the reading the fact method uses.
+
+The runner's retry pass reloads the case directory, so H2 ran inside `runs/c8` (its `plan.json` predates them;
+each attempt keeps its `case.json`). H3 ran in `runs/c8b`.
+
+**Trap reach on the real covers** (the strategy runner on each hard seed):
+
+| Scenario | Lazy shortcuts | Defeated | Not covered |
+|---|---:|---:|---|
+| CAL-23 | 4 | 4 (H) | — |
+| BOX-23 | 5 | 3 (H), 4 (H2) | search at the largest page (200): needs a crowd of more than 200 hits |
+| SLK-21 | 8 | 2 (H), 3 (H2, H3) | 5 read #deploys 999 messages a page: need more than 999 messages |
+| LIN-21 | 6 | 1 (H) | 2 read 250 or 1,000 issues a page: need more than 250 issues. 3 are not lazy for this request: the Web team is the whole scope (no sub-teams; Web Platform is the decoy's team), and the server filter can express every condition |
+
+On real covers the practical traps are:
+- another container, where the scope has several (calendars, folders);
+- a visibility default;
+- the default page;
+- a crowd past the default search page.
+
+Every largest-page shortcut is out of practical reach except Slack's search (100). The practicality rule reports
+them as not covered, as intended, instead of building 1,000-item seeds.
+
+**Qwen on the self-host** (3 trials a case; `runs/c8`, `runs/c8b`; [grade_covers.py](grade_covers.py) →
+`grades-c8.json`, `grades-c8b.json`):
+
+| Case | Complete | Missed | What was missed |
+|---|---:|---:|---|
+| CAL-23 E / H | 3 / 0 | 0 / 3 | H: the target on the visible "Architecture board" calendar and the one on the hidden calendar, in every trial |
+| BOX-23 E / H / H2 | 3 / 3 / 3 | 0 | — |
+| LIN-21 E / H | 3 / 2 | 0 / 1 | H t2: the 51st issue |
+| SLK-21 E / H / H2 | 3 / 2 / 3 | 0 | H t3 timed out (a failure) before acting; the paged target is void in H and H2 |
+| SLK-21 H3 | 3 | 0 | — (every trial read #deploys at 999 or 1,000 a page; t2's first search and history calls put their arguments in a POST query string, the replica's known gap, and it resent them in the body) |
+
+Targets found by placement (timeouts and void targets excluded): plain view 76/76; one folder down 6/6; another
+folder 6/6; another owned calendar 0/3; hidden calendar 0/3; past the first page 5/6 (Linear 2/3, Slack H3 3/3).
+
+- **Calendar: every hard trial read only the primary calendar.** It made one `events.list` call and never listed
+  the calendars. It missed the visible "Architecture board" calendar as well as the hidden one, so the miss is scope,
+  not visibility; the plain container match disambiguates, as the scoring rule intends. In cycles 3–7 containers
+  never caught the agent (65/65), but those requests named the scope ("the calendars I own", "anywhere in the Finance
+  folder"). This request names none, and the agent took the default container.
+- **Linear: one trial listed issues without `first` or `pageInfo`** and got the default 50.
+- **Box: every trial searched** at 100 or 200 results a page and read the condition from the results. H2's crowd
+  (about 40 hits) fit on one such page. That is the largest-page shortcut, not covered in practice.
+- **Slack: every trial read #deploys at 999 messages a page,** or searched with `from:` and a channel. Nothing past a
+  page was missed.
+- **Discrimination on the covers:** one decoy taken in 33 cover trials. LIN-21-E t3 filtered `createdAt >= 2024-09-10`
+  (the wrong year, no upper bound), never read the dates, and assigned the September 11 issue as created on
+  September 10.
+- **Timeouts: 2 of 75 trials, and 1 of the control's 12.** All three were on SLK-21's request, in 5 to 8 long turns:
+  - H t3 was converting the timestamps to Los Angeles time;
+  - P2 t1 was widening the date window;
+  - the control's P-SLK-21-I12 t1 met the POST query-string gap, resent its search, then produced two turns with no
+    action.
+
+  The self-host was shared with other jobs: median 31 s a turn, p90 61 s (84 trials of this cycle). So the 480 s
+  budget held 8 to 16 turns.
+
+**The probe question: does a plural probe expose a fact that the plural covers do not?**
+- **Plural probes:** 0 of 41 answered trials took the decoy or presented it as the match (1 timeout). Every answer
+  said there were none and named why the near miss fails.
+- **The same four probes with singular wording,** run as a control on the same self-host the same hour (`runs/c8c`,
+  `grades-c8c.json`); their first run was on Purdue on 2026-09-25:
+
+  | Probe (fact) | Singular, Purdue | Singular, self-host | Plural, self-host | Plural covers (E, H) |
+  |---|---:|---:|---:|---:|
+  | P-CAL-23-I11 (EventAttendee.optional) | 1/3 | 0/3 | 0/3 | 0/6 |
+  | P-CAL-23-I12 (EventAttendee.email) | 1/3 | 0/3 | 0/3 | 0/6 |
+  | P-LIN-21-I12 (Issue.createdAt) | 1/3 | 1/3 | 0/3 | 1/6 |
+  | P-SLK-21-I12 (Message.created_at) | 3/3 | 1/2 (1 timeout) | 0/2 (1 timeout) | 0/6 |
+
+  The other 10 probes exposed nothing in any wording.
+- **Reading:** on these four scenarios the plural probes exposed no fact. The plural covers exposed one
+  (createdAt). The singular probes exposed two on the same host (createdAt, created_at). So the plural probe adds
+  nothing to the plural covers, and it does not replace the singular probe.
+  - This fits the wording. "The message Priya posted…" presupposes that one exists, and a probe tests whether the
+    agent takes a near miss when the presupposed target is absent. "Every message…" does not presuppose one, so zero
+    matches is an ordinary answer and the pressure to find something is gone.
+  - The counts are small (3 trials a probe). The direction fits the fact method's own result: a probe, where the
+    presupposed target is absent, exposed far more facts than a cover (13 against 2). The plural wording removes the
+    presupposition that gives the probe its force.
+- **For the method:** a several-match test is the plural cover case, in its easy and hard tiers. Discrimination on a
+  zero-match request stays with the fact method's singular probes. The open question is closed for this method.
+
+**What was learned:**
+- **The method builds valid tests from the fact method's covers, and its checks caught both construction errors.**
+  - Check 2, run mechanically, caught the search shortcut left undefeated.
+  - One trial exposed the time-zone slip.
+  - Both lessons are now in method v1.1: the crowd rule under Traps, and the date rule in check 8. The fact
+    method's covers had followed the date rule implicitly; placing traps by hand broke it, so it must be explicit.
+- **On real covers, trap reach is set by practicality and by each cover's scope.** Every hard cover now defeats every
+  practical relevant shortcut. The largest-page shortcuts are reported as not covered, and some shortcuts are not
+  lazy for a given request: the named team is the whole scope, or the filter expresses every condition.
+- **An implicit scope caught the agent where named scopes never did.** The Calendar request names no calendar, and
+  every hard trial read only the primary one. Named scopes were followed in 65 of 65 earlier trials. The test exposes
+  this because the request is worded as a user would word it, not because it was tuned to the agent.
+- **The several-match test is the plural cover case, in two tiers.** Plural probes add nothing to it, and the
+  singular probes of the fact method keep the zero-match test.
+- **A replica gap, found in the code (reported, not fixed):** the Box search handler never passes
+  `ancestor_folder_ids` or `file_extensions` to the query. So every search covers the whole account and every
+  extension, where real Box narrows by both.
+  - All 21 Box trials of this cycle and 6 of earlier cycles sent one of them. None was hurt: each read the results'
+    extensions and folders before acting.
+  - A search here returns more than asked, never less, so no match can hide behind the gap. An agent that trusts the
+    filter could act on an out-of-scope or wrong-type file, though.
+  - It may matter for the fact tests, where 33 trials sent these filters. Checking them is outside this study.
+
+**Next:** revise report.md: the answer is now the method, applied to four covers here.

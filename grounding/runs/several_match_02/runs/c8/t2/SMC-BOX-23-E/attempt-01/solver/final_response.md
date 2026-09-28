@@ -1,0 +1,1 @@
+Added the "renewal" tag to the 3 contract PDFs that matched all criteria (description mentions "Initech renewal", size > 2MB, at least 3 comments): Initech MSA.pdf (8101), Initech MSA amendment.pdf (8106), and Initech SLA.pdf (8107).

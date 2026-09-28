@@ -1,0 +1,1 @@
+There are no contract PDFs that meet all three conditions. The only matching file — "Initech NDA.pdf" (description: "Initech renewal NDA", size 2,600,000 bytes ≈ 2.48 MB) — has only 2 comments, which is fewer than the required 3. So no tags were added.

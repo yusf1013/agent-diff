@@ -1,0 +1,1 @@
+Added :thumbsup: reaction to all 3 messages Priya Sharma posted in #deploys on September 23 about the payments-api rollback. Her cache migration message from September 22 was excluded as it didn't match the date criterion.

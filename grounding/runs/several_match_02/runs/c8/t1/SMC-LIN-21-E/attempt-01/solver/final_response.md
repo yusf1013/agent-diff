@@ -1,0 +1,1 @@
+Successfully assigned 3 Web team issues about the login redirect, all created by Omar Haddad on September 10, to Priya Nair: WEB-1 (Login redirect loops after SSO), WEB-4 (Login redirect breaks deep links), and WEB-5 (Login redirect drops query params).

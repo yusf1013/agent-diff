@@ -5,6 +5,9 @@
 Four cover scenarios whose request is meaningfully plural. For each, it writes to cases_cover/<domain>/:
 - SMC-<id>-E, the easy plural cover: the cover's seed and decoys, and three targets in plain view;
 - SMC-<id>-H, the hard plural cover: the cover's seed and decoys, two targets in plain view, and trap targets;
+- SMC-<id>-H2 (BOX-23 and SLK-21, cycle 8b): H plus a crowd of search hits that fail the condition, so that a
+  one-page search misses a target too;
+- SMC-SLK-21-H3 (cycle 8b): H2 with the paged target on September 23 in both UTC and the actor's time zone;
 - SMC-<id>-P1…, the plural probes: the fact method's probes of the scenario (no target, one decoy), with the plural
   wording.
 The cover's conditions and decoys are unchanged. placements_cover.json records each target's placement, and
@@ -77,7 +80,7 @@ def cal23(seed, hard):
 
 
 # ------------------------------------------------------------------ SLK-21: past the default page, a crowded search
-def slk21(seed, hard):
+def slk21(seed, hard, crowd=False, paged_minute=3 * 60):
     day0 = datetime(2026, 9, 23, tzinfo=timezone.utc)
     seq = iter(range(100, 10_000))
 
@@ -93,16 +96,22 @@ def slk21(seed, hard):
         start = msg(11 * 60 + 10, "U_PRIYA", "Starting the rollback of payments-api to 5.0.2.")
         return (["1790164800.000002", halfway, start],
                 {"1790164800.000002": "V", halfway: "V", start: "V"})
-    start = msg(3 * 60, "U_PRIYA", "Starting the rollback of payments-api to 5.0.2.")
+    # H and H2 put this target at 03:00 UTC, 20:00 on September 22 in the actor's zone (Los Angeles): its date is
+    # contestable (method.md, check 8). H3 puts it at 07:10 UTC, 00:10 on September 23 in Los Angeles.
+    start = msg(paged_minute, "U_PRIYA", "Starting the rollback of payments-api to 5.0.2.")
     others = ["U_LEO", "U_OMAR", "U_AISHA", "U_MAYA"]
     for i in range(150):  # one every 9.5 minutes from 00:05; every sixth drills a rollback (a crowd for search)
         text = f"Rollback drill for build {4100 + i} passed." if i % 6 == 0 else f"Deployed build {4100 + i}."
+        if crowd:  # H2, H3: every deploy names its rollback plan, so the posts after the target (131 after 03:00,
+            # 105 after 07:10) outrank it in a search for the words
+            text = (f"Rollback drill for build {4100 + i} passed." if i % 2 else
+                    f"Deployed build {4100 + i}; rollback plan attached.")
         msg(5 + i * 9.5, others[i % 4], text)
     return (["1790164800.000002", halfway, start], {"1790164800.000002": "V", halfway: "V", start: "P"})
 
 
 # ------------------------------------------------------------------ BOX-23: one folder down, another folder
-def box23(seed, hard):
+def box23(seed, hard, crowd=False):
     base = find(seed, "box_files", id="8101")
     ver = find(seed, "box_file_versions", file_id="8101")
     comments = [c for c in seed["box_comments"] if c["file_id"] == "8101"]
@@ -123,6 +132,13 @@ def box23(seed, hard):
     if not hard:
         file("8107", "Initech SLA.pdf", "Service levels for the Initech renewal", 2500000, "8100", 4)
         return ["8101", "8106", "8107"], {"8101": "V", "8106": "V", "8107": "V"}
+    if crowd:  # H2: 32 redlines, PDFs over 2 MB with fewer than three comments, ahead of the trap targets in the
+        # replica's search order, so a one-page search (30) returns neither trap target. Size and extension filters
+        # (real Box's size_range, file_extensions) keep them all; only the comment count, which search cannot
+        # express, sets them apart.
+        for i in range(32):
+            file(f"82{i:02d}", f"Initech renewal redline {i + 1:02d}.pdf", f"Redline {i + 1} of the Initech renewal",
+                 2100000 + 50000 * i, "8100", i % 3)
     folder("8110", "2026", "8100")
     folder("8120", "Legal", "0")
     file("8107", "Initech SLA.pdf", "Service levels for the Initech renewal", 2500000, "8110", 4)
@@ -180,13 +196,18 @@ SCENARIOS = {  # id -> (domain, builder, plural request, strategy table, strateg
                                            '{ nodes { id } } }'}),
 }
 PROBE_SUFFIX = " If there aren't any, just tell me."
+# Cycle 8b: the hard tier as first built left a one-page search undefeated (method.md, check 2). H2 adds a crowd of
+# search hits that fail the condition, so the default page (Box 30) or the largest (Slack 100) misses a target.
+# Cycle 8b also found SLK-21's paged target on another day in the actor's time zone; H3 moves it (slk21).
+EXTRA_TIERS = {"BOX-23": ("H2",), "SLK-21": ("H2", "H3")}
+TIERS = {"E": {}, "H": {}, "H2": {"crowd": True}, "H3": {"crowd": True, "paged_minute": 7 * 60 + 10}}
 
 
-def plural_cover(cid, hard):
+def plural_cover(cid, tier):
     domain, build, request, _table, _entry = SCENARIOS[cid]
     case = load(domain, cid)
-    targets, place = build(case["seed"], hard)
-    tid = f"SMC-{cid}-{'H' if hard else 'E'}"
+    targets, place = build(case["seed"], tier != "E", **TIERS[tier])
+    tid = f"SMC-{cid}-{tier}"
     case.update(case_id=tid, prompt=request, mode="multiple", plural=True)
     ref = case["references"][0]
     ref.update(expected=targets, description=f"every record the plural request selects ({len(targets)})")
@@ -210,11 +231,11 @@ def main():
     placements, entries = {}, {}
     for cid, (domain, _b, _r, table, entry) in SCENARIOS.items():
         cases = []
-        for hard in (False, True):
-            case, place = plural_cover(cid, hard)
+        for tier in ("E", "H") + EXTRA_TIERS.get(cid, ()):
+            case, place = plural_cover(cid, tier)
             placements[case["case_id"]] = place
             cases.append(case)
-            if hard:
+            if tier != "E":
                 entries[case["case_id"]] = {"table": table, "entry": entry}
         cases += plural_probes(cid)
         for case in cases:

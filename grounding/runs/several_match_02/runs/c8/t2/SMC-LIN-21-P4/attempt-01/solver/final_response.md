@@ -1,0 +1,1 @@
+There are no Web team issues to assign. The only login-redirect issue that Omar Haddad created on September 10 is "MOB-1: Login redirect opens the browser," which belongs to the Mobile team — not the Web team. Since no matching Web team issues exist, nothing was assigned to Priya Nair.
