@@ -1,0 +1,1 @@
+Done — added 🚀 to Leo Park's latest message in #launch-prep ("All checklists are in, we're clear to ship."). He has an earlier message in the channel too (the 6pm reminder) — say the word if you meant that one instead.
