@@ -229,7 +229,7 @@ single-page route misses two, including the tree and channel-list routes that we
 | SM2-CAL-03 (hidden owned calendar, "including any I have hidden") | 5 exact | every trial asked for `showHidden=true` |
 | SM2-SLK-02 (private channels, "public or private") | 4 exact, 1 incomplete | every trial asked for private channels. The one miss asked in a POST query string, which the mock ignores |
 | SM2-BOX-02 (1,150 files; the last modifier) | **void** | 1 exact; 4 ran out of time with no change |
-| SM2-SLK-03 (1,100 messages; Leo's :rocket:) | **void** | every trial ran out of time |
+| SM2-SLK-03 (1,100 messages; Leo's :rocket:) | **void** | all 5 ran out of time. One still reacted to all four matches, after checking reactions message by message over both pages; two reacted to the newest message, which is not a match; two changed nothing |
 
 **Both pagination tests are void.** Their conditions are not visible on the route the test depends on.
 - The Box replica's folder listing returns only the mini fields (id, name, etag), whatever `fields` asks for.

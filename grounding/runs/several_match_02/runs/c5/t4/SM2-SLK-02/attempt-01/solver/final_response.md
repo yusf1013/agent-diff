@@ -1,0 +1,1 @@
+Invited Aisha Khan (U_AISHA) to all 4 channels whose topic mentions the Q3 migration: db-upgrade and infra-migration (public), auth-cutover and payments-cutover (private). All invite calls returned ok:true and member counts went from 4 to 5 in each. Channels with Q3 migration only in purpose (migration-planning) or with Q4 (q4-prep) were correctly excluded.
