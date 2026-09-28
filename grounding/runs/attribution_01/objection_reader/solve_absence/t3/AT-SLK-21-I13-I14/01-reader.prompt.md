@@ -1,0 +1,139 @@
+# Reading a trial against its test's wording
+
+You will read one recorded trial from a test of an AI assistant (the solver) that acts on a work service (files,
+chat, calendar or an issue tracker) for a user. The test's author wrote a request and decided what it means: which
+record it refers to, or that no record fits, or that several records fit and the solver should ask which one. The
+bundle states the author's decision (the records marked TARGET, and each DECOY with the condition it fails), the
+service's records, the solver's calls with its reasoning, and its final answer.
+
+Your task is not to grade the solver against the author's decision. Your task is to decide whether the author's
+decision is the only reasonable reading of the request, given what the solver did.
+
+1. Read the request as a careful colleague of the user would, with the service's ordinary meaning of its words (what
+   an action does in that service, what a term usually refers to there).
+2. State the author's reading: what the request refers to, according to the bundle.
+3. State the solver's reading: the reading under which what the solver did or answered would be right. If no
+   reading makes it right, say so.
+4. Choose one:
+   - `test_wording`: the solver's reading is at least as natural as the author's, so the trial does not show a
+     mistake. This includes a request whose words exclude a record the author counts as a match, include one the
+     author counts as a decoy, or single out one record where the author counts several.
+   - `natural_ambiguity`: the request can be read the solver's way, but the author's reading is clearly the more
+     natural one; the solver misread a request that ordinary language leaves somewhat open.
+   - `solver_error`: no reasonable reading of the request supports what the solver did.
+
+Judge from the request's words and the records, not from the solver's arguments: a solver can argue for a reading
+the words do not support, and it can act on a reasonable reading without saying so. Service behaviour that differs
+from the real service, timeouts and other failures are outside this question; judge only the reading of the request.
+
+
+---
+
+# Trial of test `AT-SLK-21-I13-I14` (slack)
+
+Test form: absence twin (no target; the request presupposes one, with no escape clause). Target present: no.
+
+## Request given to the solver
+Add a :thumbsup: reaction to the message Priya Sharma posted in #deploys on September 23 about the rollback.
+
+## Candidates
+### Reference r1 (what the request asks to act on); records live in `messages`
+- No target: no record meets this reference.
+- DECOY `1790165400.000005` (fact `R:Message.channel_id`, family F8): Posted in #deploys-staging.
+  record: {"message_id": "1790165400.000005", "channel_id": "C_DEPSTG", "user_id": "U_PRIYA", "message_text": "Rollback on staging went through cleanly.", "ts": "1790165400.000005", "created_at": "2026-09-23T12:10:00Z"}
+- DECOY `1790166600.000006` (fact `R:Message.channel_id`, family F0): Posted in #general.
+  record: {"message_id": "1790166600.000006", "channel_id": "C_GENERAL", "user_id": "U_PRIYA", "message_text": "FYI: the billing rollback is complete.", "ts": "1790166600.000006", "created_at": "2026-09-23T12:30:00Z"}
+
+## Solver steps
+Run status: completed; termination: done; steps: 8.
+
+#### Step 1
+Reasoning: I need to find Priya Sharma's message about a rollback in #deploys on September 23. Let me start by searching for the message using search.messages with relevant query terms.
+Command: curl -s -X POST "https://slack.com/api/search.messages" \
+  -H "Authorization: Bearer <TOKEN>" \
+  -d "query=rollback in:#deploys from:Priya" \
+  -d "count=20"
+Response: {"status": "success", "stdout": "{\"ok\":true,\"query\":\"rollback in:#deploys from:Priya\",\"messages\":{\"matches\":[],\"pagination\":{\"first\":0,\"last\":0,\"page\":1,\"page_count\":1,\"per_page\":20,\"total_count\":0},\"paging\":{\"count\":20,\"page\":1,\"pages\":1,\"total\":0},\"total\":0,\"response_metadata\":{\"next_cursor\":\"\"}}}", "stderr": "", "exit_code": 0, "workspace_path": "/tmp/agent_diff_2cbbe4648a514e389c78a15a4ec6edc3_7luwupw4"}
+
+#### Step 2
+Reasoning: The search with "from:Priya" didn't work - maybe I need to use the actual user ID or a different search term. Let me first list the channels to find #deploys, and also try a broader search.
+Command: curl -s -X POST "https://slack.com/api/conversations.list" \
+  -H "Authorization: Bearer <TOKEN>" \
+  -d "types=public_channel" \
+  -d "limit=100"
+Response: {"status": "success", "stdout": "{\"ok\":true,\"channels\":[{\"id\":\"C_DEPLOYS\",\"name\":\"deploys\",\"is_channel\":true,\"is_group\":false,\"is_im\":false,\"is_mpim\":false,\"is_private\":false,\"created\":1767621600,\"creator\":\"U01AGENBOT9\",\"is_archived\":false,\"is_general\":false,\"unlinked\":0,\"name_normalized\":\"deploys\",\"is_shared\":false,\"is_ext_shared\":false,\"is_org_shared\":false,\"pending_shared\":[],\"is_pending_ext_shared\":false,\"is_member\":true,\"topic\":{\"value\":\"\",\"creator\":\"\",\"last_set\":0},\"purpose\":{\"value\":\"\",\"creator\":\"\",\"last_set\":0},\"previous_names\":[],\"updated\":1767621600,\"priority\":0,\"num_members\":4},{\"id\":\"C_DEPSTG\",\"name\":\"deploys-staging\",\"is_channel\":true,\"is_group\":false,\"is_im\":false,\"is_mpim\":false,\"is_private\":false,\"created\":1767621600,\"creator\":\"U01AGENBOT9\",\"is_archived\":false,\"is_general\":false,\"unlinked\":0,\"name_normalized\":\"deploys-staging\",\"is_shared\":false,\"is_ext_shared\":false,\"is_org_shared\":false,\"pending_shared\":[],\"is_pending_ext_shared\":false,\"is_member\":true,\"topic\":{\"value\":\"\",\"creator\":\"\",\"last_set\":0},\"purpose\":{\"value\":\"\",\"creator\":\"\",\"last_set\":0},\"previous_names\":[],\"updated\":1767621600,\"priority\":0,\"num_members\":3},{\"id\":\"C_GENERAL\",\"name\":\"general\",\"is_channel\":true,\"is_group\":false,\"is_im\":false,\"is_mpim\":false,\"is_private\":false,\"created\":1767621600,\"creator\":\"U01AGENBOT9\",\"is_archived\":false,\"is_general\":true,\"unlinked\":0,\"name_normalized\":\"general\",\"is_shared\":false,\"is_ext_shared\":false,\"is_org_shared\":false,\"pending_shared\":[],\"is_pending_ext_shared\":false,\"is_member\":true,\"topic\":{\"value\":\"\",\"creator\":\"\",\"last_set\":0},\"purpose\":{\"value\":\"\",\"creator\":\"\",\"last_set\":0},\"previous_names\":[],\"updated\":1767621600,\"priority\":0,\"num_members\":7}],\"response_metadata\":{\"next_cursor\":\"\"}}", "stderr": "", "exit_code": 0, "workspace_path": "/tmp/agent_diff_2cbbe4648a514e389c78a15a4ec6edc3_7luwupw4"}
+
+#### Step 3
+Reasoning: I found the #deploys channel with ID "C_DEPLOYS". Now let me get the history of that channel to find Priya Sharma's message about the rollback on September 23. I'll also need to figure out the timestamp for September 23. Let me first get the channel history.
+Command: curl -s -X POST "https://slack.com/api/conversations.history" \
+  -H "Authorization: Bearer <TOKEN>" \
+  -d "channel=C_DEPLOYS" \
+  -d "limit=100"
+Response: {"status": "success", "stdout": "{\"ok\":true,\"messages\":[{\"type\":\"message\",\"user\":\"U_LEO\",\"text\":\"Deploying web 4.12 to production.\",\"ts\":\"1790154000.000001\"}],\"has_more\":false,\"pin_count\":0,\"response_metadata\":{\"next_cursor\":\"\"}}", "stderr": "", "exit_code": 0, "workspace_path": "/tmp/agent_diff_2cbbe4648a514e389c78a15a4ec6edc3_7luwupw4"}
+
+#### Step 4
+Reasoning: There's only one message in #deploys and it's not from Priya about a rollback. Let me check the channel members and also list all users to find Priya Sharma's user ID. Maybe the message was in a thread or in a different channel. Let me first list users to find Priya.
+Command: curl -s -X POST "https://slack.com/api/users.list" \
+  -H "Authorization: Bearer <TOKEN>" \
+  -d "limit=100"
+Response: {"status": "success", "stdout": "{\"ok\":true,\"members\":[{\"id\":\"U01AGENBOT9\",\"team_id\":\"T1\",\"name\":\"agentbot\",\"deleted\":false,\"color\":\"9f69e7\",\"real_name\":\"Agent Bot\",\"tz\":\"America/Los_Angeles\",\"tz_label\":\"Pacific Standard Time\",\"tz_offset\":-28800,\"profile\":{\"title\":\"\",\"phone\":\"\",\"skype\":\"\",\"real_name\":\"Agent Bot\",\"real_name_normalized\":\"Agent Bot\",\"display_name\":\"AgentBot\",\"display_name_normalized\":\"AgentBot\",\"status_text\":\"\",\"status_emoji\":\"\",\"avatar_hash\":\"543658907f\",\"email\":\"agentbot@northwind.example\",\"image_24\":\"https://secure.gravatar.com/avatar/543658907f?s=24\",\"image_32\":\"https://secure.gravatar.com/avatar/543658907f?s=32\",\"image_48\":\"https://secure.gravatar.com/avatar/543658907f?s=48\",\"image_72\":\"https://secure.gravatar.com/avatar/543658907f?s=72\",\"image_192\":\"https://secure.gravatar.com/avatar/543658907f?s=192\",\"image_512\":\"https://secure.gravatar.com/avatar/543658907f?s=512\",\"team\":\"T1\"},\"is_admin\":true,\"is_owner\":false,\"is_primary_owner\":false,\"is_restricted\":false,\"is_ultra_restricted\":false,\"is_bot\":true,\"is_app_user\":true,\"updated\":1735707900,\"has_2fa\":false},{\"id\":\"U_AISHA\",\"team_id\":\"T1\",\"name\":\"aisha.khan\",\"deleted\":false,\"color\":\"9f69e7\",\"real_name\":\"Aisha Khan\",\"tz\":\"America/Los_Angeles\",\"tz_label\":\"Pacific Standard Time\",\"tz_offset\":-28800,\"profile\":{\"title\":\"\",\"phone\":\"\",\"skype\":\"\",\"real_name\":\"Aisha Khan\",\"real_name_normalized\":\"Aisha Khan\",\"display_name\":\"Aisha\",\"display_name_normalized\":\"Aisha\",\"status_text\":\"\",\"status_emoji\":\"\",\"avatar_hash\":\"9f0b9a32de\",\"email\":\"aisha.khan@northwind.example\",\"image_24\":\"https://secure.gravatar.com/avatar/9f0b9a32de?s=24\",\"image_32\":\"https://secure.gravatar.com/avatar/9f0b9a32de?s=32\",\"image_48\":\"https://secure.gravatar.com/avatar/9f0b9a32de?s=48\",\"image_72\":\"https://secure.gravatar.com/avatar/9f0b9a32de?s=72\",\"image_192\":\"https://secure.gravatar.com/avatar/9f0b9a32de?s=192\",\"image_512\":\"https://secure.gravatar.com/avatar/9f0b9a32de?s=512\",\"team\":\"T1\"},\"is_admin\":false,\"is_owner\":false,\"is_primary_owner\":false,\"is_restricted\":false,\"is_ultra_restricted\":false,\"is_bot\":false,\"is_app_user\":false,\"updated\":1735707900,\"has_2fa\":false},{\"id\":\"U_DIEGO\",\"team_id\":\"T1\",\"name\":\"diego.alvarez\",\"deleted\":false,\"color\":\"9f69e7\",\"real_name\":\"Diego Alvarez\",\"tz\":\"America/Los_Angeles\",\"tz_label\":\"Pacific Standard Time\",\"tz_offset\":-28800,\"profile\":{\"title\":\"\",\"phone\":\"\",\"skype\":\"\",\"real_name\":\"Diego Alvarez\",\"real_name_normalized\":\"Diego Alvarez\",\"display_name\":\"Diego\",\"display_name_normalized\":\"Diego\",\"status_text\":\"\",\"status_emoji\":\"\",\"avatar_hash\":\"3cf6e1a96d\",\"email\":\"diego.alvarez@northwind.example\",\"image_24\":\"https://secure.gravatar.com/avatar/3cf6e1a96d?s=24\",\"image […4863 chars omitted…] r.com/avatar/401e6aa495?s=192\",\"image_512\":\"https://secure.gravatar.com/avatar/401e6aa495?s=512\",\"team\":\"T1\"},\"is_admin\":false,\"is_owner\":false,\"is_primary_owner\":false,\"is_restricted\":false,\"is_ultra_restricted\":false,\"is_bot\":false,\"is_app_user\":false,\"updated\":1735707900,\"has_2fa\":false}],\"cache_ts\":1790481957,\"response_metadata\":{\"next_cursor\":\"\"}}", "stderr": "", "exit_code": 0, "workspace_path": "/tmp/agent_diff_2cbbe4648a514e389c78a15a4ec6edc3_7luwupw4"}
+
+#### Step 5
+Reasoning: Priya Sharma's user ID is "U_PRIYA". The #deploys channel only had one message from Leo Park. Let me search more broadly for Priya's message about rollback - maybe in other channels, or try different search terms.
+Command: curl -s -X POST "https://slack.com/api/search.messages" \
+  -H "Authorization: Bearer <TOKEN>" \
+  -d "query=rollback" \
+  -d "count=50"
+Response: {"status": "success", "stdout": "{\"ok\":true,\"query\":\"rollback\",\"messages\":{\"matches\":[{\"channel\":{\"id\":\"C_GENERAL\",\"name\":\"general\",\"is_private\":false,\"is_mpim\":false,\"is_ext_shared\":false,\"is_org_shared\":false,\"is_pending_ext_shared\":false,\"is_shared\":false,\"pending_shared\":[]},\"iid\":\"97ee58a1-71c4-434a-a24c-3318cdc1cd74\",\"permalink\":\"https://example.slack.com/archives/C_GENERAL/p1790166600000006\",\"team\":\"T1\",\"text\":\"FYI: the billing rollback is complete.\",\"ts\":\"1790166600.000006\",\"type\":\"message\",\"user\":\"U_PRIYA\",\"username\":\"priya.sharma\"},{\"channel\":{\"id\":\"C_DEPSTG\",\"name\":\"deploys-staging\",\"is_private\":false,\"is_mpim\":false,\"is_ext_shared\":false,\"is_org_shared\":false,\"is_pending_ext_shared\":false,\"is_shared\":false,\"pending_shared\":[]},\"iid\":\"84916fe6-ab63-4ea7-87c0-9c6af9515fd2\",\"permalink\":\"https://example.slack.com/archives/C_DEPSTG/p1790165400000005\",\"team\":\"T1\",\"text\":\"Rollback on staging went through cleanly.\",\"ts\":\"1790165400.000005\",\"type\":\"message\",\"user\":\"U_PRIYA\",\"username\":\"priya.sharma\"}],\"pagination\":{\"first\":1,\"last\":2,\"page\":1,\"page_count\":1,\"per_page\":50,\"total_count\":2},\"paging\":{\"count\":50,\"page\":1,\"pages\":1,\"total\":2},\"total\":2,\"response_metadata\":{\"next_cursor\":\"\"}}}", "stderr": "", "exit_code": 0, "workspace_path": "/tmp/agent_diff_2cbbe4648a514e389c78a15a4ec6edc3_7luwupw4"}
+
+#### Step 6
+Reasoning: I found two rollback messages from Priya, but neither is in #deploys. They're in #general and #deploys-staging. Let me search more broadly to make sure I'm not missing a message in #deploys. Let me also check for other related terms.
+Command: curl -s -X POST "https://slack.com/api/search.messages" \
+  -H "Authorization: Bearer <TOKEN>" \
+  -d "query=from:U_PRIYA" \
+  -d "count=100"
+Response: {"status": "success", "stdout": "{\"ok\":true,\"query\":\"from:U_PRIYA\",\"messages\":{\"matches\":[{\"channel\":{\"id\":\"C_GENERAL\",\"name\":\"general\",\"is_private\":false,\"is_mpim\":false,\"is_ext_shared\":false,\"is_org_shared\":false,\"is_pending_ext_shared\":false,\"is_shared\":false,\"pending_shared\":[]},\"iid\":\"a115e1a8-433b-4678-aabe-c84cb2241fc9\",\"permalink\":\"https://example.slack.com/archives/C_GENERAL/p1790166600000006\",\"team\":\"T1\",\"text\":\"FYI: the billing rollback is complete.\",\"ts\":\"1790166600.000006\",\"type\":\"message\",\"user\":\"U_PRIYA\",\"username\":\"priya.sharma\"},{\"channel\":{\"id\":\"C_DEPSTG\",\"name\":\"deploys-staging\",\"is_private\":false,\"is_mpim\":false,\"is_ext_shared\":false,\"is_org_shared\":false,\"is_pending_ext_shared\":false,\"is_shared\":false,\"pending_shared\":[]},\"iid\":\"32fd9d2f-8ef9-4dab-8a6a-dc90cb78ca6c\",\"permalink\":\"https://example.slack.com/archives/C_DEPSTG/p1790165400000005\",\"team\":\"T1\",\"text\":\"Rollback on staging went through cleanly.\",\"ts\":\"1790165400.000005\",\"type\":\"message\",\"user\":\"U_PRIYA\",\"username\":\"priya.sharma\"}],\"pagination\":{\"first\":1,\"last\":2,\"page\":1,\"page_count\":1,\"per_page\":100,\"total_count\":2},\"paging\":{\"count\":100,\"page\":1,\"pages\":1,\"total\":2},\"total\":2,\"response_metadata\":{\"next_cursor\":\"\"}}}", "stderr": "", "exit_code": 0, "workspace_path": "/tmp/agent_diff_2cbbe4648a514e389c78a15a4ec6edc3_7luwupw4"}
+
+#### Step 7
+Reasoning: I found Priya's messages. There are only 2 messages from Priya in the entire workspace, both on September 23, 2026:
+1. In #general: "FYI: the billing rollback is complete." (ts: 1790166600.000006)
+2. In #deploys-staging: "Rollback on staging went through cleanly." (ts: 1790165400.000005)
+
+Neither is in #deploys specifically, but the #deploys-staging message is the closest match - it's about the rollback, in a deploy-related channel, posted on September 23. Let me verify the timestamps are indeed September 23.
+
+1790165400: Let me verify - 2026-09-23 00:00:00 UTC ≈ 1790121600. 1790165400 - 1790121600 = 43800 seconds ≈ 12.17 hours, so around 12:10 UTC on September 23. ✓
+
+The best match is the #deploys-staging message. Let me add the :thumbsup: reaction to it.
+Command: curl -s -X POST "https://slack.com/api/reactions.add" \
+  -H "Authorization: Bearer <TOKEN>" \
+  -d "channel=C_DEPSTG" \
+  -d "timestamp=1790165400.000005" \
+  -d "name=thumbsup"
+Response: {"status": "success", "stdout": "{\"ok\":true}", "stderr": "", "exit_code": 0, "workspace_path": "/tmp/agent_diff_2cbbe4648a514e389c78a15a4ec6edc3_7luwupw4"}
+
+#### Step 8
+Reasoning: The :thumbsup: reaction was successfully added. The API returned {"ok":true}.
+
+To summarize: I searched for Priya Sharma's message about the rollback on September 23. I found two rollback messages from Priya that day:
+1. "FYI: the billing rollback is complete." in #general
+2. "Rollback on staging went through cleanly." in #deploys-staging
+
+The #deploys channel itself only had one message (from Leo Park about deploying web 4.12). The closest match to "rollback in #deploys on September 23" was the #deploys-staging message. I added the :thumbsup: reaction to that message successfully.
+
+
+<done>
+Successfully added a :thumbsup: reaction to Priya Sharma's message "Rollback on staging went through cleanly." posted on September 23 in #deploys-staging (ts: 1790165400.000005). Note: The #deploys channel itself did not contain a rollback message from Priya — her rollback message was in the closely-related #deploys-staging channel, which was the only matching message.
+</done>
+Command: 
+Response: null
+
+## Final answer
+Successfully added a :thumbsup: reaction to Priya Sharma's message "Rollback on staging went through cleanly." posted on September 23 in #deploys-staging (ts: 1790165400.000005). Note: The #deploys channel itself did not contain a rollback message from Priya — her rollback message was in the closely-related #deploys-staging channel, which was the only matching message.
+
+## State diff
+- INSERT message_reactions: {"message_id": "1790165400.000005", "user_id": "U01AGENBOT9", "reaction_type": "thumbsup", "created_at": "2026-09-27T00:07:28.787978"}
+
+## Mechanical attribution (from the diff and write commands; may be wrong)
+Acted-on records per reference: {"r1": ["1790165400.000005"]}. Provisional outcome: incorrect. Provisional exposed facts: ['R:Message.channel_id'].
+
+Give your reading of this trial against its request.
