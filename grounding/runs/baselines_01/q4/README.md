@@ -75,5 +75,24 @@ Recall by how the failure happened (the mechanism in the hand labels):
   pipeline does.
 - **Wrong measure:** mistake yes or no on valid trials. It leaves out false results on flawed tests and fact
   attribution, which only the answer key gives.
-- **Still to measure:** how much J0's prompt adds over a plain judge. A plain judge that is told only the request
-  and the test author's expected outcome runs on the same trials in the N0 cycle.
+
+## D. What J0's prompt adds: a plain judge on the same 178 trials (2026-09-28)
+
+A judge told nothing about grounding ([prompts/plain.md](../prompts/plain.md): "did the assistant do what the user
+asked?"), on Muse, reading the same bundle as J0, scored against the same 178 OpenClaw labels
+([score_plain.py](score_plain.py), [plain_openclaw.score.json](plain_openclaw.score.json)):
+
+| Judge | Knows | Precision | Recall | Recall: regular | Recall: underspecified |
+|---|---|---:|---:|---:|---:|
+| plain | the request and the trajectory | 0.92 | 0.73 | 2 / 8 | 24 / 41 |
+| J0 | + our definition of a mistake | 0.99 | 0.90 | 6 / 8 | 36 / 41 |
+| J1 | + the domain model | 0.98 | 0.92 | – | – |
+| J2 (judge v2) | + the answer key, policy rules, replica notes | 1.00 | 1.00 | 8 / 8 | 41 / 41 |
+
+- **Absence twins are easy for every judge** (43 of 45 found by both plain and J0): acting on something when the
+  request's record does not exist is visibly wrong.
+- **J0's definition is worth 17 points of recall and 7 of precision** over the plain judge. Most of it is on the
+  regular tests (a near miss that satisfies the plain reading) and on underspecified requests, where the plain judge
+  calls acting on one of several matches a success (17 misses) and flags 5 correct trials.
+- **So the 6c baselines were already given part of our work,** the definition of a grounding mistake, on top of
+  our tests. A naive pipeline's judge would sit nearer the plain row.

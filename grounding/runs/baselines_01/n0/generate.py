@@ -48,7 +48,7 @@ def snapshot(ws: Path, dest: Path) -> None:
             shutil.copy(f, dest / f.name)
 
 
-def load(domain: str, ws: Path) -> tuple[list[dict], list[str]]:
+def load(domain: str, ws: Path, generator: str = "N0") -> tuple[list[dict], list[str]]:
     """(cases, errors) from the workspace's tests.json."""
     path = ws / "tests.json"
     if not path.exists():
@@ -57,23 +57,23 @@ def load(domain: str, ws: Path) -> tuple[list[dict], list[str]]:
         data = json.loads(path.read_text())
     except json.JSONDecodeError as exc:
         return [], [f"`tests.json` is not valid JSON: {exc}"]
-    return cases.from_tests(domain, data)
+    return cases.from_tests(domain, data, generator=generator)
 
 
-def one_domain(domain: str, run: Path) -> dict:
+def one_domain(domain: str, run: Path, inputs: Path = INPUTS, generator: str = "N0") -> dict:
     out = run / domain
-    ws = WORK / run.name / domain
+    ws = WORK / f"{generator}-{run.name}" / domain
     if ws.exists() or out.exists():
         raise SystemExit(f"{ws} or {out} exists; use a new run name")
     ws.mkdir(parents=True)
-    for f in sorted((INPUTS / domain).iterdir()):
+    for f in sorted((inputs / domain).iterdir()):
         shutil.copy(f, ws / f.name)
-    prompt = (INPUTS / domain / "task.md").read_text()
+    prompt = (inputs / domain / "task.md").read_text()
     call = agent.Call(role="coder", workspace=ws, prompt=prompt, log_dir=out / "agent", calls_log=run / "calls.jsonl",
                       tools=agent.FILE_TOOLS, write=True, label=f"{domain}/round1", timeout=3600)
     result = agent.run(call)
     snapshot(ws, out / "workspace" / "round1")
-    built, errors = load(domain, ws)
+    built, errors = load(domain, ws, generator)
     report = {"domain": domain, "rounds": [{"round": 1, "session_id": result.get("session_id"),
                                             "cases": len(built), "errors": errors,
                                             "tests_written": cases.count_tests(ws / "tests.json")}]}
@@ -84,7 +84,7 @@ def one_domain(domain: str, run: Path) -> dict:
                            resume=result.get("session_id"), label=f"{domain}/round2", timeout=3600)
         agent.run(call2)
         snapshot(ws, out / "workspace" / "round2")
-        built, errors = load(domain, ws)
+        built, errors = load(domain, ws, generator)
         report["rounds"].append({"round": 2, "cases": len(built), "errors": errors,
                                  "tests_written": cases.count_tests(ws / "tests.json")})
     dest = out / "cases"
@@ -99,13 +99,16 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--run", required=True)
     ap.add_argument("--domains", nargs="*", default=list(DOMAINS))
+    ap.add_argument("--inputs", type=Path, default=INPUTS, help="inputs folder (default: N0's)")
+    ap.add_argument("--generator", default="N0", help="case-id prefix; runs go under <inputs>/../runs/")
     args = ap.parse_args()
     if agent.BACKEND != "muse":
         raise SystemExit("set AUTOGEN_BACKEND=muse")
-    run = HERE / "runs" / args.run
+    inputs = args.inputs.resolve()
+    run = inputs.parent / "runs" / args.run
     run.mkdir(parents=True, exist_ok=True)
     for d in args.domains:
-        report = one_domain(d, run)
+        report = one_domain(d, run, inputs, args.generator)
         print(json.dumps(report), flush=True)
 
 

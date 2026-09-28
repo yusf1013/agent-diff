@@ -1,0 +1,175 @@
+"""My hand review of N1's 48 tests (N0's inputs plus the facts our Phase 4 briefs asked for, no substitute menus),
+written 2026-09-28 before any agent ran them, by n0/review_rules.md. Same fields as n0/review_gen_01.py.
+
+    python3 grounding/runs/baselines_01/n1/review_gen_01.py     # writes runs/gen_01/review.json and prints totals
+"""
+from __future__ import annotations
+
+import json
+from collections import Counter
+from pathlib import Path
+
+from grounding.runs.baselines_01.n0.review_gen_01 import t  # same record shape
+
+HERE = Path(__file__).resolve().parent
+OUT = HERE / "runs" / "gen_01" / "review.json"
+IDS = ("d", "the event ids ev_target and ev_other name the records' roles, and the API returns them")
+DELETE = ("a", "the bot cannot delete another user's message (cant_delete_message, as in Slack)")
+
+REVIEW = [
+    # ------------------------------------------------------------------ Box
+    t("N1-BOX-T01", "present", ["A:File.name", "A:File.modified_at"],
+      near=[("8120", "A:File.modified_at", "F0", "the same name modified in March")]),
+    t("N1-BOX-T02", "present", ["A:File.name", "A:File.shared_link"],
+      near=[("8220", "A:File.shared_link", "F0", "the same name without a shared link")]),
+    t("N1-BOX-T03", "present", ["A:File.name", "A:File.uploader_display_name"],
+      near=[("8320", "A:File.uploader_display_name", "F0", "the same name uploaded by Priya")]),
+    t("N1-BOX-T04", "present", ["A:File.name", "R:TaskAssignment.assigned_to_id", "A:TaskAssignment.resolution_state",
+                                "B:TaskAssignment.task_id"],
+      near=[("8420", "B:TaskAssignment.task_id", "F5", "Leo's assignment is incomplete; another assignment is approved")],
+      proper=["B:TaskAssignment.task_id"]),
+    t("N1-BOX-T05", "present", ["A:Folder.name", "R:Folder.owned_by_id", "A:User.name"],
+      near=[("8501", "R:Folder.owned_by_id", "F8", "owned by Maya Lopez (the default people's pair)")],
+      proper=["R:Folder.owned_by_id"]),
+    t("N1-BOX-T06", "present", ["A:Folder.name", "R:Folder.created_by_id"],
+      near=[("8601", "R:Folder.created_by_id", "F0", "created by Omar")],
+      oracle_note="a delete trashes the folder (an update), whatever the assertions expect"),
+    t("N1-BOX-T07", "present", ["A:Folder.name", "H:Folder.parent_id"],
+      near=[("8711", "H:Folder.parent_id", "F0", "a Budget folder under another parent (not a level)")]),
+    t("N1-BOX-T08", "present", ["A:File.name", "R:Comment.created_by_id", "A:Comment.message", "B:Comment.file_id"],
+      near=[("8820", "B:Comment.file_id", "F5", "Maya's comment and the approving text are on different comments")],
+      proper=["B:Comment.file_id"]),
+    t("N1-BOX-T09", "present", ["A:File.name", "H:Comment.item_id:comment", "R:Comment.created_by_id"],
+      near=[("8913", "H:Comment.item_id:comment", "F4", "Omar's identical top-level comment for his reply")],
+      proper=["H:Comment.item_id:comment"]),
+    t("N1-BOX-T10", "present", ["A:Hub.title", "R:Hub.created_by_id"],
+      near=[("9021", "R:Hub.created_by_id", "F0", "the same hub title created by Sam")]),
+    t("N1-BOX-T11", "present", ["A:Hub.title", "R:HubItem.folder", "B:HubItem.hub_id"],
+      near=[("9122", "B:HubItem.hub_id", "F5", "Dana added a file, and a Roadmap folder was added by Leo")],
+      proper=["B:HubItem.hub_id"]),
+    t("N1-BOX-T12", "absence_presupposed", ["A:File.name", "R:TaskAssignment.assigned_by_id"],
+      near=[("9210", "R:TaskAssignment.assigned_by_id", "F0", "the only task was assigned by Priya")]),
+    # ------------------------------------------------------------------ Calendar
+    t("N1-CAL-T01", "present", ["A:Event.summary", "A:Event.start"],
+      near=[("ev_standup", "A:Event.summary", "F0", "an unrelated event at the same time")]),
+    t("N1-CAL-T02", "present", ["A:Event.summary", "A:Event.start"],
+      near=[("ev_two", "A:Event.start", "F0", "the same 1:1 at 2 pm")]),
+    t("N1-CAL-T03", "present", ["A:Event.summary", "A:Event.location", "A:Event.start"],
+      near=[("ev_rooma", "A:Event.location", "F0", "Room A")]),
+    t("N1-CAL-T04", "present", ["A:Event.summary", "A:Event.transparency", "A:Event.start"],
+      near=[("ev_busy", "A:Event.transparency", "F0", "the busy copy")]),
+    t("N1-CAL-T05", "present", ["A:Event.summary", "A:Event.organizer_email", "A:Event.creator_email"],
+      near=[("ev_org", "A:Event.organizer_email", "F1", "Omar, the requested creator, is its organizer"),
+            ("ev_cre", "A:Event.creator_email", "F1", "Priya, the requested organizer, is its creator")],
+      proper=["A:Event.organizer_email", "A:Event.creator_email"], flaws=[IDS]),
+    t("N1-CAL-T06", "present", ["A:Event.summary", "A:EventAttendee.response_status", "A:EventAttendee.email"],
+      near=[("ev_other", "A:EventAttendee.response_status", "F0", "Priya accepted instead of declining")],
+      flaws=[IDS]),
+    t("N1-CAL-T07", "present", ["A:Calendar.summary", "A:Calendar.data_owner"],
+      near=[("team-jordan@northwind.example", "A:Calendar.data_owner", "F0", "owned by the actor")]),
+    t("N1-CAL-T08", "present", ["A:Calendar.summary", "A:Calendar.time_zone"],
+      near=[("regional-la@northwind.example", "A:Calendar.time_zone", "F0", "Los Angeles time")]),
+    t("N1-CAL-T09", "present", ["A:Calendar.summary", "A:CalendarListEntry.access_role"],
+      near=[("partner-writer@northwind.example", "A:CalendarListEntry.access_role", "F7",
+             "writer, the nearest role to reader")],
+      proper=["A:CalendarListEntry.access_role"]),
+    t("N1-CAL-T10", "present", ["A:CalendarListEntry.summary_override", "A:CalendarListEntry.hidden"],
+      far=["contract-main: not hidden and not shown as 'Side gig'"]),
+    t("N1-CAL-T11", "present", ["A:Event.summary", "A:Event.start", "D:primary"],
+      near=[("ev_tue", "A:Event.start", "F7", "the adjacent day"),
+            ("ev_sec", "D:primary", "F0", "the same slot on a secondary calendar named 'Secondary team'")],
+      proper=["A:Event.start"]),
+    t("N1-CAL-T12", "absence_presupposed", ["A:Event.summary", "A:Event.start"],
+      far=["ev_only: a dentist appointment"]),
+    # ------------------------------------------------------------------ Linear
+    t("N1-LIN-T01", "present", ["A:Issue.identifier"],
+      near=[("i-t1", "A:Issue.identifier", "F8", "WEB-2 for WEB-3, the same title")],
+      proper=["A:Issue.identifier"], quality=["a lookup by exact identifier"]),
+    t("N1-LIN-T02", "present", ["A:Issue.title", "A:Issue.dueDate", "A:Issue.estimate"],
+      near=[("i-d1", "A:Issue.estimate", "F0", "estimate 3 for 8"), ("i-d2", "A:Issue.dueDate", "F0",
+                                                                   "due November 5")]),
+    t("N1-LIN-T03", "present", ["A:Issue.title", "R:Issue.cycleId", "A:Cycle.endsAt", "R:Cycle.teamId"],
+      near=[("i-d1", "A:Cycle.endsAt", "F7", "the next Web cycle, ending a week later"),
+            ("i-d2", "R:Cycle.teamId", "F8", "the Mobile cycle ending the same day")],
+      proper=["A:Cycle.endsAt", "R:Cycle.teamId"]),
+    t("N1-LIN-T04", "present", ["A:Issue.title", "A:Attachment.title", "A:Attachment.sourceType",
+                                "R:Attachment.creatorId", "B:Attachment.issueId"],
+      near=[("i-d1", "A:Attachment.sourceType", "F0", "from GitHub"), ("i-d2", "R:Attachment.creatorId", "F0",
+                                                                     "uploaded by Leo"),
+            ("i-d3", "B:Attachment.issueId", "F5", "the source and the title on different attachments")],
+      proper=["B:Attachment.issueId"]),
+    t("N1-LIN-T05", "present", ["A:Issue.title", "A:ProjectMilestone.name", "R:ProjectMilestone.projectId"],
+      near=[("i-d1", "A:ProjectMilestone.name", "F0", "the Alpha milestone"),
+            ("i-d2", "R:ProjectMilestone.projectId", "F1", "the same-named milestone of another project")],
+      proper=["R:ProjectMilestone.projectId"]),
+    t("N1-LIN-T06", "present", ["A:Issue.title", "R:Issue.projectId", "B:ProjectMilestone.projectId"],
+      near=[("i-d", "B:ProjectMilestone.projectId", "F5", "Zephyr has the name and the date on two milestones")],
+      proper=["B:ProjectMilestone.projectId"]),
+    t("N1-LIN-T07", "present", ["A:Issue.title", "R:Issue.projectId", "R:Issue.assigneeId"],
+      near=[("i-d1", "R:Issue.projectId", "F0", "the Zephyr project"), ("i-d2", "R:Issue.assigneeId", "F0",
+                                                                      "assigned to Leo")]),
+    t("N1-LIN-T08", "present", ["A:Issue.title", "R:issue_label_issue_association"],
+      near=[("i-d1", "R:issue_label_issue_association", "F0", "only the bug label"),
+            ("i-d2", "R:issue_label_issue_association", "F0", "only the urgent label")],
+      far=["i-d3: no label"]),
+    t("N1-LIN-T09", "present", ["A:Issue.title", "D:overdue", "A:Issue.dueDate"],
+      near=[("i-d1", "D:overdue", "F6", "done with a past due date"), ("i-d2", "D:overdue", "F0", "due in December")],
+      proper=["D:overdue"], quality=["overdue is relative to the run date; valid until 2026-12-01"]),
+    t("N1-LIN-T10", "absence_presupposed", ["A:Issue.identifier"],
+      far=["WEB-1 and WEB-2: other identifiers, same title"]),
+    t("N1-LIN-T11", "absence_presupposed", ["A:Issue.title", "R:issue_label_issue_association"],
+      near=[("i-1", "R:issue_label_issue_association", "F0", "only bug"),
+            ("i-2", "R:issue_label_issue_association", "F0", "only urgent")]),
+    t("N1-LIN-T12", "absence_presupposed", ["A:Issue.title", "D:overdue"],
+      near=[("i-1", "D:overdue", "F6", "done with a past due date"), ("i-2", "D:overdue", "F0", "due in December")]),
+    # ------------------------------------------------------------------ Slack
+    t("N1-SLK-T01", "present", ["D:dm_with", "A:Conversation.is_dm"],
+      near=[("C_ATLAS", "D:dm_with", "F6", "a channel containing Diego")],
+      proper=["D:dm_with"], quality=["the request names the channel to avoid: 'Don't post it in the #atlas channel'"]),
+    t("N1-SLK-T02", "present", ["A:Message.blocks", "A:Message.message_text", "R:messages.channel_id"],
+      near=[("m_other", "A:Message.blocks", "F0", "the identical text with another block")],
+      quality=["the request explains the trap: 'there are two messages saying ...'"]),
+    t("N1-SLK-T03", "present", ["A:User.email", "A:User.real_name"],
+      near=[("U_TOM2", "A:User.email", "F1", "the same real name with another email")],
+      proper=["A:User.email"]),
+    t("N1-SLK-T04", "present", ["A:User.is_bot", "A:User.real_name", "R:channel_members"],
+      near=[("U_HELPER", "A:User.is_bot", "F0", "the human named Helper")],
+      quality=["the request names the competitor to avoid: '(the bot, not the human ...)'"]),
+    t("N1-SLK-T05", "present", ["B:message_reactions.message", "R:messages.channel_id"],
+      near=[("m1", "B:message_reactions.message", "F0", "only Diego's thumbsup"),
+            ("m2", "B:message_reactions.message", "F0", "only Priya's check mark")],
+      flaws=[DELETE]),
+    t("N1-SLK-T06", "present", ["A:Message.message_text", "B:messages.channel_id"],
+      near=[("C_ALPHA", "B:messages.channel_id", "F0", "only the checklist"),
+            ("C_BETA", "B:messages.channel_id", "F0", "only the rollback plan")]),
+    t("N1-SLK-T07", "present", ["D:dm_with"],
+      near=[("D_DIEGO2", "D:dm_with", "F0", "the DM with Diego")]),
+    t("N1-SLK-T08", "present", ["D:latest_message", "R:messages.channel_id"],
+      near=[("m_old2", "D:latest_message", "F7", "the previous message")],
+      proper=["D:latest_message"], flaws=[DELETE]),
+    t("N1-SLK-T09", "present", ["D:reaction_count", "R:messages.channel_id"],
+      near=[("m_mid", "D:reaction_count", "F7", "two reactions, the nearest count below four")],
+      proper=["D:reaction_count"]),
+    t("N1-SLK-T10", "absence_presupposed", ["A:User.email"],
+      far=["nina: another person and another email"]),
+    t("N1-SLK-T11", "absence_presupposed", ["B:message_reactions.message", "R:messages.channel_id"],
+      near=[("m1", "B:message_reactions.message", "F0", "only Diego's thumbsup"),
+            ("m2", "B:message_reactions.message", "F0", "only Priya's check mark")]),
+    t("N1-SLK-T12", "absence_presupposed", ["D:latest_message"], far=["the channel has no message"]),
+]
+
+
+def main():
+    OUT.write_text(json.dumps(REVIEW, indent=1) + "\n")
+    valid = [r for r in REVIEW if r["valid"]]
+    print(json.dumps({
+        "tests": len(REVIEW), "forms": Counter(r["form"] for r in REVIEW),
+        "near_miss_families": Counter(n["family"] for r in REVIEW for n in r["near_misses"]),
+        "tests_with_proper_credit_valid": sum(1 for r in valid if r["proper"]),
+        "facts_exercised": len({f for r in REVIEW for f in r["facts_exercised"]}),
+        "facts_exercised_properly_valid": sorted({f for r in valid for f in r["proper"]}),
+        "invalid": [r["test"] for r in REVIEW if not r["valid"]]}, indent=1))
+
+
+if __name__ == "__main__":
+    main()

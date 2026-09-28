@@ -18,7 +18,7 @@ Times are US Eastern, from `date`.
   - **After N0:** decide the next cycle from what N0 shows. That is either N1 (N0 plus the facts, no menus) or
     hand-built ablations of our own tests.
 
-## 2026-09-28 14:10–15:00: cycle 1, N0 ("ask your coding agent")
+## 2026-09-28 14:05–14:26: cycle 1, N0 ("ask your coding agent")
 
 - **Q4 done** from existing data ([q4/README.md](q4/README.md)). A plain judge (told nothing about grounding) now
   runs on OpenClaw's 178 labelled trials, to measure what J0's prompt adds.
@@ -45,7 +45,9 @@ probes 76 of 279; F1-F8 probes 67/223, F0 probes 9/56):
   substitute removed ([plain_twins.py](plain_twins.py), [plain_pick.json](plain_pick.json)), run beside the
   unchanged originals the same day. Of the facts our probes expose, how many would a plain near miss expose too?
 
-### Cycle 2's reading, fixed before any of its results (2026-09-28, 15:05)
+### Cycle 2's reading, fixed before any of its results (2026-09-28, 14:28, commit c38417474)
+
+(Corrected: an earlier version of this heading said 15:05, a time I had not read from the clock.)
 
 Five cells, all on OpenClaw with the self-hosted Qwen, 3 trials per test:
 
