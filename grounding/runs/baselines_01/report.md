@@ -26,10 +26,14 @@ The gap comes from four parts of our approach. The measured effect of each on th
    - We took 12 of our probes that had exposed a fact and removed only the substitute, keeping the request and the
      seed. Failing trials fell from 27 of 36 to 7 of 36.
    - Leaving out two pairs whose request the agent misreads in both versions, the fall is from 21 of 30 to 2 of 30.
+   - These 12 were chosen because they had exposed a fact. So this measures how much of our exposure depends on the
+     substitute, not its average effect.
+   - Across the suite, designated near misses expose a fact in 30% of probes and plain ones in 16%.
    - The baselines' near misses are mostly plain: 39 of 48 of N0's, 37 of 58 of N1's, against 18 of 99 of our Phase 4
      decoys.
 3. **The fact catalog.** It says what to test and makes coverage measurable at all.
-   - Facts exercised properly (the credit rule), per 48 tests: N0 7, N1 17, ours 34.
+   - Facts exercised properly (the credit rule), per 48 tests: N0 7 (8 counting the invalid N0-SLK-T07), N1 17,
+     ours 34.
    - Given the facts, the coding agent wrote splits and levels for the binding and hierarchy facts. It still wrote no
      probes and mostly plain near misses.
 4. **The answer key and the machinery.** These make judging precise and cheap, and keep flawed tests out.
@@ -125,7 +129,7 @@ Ours: `openclaw_eval_01/runs/full_02.adjudicated.json`.
 |---|---:|---:|---:|
 | Tests failing at least once | 5 | 2 | 12.5 |
 | ... every failure the absence policy | 5 | 2 | 0 |
-| Distinct facts exposed (detect@3 / detect@1) | 0 / 0 | 0 / 0 | 11.0 / 7.2 |
+| Distinct facts exposed (detect@3 / detect@1) | 0 / 0 | 0 / 0 | 11.0 / 7.2 (11.6 / 7.1 without the 5 id-flawed scenarios) |
 | Wrong values on the right record (outside scope) | 7 trials | 0 | not counted |
 
 Every target-present test of both baselines passed, including N1's splits and levels (for example, "the Mockup.png
@@ -152,6 +156,11 @@ The reading of each result was fixed before the runs ([log](log.md), 14:28). Lab
   (16%).
 - **Content:** within a test, the substitute is what bites. Removed, 9 of the 10 unconfounded probes stop failing.
   Across the suite, it doubles the probe's rate (30% against 16%).
+- **Against the reading fixed at 14:28:** cell b landed at 14%, near our F0 probes, as the second branch foresaw.
+  But neither part carries "most" on its own; they multiply:
+  - the form takes plain near misses from 0% to about 15% of tests;
+  - the substitute takes probes from about 15% to about 30% across the suite, and within the same test it accounts
+    for 9 of 10 exposures.
 - **The two confounded pairs:** OpenClaw's agent reads G4-BOX-01's request ("the PDF ... with a top-level comment by
   Dana Whitfield saying 'approved for launch'") as tag-and-comment. It fails with or without the substitute, so those
   exposures are not the facts'. This is flagged for the PI below.
@@ -265,8 +274,9 @@ The agent-run cost per test is the same for all approaches. For N0 and N1 it buy
   - 48 tests per baseline.
   - 12 plain-twin pairs, chosen from probes that had exposed a fact, so they measure how much of our exposure depends
     on the substitute, not the average effect.
-- **Our side is the recorded full_02 run, not a same-day rerun.** The Phase 4 numbers still include 5 scenarios now
-  judged flawed for their ids.
+- **Our side is the recorded full_02 run, not a same-day rerun.** The Phase 4 numbers include 5 scenarios now judged
+  flawed for their ids (G4-CAL-01, -02, -06, -07, G4-LIN-06). Without them, per 48 tests: 11.6 facts exposed at
+  detect@3 (7.1 at detect@1), and 31.7 exercised properly.
 - **I am the only labeller,** and I wrote the reviews. The rules were fixed before generation; the calibration
   against our own tests' mechanical claims is left to the full comparison.
 - **The coding agent had no shell** (the kit's sandbox), so it could not try its tests. One repair turn for load
