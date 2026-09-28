@@ -203,7 +203,7 @@ cannot express.
   - owned calendars that are visible: 0 misses in 10.
 - **The hidden-calendar result does not depend on the contestable wording.** It holds with "the calendars I own".
 
-## Cycle 5 (design, 2026-09-28): controls, and pagination beyond the largest page
+## Cycle 5: controls, and pagination beyond the largest page (2026-09-28)
 
 **Why:** cycles 3–4 found that visibility defaults hide matches from Qwen, and that stated structural scopes do not.
 Two questions follow.
@@ -221,3 +221,90 @@ Two questions follow.
 
 **Mechanical check:** on both pagination seeds, only paging through every page finds all four matches. Every
 single-page route misses two, including the tree and channel-list routes that were thorough on the smaller seeds.
+
+**What ran:** 5 trials of each test (`runs/c5`, `grades-c5.json`).
+
+| Test | Trials | What happened |
+|---|---|---|
+| SM2-CAL-03 (hidden owned calendar, "including any I have hidden") | 5 exact | every trial asked for `showHidden=true` |
+| SM2-SLK-02 (private channels, "public or private") | 4 exact, 1 incomplete | every trial asked for private channels. The one miss asked in a POST query string, which the mock ignores |
+| SM2-BOX-02 (1,150 files; the last modifier) | **void** | 1 exact; 4 ran out of time with no change |
+| SM2-SLK-03 (1,100 messages; Leo's :rocket:) | **void** | every trial ran out of time |
+
+**Both pagination tests are void.** Their conditions are not visible on the route the test depends on.
+- The Box replica's folder listing returns only the mini fields (id, name, etag), whatever `fields` asks for.
+  `_filter_fields` only keeps keys the item already has. Real Box returns `modified_by` when asked.
+- The Slack replica's `conversations.history` returns no `reactions`. Real Slack includes them on each message.
+
+So the condition took one call per record, 1,150 or 1,100 of them, and the time budget ran out. The paging itself
+was not the obstacle:
+- 3 of the 4 Box trials asked for `offset=1000`;
+- the one exact trial paged, then fetched each file.
+
+The plan's validity rules already listed the Box trap, but the strategy runner counts retrieval: it records a match
+as found when its id comes back, not when its condition does. **A test must also be checked for whether the
+condition's field comes back on the thorough route.** This is now checked by hand before a test is built.
+
+**What was learned:**
+- **The visibility defaults are the hiding place, not an inability.** With the hidden calendars, or the private
+  channels, named in the request, Qwen finds them: 5/5, and 4/5 plus 1 mock miss. Without naming them: 0/10 and 4/6.
+- **Two more replica gaps** (Box listing `fields`, Slack history `reactions`) join the Slack POST query-string gap
+  on the list to report.
+
+## Cycle 6: pagination with a condition the listing shows; the numbers, redone (2026-09-28)
+
+**What changed:**
+- **SM2-BOX-03** (SM2-BOX-02's folder): "Add the tag legal-hold to every PDF in the Contracts folder."
+- **SM2-SLK-04** (SM2-SLK-03's channel): "Add an :eyes: reaction to every message Leo Park posted in #deploys."
+
+  Both put 2 matches beyond the largest page (1000 and 999), and the name or the author is in every listed record.
+- **The runner's labels.** A route thorough in one respect only is now lazy:
+  - the folder tree with one page per folder;
+  - every page of one folder;
+  - private channels with one page of history.
+
+  The thorough route covers every respect: the tree with every page, or public and private channels with every page
+  of history.
+- **Combined seeds** (mechanical): one seed per service holding every placement that service allows, under a
+  condition search cannot express.
+  - BX-COMBINED: the named folder, two levels down, and beyond the first 1000 items of a subfolder, for "not a Word
+    document".
+  - SK-COMBINED: the newest page, beyond the largest page, a private channel and an archived channel, for the
+    author.
+  - LN-COMBINED: sub-teams, and a 75-issue named team that overflows the default page.
+
+**What ran:** 5 trials each of SM2-BOX-03 and SM2-SLK-04 (`runs/c6`, `grades-c6.json`).
+
+| Test | Trials | Route |
+|---|---|---|
+| SM2-BOX-03 | 5 exact | all 5 paged past the first 1000 items (`offset=1000`, or a loop) |
+| SM2-SLK-04 | 5 exact | 2 paged the history with the cursor; 3 used search (`from:` twice; the phrase "Leo deployed", which the seed's texts carry, once) |
+
+Recall beyond the largest page: 20/20.
+
+**The numbers, redone** ([numbers.py](numbers.py), `numbers.json`): the smallest set of valid probes that defeats
+every lazy strategy.
+
+| Service | Lazy strategies | Tests needed | Which |
+|---|---:|---:|---|
+| Box | 8 | 1 | BX-COMBINED |
+| Calendar | 4 | 1 | CL-HIDDEN |
+| Linear | 6 | 1 | LN-COMBINED. Two list-everything strategies (`first: 250`, `first: 1000`) are defeated by no placement: the replica caps no page size, so a large enough page always holds everything |
+| Slack | 12 | 3 | one per kind of request: SK-CHANNELS (about channels), SK-COMBINED (messages in a set of channels), SK-DMS (messages anywhere) |
+
+Without combining (one placement per test), Box needs 2 and Slack 4.
+
+**What was learned:**
+- **Pagination does not hide matches from Qwen.** When the listing shows the condition, it pages past the largest
+  page or filters on the server, every time. With container depth (cycles 3–4), pagination and depth are both
+  followed. Only the visibility defaults catch this agent.
+- **One test per service and kind of request can defeat every lazy strategy we know of.** This works if the test
+  combines the placements in one seed, under a condition no search expresses and that the listings show.
+- **Two constraints on combining:**
+  - The thorough route must fit the time budget: a folder of 1,100 items takes 2 calls; a condition checked per
+    record takes 1,100.
+  - A write request cannot use a placement where the write is impossible. A Slack reaction in an archived channel
+    fails, so for a write request, leaving archived channels out is right, not lazy.
+
+**Next (cycle 7):** run the combined tests on the agent: SM2-BOX-04 (BX-COMBINED as a request) and SM2-SLK-05
+(SK-COMBINED without its archived channel, plus a second public channel).
