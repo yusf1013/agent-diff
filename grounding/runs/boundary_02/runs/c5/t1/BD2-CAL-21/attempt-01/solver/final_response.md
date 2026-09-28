@@ -1,0 +1,1 @@
+I could not update the On-call handoff event on Leo's on-call calendar because the account only has reader access to `leo-oncall@northwind.example`; the update request returned a 403 “Insufficient permissions” error.

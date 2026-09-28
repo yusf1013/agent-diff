@@ -334,7 +334,7 @@ def main():
             eid = trial.split("/", 1)[1].removeprefix("BD2-")
             if eid not in SPEC or space[eid]["verdict"] != "faithful":
                 continue
-            att = next((HERE / "runs" / cyc / trial).glob("attempt-*"))
+            att = sorted((HERE / "runs" / cyc / trial).glob("attempt-*"))[-1]  # the latest, as the digest reads
             v, info = verdict(SPEC[eid], att, digest[trial])
             h = hand(trial, grade)
             ok = (v.startswith("pass")) == (h == "pass")
@@ -352,6 +352,21 @@ def main():
     (HERE / "oracle-verdicts.json").write_text(json.dumps(out, indent=1) + "\n")
 
 
+# Trials void on review (log.md, cycle 5); grade_run marks them void and groups.py leaves them out.
+# - An invalid test: the seed lacked a record the request names.
+# - Mock artifacts: a trial that ended with no answer after spending its budget on calls the replica fails on and the
+#   real service serves (server errors, not refusals). A trial decided by the agent's own state changes stands.
+_DEFECT = "no answer after retrying calls that fail only in the replica: "
+VOID = {
+    "c5": {**{f"t{i}/BD2-CAL-26": "the seed had no Room 2, so the request named a record that did not exist (the test "
+                                  "form requires it); rebuilt as cycle 6" for i in (1, 2, 3)},
+           **{f"t{i}/BD2-LIN-25": _DEFECT + "an issue's attachments connection returns null nodes" for i in (1, 2)},
+           "t2/BD2-LIN-39": _DEFECT + "a team's cycles connection returns null nodes",
+           "t1/BD2-LIN-42": _DEFECT + "documentUpdate returns the document where the schema wants a payload"},
+    "c3": {"t1/BD2-LIN-37": _DEFECT + "an issue's attachments connection returns null nodes"},
+}
+
+
 def grade_run(run: str):
     """Grade a run with no hand grades yet (digest-<run>.json from digest.py). Writes oracle-<run>.json; the fails and
     the undecidable elements (never()) are reviewed by hand."""
@@ -362,7 +377,10 @@ def grade_run(run: str):
         eid = trial.split("/", 1)[1].removeprefix("BD2-")
         if eid not in SPEC or space[eid]["verdict"] != "faithful":
             continue
-        att = next((HERE / "runs" / run / trial).glob("attempt-*"))
+        if trial in VOID.get(run, {}):
+            out[trial] = {"oracle": "void: " + VOID[run][trial]}
+            continue
+        att = sorted((HERE / "runs" / run / trial).glob("attempt-*"))[-1]
         v, info = verdict(SPEC[eid], att, entry)
         out[trial] = {"oracle": v, **info}
         print(f"{trial:18} {v:40} answer={info['answer']:5} other={info['other'][:2]} toward={info['toward'][:1]}")

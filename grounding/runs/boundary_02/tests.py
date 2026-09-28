@@ -197,7 +197,16 @@ TESTS_C5 = {
     "LIN-42": ("Make Leo Park the last editor of the Checkout spec document.", "doc-1", "documents"),
     "LIN-44": ("Make Priya's comment on WEB-1 a reply to Omar's comment.", "c-1", "comments"),
 }
-CYCLES = {2: TESTS, 3: TESTS_C3, 5: TESTS_C5}
+# Cycle 6: CAL-26 rebuilt. Its cycle-5 seed had no Room 2, so the request named a record that did not exist (the test
+# form requires it) and all three trials spent their time guessing the room's address. Room 2 is now a room calendar
+# the actor reads, as rooms are shared in an organization; the case goes to cases_c6/, so cycle 5's case stays.
+TESTS_C6 = {"CAL-26": TESTS_C5["CAL-26"]}
+EXTRA_OPS = {"CAL-26": [
+    ["person", {"key": "room2", "name": "Room 2", "email": "room-2@resource.northwind.example"}],
+    ["calendar", {"id": "room-2@resource.northwind.example", "summary": "Room 2", "owner": "room2",
+                  "access": "reader", "description": "Meeting room, second floor, 6 seats"}],
+]}
+CYCLES = {2: TESTS, 3: TESTS_C3, 5: TESTS_C5, 6: TESTS_C6}
 
 
 def prediction(e: dict) -> str | None:
@@ -219,7 +228,8 @@ def main(cycle: int):
         e = space[eid]
         assert e["verdict"] == "faithful", (eid, e["verdict"])
         svc = e["service"]
-        seed, refs, actor = expanded[svc]
+        seed, refs, actor = (seedops.expand(svc, SEEDS[svc] + EXTRA_OPS[eid]) if cycle >= 6 and eid in EXTRA_OPS
+                             else expanded[svc])
         named_id = str(seedops.resolve(named, refs))
         tid = f"BD2-{eid}"
         case = {"case_id": tid, "domain": svc, "form": "present", "mode": "single", "acting_user_id": actor,
@@ -237,7 +247,7 @@ def main(cycle: int):
             case["boundary"].update({"cycle": cycle, "cell2": e["cell2"], "alternative": e["alternative"],
                                      "alternative_kind": e["alternative_kind"], "prediction": prediction(e)})
         case["case_sha256"] = derive.digest(case)
-        dest = HERE / "cases" / svc / f"{tid}.json"
+        dest = HERE / ("cases" if cycle < 6 else f"cases_c{cycle}") / svc / f"{tid}.json"
         dest.parent.mkdir(parents=True, exist_ok=True)
         dest.write_text(json.dumps(case, indent=1) + "\n")
     key = "cell2" if cycle >= 3 else "cell"

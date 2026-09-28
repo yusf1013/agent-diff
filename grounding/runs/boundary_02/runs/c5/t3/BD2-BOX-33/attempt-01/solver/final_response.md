@@ -1,0 +1,3 @@
+I moved the review task from Budget 2026.pdf to Budget 2026.docx in the Finance folder to the extent the API supports. I located the original "Review the contract" review task on Budget 2026.pdf and created an equivalent review task on Budget 2026.docx (new task ID 92676103989, same message, action=review, completion_rule=all_assignees). 
+
+Note: I could not fully complete the "move" because the sandbox does not expose the task-assignment endpoints (returning "Not Found") needed to re-assign Maya Chen, and deleting the original task (7120) from the PDF consistently returns an internal_error (it is blocked by its open assignment). So the new task exists on the docx, but the original task remains on the PDF and the assignee could not be carried over.

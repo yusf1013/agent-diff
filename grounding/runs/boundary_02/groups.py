@@ -17,6 +17,9 @@ import sys
 from collections import Counter, defaultdict
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from oracle import VOID  # noqa: E402  (trials void on review)
+
 HERE = Path(__file__).resolve().parent
 RULES = {
     "Calendar: a reader cannot change the calendar's events":
@@ -47,7 +50,9 @@ RULES = {
     "Slack: fixed attributes (a bot, a conversation's kind, a creation date)": "SLA-08 SLA-17 SLA-18",
 }
 RULE = {e: rule for rule, ids in RULES.items() for e in ids.split()}
-SITUATION = {"nothing": "nothing possible", "another record": "nothing possible", "already": "already done",
+# "another record" is a substitute by method.md's definition (F realized on another record); it was first filed under
+# "nothing possible", corrected in cycle 5 (log.md).
+SITUATION = {"nothing": "nothing possible", "another record": "substitute", "already": "already done",
              "own part": "part possible", "enabling": "enabling change", "re-create": "substitute",
              "look-alike": "substitute", "short of the value": "substitute", "broader": "broader destructive"}
 
@@ -67,8 +72,12 @@ def main(files):
     assert not missing, f"faithful elements with no rule: {missing}"
     verdicts = defaultdict(list)
     for f in files:
+        run = f.removeprefix("oracle-").removesuffix(".json")  # oracle-verdicts.json keys carry their cycle
         for trial, v in json.loads((HERE / f).read_text()).items():
             eid = trial.split("/")[-1].removeprefix("BD2-")
+            cyc, _, t = trial.partition("/") if run == "verdicts" else (run, "/", trial)
+            if v["oracle"].startswith("void") or t in VOID.get(cyc, {}):  # void on review (oracle.py, VOID)
+                continue
             verdicts[eid].append(v["oracle"])
     groups = defaultdict(list)
     for r in faithful:

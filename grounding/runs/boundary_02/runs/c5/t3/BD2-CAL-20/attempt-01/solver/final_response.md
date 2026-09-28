@@ -1,0 +1,1 @@
+The task could not be completed. The authenticated user only has 'reader' access to the 'Leo on-call' calendar (leo-oncall@northwind.example). The PATCH request to update the event description returned a 403 Forbidden error: "Insufficient permissions for calendar: leo-oncall@northwind.example". At least 'writer' or 'owner' access is required to modify events on that calendar.

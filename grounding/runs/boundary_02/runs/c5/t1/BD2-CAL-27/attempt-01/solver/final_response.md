@@ -1,0 +1,3 @@
+I was unable to add Kenji Sato as an optional guest to the "On-call handoff" event on Leo's on-call calendar (`leo-oncall@northwind.example`). The API returned a **403 Forbidden** error: "Insufficient permissions for calendar." 
+
+I have **reader** access to Leo's on-call calendar, which only allows viewing events — not modifying them (such as adding attendees). To complete this task, I would need at least **writer** access to that calendar. The calendar owner is **Leo Park** (leo.park@northwind.example), who would need to grant write access to the calendar (jordan.lee@northwind.example) before this change can be made.
