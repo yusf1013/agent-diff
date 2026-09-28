@@ -1,0 +1,4 @@
+A cold reader, who saw only the request and then the records, reports:
+- The reader finds the phrase "that mentions the rollback plan" genuinely ambiguous, in a way that changes which records match: Grammatically 'that mentions the rollback plan' sits next to 'issue', but pragmatically the comment is what is edited/approved. Under issue-reading, i-lat description does not mention a rollback plan, so no comment would qualify; under comment-reading, only comments whose own body mentions it qualify.
+
+Fix scenario.json (edit it in place) where the reader is right. If you judge that a reading the reader raises is one a careful colleague would not take, you may keep your wording; say why in your reply. A fresh reader will read the scenario again either way. Do not add hints that only a test would contain (such as "simply" or "not the one that…") just to rule out a reading. Then reply with a short summary of what you changed or kept.

@@ -1,0 +1,123 @@
+{
+  "scenario_id": "G4-LIN-21",
+  "domain": "linear",
+  "request": "Set the estimate to 5 for the issue assigned to Maya Chen in the next Atlas milestone due October 15.",
+  "answer": "one",
+  "seed": [
+    ["team", {"id": "t-web", "key": "WEB", "name": "Web"}],
+    ["project", {"id": "p-atlas", "name": "Atlas"}],
+    ["project", {"id": "p-beacon", "name": "Beacon"}],
+    ["milestone", {"id": "m-tgt", "name": "Beta launch", "project": "p-atlas", "status": "next", "target": "2026-10-15"}],
+    ["milestone", {"id": "m-st", "name": "Alpha cleanup", "project": "p-atlas", "status": "done", "target": "2026-10-15"}],
+    ["milestone", {"id": "m-d7", "name": "Release hardening", "project": "p-atlas", "status": "next", "target": "2026-10-16"}],
+    ["milestone", {"id": "m-f1", "name": "Docs polish", "project": "p-atlas", "status": "next", "target": "2026-09-30"}],
+    ["issue", {"id": "i-tgt", "team": "t-web", "title": "Fix export timeouts", "assignee": "maya", "project": "p-atlas", "milestone": "m-tgt"}],
+    ["issue", {"id": "i-d-status", "team": "t-web", "title": "Fix import timeouts", "assignee": "maya", "project": "p-atlas", "milestone": "m-st"}],
+    ["issue", {"id": "i-d-date", "team": "t-web", "title": "Fix sharing timeouts", "assignee": "maya", "project": "p-atlas", "milestone": "m-d7"}],
+    ["issue", {"id": "i-d-due", "team": "t-web", "title": "Fix sync timeouts", "assignee": "maya", "project": "p-atlas", "milestone": "m-f1", "due": "2026-10-15"}],
+    ["issue", {"id": "i-d-link", "team": "t-web", "title": "Fix audit timeouts", "assignee": "maya", "project": "p-atlas"}],
+    ["issue", {"id": "i-bg1", "team": "t-web", "title": "Update onboarding copy", "assignee": "leo", "project": "p-beacon"}],
+    ["issue", {"id": "i-bg2", "team": "t-web", "title": "Refresh help center", "assignee": "sam", "project": "p-beacon"}]
+  ],
+  "conditions": [
+    {
+      "id": "c1",
+      "text": "in the next Atlas milestone due October 15",
+      "facts": ["R:Issue.projectMilestoneId", "A:ProjectMilestone.status", "A:ProjectMilestone.targetDate", "R:Issue.projectId", "A:Project.name"]
+    },
+    {
+      "id": "c2",
+      "text": "assigned to Maya Chen",
+      "facts": ["R:Issue.assigneeId"]
+    }
+  ],
+  "reference": {
+    "name": "the issue to estimate",
+    "target": ["i-tgt"],
+    "query": {
+      "table": "issues",
+      "edges": [
+        {
+          "key": "e_assignee",
+          "join": {"parent": "assigneeId", "child": "id", "op": "eq"},
+          "node": {
+            "table": "users",
+            "filters": [{"key": "f_maya", "field": "name", "op": "eq", "value": "Maya Chen"}],
+            "edges": []
+          }
+        },
+        {
+          "key": "e_project",
+          "join": {"parent": "projectId", "child": "id", "op": "eq"},
+          "node": {
+            "table": "projects",
+            "filters": [{"key": "f_proj", "field": "name", "op": "eq", "value": "Atlas"}],
+            "edges": []
+          }
+        },
+        {
+          "key": "e_ms",
+          "join": {"parent": "projectMilestoneId", "child": "id", "op": "eq"},
+          "fact": "R:Issue.projectMilestoneId",
+          "node": {
+            "table": "project_milestones",
+            "filters": [
+              {"key": "f_status", "field": "status", "op": "eq", "value": "next", "fact": "A:ProjectMilestone.status"},
+              {"key": "f_target", "field": "targetDate", "op": "eq", "value": "2026-10-15", "fact": "A:ProjectMilestone.targetDate"}
+            ],
+            "edges": [
+              {
+                "key": "e_proj",
+                "join": {"parent": "projectId", "child": "id", "op": "eq"},
+                "node": {
+                  "table": "projects",
+                  "filters": [{"key": "f_proj2", "field": "name", "op": "eq", "value": "Atlas"}],
+                  "edges": []
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "decoys": [
+      {
+        "witness": "i-d-status",
+        "fact": "A:ProjectMilestone.status",
+        "family": "F0",
+        "substitute": "a done milestone",
+        "mutation": {"type": "DROP", "target": "f_status"},
+        "explanation": "Its milestone is done, not next; everything else matches."
+      },
+      {
+        "witness": "i-d-date",
+        "fact": "A:ProjectMilestone.targetDate",
+        "family": "F7",
+        "substitute": "the adjacent day (October 16)",
+        "mutation": {"type": "DROP", "target": "f_target"},
+        "explanation": "Its milestone is due October 16, the adjacent day, not October 15."
+      },
+      {
+        "witness": "i-d-due",
+        "fact": "A:ProjectMilestone.targetDate",
+        "family": "F1",
+        "substitute": "Issue.dueDate",
+        "mutation": {"type": "DROP", "target": "f_target"},
+        "explanation": "Its own due date is October 15, but its milestone is due September 30."
+      },
+      {
+        "witness": "i-d-link",
+        "fact": "R:Issue.projectMilestoneId",
+        "family": "F1",
+        "substitute": "Issue.projectId without the milestone",
+        "mutation": {"type": "DROP", "target": "e_ms"},
+        "explanation": "It is in the Atlas project but attached to no milestone at all."
+      }
+    ],
+    "effect": {"table": "issues", "changes": ["update"]},
+    "written": ["issues.estimate"]
+  },
+  "other_references": [],
+  "write": {"graphql": "mutation { issueUpdate(id: \"i-tgt\", input: {estimate: 5}) { issue { id estimate } } }"},
+  "probes": []
+}

@@ -1,0 +1,4 @@
+A cold reader, who saw only the request and then the records, reports:
+- The reader says the undeclared record `ev_bg1` fails only ['c3']: it is a near miss that is not declared as a decoy. Make it fail at least two conditions, or declare it as a decoy (Private focusTime on Engineering calendar with correct anchor, but Deep Dive not Deep Work and Wed 2018-06-20 not Thursday morning.).
+
+Fix scenario.json (edit it in place) where the reader is right. If you judge that a reading the reader raises is one a careful colleague would not take, you may keep your wording; say why in your reply. A fresh reader will read the scenario again either way. Do not add hints that only a test would contain (such as "simply" or "not the one that…") just to rule out a reading. Then reply with a short summary of what you changed or kept.
