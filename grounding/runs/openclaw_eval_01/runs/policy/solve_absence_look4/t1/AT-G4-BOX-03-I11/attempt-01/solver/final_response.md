@@ -1,0 +1,1 @@
+Done. Added the `verified` tag to **Q3 budget summary.xlsx** in the Budgets folder — the one Maya Chen uploaded, last modified June 8. (The other spreadsheet there, "Q3 budget scratch.xlsx," was uploaded by Leo Park and modified May 20, so I left it alone.)

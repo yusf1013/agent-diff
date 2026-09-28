@@ -1,0 +1,1 @@
+Done ✅ — added the `verified` tag to **Q3 budget summary.xlsx** (Maya Chen, Budgets folder, last modified June 8). It's the only spreadsheet in that folder matching those criteria; the other file there (Q3 budget scratch.xlsx) was uploaded by Leo Park in May.

@@ -1,0 +1,3 @@
+Done — **WEB-2 "Investigate flaky checkout tests"** is now set to **Urgent** (https://linear.app/northwind/issue/WEB-2).
+
+One correction on the details: the API timeout comment ("Seeing the same API timeout in the staging logs too.", posted 9/22 at 11:00) was actually written by **Leo Park**, and he's also the one who resolved that thread (9/22, 4:00 PM) — it matches the rest of your description exactly. Priya did comment on the same issue that day, but in a separate open thread about renaming the ticket. Since the timeout thread + Leo-resolved details are unambiguous, I went with WEB-2; let me know if you meant a different issue.

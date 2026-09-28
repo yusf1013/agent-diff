@@ -1,0 +1,1 @@
+Done — set the estimate to 5 on **WEB-4 "Checkout crash on Safari"** (linear.app/northwind/issue/WEB-4). It was the only issue matching that title. One note: I didn't find any comments on it (including the PagerDuty crash log link from Maya Chen), but the issue itself matched uniquely.

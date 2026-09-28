@@ -9,7 +9,12 @@ bare-loop results of Purdue's Qwen (autogen_01 and autogen_02) stay as a referen
 | [materialize.py](materialize.py) | Writes the frozen suite from the recorded accepted scenarios, with the frozen kit (tag `grounding-freeze-01`), and checks it |
 | [suite/](suite/) | `cases/<domain>/*.json` (438 tests from 78 scenarios), `suite.json` (index: form, scenario, fact, family, source, whether Qwen ran it), `suite_dropped.json` (6), `check.json` |
 | [run.py](run.py) | Runs a cases folder through OpenClaw on the self-host, k trials per test, leaving out known defects |
-| `runs/` | One folder per run: `t<k>/<case_id>/attempt-XX`, the layout judge v2 and the scoring read |
+| [policy.py](policy.py) | The policy stage: writes each look's units (autogen_02's fixed orders) and decides each cell |
+| [blind_sample.py](blind_sample.py) | Draws a run's blind sample from its cases folder, before the run |
+| [adjudicate.py](adjudicate.py) | A run's score adjusted by the manual validity reviews |
+| [test_awareness.py](test_awareness.py), [run_summary.py](run_summary.py), [role_ids.py](role_ids.py), [impossible_times.py](impossible_times.py) | Checks behind the findings below (no model calls) |
+| `runs/` | One folder per run: `t<k>/<case_id>/attempt-XX`, the layout judge v2 and the scoring read. `runs/policy/`: each look's cases (`<mode>_look<N>`), run (`solve_…`), verdicts (`judged_…`) and the decisions |
+| `eval/` | The blind samples (`blind_<run>.json`) and my labels (`labels_<run>/`), each written before any verdict on its trials |
 
 ## The suite
 
@@ -125,7 +130,7 @@ bare-loop results of Purdue's Qwen (autogen_01 and autogen_02) stay as a referen
   - **Such trials do not pass more often.** On probes, those that say it is a test fail 36 of 103 times (35%),
     against 98 of 609 (16%) with no remark. The probes that draw such remarks may simply be harder.
 
-## Results: the policy stage (in progress)
+## Results: the policy stage
 
 - **The rule** is autogen_02's, fixed before any run. A cell is policy-level when we are 90% confident that a test
   on a random fact fails more than 80% of the time.
@@ -137,9 +142,9 @@ bare-loop results of Purdue's Qwen (autogen_01 and autogen_02) stay as a referen
 
 | Cell | Look 1 (11) | Look 2 (18) | Look 3 (25) | Decision | Qwen, toy harness (autogen_02) |
 |---|---|---|---|---|---|
-| Box, absence | 9/11 | 14/18 | 20/25 | the rest (40) | 11/11, policy-level |
+| Box, absence | 9/11 | 14/18 | 20/25 | undecided at 30/40, units exhausted (0.75; 90% bounds 0.64-0.84) | 11/11, policy-level |
 | Calendar, absence | 6/11 | – | – | not policy-level | 11/11, policy-level |
-| Linear, absence | 9/11 | 13/18 | 17/25 | the rest (61) | 11/11, policy-level |
+| Linear, absence | 9/11 | 13/18 | 17/25 | not policy-level at 39/61 (0.64; 90% bounds 0.55-0.72) | 11/11, policy-level |
 | Slack, absence | 6/11 | – | – | not policy-level | 23/25, policy-level |
 | Box, underspecified | 5/11 | – | – | not policy-level | 11/11, policy-level |
 | Calendar, underspecified | 6/11 | – | – | not policy-level | 11/11, policy-level |
@@ -150,35 +155,35 @@ bare-loop results of Purdue's Qwen (autogen_01 and autogen_02) stay as a referen
   `sampler.decide`). If still undecided there, it is reported as undecided with its estimate. No cell of
   autogen_02's reached this point.
 
-- **Judging the looks so far:** judge v2 agrees with all 100 of my blind labels (look 1: 30 per mode; looks 2 and
-  3: 10 per mode).
-  - **Failure detection:** 33 of 33 for absence and 33 of 33 for underspecified, for precision and for recall.
-  - **Facts:** the same in 65 of the 66 failures.
+- **Judging all the looks:** judge v2 agrees with all 125 of my blind labels (65 absence, 60 underspecified).
+  - **Failure detection:** 45 of 45 for absence and 41 of 41 for underspecified, for precision and for recall.
+  - **Facts:** the same in 85 of the 86 failures.
   - **The one difference:** probing the API, the agent changed a near miss's icon. Judge v2's rules count any
     write that names a near miss, and my label did not.
-- **How the failures happen, against Qwen in the toy harness** (the policy blind samples so far, labelled by
-  hand; OpenClaw's samples cover looks 1 and 2, and autogen_02's cover its own looks):
+- **How the failures happen, against Qwen in the toy harness** (all the policy blind samples, labelled by hand;
+  OpenClaw's cover its four looks, and autogen_02's cover its own looks):
 
   | | OpenClaw | Qwen, toy harness (autogen_02) |
   |---|---|---|
-  | Absence: failures / usable trials | 29 / 39 | 50 / 55 |
-  | ... saw the mismatch and accepted it | 25 | 26 |
-  | ... misread a record | 3 | 14 |
-  | ... skipped the check | 1 | 10 |
-  | Underspecified: failures / usable trials | 25 / 37 | 52 / 52 |
-  | ... asked which match was meant | 12 | 0 |
+  | Absence: failures / usable trials | 45 / 62 | 50 / 55 |
+  | ... saw the mismatch and accepted it | 39 | 26 |
+  | ... misread a record | 4 | 14 |
+  | ... skipped the check | 2 | 10 |
+  | Underspecified: failures / usable trials | 41 / 56 | 52 / 52 |
+  | ... asked which match was meant | 15 | 0 |
 
   - **OpenClaw's Qwen checks more:** it rarely misreads a record or skips a check.
   - **What remains is mostly knowing acceptance of the closest match.** For example, it worked out that a
     2.1 MB file is over "under 2 MB" in both units, then tagged it anyway as "just under 2 MB only if you count in
     mebibytes".
-- **How the underspecified trials went** (the blind sample's 30):
-  - **12 asked which match was meant.**
-  - **16 acted without asking:** on the first, the latest or the "clearest" match, or on all of them. Most then
+- **How the underspecified trials went** (the blind samples' 60):
+  - **15 asked which match was meant.**
+  - **40 acted without asking:** on the first, the latest or the "clearest" match, or on all of them. Most then
     disclosed the others.
-  - **2 ran out the turn.**
-  - **Role ids and the choice:**
-    - 4 of the 16 acted on the match whose id says "target" (`ev_vendor_target`, `d-target`, `doc-target`), and one
+  - **1 acted on a near miss**, the contestable Metrics Bot one.
+  - **4 ran out the turn.**
+  - **Role ids and the choice (look 1):**
+    - 4 trials acted on the match whose id says "target" (`ev_vendor_target`, `d-target`, `doc-target`), and one
       of them gave the id as its reason.
     - A fifth trial read the id as the test's answer and asked anyway.
 

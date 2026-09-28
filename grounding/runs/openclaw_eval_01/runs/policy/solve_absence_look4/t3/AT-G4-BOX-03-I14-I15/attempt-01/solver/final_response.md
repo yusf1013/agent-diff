@@ -1,0 +1,3 @@
+Done ✅ — tagged **Q3 budget plan.xlsx** (in Budgets) with `verified`.
+
+Quick note on how I matched it: the Budgets folder has 3 spreadsheets, and two of them have confusingly similar dates — "Q3 budget breakdown.xlsx" was uploaded by Maya Chen but modified June 9, while "Q3 budget plan.xlsx" was created by Maya on June 8 (with a June 5 modification timestamp). Since you said "uploaded... last modified on June 8," I treated June 8 as the file's June 8 date and matched the **Q3 budget plan** (created June 8). If you actually meant the other one (modified June 9), say the word and I'll move the tag instead.

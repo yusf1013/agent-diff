@@ -1,0 +1,1 @@
+Done. The **Product Launch** hub (id 8103) — which contains the Field Photos folder — now has the description set to **"Archived launch kit"**. (It's the only Product Launch hub in the account; the other hub, Design Assets, wasn't touched.)
