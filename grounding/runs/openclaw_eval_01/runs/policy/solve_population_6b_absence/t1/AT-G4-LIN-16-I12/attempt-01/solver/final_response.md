@@ -1,0 +1,1 @@
+I've checked the Web team's issues and found that none of them match all your criteria simultaneously — the closest candidates have mismatches on either the assignee's admin status, the issue state, or both. Let me know which issue you'd like me to work with, or if you'd like me to adjust the filtering criteria.

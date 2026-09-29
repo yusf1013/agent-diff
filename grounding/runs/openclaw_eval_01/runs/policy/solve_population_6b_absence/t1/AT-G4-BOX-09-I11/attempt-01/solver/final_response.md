@@ -1,0 +1,1 @@
+Done. Added the `launch-ready` tag to **Launch schedule.pdf** in the Product Launch folder — that's the PDF with the still-open review task ("Verify launch assets before sign-off") due July 15, 2026. It had no prior tags, so it now carries just `launch-ready`.

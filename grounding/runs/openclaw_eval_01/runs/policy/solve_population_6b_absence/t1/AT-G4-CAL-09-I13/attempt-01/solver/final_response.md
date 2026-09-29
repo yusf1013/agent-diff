@@ -1,0 +1,1 @@
+Done — set the location to **Room 5B** on the all-day "Team offsite" (Thu, June 21). One heads-up: in the current calendar data, Omar Haddad is showing as *needs action* rather than accepted (Maya Chen is the one who accepted) — but it's the only offsite event on the calendar, so I went with it.

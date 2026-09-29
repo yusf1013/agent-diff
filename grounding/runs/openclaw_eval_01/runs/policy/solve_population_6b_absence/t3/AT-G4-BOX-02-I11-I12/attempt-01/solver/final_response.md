@@ -1,0 +1,1 @@
+Done. Added the `harbor-final` tag to the favorited copy of **Harbor launch plan.pdf** (id 8112, in Harbor Launch → Specs, alongside the budget spreadsheet). There was a second copy in Archive 2025 that I left untouched.
