@@ -47,15 +47,34 @@ The gap comes from four parts of our approach. The measured effect of each on th
    - Our checks and cold reader sent back 17 of 31 of our writer's first drafts (Phase 4): 10 for a substantive
      flaw, 7 for format alone.
 
-**Policy-level facts (the PI's rule, 2026-09-29):** a failing presupposing test still counts the fact of the near
-miss acted on, when it is a designated alternative. Recounted ([policy_facts.json](policy_facts.json)), the four
-baselines expose 1 fact at the policy level in all: D:overdue (N1), kept apart from the fact-sensitive exposures,
-which stay 0. Their other 19 failing trials acted on plain near misses, records outside the catalog, or a record the
-agent created.
+**Policy-level facts (2026-09-29): two readings, for the PI to choose.** The pre-registered review rule gave a
+failing presupposing test no fact: acting when nothing matches was the generic no-match policy. The PI's correction
+counts the fact of the near miss acted on, and which near misses count is still open
+([policy_facts.py](policy_facts.py), [policy_facts.json](policy_facts.json)). The fact-sensitive exposures stay 0
+under both readings.
+
+| Facts at the policy level, detect@3 / detect@1 | N0 | N1 | N0M | N1M |
+|---|---|---|---|---|
+| Designated alternatives only (the rule as relayed by the lead session) | 0 / 0 | 1 / 1 | 0 / 0 | 0 / 0 |
+| Any near miss that fails one condition (the lead session's reading) | 4 / 3 | 2 / 2 | 0 / 0 | 1 / 0 |
+
+- **The facts:** under the first reading, only D:overdue (N1). The second adds four from N0 (A:File.tags,
+  A:Issue.title, A:Event.start, R:Event.calendar_id), R:TaskAssignment.assigned_by_id (N1) and
+  R:EventAttendee.event_id (N1M). Of the 20 failing presupposing trials, 17 count no fact under the first reading
+  and 6 under the second. Those 6 are 3 on a record outside the catalog and 3 that created the missing channel.
+- **The case for the second:** it is one rule for both forms. In probe form, the failure-to-fact rule counts plain
+  near misses too: 3 of the 4 facts exposed by N0's content as probes come from plain ones (§3). By the lead
+  session's account, our pipeline's coverage credit also counts plain near misses: its DROP and SUB_OR_DROP
+  mutations select them, and 37 of 204 covered facts are credited only through F0.
+- **The labels' mechanisms do not settle it.**
+  - N0's four added facts all come from trials where the agent said the record did not match and acted anyway.
+  - N1's D:overdue is a misread in all 3 trials.
+  - But probe form credits the same "saw the mismatch and acted" mechanism (§3: N0-BOX-P-T07, N0-CAL-P-T04).
 
 **One more part is a contribution to honest measurement:** part 2 of the credit rule, and keeping the policy tests
-apart. Every one of N0's 10 failing trials and N1's 6 is the generic habit of acting when a presupposed record does
-not exist. Counted as raw failing tests, N0 would score 5 and look productive. Counted as facts, it scores 0.
+apart. All of N0's 10 failing trials and N1's 6 are on tests that presuppose a record that does not exist. Counted as
+raw failing tests, N0 would score 5 and look productive. As fact-sensitive exposures, it scores 0; at the policy
+level, 0 or 4, depending on the reading above.
 
 ### Q2. Which baselines
 
@@ -184,8 +203,9 @@ The reading of each result was fixed before the runs ([log](log.md), 14:28). Lab
 a mistake. Under the PI's rule a timeout is a failure of the agent, so counting the other 3 as failing trials gives
 15 against 4 probes, 30 against 5 trials, and 13 against 2 pairs (p = 0.007). The reading does not change.)
 
-- **Form:** the probe lifts plain near misses from nothing to about 15% of tests. That matches our own F0 probes
-  (16%).
+- **Form:** the probe lifts N0's near misses, mostly plain, from nothing to about 15% of tests. That matches our own
+  F0 probes (16%). Of the 4 facts exposed, 3 come from plain near misses and 1 from a designated one (F8:
+  A:Calendar.summary).
 - **Content:** within a test, the substitute is what bites. Removed, 9 of the 10 unconfounded probes stop failing.
   On a random sample, not selected on exposure, 13 of the 14 failing probes stop failing (the fourteenth fails for
   another reason), so the selected pairs did not overstate it.

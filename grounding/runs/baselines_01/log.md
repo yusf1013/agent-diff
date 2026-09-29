@@ -276,3 +276,20 @@ How the results will be read:
     - plain48 is 15 against 4 probes, 30 against 5 trials, and 13 against 2 pairs (p = 0.007).
     The conclusions do not change.
 - compare.py now computes our generation cost per 48 tests from the totals: $5.44 at list and $0.308 billed.
+
+## 2026-09-29: policy-level facts under two readings (a counting point from the lead session)
+
+- The lead session pointed out that my recount counts plain (F0) near misses as "no fact" in presupposing form,
+  while the failure-to-fact rule counts them in probe form (comparison 3: 3 of its 4 facts come from plain near
+  misses; the fourth is F8). By its account, our pipeline's coverage credit also counts plain near misses. Its report
+  shows both readings, for the PI and me to decide. I checked its numbers against my labels, found them right, and
+  sent no reply.
+- [policy_facts.py](policy_facts.py) now writes both readings. The existing keys hold the designated reading and
+  are unchanged; the `any_family_*` keys hold the other, and each trial carries its mechanism. Detect@3 / detect@1:
+  - designated only: N0 0/0, N1 1/1, N0M 0/0, N1M 0/0;
+  - any near miss: N0 4/3, N1 2/2, N0M 0/0, N1M 1/0.
+- The mechanisms do not separate the readings. N0's 4 added facts come from trials that saw the mismatch and acted
+  anyway, and N1's D:overdue is a misread in all 3 trials. But probe form credits the same saw-the-mismatch
+  mechanism.
+- report.md now shows both rows (Q1), and a stale count is fixed there: the failing presupposing trials that count
+  no fact under the designated reading are 17, not 19.
