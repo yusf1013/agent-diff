@@ -1,0 +1,1 @@
+Done. Set **PAY-2** — "Refund retries time out at checkout for wallets" (Payments, high priority, last updated Sep 12) — estimate from 3 to **8**. It was the only high-priority Payments issue matching that update date.

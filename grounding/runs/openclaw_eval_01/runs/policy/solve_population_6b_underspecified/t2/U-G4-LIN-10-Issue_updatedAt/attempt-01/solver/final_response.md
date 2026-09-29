@@ -1,0 +1,1 @@
+Done. Set estimate to **8** on **PAY-2** — "Refund retries time out at checkout for wallets" (Payments, High priority). That was the only high-priority refund-retries timeout issue in the Payments team.

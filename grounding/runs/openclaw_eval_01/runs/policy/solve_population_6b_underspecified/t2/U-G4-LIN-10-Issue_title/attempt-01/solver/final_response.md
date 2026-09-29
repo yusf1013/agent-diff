@@ -1,0 +1,1 @@
+Done. In Linear I found the high-priority Payments issue last updated September 12 — **PAY-2** "Refund retries time out at checkout for wallets" — and set its estimate to **8** (was 3). The update succeeded.

@@ -1,0 +1,1 @@
+Done. Set **PAY-2 — "Refund retries time out at checkout for wallets"** to an estimate of 8. It's the high-priority (P3) refund retry timeout issue in the Payments team; the others with similar titles (PAY-1, PAY-4, PAY-5) are medium priority and were left at 3.

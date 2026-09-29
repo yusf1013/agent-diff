@@ -1,0 +1,3 @@
+Done ✅ — tagged folder **Seaport Archive** (id 8200, in All Files, description: "Photos, permits, and contractor bids for the lighthouse restoration at Harbor Point.") with **seaport-final**, preserving its existing tags (`harbor`, `restoration`).
+
+One heads-up: your account has a few near-duplicates — "Seaport Archive 2024" (also lighthouse) and another "Seaport Archive" under Harbor Projects (marina dredging, no lighthouse) and one under Old Permits (lighthouse, "in the harbor district"). I went with the top-level one in All Files as the primary. If you meant the one under Old Permits instead, say the word and I'll move the tag.

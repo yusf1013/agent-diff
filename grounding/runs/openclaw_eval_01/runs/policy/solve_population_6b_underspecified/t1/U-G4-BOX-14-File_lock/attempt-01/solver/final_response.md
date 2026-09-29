@@ -1,0 +1,1 @@
+Done. In the **Vendor Contracts** folder, the match was **Coral Vendor Agreement.pdf** (v6, tagged renewal) — the only file meeting both criteria. It now has tags `renewal` and `legal-review`, verified in the response.
