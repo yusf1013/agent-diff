@@ -53,3 +53,47 @@ Round 1's values are in brackets (N0, N1).
 **Fixed now:** if a twin exposes 3 or more facts, an unchanged fresh repeat of that baseline runs before any
 conclusion, to separate the lines from session luck. The lines are not tuned on the results; each arm is generated
 once (with the generator's one repair turn for tests that do not load, as in round 1).
+
+## Result (runs 2026-09-28 23:06 to 2026-09-29 00:31; labels before any check result)
+
+288 trials on OpenClaw with the self-hosted Qwen, all labelled by hand ([n0m labels](n0m/runs/gen_01/labels.json),
+[n1m labels](n1m/runs/gen_01/labels.json)); numbers from [compare.json](../compare.json).
+
+| 48 tests each | N0 | N0M | N1 | N1M |
+|---|---:|---:|---:|---:|
+| Near misses through a designated substitute | 9 of 48 | 17 of 53 | 21 of 58 | 19 of 66 |
+| Facts exercised properly (valid tests) | 7 | 12 | 17 | 13 |
+| Distinct deciding details; tests only reusing one | 32; 20 | 38; 17 | 46; 9 | 51; 13 |
+| Right record present; our probe form | 39; 0 | 44; 0 | 40; 0 | 44; 0 |
+| Invalid tests | 3 | 6 | 7 | 7 |
+| **Facts exposed (detect@3)** | **0** | **0** | **0** | **0** |
+| Tests failing at least once; of them the absence policy | 5; 5 | 0; 0 | 2; 2 | 2; 2 |
+| Trials with a wrong written value (Linear priority) | 7 | 19 | 0 | 1 |
+| Their own assertions on valid tests: real failures caught; false alarms | 7 of 10; 6 | none to catch; 21 | 6 of 6; 16 | 1 of 1 visible; 32 |
+| Generation cost at list (billed) | $0.51 ($0.03) | $1.20 ($0.06) | $0.67 ($0.03) | $1.14 ($0.06) |
+
+(N1's 7 invalid tests include 3 found at run time. N0 and N1's assertion figures are the corrected ones.)
+
+**The predictions:**
+- **P1 held.** Neither twin exposes a fact. N0M has no failing test at all: its 4 absence tests (N0 had 9) were all
+  answered by saying nothing fits. N1M's 2 failing tests are both the absence policy: asked to remove a "Datasets
+  folder" that is not in the hub, the agent tried to remove the file named Datasets instead (3 of 3 trials; the
+  replica refuses hub removals, so only the transcripts show it); asked to cancel a budget sync "with Kenji", it once
+  cancelled the one with Sam.
+- P2 held; P3 missed for N0M; P4 half met; P5 missed (scored before the runs, [log](../log.md)).
+- **P6 held.** 51 of the twins' 53 false alarms are tests expecting a cancelled event or a deleted calendar to
+  disappear, all marked unsound in the review before the runs; the other 2 are trials where the agent rightly asked
+  or timed out. No request lacked a needed detail.
+- The rule for a control repeat (3 or more facts exposed) did not trigger.
+
+**What it says:** the naive lines changed what the tests look like, not what they expose. "Different property" and
+"challenging" raised the designated look-alikes (N0: 19% of near misses, N0M: 32%) and the facts exercised properly
+(7 to 12), but 44 of 48 tests in each twin still leave the right record in the workspace, and the agent, seeing both,
+picks right ("There were two files named ..., so I checked ... on each"). Across the four naive prompts, 0 of 192
+tests exposed a fact (at most about 1.6% per test at 95%). The line "a perfect assistant must be able to pass them"
+did not prevent impossible requests (the bot deleting others' Slack messages, invites of existing members, deleting
+a calendar the actor does not own), and the twins' own checks got worse, because more of their tests cancel events.
+
+**Also seen:** 5 timeouts (4 on invalid N0M Slack tests, 1 on N1M-BOX-T03), counted as failures of the agent that
+expose no fact; two trials probed destructively to test a permission (a delete tried on an older copy, a scratch
+channel created).

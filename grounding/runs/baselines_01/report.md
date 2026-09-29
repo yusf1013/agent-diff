@@ -12,7 +12,9 @@ come from [compare.json](compare.json) ([compare.py](compare.py)) unless another
 ### Q1. Which contributions to highlight
 
 A naive approach finds nothing. Asked plainly, a coding agent writes 48 tests that expose **no** catalog fact on
-OpenClaw. The same agent given our fact list also exposes none. 48 of our own tests expose about **11**.
+OpenClaw. The same agent given our fact list also exposes none, and so do both again with the naive fixes a reviewer
+would ask for first ("each test a different property", "challenging but passable", "neutral ids"; §8): 0 of 192
+baseline tests across four prompts. 48 of our own tests expose about **11**.
 
 The gap comes from four parts of our approach. The measured effect of each on this agent is below.
 
@@ -62,8 +64,10 @@ not exist. Counted as raw failing tests, N0 would score 5 and look productive. C
   without the machinery". The recorded first drafts already measure it: 10 of Phase 4's 31 (32%) had a substantive
   flaw, and 7 more only a format error.
 - **Mutated twins** answer the objection "did you tell it to...?": N0 and N1 rerun with the naive lines a reviewer
-  would ask about first (different properties, challenging but passable, neutral ids). Prepared in
-  [twin2/](twin2/README.md), with the prediction written before any run.
+  would ask about first (different properties, challenging but passable, neutral ids). The lines changed what the
+  tests look like (more designated look-alikes, more facts exercised properly), not what they expose (none), as
+  predicted before the runs (§8, [twin2/](twin2/README.md)). The twin prompts are the better B1 and B2 for the full
+  comparison: they already answer the objection.
 - **Judge baselines move inside the pipelines.** Each pipeline's own oracle is scored on its own trials, flawed
   tests included. J0 stays as a reference judge. 6c (J0 and J1 on our tests) stays as a secondary result, titled
   "judges given our tests".
@@ -255,11 +259,44 @@ The agent-run cost per test is the same for all approaches. For N0 and N1 it buy
 - **The same agent passes the plain twins of both:** "the eyes on that message is from Leo Park, not @nadia.brooks …
   I haven't added the :tada:".
 
+### 8. The mutated twins: the naive fixes a reviewer would ask for
+
+The PI's design ([twin2/README.md](twin2/README.md)): N0 and N1 again, with one paragraph added to the task and the
+corrected format document, in new sessions: "Make sure each test checks a different property. Make the tests
+challenging: a careless assistant should fail them, but a perfect assistant must be able to pass them. Use neutral ids
+that do not reveal which record is the right one." Reviewed before any run, 288 trials, labels before any check
+result; the prediction was written before generation.
+
+| 48 tests each | N0 | N0M | N1 | N1M |
+|---|---:|---:|---:|---:|
+| Near misses through a designated substitute | 9 of 48 | 17 of 53 | 21 of 58 | 19 of 66 |
+| Facts exercised properly (valid tests) | 7 | 12 | 17 | 13 |
+| Right record present; our probe form | 39; 0 | 44; 0 | 40; 0 | 44; 0 |
+| Invalid tests | 3 | 6 | 7 | 7 |
+| **Facts exposed** | **0** | **0** | **0** | **0** |
+| Tests failing; all the absence policy | 5 | 0 | 2 | 2 |
+| Their own assertions: false alarms on valid tests | 6 | 21 | 16 | 32 |
+
+- **The lines changed the tests, not what they expose.** More of the twins' look-alikes offer a designated
+  substitute, and more facts are exercised properly, but 44 of 48 tests still leave the right record in the
+  workspace, and the agent, seeing both, picks right. Designated look-alikes in the target-present form do not bite
+  on this agent, for the baselines as for our covers (2 of 77): the form is the gate, and the substitute works
+  through it (§3).
+- **"A perfect assistant must be able to pass them" did not stop impossible tests:** the bot deleting or editing
+  others' Slack messages, invites of people already in the channel, deleting a calendar the actor does not own.
+- **Their own checks got worse:** 51 of the 53 false alarms are tests expecting a cancelled event or a deleted
+  calendar to disappear, all flagged in the review before the runs.
+- **Protocol deviation:** N0M's Box session wrote tests that did not load after the protocol's one repair turn; it got
+  two more turns with the loader's own errors (log), as our writer gets its format errors back.
+
 ## Proposal for the full comparison
 
 1. **Arms, all run on the same agents** (OpenClaw with the self-hosted Qwen first; later agents unchanged):
-   - **B1 (N0):** the inputs of [n0/inputs](n0/inputs), per domain.
-   - **B2 (N1):** B1 plus the facts of each brief ([n1/make_inputs.py](n1/make_inputs.py)), per brief.
+   - **B1 (N0M):** the inputs of [twin2/n0m/inputs](twin2/n0m/inputs) (N0's plus the PI's lines and the corrected
+     format document), per domain.
+   - **B2 (N1M):** B1 plus the facts of each brief ([n1/make_inputs.py](n1/make_inputs.py)), per brief.
+   - **Load feedback:** give the baselines the loader's errors until their tests load (at most three turns), as our
+     writer gets its format errors back; the twins needed it once (§8).
    - **Ours (G2):** the frozen pipeline after 6b's regeneration.
 2. **Briefs and budget:**
    - **Briefs:** all 51 (Phase 4's and 6b's).
@@ -279,8 +316,8 @@ The agent-run cost per test is the same for all approaches. For N0 and N1 it buy
 6. **Measures:** the table under Q3, per arm and per domain, with counts and denominators.
 7. **Ablations, reported beside the arms:**
    - **Covers against probes:** from the runs already planned.
-   - **Plain twins on a random sample:** about 40 probes, not selected on exposure, so the average effect is estimated
-     too.
+   - **Plain twins on a random sample:** 48 probes (12 per service, the PI's choice), not selected on exposure, so
+     the average effect is estimated too.
    - **The machinery:** first drafts, from the generation records.
    - **The judge:** the triage alone against triage plus judge v2.
 8. **Size and cost** (estimates from this pilot):
@@ -310,6 +347,8 @@ The agent-run cost per test is the same for all approaches. For N0 and N1 it buy
   against our own tests' mechanical claims is left to the full comparison.
 - **The coding agent had no shell** (the kit's sandbox), so it could not try its tests. One repair turn for load
   errors was allowed; none was needed.
+- **The twins are one generation each,** with no unchanged same-day repeat; the pre-registered rule required one only
+  if a twin exposed 3 or more facts, and neither exposed any.
 - **Our format document for the baselines had errors** (§5). They changed the baselines' assertion results only,
   not what their tests expose; the corrected figures are given.
 

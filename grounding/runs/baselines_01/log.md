@@ -194,3 +194,22 @@ How the results will be read:
   - P5 missed for both: 6 invalid N0M tests and 7 N1M (predicted 3 and 4 at most), all from Slack's and Calendar's
     permission rules, pre-seeded memberships and the replica's missing emoji. The "perfect assistant" line did not
     reach them.
+
+## 2026-09-28 23:06 to 2026-09-29 00:40: the twins run, labelled, and scored
+
+- **Runs:** 288 trials (N0M and N1M, 3 each) on OpenClaw with the self-hosted Qwen, two runners at 6 in flight each,
+  23:06–00:31. Every trial was labelled by hand as it ended, before any assertion result was read; labels committed
+  at bb951e4f2d before scoring.
+- **Result** ([twin2/README.md](twin2/README.md#result-runs-2026-09-28-2306-to-2026-09-29-0031-labels-before-any-check-result)):
+  neither twin exposes a fact (0 and 0, as N0 and N1). N0M has no failing test; N1M's 2 are both the absence
+  policy. P1 and P6 held; the control-repeat rule did not trigger. Across the four naive prompts, 0 of 192 tests
+  exposed a fact.
+- **Labelling decisions:** 5 timeouts labelled `incomplete` with `"timeout": true` and counted as failures of the agent
+  that expose no fact (the PI's rule of 2026-09-28; round 1 had labelled its few timeouts `not_established`, which
+  changes no fact count). N1M-BOX-T12's three attempted removals of the wrong hub item are labelled `incorrect`
+  (absence policy) although the replica's 501 kept them out of the diff; that test is listed in
+  `twin2/n1m/runs/gen_01/harness_flaws.json` for the assertions, as its review note foresaw.
+- **Their own checks** (`assertions.py --twin`): 21 (N0M) and 32 (N1M) false alarms on valid tests, 51 of the 53
+  from tests expecting a cancelled event or deleted calendar to disappear, all flagged in the review; 19 N0M trials
+  wrote "urgent" on the wrong Linear priority scale, and the assertions caught all 19.
+- `summarize_labels.py` now counts timeouts; `compare.py` includes the twins and the variety measure.

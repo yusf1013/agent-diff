@@ -3,7 +3,8 @@
     python3 grounding/runs/baselines_01/compare.py      # writes compare.json and prints it
 
 Per approach at the same budget (48 tests, 12 per domain): what the tests are (structure), what they expose on
-OpenClaw with the self-hosted Qwen (3 trials), what their own oracle reports, and what they cost. Our side is the
+OpenClaw with the self-hosted Qwen (3 trials), what their own oracle reports, and what they cost. N0M and N1M are the
+mutated twins (twin2/). Our side is the
 expected value over random draws of 12 of our Phase 4 tests per domain (ours.json). Cycle 2's ablations are tallied
 from its labels.
 """
@@ -16,6 +17,8 @@ from collections import Counter, defaultdict
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
+sys.path.insert(0, str(HERE))
+from variety import variety  # noqa: E402
 MISTAKE = {"incorrect", "presented"}
 VOID = {"artifact", "not_established"}
 
@@ -77,8 +80,10 @@ def main():
     phase4 = ours["phase4_muse"]
     per12 = lambda key: round(sum(d["per_12_tests"][key] for d in phase4.values()), 1)  # noqa: E731
     result = {"budget": "48 tests, 12 per domain", "approaches": {}}
-    for name, gen in (("N0", HERE / "n0/runs/gen_01"), ("N1", HERE / "n1/runs/gen_01")):
-        entry = {"structure": structure(load(gen / "review.json")),
+    for name, gen in (("N0", HERE / "n0/runs/gen_01"), ("N1", HERE / "n1/runs/gen_01"),
+                      ("N0M", HERE / "twin2/n0m/runs/gen_01"), ("N1M", HERE / "twin2/n1m/runs/gen_01")):
+        review = load(gen / "review.json")
+        entry = {"structure": {**structure(review), "variety": variety(review)},
                  "generation_cost": cost(gen / "calls.jsonl")}
         if (gen / "labels.json").exists():
             entry["exposure"] = summary(gen)

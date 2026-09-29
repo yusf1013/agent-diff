@@ -7,6 +7,8 @@
 - **Policy failures:** failing trials whose label names a policy (acting when a presupposed match is missing, or on
   one of several full matches without asking); they expose no fact.
 - **Value errors:** trials on the right record with a wrong written value, outside the grounding scope.
+- **Timeouts:** trials whose turn timed out (`"timeout": true`, labelled from the twins on). By the PI's rule a timeout
+  is a failure of the agent, not a void; it exposes no fact, so it is counted here and not among the mistakes.
 - With REVIEW.json, trials of tests the review found invalid are counted apart, and so are those of tests listed in
   runtime_flaws.json beside the labels (flaws found while labelling).
 """
@@ -35,6 +37,7 @@ def main():
     outcomes = Counter(l["outcome"] for l in labels.values())
     failing3, failing1, policy_tests, facts3, facts1 = [], [], [], set(), set()
     policy_trials = value_errors = 0
+    timeouts = []
     for case, trials in sorted(by_test.items()):
         if case in invalid:
             continue
@@ -50,6 +53,7 @@ def main():
             facts1.update(bad["t1"].get("exposed", []))
         policy_trials += sum(1 for l in bad.values() if l.get("policy"))
         value_errors += sum(1 for l in trials.values() if l.get("value_error"))
+        timeouts += [f"{t}/{case}" for t, l in sorted(trials.items()) if l.get("timeout")]
     print(json.dumps({
         "trials": len(labels), "tests": len(by_test), "invalid_tests": sorted(invalid & set(by_test)),
         "outcomes": dict(outcomes),
@@ -57,7 +61,7 @@ def main():
         "failing_tests": failing3, "failing_tests_all_policy": policy_tests,
         "failing_trials": sum(outcomes[o] for o in MISTAKE), "policy_failure_trials": policy_trials,
         "facts_exposed_detect3": sorted(facts3), "facts_exposed_detect1": sorted(facts1),
-        "value_error_trials": value_errors}, indent=1))
+        "value_error_trials": value_errors, "timeout_trials_valid_tests": timeouts}, indent=1))
 
 
 if __name__ == "__main__":
