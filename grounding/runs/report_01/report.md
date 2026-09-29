@@ -213,3 +213,71 @@ Label groups and Box tasks recur: the writer could not build scenarios on them t
   tested more weakly.
 - **Facts per family** (a fact counted once per family it has): F1 81, F0 71, F8 41, F7 38, F2 30, F5 22, F6 13,
   F4 5, F3 1.
+
+## RQ3. How well does the generator perform?
+
+**Table 5. From briefs to valid regular tests, per writer.** Sources: briefs to acceptance and the manual review,
+[autogen_01 report](../autogen_01/report.md) §4, [autogen_02 report](../autogen_02/report.md) §6.1–6.2 and
+[completion_01](../completion_01/README.md); from scenarios on, [kit/generator.py](kit/generator.py) →
+[numbers/generator.json](numbers/generator.json).
+
+| | Sonnet R | Sonnet P | Sonnet P v2 | Muse Phase 4 | Muse 6b | **All** |
+|---|---:|---:|---:|---:|---:|---:|
+| Briefs | 18 | 16 | 16 | 32 | 26 | **108** |
+| Accepted scenarios | 18 | 15 | 16 | 29 | 23 | **101** |
+| Rejected (the cold reader never accepted a version) | 0 | 1 | 0 | 2 | 3 | **6** |
+| Failed (infrastructure) | 0 | 0 | 0 | 1 | 0 | **1** |
+| Versions per accepted scenario, median (max) | 1 (5) | 2 (5) | 2 (6) | 2 (7) | – | |
+| Manual review: scenarios valid / flawed but usable / invalid | 16 / 1 / 1 | 11 / 4 / 0 | 15 / 1 / 0 | 24 / 5 / 0 | 21 / 2 / 0 | **87 / 13 / 1** |
+| Near misses declared | 67 | 56 | 62 | 99 | 93 | **377** |
+| … ruled flawed by the PI (rulings) | 2 | 3 | 2 | 0 | 1 | **8** |
+| Regular tests derived (cover, probe, fact probe) | 108 | 84 | 93 | 159 | 138 | **582** |
+| … dropped by the witness check | 0 | 3 | 2 | 1 | 1 | **7** |
+| … left out by the rulings | 4 | 3 | 2 | 0 | 1 | **10** |
+| **Valid regular tests** | **104** | **78** | **89** | **158** | **136** | **565** |
+| Facts covered (RQ2) | 37 | 40 | 44 | 58 | 69 | **204** |
+
+- **Acceptance:** 101 of 108 briefs (94%) gave an accepted scenario. A brief is rejected when no version passes
+  every check within the round limit; in the recorded cases the cold reader kept finding a problem.
+- **Validity:** 100 of 101 accepted scenarios are usable; 1 is invalid (AR-LIN-25). Of all derived tests, 565 of
+  582 (97%) are valid. "Flawed but usable" means a contestable near miss or contrived wording; the PI's rulings
+  decide what is left out.
+- **Sonnet versus Muse** is descriptive only: different briefs, facts, method versions and judges. Muse's scenarios
+  had fewer flawed near misses in review (Phase 4: 1 contestable of 99, against 2 to 8 contestable or invalid per
+  Sonnet arm).
+- **The witness check** drops a probe whose near miss no longer fails its fact once the target is removed. It
+  always ran, but its result was ignored until the frozen version of 2026-09-27; the 7 dropped tests would otherwise
+  have been run and scored.
+
+**What the automated checks caught before any agent ran.**
+
+- **Per version** (autogen_01's Sonnet arms): 50 versions sent back. Code checks 14 (near misses failing two
+  conditions, missing seed arguments, anchors that vanish with the target), replica pre-checks 18 (seeds the
+  replica refuses, values no read returns, writes that do not land), the cold reader 18 (undeclared near misses,
+  genuine ambiguity such as "my calendar list", unnatural requests).
+- **Per scenario** (Muse Phase 4): 14 of 32 sent back by the code checks or pre-checks, 4 by the reader. Of 31
+  first drafts, 14 were clean and 17 were sent back, 10 of them for a substantive flaw (baselines_01,
+  `machinery.json` on branch `exp/baselines-01`).
+- **What no check caught** (found by the manual review or in runs): domain semantics (a Linear label group used as a
+  label), fields the acting user cannot read (a calendar's sharing rules), and contrived or ambiguous wording.
+
+**Table 6. Policy variants, written by code and Muse.** Sources: [autogen_02 report](../autogen_02/report.md) §3
+and §6.4, [completion_01](../completion_01/README.md).
+
+| Variant | Attempted | Accepted | Declined by the writer | Rejected | Not derivable | Valid in manual read |
+|---|---:|---:|---:|---:|---:|---|
+| Absence twin (code), Phase 4 | 62 pairs | 61 | – | 1 (code check) | – | – |
+| Drop-F, Phase 2 calibration (cal3, on the hand-built scenarios) | 31 derivable | 23 | – | – | – | 22 / 23; 37 / 37 same derivable call as the hand-made variants |
+| Drop-F, Phase 4 | 59 | 52 | 4 | 1 (reader) | 2 | – |
+| Drop-F, 6b | 70 | 53 | 11 | 5 | 1 | 51 / 53 |
+| Clone, Phase 4 | 29 | 25 | 3 | 1 (code check) | – | 11 / 11 reviewed |
+
+- **Policy units on OpenClaw** (RQ6): 255 absence units, 244 valid; 209 underspecified units, 197 valid.
+- **A bug the checks missed:** the drop-F derivation named a variant by table and field without the fact's kind, so
+  two facts of one column overwrote each other's records. It cost 6b five jobs, derived again, and Phase 4 two
+  variants, not recovered because 6a's population had been fixed. Found while assembling 6b; now fixed
+  (`variants2.dropf_id`).
+
+**Cost of generation** (Muse, [numbers/costs.json](numbers/costs.json)): writer and reader together, $0.62 per
+accepted scenario at list price in Phase 4 and $0.82 in 6b ($0.035 and $0.046 billed); $0.125 per valid regular test
+($0.007 billed). Sonnet on the subscription: $1.78 to $5.47 per accepted scenario at list price. §12 has the rest.
