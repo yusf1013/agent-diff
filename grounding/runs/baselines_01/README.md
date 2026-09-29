@@ -61,5 +61,9 @@ python3 grounding/runs/baselines_01/score_oracles.py GEN
 python3 grounding/runs/baselines_01/compare.py
 ```
 
-N1's two LLM oracles did not run: Muse answered HTTP 402 (billing) from 16:13. The failed calls are kept in
-`n1/runs/gen_01/judged_*.failed-402-billing`; the two `judges` commands above rerun them once billing works.
+N1's two LLM oracles first failed with HTTP 402 (billing) at 16:13; the failed calls are kept in
+`n1/runs/gen_01/judged_*.failed-402-billing`. The rerun on the 141 trials that ran finished at 21:30.
+
+`assertions.py --faithful` (output `assertions.faithful.json`) evaluates the baselines' assertions as our format
+document described them: the document listed an `"unchanged"` type the engine rejects and promised that bookkeeping
+columns are ignored (log, 21:29–21:45).
