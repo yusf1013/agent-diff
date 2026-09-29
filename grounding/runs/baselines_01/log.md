@@ -203,10 +203,11 @@ How the results will be read:
 - **Result** ([twin2/README.md](twin2/README.md#result-runs-2026-09-28-2306-to-2026-09-29-0031-labels-before-any-check-result)):
   neither twin exposes a fact (0 and 0, as N0 and N1). N0M has no failing test; N1M's 2 are both the absence
   policy. P1 and P6 held; the control-repeat rule did not trigger. Across the four naive prompts, 0 of 192 tests
-  exposed a fact.
+  (169 valid) exposed a fact.
 - **Labelling decisions:** 5 timeouts labelled `incomplete` with `"timeout": true` and counted as failures of the agent
-  that expose no fact (the PI's rule of 2026-09-28; round 1 had labelled its few timeouts `not_established`, which
-  changes no fact count). N1M-BOX-T12's three attempted removals of the wrong hub item are labelled `incorrect`
+  that expose no fact (the PI's rule of 2026-09-28). Round 1 labelled three timed-out trials `not_established`
+  (N0-SLK-T12 twice, N1-BOX-T11), all on tests counted invalid, so no count changes; its fourth (N1-BOX-T12) acted
+  before timing out and is `incorrect`. N1M-BOX-T12's three attempted removals of the wrong hub item are labelled `incorrect`
   (absence policy) although the replica's 501 kept them out of the diff; that test is listed in
   `twin2/n1m/runs/gen_01/harness_flaws.json` for the assertions, as its review note foresaw.
 - **Their own checks** (`assertions.py --twin`): 21 (N0M) and 32 (N1M) false alarms on valid tests, 51 of the 53

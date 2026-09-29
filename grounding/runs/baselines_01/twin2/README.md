@@ -68,11 +68,13 @@ once (with the generator's one repair turn for tests that do not load, as in rou
 | Invalid tests | 3 | 6 | 7 | 7 |
 | **Facts exposed (detect@3)** | **0** | **0** | **0** | **0** |
 | Tests failing at least once; of them the absence policy | 5; 5 | 0; 0 | 2; 2 | 2; 2 |
-| Trials with a wrong written value (Linear priority) | 7 | 19 | 0 | 1 |
+| Trials with a wrong written value (see below) | 7 | 19 | 0 | 1 |
 | Their own assertions on valid tests: real failures caught; false alarms | 7 of 10; 6 | none to catch; 21 | 6 of 6; 16 | 1 of 1 visible; 32 |
 | Generation cost at list (billed) | $0.51 ($0.03) | $1.20 ($0.06) | $0.67 ($0.03) | $1.14 ($0.06) |
 
-(N1's 7 invalid tests include 3 found at run time. N0 and N1's assertion figures are the corrected ones.)
+(N1's 7 invalid tests include 3 found at run time. N0 and N1's assertion figures are the corrected ones. The wrong
+written values are Linear priorities on the wrong scale, except N1M's one, a mis-encoded dash in a Slack message:
+19 of N0M's 30 trials that set a priority wrote Low, High or No priority for Urgent.)
 
 **The predictions:**
 - **P1 held.** Neither twin exposes a fact. N0M has no failing test at all: its 4 absence tests (N0 had 9) were all
@@ -90,7 +92,7 @@ once (with the generator's one repair turn for tests that do not load, as in rou
 "challenging" raised the designated look-alikes (N0: 19% of near misses, N0M: 32%) and the facts exercised properly
 (7 to 12), but 44 of 48 tests in each twin still leave the right record in the workspace, and the agent, seeing both,
 picks right ("There were two files named ..., so I checked ... on each"). Across the four naive prompts, 0 of 192
-tests exposed a fact (at most about 1.6% per test at 95%). The line "a perfect assistant must be able to pass them"
+tests exposed a fact (169 of them valid: at most about 1.8% per valid test at 95%). The line "a perfect assistant must be able to pass them"
 did not prevent impossible requests (the bot deleting others' Slack messages, invites of existing members, deleting
 a calendar the actor does not own), and the twins' own checks got worse, because more of their tests cancel events.
 

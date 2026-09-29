@@ -14,7 +14,7 @@ come from [compare.json](compare.json) ([compare.py](compare.py)) unless another
 A naive approach finds nothing. Asked plainly, a coding agent writes 48 tests that expose **no** catalog fact on
 OpenClaw. The same agent given our fact list also exposes none, and so do both again with the naive fixes a reviewer
 would ask for first ("each test a different property", "challenging but passable", "neutral ids"; §8): 0 of 192
-baseline tests across four prompts. 48 of our own tests expose about **11**.
+baseline tests (169 valid) across four prompts. 48 of our own tests expose about **11**.
 
 The gap comes from four parts of our approach. The measured effect of each on this agent is below.
 
