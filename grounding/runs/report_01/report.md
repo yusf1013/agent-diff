@@ -78,7 +78,7 @@ Source: [kit/scale.py](kit/scale.py) → [numbers/scale.json](numbers/scale.json
 |---|---:|---:|---:|---:|---:|
 | Regular suite: `full_02` (Box; the first pass), `full_03` (opaque-id re-run), `full_04` (6b) | 2,721 | 153.0 | 25,249 | 308M | 7.3M |
 | Policy stage: first-pass looks and full populations | 1,743 | 134.6 | 19,326 | 242M | 6.9M |
-| **All** | **4,464** | **287.6** | **44,575** | **550M** | **14.3M** |
+| **Main evaluation subtotal** | **4,464** | **287.6** | **44,575** | **550M** | **14.3M** |
 
 - Agent hours add up each trial's agent time; trials ran 24 to 48 at a time.
 - Median trial: 152 to 282 s depending on the run.
@@ -86,6 +86,30 @@ Source: [kit/scale.py](kit/scale.py) → [numbers/scale.json](numbers/scale.json
   three smoke runs (17 trials).
 - **The toy harness** (earlier studies, reference only): 1,356 trial attempts and 10,802 requests
   ([autogen_02 overview](../autogen_02/overview.md) §4).
+
+**Self-hosted Qwen token accounting across this report (audited 2026-09-29).** The subtotal above omits
+RQ8's fresh baseline and ablation runs. [kit/qwen_usage.py](kit/qwen_usage.py) →
+[numbers/qwen_usage.json](numbers/qwen_usage.json) reads the original proxy request metadata, checks the
+self-hosted Qwen/OpenClaw configuration, and reconciles it with each execution summary. No new model calls.
+
+| Scope | Trial attempts | Model requests | Input tokens | Output tokens | Combined tokens |
+|---|---:|---:|---:|---:|---:|
+| Main regular and policy evaluation (opening table) | 4,464 | 44,575 | 549,836,059 | 14,285,364 | 564,121,423 |
+| RQ8: N0, N1, N0M, N1M, cycle2 and plain48 | 1,020 | 7,488 | 89,314,308 | 1,792,608 | 91,106,916 |
+| **All reported OpenClaw result runs** | **5,484** | **52,063** | **639,150,367** | **16,077,972** | **655,228,339** |
+| Stopped `full_01` and the three smoke runs, kept apart | 595 | 3,601 | 44,405,460 | 1,298,576 | 45,704,036 |
+| Including stopped and smoke runs | 6,079 | 55,664 | 683,555,827 | 17,376,548 | 700,932,375 |
+
+- Input counts the prompt and accumulated context on every request, including **564,216,576 cached input
+  tokens** in the reported result runs (88.3% of input). The provider also reports 55,297,088 cache-creation
+  tokens. These are input details, not extra tokens to add. Output includes 9,613,752 reasoning tokens.
+- **Recorded lower bounds:** 247 of the 52,063 result-run requests have no returned usage (232 main, 15 RQ8).
+  Three baseline trial attempts have no model request metadata. The stopped/smoke group has another 19 requests
+  without usage and six attempts without request metadata; their consumption is not estimated.
+- The result-run metadata agrees exactly with the saved usage summaries. The stopped run has 18 unfinished
+  summaries whose surviving request metadata adds 1,190,158 input and 37,904 output tokens absent from `scale.json`.
+- Reused trials in judge comparisons and ablations count once; fresh reruns count again. Generation and judging
+  models are excluded, as are all toy-harness runs, including step 5's self-hosted Qwen runs in RQ9.
 
 ### 0.5 Research questions
 
@@ -606,7 +630,7 @@ labelled by hand before any assertion result or judge verdict was read; one pers
 
 ## RQ9. Two extensions: several matches, and requests beyond the agent's capabilities
 
-Two studies on branch `exp/automation-01` (commit 5b87399356, not merged) automate methods first worked out by hand:
+Two studies from branch `exp/automation-01` (source commit 5b87399356, now merged into main) automate methods first worked out by hand:
 `grounding/runs/several_match_auto_01/` and `grounding/runs/boundary_auto_01/`, each with `summary.py` →
 `summary.json` and `report.md`. **They ran on the self-hosted Qwen3.8-27B in the toy harness, not in OpenClaw,**
 3 trials per test, with timeouts counted as failures.
@@ -787,7 +811,7 @@ mechanisms on every failing trial it reads ([numbers/exposure.json](numbers/expo
 | Muse: baselines_01 (generation $3.53, judges $21.36) | 814 | $24.89 | $1.78 |
 | Muse: step 5's automation (several matches $7.26, boundaries $5.42) | 323 | $12.68 | $0.90 |
 | Sonnet 5 on the Claude Code subscription (autogen_01, all runs) | 1,421 | $208.02, plus $13.61 in failed calls | $0 |
-| Agent under test: self-hosted Qwen | 44,575 requests | no per-call charge | 287.6 agent-hours |
+| Agent under test: self-hosted Qwen (main evaluation only; full token accounting in §0.4) | 44,575 requests | no per-call charge | 287.6 agent-hours |
 
 **Unit costs (Muse, list price; billed in brackets):**
 

@@ -26,7 +26,13 @@ python grounding/runs/fact_coverage_02/launch.py grounding.runs.report_01.kit.be
 python grounding/runs/fact_coverage_02/launch.py grounding.runs.report_01.kit.mechanisms # §10
 python grounding/runs/fact_coverage_02/launch.py grounding.runs.report_01.kit.scale      # §0.4
 python grounding/runs/fact_coverage_02/launch.py grounding.runs.report_01.kit.costs      # §12
+python -m grounding.runs.report_01.kit.qwen_usage                                    # §0.4: exact Qwen/OpenClaw tokens, including RQ8
 ```
 
 `numbers/awareness_full_03.json` and `numbers/awareness_full_04.json` come from openclaw_eval_01's
 `test_awareness.py` on those runs.
+
+`qwen_usage.py` uses only the Python standard library and reads the original proxy metadata, including cached
+input and missing usage, without changing run evidence. It separates the main evaluation, RQ8's fresh baseline
+and ablation runs, and stopped/smoke runs. If the baseline branch is still separate, pass
+`--baselines-root .claude/worktrees/baselines-01/grounding/runs/baselines_01` from the repository root.
