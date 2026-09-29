@@ -145,3 +145,37 @@ How the results will be read:
   (N0 0.54, N1 0.27; `assertions_corrected`, which also counts N0-SLK-T06 and N0-BOX-T08 apart via
   `harness_flaws.json`), N1's judges (plain 1.00/1.00, J0 0.75/1.00), and the first-draft split, now recorded by
   [machinery.py](machinery.py): Phase 4's 31 first drafts, 14 clean, 7 sent back for format only, 10 for substance.
+
+## 2026-09-28 22:34–23:02: the mutated twins generated and reviewed before any run
+
+- **Sessions (PI's choice (a)):** a new Muse session per service, all 12 tests written together, as in round 1.
+  Generation ran 22:34–23:01; $2.34 at list, $0.12 billed. The study is at $24.89 at list, $1.78 billed.
+- **Loading:** three sessions wrote invalid JSON at first (N0M Box, N1M Box, N1M Linear; round 1 had none). N1M's two
+  loaded after the protocol's one repair turn. N0M Box did not: the repair fixed one bracket and left another. I
+  gave it further turns with the loader's own errors ([twin2/repair_more.py](twin2/repair_more.py)), a deviation from
+  round 1's protocol, checked with the advisor: our writer gets load feedback until its drafts load, and the cap of
+  one was ours, not a property of the baseline. Round 3 parsed but 11 seeds lacked a file's `parent`; round 4
+  loaded all 12. Funnel: N0M Box "loaded after three repairs"; every other service at first or after one.
+- **My review** ([twin2/n0m/review_gen_01.py](twin2/n0m/review_gen_01.py),
+  [twin2/n1m/review_gen_01.py](twin2/n1m/review_gen_01.py)), by the fixed rules, before any run:
+
+  | 48 tests | N0 | N0M | N1 | N1M |
+  |---|---:|---:|---:|---:|
+  | Right record present (incl. sets) | 39 | 44 | 40 | 44 |
+  | No right record, absence permitted (our probe form) | 0 | 0 | 0 | 0 |
+  | Near misses through a designated substitute | 9 of 48 | 18 of 53 | 21 of 58 | 20 of 66 |
+  | Facts exercised | 49 | 55 | 67 | 77 |
+  | Facts exercised properly (valid tests) | 7 | 13 | 17 | 14 |
+  | Distinct deciding details; tests only reusing one | 32; 20 | 38; 17 | 46; 9 | 51; 13 |
+  | Invalid | 3 | 6 | 7 | 7 |
+
+  - **Invalid, N0M:** five Slack tests ask the bot to delete, edit or un-react other people's messages (Slack
+    allows none of these), one needs `white_check_mark` (the replica lacks it; counted apart). **N1M:** three Slack
+    deletes of others' messages, two invites of people the seed already made members, one delete of a calendar the
+    actor does not own, one `white_check_mark`. The "perfect assistant must be able to pass" line did not prevent
+    them.
+  - **Their own assertions:** the Calendar ones expect a deleted event or calendar to disappear (the replica cancels
+    or flags it): 7 N0M and 11 N1M tests are unsound before any run. Not comparable with round 1's review, which had
+    not flagged N1's (the scored measure is unaffected).
+  - N0M-LIN-T05's active cycle ended on 2026-09-14 (Linear runs on the real clock): a quality note, not a flaw,
+    after the advisor's reading (no reading picks the past cycle).
