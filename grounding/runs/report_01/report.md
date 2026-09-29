@@ -600,3 +600,84 @@ labelled by hand before any assertion result or judge verdict was read; one pers
   and removes artifacts.
 - **Not measured:** baselines for the policy tests (the baselines wrote no underspecified test); baselines for the
   extensions in RQ9; a second agent under test.
+
+## RQ9. Two extensions: several matches, and requests beyond the agent's capabilities
+
+Two studies on branch `exp/automation-01` (commit 5b87399356, not merged) automate methods first worked out by hand:
+`grounding/runs/several_match_auto_01/` and `grounding/runs/boundary_auto_01/`, each with `summary.py` →
+`summary.json` and `report.md`. **They ran on the self-hosted Qwen3.8-27B in the toy harness, not in OpenClaw,**
+3 trials per test, with timeouts counted as failures.
+
+**Neither adds a coverage dimension.** Several-match tests are one more test form over the same catalog facts, and
+their traps (a copy of the target in a hidden calendar, past a page, in another folder) are construction choices,
+like near-miss families. Capability boundaries are a separate requirement space, linked to the catalog the way the
+policy panel is.
+
+### 9.1 Several matches: plural requests
+
+- **The form.** A plural request ("tag every PDF that…") over a cover's world with the target and extra full matches.
+  *Easy:* the copies are in plain view. *Hard:* one copy sits where a lazy route misses it (another folder, a hidden
+  calendar, a private channel, past the first page). The cover's near misses stay and are checked again.
+- **Generated:** 91 single-target covers in; the Muse writer judged 65 worth a plural request; 131 tests (101 first
+  builds, 17 repairs, 13 from later rounds). **Valid: 103** (63 easy, 40 hard): the cold reader picks exactly the
+  targets, the fact check still holds, the thorough route finds every target, the trap is practical, and the seed
+  installs.
+- **In FDC terms:** the 103 valid tests exercise 99 catalog facts (Box 29, Calendar 21, Linear 30, Slack 19), all
+  servable and all already covered by single-target covers. They add no coverage, and 13 facts are exposed through
+  near misses acted on (10 firm; 3 rest on near misses the reader or the upstream wording makes contestable).
+- **Trials:** 309, 8 voided on review, 23 timeouts counted as failures.
+
+**Table 16. Targets found, by where the extra match was placed** (valid tests; timeouts and voided trials out).
+
+| Placement | Found |
+|---|---:|
+| Plain view | 708 / 731 |
+| One folder down | 5 / 5 |
+| Another folder | 2 / 2 |
+| Another calendar the user owns | 7 / 21 |
+| Hidden calendar or private channel | 2 / 26 |
+| Past the first page | 58 / 65 |
+| Text lacking the search words | 10 / 10 |
+
+- **This is a policy, not a fact.** The misses follow the route, whatever the facts: with no calendar named, the
+  agent reads the primary calendar only, in all 7 calendar covers. Slack's default channel list misses private
+  copies (3 of 6), and Linear sometimes reads one page (5 covers). Box walks folders and pages. There was no clear
+  case of stopping early and no filter failure. We report it like the policy panel's collection request
+  ([criterion.md](../fact_coverage_01/criterion.md)), once per service, not per fact.
+- **The judge against review:** 84 failures reported on valid tests, 76 true and 8 false (3 replica artifacts, 5
+  near misses the reader itself doubted); no false negative in 225 passes. This is not a blind comparison: 13 were
+  read by hand, and the others follow from construction or the timeout rule. The judge does not check values: in 31
+  of 39 passed Linear trials that name a priority, the agent wrote the wrong one (RQ7).
+- **Manual phase before it** (`several_match_02`): 4 covers, trap reach 12 of 23; the automation reaches 11 of 23 on
+  the same covers and reproduces the findings. Plural probes (no target) exposed nothing in 41 trials and were
+  dropped.
+- **Cost:** 144 Muse calls, $7.26 at list price ($0.52 billed).
+
+### 9.2 Capability boundaries: requests the actor cannot carry out
+
+- **The requirement space.** From the catalog: for each of the 255 facts, can the acting user change it, through which
+  operation and under what precondition, plus preconditions of operations not tied to a field. This gives 152
+  elements; checked on the replicas, **93 are faithful** (27 unfaithful, 12 replica gaps, 6 uncertain, 14 not a
+  boundary). 88 of the 93 come from a catalog fact (80 distinct facts); 5 are operation-level. By class: read-only
+  field 32, permission 31, no such operation 15, state precondition 13, value limit 2.
+- **The test.** A natural request that needs the missing capability, naming the record, with no hint of the limit.
+  Right behaviour: report the limit. Failures: substituting another change, re-creating the record, or claiming
+  success.
+- **Generated:** 93 tests, 89 valid (the cold reader: the named record, no hint, natural wording); 10 reworded in a
+  second round, all valid: **90 of 93 boundaries** have a valid test.
+- **Results:** 49 of 89 boundaries fail at least once; 116 of 261 graded trials fail (44%). Wording matters: round 1's
+  "Show X as…" requests read as display requests; reworded as "Make X…", the same 10 boundaries fail 23 of 30 trials
+  against 15 of 30.
+- **The judge against hand labels** (a seeded random quarter of the trials, drawn before the verdicts, plus every
+  flagged trial): failures 21 true, 1 false; passes 42 true, 1 false negative, and 2 more pending a PI ruling on
+  undone writes. The generated oracle specs agree with the hand-written ones on 272 of 275 manual-phase trials.
+- **Not an FDC exposure.** A boundary failure is the answer to an impossible request, not a confusion between facts.
+  It is keyed to its source fact ("80 catalog facts carry a faithful write limit") and counted in its own space.
+- **The 42 unservable facts are a different axis:** only 4 of the 152 elements touch them (the Calendar sharing-rule
+  limit).
+- **Cost:** 179 Muse calls, $5.42 at list price ($0.38 billed).
+
+**Caveats for both** (from the studies): one agent, and the toy harness; the self-hosted model was shared with other
+sessions (13 to 38 s per turn); replica gaps voided some trials (Linear's null connections, Box folder listings that
+ignore `fields`); two upstream covers are contestable (AR-LIN-24's "Cycle 4", G4-CAL-06's "Leo Park's calendar").
+**Not measured:** either extension on OpenClaw, and baselines for either.
