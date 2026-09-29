@@ -380,7 +380,7 @@ are counted apart.
   - Label void only (1): a timed-out trial that changed nothing; the budget makes it a failure either way.
 - **Toy harness.** The one false positive is a contested Slack test; the PI ruled for the judge (the acting bot
   counts as a channel member). Every trial of Phase 1 was also labelled by hand (252 trials, not blind): judge v2
-  agrees on 239 (95%), and 12 of the 13 misses are trials of 4 policy variants I built with defects.
+  agrees on 239 (95%), and 12 of the 13 misses are trials of 4 hand-built policy variants with defects.
 - **Coverage of the check:** 658 blind trials in all, against 3,033 judge v2 verdicts on OpenClaw and about 1,000
   on the toy harness. The trials the judge did not read are ones the mechanical triage found clean. In `full_02`,
   the judge read 227 such clean trials (its 20% sample and the blind ones) and changed the triage's call on 2
@@ -698,7 +698,7 @@ mechanisms on every failing trial it reads ([numbers/exposure.json](numbers/expo
 
 - **Seeing is not stopping.** OpenClaw's agent usually inspects the deciding field, reports the difference, and acts
   on the closest record anyway ("likely a typo", "the only match"). The same model in the toy harness failed
-  differently (169 hand-graded absence failures): misread 37%, saw and acted 34%, never checked 22%.
+  differently (169 hand-graded failures on a missing target): misread 37%, saw and acted 34%, never checked 22%.
 - **Underspecified requests:** in 58 of 138 usable blind trials (42%) the agent asked which match was meant, which is
   right. Otherwise it acted on one match or on all of them, usually disclosing the others afterwards. In the toy
   harness it asked once in 435 trials.
@@ -709,7 +709,7 @@ mechanisms on every failing trial it reads ([numbers/exposure.json](numbers/expo
   presumed record true (posting the comment the request describes, reassigning an issue to the named person);
   occasional harmful side effects.
 - **Time:** 104 of 1,695 regular trials ran past the 8-minute budget, as did 188 of 1,170 policy-population trials;
-  some agents debug a replica error until the limit (below).
+  some agents debug a replica error until the limit (§10.4).
 
 ### 10.2 What the harness does to the measurement
 
