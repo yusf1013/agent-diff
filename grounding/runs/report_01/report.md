@@ -281,3 +281,123 @@ and §6.4, [completion_01](../completion_01/README.md).
 **Cost of generation** (Muse, [numbers/costs.json](numbers/costs.json)): writer and reader together, $0.62 per
 accepted scenario at list price in Phase 4 and $0.82 in 6b ($0.035 and $0.046 billed); $0.125 per valid regular test
 ($0.007 billed). Sonnet on the subscription: $1.78 to $5.47 per accepted scenario at list price. §12 has the rest.
+
+## RQ4. What failures do the tests expose in a real agent harness?
+
+The 565 valid regular tests ran on OpenClaw with the self-hosted Qwen3.8-27B, 3 trials each: Box's tests from
+`full_02`, the other services' from the opaque-id re-run `full_03`, and 6b's from `full_04`. Every verdict is judge
+v2's (RQ5 measures it), under the PI's rulings and the 8-minute budget.
+
+**Table 7. Exposure by service.** Source: [final_regular_with_6b.json](../openclaw_eval_01/runs/final_regular_with_6b.json);
+[kit/exposure.py](kit/exposure.py) → [numbers/exposure.json](numbers/exposure.json).
+
+| Service | Tests | Tests exposing a fact | Facts exposed, detect@3 | detect@1 | Facts covered | Share of covered facts exposed (detect@3) |
+|---|---:|---:|---:|---:|---:|---:|
+| Box | 139 | 39 | 27 | 21 | 56 | 48% |
+| Calendar | 103 | 32 | 17 | 12 | 34 | 50% |
+| Linear | 213 | 45 | 30 | 19 | 80 | 38% |
+| Slack | 110 | 22 | 13 | 8 | 34 | 38% |
+| **All** | **565** | **138 (24%)** | **87** | **60** | **204** | **43%** |
+
+**Table 8. Exposure by test form, writer and kind of fact.** Same source.
+
+| | Tests | Exposing | Facts, detect@3 (detect@1) |
+|---|---:|---:|---:|
+| Cover (target present) | 100 | 12 (12%) | 12 (6) |
+| Probe (one near miss, absence permitted) | 363 | 101 (28%) | 79 (55) |
+| Fact probe (all near misses of a fact) | 102 | 25 (25%) | 25 (14) |
+| Sonnet R | 104 | 24 (23%) | 19 of 37 covered (13) |
+| Sonnet P | 78 | 17 (22%) | 12 of 40 (7) |
+| Sonnet P v2 | 89 | 18 (20%) | 15 of 44 (10) |
+| Muse Phase 4 | 158 | 45 (28%) | 26 of 58 (19) |
+| Muse 6b | 136 | 34 (25%) | 22 of 69 (14) |
+
+| Kind of fact | Covered | Exposed, detect@3 | detect@1 |
+|---|---:|---:|---:|
+| A attribute | 117 | 59 (50%) | 41 |
+| R relationship | 48 | 19 (40%) | 13 |
+| H hierarchy | 5 | 1 | 1 |
+| B binding | 22 | 4 (18%) | 2 |
+| D derived | 12 | 4 (33%) | 3 |
+
+- **Probes carry the exposure.** With the target present, the agent picks the right record far more often: 12% of
+  covers expose a fact against 28% of probes. Covers are still needed for credit on 2 facts (RQ2) and test the
+  write itself.
+- **By near-miss family** (probes): designated substitutes 84 of 282 (30%) against plain F0 near misses 17 of 81
+  (21%). F8 partial identity (a similar name, a shared prefix) exposes most: 25 of 52 probes (48%); then F1 sibling
+  role or attribute 31 of 98 (32%), F7 neighbouring value 13 of 50 (26%), F6 representation 4 of 16, F2 indirection
+  6 of 32 (19%), F5 split binding 4 of 28 (14%).
+- **Trials:** of 1,695, 254 fail and count (15%), 1,310 pass, 104 ran over the 8-minute budget (no exposure), 14
+  failed only on flawed near misses (not counted) and 13 are void.
+
+**Opaque ids matter.** Before the final runs, the Calendar, Linear and Slack tests had seed ids that could name a
+record's role. On the same 333 tests, with the same rules and judge, the opaque-id re-run exposes more: 80 tests
+against 65 and 48 facts against 42 (Calendar 23 → 25 tests, Linear 23 → 33, Slack 19 → 22). The two runs are a day
+apart, not interleaved. Source: [openclaw_eval_01](../openclaw_eval_01/README.md), "Results: the regular suite".
+
+**Reference: the same model in the toy harness.** Qwen on Purdue ran 332 of these tests earlier, with the original
+ids, before the rulings; autogen_01's arms were judged by judge v1 (Sonnet), Phase 4 by judge v2. Not comparable
+row for row with Table 7. Source: [autogen_02 report](../autogen_02/report.md) §6.3.
+
+| Suite (toy harness) | Tests | Exposing | Facts, detect@3 (detect@1) |
+|---|---:|---:|---:|
+| Muse Phase 4 (judge v2) | 159 | 37 | 24 of 58 declared (15) |
+| Sonnet R (judge v1) | 108 | 18 | 11 (7) |
+| Sonnet P (judge v1) | 84 | 25 | 19 (12) |
+| Sonnet P v2 (judge v1) | 93 | 14 | 13 (9) |
+
+- **Not measured:** a second model or harness under the same final suite and rules.
+
+## RQ5. How accurate is the automated judge?
+
+Every run had a blind sample: trials drawn at random before the run and labelled by hand before any verdict on them
+was read. Outcomes collapse to fail (acted on a wrong record, or presented one as the answer), pass (correct, or
+correctly reported absence) and void. TP, FP, FN and TN are counted on trials both call usable; void disagreements
+are counted apart.
+
+**Table 9. Judge v2 against the blind labels.** Source: each run's `comparison_blind.json`;
+[kit/judge.py](kit/judge.py) → [numbers/judge.json](numbers/judge.json).
+
+| Agent | Tests | Trials | Agree | TP | FP | FN | TN | Void (both) | Judge void only | Label void only | Same facts on TP |
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| OpenClaw | regular | 150 | 148 | 20 | 0 | 0 | 127 | 1 | 2 | 0 | 20 / 20 |
+| OpenClaw | absence | 155 | 154 | 95 | 0 | 0 | 48 | 11 | 0 | 1 | 95 / 95 |
+| OpenClaw | underspecified | 150 | 150 | 80 | 0 | 0 | 58 | 12 | 0 | 0 | 79 / 80 |
+| **OpenClaw** | **all** | **455** | **452** | **195** | **0** | **0** | **233** | **24** | **2** | **1** | **194 / 195** |
+| Toy harness | regular | 60 | 60 | 10 | 0 | 0 | 50 | 0 | 0 | 0 | 10 / 10 |
+| Toy harness | absence | 60 | 55 | 50 | 1 | 0 | 4 | 1 | 0 | 4 | 50 / 50 |
+| Toy harness | underspecified | 53 | 52 | 52 | 0 | 0 | 0 | 0 | 0 | 1 | 52 / 52 |
+| Toy harness | policy, mixed (Phase 4) | 30 | 30 | 29 | 0 | 0 | 1 | 0 | 0 | 0 | 29 / 29 |
+| **Toy harness** | **all** | **203** | **197** | **141** | **1** | **0** | **55** | **1** | **0** | **5** | **141 / 141** |
+
+- **On OpenClaw, no false positive and no false negative** in 428 trials both call usable. With a random sample,
+  these are estimates: 0 misses in 195 labelled failures bounds the miss rate below 1.5% (95%, rule of three), and
+  0 false alarms in 233 labelled passes bounds that rate below 1.3%.
+- **The void disagreements.**
+  - Judge void only (2, both regular, the first pass): the judge voided two labelled failures as artifacts. In one,
+    the replica reports a group DM as private, which the label missed; the other rests on a near miss the validity
+    review marks contestable. Counting both as misses gives recall 195 / 197.
+  - Label void only (1): a timed-out trial that changed nothing; the budget makes it a failure either way.
+- **Toy harness.** The one false positive is a contested Slack test; the PI ruled for the judge (the acting bot
+  counts as a channel member). Every trial of Phase 1 was also labelled by hand (252 trials, not blind): judge v2
+  agrees on 239 (95%), and 12 of the 13 misses are trials of 4 policy variants I built with defects.
+- **Coverage of the check:** 658 blind trials in all, against 3,033 judge v2 verdicts on OpenClaw and about 1,000
+  on the toy harness. The trials the judge did not read are ones the mechanical triage found clean. In `full_02`,
+  the judge read 227 such clean trials (its 20% sample and the blind ones) and changed the triage's call on 2
+  (baselines_01, ablation 7).
+
+**Table 10. Judges given the same trials.** Source: [judge_baselines_01](../judge_baselines_01/README.md)
+(`score.json`); the plain judge from baselines_01 on branch `exp/baselines-01` (`q4/plain_openclaw.score.json`).
+
+| Judge | What it reads | OpenClaw, 178 trials (94 mistakes): precision / recall | Toy harness, 191 blind trials (139 mistakes) |
+|---|---|---|---|
+| Plain LLM judge | the trial only, no definition of a mistake | 69/75 = 0.92 / 69/94 = 0.73 | not run |
+| J0 | the trial and the definition of a mistake | 85/86 = 0.99 / 85/94 = 0.90 | 100/101 = 0.99 / 100/139 = 0.72 |
+| J1 | J0 plus the service's domain model | 86/88 = 0.98 / 86/94 = 0.91 | 104/104 = 1.00 / 104/139 = 0.75 |
+| **Judge v2** | the test's candidates, a mechanical attribution, policy rules, replica notes | **92/92 = 1.00 / 92/92 = 1.00** (92/94 = 0.98 counting its 2 voids) | **139/140 = 0.99 / 139/139 = 1.00** |
+
+- **The naive judges miss silent failures.** On the toy harness they miss 30% of underspecified failures: the agent
+  acted on one of several full matches and said nothing, and without the test's candidates the trial looks right.
+  OpenClaw's agent usually discloses the mismatch, which lifts the naive judges' recall to 0.90.
+- **Only judge v2 attributes facts.** Exposure (RQ4) needs the fact, not just a mistake.
+- **Pipeline cost of judging:** judge v2 reads a trial for $0.03 at list price (§12).
