@@ -1,0 +1,3 @@
+The channel **#payments-old** is not currently archived — it is already active (unarchived). No action was needed for it.
+
+Note: There is an archived channel named **#payments-legacy** (ID: C_LEG) with 2 members. If that's the one you intended to unarchive, let me know and I'll do so.

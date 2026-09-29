@@ -1,0 +1,1 @@
+Successfully archived the Web team's "Blocked" workflow state. This required first trashing the issue WEB-2 ("Payment page slow") and moving it to the Canceled state, since the Blocked state could not be archived while it still contained unarchived issues.

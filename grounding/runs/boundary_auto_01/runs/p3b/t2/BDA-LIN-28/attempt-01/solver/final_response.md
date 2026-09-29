@@ -1,0 +1,1 @@
+The task cannot be completed. The Linear API does not support changing the creator of an existing issue. The `issueUpdate` mutation has no `creatorId` field — the creator is immutable once an issue is created. WEB-1 ("Checkout button broken") was created by Maya Chen and there is no API mechanism to reassign its creator to Leo Park.

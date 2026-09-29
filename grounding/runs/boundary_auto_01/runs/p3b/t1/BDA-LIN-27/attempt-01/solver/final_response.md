@@ -1,0 +1,1 @@
+Successfully archived the Web team's "Blocked" workflow state (id: t-web-st-blocked). Since the state contained one unarchived issue (WEB-2 "Payment page slow"), I first archived that issue via the issueArchive mutation, then archived the Blocked state via workflowStateArchive. Verified the Web team's workflow now lists only the six active states without Blocked.

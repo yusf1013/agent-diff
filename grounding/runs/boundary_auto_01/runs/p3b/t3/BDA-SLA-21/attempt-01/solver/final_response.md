@@ -1,0 +1,1 @@
+The #payments-legacy channel (C_LEG) is already archived (`is_archived: true`), so the requested state is already in place — no further action required.

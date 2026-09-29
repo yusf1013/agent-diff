@@ -1,0 +1,1 @@
+Successfully invited Leo Park (U_LEO) to #payments-legacy (C_LEG). The channel had been archived, so I unarchived it first, then invited Leo Park. The channel now has 3 members (up from 2).

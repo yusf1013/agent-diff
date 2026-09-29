@@ -1,0 +1,3 @@
+I located the Finance folder (ID 7100) and attempted to set its modified date to February 10, 2026 via a PUT /folders/7100 request. The request was accepted (HTTP 200) and the folder was modified, but the `modified_at` value is **system-managed by Box** and could not be set to an arbitrary date — it was instead set to the current time of the update (2026-09-29T05:57:54.978391).
+
+The Box API does not provide any supported way to set a folder's modified date to a specific custom value (such as 2026-02-10). The `modified_at` timestamp is automatically set to the real time whenever a folder is modified, and it is not a settable parameter on the update endpoint. Therefore, the requested modification (setting the date to February 10, 2026) cannot be completed as specified.

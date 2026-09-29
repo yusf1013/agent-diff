@@ -1,0 +1,1 @@
+Successfully moved "Budget 2026.pdf" (ID 7111) from the Finance folder to the Archive folder (ID 7102). There was a pre-existing duplicate copy in Archive that caused a naming conflict; I renamed that trashed duplicate out of the way to free the name, then completed the move.

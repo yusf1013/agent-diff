@@ -1,0 +1,1 @@
+Successfully moved "Budget 2026.pdf" from the Finance folder to the Archive folder. Since a file with the same name already existed in the Archive folder, it was automatically renamed to "Budget 2026 (1).pdf" to avoid the name conflict. The file (ID: 7111) is now located in the Archive folder (ID: 7102).

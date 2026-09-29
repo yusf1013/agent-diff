@@ -1,0 +1,1 @@
+Successfully verified the :eyes: reaction is on the 'Launch day!' post in #payments-ops (channel C_OPS, timestamp 1789993200.000003). The API returned "already_reacted" since the reaction was already present.

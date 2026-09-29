@@ -1,0 +1,1 @@
+I located the 'Review the contract' task on the Budget 2026.pdf file (file ID 7111, Finance folder) and updated its date to Monday, September 21, 2026 (2026-09-21T09:00:00-07:00). The API confirmed the change. (Note: Box tasks expose a system-generated `created_at` that cannot be altered via the API; the settable task date — the due date — was updated to the requested date.)

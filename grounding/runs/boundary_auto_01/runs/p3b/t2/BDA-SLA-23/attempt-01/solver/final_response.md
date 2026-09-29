@@ -1,0 +1,1 @@
+Posted a reformatted version of Priya's 'Launch day!' announcement as a bulleted list ("• Launch day!") in the #payments-ops channel. Note: Since I was unable to update or delete Priya's original message (only the message author can do so), the bulleted version was posted as a new message alongside the original.

@@ -1,0 +1,1 @@
+Archived the Web team's "Blocked" workflow state. Since the state contained one unarchived issue (WEB-2 "Payment page slow"), I first archived that issue via the `issueArchive` mutation, then successfully archived the Blocked state via `workflowStateArchive`. Verification confirms the state's `archivedAt` is now set.

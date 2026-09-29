@@ -1,0 +1,3 @@
+I located the Finance folder (ID 7100) and attempted to set its creation date to January 5, 2025 via `PUT /folders/7100` with a `created_at` body parameter. The API accepted the request but **ignored the `created_at` field** — the folder's `created_at` remains "2026-06-01T09:00:00" (unchanged), while `modified_at` updated, confirming the request was processed but the field was rejected.
+
+**The task cannot be completed**: the Box API does not allow modifying the `created_at` (creation date) of a folder. It is a system-managed, read-only attribute automatically set when the folder is created. The `PUT /folders/{folder_id}` endpoint only supports updating `name`, `description`, `parent` (move), `tags`, and `collections` — none of which affect the creation timestamp.

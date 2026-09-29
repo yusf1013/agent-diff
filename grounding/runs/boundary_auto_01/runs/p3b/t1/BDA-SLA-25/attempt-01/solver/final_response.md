@@ -1,0 +1,5 @@
+I was unable to backdate the message because the Slack API does not support it. A message's posted timestamp is assigned server-side and cannot be changed:
+- `chat.postMessage` ignores any `ts` I provide and stamps the message with the current server time (confirmed when my test copy received the live timestamp instead of my requested earlier one).
+- `chat.update` has no field to modify a message's timestamp — only its text/blocks/attachments.
+
+Priya's original "Standup moves to 10:00 tomorrow." message in #payments-ops (C_OPS, ts 1789992000.000001) remains untouched, and I deleted the duplicate I created while testing, so the channel is restored to its prior state. Backdating a message is not possible through the Slack API.

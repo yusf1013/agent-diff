@@ -1,0 +1,1 @@
+Successfully made the comment 'Tpyo in the title.' on WEB-1 a reply to Omar Haddad's comment 'On it.' by deleting the original top-level comment and creating a new comment with the same body as a child (parentId: c-2) of Omar's comment. The reply relationship is now confirmed in the API response.

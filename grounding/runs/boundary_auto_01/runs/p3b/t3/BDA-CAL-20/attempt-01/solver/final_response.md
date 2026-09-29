@@ -1,0 +1,3 @@
+I was unable to complete the task. The event "On-call handoff" (ID: ev_handoff) was found on Leo's on-call calendar (leo-oncall@northwind.example), but updating its description failed with a 403 Forbidden error: "Insufficient permissions for calendar: leo-oncall@northwind.example". 
+
+Your current access role to this calendar is **reader**, which allows viewing events but not modifying them. To update the event description, you would need at least **writer** access to Leo's on-call calendar. Please ask the calendar owner (Leo Park / leo.park@northwind.example) to share the calendar with you with writer or owner permissions, then I can retry the update.

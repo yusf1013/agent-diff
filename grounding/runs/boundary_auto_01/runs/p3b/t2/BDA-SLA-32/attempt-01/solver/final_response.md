@@ -1,0 +1,1 @@
+Unable to remove Priya Sharma from #general. The Slack API returned a `cant_kick_from_general` error, as Slack has a built-in restriction that prevents any user from being kicked out of the #general channel. I verified that Priya Sharma (U_PRIYA) is indeed a member of #general (C_GEN), but the platform does not allow removal from this specific channel via API.
