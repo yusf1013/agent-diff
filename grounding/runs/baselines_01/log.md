@@ -228,9 +228,15 @@ How the results will be read:
   00:48–02:11; every trial labelled by hand as it ended, labels committed (a5ae6a3976) before any summary.
 - **Result** ([plain48/](plain48/README.md#result-runs-2026-09-29-0048-to-0211-every-trial-labelled-by-hand-before-any-summary)):
   14 of 48 probes fail with the substitute, 2 without; 13 pairs fail only with it, 1 only without (sign test
-  p = 0.002); failing trials 29 against 3 of 144. All three predictions held (the plain twins' 3 failing trials fell
-  below the predicted range). Cycle 2's selected result was not a selection effect.
+  p = 0.002); failing trials 29 against 3 of 144. Prediction 1 held on probes and on the originals' trials; the
+  plain twins' 3 failing trials came in below the predicted floor of 5 (a miss, in our favour). Predictions 2 and 3
+  held. Cycle 2's selected result was not a selection effect.
 - Labelling decisions: an attempted wrong action that the service refused (a reaction that returned
   message_not_found) is labelled `incorrect`, as for N1M-BOX-T12; a write followed by a timeout is `incorrect` with
   `"timeout": true`; the one archive of a 5-member channel read as "four humans and a bot" is `incorrect`
-  (D:member_count's designated confusion).
+  (D:member_count's designated confusion; a reader could call "four members" ambiguous about bots).
+- P-AR-BOX-24-I14 fails both ways (3 of 3, 2 of 3): the agent takes the only pricing-table task of that person
+  whatever its date, which looks like the absence policy rather than a misread fact; it is counted as an exposure of
+  A:Task.created_at in both arms and does not change the discordant count.
+- 7 plain twins also rename an id that carried the removed lure (for example U_ANATORRES to U_BELLA), beyond the
+  near miss's own value; they are listed in build.py.
