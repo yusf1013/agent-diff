@@ -1,0 +1,1 @@
+All 3 "Sprint retrospective" events in Room 5B created by Kenji Sato (ev_target, ev_target_sm0v, ev_target_sm1v) have been set to red (colorId "11", #dc2127). Decoy events with wrong location, title, creator, or organizer were correctly excluded.

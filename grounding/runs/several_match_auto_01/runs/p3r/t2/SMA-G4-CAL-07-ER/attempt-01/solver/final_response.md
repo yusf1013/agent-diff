@@ -1,0 +1,1 @@
+Moved all 3 Quarterly planning meetings from Thursday, June 21, 2018 that Dana Whitfield declined to Room 5B. The other quarterly planning events that day were left unchanged (one where Dana is the organizer, one she accepted, and one where she's tentative).

@@ -1,0 +1,1 @@
+Moved all client syncs about finalizing the Meridian contract that end at 3:30 PM to Room 4C. Two events matched and were updated: "Client sync" (ev_target) and "Client sync update" (ev_target_sm0v), both on June 21, 2018, 3:00–3:30 PM. Similar events that didn't meet all criteria (wrong end time or wrong topic) were left unchanged.

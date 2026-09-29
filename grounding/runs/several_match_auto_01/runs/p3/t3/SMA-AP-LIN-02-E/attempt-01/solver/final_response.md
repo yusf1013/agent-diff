@@ -1,0 +1,1 @@
+Successfully bumped the priority of all 3 security review tickets assigned to Priya Chen (guest reviewer, priya.chen@vendorworks.example) to Urgent: GRC-1 (Payments API), GRC-7 (Auth service), and GRC-8 (Checkout flow).

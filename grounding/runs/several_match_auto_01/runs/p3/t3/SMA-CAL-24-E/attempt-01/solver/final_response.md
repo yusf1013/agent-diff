@@ -1,0 +1,1 @@
+Set the description of all 3 calendars located in Tokyo to "APAC offsite planning": "APAC events", "Tokyo events", and "Tokyo offsite". Other calendars (Sydney, Osaka, Seoul, Singapore) were left unchanged.

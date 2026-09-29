@@ -1,0 +1,1 @@
+Deleted the 3 Friday architecture review events where Kenji Sato (kenji.sato@northwind.example) is an optional guest: "Architecture review", "Architecture review sync", and "Architecture review Q4" on 2018-06-22. Left untouched: "Architecture review: storage" (Kenji required) and "Architecture review: search" (different address kenji.satou@northwind.example).

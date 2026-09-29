@@ -1,0 +1,1 @@
+Moved all 3 planning sessions ending at 5pm on Thursday (June 21) with Q4 roadmap in their description to Room 2B: "Planning session" (ev_ps_target), "Planning session Q4" (ev_ps_target_sm0v), and "Team planning session" (ev_ps_target_sm1v).

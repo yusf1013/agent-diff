@@ -1,0 +1,1 @@
+Found Priya Nair's resolved comments about the payment gateway timeout posted on March 3, and set the priority to Urgent on all three associated issues: "Checkout error handling cleanup" (i-web-1), and two "Payment form validation polish" issues (i-web-1-sm0-v, i-web-1-sm3-p). All updates were successful.

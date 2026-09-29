@@ -1,0 +1,1 @@
+Granted Sam Rivera (sam.rivera@northwind.example) read access (role: reader) to all three calendars whose description says "Calendar for the London office": emea@northwind.example, emea@northwind.example-sm49, and emea@northwind.example-sm50.
