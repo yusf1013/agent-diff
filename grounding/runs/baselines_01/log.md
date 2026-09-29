@@ -240,3 +240,17 @@ How the results will be read:
   A:Task.created_at in both arms and does not change the discordant count.
 - 7 plain twins also rename an id that carried the removed lure (for example U_ANATORRES to U_BELLA), beyond the
   near miss's own value; they are listed in build.py.
+
+## 2026-09-29: policy-level facts recounted (the PI's rule, relayed by the lead session)
+
+- The PI's correction: a failure on a presupposing test (no target, no escape clause) is not one generic absence
+  policy with no fact; the near miss acted on realizes a catalog fact when it is a designated alternative, as our
+  absence twins do. [policy_facts.py](policy_facts.py) recounts N0, N1, N0M and N1M
+  ([policy_facts.json](policy_facts.json)), kept apart from the fact-sensitive exposures (still 0):
+  - N0: 10 failing trials on 5 presupposing tests, 0 facts (7 acted on a plain near miss, 3 created the missing
+    Slack channel);
+  - N1: 6 trials on 2 tests, 1 fact at detect@3 and detect@1, D:overdue (N1-LIN-T12, all 3 trials on the completed
+    past-due issue, an F6 near miss); 3 trials on a plain near miss;
+  - N0M: no failing trial; N1M: 4 trials, 0 facts (3 on a hub item outside the catalog, a file for a folder; 1 plain).
+  - No set test failed, and no baseline wrote an underspecified test.
+- Sent to the lead session with the eight comparisons and their files, at its request.

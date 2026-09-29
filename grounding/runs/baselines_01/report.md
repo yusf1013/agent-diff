@@ -47,6 +47,12 @@ The gap comes from four parts of our approach. The measured effect of each on th
    - Our checks and cold reader sent back 17 of 31 of our writer's first drafts (Phase 4): 10 for a substantive
      flaw, 7 for format alone.
 
+**Policy-level facts (the PI's rule, 2026-09-29):** a failing presupposing test still counts the fact of the near
+miss acted on, when it is a designated alternative. Recounted ([policy_facts.json](policy_facts.json)), the four
+baselines expose 1 fact at the policy level in all: D:overdue (N1), kept apart from the fact-sensitive exposures,
+which stay 0. Their other 19 failing trials acted on plain near misses, records outside the catalog, or a record the
+agent created.
+
 **One more part is a contribution to honest measurement:** part 2 of the credit rule, and keeping the policy tests
 apart. Every one of N0's 10 failing trials and N1's 6 is the generic habit of acting when a presupposed record does
 not exist. Counted as raw failing tests, N0 would score 5 and look productive. Counted as facts, it scores 0.
