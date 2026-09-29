@@ -93,3 +93,13 @@ run, and every Muse-written policy variant a manual read.
 - **Same request, two units:** G4-LIN-14's two assignee variants (conditions `e_ass` and `e_ass`+`f_who`) have the
   same request, and G4-LIN-11's two membership variants the same matches. By the rule of one unit per condition each
   pair is two units, as Phase 3's AP-SLK-03 pair was.
+
+## Results on OpenClaw (2026-09-29)
+
+In [openclaw_eval_01](../openclaw_eval_01/README.md), with 3 trials each and judge v2, which agrees with every
+blind label of 6b's three runs (90 of 90):
+- **Regular tests** (`full_04`): 34 of the 136 tests expose a fact, 22 facts at detect@3 and 14 at detect@1. Five
+  trials acted only on G4-CAL-10's flawed near miss and do not count. With 6a, 138 of 565 tests expose a fact, and 87
+  facts are detected.
+- **Policy units:** the 68 absence and 49 underspecified units ran after 6a's population. They are decided with 6a's,
+  on each cell's full valid set: no cell is policy-level.

@@ -384,9 +384,10 @@ def decide_population(mode: str, verdict_dirs: list[Path], first_pass_dirs: list
             decision["decision"] = f"incomplete: {len(missing)} valid units without verdicts"
         result[cell] = {"valid_units": len(valid), "missing": missing, **decision,
                         "readings": readings(valid, outcomes, doc["looks"])}
-        if any(u.get("source") == "phase4" for u in valid):  # amendment 5: the two writers' units apart
-            for name, keep in (("phase3_only", lambda u: u.get("source") != "phase4"),
-                               ("phase4_only", lambda u: u.get("source") == "phase4")):
+        if any(u.get("source") == "phase4" for u in valid):  # amendment 5: each writer's units apart (and 6b's)
+            for name, keep in (("phase3_only", lambda u: u.get("source") not in ("phase4", "completion_01")),
+                               ("phase4_only", lambda u: u.get("source") == "phase4"),
+                               ("6b_only", lambda u: u.get("source") == "completion_01")):
                 part = [u for u in valid if keep(u)]
                 pu = [(sum(o in sampler.FAIL for o in us), len(us)) for us in
                       ([o for o in outcomes.get(u["unit"], {}).values() if o in sampler.FAIL | sampler.PASS]
