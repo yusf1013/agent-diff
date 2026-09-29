@@ -86,11 +86,11 @@ def main():
         cover = cid.removeprefix("SMA-").rsplit("-", 1)[0]
         for rec, why in (v.get("unsure") or {}).items() if isinstance(v.get("unsure"), dict) else []:
             doubted.setdefault((cover, str(rec)), why)
+    _, valid, _ = summary.validity()
     out = {}
     for t in grades["trials"]:
         cid = t["trial"].split("/")[1]
-        if not (reader.get(cid) or {}).get("agreed") or cid in summary.FLAWED or \
-                (cid.rsplit("-", 1)[1].startswith("H") and not (checks.get(cid) or {}).get("thorough_finds_all")):
+        if cid not in valid:  # summary.validity(): the reader, the checks, the known flaws, practicality
             continue
         tk = t["trial"].split("/")[0]
         att = sorted((HERE / "runs" / t["run"] / tk / cid).glob("attempt-*"))[-1]

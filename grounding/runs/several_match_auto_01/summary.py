@@ -73,9 +73,10 @@ def load(name, default):
     return json.loads(p.read_text()) if p.exists() else default
 
 
-def main():
-    writer, build, reader = load("writer.json", {}), load("build.json", {}), load("reader.json", {})
-    checks, grades, review = load("checks.json", {}), load("grades.json", {"trials": []}), load("review.json", {})
+def validity():
+    """Every built case: valid (cover, domain, table, pinned, tier) or the reasons it is refused. The one rule of
+    validity for this study; review_verdicts.py uses it too."""
+    build, reader, checks = load("build.json", {}), load("reader.json", {}), load("checks.json", {})
     built = {}
     for key, r in build.items():
         for tier, c in (r.get("cases") or {}).items():
@@ -102,6 +103,13 @@ def main():
             reasons.append("impractical (check 6): the page trap's fillers fail a condition the listing does not "
                            "show, so the thorough route reads each of 100 files")
         (why_not if reasons else valid)[cid] = reasons or b
+    return built, valid, why_not
+
+
+def main():
+    writer, build, reader = load("writer.json", {}), load("build.json", {}), load("reader.json", {})
+    checks, grades, review = load("checks.json", {}), load("grades.json", {"trials": []}), load("review.json", {})
+    built, valid, why_not = validity()
     # The covers, by the kind of record and whether the request names its container: which reached a valid easy and a
     # valid hard test. Kinds with no route table (method.md: four services, their main record kinds) get the easy
     # tier only.
