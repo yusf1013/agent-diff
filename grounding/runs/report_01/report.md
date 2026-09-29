@@ -681,3 +681,135 @@ policy panel is.
 sessions (13 to 38 s per turn); replica gaps voided some trials (Linear's null connections, Box folder listings that
 ignore `fields`); two upstream covers are contestable (AR-LIN-24's "Cycle 4", G4-CAL-06's "Leo Park's calendar").
 **Not measured:** either extension on OpenClaw, and baselines for either.
+
+## 10. Lessons
+
+### 10.1 How the agent fails
+
+**Table 17. Failure mechanisms in the hand labels** (OpenClaw's blind samples). Source:
+[kit/mechanisms.py](kit/mechanisms.py) → [numbers/mechanisms.json](numbers/mechanisms.json). Judge v2 records the same
+mechanisms on every failing trial it reads ([numbers/exposure.json](numbers/exposure.json)).
+
+| Mechanism | Regular (22 failures) | Absence (95) | Judge v2, all 254 counted regular failures |
+|---|---:|---:|---:|
+| Saw the mismatch and acted anyway | 13 | 74 (78%) | 156 (61%) |
+| Never checked the deciding field | 5 | 12 | 63 (25%) |
+| Checked it and misread it | 4 | 9 | 35 (14%) |
+
+- **Seeing is not stopping.** OpenClaw's agent usually inspects the deciding field, reports the difference, and acts
+  on the closest record anyway ("likely a typo", "the only match"). The same model in the toy harness failed
+  differently (169 hand-graded absence failures): misread 37%, saw and acted 34%, never checked 22%.
+- **Underspecified requests:** in 58 of 138 usable blind trials (42%) the agent asked which match was meant, which is
+  right. Otherwise it acted on one match or on all of them, usually disclosing the others afterwards. In the toy
+  harness it asked once in 435 trials.
+- **What bites:** near misses by partial identity (a similar name, a shared prefix) expose in 48% of their probes;
+  sibling roles or attributes 32%; neighbouring values 26%; plain near misses 21% (RQ4). Attributes are exposed more
+  often than bindings (50% against 18% of covered facts).
+- **Habits beyond grounding** (RQ7): Linear's priority scale read upside down in 70% of priority writes; making a
+  presumed record true (posting the comment the request describes, reassigning an issue to the named person);
+  occasional harmful side effects.
+- **Time:** 104 of 1,695 regular trials ran past the 8-minute budget, as did 188 of 1,170 policy-population trials;
+  some agents debug a replica error until the limit (below).
+
+### 10.2 What the harness does to the measurement
+
+- **The harness changes the answer more than the tests do.** The same model is policy-level in all eight cells in
+  the toy harness and in none in OpenClaw (RQ6).
+- **Harnesses can leak the test.** OpenClaw wrote its state folder's path, which held the case id and the benchmark's
+  name, into every system prompt. In the stopped `full_01`, 43% of trials remarked on being tested, some reading the
+  test's form from its id. An anonymous state folder and a guard on every attempt's first request fixed it.
+- **The agent still notices tests.** Remarks on a trap, a decoy or a test appear in 25.6% of `full_02`'s trials,
+  19.9% of `full_03`'s (opaque ids) and 22.8% of `full_04`'s ([numbers/awareness_full_03.json](numbers/awareness_full_03.json),
+  [awareness_full_04.json](numbers/awareness_full_04.json)); in the toy harness, 11 of 221 and 1 of 261 trials.
+- **Ids that name roles hand over the answer.** Opaque ids raised exposure on the same 333 tests from 65 to 80 tests
+  (RQ4).
+- **Some tests are right only on some days.** "On Tuesday", "overdue" and "the next milestone" need the agent's clock
+  set; the date check first missed one of them.
+
+### 10.3 What building the tests taught
+
+- **Enforce every check.** The witness check ran from the start, but its result was ignored until the frozen
+  version: 7 tests would have run with no trap.
+- **Automated checks do not replace a reader.** Domain semantics, fields the actor cannot read and contrived wording
+  reached the manual review; 8 near misses and 1 scenario were ruled out by the PI.
+- **Covers rarely expose; probes do.** A generator that writes only target-present tests finds almost nothing on
+  this agent (RQ8).
+- **Identifiers need a collision check.** The drop-F derivation silently lost 7 variants to a naming collision.
+
+### 10.4 Replica defects found (reported, not fixed)
+
+- Linear: `documentUpdate` and `attachmentUpdate` apply the change but answer with an error, and agents then debug
+  until the time limit; several nested connections return null (projects, comment children, team cycles, cycle
+  issues, attachments).
+- Box: an update that omits the shared link or the lock clears it; folder listings ignore `fields`; search ignores
+  `ancestor_folder_ids` and `file_extensions`; `DELETE /tasks` fails and `/task_assignments` is missing.
+- 38 catalog facts are replica gaps (RQ1).
+
+## 11. Threats to validity
+
+- **One model.** Qwen3.8-27B, in two harnesses. No second model ran the final suite.
+- **One labeller.** The same person wrote the blind labels, the validity reviews and the variant reads. Labels were
+  written before the verdicts, but there is no second annotator and no inter-rater agreement.
+- **Judge validation is a sample.** 455 of about 3,000 OpenClaw verdicts have a blind label. The bounds in RQ5 hold for
+  the sampled runs.
+- **Rulings made by the team.** The PI ruled on contested near misses after the first pass had been seen; the rulings
+  are recorded and applied by code, and change coverage by 1 fact.
+- **The 8-minute budget was applied after the runs,** which ran with a 10-minute limit. No policy decision changes
+  without it.
+- **The opaque-id comparison is not same-day.** The two runs are a day apart on the same self-hosted server.
+- **Replicas are not the services.** 42 facts cannot be served, and replica artifacts void some trials.
+- **Writers are confounded.** Sonnet and Muse differ in briefs, method version and judge; comparisons are descriptive.
+- **Coverage includes weak credit.** 37 facts are credited through plain near misses only, and 2 through a cover
+  only.
+- **Test awareness** at about 20% of trials may change the agent's behaviour in either direction.
+- **Baselines** are 48 tests per arm with one labeller and one agent.
+- **The extensions** ran on the toy harness only.
+
+## 12. Cost
+
+**Table 18. Model spend by component** (list price; billed in brackets). Source: [kit/costs.py](kit/costs.py) →
+[numbers/costs.json](numbers/costs.json), from every `calls.jsonl` on this branch; other branches from their reports.
+
+| Component | Calls | List | Billed |
+|---|---:|---:|---:|
+| Muse: scenario generation (writer and cold reader) | 331 | $36.74 | $2.08 |
+| Muse: policy variants (drop-F wording and reader, clones) | 1,291 | $54.42 | $3.44 |
+| Muse: drop-F and clone calibration | 446 | $21.23 | $1.36 |
+| Muse: judge v2 on OpenClaw trials | 3,037 | $89.53 | $6.21 |
+| Muse: judge v2 on the toy harness's trials | 1,067 | $46.23 | $3.12 |
+| Muse: development (smoke tests, judge v1 on Muse, settings checks) | 450 | $20.09 | $1.34 |
+| Muse: judge baselines J0 and J1 | 1,228 | $34.50 | $2.41 |
+| **Muse, this branch** | **7,850** | **$302.74** | **$19.96** |
+| Muse: baselines_01 (generation $3.53, judges $21.36) | 814 | $24.89 | $1.78 |
+| Muse: step 5's automation (several matches $7.26, boundaries $5.42) | 323 | $12.68 | $0.90 |
+| Sonnet 5 on the Claude Code subscription (autogen_01, all runs) | 1,421 | $208.02, plus $13.61 in failed calls | $0 |
+| Agent under test: self-hosted Qwen | 44,575 requests | no per-call charge | 287.6 agent-hours |
+
+**Unit costs (Muse, list price; billed in brackets):**
+
+| Unit | Cost |
+|---|---:|
+| Accepted scenario (writer and reader) | $0.62 (Phase 4), $0.82 (6b); ($0.035, $0.046) |
+| Valid regular test | $0.125 ($0.007) |
+| Judge v2 verdict on an OpenClaw trial | $0.029 ($0.002) |
+| Judging per OpenClaw trial run (4,464) | $0.020 ($0.0014) |
+| Baseline test (B1, B2), for comparison | $0.011 to $0.014 at list |
+
+- **Muse is billed at about 6.6% of its list price.** Muse's part of the OpenClaw evaluation (its scenarios, all
+  policy variants, and judging) comes to $181 at list price and $11.73 billed.
+- **Not measured:** GPU cost of the self-hosted agent; the people's time for reviews and labels.
+
+## 13. Not yet measured
+
+| Measurement | Status |
+|---|---|
+| A second model and harness on the final suite | – |
+| Baselines for the policy tests (neither baseline wrote an underspecified test) | – |
+| The several-match and boundary extensions on OpenClaw | – |
+| Baselines for the extensions | – |
+| A second annotator on the blind samples | – |
+| Value checks for dates, free text and time zones (RQ7) | – |
+| Disclosure: does the final reply report what was written? | – |
+| The 9 servable facts left uncovered (label groups, Box tasks) | – |
+| Phase 4's 2 drop-F variants lost to the naming bug | – |
+| The full baseline comparison proposed in baselines_01 | – |
