@@ -221,11 +221,11 @@ Label groups and Box tasks recur: the writer could not build scenarios on them t
 [completion_01](../completion_01/README.md); from scenarios on, [kit/generator.py](kit/generator.py) →
 [numbers/generator.json](numbers/generator.json).
 
-| | Sonnet R | Sonnet P | Sonnet P v2 | Muse Phase 4 | Muse 6b | **All** |
+| | Sonnet R | Sonnet P | Sonnet P v2 | Muse Phase 4 | Muse 6b | **All runs** |
 |---|---:|---:|---:|---:|---:|---:|
-| Briefs | 18 | 16 | 16 | 32 | 26 | **108** |
+| Briefs run | 18 | 16 | 16 | 32 | 26 | **108** |
 | Accepted scenarios | 18 | 15 | 16 | 29 | 23 | **101** |
-| Rejected (the cold reader never accepted a version) | 0 | 1 | 0 | 2 | 3 | **6** |
+| Rejected (no version accepted) | 0 | 1 | 0 | 2 | 3 | **6** |
 | Failed (infrastructure) | 0 | 0 | 0 | 1 | 0 | **1** |
 | Versions per accepted scenario, median (max) | 1 (5) | 2 (5) | 2 (6) | 2 (7) | – | |
 | Manual review: scenarios valid / flawed but usable / invalid | 16 / 1 / 1 | 11 / 4 / 0 | 15 / 1 / 0 | 24 / 5 / 0 | 21 / 2 / 0 | **87 / 13 / 1** |
@@ -237,8 +237,10 @@ Label groups and Box tasks recur: the writer could not build scenarios on them t
 | **Valid regular tests** | **104** | **78** | **89** | **158** | **136** | **565** |
 | Facts covered (RQ2) | 37 | 40 | 44 | 58 | 69 | **204** |
 
-- **Acceptance:** 101 of 108 briefs (94%) gave an accepted scenario. A brief is rejected when no version passes
-  every check within the round limit; in the recorded cases the cold reader kept finding a problem.
+- **Acceptance:** 101 of 108 brief runs (94%) gave an accepted scenario. The runs overlap: P v2 reran P's 16 briefs
+  and 6b reran 3 of Phase 4's (G4-BOX-02, G4-CAL-08, G4-LIN-03). Of the 89 distinct briefs, 86 have an accepted
+  scenario and 3 never did (G4-BOX-10, G4-LIN-18, G4-LIN-03). A brief is rejected when no version passes every check
+  within the round limit; in the cases whose record gives the reason, the cold reader kept finding a problem.
 - **Validity:** 100 of 101 accepted scenarios are usable; 1 is invalid (AR-LIN-25). Of all derived tests, 565 of
   582 (97%) are valid. "Flawed but usable" means a contestable near miss or contrived wording; the PI's rulings
   decide what is left out.
@@ -458,9 +460,9 @@ the runs (§0.3). Every valid unit of the generated scenarios ran, 3 trials each
 
 - **Units exceed requirements** because a fact can have near misses in several scenarios; the unit is the scenario's
   fact. Some facts have no valid unit (a derivation not possible, a variant declined or ruled invalid).
-- **The same facts show up in both kinds of test.** Of the facts a regular test exposes, almost all also fail their
-  absence twin (82 of 84). Another 87 facts pass every regular test but fail when the request presumes the record:
-  the agent can check the fact when it may report absence, and does not when the request presumes a match.
+- **The same facts show up in both kinds of test.** Of the 84 facts that a regular test exposes and that have an
+  absence unit, 82 also fail it. Another 87 facts pass every regular test but fail when the request presumes the
+  record: the agent can check the fact when it may report absence, and does not when the request presumes a match.
 - **Per-fact counting of policy failures.** A policy failure is attributed to the fact of the near miss acted on
   (absence) or of the condition dropped (underspecified), exactly as in regular tests. The totals above count facts,
   not failing tests.
@@ -489,7 +491,7 @@ request without interpretation.
 | Linear priority ("…to Urgent") | 58 (31 on the target) | **42 (23 on the target)** | 91 | **63** |
 | Linear estimate ("estimate to 5") | 58 | 0 | 75 | 0 |
 | Box tag ("Add the tag X") | 105 | 0 | 198 | 0 |
-| Slack reaction ("a :tada: reaction") | 45 | 0 | 74 | 1 (asked "check", wrote "done") |
+| Slack reaction ("a :tada: reaction") | 45 | 0 | 74 | 0 (1 ambiguous: asked for a "check" reaction, which names no exact emoji; wrote "done") |
 | Slack archive or unarchive | 14 | 0 | 15 | 0 |
 | Calendar hide | 21 | 0 | 17 | 0 |
 
@@ -498,9 +500,9 @@ request without interpretation.
   3 (Medium) for High in 2. Over all runs, 105 of 149 priority writes (70%) are wrong. The step-5 study found the
   same on its own tests (31 of 39 passed Linear priority trials), and so did fact_coverage_02 (7 of 14).
 - **The right record with the wrong value passes.** 23 cover trials set the priority of the right issue to the wrong
-  value. They count as correct: the triage cleared 16 without the judge, and the judge graded the other 7 on the
-  record chosen (6 correct, with notes such as "The written priority 4 is Low not Urgent, but a wrong value on the
-  target does not change the outcome"; 1 incorrect because it also wrote a near miss).
+  value, and 22 of them count as correct: the triage cleared 16 without the judge, and the judge graded 6 correct,
+  with notes such as "The written priority 4 is Low not Urgent, but a wrong value on the target does not change the
+  outcome". The 23rd is incorrect because it also wrote a near miss.
 - **Judge v2's notes** mention a wrong value or scale in 76 of its 3,033 OpenClaw verdicts (13 graded correct), a side
   effect in 2 and a false claim to the user in 2. It reports what it sees but, as instructed, grades grounding only.
 
@@ -552,7 +554,7 @@ labelled by hand before any assertion result or judge verdict was read; one pers
 | Near misses through a designated substitute (F1–F8) | 9 of 48 | 17 of 53 | 21 of 58 | 19 of 66 | 81 of 99 |
 | Facts exercised properly (credit rule), valid tests | 7 | 12 | 17 | 13 | 34.0 |
 | **Facts exposed, fact-sensitive tests (detect@3 / detect@1)** | **0 / 0** | **0 / 0** | **0 / 0** | **0 / 0** | **11.0 / 7.2** |
-| Failing tests (detect@3), and their kind | 5, all presupposing | 0 | 2, presupposing | 3, presupposing (1 by timeout) | 12.5, all fact-level |
+| Failing tests (detect@3), and their kind | 5, all presupposing | 0 | 2, presupposing | 3: 2 presupposing, 1 a timeout without a write | 12.5, all fact-level |
 | Policy-level facts, designated near misses only (baselines_01's count) | 0 / 0 | 0 / 0 | 1 / 1 | 0 / 0 | – |
 | Policy-level facts, any near miss failing one fact (our rule) | 4 / 3 | 0 / 0 | 2 / 2 | 1 / 0 | – |
 | Own oracle on its valid trials: precision / recall | 0.54 / 0.70 (assertions) | 0 real, 21 false | 0.27 / 1.00 | 0.03 / 1.00 | 1.00 / 1.00 (judge v2) |
@@ -560,8 +562,9 @@ labelled by hand before any assertion result or judge verdict was read; one pers
 
 - **Asked plainly, a coding agent writes tests that expose no fact,** with or without our catalog, with or without
   the reviewer's fixes: 0 facts from 169 valid baseline tests. 48 of ours expose about 11.
-- **Its failing tests are policy failures.** Every failing baseline test presupposes a record that does not exist.
-  Counted as raw failing tests, B1 (5) would look productive; counted as facts, it is not.
+- **Its failing tests are policy failures.** Every failing baseline trial that wrote something acted on a request that
+  presupposes a record that does not exist; the one other failing test (N1M) is a timeout without a write. Counted
+  as raw failing tests, B1 (5) would look productive; counted as facts, it is not.
 - **Policy-level failures counted by fact.** Our policy tests count the fact of the near miss acted on (RQ6), so the
   baselines' presupposing tests should too. Our own Phase 4 policy units, with every one run: 60 absence units over
   56 facts, 45 failing (39 through designated near misses); 50 underspecified units over 52 facts, 41 failing (38).
@@ -640,8 +643,9 @@ policy panel is.
 | Text lacking the search words | 10 / 10 |
 
 - **This is a policy, not a fact.** The misses follow the route, whatever the facts: with no calendar named, the
-  agent reads the primary calendar only, in all 7 calendar covers. Slack's default channel list misses private
-  copies (3 of 6), and Linear sometimes reads one page (5 covers). Box walks folders and pages. There was no clear
+  agent reads the primary calendar only, in all 7 calendar covers: a copy in a hidden calendar was found 0 of 21
+  times. Slack's default channel list missed a private channel's copy 3 of 5 times, and Linear sometimes reads one
+  page (5 covers). Box walks folders and pages. There was no clear
   case of stopping early and no filter failure. We report it like the policy panel's collection request
   ([criterion.md](../fact_coverage_01/criterion.md)), once per service, not per fact.
 - **The judge against review:** 84 failures reported on valid tests, 76 true and 8 false (3 replica artifacts, 5
