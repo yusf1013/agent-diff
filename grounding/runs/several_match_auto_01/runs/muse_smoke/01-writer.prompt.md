@@ -1,0 +1,1 @@
+Rewrite this request so that it asks for every matching record, keeping every condition: "Delete Friday's architecture review that Kenji Sato attends as an optional guest." Answer with JSON: {"plural": <the rewritten request>, "ok": true}.
