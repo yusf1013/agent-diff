@@ -11,6 +11,7 @@ report studies on other branches: the generator baselines (`exp/baselines-01`) a
 | Path | What |
 |---|---|
 | [report.md](report.md) | The report |
+| [report_concise.md](report_concise.md) | Shorter report: 1,006 methodology cases, final OpenClaw executions, combined writer groups, and estimated solver costs |
 | [kit/](kit/) | One script per table group; each reads committed run records and writes one JSON file. No model calls, no agent runs |
 | [numbers/](numbers/) | The scripts' outputs, which the report's tables cite |
 
@@ -27,7 +28,14 @@ python grounding/runs/fact_coverage_02/launch.py grounding.runs.report_01.kit.me
 python grounding/runs/fact_coverage_02/launch.py grounding.runs.report_01.kit.scale      # §0.4
 python grounding/runs/fact_coverage_02/launch.py grounding.runs.report_01.kit.costs      # §12
 python -m grounding.runs.report_01.kit.qwen_usage                                    # §0.4: exact Qwen/OpenClaw tokens, including RQ8
+python grounding/runs/fact_coverage_02/launch.py grounding.runs.report_01.kit.concise  # concise report: writes only numbers/concise.json
 ```
+
+`concise.py` selects final executions, combines writers, filters the blind-label and judge-comparison samples,
+and recomputes the equal-budget Muse comparison. It reads baseline summaries from `runs/baselines_01` or, if
+still unmerged, `.claude/worktrees/baselines-01/grounding/runs/baselines_01`, and includes those summaries in its
+output. The concise report's token estimate scales the historical average to 3,018 executions; it is not an
+exact usage audit of that subset. Its price table states the rates, sources and calculation separately.
 
 `numbers/awareness_full_03.json` and `numbers/awareness_full_04.json` come from openclaw_eval_01's
 `test_awareness.py` on those runs.
