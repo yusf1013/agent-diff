@@ -1,0 +1,1 @@
+Successfully marked issue WEB-1 "Checkout button broken" as completed (state: "Done") with a due date of Friday, September 25, 2026. The issue was in the "Web" team and previously had a "Todo" state with a due date of 2026-09-01. Both the workflow state and due date have been updated via the issueUpdate mutation.

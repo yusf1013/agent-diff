@@ -1,0 +1,11 @@
+I was unable to convert Diego Alvarez to a bot user because this operation is not supported by the Slack API available in this environment.
+
+What I confirmed:
+- Diego Alvarez exists as user `U_DIEGO` (email: diego.alvarez@northwind.example).
+- He is currently a regular human user: `is_bot: false`, `is_app_user: false`.
+
+Why it can't be done:
+- The user-related endpoints available are read-only (`users.list`, `users.info`, `users.conversations`). There is no endpoint to change a user's type or modify the `is_bot` / `is_app_user` flags.
+- In Slack generally, bot accounts are not created by converting a human user. Bots are provisioned by installing/authorizing a Slack App with bot scopes, which is outside the scope of these messaging/collaboration APIs.
+
+To proceed, you would need to either (a) grant me an admin/identity-management endpoint that can re-type a user, or (b) create a new bot app and have Diego's automation use the bot's token instead of his user account. Let me know which approach you'd like and I can help with the part that is within these APIs.

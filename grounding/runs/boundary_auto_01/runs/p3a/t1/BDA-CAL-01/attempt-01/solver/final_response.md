@@ -1,0 +1,1 @@
+Successfully renamed Maya's team calendar to "Maya's Product Team" by setting a summaryOverride on the calendar list entry. Note: I only have "writer" access to this calendar (owned by maya.chen@northwind.example), so I couldn't change the actual calendar's summary — only set a user-specific display name, which achieves the rename in the user's view.

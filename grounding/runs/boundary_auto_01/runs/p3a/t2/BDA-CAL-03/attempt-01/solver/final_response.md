@@ -1,0 +1,1 @@
+I was unable to set the location of Maya's team calendar because the authenticated user (jordan.lee@northwind.example) only has "writer" access to that calendar, not "owner" access. Only the calendar owner (maya.chen@northwind.example) can update calendar metadata such as the location. The request was rejected with a 403 "forbidden" error.

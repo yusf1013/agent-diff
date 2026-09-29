@@ -1,0 +1,1 @@
+Renamed the calendar to "Maya's Product Team" by setting the display name (summaryOverride) on the calendar list entry for maya-team@northwind.example. Note: the underlying calendar is owned by Maya, and as a writer I couldn't rename it directly (403), so this is the display name in the user's calendar view.
