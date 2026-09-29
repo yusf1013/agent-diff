@@ -208,3 +208,5 @@ the final runs use one frozen version.
 | 6c | Judge baselines | done (2026-09-28). On Qwen's 429 labels, over the blind samples, recall is 0.72 for J0, 0.75 for J1 and 1.00 for judge v2, all at precision ≥ 0.99. On OpenClaw's 178 usable blind labels it is 0.90 for J0, 0.92 for J1 and 1.00 for judge v2, at precision ≥ 0.98. OpenClaw's agent usually says what is wrong, which a naive judge can read. | [judge_baselines_01](../runs/judge_baselines_01/README.md) |
 | 6d | Generator baselines | not started | – |
 | 6e | Reports | not started | – |
+
+**Open for the PI after 6a and 6b (2026-09-29):** the rulings I made under the PI's criteria (G4-CAL-10's two near misses, the sub-team near misses of G4-LIN-15 and G4-LIN-11, AP-LIN-07's d-team-f1), the 8-minute budget read retroactively (no decision changes either way), the post-freeze naming fix in `autogen_02/kit/variants2.py` and the 2 Phase 4 drop-F variants it had lost, duplicate units from one request, and G4-LIN-12. Details: [openclaw_eval_01](../runs/openclaw_eval_01/README.md), "For the PI".

@@ -507,8 +507,8 @@ and the blind sample) and the score come from `autogen_02.kit.phase4 select` and
 | `smoke_01` (2026-09-27) | 8 tests, 1 trial: a generated Slack cover and fact probe, G4-CAL-06 (cover and a probe, with the new zones), G4-BOX-05, a Box probe, G4-LIN-01, a G4-LIN-02 probe | 8 of 8 completed and ended on their own; see below |
 | `full_01` (2026-09-28, stopped) | The regular suite, 3 trials, before the neutral layout | Stopped after 535 trials: its prompts named the benchmark and the test. A record only |
 | `smoke_02` (2026-09-28) | 3 tests, 1 trial, the neutral layout | 3 of 3 completed; no prompt leaks |
-| `full_02` (2026-09-28) | The regular suite, 438 tests × 3 trials, neutral layout | See "Results: the regular suite" |
-| `policy/solve_absence_look1`-`4`, `policy/solve_underspecified_look1`-`4` (2026-09-28) | The policy stage's looks: 132 + 42 + 42 + 153 absence trials, 132 + 21 + 21 + 30 underspecified trials | See "Results: the policy stage" |
+| `full_02` (2026-09-28) | The regular suite, 438 tests × 3 trials, neutral layout | See "First pass: the regular suite (`full_02`)" |
+| `policy/solve_absence_look1`-`4`, `policy/solve_underspecified_look1`-`4` (2026-09-28) | The policy stage's looks: 132 + 42 + 42 + 153 absence trials, 132 + 21 + 21 + 30 underspecified trials | See "First pass: the policy stage" |
 | `smoke_03` (2026-09-28) | Six covers with opaque ids, 1 trial (AR-SLK-21, AP-SLK-02, G4-LIN-02, AP-LIN-07, AP-CAL-02, G4-CAL-01) | All installed and completed, no prompt leaks; the clocked AR-SLK-21 and G4-LIN-02 showed the agent 2026-09-25 12:00 EDT, Calendar still 2018-06-17 |
 | `full_03` (2026-09-28) | 6a's re-run: the 333 Calendar, Linear and Slack tests the rulings keep, opaque ids and clocks, 3 trials | 999 trials, 32 at OpenClaw's limit; see "Results: the regular suite" |
 | `policy/solve_population_absence`, `policy/solve_population_underspecified` (2026-09-28) | Every valid 6a unit, 3 trials (Box's first-pass units keep their verdicts) | 408 and 411 trials, 23 and 58 at OpenClaw's limit; see "Results: the policy stage" |
