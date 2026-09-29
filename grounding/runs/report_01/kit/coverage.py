@@ -58,7 +58,9 @@ def main():
                     "with_designated_alternative": sum(1 for f in facts if cat[d][f]["kind"] in "HBD"
                                                        or cat[d][f].get("alternatives")
                                                        or cat[d][f].get("sibling_alternatives"))}
+        before_6b = set().union(*(set(v) for w, v in per.items() if w != "Muse 6b"))
         achieved[d] = {"per_writer": {w: len(v) for w, v in per.items()},
+                       "covered_before_6b": len(before_6b),
                        "covered": len(union), "covered_servable": len(union & servable),
                        "claimed_before_rulings": len(before),
                        "uncovered_servable": sorted(servable - union),
@@ -98,6 +100,7 @@ def main():
            "facts_per_family": dict(sorted(by_family.items())),
            "totals": {"facts": sum(s["facts"] for s in space.values()),
                       "servable": sum(s["servable"] for s in space.values()),
+                      "covered_before_6b": sum(a["covered_before_6b"] for a in achieved.values()),
                       "covered": sum(a["covered"] for a in achieved.values()),
                       "covered_servable": sum(a["covered_servable"] for a in achieved.values()),
                       "claimed_before_rulings": sum(a["claimed_before_rulings"] for a in achieved.values())}}

@@ -100,3 +100,116 @@ Source: [kit/scale.py](kit/scale.py) → [numbers/scale.json](numbers/scale.json
 - **RQ9** Two extensions: requests with several matches, and requests beyond the agent's capabilities.
 
 Then: lessons (§10), threats to validity (§11), cost (§12) and what is not yet measured (§13).
+
+## RQ1. How large is the coverage space?
+
+The coverage criterion is **fact-discrimination coverage** (FDC): a requirement is one fact of a service's domain
+model, and a test covers it when a near miss forces the agent to check that fact
+([criterion.md](../fact_coverage_01/criterion.md)). The catalog is built by code from the replicas' schemas and a
+curated domain model ([catalog/build.py](../fact_coverage_01/catalog/build.py)). Every stored column of an included
+entity and every model relationship has a recorded disposition: a fact, or a reason it is not one (a foreign key, a
+bookkeeping column, a configuration field, and so on).
+
+**Table 1. The catalog.** Source: [counts.md](../fact_coverage_01/catalog/counts.md);
+[kit/coverage.py](kit/coverage.py) → [numbers/coverage.json](numbers/coverage.json) (`space`).
+
+| Service | A attribute | R relationship | H hierarchy | B binding | D derived | **Facts** | With a designated alternative | Replicas cannot serve | **Servable** |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| Box | 31 | 19 | 2 | 5 | 3 | **60** | 45 | 0 | **60** |
+| Calendar | 28 | 4 | 1 | 3 | 4 | **40** | 25 | 6 | **34** |
+| Linear | 63 | 38 | 5 | 12 | 3 | **121** | 80 | 36 | **85** |
+| Slack | 20 | 4 | 1 | 4 | 5 | **34** | 22 | 0 | **34** |
+| **All** | **142** | **65** | **9** | **24** | **15** | **255** | **172** | **42** | **213** |
+
+- **Attributes by subkind** (identity, text, time, quantity, state): Box 6/7/8/3/7, Calendar 8/4/2/0/14,
+  Linear 19/8/11/3/22, Slack 5/5/2/0/8.
+- **A designated alternative** is a sibling attribute or role, or a kind-level confusion for H, B and D facts. For
+  the other 83 facts the near miss is a plain different value (for a state, another value is the designated
+  alternative).
+- **The 42 facts the replicas cannot serve** are 38 replica gaps (features the real services have and the replicas
+  lack, mostly Linear) and 4 real limits (Calendar sharing rules the acting user cannot read). Source:
+  `grounding/runs/boundary_01/report.md` on branch `exp/automation-01`. The generator's briefs never draw them.
+
+**Table 2. The same four services under route-based criteria.** Source: [counts.md](../fact_coverage_01/catalog/counts.md).
+
+| Service | FDC facts | Structural routes | Read-screened routes | … with ≤2 edges | … with ≤3 edges | Entity × route × mode | Fact pairs |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Box | 60 | 12,398 | 6,500 | 298 | 1,146 | 26,000 | 1,770 |
+| Calendar | 40 | 168 | 30 | 20 | 28 | 120 | 780 |
+| Linear | 121 | 989,643,546,920 | 58,820,072,198 | 2,854 | 23,372 | 235,280,288,792 | 7,260 |
+| Slack | 34 | 2,870 | 212 (174 after review) | – | – | 696 | 561 |
+
+- The FDC count is linear in the model's size: it does not multiply facts by routes, modes or one another.
+- Route-based criteria grow with the schema's paths, up to 10^11 routes for Linear.
+
+**The policy space.** The policy tests add two requirements per covered fact (one absence twin and one
+underspecified test): 408 for the 204 facts covered in RQ2, 426 if all 213 servable facts were. RQ6 asks whether
+they can be collapsed to one test per service and mode, 8 in all.
+
+## RQ2. How much of the space do generated tests cover, validly?
+
+**The generator.** A brief names 1 to 4 catalog facts of one service. An LLM writer turns it into a scenario, code
+checks it, the replica installs and pre-runs it, and a second LLM reads it cold and must find the target and the
+condition each near miss fails. Code then derives the regular tests (RQ3). Five generation runs wrote the
+scenarios:
+
+- **Sonnet R:** briefs on the 36 facts that fact_coverage_02's hand-built suites tested.
+- **Sonnet P, and P v2:** briefs on facts no hand-built test used; P v2 regenerated P's briefs with a revised method.
+- **Muse Phase 4:** briefs on facts no earlier brief had used. The run was cut to 32 of 51 briefs for time.
+- **Muse 6b:** the remaining servable facts: Phase 4's 19 ungenerated briefs, its 3 briefs without an accepted
+  scenario, and 4 new briefs for the facts earlier used only to develop the method.
+
+**Table 3. Facts covered by valid tests, by writer.** Source: [kit/coverage.py](kit/coverage.py) →
+[numbers/coverage.json](numbers/coverage.json) (`achieved`). Writers overlap (P and P v2 share their briefs), so the
+columns do not add up.
+
+| Service | Servable | Sonnet R | Sonnet P | Sonnet P v2 | Muse Phase 4 | Muse 6b | Covered before 6b | **Covered** | Share of servable |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| Box | 60 | 14 | 5 | 5 | 16 | 21 | 35 | **56** | 93% |
+| Calendar | 34 | 7 | 3 | 4 | 16 | 10 | 26 | **34** | 100% |
+| Linear | 85 | 9 | 18 | 21 | 17 | 35 | 46 | **80** | 94% |
+| Slack | 34 | 7 | 14 | 14 | 9 | 3 | 31 | **34** | 100% |
+| **All** | **213** | 37 | 40 | 44 | 58 | 69 | 138 | **204** | **95.8%** |
+
+- **Of the whole catalog,** 204 of 255 facts (80%) are covered; the other 42 cannot be served (RQ1).
+- **Every covered fact comes from generated scenarios.** Of the 36 facts the hand-built suites tested, 35 are
+  covered; the 36th is `H:IssueLabel.parentId` (below).
+- **6b** was aimed at 74 uncovered facts and covered 66 of them.
+- **Validity costs one fact.** Before the PI's rulings the suites claim 205 facts. `H:IssueLabel.parentId` had
+  its only near miss in AR-LIN-25, a scenario the validity review found invalid (the target itself carries the
+  label group that the near miss was meant to differ on).
+
+**Table 4. Coverage by kind of fact.** Same source (`by_kind`).
+
+| Kind | Facts | Servable | Covered | Share of servable |
+|---|---:|---:|---:|---:|
+| A attribute | 142 | 119 | 117 | 98% |
+| R relationship | 65 | 51 | 48 | 94% |
+| H hierarchy | 9 | 6 | 5 | 83% |
+| B binding | 24 | 23 | 22 | 96% |
+| D derived | 15 | 14 | 12 | 86% |
+
+**The 9 servable facts left uncovered,** and why:
+
+| Facts | Cause |
+|---|---|
+| Box `R:Task.item_id`, `R:Task.created_by_id`, `B:Task.item_id`, `D:Task.assignment_count` | Brief G4-BOX-10: the cold reader rejected all 3 rounds |
+| Linear `A:IssueLabel.isGroup`, `A:IssueLabel.name`, `R:IssueLabel.teamId`, `D:issue_count` | Briefs G4-LIN-03 (rejected twice, after 7 versions in 6b) and G4-LIN-18 (rejected after 3 rounds) |
+| Linear `H:IssueLabel.parentId` | Its only near miss is in the invalid AR-LIN-25 (above) |
+
+Label groups and Box tasks recur: the writer could not build scenarios on them that the reader accepted.
+
+**How the credit is earned.** Same source (`facts_credited_through_form`, `credited_only_through_plain_near_misses`,
+`facts_per_family`).
+
+- **Form.** All 204 facts have a near miss in some cover; 202 also in a probe and 94 in a fact probe. For 2 facts
+  (`R:Comment.file_id` in G4-BOX-13, `R:ProjectMilestone.projectId` in G4-LIN-01) the credit rests on a cover
+  alone. Their probes were dropped because the near miss lost its trap once the target was removed, while the claim
+  still passes the check in the cover. All 101 covers pass the reference check again here.
+- **Near-miss family.** 167 facts have at least one near miss through a designated substitute (F1–F8). 37 are
+  credited only through plain near misses (F0). 30 of those are state attributes, where another value is the
+  designated alternative; the other 7 are 5 text attributes, `A:Cycle.number` and `R:IssueRelation.relatedIssueId`.
+  Plain near misses expose less often than designated ones (RQ4, RQ8), so these 37 are covered by the rule but
+  tested more weakly.
+- **Facts per family** (a fact counted once per family it has): F1 81, F0 71, F8 41, F7 38, F2 30, F5 22, F6 13,
+  F4 5, F3 1.
