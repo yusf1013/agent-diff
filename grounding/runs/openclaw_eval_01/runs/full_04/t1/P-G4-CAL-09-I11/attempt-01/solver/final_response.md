@@ -1,0 +1,1 @@
+No all-day event found. The only Team offsite on Thursday, June 21 is a timed event — 10:00–11:00 AM PDT — and Omar Haddad has accepted it. Since you specifically said "all-day," I didn't want to assume that's the one. If you want, I can set the location on that 10am one instead — just say the word.

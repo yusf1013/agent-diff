@@ -1,0 +1,1 @@
+Done. Added the `harbor-final` tag to **Harbor launch plan.pdf** (ID 8110) — the favorited copy in the Harbor Launch folder (the one that also contains Harbor budget.xlsx). It had no tags before, so nothing was overwritten.

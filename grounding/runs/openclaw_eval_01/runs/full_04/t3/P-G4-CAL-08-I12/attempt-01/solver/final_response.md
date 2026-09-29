@@ -1,0 +1,1 @@
+Found it and moved it. The "Deep Work" block on the Engineering calendar — Thursday, June 21, 8:00–9:00 AM, the one with Sprint Planning that afternoon at 3 PM — is now set to **Room 5B**. You were right, it's marked private.

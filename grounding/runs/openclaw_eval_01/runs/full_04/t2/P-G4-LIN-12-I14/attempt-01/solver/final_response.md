@@ -1,0 +1,3 @@
+Done — estimate set to **3** on **APX-5 "Offline sync progress indicator"** (Apex team, assigned to Rae Ellison, state: Todo).
+
+One caveat worth flagging: there are several workspace users with similar names/displays (Raquel Vance, Rae Quinn, Raquel Ellison, Raquel Ibarra, Raquel Okafor — all displaying "Rae Ellison" variants). I matched on the Apex offline-sync issue being assigned to the "Rae Ellison" display, which was the only such issue on the team. I didn't find a "Reviewing support queue" status on the issue itself (its state is Todo) — if that's her presence status rather than the issue state, the issue is still the right one given it's the only offline-sync issue assigned to Rae on Apex.

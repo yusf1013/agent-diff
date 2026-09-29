@@ -1,0 +1,1 @@
+Done. Set **WEB-1 "Checkout latency spike on Safari"** (Todo, Web team) to an estimate of **3 points**. It's assigned to Nina Porter — the active human admin (the other admin on the team is Relay Bot, a bot).

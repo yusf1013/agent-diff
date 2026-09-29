@@ -1,0 +1,1 @@
+Done ✅ "Bring the printed roadmap" is now in the description of the Thursday 4:00–5:00 PM sprint review (June 21) — the confirmed one with the Google Meet link and Maple Room booked. The 9 AM sprint review had no video link, so I left it alone.

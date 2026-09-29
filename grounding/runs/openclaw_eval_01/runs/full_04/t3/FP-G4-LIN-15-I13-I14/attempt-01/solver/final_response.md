@@ -1,0 +1,1 @@
+I checked Linear: the Platform team has only one issue (PLT-2 "Platform epic: mobile rollout", In Progress, assigned to Leo Park). Priya Nair exists in the workspace but has no Todo issue assigned to her in the Platform team, so there was nothing to update.

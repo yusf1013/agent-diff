@@ -1,0 +1,1 @@
+No match found — I checked the Atlas project in Linear. The Atlas milestones due October 15 are "Beta launch" and "Alpha cleanup," but Maya Chen has no issues in either. Her two open Atlas issues are in "Docs polish" (due Sep 30) and "Release hardening" (due Oct 16). So no estimate was set.

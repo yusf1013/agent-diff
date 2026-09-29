@@ -1,0 +1,1 @@
+Nope — there's no such issue. I found **WEB-1 "Checkout crash on Safari"** (assigned to Leo Park), but it has no blocker relations at all, so there's no Web team issue assigned to Maya Chen blocking it. No estimate was changed.

@@ -1,0 +1,1 @@
+Done. In the **Product Launch** folder, `Launch plan.pdf` is the only PDF with a still-open review task due July 15, 2026 (the others were either completed, different actions, or different due dates). It had no tags before, so I added **launch-ready** — confirmed applied.

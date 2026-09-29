@@ -1,0 +1,1 @@
+Done. Set the estimate to 3 on **MOB-1: "Checkout error banner missing copy"** — the only Mobile issue in the current cycle (Cycle 12, Sep 21 – Oct 5) assigned to Maya Chen with the Frontend label. Estimate was previously unset.

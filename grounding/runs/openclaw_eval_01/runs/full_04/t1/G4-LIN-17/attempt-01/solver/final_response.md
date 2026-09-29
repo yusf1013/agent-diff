@@ -1,0 +1,1 @@
+Done. Set the estimate to **5** on **WEB-3 "API rate limiting under load"** — the Web team issue assigned to Maya Chen that blocks WEB-1 "Checkout crash on Safari". (Note: WEB-5 is only related via inverse relations; WEB-3 is the actual blocking issue.)

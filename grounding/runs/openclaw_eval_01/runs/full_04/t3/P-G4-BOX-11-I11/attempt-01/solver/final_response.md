@@ -1,0 +1,1 @@
+Done. Added **seaport-final** to **"Seaport Archive 2024"** (id 8201) — the one matching folder: its description mentions the lighthouse restoration at Harbor Point, and it was already tagged "harbor". Its tags are now: `harbor`, `restoration`, `seaport-final`.

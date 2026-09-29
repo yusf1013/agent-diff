@@ -1,0 +1,1 @@
+Done ✅ — added the **harbor-final** tag to the favorited copy of **Harbor launch plan.pdf** (in `Harbor Launch / Specs`, the folder that also contains Harbor budget.xlsx). It's confirmed in the Favorites collection, and the tag now shows on the file.

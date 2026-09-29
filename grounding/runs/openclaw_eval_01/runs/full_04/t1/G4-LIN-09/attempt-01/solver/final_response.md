@@ -1,0 +1,1 @@
+Done. Set the estimate to 5 on **MOB-1 "Fix crash on photo upload"** — the only issue in the Mobile team's completed *Review* state (**Launch Review**) assigned to Priya Nair. It previously had an estimate of 2.
