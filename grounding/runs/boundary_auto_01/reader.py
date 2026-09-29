@@ -52,6 +52,34 @@ Records in the workspace (table: rows):
 """
 
 
+def agrees(r, t):
+    """The reader names the writer's record: the same record for a change to one record; for a new or removed row,
+    the same table or the parent record the row hangs on (a reaction's message, an attendee's event: its id among the
+    row's key values); a question names no record to change."""
+    if t["kind"] == "question":
+        return True
+    if t["kind"] in ("add_row", "remove_row"):
+        try:
+            values = {str(v) for v in json.loads(t.get("match") or "{}").values()}
+        except ValueError:
+            values = set()
+        return r["table"] == t["table"] or str(r["record_id"]) in values or str(r["record_id"]) == str(t["record_id"])
+    return r["table"] == t["table"] and str(r["record_id"]) == str(t["record_id"])
+
+
+def recompute():
+    """Re-apply the agreement rule to the saved verdicts (no model calls)."""
+    answers = json.loads((HERE / "writer.json").read_text())
+    path = HERE / "reader.json"
+    done = json.loads(path.read_text())
+    for eid, v in done.items():
+        v["same_record"] = agrees(v, answers[eid]["target"])
+        v["agreed"] = v["same_record"] and not v["hints_limit"] and v["natural"]
+    path.write_text(json.dumps(done, indent=1, ensure_ascii=False) + "\n")
+    print(len(done), "read;", sum(1 for v in done.values() if v["agreed"]), "agreed;",
+          {k: (v["same_record"], v["hints_limit"], v["natural"]) for k, v in done.items() if not v["agreed"]})
+
+
 def read(e, answer):
     svc = e["service"]
     ops = SEEDS[svc] + EXTRA_OPS.get(e["id"], [])
@@ -62,10 +90,7 @@ def read(e, answer):
         prompt=TASK.format(service=SERVICE[svc], actor=ACTOR[svc], request=answer["request"], records=render(seed))))
     r = agent.structured(result)
     t = answer["target"]
-    # The record must be the writer's for a change to one record; for a new or removed row the table is enough
-    # (a removed row is often named by two keys); a question names no record to change.
-    same_record = t["kind"] == "question" or (r["table"] == t["table"] and (
-        t["kind"] in ("add_row", "remove_row") or str(r["record_id"]) == str(t["record_id"])))
+    same_record = agrees(r, t)
     return e["id"], {"agreed": same_record and not r["hints_limit"] and r["natural"], "same_record": same_record,
                      **r, "billed": result["cost_usd_billed"], "list": result["total_cost_usd"]}
 
@@ -84,6 +109,9 @@ def main(ids, concurrency):
 
 if __name__ == "__main__":
     args = sys.argv[1:]
+    if "--recompute" in args:
+        recompute()
+        sys.exit()
     ids = set(args[args.index("--ids") + 1:]) if "--ids" in args else set()
     ids = {i for i in ids if not i.startswith("--")}
     conc = int(args[args.index("--concurrency") + 1]) if "--concurrency" in args else 4
