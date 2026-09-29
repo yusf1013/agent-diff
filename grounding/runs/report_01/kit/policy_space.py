@@ -43,7 +43,11 @@ def main():
             judged = 0
             for u in valid:
                 src = by_source[mode].setdefault(u.get("source") or "phase3", {"units": 0, "facts": set(),
-                                                                                 "failing": set()})
+                                                                                 "failing": set(),
+                                                                                 "failing_designated": set()})
+                # A unit built on a designated substitute (any family but F0), for the stricter reading of a
+                # policy-level fact that baselines_01 applies.
+                designated = any(x != "F0" for x in str(u.get("family") or "F0").split("+"))
                 # Box's first-pass units keep their verdicts (openclaw_eval_01 README, "What ran").
                 got = outcomes.get(u["unit"]) or (earlier.get(u["unit"], {}) if d == "box" and u["unit"] in ran_first
                                                   else {})
@@ -54,6 +58,8 @@ def main():
                 if any(o in sampler.FAIL for o in got.values()):
                     fail3 |= fs
                     src["failing"] |= {f"{d} {f}" for f in fs}
+                    if designated:
+                        src["failing_designated"] |= {f"{d} {f}" for f in fs}
                 if got.get("t1") in sampler.FAIL:
                     fail1 |= fs
                 src["units"] += 1
@@ -91,7 +97,8 @@ def main():
                          "exposed_by_regular_only": len((both & regular) - fails3[mode]),
                          "neither": len(both - regular - fails3[mode])}
     out["regular_vs_policy_facts"] = overlap
-    out["by_source"] = {m: {s: {"units": v["units"], "facts": len(v["facts"]), "facts_failing_detect3": len(v["failing"])}
+    out["by_source"] = {m: {s: {"units": v["units"], "facts": len(v["facts"]), "facts_failing_detect3": len(v["failing"]),
+                                "facts_failing_detect3_designated_units": len(v["failing_designated"])}
                             for s, v in srcs.items()} for m, srcs in by_source.items()}
     out["facts_failing_detect3"] = {m: sorted(v) for m, v in fails3.items()}
     print(write("policy", out))

@@ -524,3 +524,79 @@ request without interpretation.
   them. 32 trials show such a change; it is a replica defect, recorded, not scored.
 - **Not measured:** values whose request needs interpretation (dates, free text, colours, time zones), except where a
   flagged trial showed one; a check of disclosure (whether the final reply reports what was written).
+
+## RQ8. Baselines and ablations
+
+A separate study, baselines_01 (branch `exp/baselines-01`, `grounding/runs/baselines_01/report.md` and
+`compare.json`), compares our tests with what a coding agent writes when asked directly, and removes parts of our
+system one at a time. Everything below ran on the same agent (OpenClaw, Qwen3.8-27B, k = 3). Each baseline trial was
+labelled by hand before any assertion result or judge verdict was read; one person labelled.
+
+### 8.1 Two baselines
+
+- **B1, "ask your coding agent" (N0):** Muse Code in a sandbox, given the goal in plain words, the API docs the agent
+  under test gets, how to seed records, the table list and AgentDiff's assertion format. 48 tests, 12 per service.
+- **B2, B1 plus our fact catalog (N1).**
+- **Mutated twins (N0M, N1M):** B1 and B2 again with the fixes a reviewer would ask for first ("each test a different
+  property", "challenging but passable", "neutral ids").
+- **Ours:** Muse's Phase 4 tests, as expected values over random draws of 12 per service from its 158 tests, on the
+  first pass (`full_02`). Phase 4's final score is close: 45 tests exposing and 26 facts, against 41 and 28 in the
+  first pass.
+
+**Table 14. Baselines against ours, per 48 tests.** Source: baselines_01 `compare.json`, `policy_facts.json`,
+`oracles.score.json`; our policy row from [numbers/policy.json](numbers/policy.json) (`by_source`).
+
+| | B1: N0 | B1 + fixes: N0M | B2: N1 | B2 + fixes: N1M | Ours (Phase 4) |
+|---|---:|---:|---:|---:|---:|
+| Tests / valid | 48 / 45 | 48 / 42 | 48 / 41 | 48 / 41 | 48 of 158, all valid |
+| Near misses through a designated substitute (F1–F8) | 9 of 48 | 17 of 53 | 21 of 58 | 19 of 66 | 81 of 99 |
+| Facts exercised properly (credit rule), valid tests | 7 | 12 | 17 | 13 | 34.0 |
+| **Facts exposed, fact-sensitive tests (detect@3 / detect@1)** | **0 / 0** | **0 / 0** | **0 / 0** | **0 / 0** | **11.0 / 7.2** |
+| Failing tests (detect@3), and their kind | 5, all presupposing | 0 | 2, presupposing | 3, presupposing (1 by timeout) | 12.5, all fact-level |
+| Policy-level facts, designated near misses only (baselines_01's count) | 0 / 0 | 0 / 0 | 1 / 1 | 0 / 0 | – |
+| Policy-level facts, any near miss failing one fact (our rule) | 4 / 3 | 0 / 0 | 2 / 2 | 1 / 0 | – |
+| Own oracle on its valid trials: precision / recall | 0.54 / 0.70 (assertions) | 0 real, 21 false | 0.27 / 1.00 | 0.03 / 1.00 | 1.00 / 1.00 (judge v2) |
+| Generation cost per 48 tests, list (billed) | $0.51 ($0.03) | $1.20 ($0.06) | $0.67 ($0.03) | $1.14 ($0.06) | $5.44 ($0.31) |
+
+- **Asked plainly, a coding agent writes tests that expose no fact,** with or without our catalog, with or without
+  the reviewer's fixes: 0 facts from 169 valid baseline tests. 48 of ours expose about 11.
+- **Its failing tests are policy failures.** Every failing baseline test presupposes a record that does not exist.
+  Counted as raw failing tests, B1 (5) would look productive; counted as facts, it is not.
+- **Policy-level failures counted by fact.** Our policy tests count the fact of the near miss acted on (RQ6), so the
+  baselines' presupposing tests should too. Our own Phase 4 policy units, with every one run: 60 absence units over
+  56 facts, 45 failing (39 through designated near misses); 50 underspecified units over 52 facts, 41 failing (38).
+  These are not per 48 tests: our regular suite has no presupposing tests, and the policy units are generated
+  apart.
+- **A counting difference we found in the baseline study.** It counts a plain near miss (F0) as exposing its fact in
+  probe form (ablation 3 below), but as "no fact" in presupposing form. Our pipeline credits any near miss that fails
+  exactly one fact, whatever its family (RQ2: 37 facts are credited through plain near misses alone). Counting the
+  baselines' failures on plain near misses by the facts their labels name gives the second policy row: B1 4 facts
+  (A:File.tags, A:Issue.title, A:Event.start, R:Event.calendar_id), B2 2 (D:overdue,
+  R:TaskAssignment.assigned_by_id), N1M 1. Either way the baselines' fact-sensitive exposure stays 0.
+- **Their oracles:** AgentDiff assertions written by the coding agent report mostly false failures (7 real of 22 for
+  N0, 6 of 40 for N1, after removing our harness's errors), and report failures on every invalid test.
+- **Value errors** (outside scope, as in RQ7): N0's assertions caught 7 wrong-value trials on the right record, mostly
+  Linear's priority scale; the plain judge caught 3 and J0 none.
+
+### 8.2 Six ablations of our system
+
+**Table 15.** Source: baselines_01 (`cycle2/labels.json`, `plain48/score.json`, `machinery.json`,
+`q4/numbers.json`, `q4/plain_openclaw.score.json`); judge_baselines_01 `score.json`.
+
+| # | What is removed or swapped | Result |
+|---|---|---|
+| 3 | **The probe form** (target present instead) | N0's own near misses: 0 of 36 tests expose a fact as covers; as probes, 4 of 28 tests (4 facts at detect@3, 3 at detect@1), 7 of 83 trials |
+| 4a | **The designated substitute** (only the lure removed, same probe), 12 probes that had exposed a fact | Failing trials 27/36 against 7/36 (21/30 against 2/30 without 2 confounded pairs); pairs failing 12/12 against 3/12; facts at detect@3 10 against 1 |
+| 4b | The same, on 48 probes drawn at random (plain48) | Probes failing 14/48 against 2/48; failing trials 29/144 against 3/144; pairs failing in one version only 13 against 1, sign test p = 0.002; facts 14 against 2 (detect@1 10 against 1). Counting 3 timeouts as failures: 15 against 4 probes, p = 0.007 |
+| 5 | **Probes in our own suite** (first pass, 436 tests) | Covers 2 of 77 tests expose a fact; probes 76 of 279; fact probes 16 of 80. Within probes, designated near misses 67 of 223, plain 9 of 56. The final score shows the same (RQ4) |
+| 6 | **The machinery** (checks, replica pre-checks, cold reader): first drafts against accepted | Phase 4: 14 of 31 first drafts clean; 17 sent back, 10 for a substantive flaw and 7 for format; all 81 autogen briefs: 38 first drafts clean |
+| 7 | **The LLM judge** (mechanical triage alone), `full_02`'s 1,314 trials | Triage clears 957 (73%) and flags 184 of the 189 final failures (97%). The judge voided 11 of triage's failures as artifacts, resolved 143 uncertain trials as correct, and changed 2 of 227 sampled clean ones |
+| 8 | **The judge's inputs**: plain judge, J0, J1 against judge v2, on 178 hand-labelled OpenClaw trials | Precision / recall: plain 0.92 / 0.73; J0 0.99 / 0.90; J1 0.98 / 0.91; judge v2 1.00 / 1.00 (0.98 counting its 2 voids). On regular tests alone, judge v2 and J0 6 of 8, the plain judge 2 of 8 |
+
+- **Form and content multiply.** The probe form lifts plain near misses from nothing to about 15% of tests; the
+  designated substitute doubles that across the suite, and within one test it carries 9 of 10 exposures.
+- **The machinery keeps flawed tests out:** a third of first drafts had a substantive flaw.
+- **The answer key does most of the judging.** Triage alone flags 97% of failures; the LLM judge settles the rest
+  and removes artifacts.
+- **Not measured:** baselines for the policy tests (the baselines wrote no underspecified test); baselines for the
+  extensions in RQ9; a second agent under test.
