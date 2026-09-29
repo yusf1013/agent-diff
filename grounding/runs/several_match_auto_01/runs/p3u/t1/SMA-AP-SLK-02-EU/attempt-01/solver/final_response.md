@@ -1,0 +1,1 @@
+Unarchived all four archived incident channels about the checkout outage: `incident-checkout`, `incidents-checkout`, `incidents-checkout-2`, and `incidents-checkout-3`. Verified via conversations.list that all now show is_archived: false. The `incidents-checkout-live` channel was already active and required no action.

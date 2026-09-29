@@ -1,0 +1,1 @@
+Unarchived all incident channels about the checkout outage: `incident-checkout`, `incidents-checkout`, `incidents-checkout-2`, and `incidents-checkout-3`. Verified all are now active. Unrelated archived channels (`incidents-billing`, `incidents-shipping`) were left untouched.

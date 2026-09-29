@@ -1,0 +1,1 @@
+Posted "Reminder: expense reports are due Friday" in all 6 private channels where both Priya Sharma (U_PRIYA) and Leo Park (U_LEO) are members: budget-review (C_BUDGET), finance-leads (C_FINLEADS), finance-sync (C_FINLEADS-sm11), budget-leads (C_FINLEADS-sm13), hr-partners (C_HRPARTNERS), and ops-leads (C_OPSLEADS). All posts returned ok:true.

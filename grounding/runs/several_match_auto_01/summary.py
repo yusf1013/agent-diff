@@ -33,7 +33,8 @@ LISTED = {"File.name", "File.extension"}
 # report, trap reach). Any other undefeated shortcut is reported as a construction gap.
 PLACE = {"V": "V, plain view (stopping early)", "C": "C, another container in scope (scope)",
          "H": "H, behind a visibility default (visibility)", "C1": "C1, one folder down (scope)",
-         "O": "O, another folder (scope)", "P": "P, past a page (pages)"}
+         "O": "O, another folder (scope)", "P": "P, past a page (pages)",
+         "S": "S, a copy whose text lacks the search words (filter)"}
 IMPRACTICAL_1000 = "impractical: a container over 1,000 records (method check 6)"
 IMPRACTICAL_999 = "impractical: a channel over 999 messages; the channel-list routes reduce to the named channel's page"
 NOT_COVERED = {
@@ -128,7 +129,10 @@ def main():
     placements = load("placements.json", {})
     found_by_place = defaultdict(Counter)
     timeouts_done = 0
+    void = {k for k, v in review.items() if v.get("verdict") == "FP"}  # a replica artifact or a contestable near miss
     for t in trials:
+        if t["trial"] in void:
+            continue
         if t["diligence"] == "timeout":
             timeouts += 1
             timeouts_done += not t["missing"]
@@ -156,8 +160,8 @@ def main():
         "tests generated": {"all": len(built), "easy": sum(1 for b in built.values() if b["tier"] == "E"),
                             "hard": sum(1 for b in built.values() if b["tier"] == "H"),
                             "of them repaired versions": sum(1 for c in built if c.endswith(("R", "EU"))),
-                            "of them iteration 2 (traps the first round lacked)": sum(1 for c in built
-                                                                                      if c.endswith("HP"))},
+                            "of them iterations 2 and 3 (traps the first round lacked)": sum(
+                                1 for c in built if c.endswith(("HP", "HT")))},
         "valid": {"all": len(valid), "easy": sum(1 for b in valid.values() if b["tier"] == "E"),
                   "hard": sum(1 for b in valid.values() if b["tier"] == "H")},
         "not valid, by reason": dict(Counter(r for rs in why_not.values() for r in rs)),
@@ -169,6 +173,7 @@ def main():
                                                           for s in sorted(v["shortcuts"] - v["defeated"])}}
                                      for k, v in sorted(kinds.items())},
         "trials on valid tests": len(trials),
+        "of them voided by the review (a replica artifact or a contestable near miss)": len(void & {t["trial"] for t in trials}),
         "timeouts": timeouts,
         "timeouts with every target already changed (the answer cut off)": timeouts_done,
         "targets found by placement (valid tests, timeouts out)": {

@@ -37,6 +37,10 @@ READ = {
                            "connection); a correct answer does not need that list, since issue.cycle gives each "
                            "issue's cycle number, which the agent had read at step 4. It then queried the decoy's "
                            "cycle (named 'Cycle 4', number 11) and ran out of time at 66 s a turn"},
+    "t3/SMA-G4-LIN-01-EU": {"verdict": "FP", "note": "a request about projects: the replica's projects reads fail "
+                            "(Query.projects, Query.project, ProjectConnection.nodes) on 7 of the 21 turns; the natural "
+                            "read a correct answer needs broke, and the other two trials got through only by "
+                            "workarounds. A mock artifact"},
     "t1/SMA-LIN-23-E": {"verdict": "TP", "note": "the server errors were on comment.children (a replica null "
                         "connection); a correct answer does not need them: the thread roots and who resolved them came "
                         "back at step 6 (parentId, resolvedAt, resolvingUser). It then spent its turns looking for the "
@@ -75,6 +79,13 @@ def main():
     side = json.loads((HERE / "side_effects.json").read_text()) if (HERE / "side_effects.json").exists() else {}
     reader = json.loads((HERE / "reader.json").read_text())
     checks = json.loads((HERE / "checks.json").read_text())
+    # Near misses the cold reader doubted in any case of the cover (it could not tell whether the request meant them):
+    # contestable, so a trial whose only failure is acting on one is not a clear failure (FP).
+    doubted = {}
+    for cid, v in reader.items():
+        cover = cid.removeprefix("SMA-").rsplit("-", 1)[0]
+        for rec, why in (v.get("unsure") or {}).items() if isinstance(v.get("unsure"), dict) else []:
+            doubted.setdefault((cover, str(rec)), why)
     out = {}
     for t in grades["trials"]:
         cid = t["trial"].split("/")[1]
@@ -106,6 +117,12 @@ def main():
         if errors and (t["missing"] or t["diligence"] == "timeout") and not t["decoys_acted"]:
             verdict = "FP"
             grounds.append(f"replica server errors in the trajectory: {errors} (a mock artifact)")
+        contested = [d for d in t["decoys_acted"] if (t["cover"], d) in doubted]
+        if contested and len(contested) == len(t["decoys_acted"]) and not t["missing"] and not t["other_acted"] \
+                and t["diligence"] != "timeout":
+            verdict = "FP"
+            grounds.append(f"contestable near miss: the cold reader doubted {contested[0]} "
+                           f"({doubted[(t['cover'], contested[0])][:120]})")
         out[t["trial"]] = {"verdict": READ.get(t["trial"], {}).get("verdict", verdict), "grounds": grounds,
                            "note": READ.get(t["trial"], {}).get("note", "")}
     (HERE / "review.json").write_text(json.dumps(out, indent=1) + "\n")
