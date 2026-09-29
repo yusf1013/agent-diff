@@ -215,7 +215,7 @@ How the results will be read:
   wrote "urgent" on the wrong Linear priority scale, and the assertions caught all 19.
 - `summarize_labels.py` now counts timeouts; `compare.py` includes the twins and the variety measure.
 
-## 2026-09-29 00:50–01:35: the random plain twins designed (plain48/)
+## 2026-09-29 00:40–00:47: the random plain twins designed (plain48/)
 
 - The PI chose 48 random plain twins, 12 per service (2026-09-28). [plain48/](plain48/README.md): the seeded draw
   (from this worktree's suite, the version cycle 2 used; exclusions from cycle 2, G4-BOX-01, and the lead's current
