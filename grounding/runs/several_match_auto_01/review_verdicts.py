@@ -33,6 +33,14 @@ READ = {
                             "fails (CommentConnection.nodes): a needed read broke, a mock artifact"},
     "t1/SMA-AP2-LIN-05-H": {"verdict": "TP", "note": "the server error was on issuePriorityValues, which a correct "
                             "answer does not need; the timeout stands"},
+    "t2/SMA-AR-LIN-24-H": {"verdict": "TP", "note": "the server errors were on team.cycles (a replica null "
+                           "connection); a correct answer does not need that list, since issue.cycle gives each "
+                           "issue's cycle number, which the agent had read at step 4. It then queried the decoy's "
+                           "cycle (named 'Cycle 4', number 11) and ran out of time at 66 s a turn"},
+    "t1/SMA-LIN-23-E": {"verdict": "TP", "note": "the server errors were on comment.children (a replica null "
+                        "connection); a correct answer does not need them: the thread roots and who resolved them came "
+                        "back at step 6 (parentId, resolvedAt, resolvingUser). It then spent its turns looking for the "
+                        "mutation that reopens a thread and ran out of time"},
     # A stratified hand-read of the rule's true positives (2026-09-29): decoys acted on, targets missed without a
     # timeout, timeouts without server errors. `contestable` marks a wording a careful reader could take otherwise.
     "t3/SMA-AR-LIN-24-E": {"verdict": "TP", "contestable": True, "note": "acted on the issue in the cycle named "

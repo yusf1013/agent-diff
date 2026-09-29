@@ -1,9 +1,13 @@
 # boundary_auto_01: automating the capability-boundary method (phases 2 and 3)
 
-*2026-09-28, overnight. The method is [../boundary_02/method.md](../boundary_02/method.md) (version 1.2), made by
+*2026-09-28/29, overnight. The method is [../boundary_02/method.md](../boundary_02/method.md) (version 1.2), made by
 hand in the manual investigation. Here Muse (`muse-spark-1.3-contributor`) does the creative step (the request's
 wording) and names what the request asks for; code builds the oracle's spec and the test; the self-hosted Qwen is the
-instrument. Numbers marked [pending] are filled as the runs finish.*
+instrument. Numbers from [summary.py](summary.py) → `summary.json`.*
+
+## The numbers the PI asked for
+
+[pending: filled when runs/p3b is graded]
 
 ## What is automated, and what is not yet
 
@@ -15,6 +19,11 @@ instrument. Numbers marked [pending] are filled as the runs finish.*
 | Request check | by eye | a cold Muse reader: the record it names, no hint of the limit, natural wording ([reader.py](reader.py)) |
 | Seed | per service ([probe_elements.py](../boundary_02/probe_elements.py)) | the same |
 | Oracle | the state first, then the answer; the PI's rulings | the same, with the generated spec ([grade.py](grade.py)) |
+| The judge's review | every failure read by hand | a seeded quarter of the trials read by hand, drawn before the verdicts ([review.py](review.py)) |
+
+The derivation stays manual in this study. It is mechanical once the fact catalog exists (one element per attribute
+without a writing operation, one per precondition), but the filters need a probe per element on the replica, which
+phase 1 made by hand.
 
 ## Phase 2: does the automation meet the manual standard?
 
@@ -25,9 +34,27 @@ elements agree on every trial. The two that do not carry knowledge the target la
 - LIN-19 (the Web team's In Review state): the hand spec names the state by description, so a re-creation that keeps
   everything can pass; the generated spec names it by id.
 
-**The requests.** The cold reader's verdicts: [pending].
+**The requests.** The cold reader (a fresh Muse session per request, no view of the limit or the element) agreed on
+**89 of 93**: it named the record the element is about, found no hint of the limit, and judged the wording natural.
+No request hinted at the limit. The four it refused are real writer errors, so the four tests are invalid:
+- SLA-34: "Diego's message in #payments-ops": there is no such message in the seed;
+- CAL-18: "the Budget review from Leo's on-call calendar": the event is on the actor's calendar;
+- BOX-06: "Convert Budget 2026.docx to a PDF": read as creating a new file, not changing the named one;
+- LIN-24: "Show Priya's comment as written on September 10": read as a display request, with nothing to change.
+
+The first version of the reader also rejected requests that are impossible by design ("the request names a change
+the service cannot make"). Its prompt now judges the wording only (the first verdicts are kept in `reader.v1.json`).
 
 ## Phase 3: the numbers
 
-[pending: coverage space; tests generated; valid; failures exposed by kind of alternative; judge true and false
-positives; tokens and costs]
+[pending]
+
+## Files
+
+- [writer.py](writer.py) → `writer.json`; [specs.py](specs.py) → `specs.json` (the phase-2 agreement);
+  [reader.py](reader.py) → `reader.json`; [cases.py](cases.py) → `cases/`; [grade.py](grade.py) →
+  `digest-<run>.json`, `grades-<run>.json`; [review.py](review.py) → `review.json`; [summary.py](summary.py) →
+  `summary.json`.
+- Muse calls: `runs/calls.jsonl`, `runs/writer/`, `runs/reader/` (prompts, transcripts, usage).
+- Solver runs: `runs/p3a` (16 cases, beside the several-match batch at 3 in flight) and `runs/p3b` (77 cases at 9);
+  the split is in `batches.json`.

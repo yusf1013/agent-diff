@@ -40,28 +40,33 @@ def main():
             if not v["oracle"].startswith("void"):
                 manual[k] = v["oracle"]
     by_kind = defaultdict(lambda: {"auto": Counter(), "manual": Counter(), "elements": set()})
-    failing, review_needed = set(), 0
+    failing, review_needed, fail_kinds = set(), 0, defaultdict(set)
+    read = (review.get("trials") or {}) if isinstance(review, dict) else {}
     for trial, v in auto.items():
         eid = trial.split("/")[1].removeprefix("BDA-")
         if eid not in valid:
             continue
         verdict = v["oracle"]
         if verdict.startswith("review"):
-            review_needed += 1
-            continue
+            mine = next((r["verdict"] for k, r in read.items() if k.endswith(trial) and r["drawn"] == "flagged"), None)
+            if mine != "TP":  # unread, or void: a replica server error on a call the answer needs
+                review_needed += 1
+                continue
+            verdict = "fail: no answer (after a replica server error on a call the answer does not need)"
         kind = space[eid].get("alternative_kind")
         by_kind[kind]["auto"][verdict.split(":")[0]] += 1
         by_kind[kind]["elements"].add(eid)
         if verdict.startswith("fail"):
             failing.add(eid)
+            fail_kinds[verdict.split(" (")[0]].add(eid)
     for trial, verdict in manual.items():
         eid = trial.split("/")[-1].removeprefix("BD2-")
         if eid in space:
             by_kind[space[eid].get("alternative_kind")]["manual"][verdict.split(":")[0]] += 1
     agree = sum(r.get("agree", 0) for r in specs.values())
     judged = sum(r.get("trials", 0) for r in specs.values())
-    reviewed = [v for v in review.values() if v.get("verdict") in ("TP", "FP")]
-    sample = [v for v in review.values() if v.get("sample") == "pass"]
+    reviewed = [v for v in read.values() if v["judge"].startswith("fail")]
+    sample = [v for v in read.values() if v["judge"].startswith("pass")]
     muse = [json.loads(line) for line in (HERE / "runs" / "calls.jsonl").read_text().splitlines()] \
         if (HERE / "runs" / "calls.jsonl").exists() else []
     solver = Counter()
@@ -79,14 +84,20 @@ def main():
         "phase 3 trials on valid tests (graded)": sum(sum(k["auto"].values()) for k in by_kind.values()),
         "trials held for review (no answer after replica server errors)": review_needed,
         "elements with a failing trial": len(failing),
+        "elements failing, by the judge's kind of failure": {k: len(v) for k, v in sorted(fail_kinds.items())},
         "pass rate by the alternative the actor had (automated vs phase 1)": {
             k: {"elements": len(v["elements"]),
                 "automated": f"{v['auto']['pass']}/{v['auto']['pass'] + v['auto']['fail']}",
                 "phase 1": f"{v['manual']['pass']}/{v['manual']['pass'] + v['manual']['fail']}"}
             for k, v in sorted(by_kind.items(), key=lambda kv: str(kv[0]))},
-        "judge": {"fails reviewed": len(reviewed), "true positives": sum(1 for v in reviewed if v["verdict"] == "TP"),
-                  "false positives": sum(1 for v in reviewed if v["verdict"] == "FP"), "passes sampled": len(sample),
-                  "false negatives in the sample": sum(1 for v in sample if v.get("verdict") == "FN")},
+        "judge (a seeded quarter of the trials, read by me; review.py)": {
+            "failures in the sample": len(reviewed), "read": sum(1 for v in reviewed if v["verdict"] != "unread"),
+            "true positives": sum(1 for v in reviewed if v["verdict"] == "TP"),
+            "false positives": sum(1 for v in reviewed if v["verdict"] == "FP"),
+            "passes in the sample": len(sample), "passes read": sum(1 for v in sample if v["verdict"] != "unread"),
+            "false negatives": sum(1 for v in sample if v["verdict"] == "FN"),
+            "flagged trials": {r: sum(1 for v in read.values() if v["drawn"] == "flagged" and v["verdict"] == r)
+                               for r in ("void", "TP", "unread")}},
         "muse": {"calls": len(muse), "input tokens": sum(r.get("input_tokens") or 0 for r in muse),
                  "output tokens": sum(r.get("output_tokens") or 0 for r in muse),
                  "billed usd": round(sum(r.get("cost_usd_billed") or 0 for r in muse), 4),

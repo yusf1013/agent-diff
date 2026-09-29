@@ -26,6 +26,9 @@ FLAWED = {"SMA-AP-BOX-02-H": "a file and a folder shared an id", "SMA-BOX-23-H":
           "SMA-G4-BOX-04-E": "a file and a folder shared an id"}
 # Why a shortcut that no valid hard test defeats is not covered, in the manual investigation's terms (several_match_02
 # report, trap reach). Any other undefeated shortcut is reported as a construction gap.
+PLACE = {"V": "V, plain view (stopping early)", "C": "C, another container in scope (scope)",
+         "H": "H, behind a visibility default (visibility)", "C1": "C1, one folder down (scope)",
+         "O": "O, another folder (scope)", "P": "P, past a page (pages)"}
 IMPRACTICAL_1000 = "impractical: a container over 1,000 records (method check 6)"
 IMPRACTICAL_999 = "impractical: a channel over 999 messages; the channel-list routes reduce to the named channel's page"
 NOT_COVERED = {
@@ -105,10 +108,17 @@ def main():
     trials = [t for t in grades["trials"] if t["trial"].split("/")[1] in valid]
     missed = Counter()
     distinct_miss, distinct_fact, timeouts = set(), set(), 0
+    placements = load("placements.json", {})
+    found_by_place = defaultdict(Counter)
+    timeouts_done = 0
     for t in trials:
         if t["diligence"] == "timeout":
             timeouts += 1
+            timeouts_done += not t["missing"]
             continue
+        for tgt, place in (placements.get(t["trial"].split("/")[1]) or {}).items():
+            found_by_place[place]["placed"] += 1
+            found_by_place[place]["found"] += tgt not in t["missing"]
         for tgt, place in t["missing"].items():
             missed[(t["domain"], place)] += 1
             distinct_miss.add((t["cover"], place))
@@ -143,6 +153,9 @@ def main():
                                      for k, v in sorted(kinds.items())},
         "trials on valid tests": len(trials),
         "timeouts": timeouts,
+        "timeouts with every target already changed (the answer cut off)": timeouts_done,
+        "targets found by placement (valid tests, timeouts out)": {
+            PLACE.get(p, p): f"{v['found']}/{v['placed']}" for p, v in sorted(found_by_place.items())},
         "targets missed (trials × targets), by service and placement": {f"{d} {p}": n for (d, p), n in
                                                                          sorted(missed.items())},
         "distinct (cover, placement) misses": len(distinct_miss),

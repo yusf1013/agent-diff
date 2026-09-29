@@ -1,8 +1,22 @@
 # several_match_auto_01: automating the several-match method (phases 2 and 3)
 
-*2026-09-28, overnight. The method is [../several_match_02/method.md](../several_match_02/method.md) (version 1.1),
-made by hand in the manual investigation. Here Muse (`muse-spark-1.3-contributor`) does the creative steps, code does
-the rest, and the self-hosted Qwen is the instrument. Numbers marked [pending] are filled as the runs finish.*
+*2026-09-28/29, overnight. The method is [../several_match_02/method.md](../several_match_02/method.md) (version
+1.1), made by hand in the manual investigation. Here Muse (`muse-spark-1.3-contributor`) does the creative steps,
+code does the rest, and the self-hosted Qwen is the instrument. Numbers from [summary.py](summary.py) →
+`summary.json`, after every batch was graded.*
+
+## The numbers the PI asked for
+
+| | |
+|---|---|
+| **The coverage space** | The method's requirement space: the laziness behaviours (stopping early, and falling short on scope, pages, visibility, filter or selection), instantiated as **shortcuts** on each service's route table per kind of request. The population's plural-worthy requests fall in **6 request kinds with a route table, 33 shortcuts** (the manual found 30 over its kinds; see below). Of the 33, **19 are lazy and practical to defeat**; 9 need more records than the replicas hold practically (a page of 250 to 1,000, a crowd over 200) and 5 are not lazy for these requests. Stopping early applies to every plural request. |
+| **Covers** | 91 single-target cover scenarios (the fact method's hand covers and autogen_01/02's generated ones). The writer judged **65 plural-worthy**; 26 name one record by nature (an exact title, a superlative, a rename to one name). 16 of the 65 are record kinds with no route table (Box folders, calendars, Linear comments and projects, a Box task, a Slack user) or a pinned calendar (a page trap would need 250 events): they get the easy tier only. |
+| **Tests generated automatically** | [pending] |
+| **Coverage reached** | [pending] |
+| **Valid** | [pending] |
+| **Distinct failures exposed** | [pending] |
+| **The judge** | [pending] |
+| **Tokens and cost** | [pending] |
 
 ## The pipeline
 
@@ -15,33 +29,32 @@ the rest, and the self-hosted Qwen is the instrument. Numbers marked [pending] a
 | Hard tier | code | one trap per laziness behaviour that applies. Whether the request pins its container (a channel, calendar, folder or team) comes from the reference query |
 | Checks | code | the reference query selects exactly the targets and every near-miss claim still holds (fdc); no container over 200 records; every target's date the same in UTC and Los Angeles |
 | Cold reader | Muse, a fresh session per case | reads the request and every record of the kind, with containers and visibility, and must pick exactly the targets ([reader.py](reader.py)) |
+| Repair | code, then the reader again | a case the reader disagrees with is rebuilt with the original texts; if it still disagrees, without the traps it doubted |
 | Shortcut check | code, on the replica | every shortcut of the request's kind run on the hard seed; the thorough route must find every target ([checks.py](checks.py)) |
-| Runs | self-hosted Qwen, 3 trials | [runs/p3](runs/p3) |
-| Judge | code | acted-on set against the targets; misses by placement; near misses acted on by fact ([grade.py](grade.py)) |
+| Runs | self-hosted Qwen, 3 trials | [runs/p3](runs/p3), repairs [runs/p3r](runs/p3r), iteration 2 [runs/p3c](runs/p3c) |
+| Judge | code | the set acted on against the targets; misses by placement; near misses acted on by fact ([grade.py](grade.py)) |
+| Review | code and me | every reported failure against its ground ([review_verdicts.py](review_verdicts.py)); every pass for changes outside the target table ([side_effects.py](side_effects.py)) and for the value written ([effects.py](effects.py)) |
+
+**Two iterations.** The first round's coverage table showed two construction gaps: requests about Box files in a named
+folder got only a search crowd (5 of 6 covers had no hard case), and Slack requests about channels got no trap.
+Iteration 2 (`build.py --iterate2`) added a copy past the named folder's first 100 items, and a copy as a private
+channel the actor belongs to. All 8 new cases passed the checks and the reader.
 
 ## Phase 2: does the automation meet the manual standard?
 
-On the four covers of the manual cycle 8, the automated hard cases defeat the same shortcuts:
+[pending]
 
-| Cover | Automated | Manual (cycle 8) |
-|---|---:|---:|
-| CAL-23 | 4 of 4 | 4 of 4 |
-| BOX-23 | 4 of 5 | 4 of 5 |
-| LIN-21 | 1 of 6 | 1 of 6 |
-| SLK-21 | 3 of 8 | 3 of 8 |
+## Phase 3: what the tests found
 
-The writer's plural wordings of those four are the manual ones in substance ("Delete all of Friday's architecture
-reviews that Kenji Sato … attends as an optional guest"). The cold reader's verdicts on them: [pending].
-
-## Phase 3: the numbers
-
-[pending: coverage space; tests generated; coverage reached; valid tests; distinct failures exposed; judge true and
-false positives (false negatives from a sample); tokens and costs]
+[pending]
 
 ## Files
 
 - [population.py](population.py) → `population.json`; [writer.py](writer.py) → `writer.json`;
   [build.py](build.py) → `cases/`, `build.json`, `placements.json`; [reader.py](reader.py) → `reader.json`;
-  [checks.py](checks.py) → `checks.json`; [grade.py](grade.py) → `grades.json`.
+  [checks.py](checks.py) → `checks.json`; [grade.py](grade.py) → `grades.json`;
+  [review_verdicts.py](review_verdicts.py) → `review.json`; [side_effects.py](side_effects.py),
+  [effects.py](effects.py) → `effects.json`; [pace.py](pace.py); [summary.py](summary.py) → `summary.json`.
+- [probe_subfolder.py](probe_subfolder.py): a reader-only probe (`probes/`), not a test.
 - Muse calls: `runs/calls.jsonl` and `runs/writer/`, `runs/reader/` (prompts, transcripts, usage).
-- Solver runs: `runs/p3` (and `runs/smoke`, the first end-to-end trial).
+- Solver runs: `runs/p3` (the first builds), `runs/p3r` (repairs), `runs/p3c` (iteration 2), `runs/smoke`.

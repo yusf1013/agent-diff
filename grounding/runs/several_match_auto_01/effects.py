@@ -11,6 +11,7 @@ against its request. Writes effects.json; my reading is recorded in review_verdi
 from __future__ import annotations
 
 import json
+import re
 from collections import Counter, defaultdict
 from pathlib import Path
 
@@ -54,6 +55,28 @@ def main():
                     entry["values"]["delete"] += 1
     out = {k: {"request": v["request"], "passed trials": v["trials"], "values written": dict(v["values"])}
            for k, v in sorted(by_cover.items())}
+    # The one value the request states in a closed vocabulary: a Linear priority (1 Urgent ... 4 Low). Per passed
+    # trial, whether every target got the priority the request names.
+    scale = {"urgent": 1.0, "high": 2.0, "medium": 3.0, "normal": 3.0, "low": 4.0}
+    checked = Counter()
+    for t in grades["trials"]:
+        if (review.get(t["trial"]) or {}).get("sample") != "pass" or t["domain"] != "linear":
+            continue
+        tk, cid = t["trial"].split("/")
+        att = sorted((HERE / "runs" / t["run"] / tk / cid).glob("attempt-*"))[-1]
+        case = json.loads((att / "case.json").read_text())
+        words = re.search(r"priority (?:of [^.]*? )?to (urgent|high|medium|normal|low)", case["prompt"], re.I) or \
+            re.search(r"priority[^.]*?\bto (urgent|high|medium|normal|low)", case["prompt"], re.I)
+        if not words:
+            continue
+        want = scale[words.group(1).lower()]
+        diff = (json.loads((att / "environment/diff_run.json").read_text()) or {}).get("diff") or {}
+        got = {(r.get("after") or {}).get("priority") for r in diff.get("updates") or []
+               if r.get("__table__") == "issues" and (r.get("after") or {}).get("priority") !=
+               (r.get("before") or {}).get("priority")}
+        checked["right" if got == {want} else f"wrong: wrote {sorted(got)} for {words.group(1)}"] += 1
+    out["_linear priority in passed trials"] = dict(checked)
+    print("Linear priority in passed trials:", dict(checked))
     (HERE / "effects.json").write_text(json.dumps(out, indent=1) + "\n")
     for k, v in out.items():
         print(f"{k} ({v['passed trials']} passed): {v['request'][:150]}")
