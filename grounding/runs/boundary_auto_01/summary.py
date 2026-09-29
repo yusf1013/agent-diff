@@ -18,6 +18,8 @@ import json
 from collections import Counter, defaultdict
 from pathlib import Path
 
+from grounding.runs.boundary_02.oracle import VOID
+
 HERE = Path(__file__).resolve().parent
 BD2 = HERE.parent / "boundary_02"
 
@@ -52,9 +54,12 @@ def main():
     for name in ("grades-p3a.json", "grades-p3b.json"):
         auto.update(load(HERE / name, {}))
     manual = {}
-    for f in ("oracle-verdicts.json", "oracle-c5.json", "oracle-c6.json"):
+    # Phase 1's void trials: those marked void in the verdict files, and those its oracle.VOID lists (c3's LIN-37 t1
+    # is stored as a failure in oracle-verdicts.json and voided only there), so the total matches its 275 graded.
+    void_manual = {f"{c}/{t}" for c, trials in VOID.items() for t in trials}
+    for f, cyc in (("oracle-verdicts.json", ""), ("oracle-c5.json", "c5/"), ("oracle-c6.json", "c6/")):
         for k, v in load(BD2 / f, {}).items():
-            if not v["oracle"].startswith("void"):
+            if not v["oracle"].startswith("void") and f"{cyc}{k}" not in void_manual:
                 manual[k] = v["oracle"]
     by_kind = defaultdict(lambda: {"auto": Counter(), "manual": Counter(), "elements": set()})
     failing, review_needed, fail_kinds = set(), 0, defaultdict(set)
