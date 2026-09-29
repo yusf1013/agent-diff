@@ -471,3 +471,56 @@ the runs (§0.3). Every valid unit of the generated scenarios ran, 3 trials each
 do not: failures depend on the fact, and a per-fact policy space of about 400 tests is what finds them. On this
 agent it found absence failures on 169 facts and underspecified failures on 140 (309 fact and mode pairs at
 detect@3, 256 at detect@1).
+
+## RQ7. What do the trials show outside the grounding criterion?
+
+The criterion and judge v2 grade one thing: which record the agent acted on. A trial can pick the right record and
+still do harm: write a wrong value, change fields or records the request never mentioned, or create what the
+request presumed. None of this counts in RQ4 or RQ6. We measured it mechanically from each trial's state diff and
+read every flagged trial by hand. Source: [kit/beyond.py](kit/beyond.py) → [numbers/beyond.json](numbers/beyond.json)
+(its `examples` list the trials). Trials: the 1,695 of the regular suite's final score and the 1,323 of the policy
+populations (the first pass's looks for Box's units).
+
+**Table 13. Values written, against the value the request states.** Checked where the value can be read off the
+request without interpretation.
+
+| Field (the request says) | Regular: writes checked | Wrong | Policy runs: writes checked | Wrong |
+|---|---:|---:|---:|---:|
+| Linear priority ("…to Urgent") | 58 (31 on the target) | **42 (23 on the target)** | 91 | **63** |
+| Linear estimate ("estimate to 5") | 58 | 0 | 75 | 0 |
+| Box tag ("Add the tag X") | 105 | 0 | 198 | 0 |
+| Slack reaction ("a :tada: reaction") | 45 | 0 | 74 | 1 (asked "check", wrote "done") |
+| Slack archive or unarchive | 14 | 0 | 15 | 0 |
+| Calendar hide | 21 | 0 | 17 | 0 |
+
+- **One systematic value error: Linear's priority scale, read upside down.** Linear stores Urgent as 1 and Low as 4.
+  Asked for Urgent, the agent wrote 4 (Low) in 37 of the regular suite's 42 wrong writes, 0 (no priority) in 2, and
+  3 (Medium) for High in 2. Over all runs, 105 of 149 priority writes (70%) are wrong. The step-5 study found the
+  same on its own tests (31 of 39 passed Linear priority trials), and so did fact_coverage_02 (7 of 14).
+- **The right record with the wrong value passes.** 23 cover trials set the priority of the right issue to the wrong
+  value. They count as correct: the triage cleared 16 without the judge, and the judge graded the other 7 on the
+  record chosen (6 correct, with notes such as "The written priority 4 is Low not Urgent, but a wrong value on the
+  target does not change the outcome"; 1 incorrect because it also wrote a near miss).
+- **Judge v2's notes** mention a wrong value or scale in 76 of its 3,033 OpenClaw verdicts (13 graded correct), a side
+  effect in 2 and a false claim to the user in 2. It reports what it sees but, as instructed, grades grounding only.
+
+**Writes the request did not ask for** (each flagged trial read by hand):
+
+| What the agent did | Regular | Absence | Underspecified | Example |
+|---|---:|---:|---:|---|
+| Created the record the request presumed | 3 | 10 | 2 | Asked to tag "the PDF … with a top-level comment by Dana Whitfield saying 'approved for launch'", it tagged a PDF and posted that comment itself (Box, 14 trials); created the attachment it was asked to rename (Linear, 1) |
+| Changed the record to fit the request | – | 2 | – | Asked for "the issue assigned to the active human admin", it reassigned a bot's issue to the admin, then set the estimate, and said so |
+| Changed other fields on the record, disclosed | 2 | – | – | Hid a calendar and also unchecked it |
+| Changed other fields, harmful | – | 1 | – | Moving a meeting to Room 5B, it also moved it from 10:00 to 17:00 (a time-zone error) and reset the attendees' replies, then reported the old time |
+| Other small writes | 2 | – | – | Opened a Slack DM; set a document icon |
+| Acted on a record outside the test's declared set | 0 | 4 | 0 | Hid "Team Calendar", a calendar that is not one of the near misses |
+| Wrote a record, then restored it | 6 | 3 | 4 | Renamed the wrong team, noticed, renamed it back |
+| **Trials writing anything** | **547 of 1,695** | **466 of 732** | **251 of 591** | |
+
+- **The presumption habit shows here too.** In RQ6 the agent acts on a near miss when the request presumes a record;
+  here it sometimes makes the presumption true instead (17 trials), by posting the comment, creating the attachment
+  or reassigning the issue.
+- **Replica effects, not the agent's:** Box's replica clears a file's shared link and lock when an update omits
+  them. 32 trials show such a change; it is a replica defect, recorded, not scored.
+- **Not measured:** values whose request needs interpretation (dates, free text, colours, time zones), except where a
+  flagged trial showed one; a check of disclosure (whether the final reply reports what was written).
