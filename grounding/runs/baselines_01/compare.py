@@ -98,7 +98,9 @@ def main():
         "exposure": {"tests_failing": per12("tests_exposing"), "facts_exposed_detect3": per12("exposed3"),
                      "facts_exposed_detect1": per12("exposed1"), "note": "no presupposing test in the regular suite"},
         "generation_cost": {"list_usd_per_test": gen_cost["list_per_test"], "billed_usd_per_test":
-                            gen_cost["billed_per_test"], "list_usd_per_48": round(48 * gen_cost["list_per_test"], 2)}}
+                            gen_cost["billed_per_test"],
+                            "list_usd_per_48": round(48 * gen_cost["list_usd"] / gen_cost["regular_tests"], 2),
+                            "billed_usd_per_48": round(48 * gen_cost["billed_usd"] / gen_cost["regular_tests"], 3)}}
     result["ablations"] = ablations()
     (HERE / "compare.json").write_text(json.dumps(result, indent=1) + "\n")
     print(json.dumps(result, indent=1))

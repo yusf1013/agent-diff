@@ -97,5 +97,6 @@ did not prevent impossible requests (the bot deleting others' Slack messages, in
 a calendar the actor does not own), and the twins' own checks got worse, because more of their tests cancel events.
 
 **Also seen:** 5 timeouts (4 on invalid N0M Slack tests, 1 on N1M-BOX-T03), counted as failures of the agent that
-expose no fact; two trials probed destructively to test a permission (a delete tried on an older copy, a scratch
-channel created).
+expose no fact. N1M-BOX-T03's timeout is on a valid test; counting it as a failing test makes N1M's failing tests 3,
+not 2. Two trials probed destructively to test a permission (a delete tried on an older copy, a scratch channel
+created).

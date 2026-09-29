@@ -180,6 +180,10 @@ The reading of each result was fixed before the runs ([log](log.md), 14:28). Lab
 | Failing trials | 29 of 144 | 3 of 144 |
 | Pairs failing only in this version | 13 | 1 |
 
+(4 plain48 trials timed out. They are counted apart above, except one that wrote before timing out and is counted as
+a mistake. Under the PI's rule a timeout is a failure of the agent, so counting the other 3 as failing trials gives
+15 against 4 probes, 30 against 5 trials, and 13 against 2 pairs (p = 0.007). The reading does not change.)
+
 - **Form:** the probe lifts plain near misses from nothing to about 15% of tests. That matches our own F0 probes
   (16%).
 - **Content:** within a test, the substitute is what bites. Removed, 9 of the 10 unconfounded probes stop failing.
@@ -227,7 +231,14 @@ Failures reported on invalid tests are counted apart.
 | ... as first reported | 0.28 / 0.70 | 9 | 0.15 / 1.00 | 18 |
 | Plain judge given the test's expected outcome | 0.77 / 1.00 | 9 | 1.00 / 1.00 | 12 |
 | J0 | 0.83 / 1.00 | 0 | 0.75 / 1.00 | 0 |
-| Ours: triage plus judge v2, with the answer key (on our tests) | 1.00 / 1.00 on valid trials | 16 of 18 artifacts called "incorrect" | | |
+| Ours: triage plus judge v2, with the answer key (on our tests) | 1.00 / 1.00 on valid trials (see below) | 16 of 18 artifacts called "incorrect" | | |
+
+Our row scores judge v2's verdicts against the hand labels of our tests
+([score.json](../judge_baselines_01/score.json)).
+- On Qwen's 429 scored trials: 372 of 373 for precision and 372 of 372 for recall.
+- On OpenClaw's 178 blind-labelled trials: 92 of 92 for precision and 92 of 94 = 0.98 for recall. The 2 misses are
+  trials it voided as artifacts: in one the label missed a replica response, and the other is a contestable near
+  miss.
 
 N1 has 6 real failures, so its precision figures rest on few cases. N1's two LLM judges ran after Muse's billing was
 restored, on the 141 trials that ran ($8.41 at list for both). On N0's 7 wrong priority values (outside scope, not
@@ -301,6 +312,9 @@ result; the prediction was written before generation.
   others' Slack messages, invites of people already in the channel, deleting a calendar the actor does not own.
 - **Their own checks got worse:** 51 of the 53 false alarms are tests expecting a cancelled event or a deleted
   calendar to disappear, all flagged in the review before the runs.
+- **Timeouts** are counted apart from the failing tests. One trial timed out on a valid test, N1M-BOX-T03, without
+  writing anything. Counted as a failure of the agent (the PI's rule), it makes N1M's failing tests 3, and it exposes
+  no fact. N0M's 4 timeouts are all on invalid tests.
 - **Protocol deviation:** N0M's Box session wrote tests that did not load after the protocol's one repair turn; it got
   two more turns with the loader's own errors (log), as our writer gets its format errors back.
 

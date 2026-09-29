@@ -268,3 +268,11 @@ How the results will be read:
 - The same check found an error of mine in [q4/README.md](q4/README.md). Judge v2's row read recall 1.00, and 8 / 8
   on regular tests. Both voided trials are regular tests, so against the original labels judge v2's recall is 0.98
   (92 of 94) and 6 / 8 on regular tests. The row is corrected, with a note.
+- The advisor's review of the check raised two more points.
+  - report.md §5's row for our judge now names its source. On OpenClaw, judge v2's recall is 92 of 94 = 0.98.
+  - Timeouts: the study counts them apart from the failing tests. Under the PI's rule a timeout is a failure of the
+    agent, and counting it that way changes two numbers, both given in the report and the READMEs:
+    - N1M's failing tests are 3, not 2 (N1M-BOX-T03 timed out on a valid test without writing);
+    - plain48 is 15 against 4 probes, 30 against 5 trials, and 13 against 2 pairs (p = 0.007).
+    The conclusions do not change.
+- compare.py now computes our generation cost per 48 tests from the totals: $5.44 at list and $0.308 billed.

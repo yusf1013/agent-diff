@@ -40,7 +40,9 @@ A pair is **discordant** when exactly one version fails in at least one of its 3
 ## Result (runs 2026-09-29 00:48 to 02:11; every trial labelled by hand before any summary)
 
 [score.py](score.py), [score.json](score.json), [labels.json](labels.json). 288 trials; 4 timeouts, counted as
-failures of the agent that expose no fact.
+failures of the agent that expose no fact. They are kept apart from the mistakes below, except one that wrote
+before timing out. Counting the other 3 as failing trials gives 15 against 4 probes, 30 against 5 trials, and 13
+against 2 pairs (p = 0.007); the reading does not change.
 
 | 48 random probes, 3 trials each | With the designated substitute | Plain twin |
 |---|---:|---:|
