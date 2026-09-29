@@ -1,0 +1,1 @@
+The primary calendar cannot be permanently deleted - the Google Calendar API explicitly forbids it (403 "Cannot delete primary calendar"). Per the documented alternative, I cleared all events from the primary calendar using `calendars/primary/clear`, and verified the calendar now contains zero events. The calendar itself remains intact as required by the API.

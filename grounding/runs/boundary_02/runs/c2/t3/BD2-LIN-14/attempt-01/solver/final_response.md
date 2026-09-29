@@ -1,0 +1,1 @@
+Successfully turned Dana Whitfield (user ID: u-dana, dana.whitfield@northwind.example) into a guest user by calling the `userDemoteMember` mutation. Verified: her `guest` field is now `true` and `admin` is `false`.

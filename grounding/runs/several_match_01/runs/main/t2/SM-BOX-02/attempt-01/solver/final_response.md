@@ -1,0 +1,1 @@
+Added the tag "legal-hold" to all 4 PDFs in the Contracts folder that were last modified by Leo Park: Acme MSA 2026.pdf, Birchwood lease.pdf, Walker NDA.pdf, and Zenith SOW.pdf. The remaining PDF (Birchwood lease amendment.pdf) was last modified by Maya Chen and was correctly left untagged.

@@ -1,0 +1,1 @@
+Invited Aisha Khan (U_AISHA) to all 3 qualifying channels (name contains 'incident', topic mentions postmortems, not archived): incident-response (C_INCRESP), incident-review (C_INCRESP-sm692), and incidents-postmortem (C_INCRESP-sm693). Verified membership in each channel.

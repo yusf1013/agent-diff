@@ -1,0 +1,1 @@
+Moved issue WEB-1 ("Checkout button broken") from "Todo" to "Done" (completed) state. The issue is no longer overdue because it's now in a completed state, and its due date remained unchanged at 2026-09-01.

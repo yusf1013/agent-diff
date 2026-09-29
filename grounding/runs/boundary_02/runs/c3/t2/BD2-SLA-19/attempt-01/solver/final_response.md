@@ -1,0 +1,1 @@
+#payments-old (channel ID: C_OLD) is already unarchived — the unarchive call returned `not_archived`, confirming the channel is in an active, non-archived state. No further action was needed.

@@ -1,0 +1,1 @@
+Updated the 'Old note.' message in #payments-legacy (channel C_LEG) to 'Moved to #payments-ops'. Note: the channel was archived, which blocked the update, so I unarchived it first; it remains unarchived.

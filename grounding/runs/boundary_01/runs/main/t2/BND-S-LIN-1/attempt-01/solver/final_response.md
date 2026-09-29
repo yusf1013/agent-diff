@@ -1,0 +1,1 @@
+Successfully archived the "Blocked" workflow state in the Web team. The state had 2 active issues (WEB-2 and WEB-3) preventing archiving, so I moved both to "In Progress" first, then ran the `workflowStateArchive` mutation, which returned success. Verified the state no longer appears among the Web team's active workflow states.

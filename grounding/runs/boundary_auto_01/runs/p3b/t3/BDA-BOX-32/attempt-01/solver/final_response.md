@@ -1,0 +1,1 @@
+Successfully moved the comment "Totals look of." from Budget 2026.pdf (ID: 7111) to Budget 2026.docx (ID: 7112). Since Box API doesn't support direct comment relocation, I created a new comment with the same message on the DOCX file and deleted the original from the PDF. Verification confirmed the PDF no longer contains the comment and the DOCX now has it.

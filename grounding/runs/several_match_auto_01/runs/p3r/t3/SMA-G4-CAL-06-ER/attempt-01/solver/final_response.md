@@ -1,0 +1,1 @@
+Found the "Quarterly planning lunch" event (id: ev_d_sum) on the Leo Park calendar (cal-leo-park@northwind.example) — the only such event, scheduled for Thursday June 21, 2018. I updated it via PATCH to run 12:00–13:00 in America/New_York time (previously Los Angeles time) and set the location to "Room 5B".

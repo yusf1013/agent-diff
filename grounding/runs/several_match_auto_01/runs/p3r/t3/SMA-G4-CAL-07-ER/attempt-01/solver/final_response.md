@@ -1,0 +1,1 @@
+Found 6 "Quarterly planning" meetings on Thursday, June 21, 2018. Identified the 3 where Dana Whitfield declined (all 10:00–11:00 AM) and updated each one's location to "Room 5B" via PATCH. Excluded the meetings where Dana was the organizer, accepted, or tentative. All 3 qualifying events now show location "Room 5B" with confirmed successful responses.

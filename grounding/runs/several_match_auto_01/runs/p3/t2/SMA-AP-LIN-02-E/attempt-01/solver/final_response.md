@@ -1,0 +1,1 @@
+Bumped all 3 security review tickets assigned to the guest reviewer Priya Chen (u-priya_guest) to Urgent (priority 1.0): "Security review: Payments API", "Security review: Auth service", and "Security review: Checkout flow". I identified the correct guest user among three same-named users and verified each ticket now reports priorityLabel "Urgent".

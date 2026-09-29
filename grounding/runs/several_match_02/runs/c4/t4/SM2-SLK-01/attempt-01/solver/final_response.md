@@ -1,0 +1,5 @@
+Successfully invited Aisha Khan (U_AISHA) to every channel whose topic mentions the Q3 migration:
+- **infra-migration** (topic: "Tracking the Q3 migration cutover")
+- **db-upgrade** (topic: "Q3 migration: database steps")
+
+Both invitations were confirmed and verified via the member lists. Other channels were correctly excluded: q4-prep (Q4, not Q3), migration-planning (Q3 only in its purpose, not topic), general, and random (topics unrelated to migration).

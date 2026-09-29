@@ -1,0 +1,1 @@
+Found 5 "Quarterly planning" events this Thursday (June 21, 2018). Two of them had Dana Whitfield's response as "declined": the 10:00–11:00 AM meetings (IDs ev_qp_target and ev_qp_target_sm0v). I updated both events' location to "Room 5B" via PATCH. The remaining three Thursday meetings were left untouched (Dana was the organizer, accepted, or tentative on those respectively).

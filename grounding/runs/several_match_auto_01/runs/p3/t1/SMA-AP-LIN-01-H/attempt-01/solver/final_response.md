@@ -1,0 +1,1 @@
+Set priority to Urgent (4.0) for 3 matching issues: WEB-1, WEB-8, and WEB-9042 — all in the Web team's Done state, assigned to Priya Nair, with "rollback window" in their descriptions, completed on 2026-10-02. Other issues were excluded for missing the rollback window mention or having a different completion date.

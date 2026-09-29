@@ -1,0 +1,1 @@
+#payments-old (channel ID: C_OLD) is already in an unarchived state (is_archived: false), as confirmed by conversations.info and the "not_archived" response from conversations.unarchive. The required end state is satisfied.

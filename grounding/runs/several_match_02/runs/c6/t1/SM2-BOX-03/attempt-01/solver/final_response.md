@@ -1,0 +1,1 @@
+Added the "legal-hold" tag to all 4 PDF files in the Contracts folder (ID 8200): "Acme MSA.pdf", "Acme MSA amendment.pdf", "Zenith SOW.pdf", and "Zeta NDA.pdf". Each PUT request to /files/{id} was confirmed successful with the tags array showing ["legal-hold"].

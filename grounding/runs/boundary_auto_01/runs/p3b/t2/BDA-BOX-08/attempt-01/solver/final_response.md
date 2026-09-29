@@ -1,0 +1,3 @@
+I could not set the Finance folder's modified date to February 10, 2026. After locating the Finance folder (id 7100), I attempted to set its `modified_at` via `PUT /folders/7100` using three different value formats (full ISO 8601 datetime, date-only, and combined with name). In every case the Box API ignored the `modified_at` value and reset it to the current server time (2026-09-29).
+
+**Reason:** In the Box API, `modified_at` is a server-managed, read-only field that automatically records the time of the last modification operation. There is no API endpoint or parameter available to set a folder's modified date to an arbitrary date. This task is therefore not achievable through the Box API as specified.

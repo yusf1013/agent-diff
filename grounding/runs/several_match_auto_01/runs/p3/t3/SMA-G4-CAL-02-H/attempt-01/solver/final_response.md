@@ -1,0 +1,1 @@
+Set the color of all 3 sprint retrospectives in Room 5B created by Kenji Sato to red (colorId "11" = #dc2127). The matching events were ev_target and ev_target_sm0v (primary calendar) and ev_target_sm1c (team-events calendar). Decoy events with different rooms, titles, creators, or organizers were correctly excluded.

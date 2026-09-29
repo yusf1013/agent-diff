@@ -1,0 +1,1 @@
+Moved the matching "Budget Review" event (Thursday June 21 at 10am, organized by Dana Whitfield, blocking time) to **Room 5B**. Only event `ev_budget_10am` satisfied all criteria; all other budget-related events were correctly excluded based on time, day, organizer, meeting name, or transparency.

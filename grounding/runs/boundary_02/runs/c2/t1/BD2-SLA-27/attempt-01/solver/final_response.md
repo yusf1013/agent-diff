@@ -1,0 +1,1 @@
+The :eyes: reaction is present on Priya's 'Launch day!' post in #payments-ops (C_OPS, ts 1789993200.000003). When I attempted to add it, Slack reported "already_reacted," and verification via reactions.get confirms the :eyes: reaction is already on the post (from the current user). The desired state is achieved.

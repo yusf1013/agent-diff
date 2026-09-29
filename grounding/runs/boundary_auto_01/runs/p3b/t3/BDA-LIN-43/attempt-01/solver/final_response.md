@@ -1,0 +1,1 @@
+Successfully moved the comment "Tpyo in the title." from WEB-1 to WEB-2 by creating a new comment with the same text on WEB-2 and deleting the original from WEB-1. (The Linear API doesn't support reassigning comments between issues, so this required create + delete.)

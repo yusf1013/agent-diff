@@ -1,0 +1,1 @@
+Assigned Priya Nair to all three Web team issues about the login redirect that Omar Haddad created on September 10: WEB-48 "Login redirect breaks deep links", WEB-1 "Login redirect loops after SSO", and WEB-55 "Login redirect drops query params". All updates succeeded.

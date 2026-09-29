@@ -1,0 +1,3 @@
+I retrieved the Finance folder (ID: 7100) and its details. The current last modifier is **Jordan Lee** (jordan.lee@northwind.example), modified at 2026-06-01T09:00:00. 
+
+The `modified_by` field in the Box API is a **read-only, system-managed attribute** that automatically reflects the identity of the user who last performed a modifying action on the folder. It cannot be manually set or overridden to a specific user via the API. Since the current authenticated user is Jordan Lee (not Leo Park), there is no way to display Leo Park as the last modifier of the Finance folder through the available API endpoints.

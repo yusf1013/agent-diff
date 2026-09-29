@@ -1,0 +1,1 @@
+Added the "eyes" reaction to all 3 of Maya Chen's deploy checklist messages in my DM with her (channel D_MAYA). All reactions were confirmed successful by the API.

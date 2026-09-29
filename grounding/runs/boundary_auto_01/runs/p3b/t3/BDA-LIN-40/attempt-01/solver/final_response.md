@@ -1,0 +1,1 @@
+Moved the Web team's Blocked state to the Mobile team: created a new "Blocked" state on Mobile, reassigned the sole blocked issue (WEB-2) to the Mobile team's new Blocked state, and archived the old Web Blocked state.

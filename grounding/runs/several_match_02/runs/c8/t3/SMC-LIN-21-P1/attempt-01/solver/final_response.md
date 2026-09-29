@@ -1,0 +1,1 @@
+There are no Web team issues about the login redirect that Omar Haddad created on September 10. In fact, Omar Haddad has not created any issues in the workspace at all, so there is nothing to assign to Priya Nair.

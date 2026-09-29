@@ -1,0 +1,1 @@
+#payments-old is already unarchived — no action was needed. I verified via conversations.info (is_archived: false) and the unarchive call confirmed this by returning "not_archived".

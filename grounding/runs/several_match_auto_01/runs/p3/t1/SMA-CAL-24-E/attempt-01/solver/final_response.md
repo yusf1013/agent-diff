@@ -1,0 +1,1 @@
+Updated the description to "APAC offsite planning" on all 3 calendars with location "Tokyo": apac@northwind.example (APAC events), apac@northwind.example-sm57 (Tokyo events), and apac@northwind.example-sm58 (Tokyo offsite).

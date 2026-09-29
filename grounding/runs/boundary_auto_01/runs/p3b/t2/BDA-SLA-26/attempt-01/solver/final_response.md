@@ -1,0 +1,10 @@
+I could not fully complete the task due to a permissions limitation. 
+
+Details:
+- I'm authenticated as AgentBot (U01AGENBOT9), not Priya (U_PRIYA).
+- Slack's `reactions.remove` only removes a reaction that the *calling* user added. Both removal attempts for the :tada: returned `no_reaction`, because it's Priya's reaction, not mine.
+- There is no admin/impersonation endpoint available to remove another user's reaction.
+
+What I did do: I added a `:rocket:` reaction to the 'Launch day!' message (ts 1789993200.000003) in #payments-ops, but it's under AgentBot's name. Priya's `:tada:` reaction is still present and I cannot remove it without being authenticated as Priya (or as an admin with the appropriate capability).
+
+To complete this, the request would need to be run as Priya (or with admin rights that allow managing other users' reactions).

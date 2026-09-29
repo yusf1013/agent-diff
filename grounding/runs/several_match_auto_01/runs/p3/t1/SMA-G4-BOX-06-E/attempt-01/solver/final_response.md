@@ -1,0 +1,1 @@
+Added the "launch-ready" tag to the 3 folders directly under the Marketing folder (ID 8100) that are owned by Dana Whitfield and created by Leo Park: "Spring Launch" (8118), "Summer Launch" (8110), and "Summer Release" (8119). All updates were confirmed via API responses showing the new tag.

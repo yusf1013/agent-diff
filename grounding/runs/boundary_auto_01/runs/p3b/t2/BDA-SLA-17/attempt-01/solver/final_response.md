@@ -1,0 +1,1 @@
+Turned the DM with Priya into a channel. I located Priya (U_PRIYA) and her DM (D_PRIYA), created a new channel named "launch-checklist" (CU56RCDWDXE), invited Priya to it (now 2 members), posted a transition announcement in the new channel plus a heads-up in the DM, and archived the original DM. The conversation now lives in the #launch-checklist channel.

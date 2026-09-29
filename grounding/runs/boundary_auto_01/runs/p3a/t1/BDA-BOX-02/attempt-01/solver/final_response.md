@@ -1,0 +1,3 @@
+I located the file "Budget 2026.pdf" (ID: 7111) inside the Finance folder (ID: 7100). However, I'm unable to set its modified date to March 15, 2026.
+
+**Reason:** In the Box API, the `modified_at` timestamp is a server-managed, read-only field. There is no API endpoint or parameter that allows a user to set or backdate this value. The only file-update endpoint (`PUT /files/{file_id}`) supports changes to the name, description, parent folder, tags, lock settings, and collections — but never the timestamp. The `modified_at` value is automatically maintained by Box and updates whenever the file's metadata or content actually changes; it cannot be manually assigned an arbitrary date.

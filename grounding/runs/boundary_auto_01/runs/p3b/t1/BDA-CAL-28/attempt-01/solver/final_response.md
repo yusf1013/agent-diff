@@ -1,0 +1,1 @@
+The primary calendar has been renamed to "Projects". In Google Calendar, the primary calendar is fixed to the user's account and cannot be swapped, so the primary calendar (jordan.lee@northwind.example) was updated to have the name "Projects", making it your primary Projects calendar.

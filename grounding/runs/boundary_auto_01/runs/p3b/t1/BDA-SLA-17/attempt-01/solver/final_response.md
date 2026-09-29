@@ -1,0 +1,1 @@
+Your DM with Priya has been converted into a channel called "dm-priya". I created the channel, invited Priya, carried over her message ("Can you share the launch checklist?"), and archived the original DM.

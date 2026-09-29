@@ -1,0 +1,1 @@
+The task cannot be completed. The creation date (created_at) of the Finance hub (ID: 7300) cannot be changed. In the Box API, the created_at field is immutable — it is set when the resource is created and cannot be modified via the PUT /hubs/{hub_id} endpoint, which only supports updating title, description, and is_ai_enabled. The hub's creation date remains 2026-06-01T09:00:00.

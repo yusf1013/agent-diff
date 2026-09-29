@@ -1,0 +1,1 @@
+Set the color to red (colorId 11) for all 3 sprint retrospective events in Room 5B created by Kenji Sato: ev_target, ev_target_sm0v, and ev_target_sm1v. Excluded decoy events that didn't match all three criteria (wrong room, wrong title, wrong creator).

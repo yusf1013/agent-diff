@@ -1,0 +1,1 @@
+The task cannot be completed. The `created_at` field on Box Hubs (and other Box resources) is a read-only, system-managed timestamp that cannot be modified via the API. All three attempts to set the creation date of the Finance hub (ID 7300) to January 15, 2026 were accepted by the API (HTTP 200) but had no effect on the `created_at` value, which remains 2026-06-01T09:00:00.

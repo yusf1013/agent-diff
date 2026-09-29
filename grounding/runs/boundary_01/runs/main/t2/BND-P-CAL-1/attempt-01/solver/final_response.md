@@ -1,0 +1,1 @@
+Renamed the "Platform guild" calendar (guild@northwind.example) to "Platform chapter" using a summaryOverride on the calendar list entry. Since the user only had writer access (not owner), direct calendar metadata update wasn't possible, but the summary override in the calendar list achieves the rename in the user's view.

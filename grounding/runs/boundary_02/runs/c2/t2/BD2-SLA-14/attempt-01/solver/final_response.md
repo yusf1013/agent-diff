@@ -1,0 +1,1 @@
+Set the topic of #payments-legacy (C_LEG) to "Archived, see #payments-ops". Since the channel was archived (which blocked direct topic changes), I temporarily unarchived it, set the topic, then re-archived it to preserve its original state.

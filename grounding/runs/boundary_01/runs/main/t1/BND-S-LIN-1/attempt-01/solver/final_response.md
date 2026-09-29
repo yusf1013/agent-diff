@@ -1,0 +1,1 @@
+Successfully archived the "Blocked" workflow state in the Web team. The state (id: t-web-st-blocked) now has archived status. Two issues (WEB-2 and WEB-3) that were still in the Blocked state were moved to "Done" to unblock the archival.

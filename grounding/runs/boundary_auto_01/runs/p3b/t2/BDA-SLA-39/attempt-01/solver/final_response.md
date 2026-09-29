@@ -1,0 +1,1 @@
+The channel #payments-ops already exists (ID: C_OPS), so no new channel needed to be created. The requested channel is present and active in the workspace.

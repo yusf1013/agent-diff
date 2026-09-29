@@ -1,0 +1,1 @@
+Set priority to Urgent (4) on the three matching issues: WEB-1 (Fix checkout regression), WEB-6 (Fix search pagination bug), and WEB-7 (Update checkout empty state). Each is in the Web team's Website Redesign project, marked Done, completed on August 14, and has a description mentioning the pagination fix.

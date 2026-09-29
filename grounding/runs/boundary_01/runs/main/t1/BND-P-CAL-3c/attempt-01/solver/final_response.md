@@ -1,0 +1,1 @@
+The "Team planning" event on the Team calendar (team@northwind.example) was moved to this Thursday, June 21, 2018 at 15:00–16:00 (America/Los_Angeles), preserving its original 1-hour duration. The API response confirms the updated start/end times and incremented sequence number.

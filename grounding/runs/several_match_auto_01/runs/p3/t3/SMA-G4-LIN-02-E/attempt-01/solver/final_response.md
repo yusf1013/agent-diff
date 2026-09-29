@@ -1,0 +1,1 @@
+Set the estimate to 5 on the three overdue high-priority issues assigned to Maya Chen on the Web team: WEB-1 ("Fix checkout redirect loop"), WEB-7 ("Fix search filter crash"), and WEB-8 ("Fix cart total mismatch"). WEB-2 was excluded because it is already in the completed "Done" state.

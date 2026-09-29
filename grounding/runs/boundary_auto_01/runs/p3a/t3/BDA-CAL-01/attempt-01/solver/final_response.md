@@ -1,0 +1,1 @@
+Successfully renamed Maya's team calendar. The calendar "Maya's team" (ID: maya-team@northwind.example) now displays as "Maya's Product Team" via the summaryOverride field, as confirmed by the API response.

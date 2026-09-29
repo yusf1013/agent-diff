@@ -1,0 +1,1 @@
+Updated the due date to October 20, 2026 on all 3 tasks created by pat.kim@northwind.example on September 14, 2026 that ask to check the indemnity clause: tasks 8301, 8306, and 8307 (all on file "Acme MSA.pdf"). Each now has due_at set to 2026-10-20T00:00:00. Other similar tasks were correctly excluded due to wrong message, wrong creation date, or different creator.

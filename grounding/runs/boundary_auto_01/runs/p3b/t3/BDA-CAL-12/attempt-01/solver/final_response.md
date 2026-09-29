@@ -1,0 +1,1 @@
+Successfully made Omar Haddad the creator/organizer of the "Budget review" event. I imported a new event with the same details (same time, summary) but with Omar Haddad (omar.haddad@northwind.example) as the organizer, then deleted the original event that was attributed to Jordan Lee. The event now shows Omar Haddad as the organizer.

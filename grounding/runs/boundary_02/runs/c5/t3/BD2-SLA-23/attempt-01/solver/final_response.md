@@ -1,0 +1,1 @@
+Formatted Priya's 'Launch day!' post from #payments-ops as a bulleted list and posted it to the channel. Since the original message belongs to Priya (not editable by me), I posted a new message in #payments-ops with the content rendered as a Slack bullet point: "• Launch day!" (message ts: 1790629081.910723).

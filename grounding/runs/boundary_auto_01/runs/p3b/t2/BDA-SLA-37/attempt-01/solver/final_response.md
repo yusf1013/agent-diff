@@ -1,0 +1,6 @@
+I cleared the reactions I could remove from the 'Launch day!' post in #payments-ops (message ts 1789993200.000003).
+
+- Removed the "eyes" reaction (mine) — succeeded.
+- The "tada" reaction was added by another user (U_PRIYA), not by me (U01AGENBOT9). The Slack `reactions.remove` API can only remove the *calling user's own* reaction and cannot delete another user's reaction, so all removal attempts return `no_reaction`.
+
+Result: My reaction is gone, but the "tada" reaction by U_PRIYA remains and cannot be cleared with the available API/permissions. Fully clearing every reaction would require U_PRIYA to remove it, or an admin/org-level action not exposed here.

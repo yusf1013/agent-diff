@@ -1,0 +1,1 @@
+No estimate updates were needed. After querying the Linear API, I found there are no high-priority (priority 3) issues on the Web team at all, and consequently none matching the full criteria (overdue + high priority + assigned to Maya Chen on the Web team). All of Maya Chen's Web team issues are medium priority, so the set to update is empty.

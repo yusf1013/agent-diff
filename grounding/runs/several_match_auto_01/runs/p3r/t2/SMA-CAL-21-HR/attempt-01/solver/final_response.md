@@ -1,0 +1,1 @@
+Moved the two qualifying planning sessions (ev_ps_target and ev_ps_target_sm0v) — both "Planning session" events ending at 5pm on Thursday, June 21, 2018 with descriptions mentioning the Q4 roadmap — to Room 2B. Other planning sessions were excluded because they either didn't end at 5pm or their descriptions didn't mention the Q4 roadmap.

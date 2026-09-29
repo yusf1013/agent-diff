@@ -1,0 +1,1 @@
+Successfully added the tag "legal-hold" to every PDF in the Contracts folder (id 8200). Found 4 PDFs among the 1,149 items in the folder — "Acme MSA.pdf", "Acme MSA amendment.pdf", "Zenith SOW.pdf", and "Zeta NDA.pdf" — and applied the tag to each. All four now show tags: ["legal-hold"] in the API.

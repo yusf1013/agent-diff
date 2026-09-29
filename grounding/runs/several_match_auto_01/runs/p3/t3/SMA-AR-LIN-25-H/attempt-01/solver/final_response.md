@@ -1,0 +1,1 @@
+Set priority to Urgent (4) for all 3 issues in the Support team assigned to Priya Nair that are tagged with the "Customer Tier" label: SUP-1 ("Renewal terms dispute for Meridian Logistics"), SUP-5, and SUP-9045 (both "Invoice correction request for Beacon Foods"). Verified via follow-up query that all now show priority 4.0.

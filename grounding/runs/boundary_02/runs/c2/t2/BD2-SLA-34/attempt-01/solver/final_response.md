@@ -1,0 +1,1 @@
+Successfully moved Priya's standup message ("Standup moves to 10:00 tomorrow.") into the thread under her "Launch day!" post in #payments-ops. The message was posted as a thread reply (thread_ts: 1789993200.000003). Note: The original standalone message could not be deleted as it belongs to another user (U_PRIYA) and the current user lacks permission to delete it.

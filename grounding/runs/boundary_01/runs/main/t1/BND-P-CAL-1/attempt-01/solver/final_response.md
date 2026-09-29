@@ -1,0 +1,1 @@
+The "Platform guild" calendar (guild@northwind.example) has been renamed to "Platform chapter" in the user's calendar list via summaryOverride. Note: the actual calendar metadata could not be renamed (403 Forbidden) since the authenticated user only has writer access, not ownership.

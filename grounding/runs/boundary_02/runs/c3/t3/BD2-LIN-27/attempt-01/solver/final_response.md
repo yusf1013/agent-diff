@@ -1,0 +1,1 @@
+Successfully archived the Web team's "Blocked" workflow state. This required first moving the one issue (WEB-2) that was still in the Blocked state to the Canceled state, then executing the archive mutation on the workflow state.

@@ -1,0 +1,5 @@
+I successfully relocated Priya's 'Launch day!' message:
+- Found the original in #payments-ops (C_OPS): ts 1789993200.000003, posted by priya.sharma (U_PRIYA)
+- Posted 'Launch day!' to #payments-team (C_TEAM): new message ts 1790613041.926408
+
+However, I could not delete the original message from #payments-ops — the API returned "cant_delete_message" because Slack only permits the message author (or an authorized admin) to delete a message, and it was posted by Priya, not by the authenticated bot (AgentBot). The message is now present in the target channel; removing the original requires Priya or a workspace admin to delete it.

@@ -1,0 +1,1 @@
+There are no architecture reviews on Friday (June 22, 2018) where Kenji Sato attends as an optional guest. The only review that day — "Architecture review: storage" (1:00–2:00 PM) — lists Kenji as a required attendee with an "accepted" response (no optional flag), so it did not meet the "optional guest" condition and was left untouched. No events were deleted.

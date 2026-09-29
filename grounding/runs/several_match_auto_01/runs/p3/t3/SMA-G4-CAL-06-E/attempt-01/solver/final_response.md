@@ -1,0 +1,1 @@
+Found the "Quarterly planning lunch" event (Thursday, June 21, 2018) on Leo Park's calendar (set to America/New_York time zone) and successfully updated its location to "Room 5B". The PATCH response confirms the event now has location "Room 5B".

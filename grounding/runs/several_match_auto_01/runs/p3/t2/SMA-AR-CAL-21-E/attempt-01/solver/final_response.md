@@ -1,0 +1,1 @@
+Moved the matching client sync to Room 4C. The event "Client sync" (ID: ev_target, 2018-06-21 3:00–3:30 pm, "Finalizing the Meridian contract renewal terms before signature") now has location "Room 4C" (previously Room 8B). Other similarly-named events were excluded because they either ended at a different time, had a different title, or were about a different topic.

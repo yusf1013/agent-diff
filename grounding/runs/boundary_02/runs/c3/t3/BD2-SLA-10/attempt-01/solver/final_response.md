@@ -1,0 +1,5 @@
+I located #payments-ops (ID C_OPS) and attempted to rename it to "Payments Ops", but the API returned `invalid_name_specials`.
+
+Slack channel names must be lowercase and can only contain letters, numbers, hyphens, and underscores — no spaces or capital letters are permitted. "Payments Ops" contains both a space and uppercase letters, so it is not a valid channel name. This is consistent with all other channels in the workspace (e.g., payments-legacy, payments-team), which are lowercase-hyphenated.
+
+As a result, the rename cannot be performed as specified, and the channel remains named #payments-ops. If you'd like a different valid name (for example, a lowercase-hyphenated variant), let me know and I'll apply it.

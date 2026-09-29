@@ -1,0 +1,1 @@
+Added the "q3-review" tag to all files anywhere in the Finance folder (id 6100, including subfolders Q1, Q2, and Q2/Receipts) that were last modified by Leo Park: Budget 2026.pdf (6111), Cash forecast.xlsx (6112), Q1 close summary.docx (6113), Q2 plan.xlsx (6114), and Travel receipts June.pdf (6115). Each file's tags were confirmed to include "q3-review".

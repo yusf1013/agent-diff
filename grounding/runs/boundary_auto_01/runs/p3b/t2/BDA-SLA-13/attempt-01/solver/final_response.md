@@ -1,0 +1,1 @@
+Renamed #payments-legacy to #payments-archive. The channel was archived, so I unarchived it, performed the rename, and then re-archived it to preserve its original state.

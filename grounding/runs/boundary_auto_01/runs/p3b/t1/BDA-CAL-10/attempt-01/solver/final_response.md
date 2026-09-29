@@ -1,0 +1,1 @@
+Unable to complete the task. I found the "On-call handoff" event (id: ev_handoff) on Leo's on-call calendar (leo-oncall@northwind.example), but the update request returned a 403 error because I only have "reader" access to that calendar. I do not have the required write permissions to modify the event's location.

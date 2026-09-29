@@ -1,0 +1,1 @@
+Unarchived the #payments-legacy channel (ID: C_LEG).

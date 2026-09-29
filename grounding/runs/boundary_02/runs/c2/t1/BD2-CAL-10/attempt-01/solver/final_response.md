@@ -1,0 +1,1 @@
+Could not complete the task: the "On-call handoff" event (ev_handoff) was found on Leo's on-call calendar (leo-oncall@northwind.example), but updating its location failed with a 403 error because my account only has "reader" access to that calendar, which does not allow event modifications. Writer access from Leo (or the calendar owner) is required to set the location to Room 2.

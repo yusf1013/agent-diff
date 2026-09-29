@@ -1,0 +1,1 @@
+Unarchived all 3 incident channels related to the checkout outage: `incident-checkout`, `incidents-checkout`, and `incidents-checkout-2`. Verified via conversations.list that all three now show is_archived: false. Unrelated archived channels (incidents-billing, incidents-shipping) were left as-is.

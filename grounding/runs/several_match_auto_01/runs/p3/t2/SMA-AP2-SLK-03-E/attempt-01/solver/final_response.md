@@ -1,0 +1,6 @@
+Added a 🚀 rocket reaction to all 3 payment gateway outage messages in #incidents that Diego Alvarez had reacted to with 🔥 fire:
+- "Heads up: payment gateway outage — fix rolled out..." (ts 1790086320.000702) — verified
+- "Update: payment gateway outage — config reverted..." (ts 1790086260.000701)
+- "Update: payment gateway outage — rollback deployed..." (ts 1790086200.000001)
+
+The other 4 outage messages were correctly excluded (fire came from other users, or Diego's reactions were non-fire like 👍 or 👀).

@@ -1,0 +1,1 @@
+Issue WEB-1 ("Checkout button broken") has been successfully marked as completed by setting its state to "Done" (completed state) for the Web team. Note: The `completedAt` date field is system-managed and cannot be directly set via the Linear API - it is automatically tracked when an issue transitions to a completed workflow state.

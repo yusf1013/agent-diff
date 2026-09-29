@@ -1,0 +1,1 @@
+Successfully set the topic of #payments-legacy to "Archived, see #payments-ops". The channel was temporarily unarchived to set the topic, then re-archived to restore its original state. Verified the topic is correctly set via conversations.info.

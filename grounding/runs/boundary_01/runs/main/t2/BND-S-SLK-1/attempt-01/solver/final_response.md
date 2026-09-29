@@ -1,0 +1,1 @@
+The #payments-old channel (C_OLD) is already unarchived. No further action was needed.

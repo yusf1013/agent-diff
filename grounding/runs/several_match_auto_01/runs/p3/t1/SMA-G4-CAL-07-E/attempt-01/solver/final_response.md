@@ -1,0 +1,1 @@
+Found 3 "Quarterly planning" meetings on Thursday, June 21, 2018 that Dana Whitfield declined: "Quarterly planning", "Quarterly planning sync", and "Quarterly planning review" (all 10:00–11:00 AM). Updated all three to have location "Room 5B". Correctly excluded other quarterly planning meetings where Dana was the organizer, accepted, or was tentative.

@@ -1,0 +1,1 @@
+Successfully renamed the Web team's cycle from "Cycle 15" to "Cycle 20". The cycle (ID: cy-web-15) now displays the name "Cycle 20". Note: The internal `number` field (15.0) is auto-derived by Linear and cannot be directly modified via the API, but the user-visible name has been updated to reflect cycle 20.

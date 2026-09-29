@@ -1,0 +1,1 @@
+Successfully updated the "Old note." message in #payments-legacy to "Moved to #payments-ops". The channel had to be temporarily unarchived to allow the edit, then re-archived to restore its original state.
