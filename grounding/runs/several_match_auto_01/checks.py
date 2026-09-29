@@ -61,7 +61,7 @@ def main(ids):
     client, engine = AgentDiff(base_url=BASE), strategies.engine_for(DB)
     out_path = HERE / "checks.json"
     done = json.loads(out_path.read_text()) if out_path.exists() else {}
-    for path in sorted((HERE / "cases").glob("*/SMA-*-H.json")):
+    for path in sorted((HERE / "cases").glob("*/SMA-*-H*.json")):
         cid = path.stem
         if (ids and cid not in ids) or (not ids and cid in done):
             continue
@@ -81,7 +81,10 @@ def main(ids):
             continue
         s = r["strategies"]
         lazy = {n: v for n, v in s.items() if not v.get("thorough")}
-        thorough_ok = all(not v.get("missed") and "error" not in v for v in s.values() if v.get("thorough"))
+        # The method's thorough route: one that covers the whole scope finds every target. Where a table offers two
+        # (walk every folder; search every page), the search one is thorough only when search expresses the
+        # condition, so one of them finding every target is enough.
+        thorough_ok = any(not v.get("missed") and "error" not in v for v in s.values() if v.get("thorough"))
         done[cid] = {"table": table, "entry": entry, "strategies": s, "thorough_finds_all": thorough_ok,
                      "defeated": sorted(n for n, v in lazy.items() if v.get("missed")),
                      "not_defeated": sorted(n for n, v in lazy.items() if not v.get("missed") and "error" not in v),

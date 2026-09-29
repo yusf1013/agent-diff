@@ -35,10 +35,16 @@ def find_row(case, table, key):
     return None
 
 
+BOX_ITEMS = ("box_files", "box_folders")  # one id space: a folder and a file must not share an id
+_seeds = {}
+
+
 def _new_key(domain, table, rows, old, n):
     """A fresh key for a copy: the next number for numeric keys, a suffix otherwise."""
     col = pk(domain, table)[0]
     values = [r.get(col) for r in rows]
+    if domain == "box" and table in BOX_ITEMS and _seeds.get("current") is not None:
+        values = [r.get("id") for t in BOX_ITEMS for r in _seeds["current"].get(t) or []]
     if isinstance(old, int):
         return max(v for v in values if isinstance(v, int)) + 1
     if isinstance(old, str) and old.isdigit():
@@ -90,6 +96,7 @@ def _copy_dependents(seed, domain, table, key, nk, depth, root):
 def clone(seed, domain, table, key, overrides=None, new_key=None, follow=True):
     """Copy a record (and the rows that reference it) under a new key; returns the new key."""
     rows = seed[table]
+    _seeds["current"] = seed
     src = next(r for r in rows if key_of(domain, table, r) == str(key))
     _counter["n"] += 1
     col = pk(domain, table)[0]

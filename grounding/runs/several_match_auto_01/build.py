@@ -61,7 +61,8 @@ def iso_z(dt):
 class Builder:
     """One case under construction: its seed, targets and placements."""
 
-    def __init__(self, cover, answer):
+    def __init__(self, cover, answer, drop=(), no_variants=False):
+        self.drop = set(drop)
         self.case = copy.deepcopy(cover)
         self.domain = cover["domain"]
         self.seed = self.case["seed"]
@@ -69,7 +70,7 @@ class Builder:
         self.table = self.ref["query"]["table"]
         self.key = str(self.ref["expected"][0])
         self.field = KIND.get(self.table, ("", "name"))[1]
-        self.variants = [v for v in answer.get("variants") or [] if v]
+        self.variants = [] if no_variants else [v for v in answer.get("variants") or [] if v]
         self.words = (answer.get("search_words") or "").strip()
         self.targets = [self.key]
         self.place = {self.key: "V"}
@@ -80,6 +81,9 @@ class Builder:
     def text(self, i):
         original = (seedkit.find_row(self.case, self.table, self.key) or {}).get(self.field)
         v = self.variants[i % len(self.variants)] if self.variants else original
+        if self.table == "box_files" and original and not self.variants:  # names stay unique in a folder
+            stem, dot, ext = original.rpartition(".")
+            return f"{stem} ({i + 2}).{ext}" if dot else f"{original} ({i + 2})"
         if self.table == "box_files" and original and "." in original:
             ext = original.rsplit(".", 1)[1]
             if not str(v).lower().endswith("." + ext.lower()):
@@ -121,15 +125,19 @@ class Builder:
     def trap_calendar(self):
         prim_entry = next(e for e in self.seed["calendar_list_entries"] if e.get("primary"))
         prim = next(c for c in self.seed["calendars"] if c["id"] == prim_entry["calendar_id"])
+        made = []
         for i, (code, cid, name, hidden) in enumerate((("C", "team-events@northwind.example", "Team events", False),
                                                         ("H", "planning@northwind.example", "Planning", True)), 1):
+            if code in self.drop:
+                continue
             self.seed["calendars"].append({**copy.deepcopy(prim), "id": cid, "summary": name,
                                            "description": f"{name} calendar", "etag": f'"etag_{cid}"'})
             self.seed["calendar_list_entries"].append({**copy.deepcopy(prim_entry), "id": f"cle_{cid}",
                                                        "calendar_id": cid, "primary": False, "hidden": hidden,
                                                        "etag": f'"etag_cle_{cid}"'})
             self.copy_target(i, code, calendar_id=cid)
-        return ["another owned calendar", "an owned calendar hidden in the list"]
+            made.append("an owned calendar hidden in the list" if hidden else "another owned calendar")
+        return made
 
     def box_crowd(self):
         """32 copies of a near miss that shares the search words and fails a condition search cannot express."""
@@ -155,6 +163,8 @@ class Builder:
         folder = seedkit.find_row(self.case, "box_folders", f["parent_id"]) or self.seed["box_folders"][0]
         made = []
         for i, (code, name, parent) in enumerate((("C1", "Current", f["parent_id"]), ("O", "Shared", "0")), 1):
+            if code in self.drop:
+                continue
             fid = str(1 + max(int(x["id"]) for x in self.seed["box_folders"] + self.seed["box_files"]
                               if str(x["id"]).isdigit()))
             self.seed["box_folders"].append({**copy.deepcopy(folder), "id": fid, "name": name, "parent_id": parent})
@@ -165,6 +175,8 @@ class Builder:
         return made
 
     def trap_linear(self):
+        if "P" in self.drop:
+            return []
         row = seedkit.find_row(self.case, "issues", self.key)
         team = row["teamId"]
         day = str(row["createdAt"])[:10]
@@ -190,6 +202,8 @@ class Builder:
         return [f"past the first 50 issues ({fillers} older issues)"]
 
     def trap_slack_pinned(self):
+        if "P" in self.drop:
+            return []
         row = seedkit.find_row(self.case, "messages", self.key)
         t = utc(row["created_at"])
         day = t.date()
@@ -231,6 +245,8 @@ class Builder:
         made = []
         for i, (code, cid, name, private) in enumerate((("C", "C_SMA_OPEN", "team-updates", False),
                                                         ("H", "C_SMA_PRIV", "leads", True)), 1):
+            if code in self.drop:
+                continue
             self.seed["channels"].append({**copy.deepcopy(chan), "channel_id": cid, "channel_name": name,
                                           "is_private": private, "topic_text": "", "purpose_text": ""})
             for m in members:
@@ -261,9 +277,9 @@ class Builder:
         return problems
 
 
-def finish(b: Builder, tier, answer, cover):
+def finish(b: Builder, tier, answer, cover, suffix=""):
     case = b.case
-    tid = f"SMA-{cover['case_id']}-{tier}"
+    tid = f"SMA-{cover['case_id']}-{tier}{suffix}"
     case.update(case_id=tid, prompt=answer["plural_request"], mode="multiple", plural=True, form="present")
     b.ref.update(expected=list(b.targets), description=f"every record the plural request selects ({len(b.targets)})")
     case["cards"] = [{**(case.get("cards") or [{}])[0], "Test ID": tid, "Referent set": list(b.targets)}]
@@ -274,11 +290,11 @@ def finish(b: Builder, tier, answer, cover):
     return case
 
 
-def build_one(cover, answer):
+def build_one(cover, answer, tiers=("E", "H"), suffix="", drop=(), no_variants=False):
     out = {"cover": cover["case_id"], "domain": cover["domain"], "table": cover["references"][0]["query"]["table"],
            "pinned": pinned(cover["references"][0]["query"]), "cases": {}}
-    for tier in ("E", "H"):
-        b = Builder(cover, answer)
+    for tier in tiers:
+        b = Builder(cover, answer, drop=drop, no_variants=no_variants)
         traps = []
         try:
             if tier == "E":
@@ -309,7 +325,7 @@ def build_one(cover, answer):
             out["cases"][tier] = {"built": False, "why": f"construction failed: {type(exc).__name__}: {exc}"[:300]}
             continue
         problems = b.checks()
-        case = finish(b, tier, answer, cover)
+        case = finish(b, tier, answer, cover, suffix)
         out["cases"][tier] = {"built": not problems, "id": case["case_id"], "targets": len(b.targets),
                               "traps": traps, "problems": problems, "notes": b.notes, "placements": b.place}
         if not problems:
@@ -352,5 +368,40 @@ def main(ids):
     print("built:", dict(built), "| skipped:", sum(1 for r in report.values() if r.get("skipped")))
 
 
+def repair(drop_traps: bool):
+    """Rebuild the cases the cold reader did not agree on, in two rounds (the first build and its trials stay on record).
+    - Round 1 (`--repair`): each disagreed first build is rebuilt with every copy keeping the original text, all traps
+      kept, as SMA-<cover>-ER / -HR. Most doubts were about a variant title, not a place.
+    - Round 2 (`--repair2`): each repaired case the reader still did not agree on is rebuilt again without the traps
+      whose targets the reader left out or doubted: those placements are contestable for this request."""
+    answers = json.loads((HERE / "writer.json").read_text())
+    verdicts = json.loads((HERE / "reader.json").read_text())
+    report = json.loads((HERE / "build.json").read_text())
+    placements = json.loads((HERE / "placements.json").read_text())
+    by_id = {c["case_id"]: c for c in covers()}
+    for cid, v in sorted(verdicts.items()):
+        if v["agreed"] or cid.endswith("R") != drop_traps:
+            continue
+        cover_id, tier = cid.removeprefix("SMA-").rsplit("-", 1)
+        tier = tier[0]
+        doubtful = set(v["missing"]) | set(v["unsure"]) | set(v["extra"])
+        drop = ({placements.get(cid, {}).get(t) for t in doubtful} - {None, "V"}) if drop_traps else set()
+        r = build_one(by_id[cover_id], answers[cover_id], tiers=(tier,), suffix="R", drop=drop, no_variants=True)
+        c = r["cases"].get(tier) or {}
+        report[f"{cover_id}:{tier}R"] = {**r, "repair_of": cid, "dropped": sorted(drop), "round": 2 if drop_traps else 1}
+        if c.get("built"):
+            placements[c["id"]] = c["placements"]
+        elif drop_traps:  # nothing valid is left of this hard case: remove the stale repaired file
+            stale = OUT / r["domain"] / f"SMA-{cover_id}-{tier}R.json"
+            stale.unlink(missing_ok=True)
+        print(f"{cid:24} -> {c.get('id') or '-'} built={c.get('built')} dropped={sorted(drop)} "
+              f"{c.get('why') or c.get('problems') or ''}")
+    (HERE / "build.json").write_text(json.dumps(report, indent=1, default=str) + "\n")
+    (HERE / "placements.json").write_text(json.dumps(placements, indent=1) + "\n")
+
+
 if __name__ == "__main__":
-    main(set(sys.argv[1:]))
+    if "--repair" in sys.argv or "--repair2" in sys.argv:
+        repair("--repair2" in sys.argv)
+    else:
+        main(set(sys.argv[1:]))

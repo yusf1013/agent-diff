@@ -38,7 +38,7 @@ def main(runs):
             summary = json.loads((att / "execution_summary.json").read_text())
             traj = next(p for p in (att / "solver").glob("*.json") if p.name != "config.json")
             row = {"trial": f"{att.parent.parent.name}/{cid}", "run": Path(run).name, "cover": case.get("source_cover"),
-                   "tier": cid.rsplit("-", 1)[1], "domain": case["domain"],
+                   "tier": cid.rsplit("-", 1)[1][0], "repaired": cid.endswith("R"), "domain": case["domain"],
                    "termination": summary.get("termination"),
                    "missing": {t: place.get(t, "?") for t in sorted(missing)},
                    "decoys_acted": {d: claims[d] for d in sorted(extra & set(claims))},
