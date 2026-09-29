@@ -59,10 +59,19 @@ def main():
         if verdict.startswith("fail"):
             failing.add(eid)
             fail_kinds[verdict.split(" (")[0]].add(eid)
+    manual_failing, manual_graded, auto_graded = set(), set(), set()
     for trial, verdict in manual.items():
         eid = trial.split("/")[-1].removeprefix("BD2-")
         if eid in space:
             by_kind[space[eid].get("alternative_kind")]["manual"][verdict.split(":")[0]] += 1
+            manual_graded.add(eid)
+            if verdict.startswith("fail"):
+                manual_failing.add(eid)
+    for trial, v in auto.items():
+        eid = trial.split("/")[1].removeprefix("BDA-")
+        if eid in valid and not v["oracle"].startswith("review"):
+            auto_graded.add(eid)
+    both = auto_graded & manual_graded
     agree = sum(r.get("agree", 0) for r in specs.values())
     judged = sum(r.get("trials", 0) for r in specs.values())
     reviewed = [v for v in read.values() if v["judge"].startswith("fail")]
@@ -84,6 +93,12 @@ def main():
         "phase 3 trials on valid tests (graded)": sum(sum(k["auto"].values()) for k in by_kind.values()),
         "trials held for review (no answer after replica server errors)": review_needed,
         "elements with a failing trial": len(failing),
+        "the same elements, automated tests vs phase 1's hand-worded ones (a failing trial or not)": {
+            "elements graded in both": len(both),
+            "failing in both": len(both & failing & manual_failing),
+            "failing only in phase 1": len((both & manual_failing) - failing),
+            "failing only in the automated tests": len((both & failing) - manual_failing),
+            "failing in neither": len(both - failing - manual_failing)},
         "elements failing, by the judge's kind of failure": {k: len(v) for k, v in sorted(fail_kinds.items())},
         "pass rate by the alternative the actor had (automated vs phase 1)": {
             k: {"elements": len(v["elements"]),
