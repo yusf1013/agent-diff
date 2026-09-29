@@ -1,0 +1,1 @@
+Done — "Client Success Renewals" is now hidden from your calendar list (it was already unchecked, so no change to what shows in the calendar view). If you want it fully removed from the list instead of hidden, just say the word.

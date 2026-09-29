@@ -1,0 +1,1 @@
+No match found. The only PDF in **Product Specs** whose description mentions the mobile redesign is **Mobile Redesign Spec v2.pdf** — it does have exactly 3 comments (no replies), but it's **9.5 MB**, well over the 2 MB limit. The other PDF, **Payment Redesign Spec.pdf**, is 3 MB and has 0 comments. So I didn't add the tag.

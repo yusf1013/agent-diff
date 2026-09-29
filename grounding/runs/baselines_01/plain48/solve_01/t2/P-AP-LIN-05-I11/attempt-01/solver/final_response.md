@@ -1,0 +1,1 @@
+Done. I found the comment: Priya Nair posted on **WEB-2 ("Improve payment retry logic")** about the payment gateway timeout causing failed charges under load (posted Mar 2, resolved Mar 3 at 11:00 by Dana Whitfield). I set that issue's priority to **Urgent** (priority 4) — update confirmed successful.

@@ -1,0 +1,1 @@
+No matching channel. The only one with "incident" in its name is **incident-2019-retro**, and it fails both other conditions — it's archived and has no topic. So there's nothing to invite Aisha Khan to.

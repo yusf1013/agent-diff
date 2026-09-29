@@ -1,0 +1,1 @@
+Done. Added the **design-review** tag to **Mobile Redesign Spec Addendum.pdf** (in Product Specs) — it's the only match: 1.7 MB (< 2 MB), description says "Design spec addendum for the mobile redesign of the navigation menu," and it has exactly 3 top-level comments with no replies.

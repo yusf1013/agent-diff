@@ -1,0 +1,1 @@
+I checked #incidents — there's no message there that Diego Alvarez reacted to with fire 🚀. The only message in the channel is Leo Park's "Payment gateway outage — I'm starting the rollback now," and its only reaction is a fire from Omar Haddad. Since no Diego-reactioned outage message exists, I didn't add the rocket. Let me know if you'd like me to react to Leo's message instead.
