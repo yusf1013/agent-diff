@@ -67,7 +67,8 @@ under both readings.
   session's account, our pipeline's coverage credit also counts plain near misses: its DROP and SUB_OR_DROP
   mutations select them, and 37 of 204 covered facts are credited only through F0.
 - **The labels' mechanisms do not settle it.**
-  - N0's four added facts all come from trials where the agent said the record did not match and acted anyway.
+  - N0's four added facts all come from trials where the agent saw that the record did not match and acted anyway
+    (labelled saw-mismatch-accepted).
   - N1's D:overdue is a misread in all 3 trials.
   - But probe form credits the same "saw the mismatch and acted" mechanism (§3: N0-BOX-P-T07, N0-CAL-P-T04).
 
