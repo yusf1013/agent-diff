@@ -1,0 +1,1 @@
+Reacted with the "eyes" emoji on all 3 messages in #incidents about the payment gateway timeout that were posted by U_AISHA (the only #payments-oncall member who posted such messages). Messages by U_MAYA, U_OMAR, U_LEO, and U_DIEGO were excluded as they are not members of #payments-oncall.

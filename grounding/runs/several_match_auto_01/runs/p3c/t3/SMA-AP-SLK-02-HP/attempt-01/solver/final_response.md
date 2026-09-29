@@ -1,0 +1,1 @@
+Unarchived all 4 archived incident channels about the checkout outage: "incident-checkout", "incidents-checkout", "incidents-checkout-2", and the private "incidents-checkout-eu". Other incident channels (billing, shipping, auth, and the live checkout channel) were left as-is since they either weren't about the checkout outage or weren't archived.

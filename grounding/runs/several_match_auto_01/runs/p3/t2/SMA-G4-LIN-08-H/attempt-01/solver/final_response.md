@@ -1,0 +1,1 @@
+Updated the priority of all 3-point sub-issues of MOB-42 due on October 15 to High. The matching sub-issues were MOB-50 and MOB-422 (both estimate 3.0, due 2026-10-15). Both were successfully updated to priority High (3.0).

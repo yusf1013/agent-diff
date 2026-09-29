@@ -1,0 +1,1 @@
+Set priority to High (priority=2) on all three issues assigned to Maya Chen in the Atlas project within Web's Cycle 4: WEB-1, WEB-9, and WEB-10. Verification confirmed all issues now show priority 2.0 (High).

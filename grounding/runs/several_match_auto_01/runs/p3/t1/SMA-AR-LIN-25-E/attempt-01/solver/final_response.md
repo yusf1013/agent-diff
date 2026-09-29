@@ -1,0 +1,1 @@
+Successfully set priority to Urgent for all 3 issues in the Support team assigned to Priya Nair with the "Customer Tier" label: SUP-1, SUP-5, and SUP-6. The issue SUP-2 was excluded as it only had the "Enterprise" label.

@@ -1,0 +1,1 @@
+Added a thumbsup reaction to all 3 of Diego Alvarez's gateway rollback messages in #deployments that had exactly 3 eyes reactions (timestamps 1789992180.000701, 1789992120.000001, and 1789974600.000702). Three other gateway rollback messages were checked and skipped because their eyes reaction counts were not exactly 3 (they had 5, 2, and 1 eyes reactions respectively).

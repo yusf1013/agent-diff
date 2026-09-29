@@ -1,0 +1,1 @@
+Set priority to Low on the 2 Web team issues that Dana Whitfield is subscribed to: WEB-1 ("Search results jump on scroll") and WEB-5 ("Homepage banner flickers on load"). Both updates succeeded (priority=1 = Low).

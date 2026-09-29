@@ -17,13 +17,18 @@ Writes summary.json and prints it.
 from __future__ import annotations
 
 import json
+import re
 from collections import Counter, defaultdict
 from pathlib import Path
+
+from grounding.runs.several_match_auto_01 import seedkit
 
 HERE = Path(__file__).resolve().parent
 # Cases whose construction was flawed after the checks passed (log: the review found them).
 FLAWED = {"SMA-AP-BOX-02-H": "a file and a folder shared an id", "SMA-BOX-23-H": "a file and a folder shared an id",
           "SMA-G4-BOX-04-E": "a file and a folder shared an id"}
+# What a Box folder listing shows of a file in this replica: its name (and so its extension). Listings ignore `fields`.
+LISTED = {"File.name", "File.extension"}
 # Why a shortcut that no valid hard test defeats is not covered, in the manual investigation's terms (several_match_02
 # report, trap reach). Any other undefeated shortcut is reported as a construction gap.
 PLACE = {"V": "V, plain view (stopping early)", "C": "C, another container in scope (scope)",
@@ -35,7 +40,11 @@ NOT_COVERED = {
     ("box", "list named (limit 1000)"): IMPRACTICAL_1000,
     ("box", "list tree, one page per folder (limit 1000)"): IMPRACTICAL_1000,
     ("box", "search extension under folder (limit 200)"): "impractical: a crowd over 200 hits",
-    ("box", "search words under folder (limit 200)"): "impractical: a crowd over 200 hits",
+    ("box", "search words under folder (limit 200)"): "a construction gap: where the condition is not text (a comment, "
+                                                      "a task, an owner), a copy whose name and description lack the "
+                                                      "search words would defeat it, and the builder places none. "
+                                                      "In AR-BOX-23 (the valid tests) the words are the condition, so "
+                                                      "there only a crowd over 200 hits would",
     ("box", "list named, every page (limit 1000)"): "not lazy for these requests: a copy in a subfolder of the named "
                                                     "folder is contestable (check 8; the cold reader left it out in "
                                                     "2 of 2 probes, probe_subfolder.py), so none goes there, and every "
@@ -70,8 +79,10 @@ def main():
     for key, r in build.items():
         for tier, c in (r.get("cases") or {}).items():
             if c.get("built"):
+                page = next((m.group(1) for t in c.get("traps") or []
+                             for m in [re.search(r"folder \(\d+ copies of a near miss failing (\S+)\)", t)] if m), None)
                 built[c["id"]] = {"cover": r["cover"], "domain": r["domain"], "table": r["table"],
-                                  "pinned": r["pinned"], "tier": tier[0]}
+                                  "pinned": r["pinned"], "tier": tier[0], "page_fillers_fail": page}
     valid, why_not = {}, {}
     for cid, b in built.items():
         reasons = []
@@ -83,6 +94,12 @@ def main():
                 reasons.append("thorough route misses a target" if ch else "not checked")
         if cid in FLAWED:
             reasons.append(FLAWED[cid])
+        case = next((HERE / "cases").glob(f"*/{cid}.json"), None)
+        if case and seedkit.unique_violations(json.loads(case.read_text())["seed"], b["domain"]):
+            reasons.append("the seed breaks a unique key of the replica's schema (it does not install)")
+        if b["page_fillers_fail"] and b["page_fillers_fail"].split(":", 1)[-1] not in LISTED:
+            reasons.append("impractical (check 6): the page trap's fillers fail a condition the listing does not "
+                           "show, so the thorough route reads each of 100 files")
         (why_not if reasons else valid)[cid] = reasons or b
     # The covers, by the kind of record and whether the request names its container: which reached a valid easy and a
     # valid hard test. Kinds with no route table (method.md: four services, their main record kinds) get the easy
@@ -138,7 +155,7 @@ def main():
         "covers": len(writer), "plural-worthy": sum(1 for a in writer.values() if a.get("plural_worthy")),
         "tests generated": {"all": len(built), "easy": sum(1 for b in built.values() if b["tier"] == "E"),
                             "hard": sum(1 for b in built.values() if b["tier"] == "H"),
-                            "of them repaired versions": sum(1 for c in built if c.endswith("R")),
+                            "of them repaired versions": sum(1 for c in built if c.endswith(("R", "EU"))),
                             "of them iteration 2 (traps the first round lacked)": sum(1 for c in built
                                                                                       if c.endswith("HP"))},
         "valid": {"all": len(valid), "easy": sum(1 for b in valid.values() if b["tier"] == "E"),

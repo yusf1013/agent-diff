@@ -1,0 +1,1 @@
+Set the estimate to 3 on all 3 issues assigned to Maya Chen in the Web team's cycle ending October 12 (Cycle 12): "Checkout hangs on promo code apply" (i-web-12), "Checkout fails on gift card entry" (i-web-12-sm0-v), and "Checkout fails on gift card entry" (i-web-12-sm3-p). All updates were verified via a follow-up query.

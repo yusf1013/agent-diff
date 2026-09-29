@@ -1,0 +1,1 @@
+Set the estimate to 3 for the 3 Todo issues assigned to Maya Chen in the Web team with the Web team's Bug label: i-target ("Checkout button unresponsive on Safari"), i-target-sm0-v and i-target-sm3-p ("Search input freezes on Safari"). Issues with the Mobile team's Bug label or no labels were correctly excluded.

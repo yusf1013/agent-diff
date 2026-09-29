@@ -1,0 +1,1 @@
+Set the estimate to 3 on all issues assigned to Maya Chen in the Web team's cycle ending October 12 (Cycle 12). The three affected issues were WEB-1, WEB-5, and WEB-6, all of which were updated from estimate 1 to 3 and verified.

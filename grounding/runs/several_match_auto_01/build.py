@@ -16,14 +16,20 @@ For every cover the writer judged plural-worthy (writer.json) and whose wording 
     messages ahead of it. The fillers mention the search words when they fail another condition (the author), so a
     one-page search misses the copy too.
   - Slack messages, channel not pinned: a copy in another public channel (C) and in a private channel (H).
+- **Later iterations** (`--iterate2`, `--iterate3`, `--rebuild-unique`): the traps the first round lacked, as
+  SMA-<cover>-HP (a copy past a named folder's first page; a private copy of a channel) and SMA-<cover>-HT (a copy
+  whose text lacks the search words, for a named folder whose condition is not text); the easy cases whose seeds broke
+  a unique key, as SMA-<cover>-EU.
 - **Checks:** fdc.check_reference (the query selects exactly the targets; every near-miss claim still holds); no
-  container over 200 records; every target's date the same in UTC and the actor's zone (Los Angeles).
+  container over 200 records; every target's date the same in UTC and the actor's zone (Los Angeles); no row breaks a
+  primary key or unique constraint of the replica's schema.
 Writes cases/<domain>/SMA-*.json, placements.json, build.json (per cover: what was built, and why not).
 """
 from __future__ import annotations
 
 import copy
 import json
+import re
 import sys
 from collections import Counter
 from datetime import datetime, timedelta, timezone
@@ -102,8 +108,11 @@ class Builder:
             over.update(ts=nk, created_at=iso_z(when))
         elif self.table == "issues":
             team = next(t for t in self.seed["teams"] if t["id"] == over.get("teamId", row["teamId"]))
-            n = 1 + max([int(x.get("number") or 0) for x in self.seed["issues"] if x.get("teamId") == team["id"]]
-                        or [0])
+            taken = [int(x.get("number") or 0) for x in self.seed["issues"] if x.get("teamId") == team["id"]] + \
+                [int(str(x["identifier"]).rsplit("-", 1)[1]) for x in self.seed["issues"]  # seeds without numbers
+                 if str(x.get("identifier") or "").rsplit("-", 1)[0] == team["key"]
+                 and str(x["identifier"]).rsplit("-", 1)[1].isdigit()]
+            n = 1 + max(taken or [0])
             nk = f"{self.key}-sm{i}-{code.lower()}"
             over.update(identifier=f"{team['key']}-{n}", number=float(n), sortOrder=float(n),
                         branchName=f"{team['key'].lower()}-{n}", url=f"https://linear.app/northwind/issue/"
@@ -111,10 +120,20 @@ class Builder:
         elif self.table == "calendar_events":
             nk = f"{self.key}_sm{i}{code.lower()}"
             over.update(ical_uid=f"{nk}@northwind.example", etag=f'"etag_{nk}"')
+        elif self.table == "channels":  # a channel name is unique in its team (the writer's text may be taken)
+            names = {c["channel_name"] for c in self.seed["channels"] if c.get("team_id") == row.get("team_id")}
+            base, k = over["channel_name"], 2
+            while over["channel_name"] in names:
+                over["channel_name"], k = f"{base}-{k}", k + 1
         nk = str(seedkit.clone(self.seed, self.domain, self.table, self.key, over, new_key=nk))
         selected = {str(x) for x in fdc.evaluate(self.seed, self.ref["query"])}
         if nk not in selected and self.field in over:  # the variant broke a condition: keep the original text
             original = (seedkit.find_row(self.case, self.table, self.key) or {}).get(self.field)
+            if self.table == "channels":  # unique in the team: the original name with a number
+                names, k = {c["channel_name"] for c in self.seed["channels"]}, 2
+                while f"{original}-{k}" in names:
+                    k += 1
+                original = f"{original}-{k}"
             seedkit.find_row(self.case, self.table, nk)[self.field] = original
             self.notes.append(f"variant {i} failed the query; the copy keeps the original text")
         self.targets.append(nk)
@@ -297,6 +316,28 @@ class Builder:
         self.place.pop(nk)
         return []
 
+    def trap_box_search_miss(self):
+        """Iteration 3: for a request whose condition is not in the file's text (an owner, a comment, a task), a copy
+        whose name and description lack the search words, so a search narrows it away (the filter behaviour). Not for
+        requests that filter on the name or description: there the search words express the condition."""
+        if "S" in self.drop or not self.words:
+            return []
+        q = self.ref["query"]
+        if any(f.get("field") in ("name", "description") for f in q.get("filters") or []):
+            return []
+        row = seedkit.find_row(self.case, "box_files", self.key)
+        stem, dot, ext = str(row["name"]).rpartition(".")
+        for w in self.words.split():
+            stem = re.sub(re.escape(w), "", stem, flags=re.I)
+        stem = re.sub(r"\s+", " ", stem).strip(" -_")
+        stem = f"{stem} (scan)" if stem else "Scan 0417"
+        nk = self.copy_target(2, "S", name=f"{stem}.{ext}" if dot else stem, description=None)
+        text = f"{seedkit.find_row(self.case, 'box_files', nk)['name']}".lower()
+        if any(w.lower() in text for w in self.words.split()):
+            self.notes.append("search-miss copy impossible: its name keeps a search word")
+            return []
+        return ["a copy whose name and description lack the search words"]
+
     def trap_slack_private(self):
         """For a request about channels that does not name their visibility: a copy of the channel as a private
         channel the actor belongs to, behind conversations.list's default (public channels only)."""
@@ -317,6 +358,9 @@ class Builder:
         _, errors = fdc.check_reference(self.seed, self.ref)
         if errors:
             problems.append(f"fdc: {errors[:3]}")
+        clashes = seedkit.unique_violations(self.seed, self.domain)
+        if clashes:
+            problems.append(f"the seed breaks a unique key of the replica's schema: {clashes[:3]}")
         col = CONTAINER.get(self.table)
         if col:
             sizes = Counter(str(r.get(col)) for r in self.seed[self.table])
@@ -345,7 +389,8 @@ def finish(b: Builder, tier, answer, cover, suffix=""):
     return case
 
 
-def build_one(cover, answer, tiers=("E", "H"), suffix="", drop=(), no_variants=False, second=False):
+def build_one(cover, answer, tiers=("E", "H"), suffix="", drop=(), no_variants=False, second=False,
+              third=False):
     out = {"cover": cover["case_id"], "domain": cover["domain"], "table": cover["references"][0]["query"]["table"],
            "pinned": pinned(cover["references"][0]["query"]), "cases": {}}
     for tier in tiers:
@@ -362,6 +407,8 @@ def build_one(cover, answer, tiers=("E", "H"), suffix="", drop=(), no_variants=F
                     traps = b.trap_calendar()
                 elif kind == "box_files" and not out["pinned"]:
                     traps = b.trap_box()
+                elif kind == "box_files" and third:
+                    traps = b.trap_box_search_miss()
                 elif kind == "box_files":
                     traps = [t for t in [b.box_crowd()] if t]
                     traps = [f"a search crowd failing {traps[0]}"] if traps else []
@@ -488,8 +535,58 @@ def iterate2():
     (HERE / "placements.json").write_text(json.dumps(placements, indent=1) + "\n")
 
 
+def rebuild_unique():
+    """Four first-build easy cases the reader agreed on failed to install in runs/p3: their seeds broke a unique key
+    of the replica's schema (unique_check.py). Rebuilt with the fixed copies as SMA-<cover>-EU. (AP2-SLK-05's easy
+    case broke one too, but the reader had refused it and its repair.)"""
+    answers = json.loads((HERE / "writer.json").read_text())
+    report = json.loads((HERE / "build.json").read_text())
+    placements = json.loads((HERE / "placements.json").read_text())
+    by_id = {c["case_id"]: c for c in covers()}
+    for cid in ("AP-SLK-02", "G4-LIN-01", "G4-SLK-07", "SLK-24"):
+        r = build_one(by_id[cid], answers[cid], tiers=("E",), suffix="U")
+        c = r["cases"].get("E") or {}
+        report[f"{cid}:EU"] = {**r, "repair_of": f"SMA-{cid}-E", "why": "the seed broke a unique key"}
+        if c.get("built"):
+            placements[c["id"]] = c["placements"]
+        print(cid, c.get("id"), "built" if c.get("built") else c.get("problems") or c.get("why"))
+    (HERE / "build.json").write_text(json.dumps(report, indent=1, default=str) + "\n")
+    (HERE / "placements.json").write_text(json.dumps(placements, indent=1) + "\n")
+
+
+def iterate3():
+    """Iteration 3: iteration 2's page trap for Box files in a named folder is impractical when its fillers fail a
+    condition the listing does not show (the thorough route then reads each of 100 files, and 7 of 18 trials timed
+    out). For those requests the condition is not in the file's text, so a search narrows with words that do not
+    express it: SMA-<cover>-HT places a copy whose name and description lack the search words, and no fillers."""
+    answers = json.loads((HERE / "writer.json").read_text())
+    verdicts = json.loads((HERE / "reader.json").read_text())
+    report = json.loads((HERE / "build.json").read_text())
+    placements = json.loads((HERE / "placements.json").read_text())
+    for cover in covers():
+        cid, q = cover["case_id"], cover["references"][0]["query"]
+        easy = ((report.get(cid) or {}).get("cases") or {}).get("E") or {}
+        if not (easy.get("built") and (verdicts.get(easy.get("id")) or {}).get("agreed")):
+            continue
+        if not (q["table"] == "box_files" and pinned(q)):
+            continue
+        r = build_one(cover, answers[cid], tiers=("H",), suffix="T", third=True)
+        c = r["cases"].get("H") or {}
+        report[f"{cid}:HT"] = {**r, "iteration": 3}
+        if c.get("built"):
+            placements[c["id"]] = c["placements"]
+        print(f"{cid:12} -> {c.get('id') or '-'} built={c.get('built')} traps={c.get('traps')} "
+              f"{c.get('why') or c.get('problems') or ''} {c.get('notes') or ''}"[:400])
+    (HERE / "build.json").write_text(json.dumps(report, indent=1, default=str) + "\n")
+    (HERE / "placements.json").write_text(json.dumps(placements, indent=1) + "\n")
+
+
 if __name__ == "__main__":
-    if "--iterate2" in sys.argv:
+    if "--iterate3" in sys.argv:
+        iterate3()
+    elif "--rebuild-unique" in sys.argv:
+        rebuild_unique()
+    elif "--iterate2" in sys.argv:
         iterate2()
     elif "--repair" in sys.argv or "--repair2" in sys.argv:
         repair("--repair2" in sys.argv)

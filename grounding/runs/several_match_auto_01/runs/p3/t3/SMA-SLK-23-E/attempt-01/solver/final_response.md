@@ -1,0 +1,1 @@
+Set the topic "Renewals due Oct 31" on all private channels whose purpose is coordinating vendor contracts: legal-deals (C_LEGALOPS-sm172), legal-ops (C_LEGALOPS), and vendor-ops (C_LEGALOPS-sm171). All updates returned ok:true.

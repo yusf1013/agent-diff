@@ -85,12 +85,54 @@ def _copy_dependents(seed, domain, table, key, nk, depth, root):
         new_dep_key = None
         if len(pkc) == 1 and pkc[0] in r and pkc[0] not in cols:
             new_dep_key = _new_key(domain, t, seed[t], r.get(pkc[0]), _counter["n"])
+            if t == "messages" and new_dep_key == r.get(pkc[0]):  # a Slack ts key: same second, a fresh sequence
+                _counter["n"] += 1
+                new_dep_key = f"{str(new_dep_key).split('.')[0]}.{900000 + _counter['n']:06d}"
+                if "ts" in dep:
+                    dep["ts"] = new_dep_key
             dep[pkc[0]] = new_dep_key
+        if t == "issues" and dep.get("identifier"):  # a Linear identifier is unique: the team's next number
+            prefix = str(dep["identifier"]).rsplit("-", 1)[0]
+            used = [int(str(x.get("identifier")).rsplit("-", 1)[1]) for x in seed[t]
+                    if str(x.get("identifier") or "").rsplit("-", 1)[0] == prefix
+                    and str(x.get("identifier")).rsplit("-", 1)[1].isdigit()]
+            n = 1 + max(used or [0])
+            dep.update(identifier=f"{prefix}-{n}", number=float(n))
         for c in cols:
             dep[c] = nk
         seed[t].append(dep)
         if depth > 1 and new_dep_key is not None:
             _copy_dependents(seed, domain, t, str(r.get(pkc[0])), new_dep_key, depth - 1, root)
+
+
+def unique_violations(seed, domain) -> list[str]:
+    """Rows that break a primary key or a unique constraint or index of the replica's schema (the fdc checks do not
+    see these; the seed would fail to install)."""
+    from sqlalchemy import UniqueConstraint
+
+    from grounding.runs.autogen_01.kit.seedops import _metadata
+    tables = {t.name: t for t in _metadata(domain).tables.values()}
+    out = []
+    for name, rows in seed.items():
+        table = tables.get(name)
+        if table is None or not isinstance(rows, list):
+            continue
+        keys = {tuple(c.name for c in table.primary_key.columns)}
+        keys |= {tuple(c.name for c in con.columns) for con in table.constraints if isinstance(con, UniqueConstraint)}
+        keys |= {tuple(c.name for c in ix.columns) for ix in table.indexes if ix.unique}
+        keys |= {(c.name,) for c in table.columns if c.unique}
+        for k in keys:
+            if not k:
+                continue
+            seen = {}
+            for r in rows:
+                if all(r.get(c) is not None for c in k):
+                    v = tuple(str(r.get(c)) for c in k)
+                    seen[v] = seen.get(v, 0) + 1
+            dups = [v for v, n in seen.items() if n > 1]
+            if dups:
+                out.append(f"{name} {k}: {dups[:2]}")
+    return out
 
 
 def clone(seed, domain, table, key, overrides=None, new_key=None, follow=True):

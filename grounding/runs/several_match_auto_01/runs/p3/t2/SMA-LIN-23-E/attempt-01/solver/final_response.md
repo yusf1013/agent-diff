@@ -1,0 +1,1 @@
+Reopened all 3 comment threads on WEB-5 that Maya Chen had resolved (c-21, c-21-sm111, c-21-sm112). I identified them by querying the issue's comments with the `resolvingUser` field, found the three threads resolved by Maya Chen, and set their `resolvingUserId` to null via `commentUpdate`. The two threads resolved by Dana Whitfield (c-22, c-25) were left untouched.

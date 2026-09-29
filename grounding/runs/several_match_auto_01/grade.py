@@ -27,6 +27,11 @@ def main(runs):
         for att in sorted(Path(run).glob("t*/SMA-*/attempt-*")):
             if att != sorted(att.parent.glob("attempt-*"))[-1] or not (att / "environment/diff_run.json").exists():
                 continue
+            # Each case is graded from its own run: first builds from p3, repairs from p3r (and p3u), iteration 2
+            # from p3c. p3's retry pass reloaded the cases dir and ran the later cases too; those trials are kept
+            # on disk and not counted, so every case has its three trials.
+            if Path(run).name == "p3" and att.parent.name.endswith(("R", "HP", "EU", "HS")):
+                continue
             case = json.loads((att / "case.json").read_text())
             cid = case["case_id"]
             ref = case["references"][0]

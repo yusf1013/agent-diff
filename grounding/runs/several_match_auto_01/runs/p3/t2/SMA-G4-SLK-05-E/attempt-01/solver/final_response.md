@@ -1,0 +1,4 @@
+Added the "eyes" reaction to all 3 of Maya Chen's messages about the deploy checklist in the DM channel with her (D_MAYA). The messages were:
+1. "Deploy checklist for Monday is set: config, flags, rollback plan." (ts: 1789992420.000702)
+2. "Deploy checklist for Thursday is ready: env, flags, rollback." (ts: 1789992360.000701)
+3. "Deploy checklist for Friday is ready: env, flags, rollback plan." (ts: 1789992300.000001)
