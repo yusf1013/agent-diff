@@ -1,0 +1,1 @@
+No channel matches. There's exactly one non-archived channel with "incident" in its name — **#incident-comms** — but its topic is "Live incident chatter and status updates," which doesn't mention postmortems. So I haven't sent an invite to Aisha Khan (U_AISHA). Let me know if you'd like her added to incident-comms anyway, or if the channel lives in another workspace.

@@ -1,0 +1,1 @@
+Done ✅ — archived **#team-gamma** (`C_GAMMA`), the only channel containing both the "Deploy checklist for Friday release" and "Rollback plan for Friday release" messages. (team-alpha had the deploy checklist only, team-beta had the rollback plan only.)

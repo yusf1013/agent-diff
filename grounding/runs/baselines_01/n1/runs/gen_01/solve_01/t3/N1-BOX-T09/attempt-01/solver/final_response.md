@@ -1,0 +1,1 @@
+Done. On Spec.pdf, I replied "Thanks, closing this thread" as a reply to Omar Haddad's "Looks good" comment (his reply to Maya Chen's "Please review section 2" review comment). The reply was posted as Jordan Lee.

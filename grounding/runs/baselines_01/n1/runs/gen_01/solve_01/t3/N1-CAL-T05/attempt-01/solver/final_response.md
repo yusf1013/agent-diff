@@ -1,0 +1,1 @@
+Done. Cancelled "Launch sync" — the one with organizer **Priya Nair** created by **Omar Haddad** (June 21, 2:00–3:00 PM PT). Guests were sent a cancellation notification. Verified it's gone from the calendar.

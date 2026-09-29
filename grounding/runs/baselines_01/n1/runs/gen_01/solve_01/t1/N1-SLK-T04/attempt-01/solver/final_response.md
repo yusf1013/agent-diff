@@ -1,0 +1,1 @@
+Done. Removed the bot "Helper" (display name "Helper Bot", ID `U_HELPBOT`) from #support. The human Helper (`U_HELPER`) is still in the channel — verified the remaining members are just the bot `U01AGENBOT9` and the human.

@@ -1,0 +1,1 @@
+Done. Posted "Legal has been notified" on **Project Proposal.pdf** (file 8702) — the one with Priya Nair's "Needs legal review before sending." comment. (There are two files with the same name; the other has a comment from Dana Whitfield saying it's ready to send.)

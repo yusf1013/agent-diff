@@ -1,0 +1,1 @@
+Done — added "Escalating to on-call." to **WEB-1 "Checkout fails"** (the one labeled both `bug` and `urgent`). Note there were 3 other issues with the same title (WEB-2 has only `bug`, WEB-3 only `urgent`, WEB-4 no labels), so if you meant one of those instead, let me know.

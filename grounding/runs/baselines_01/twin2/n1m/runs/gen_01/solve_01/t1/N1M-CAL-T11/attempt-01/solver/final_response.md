@@ -1,0 +1,1 @@
+Done — deleted the hidden calendar you'd nicknamed "Weekend trips" (`cal-a@northwind.example`). The other two "Weekend trips" calendars (both visible in your list) are untouched. This was a hard delete, so its events are gone too — no undo available.

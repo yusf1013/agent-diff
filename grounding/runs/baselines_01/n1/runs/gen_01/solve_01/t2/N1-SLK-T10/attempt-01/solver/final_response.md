@@ -1,0 +1,3 @@
+I looked into it — Jordan can't be invited yet. The #events2 channel exists (ID `C_EV2`), but there's no user with the email **jordan.lee@example.com** in this Slack workspace. I checked the full member list (8 users: Aisha, Diego, Leo, Maya, Nina, Omar, Priya, and the bot) and there's no match — the `conversations.invite` API only accepts existing user IDs, not emails.
+
+To move forward, Jordan would need to be added to the workspace first (e.g., via the Slack admin console or an "admin users invite" endpoint, which isn't available in the API set I have access to). Once they're a member, I can invite them to #events2 immediately. Want me to check back after they join?

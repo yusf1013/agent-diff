@@ -1,0 +1,1 @@
+Done ✅ — added "Got it, thanks." to **Data Export.csv** (file 8302) in Exports, the one uploaded by Sam Rivera. (There was another "Data Export.csv" in that folder uploaded by Maya Chen — I left that one alone.)

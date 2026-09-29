@@ -1,0 +1,1 @@
+Done. Added "Nice work." to **Design Mockup.png** (file 8501) in the Design folder — that's the one with the "Polish the mockup" review task assigned to Maya Chen. (Heads up: there's a second file with the same name whose task went to Maya *Lopez* — left that one alone.)

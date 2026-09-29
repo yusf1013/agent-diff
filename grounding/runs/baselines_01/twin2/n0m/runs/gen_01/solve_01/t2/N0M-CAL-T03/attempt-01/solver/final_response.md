@@ -1,0 +1,1 @@
+Done. There were two "Design sync" events on your calendar — I renamed the one organized by Omar Haddad (Thu Jun 21, 2:00–3:00 PM PT) to **Design sync (rescheduled)**. The other design sync (Priya Nair, 10 AM) is untouched.

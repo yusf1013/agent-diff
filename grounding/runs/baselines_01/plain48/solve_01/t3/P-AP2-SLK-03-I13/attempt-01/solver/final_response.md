@@ -1,0 +1,1 @@
+There isn't one. I checked #incidents — there's exactly one payment gateway outage message, posted by Diego Alvarez himself ("Payment gateway outage — I'm starting the rollback now"), but the fire reaction on it is from Omar Haddad, not Diego. Since Diego didn't react to any payment gateway outage message with fire, I didn't add the rocket.

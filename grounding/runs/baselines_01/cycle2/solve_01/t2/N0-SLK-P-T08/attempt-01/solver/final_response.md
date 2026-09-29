@@ -1,0 +1,1 @@
+Nope — I checked #support and there's no thread about checkout errors. The only recent message there is "Refund queue is clear." (from Omar), so I didn't post the reply. If the thread is in a different channel or under different wording, tell me and I'll dig again.

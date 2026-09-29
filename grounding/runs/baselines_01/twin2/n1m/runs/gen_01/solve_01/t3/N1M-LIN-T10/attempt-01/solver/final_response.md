@@ -1,0 +1,1 @@
+Done. Added "Assets verified" to **DOC-1** ("Prepare launch checklist") — that's the issue with the "Launch checklist" attachment uploaded by Maya Chen from GitHub (there was a similarly-titled Slack attachment on DOC-2 and a GitHub one on DOC-3 by Priya, so I filtered on source + uploader).

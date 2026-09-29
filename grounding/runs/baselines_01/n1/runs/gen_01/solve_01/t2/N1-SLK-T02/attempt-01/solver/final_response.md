@@ -1,0 +1,1 @@
+Done. Both #proposals messages say "Q3 budget proposal," but I reacted 👀 to the one whose block says "Approve the Q3 budget" (ts 1789992000.000001) — the other one ("Q3 budget background figures") was left alone.

@@ -1,0 +1,1 @@
+Done. I found **Q3 budget variance.pdf** in the Budget Reviews folder — it has exactly that review task (created by Leo Park, assigned to Maya Chen, resolution state "approved") — and tagged it with **q3-signoff**. The file now shows `tags: ["q3-signoff"]`.

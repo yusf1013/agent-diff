@@ -1,0 +1,1 @@
+Done. There were three "Launch sync" events — I matched the one created by Omar Haddad with Priya Nair as organizer (2:00–3:00 PM, June 21) and cancelled it. Guest notifications were sent. The other two (Priya's own event, and Omar's separately organized one) were left untouched.

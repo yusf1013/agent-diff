@@ -1,0 +1,1 @@
+Cancelled. There were two "Sprint demo" events Friday 3:00–4:00 PM PDT — I deleted the one in **Room B** (attendees notified) and left the Room A one untouched, since it looked like a separate event. If you wanted the Room A one gone too, say the word.

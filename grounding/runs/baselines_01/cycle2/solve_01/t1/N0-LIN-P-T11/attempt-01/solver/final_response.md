@@ -1,0 +1,1 @@
+There's no iOS team in Linear — the only team is **Android** (AND). Priya Nair does exist in the org (priya.nair@northwind.example), so if you want, I can create the iOS team and add her, or add her to Android instead.

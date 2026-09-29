@@ -1,0 +1,1 @@
+I checked your calendar list — there's no "Product Team" calendar there. The only calendar you have on your list is **Offsite Planning**. Nothing was changed; if you'd like to rename that one instead (or if the Product Team calendar lives under a different account), just say the word.

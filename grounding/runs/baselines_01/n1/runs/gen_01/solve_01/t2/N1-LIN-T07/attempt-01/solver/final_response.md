@@ -1,0 +1,1 @@
+Done — added the comment **"Profiling attached."** to WEB-1 ("Search is slow"), the Apollo project issue assigned to Maya Chen. There were two other issues with the same title, but neither matched both criteria (Zephyr/Maya and Apollo/Leo), so I went with the unambiguous one.

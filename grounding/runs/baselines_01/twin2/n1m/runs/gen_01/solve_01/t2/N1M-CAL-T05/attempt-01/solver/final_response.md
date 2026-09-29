@@ -1,0 +1,1 @@
+Cancelled. The "Lunch with Sam" that was showing as free (transparent) on Jun 20, 12–1pm PDT has been deleted, and Sam has been notified of the cancellation. The busy one at the same time is untouched — let me know if that was the one you actually wanted gone.

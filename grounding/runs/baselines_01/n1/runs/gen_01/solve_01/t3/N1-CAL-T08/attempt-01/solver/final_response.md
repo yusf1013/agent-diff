@@ -1,0 +1,1 @@
+Done — updated the description of your "Regional schedule" calendar (regional-tokyo@northwind.example, Asia/Tokyo) to **"Regional marketing schedule"**. There's another calendar with the same name (regional-la) in LA time — I left that one untouched. Let me know if you'd like it changed too.

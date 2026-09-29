@@ -1,0 +1,1 @@
+No channel qualifies. The workspace owner (Nina Torres) belongs to exactly one channel — `#delta-ops` — and it has 5 members (agentbot, nina.torres, diego, leo, omar), not four. So there was nothing to archive; I left it alone.

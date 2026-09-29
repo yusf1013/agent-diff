@@ -1,0 +1,1 @@
+I checked the Engineering calendar (eng@northwind.example) — it's completely empty, so there's no sprint planning event to rename. Let me know if it's on a different calendar or under a different name.

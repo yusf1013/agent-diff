@@ -1,0 +1,1 @@
+Done. Added the comment **"Release train stabilized"** to **WEB-1 (Stabilize release train)** in the Web team's Cycle 3, which ends 2026-12-01. (Note: there's a duplicate issue, WEB-2, in Cycle 4 ending 2026-12-08 — I left that one untouched.)

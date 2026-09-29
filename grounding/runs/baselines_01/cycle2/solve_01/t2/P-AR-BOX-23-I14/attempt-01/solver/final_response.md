@@ -1,0 +1,1 @@
+Done — tagged **Mobile Redesign Spec Addendum.pdf** with `design-review`. It was the only match: PDF in Product Specs, description mentions the mobile redesign, 1.8 MB (under 2 MB), and exactly 3 top-level comments (no replies).

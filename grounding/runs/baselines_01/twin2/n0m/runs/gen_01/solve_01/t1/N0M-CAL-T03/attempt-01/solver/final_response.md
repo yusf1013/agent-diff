@@ -1,0 +1,1 @@
+Renamed ✅ — the Design sync organized by Omar Haddad (Thu Jun 21, 2:00–3:00 PM) is now "Design sync (rescheduled)". Heads up: there's a separate Design sync that same morning organized by Priya Nair, which I left untouched.

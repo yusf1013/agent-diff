@@ -1,0 +1,1 @@
+Done ✅ — added a checkmark reaction (`check`) to Priya's "Q3 roadmap is posted in the canvas." message in #general. Verified it's live on the message (that's the checkmark emoji this workspace's API supports — standard Slack names like `white_check_mark` aren't available here).

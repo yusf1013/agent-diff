@@ -1,0 +1,1 @@
+No Word version to delete — I searched your Box account for "Proposal" and the only match is `Proposal.pdf` (in the Proposals folder). There's no `Proposal.docx` anywhere, so there's nothing to remove. The PDF is untouched.

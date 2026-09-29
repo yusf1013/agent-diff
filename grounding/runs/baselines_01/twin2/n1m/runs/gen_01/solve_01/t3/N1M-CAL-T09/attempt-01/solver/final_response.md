@@ -1,0 +1,1 @@
+Done — deleted the Tokyo-timezone "APAC sync" calendar (`cal-b@northwind.example`). The other "APAC sync" (Los Angeles timezone) is untouched. Note this permanently removes the calendar and its events, not just from your list.

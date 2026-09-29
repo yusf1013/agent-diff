@@ -1,0 +1,1 @@
+Done. Deleted the "Sprint demo" event from June 22 (3–4 PM PT) that Omar Haddad created and Priya Nair organized, and sent cancellation notices to external guests. Verified the other two "Sprint demo" events (the one Priya created, and the one Omar both created and organized) are untouched.

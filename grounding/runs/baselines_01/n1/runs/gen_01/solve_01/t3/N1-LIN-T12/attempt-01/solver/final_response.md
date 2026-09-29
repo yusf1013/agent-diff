@@ -1,0 +1,1 @@
+Added the comment "Do this today." to **WEB-1 "Rotate database credentials"** — the one that's overdue (due 2026-08-15). There's also a WEB-2 with the same title, but that one isn't due until 2026-12-15, so I left it alone.

@@ -1,0 +1,1 @@
+No such issue on the Web team — the Web team actually has no open issues at all. I did find "Push notifications delayed," but it's **MOB-1** on the **Mobile** team (state: Todo), not Web. I didn't comment on it since it's a different team. Want me to comment on MOB-1 instead?

@@ -1,0 +1,1 @@
+Done — added "Profiling attached." to **Search is slow (WEB-1)** in the Apollo project, assigned to Maya Chen. There were two issues with that title, so I confirmed the assignee match before posting. Verified the comment is live on the issue.

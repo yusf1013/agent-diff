@@ -1,0 +1,1 @@
+Couldn't find one. I checked all the active private channels in the workspace (there are just two: `#budget-planning` and `#hr-general`), and neither has an onboarding-related purpose — one is for quarterly budget planning, the other for general HR announcements. So there's no channel to archive. Let me know if you want me to dig into archived channels or check anything else.

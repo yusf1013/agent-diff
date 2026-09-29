@@ -1,0 +1,1 @@
+Done. There were two "Project Proposal.pdf" files in Box — I checked comments on both to identify the one Priya flagged (id 8702, with her comment "Needs legal review before sending.") and posted "Legal has been notified" on that file (comment id 798021603).

@@ -1,0 +1,1 @@
+There's no API-2 in your Linear workspace — the API team only has API-1 ("Webhook delivery delayed") and API-3 ("Webhook retries exhausted"), and I checked archived issues too. Nothing to update. Let me know if one of those was the issue you meant and I'll set it to urgent.

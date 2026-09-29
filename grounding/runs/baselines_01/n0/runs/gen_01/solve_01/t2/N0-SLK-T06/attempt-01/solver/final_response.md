@@ -1,0 +1,1 @@
+Done ✅ Added a check-mark reaction to Priya's "Q3 roadmap is posted in the canvas." message in #general. (There was a similar message from Diego in the channel — I reacted to Priya's only. A stray thumbsup from a test was cleaned up.)

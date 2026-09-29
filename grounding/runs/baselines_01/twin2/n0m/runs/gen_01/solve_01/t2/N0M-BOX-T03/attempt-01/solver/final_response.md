@@ -1,0 +1,1 @@
+Done — added the comment "Archived for reference" to **Leadership Sync.pdf** (id 8311), the file described as "Contains the Q3 roadmap decision from leadership." (The other match, Q3 Roadmap.pdf, is just a superseded draft outline, so I left that one alone.) Comment id: 246523002.

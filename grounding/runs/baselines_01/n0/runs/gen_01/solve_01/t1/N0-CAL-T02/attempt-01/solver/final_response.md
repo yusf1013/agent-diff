@@ -1,0 +1,1 @@
+Done. I found two "1:1 with Sam" events on Wednesday — the morning one (10:00am, Room A) and the afternoon one (3:00pm–3:30pm, which was at Cafe). I updated the afternoon one's location to **Room B**.

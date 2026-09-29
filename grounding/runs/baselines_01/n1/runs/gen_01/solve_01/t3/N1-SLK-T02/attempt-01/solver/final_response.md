@@ -1,0 +1,1 @@
+Done 👀 — I found both 'Q3 budget proposal' messages from Diego in #proposals, and added the eyes reaction to the one whose block says "Approve the Q3 budget" (the other one had a "Q3 budget background figures" block, so I left it alone).

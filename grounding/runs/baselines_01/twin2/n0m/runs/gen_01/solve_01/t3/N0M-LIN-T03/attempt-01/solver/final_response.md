@@ -1,0 +1,1 @@
+Done — **SUP-1** "Login fails for invited guests" (the one labeled **Billing**) is now set to **Urgent** priority in Linear. (There was a duplicate SUP-2 with the same title but an SSO label — left that one alone.)

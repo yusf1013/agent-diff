@@ -1,0 +1,1 @@
+Done — "Onboarding Guide.pdf" (the 2026 edition, in your Reading folder) is now in your Box Favorites. I made sure to pick the right one: there's a second file with the same name that's the superseded 2023 version, so I matched on the "Current 2026 onboarding guide" description.

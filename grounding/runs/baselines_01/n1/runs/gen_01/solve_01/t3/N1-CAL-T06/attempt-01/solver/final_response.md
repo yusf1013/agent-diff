@@ -1,0 +1,1 @@
+Cancelled. The "Design review" (June 21, 10:00 AM PT) where Omar Haddad accepted and Priya Nair declined has been deleted, with cancellation notifications sent to attendees. The other same-time "Design review" — where Priya accepted — was left untouched.

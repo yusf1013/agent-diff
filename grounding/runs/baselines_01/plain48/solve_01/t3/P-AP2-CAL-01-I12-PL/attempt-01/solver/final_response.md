@@ -1,0 +1,1 @@
+No 'Product Team' calendar in your Google Calendar. The only calendar you have is **"Offsite Planning"** (id: `offsite_planning`) — and it's the one currently checked. Nothing was renamed. If you'd like, I can rename "Offsite Planning" to "Eng Product Sync" instead.

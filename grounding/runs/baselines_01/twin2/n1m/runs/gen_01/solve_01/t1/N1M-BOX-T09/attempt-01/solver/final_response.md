@@ -1,0 +1,1 @@
+Done — replied "Noted, thanks." to Dana Whitfield's "Agreed, moving forward." reply (comment 89012) on Spec.pdf. Note there was a second top-level comment with the same text by Leo Park; I targeted the one that's actually a reply to another comment, per your instruction.

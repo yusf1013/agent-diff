@@ -1,0 +1,1 @@
+Done ✅ — the "Regional schedule" calendar on Tokyo time (`regional-tokyo@northwind.example`) now has its description set to **"Regional marketing schedule"**. The LA version of that calendar was left untouched.
