@@ -6,8 +6,11 @@ Oracles:
 - **assertions:** the test's own AgentDiff assertions (assertions.json, from assertions.py);
 - **assertions_faithful:** the same, evaluated as our format document described them (assertions.faithful.json, from
   `assertions.py --faithful`);
-- **assertions_corrected:** assertions_faithful with the tests in harness_flaws.json (broken by our replica or our
-  format document, not by the baseline) counted apart;
+- **assertions_twin:** the twins' assertions evaluated as their corrected format document describes them
+  (assertions.twin.json, from `assertions.py --twin`);
+- **assertions_corrected:** assertions_twin (the twins) or assertions_faithful (round 1), with the tests in
+  harness_flaws.json (broken by our replica or our format document, not by the baseline) counted apart: the row to
+  compare across rounds;
 - **plain_expected:** a plain LLM judge given the test author's expected outcome (judges.py);
 - **j0:** judge_baselines_01's J0 (judges.py).
 
@@ -43,15 +46,18 @@ def main():
         for test in (k for k in json.loads((gen / "runtime_flaws.json").read_text()) if not k.startswith("_")):
             review.setdefault(test, {})["valid"] = False
     oracles = {}
-    for name, file in (("assertions", "assertions.json"), ("assertions_faithful", "assertions.faithful.json")):
+    for name, file in (("assertions", "assertions.json"), ("assertions_faithful", "assertions.faithful.json"),
+                       ("assertions_twin", "assertions.twin.json")):
         if (gen / file).exists():
             oracles[name] = {f"solve_01/{k}": (not v["passed"]) if v.get("passed") is not None else None
                              for k, v in json.loads((gen / file).read_text()).items()}
     harness = {}
     if (gen / "harness_flaws.json").exists():
         harness = {k: v for k, v in json.loads((gen / "harness_flaws.json").read_text()).items() if not k.startswith("_")}
-    if "assertions_faithful" in oracles:
-        oracles["assertions_corrected"] = oracles["assertions_faithful"]
+    for source in ("assertions_twin", "assertions_faithful"):
+        if source in oracles:
+            oracles["assertions_corrected"] = oracles[source]
+            break
     for name in ("plain_expected", "j0"):
         if (gen / f"judged_{name}").exists():
             oracles[name] = verdicts(gen / f"judged_{name}")

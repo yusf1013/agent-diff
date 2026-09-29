@@ -163,9 +163,9 @@ How the results will be read:
   |---|---:|---:|---:|---:|
   | Right record present (incl. sets) | 39 | 44 | 40 | 44 |
   | No right record, absence permitted (our probe form) | 0 | 0 | 0 | 0 |
-  | Near misses through a designated substitute | 9 of 48 | 18 of 53 | 21 of 58 | 20 of 66 |
-  | Facts exercised | 49 | 55 | 67 | 77 |
-  | Facts exercised properly (valid tests) | 7 | 13 | 17 | 14 |
+  | Near misses through a designated substitute | 9 of 48 | 17 of 53 | 21 of 58 | 19 of 66 |
+  | Facts exercised | 49 | 55 | 67 | 76 |
+  | Facts exercised properly (valid tests) | 7 | 12 | 17 | 13 |
   | Distinct deciding details; tests only reusing one | 32; 20 | 38; 17 | 46; 9 | 51; 13 |
   | Invalid | 3 | 6 | 7 | 7 |
 
@@ -179,3 +179,18 @@ How the results will be read:
     not flagged N1's (the scored measure is unaffected).
   - N0M-LIN-T05's active cycle ended on 2026-09-14 (Linear runs on the real clock): a quality note, not a flaw,
     after the advisor's reading (no reading picks the past cycle).
+- **Two credits withdrawn before any run** (advisor, precision-first): N0M-LIN-T08's competitor has "Login" in its
+  title, but so does every issue, so it lures toward none (F0); N1M-BOX-T08's split is of a binding the catalog does
+  not name (two assignees on one task), recorded outside the catalog. The table above has the final counts.
+- **Offline check:** all 96 twin assertion specs compile under `--twin`, and an empty `where` and an `exists` check
+  mean "any row" (tested on a synthetic diff).
+- **The structural predictions, scored before any trial** ([twin2/README.md](twin2/README.md)):
+  - P2 held: the right record is present in 44 and 44 tests; neither twin wrote our probe form.
+  - P3 missed for N0M: 17 of 53 near misses (32%) go through a designated substitute, against a predicted 25% at
+    most (N0: 19%). "Make the tests challenging" moved Muse toward partial names (F8), neighbouring values (F7) and
+    sibling fields (F1). N1M, 29%, is inside its predicted 25% to 50%. So P1, exposure, is the live question.
+  - P4 half met: N0M uses 38 distinct deciding details (the predicted floor) but 17 tests only reuse one (predicted
+    12 at most). N1M: 51 and 13, near N1's 46 and 9.
+  - P5 missed for both: 6 invalid N0M tests and 7 N1M (predicted 3 and 4 at most), all from Slack's and Calendar's
+    permission rules, pre-seeded memberships and the replica's missing emoji. The "perfect assistant" line did not
+    reach them.
