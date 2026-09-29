@@ -214,3 +214,10 @@ How the results will be read:
   from tests expecting a cancelled event or deleted calendar to disappear, all flagged in the review; 19 N0M trials
   wrote "urgent" on the wrong Linear priority scale, and the assertions caught all 19.
 - `summarize_labels.py` now counts timeouts; `compare.py` includes the twins and the variety measure.
+
+## 2026-09-29 00:50–01:35: the random plain twins designed (plain48/)
+
+- The PI chose 48 random plain twins, 12 per service (2026-09-28). [plain48/](plain48/README.md): the seeded draw
+  (from this worktree's suite, the version cycle 2 used; exclusions from cycle 2, G4-BOX-01, and the lead's current
+  known-defects list on exp/roadmap-02), two replacements by a rule fixed before any twin was built, 48 hand edits
+  (4 reused from cycle 2), and the prediction, written before any run.
