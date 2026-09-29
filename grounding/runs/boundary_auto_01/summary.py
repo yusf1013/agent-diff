@@ -26,6 +26,23 @@ def load(p, default):
     return json.loads(p.read_text()) if p.exists() else default
 
 
+def round2(manual, auto, w2):
+    """Per reworded element: phase 1's hand wording, round 1's display wording, round 2's direct wording."""
+    def tally(verdicts):
+        c = Counter(v.split(":")[0] for v in verdicts if not v.startswith(("void", "review")))
+        return f"{c['pass']} pass, {c['fail']} fail"
+    out, total = {}, {"phase 1": Counter(), "round 1": Counter(), "round 2": Counter()}
+    for eid in sorted({t.split("/")[1].removeprefix("BDA-").removesuffix("-W2") for t in w2}):
+        rows = {"phase 1": [v for k, v in manual.items() if k.split("/")[-1].removeprefix("BD2-") == eid],
+                "round 1": [v["oracle"] for k, v in auto.items() if k.split("/")[1] == f"BDA-{eid}"],
+                "round 2": [v["oracle"] for k, v in w2.items() if k.split("/")[1] == f"BDA-{eid}-W2"]}
+        out[eid] = {k: tally(v) for k, v in rows.items()}
+        for k, v in rows.items():
+            total[k].update(x.split(":")[0] for x in v if not x.startswith(("void", "review")))
+    out["all ten"] = {k: f"{v['pass']} pass, {v['fail']} fail" for k, v in total.items()}
+    return out
+
+
 def main():
     space = {r["id"]: r for r in json.loads((BD2 / "space.json").read_text()) if r["verdict"] == "faithful"}
     writer, reader, specs = load(HERE / "writer.json", {}), load(HERE / "reader.json", {}), load(HERE / "specs.json", {})
@@ -105,6 +122,8 @@ def main():
                 "automated": f"{v['auto']['pass']}/{v['auto']['pass'] + v['auto']['fail']}",
                 "phase 1": f"{v['manual']['pass']}/{v['manual']['pass'] + v['manual']['fail']}"}
             for k, v in sorted(by_kind.items(), key=lambda kv: str(kv[0]))},
+        "round 2 (ten requests reworded from 'Show X as ...' to a direct change; pass/fail per element)":
+            round2(manual, auto, load(HERE / "grades-p3w2.json", {})),
         "judge (a seeded quarter of the trials, read by me; review.py)": {
             "failures in the sample": len(reviewed), "read": sum(1 for v in reviewed if v["verdict"] != "unread"),
             "true positives": sum(1 for v in reviewed if v["verdict"] == "TP"),
