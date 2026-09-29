@@ -254,3 +254,17 @@ How the results will be read:
   - N0M: no failing trial; N1M: 4 trials, 0 facts (3 on a hub item outside the catalog, a file for a folder; 1 plain).
   - No set test failed, and no baseline wrote an underspecified test.
 - Sent to the lead session with the eight comparisons and their files, at its request.
+
+## 2026-09-29: the reply to the lead, checked against the files
+
+- After sending the reply, I checked each of its figures against its file and sent the lead a correction with 5 fixes.
+  - The Muse spend has no "other" part: generation, N0's judges, N1's judges and the plain judge add up to the total,
+    $24.89 at list and $1.78 billed over 814 calls. 41 of the calls failed on the 402 and cost nothing.
+  - Our generation cost per 48 tests is $5.44 ($0.31 billed), not $5.43.
+  - N0M's assertions reported 15 failures on invalid tests, not 18. The other 3 are on N0M-SLK-T07, a harness flaw.
+  - Comparison 8's 178 trials are not only full_02's: 60 are full_02's blind trials and 118 come from the policy
+    stage's looks (125, less 7 unusable).
+  - Judge v2's 92 of 92 leaves out the 2 trials it voided.
+- The same check found an error of mine in [q4/README.md](q4/README.md). Judge v2's row read recall 1.00, and 8 / 8
+  on regular tests. Both voided trials are regular tests, so against the original labels judge v2's recall is 0.98
+  (92 of 94) and 6 / 8 on regular tests. The row is corrected, with a note.

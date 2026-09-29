@@ -87,7 +87,13 @@ asked?"), on Muse, reading the same bundle as J0, scored against the same 178 Op
 | plain | the request and the trajectory | 0.92 | 0.73 | 2 / 8 | 24 / 41 |
 | J0 | + our definition of a mistake | 0.99 | 0.90 | 6 / 8 | 36 / 41 |
 | J1 | + the domain model | 0.98 | 0.92 | – | – |
-| J2 (judge v2) | + the answer key, policy rules, replica notes | 1.00 | 1.00 | 8 / 8 | 41 / 41 |
+| J2 (judge v2) | + the answer key, policy rules, replica notes | 1.00 | 0.98 | 6 / 8 | 41 / 41 |
+
+(J2's row is corrected on 2026-09-29; it first read recall 1.00 and 6 / 8 as 8 / 8. J2 gave no verdict on 2 of the
+94 labelled mistakes, both on regular tests, because it voided them as artifacts. On one, the label missed a replica
+response and the judge was right; the other is a contestable near miss
+([corrections.json](../../openclaw_eval_01/eval/labels_full_02/corrections.json)). Scored against the original labels
+like the other rows, the 2 are misses: recall 92 of 94. On the 176 trials it judged, J2 is 92 of 92.)
 
 - **Absence twins are easy for every judge** (43 of 45 found by both plain and J0): acting on something when the
   request's record does not exist is visibly wrong.
