@@ -33,6 +33,32 @@ READ = {
                             "fails (CommentConnection.nodes): a needed read broke, a mock artifact"},
     "t1/SMA-AP2-LIN-05-H": {"verdict": "TP", "note": "the server error was on issuePriorityValues, which a correct "
                             "answer does not need; the timeout stands"},
+    # A stratified hand-read of the rule's true positives (2026-09-29): decoys acted on, targets missed without a
+    # timeout, timeouts without server errors. `contestable` marks a wording a careful reader could take otherwise.
+    "t3/SMA-AR-LIN-24-E": {"verdict": "TP", "contestable": True, "note": "acted on the issue in the cycle named "
+                           "'Cycle 4' (number 11) and on none of the targets in cycle number 4 ('Sprint Nova'). The "
+                           "cover's reference reads 'Cycle 4' as the number; a reading by name is possible (inherited "
+                           "from the upstream cover AR-LIN-24)"},
+    "t3/SMA-G4-CAL-06-ER": {"verdict": "TP", "contestable": True, "note": "moved the lunch on the calendar titled "
+                            "'Leo Park' (owned by Priya Nair), none on the New York calendar Leo owns. The reference "
+                            "reads 'Leo Park's calendar' as the one he owns; a reading by title is possible (inherited "
+                            "from G4-CAL-06)"},
+    "t3/SMA-CAL-23-H": {"verdict": "TP", "note": "read only the primary calendar, so missed the copies on the other "
+                        "owned calendar (C) and the hidden one (H). It also left out the plain-view copy titled "
+                        "'Architecture review sync' as 'a sync meeting, not an architecture review': that variant "
+                        "title is contestable (the writer's text), so this V miss is not counted as stopping early"},
+    "t1/SMA-G4-BOX-03-E": {"verdict": "TP", "note": "read created_by (the actor) as the uploader and tagged nothing; "
+                           "the uploader field (uploader_display_name) comes back from the replica, and t2 and t3 "
+                           "used it"},
+    "t3/SMA-G4-BOX-01-E": {"verdict": "TP", "note": "misread the request: posted an 'approved for launch' comment on "
+                           "every PDF and tagged them, including near misses whose comment is a reply (8111) or on "
+                           "another file (8112); missed 8115"},
+    "t2/SMA-AR-LIN-23-E": {"verdict": "TP", "note": "a timeout with no server error: 9 turns at 55 s a turn (the "
+                           "self-host was shared with other sessions), spent finding how to reopen a thread; it "
+                           "cleared the resolving fields of one comment, which left it resolved"},
+    "t2/SMA-AP2-LIN-05-E": {"verdict": "TP", "note": "a timeout with no server error, after the work: all three "
+                            "targets got priority 1 (Urgent), then the verifying query ran past the budget (11 turns "
+                            "at 44 s a turn under shared load). A failure by the PI's rule; the state was right"},
 }
 
 

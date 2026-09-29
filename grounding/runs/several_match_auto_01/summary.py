@@ -34,7 +34,8 @@ NOT_COVERED = {
     ("box", "search extension under folder (limit 200)"): "impractical: a crowd over 200 hits",
     ("box", "search words under folder (limit 200)"): "impractical: a crowd over 200 hits",
     ("box", "list named, every page (limit 1000)"): "not lazy for these requests: a copy in a subfolder of the named "
-                                                    "folder is contestable (check 8), so none goes there, and every "
+                                                    "folder is contestable (check 8; the cold reader left it out in "
+                                                    "2 of 2 probes, probe_subfolder.py), so none goes there, and every "
                                                     "page of the named folder is the thorough route",
     ("box-anywhere", "search words (limit 200)"): "impractical: a crowd over 200 hits",
     ("linear", "all issues (first 1000)"): "impractical: over 250 issues in scope",
