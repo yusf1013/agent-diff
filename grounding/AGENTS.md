@@ -6,6 +6,7 @@ This directory contains our grounding research: benchmark coverage (G1), mutatio
 
 Start with [README.md](README.md) for the component map, then the relevant guide. Do not recursively read all protocols, experiment records, or archives.
 
+- **The research goal, planning, or next steps:** read [the PI's notes of 2026-09-29](protocols/brain_dump_2026-09-29.md), then the [roadmap](protocols/roadmap.md).
 - **Cards, task specifications, or coverage annotations:** read [card extraction](protocols/card_extraction.md).
 - **Manual reference labeling:** also read [ground-truth evaluation](protocols/ground_truth_evaluation.md).
 - **Generation changes:** read [generation/README.md](generation/README.md) and the affected agent prompts.
