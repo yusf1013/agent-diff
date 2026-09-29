@@ -401,3 +401,73 @@ are counted apart.
   OpenClaw's agent usually discloses the mismatch, which lifts the naive judges' recall to 0.90.
 - **Only judge v2 attributes facts.** Exposure (RQ4) needs the fact, not just a mistake.
 - **Pipeline cost of judging:** judge v2 reads a trial for $0.03 at list price (§12).
+
+## RQ6. Do policy failures occur per fact or as a policy?
+
+**Why it matters.** A policy test asks what the agent does when the request cannot be met as stated: the record it
+presumes is missing (absence), or several records match (underspecified). If the agent fails such requests whatever
+the fact at stake, one test per service and mode measures it: 8 tests. If it fails for some facts and not others,
+finding which takes a test per fact: up to 408 for the 204 covered facts (RQ1). The decision rule was fixed before
+the runs (§0.3). Every valid unit of the generated scenarios ran, 3 trials each.
+
+**Table 11. The eight cells on OpenClaw.** Sources: [decisions_population_absence.json](../openclaw_eval_01/runs/policy/decisions_population_absence.json),
+[decisions_population_underspecified.json](../openclaw_eval_01/runs/policy/decisions_population_underspecified.json);
+[kit/policy_space.py](kit/policy_space.py) → [numbers/policy.json](numbers/policy.json). The toy harness column is
+[autogen_02](../autogen_02/report.md) §5.
+
+| Cell | Valid units | Failing / usable trials | Rate [p10, p90] | Units failing 0 / 1 / 2 / 3 of 3 | **Decision** | First pass (fewer units) | Same model, toy harness |
+|---|---:|---:|---|---|---|---|---|
+| Box, absence | 60 | 142 / 179 | 0.79 [0.74, 0.85] | 6 / 4 / 11 / 38 | **undecided** | undecided (0.75) | policy-level |
+| Calendar, absence | 42 | 104 / 126 | 0.83 [0.77, 0.88] | 3 / 2 / 9 / 28 | **undecided** | not policy-level | policy-level |
+| Linear, absence | 99 | 202 / 294 | 0.69 [0.64, 0.74] | 17 / 13 / 14 / 52 | **not policy-level** | not policy-level | policy-level |
+| Slack, absence | 43 | 80 / 129 | 0.62 [0.54, 0.70] | 10 / 5 / 9 / 19 | **not policy-level** | not policy-level | policy-level |
+| Box, underspecified | 56 | 97 / 167 | 0.58 [0.52, 0.65] | 10 / 15 / 9 / 21 | **not policy-level** | not policy-level | policy-level |
+| Calendar, underspecified | 30 | 52 / 90 | 0.58 [0.49, 0.67] | 6 / 7 / 6 / 11 | **not policy-level** | not policy-level | policy-level |
+| Linear, underspecified | 79 | 120 / 236 | 0.51 [0.45, 0.57] | 25 / 10 / 19 / 24 | **not policy-level** | not policy-level | policy-level |
+| Slack, underspecified | 32 | 79 / 96 | 0.82 [0.75, 0.89] | 2 / 3 / 5 / 22 | **undecided** | undecided (0.80) | policy-level |
+
+- **The same model is policy-level in all eight cells in the toy harness, and in none on OpenClaw:** five cells are
+  shown not policy-level and three are undecided with every unit used. The harness changes the answer.
+- **In the toy harness** Qwen almost never stopped: it acted on a near miss in about 95% of absence trials, and it
+  asked or listed the matches without acting once in 435 underspecified trials. One absence test and one
+  underspecified test per service carried the whole result there.
+- **On OpenClaw** the failure rate depends on the unit: every cell has units that fail 3 of 3 and units that never
+  fail.
+- **Readings other than the fixed one** (the same file, `readings`): if a unit counts as failing when any of its 3
+  trials fails, Box absence, Calendar absence and Slack underspecified become policy-level and the others stay
+  undecided or not; if a unit must fail all 3, every cell is not policy-level.
+- **The 8-minute budget changes no decision.** With over-budget trials left as the judge called them, the rates are
+  0.77, 0.82, 0.61, 0.60 (absence) and 0.49, 0.46, 0.41, 0.77 (underspecified).
+- **Writers differ.** In both Calendar cells, units from Muse's scenarios fail more often than units from Sonnet's:
+  absence 0.90 (Phase 4) and 0.96 (6b) against 0.64; underspecified 0.71 and 0.53 against 0.37.
+
+**Table 12. The per-fact policy space.** Same source (`totals`, `regular_vs_policy_facts`, `by_source`).
+
+| | Absence | Underspecified | Both |
+|---|---:|---:|---:|
+| Requirements (one per covered fact) | 204 | 204 | 408 |
+| Units derived (every fact of every scenario) | 255 | 209 | 464 |
+| Valid units, all run and judged | 244 | 197 | 441 |
+| Facts with a valid unit | 197 | 173 | 370 (91% of 408) |
+| Facts failing at least one trial (detect@3) | 169 | 140 | 309 |
+| Facts failing the first trial (detect@1) | 145 | 111 | 256 |
+| … of those with a unit: also exposed by a regular test | 82 | 62 | |
+| … failing the policy unit only | 87 | 78 | |
+| … exposed by a regular test only | 2 | 12 | |
+| … neither | 26 | 21 | |
+
+- **Units exceed requirements** because a fact can have near misses in several scenarios; the unit is the scenario's
+  fact. Some facts have no valid unit (a derivation not possible, a variant declined or ruled invalid).
+- **The same facts show up in both kinds of test.** Of the facts a regular test exposes, almost all also fail their
+  absence twin (82 of 84). Another 87 facts pass every regular test but fail when the request presumes the record:
+  the agent can check the fact when it may report absence, and does not when the request presumes a match.
+- **Per-fact counting of policy failures.** A policy failure is attributed to the fact of the near miss acted on
+  (absence) or of the condition dropped (underspecified), exactly as in regular tests. The totals above count facts,
+  not failing tests.
+- **Muse's Phase 4 scenarios alone** (for comparison with the baselines, RQ8): 60 absence units over 56 facts, 45
+  failing; 50 underspecified units over 52 facts, 41 failing.
+
+**Answer to RQ6.** For Qwen in the toy harness the policy tests collapse to 8. For the same model in OpenClaw they
+do not: failures depend on the fact, and a per-fact policy space of about 400 tests is what finds them. On this
+agent it found absence failures on 169 facts and underspecified failures on 140 (309 fact and mode pairs at
+detect@3, 256 at detect@1).

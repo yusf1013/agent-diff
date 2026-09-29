@@ -23,6 +23,9 @@ def main():
     cat = catalog()
     cov = load(NUMBERS / "coverage.json")["achieved"]
     out = {"cells": {}, "totals": {}}
+    fails3 = {"absence": set(), "underspecified": set()}
+    valid_facts = {"absence": set(), "underspecified": set()}
+    by_source = {"absence": {}, "underspecified": {}}   # mode -> the units' writer run -> units, facts, failing
     for mode in ("absence", "underspecified"):
         decisions = load(P / f"decisions_population_{mode}.json")
         first = load(P / f"decisions_{mode}.json")
@@ -39,6 +42,8 @@ def main():
             facts_valid, fail3, fail1 = set(), set(), set()
             judged = 0
             for u in valid:
+                src = by_source[mode].setdefault(u.get("source") or "phase3", {"units": 0, "facts": set(),
+                                                                                 "failing": set()})
                 # Box's first-pass units keep their verdicts (openclaw_eval_01 README, "What ran").
                 got = outcomes.get(u["unit"]) or (earlier.get(u["unit"], {}) if d == "box" and u["unit"] in ran_first
                                                   else {})
@@ -48,8 +53,11 @@ def main():
                     judged += 1
                 if any(o in sampler.FAIL for o in got.values()):
                     fail3 |= fs
+                    src["failing"] |= {f"{d} {f}" for f in fs}
                 if got.get("t1") in sampler.FAIL:
                     fail1 |= fs
+                src["units"] += 1
+                src["facts"] |= {f"{d} {f}" for f in fs}
             dec = decisions[cell]
             fp = first.get(cell, {})
             row = {"units": len(seq), "valid": len(valid), "judged": judged,
@@ -64,15 +72,34 @@ def main():
             out["cells"][cell] = row
             for k in tot:
                 tot[k] += row[k]
+            fails3[mode] |= {f"{d} {f}" for f in fail3}
+            valid_facts[mode] |= {f"{d} {f}" for f in facts_valid}
         out["totals"][mode] = tot
     # The per-fact policy space: one absence and one underspecified requirement per covered fact.
     covered = sum(len(cov[d]["covered_facts"]) for d in DOMAINS)
     out["per_fact_space"] = {"covered_facts": covered, "requirements": 2 * covered,
                              "facts_with_a_valid_unit": sum(t["facts_valid"] for t in out["totals"].values())}
+    # The same facts in regular and policy tests: which facts a regular test exposes (RQ4), and which fail a policy
+    # unit, among the facts that have both a regular test and a valid unit of the mode.
+    regular = set(load(NUMBERS / "exposure.json")["facts_detect3"])
+    overlap = {}
+    for mode in ("absence", "underspecified"):
+        both = valid_facts[mode]
+        overlap[mode] = {"facts_with_a_valid_unit": len(both),
+                         "exposed_by_regular_and_failing_policy": len(both & regular & fails3[mode]),
+                         "failing_policy_only": len((both & fails3[mode]) - regular),
+                         "exposed_by_regular_only": len((both & regular) - fails3[mode]),
+                         "neither": len(both - regular - fails3[mode])}
+    out["regular_vs_policy_facts"] = overlap
+    out["by_source"] = {m: {s: {"units": v["units"], "facts": len(v["facts"]), "facts_failing_detect3": len(v["failing"])}
+                            for s, v in srcs.items()} for m, srcs in by_source.items()}
+    out["facts_failing_detect3"] = {m: sorted(v) for m, v in fails3.items()}
     print(write("policy", out))
     for cell, r in out["cells"].items():
         print(cell, {k: v for k, v in r.items() if k not in ("any_of_runs", "all_runs", "by_writer", "spread")})
     print(out["totals"], out["per_fact_space"])
+    print(out["regular_vs_policy_facts"])
+    print(out["by_source"])
 
 
 if __name__ == "__main__":
