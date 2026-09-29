@@ -1,0 +1,1 @@
+Done — set **MOB-1** ("Checkout button unresponsive on Safari", Mobile team) to priority **Urgent**. Note there's a same-named issue on the Web team (WEB-1); I left that one untouched since you asked for Mobile.

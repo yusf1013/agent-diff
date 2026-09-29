@@ -1,0 +1,1 @@
+Done ✅ — commented "All set." on **Vendor Agreement.pdf** (file 8401, in Vendors/). That's the one whose "Review vendor terms" task was assigned by Leo Park and is already completed — the other two copies with the same name were excluded (8402 is still incomplete; 8403's task was assigned by Maya Chen).

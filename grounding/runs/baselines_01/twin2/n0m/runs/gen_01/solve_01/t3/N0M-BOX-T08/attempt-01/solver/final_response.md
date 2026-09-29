@@ -1,0 +1,1 @@
+Done ✅ — added the comment **"Rollback verified"** to Migration Plan.pdf (file 8802), which is the one with the "Verify rollback steps with infra" task. (There was a second Migration Plan.pdf with a different task — "Update the architecture diagram" — so I verified before commenting.) Comment ID: 305370582.

@@ -1,0 +1,1 @@
+Done — set **WEB-2** ("Q3 website refresh: hero copy", the subtask under WEB-1) to **Urgent** priority. Note there's a similarly-titled top-level issue WEB-3, but that one is not under the refresh issue, so I left it alone.

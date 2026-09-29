@@ -1,0 +1,1 @@
+Done. Added the comment "RC cut, verifying" to **REL-1 "Cut release candidate"** — the one in project Atlas under the Beta milestone (REL-2 is Atlas/Alpha, REL-3 is Boreas/Beta, so those were ruled out). API confirmed success.

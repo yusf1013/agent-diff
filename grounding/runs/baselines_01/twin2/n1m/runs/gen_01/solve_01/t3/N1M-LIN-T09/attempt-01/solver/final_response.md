@@ -1,0 +1,1 @@
+Done. I found three issues titled "Render glitch on settings page," but only **RND-1** carries both the Bug and Frontend labels (RND-2 has only Bug, RND-3 only Frontend). Commented **"Confirmed on staging"** on RND-1.

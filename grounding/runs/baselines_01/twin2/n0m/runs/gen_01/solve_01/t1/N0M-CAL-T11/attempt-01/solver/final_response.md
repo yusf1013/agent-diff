@@ -1,0 +1,1 @@
+Done — cancelled the all-day "Offsite" on Friday, June 22 and sent the cancellation notice to attendees. (Heads up: there's also a 10am–11am "Offsite" event that same day I left in place — let me know if that should go too.)

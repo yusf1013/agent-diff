@@ -1,0 +1,1 @@
+Done. There were two files named "Design Mockup.png" — I checked the tasks on both and added the comment to the one with Maya Chen's task (file 8501; the other has a task assigned to Maya Lopez). Comment "Nice work." is now posted (comment ID 214849667).

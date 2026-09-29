@@ -1,0 +1,1 @@
+Done. There were three issues titled "Migrate billing export" — only **LDG-3** matched both criteria (8-point estimate, due 2026-10-15; LDG-1 was 3 points, LDG-2 was due 2026-11-01). Comment "Scope confirmed for this one" added successfully.

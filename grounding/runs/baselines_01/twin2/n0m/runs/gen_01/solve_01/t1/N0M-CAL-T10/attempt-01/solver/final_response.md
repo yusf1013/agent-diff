@@ -1,0 +1,1 @@
+Done. Cancelled **Design review: Checkout** (Thursday, June 21, 10:00–11:00 AM PT) and sent cancellation notifications to attendees. The **follow-up** (2:00 PM the same day) is untouched — confirmed still on the calendar.

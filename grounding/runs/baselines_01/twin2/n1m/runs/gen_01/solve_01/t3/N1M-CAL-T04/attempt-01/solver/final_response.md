@@ -1,0 +1,1 @@
+Deleted the Sprint demo (June 22, 3–4 PM PT) that Priya organized and Omar created. The two other "Sprint demo" events were left alone since they didn't match — one Priya created/organized, one Omar created/organized. Attendees got a cancellation notice.

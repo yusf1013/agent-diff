@@ -1,0 +1,1 @@
+Done — added 👀 to Leo's "db failover starting, holding writes" message from Monday, Sept 21, 2026 (08:05 EDT) in #ops. (There was a second identical message from Tuesday Sept 22; I left that one alone.)

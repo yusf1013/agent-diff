@@ -1,0 +1,1 @@
+Done. There were two "APAC sync" calendars — the one set to Tokyo time (Asia/Tokyo) has been permanently deleted. The other one (America/Los_Angeles) is still there, let me know if that should go too.

@@ -1,0 +1,1 @@
+Done — moved the "Client demo" event (Thu, Jun 21, 2:00–3:00 PM) from Room B to Room C, and sent update notifications to attendees. There's another "Client demo" on the morning of the same day in Room A, but I left that one alone.

@@ -1,0 +1,1 @@
+Done — commented "Cache warmed, looks good" on **SYN-1** "Refresh dashboard cache" (Maya Chen). Note there's a duplicate issue (SYN-2) with the same title assigned to Priya Nair; I left that one alone.

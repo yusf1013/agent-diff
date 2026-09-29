@@ -1,0 +1,1 @@
+Done — though no invite was needed: the human Sam Carter (`sam.q2`, not the `sam.q1` bot) is **already a member of #support**. I verified this against the channel and user lists, so nothing to do here. Let me know if you meant a different channel or a different Sam.

@@ -1,0 +1,3 @@
+I can't make that edit — and it's not a permissions quirk on my end, it's how Slack works: my Slack identity is the **AgentBot** user (U01AGENBOT9), and `chat.update` only works on messages the token's own user posted. Leo's message (`nit: flip the flag order`, ts `1789992360.000002` in the thread under Diego's "release plan v2 is up") was posted by leo.park (U_LEO), so Slack returns `cant_update_message` when I try to rewrite it. Only Leo himself (or a user-token with edit rights) can change it.
+
+If you want, I can instead reply in that same thread with `nit: flip the flag order (done)` as AgentBot — just say the word and I'll post it.

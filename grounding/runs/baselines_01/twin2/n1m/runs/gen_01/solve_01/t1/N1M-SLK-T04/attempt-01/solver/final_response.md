@@ -1,0 +1,1 @@
+No action needed — Sam Carter (the human, `sam.q2`) is **already a member** of the support channel. I made sure to pick the human account, not the `sam.q1` bot that shares the same display name. Nothing to invite.

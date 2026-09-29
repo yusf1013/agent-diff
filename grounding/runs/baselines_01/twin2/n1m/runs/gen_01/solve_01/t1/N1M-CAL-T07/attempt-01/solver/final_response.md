@@ -1,0 +1,1 @@
+Done. Cancelled the "Planning meeting" on Thu, June 21 at 2:00–3:00 PM PT — the one where Priya Nair accepted and Omar Haddad declined — and sent cancellation notifications to the guests. The other two planning meetings (June 21, same time slot) were left untouched.
