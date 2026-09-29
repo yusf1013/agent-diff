@@ -1,0 +1,1 @@
+The task cannot be completed. The Linear GraphQL API does not expose `createdAt` as a writable field in `IssueUpdateInput`. After introspecting the schema, the available updatable fields for an issue do not include any creation date field. The `createdAt` timestamp is system-generated at issue creation and cannot be modified through the Linear API.

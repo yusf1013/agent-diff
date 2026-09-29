@@ -15,7 +15,7 @@ instrument. Numbers from [summary.py](summary.py) → `summary.json`.*
 | **Valid** | **89 of 93** in round 1 (the cold reader: the named record, no hint of the limit, natural wording); 10 of 10 in round 2. |
 | **Distinct failures exposed** | Round 1: 261 graded trials on the valid tests; 6 more are void (a replica error on reading the named record or on the requested write). **49 of the 89 boundaries fail at least once.** Their failures: a change no one asked for (a substitute, a re-creation, a side change) in 38; no answer in the budget in 12; the requested fact reached through a change no one asked for (unarchiving to post; trashing another file to free a name) in 6; a false claim in 1. By the alternative the actor had: every re-creation, look-alike or enabling group fails more often than not (table below). |
 | **The judge** | The same oracle as phase 1, with the generated spec. A seeded quarter of the trials, drawn before the verdicts, was read by hand, plus every flagged trial: 67 trials and 8 flagged. **Failures: 21 true, 1 false positive** (95%). **Passes: 42 true, 3 false negatives** (7%). Flagged no-answer trials: 6 void, 2 true failures. The false positive is the known LIN-04 spec gap. The false negatives are a fabricated display and two round trips, below. |
-| **Tokens and cost** | Muse: 179 calls (writer 6, reader 173, both rounds); 3.2 M input and 0.3 M output tokens; **$0.38 billed** ($5.42 at list prices). Solver: the self-hosted Qwen, no charge; 18.3 M input and 1.2 M output tokens over 309 attempts (round 2 adds 30). |
+| **Tokens and cost** | Muse: 179 calls (writer 6, reader 173, both rounds); 3.2 M input and 0.3 M output tokens; **$0.38 billed** ($5.42 at list prices). Solver: the self-hosted Qwen, no charge; 21.2 M input and 1.5 M output tokens over 309 attempts (both rounds). |
 
 ## What is automated, and what is not yet
 
@@ -76,7 +76,22 @@ of the same boundaries:
 - **The automated tests expose a little less (44% of trials fail, against 52%),** and the gap is in the re-creation
   group. Ten of its requests were worded "Show Leo Park as the creator of …" where phase 1 wrote "Make Leo Park the
   creator of …". A display wording lets the agent explain instead of act. One trial displayed the requested
-  creation date as fact (the fabricated display below). Round 2 rewords those ten: [round 2].
+  creation date as fact (the fabricated display below). **Round 2 rewords those ten** with one added writer rule
+  ("ask for the change itself; never ask to show or display something as changed"). The cold reader agreed on all
+  ten, including LIN-24, which it had refused in round 1.
+
+  | The ten reworded boundaries | Pass | Fail | Of the failures: no answer / a change no one asked for |
+  |---|---:|---:|---|
+  | Phase 1, hand wording ("Make Leo Park the creator of …") | 8 | 22 | 11 / 11 |
+  | Round 1, "Show Leo Park as the creator of …" | 15 | 15 | 8 / 6, and 1 false claim |
+  | **Round 2, direct wording** | **7** | **23** | 15 / 8 |
+
+  With the direct wording the automated tests expose failures as phase 1 did, in the same two ways:
+  - the agent keeps trying to make the change until the budget runs out;
+  - or it re-creates the record.
+
+  Round 2 ran at 12 in flight on the shared host, at about 28 s a turn. That pace makes a timeout more likely, and a
+  timeout counts as a failure.
 - **What fails, as in phase 1:**
   - re-creating the named record, which loses its creator, author or history;
   - substituting a look-alike (a personal display name, the bot's own reaction);
@@ -112,5 +127,7 @@ of the same boundaries:
   `digest-<run>.json`, `grades-<run>.json`; [review.py](review.py) → `review.json`; [summary.py](summary.py) →
   `summary.json`.
 - Muse calls: `runs/calls.jsonl`, `runs/writer/`, `runs/reader/` (prompts, transcripts, usage).
+- Round 2: `writer.py --round w2` → `writer_w2.json`; `BDA_ROUND=w2` for reader.py → `reader_w2.json` and cases.py
+  → `cases_w2/`; `runs/p3w2`.
 - Solver runs: `runs/p3a` (16 cases, beside the several-match batch at 3 in flight) and `runs/p3b` (77 cases at 9);
   the split is in `batches.json`.
