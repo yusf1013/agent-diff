@@ -1,0 +1,1 @@
+Done 👀 — added the :eyes: reaction to Leo Park's latest message in #incidents ("Wrapping up the post-incident review doc."). If you meant his earlier one ("Rolled back the payment gateway config..."), say the word and I'll react to that instead.

@@ -1,0 +1,547 @@
+{
+  "test_id": "U-AP2-LIN-01-Issue_description",
+  "question": "In Linear: Set the priority to Urgent on the Web team's issue in the Website Redesign project that's marked Done and was completed on August 14.",
+  "harness": "openclaw",
+  "termination": "done",
+  "final": "I found the Website Redesign project, but there's an ambiguity — **two** Web team issues in it are marked Done and completed on August 14:\n\n- **WEB-1** — \"Fix checkout regression\" (completed 16:00)\n- **WEB-4** — \"Backend patch for the pagination fix\" (completed 13:00)\n\nWhich one should I set to Urgent?",
+  "turns": [
+    {
+      "label": "turn1",
+      "message": "In Linear: Set the priority to Urgent on the Web team's issue in the Website Redesign project that's marked Done and was completed on August 14.",
+      "text": "I found the Website Redesign project, but there's an ambiguity — **two** Web team issues in it are marked Done and completed on August 14:\n\n- **WEB-1** — \"Fix checkout regression\" (completed 16:00)\n- **WEB-4** — \"Backend patch for the pagination fix\" (completed 13:00)\n\nWhich one should I set to Urgent?",
+      "termination": "done",
+      "returncode": 0,
+      "killed": null,
+      "duration_s": 191.2,
+      "meta_error": null,
+      "stop_reason": "stop"
+    }
+  ],
+  "steps": [
+    {
+      "turn": 1,
+      "tool": "read",
+      "arguments": {
+        "path": "~/.openclaw-state/e55ddda2b8a14971/workspace-assistant/skills/linear/SKILL.md"
+      },
+      "action": "read {\"path\": \"~/.openclaw-state/e55ddda2b8a14971/workspace-assistant/skills/linear/SKILL.md\"}",
+      "text": "",
+      "thinking": "The user is requesting an update to a Linear issue. Since the linear skill applies, I'll first read the SKILL.md of the linear skill.",
+      "usage": {
+        "input": 4720,
+        "output": 87,
+        "cacheRead": 3920,
+        "cacheWrite": 0,
+        "reasoningTokens": 31,
+        "totalTokens": 8727,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "status": "success",
+        "stdout": "---\nname: linear\ndescription: \"Linear project management and issue tracking API. Use it for anything in the user's Linear account.\"\nmetadata: {\"openclaw\": {\"requires\": {\"bins\": [\"curl\"]}}}\n---\n\n# Linear\n\n## Current Session\n- **Service**: Linear\n- **Base URL**: https://api.linear.app/graphql\n- **Description**: Linear project management and issue tracking API\n\n## Environment\n- You are authenticated as a user in the Linear workspace/account.\n- Authentication is handled automatically via proxy. Use placeholder tokens like `<TOKEN>` where credentials would go.\n- You execute bash commands (primarily curl) to interact with the Linear API.\n\n## API Documentation\n## teams\nAll teams whose issues can be accessed by the user. This might be different from `administrableTeams`, which also includes teams whose settings can be changed by the user.\n\n## issues\nAll issues.\n\n## issue\nGet a single issue by ID.\n\n## workflowStates\nAll issue workflow states.\n\n## users\nAll users for the organization.\n\n## issueCreate\nCreates a new issue.\n\n## issueUpdate\nUpdates an issue.\n\n## commentCreate\nCreates a new comment.\n\n## teamCreate\nCreates a new team. The user who creates the team will automatically be added as a member to the newly created team.\n\n## issueLabelCreate\nCreates a new label.\n\n## issueLabels\nAll issue labels.\n\n## comments\nAll comments.\n\n## commentUpdate\nUpdates a comment.\n\n## commentDelete\nDeletes a comment.\n\n## issueLabelUpdate\nUpdates a label.\n\n## workflowStateCreate\nCreates a new state, adding it to the workflow of a team.\n\n## workflowStateArchive\nArchives a state. Only states with issues that have all been archived can be archived.\n\n## teamMembershipCreate\nCreates a new team membership.\n\n## issueRelationCreate\nCreates a new issue relation.\n"
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nThe user is requesting an update to a Linear issue. Since the linear skill applies, I'll first read the SKILL.md of the linear skill.\n</thinking>\n"
+          }
+        ]
+      }
+    },
+    {
+      "turn": 2,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: <TOKEN>' -d '{\"query\":\"{ projects(first: 100) { nodes { id name issues(filter: {state: {type: {eq: \\\"completed\\\"}}, completedAt: {eq: \\\"2026-08-14\\\"}}) { nodes { id identifier title state { name type } priority team { id name key } completedAt } } } } }\"}'"
+      },
+      "action": "curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: <TOKEN>' -d '{\"query\":\"{ projects(first: 100) { nodes { id name issues(filter: {state: {type: {eq: \\\"completed\\\"}}, completedAt: {eq: \\\"2026-08-14\\\"}}) { nodes { id identifier title state { name type } priority team { id name key } completedAt } } } } }\"}'",
+      "text": "",
+      "thinking": "SKILL.md is a bit thin on the exact GraphQL fields. I'll go with standard Linear GraphQL API. First, query the projects to find the \"Website Redesign\" project, then query its issues with state Done and completedAt on 2025-08-14… wait, the current date is 2026-09-28. So \"completed on August 14\" probably means 2026-08-14.\n\nLet me write a GraphQL query:\n\n```graphql\n{\n  projects(first: 50) {\n    nodes {\n      id\n      name\n      issues(filter: {state: {type: {eq: \"completed\"}}, completedAt: {eq: \"2026-08-14\"}}) {\n        nodes {\n          id\n          identifier\n          title\n          team { name key }\n          state { name type }\n          priority\n          completedAt\n        }\n      }\n    }\n  }\n}\n```\n\nHmm, Linear's API: does the issue filter support `completedAt: {eq: ...}`? Linear API filters include `completedAt` with operators lt/gt/eq, etc. Date type is a date-only string in the format \"2017-01-01\". Yeah, Linear's date filters accept YYYY-MM-DD.\n\nAlso, priority values: none, urgent, high, medium, low (numeric 0,1,2,3,4). issueUpdate takes `priority: Int`.\n\nLet me run the query with curl. Auth is handled automatically by the proxy — use placeholder token `<TOKEN>`.\n\nLet me build the command. Use a heredoc for the query.\n\nStep 1: find the project and matching issue.",
+      "usage": {
+        "input": 489,
+        "output": 518,
+        "cacheRead": 8624,
+        "cacheWrite": 0,
+        "reasoningTokens": 383,
+        "totalTokens": 9631,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "status": "success",
+        "stdout": "{\"data\":null,\"errors\":[{\"message\":\"Cannot return null for non-nullable field Query.projects.\",\"locations\":[{\"line\":1,\"column\":3}],\"path\":[\"projects\"]}]}"
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nSKILL.md is a bit thin on the exact GraphQL fields. I'll go with standard Linear GraphQL API. First, query the projects to find the \"Website Redesign\" project, then query its issues with state Done and completedAt on 2025-08-14… wait, the current date is 2026-09-28. So \"completed on August 14\" probably means 2026-08-14.\n\nLet me write a GraphQL query:\n\n```graphql\n{\n  projects(first: 50) {\n    nodes {\n      id\n      name\n      issues(filter: {state: {type: {eq: \"completed\"}}, completedAt: {eq: \"2026-08-14\"}}) {\n        nodes {\n          id\n          identifier\n          title\n          team { name key }\n          state { name type }\n          priority\n          completedAt\n        }\n      }\n    }\n  }\n}\n```\n\nHmm, Linear's API: does the issue filter support `completedAt: {eq: ...}`? Linear API filters include `completedAt` with operators lt/gt/eq, etc. Date type is a date-only string in the format \"2017-01-01\". Yeah, Linear's date filters accept YYYY-MM-DD.\n\nAlso, priority values: none, urgent, high, medium, low (numeric 0,1,2,3,4). issueUpdate takes `priority: Int`.\n\nLet me run the query with curl. Auth is handled automatically by the proxy — use placeholder token `<TOKEN>`.\n\nLet me build the command. Use a heredoc for the query.\n\nStep 1: find the project and matching issue.\n</thinking>\n"
+          }
+        ]
+      }
+    },
+    {
+      "turn": 3,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: <TOKEN>' -d '{\"query\":\"{ teams(first: 100) { nodes { id name key issues { totalCount } } } }\"}'"
+      },
+      "action": "curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: <TOKEN>' -d '{\"query\":\"{ teams(first: 100) { nodes { id name key issues { totalCount } } } }\"}'",
+      "text": "",
+      "thinking": "Hmm, the projects query is returning a null error. Maybe the schema for projects is different — in newer versions of Linear, `projects` has been replaced with `projectV2` or something similar. Or maybe the query needs different syntax. Let me check the schema, or try a different query. First, I'll list the teams to understand the structure.",
+      "usage": {
+        "input": 675,
+        "output": 156,
+        "cacheRead": 8624,
+        "cacheWrite": 0,
+        "reasoningTokens": 74,
+        "totalTokens": 9455,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "status": "success",
+        "stdout": "{\"errors\":[{\"message\":\"Cannot query field 'totalCount' on type 'IssueConnection'.\",\"locations\":[{\"line\":1,\"column\":52}]}]}"
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nHmm, the projects query is returning a null error. Maybe the schema for projects is different — in newer versions of Linear, `projects` has been replaced with `projectV2` or something similar. Or maybe the query needs different syntax. Let me check the schema, or try a different query. First, I'll list the teams to understand the structure.\n</thinking>\n"
+          }
+        ]
+      }
+    },
+    {
+      "turn": 4,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: <TOKEN>' -d '{\"query\":\"{ teams(first: 100) { nodes { id name key } } }\"}'"
+      },
+      "action": "curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: <TOKEN>' -d '{\"query\":\"{ teams(first: 100) { nodes { id name key } } }\"}'",
+      "text": "",
+      "thinking": "Let me explore the schema a bit. First, I'll query the team and project, and check whether the \"project\" field exists on the team.",
+      "usage": {
+        "input": 803,
+        "output": 110,
+        "cacheRead": 8624,
+        "cacheWrite": 0,
+        "reasoningTokens": 32,
+        "totalTokens": 9537,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "status": "success",
+        "stdout": "{\"data\":{\"teams\":{\"nodes\":[{\"id\":\"42607b1a-344e-4972-bcfe-ff4d9d2ead4e\",\"name\":\"Mobile\",\"key\":\"MOB\"},{\"id\":\"ecfcef2c-8390-410d-b56b-0b40335cc4c1\",\"name\":\"Web\",\"key\":\"WEB\"}]}}}"
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nLet me explore the schema a bit. First, I'll query the team and project, and check whether the \"project\" field exists on the team.\n</thinking>\n"
+          }
+        ]
+      }
+    },
+    {
+      "turn": 5,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: <TOKEN>' -d '{\"query\":\"{ projects { nodes { id name } } }\"}'"
+      },
+      "action": "curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: <TOKEN>' -d '{\"query\":\"{ projects { nodes { id name } } }\"}'",
+      "text": "",
+      "thinking": "Next, let's find the project called \"Website Redesign\". The `projects` query returned an error \"Cannot return null for non-nullable field Query.projects\" — maybe the projects query needs different arguments, or the API version is different. Let me try `projects` with a different argument, or use `project` search. The error \"Cannot return null for non-nullable field\" is strange — probably the query field exists but something is failing. Let me try with first=10, or try `projects(filter:)`.",
+      "usage": {
+        "input": 206,
+        "output": 179,
+        "cacheRead": 9408,
+        "cacheWrite": 0,
+        "reasoningTokens": 109,
+        "totalTokens": 9793,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "status": "success",
+        "stdout": "{\"data\":null,\"errors\":[{\"message\":\"Cannot return null for non-nullable field Query.projects.\",\"locations\":[{\"line\":1,\"column\":3}],\"path\":[\"projects\"]}]}"
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nNext, let's find the project called \"Website Redesign\". The `projects` query returned an error \"Cannot return null for non-nullable field Query.projects\" — maybe the projects query needs different arguments, or the API version is different. Let me try `projects` with a different argument, or use `project` search. The error \"Cannot return null for non-nullable field\" is strange — probably the query field exists but something is failing. Let me try with first=10, or try `projects(filter:)`.\n</thinking>\n"
+          }
+        ]
+      }
+    },
+    {
+      "turn": 6,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: <TOKEN>' -d '{\"query\":\"{ __type(name: \\\"Query\\\") { fields { name args { name type { name kind ofType { name } } } } } }\"}' | head -c 3000"
+      },
+      "action": "curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: <TOKEN>' -d '{\"query\":\"{ __type(name: \\\"Query\\\") { fields { name args { name type { name kind ofType { name } } } } } }\"}' | head -c 3000",
+      "text": "",
+      "thinking": "The projects query might require arguments. Let me check the schema with an introspection query.",
+      "usage": {
+        "input": 327,
+        "output": 116,
+        "cacheRead": 9408,
+        "cacheWrite": 0,
+        "reasoningTokens": 19,
+        "totalTokens": 9851,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "status": "success",
+        "stdout": "{\"data\":{\"__type\":{\"fields\":[{\"name\":\"administrableTeams\",\"args\":[{\"name\":\"after\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\",\"ofType\":null}},{\"name\":\"before\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\",\"ofType\":null}},{\"name\":\"filter\",\"type\":{\"name\":\"TeamFilter\",\"kind\":\"INPUT_OBJECT\",\"ofType\":null}},{\"name\":\"first\",\"type\":{\"name\":\"Int\",\"kind\":\"SCALAR\",\"ofType\":null}},{\"name\":\"includeArchived\",\"type\":{\"name\":\"Boolean\",\"kind\":\"SCALAR\",\"ofType\":null}},{\"name\":\"last\",\"type\":{\"name\":\"Int\",\"kind\":\"SCALAR\",\"ofType\":null}},{\"name\":\"orderBy\",\"type\":{\"name\":\"PaginationOrderBy\",\"kind\":\"ENUM\",\"ofType\":null}}]},{\"name\":\"agentActivities\",\"args\":[{\"name\":\"after\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\",\"ofType\":null}},{\"name\":\"before\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\",\"ofType\":null}},{\"name\":\"filter\",\"type\":{\"name\":\"AgentActivityFilter\",\"kind\":\"INPUT_OBJECT\",\"ofType\":null}},{\"name\":\"first\",\"type\":{\"name\":\"Int\",\"kind\":\"SCALAR\",\"ofType\":null}},{\"name\":\"includeArchived\",\"type\":{\"name\":\"Boolean\",\"kind\":\"SCALAR\",\"ofType\":null}},{\"name\":\"last\",\"type\":{\"name\":\"Int\",\"kind\":\"SCALAR\",\"ofType\":null}},{\"name\":\"orderBy\",\"type\":{\"name\":\"PaginationOrderBy\",\"kind\":\"ENUM\",\"ofType\":null}}]},{\"name\":\"agentActivity\",\"args\":[{\"name\":\"id\",\"type\":{\"name\":null,\"kind\":\"NON_NULL\",\"ofType\":{\"name\":\"String\"}}}]},{\"name\":\"agentSession\",\"args\":[{\"name\":\"id\",\"type\":{\"name\":null,\"kind\":\"NON_NULL\",\"ofType\":{\"name\":\"String\"}}}]},{\"name\":\"agentSessions\",\"args\":[{\"name\":\"after\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\",\"ofType\":null}},{\"name\":\"before\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\",\"ofType\":null}},{\"name\":\"first\",\"type\":{\"name\":\"Int\",\"kind\":\"SCALAR\",\"ofType\":null}},{\"name\":\"includeArchived\",\"type\":{\"name\":\"Boolean\",\"kind\":\"SCALAR\",\"ofType\":null}},{\"name\":\"last\",\"type\":{\"name\":\"Int\",\"kind\":\"SCALAR\",\"ofType\":null}},{\"name\":\"orderBy\",\"type\":{\"name\":\"PaginationOrderBy\",\"kind\":\"ENUM\",\"ofType\":null}}]},{\"name\":\"apiKeys\",\"args\":[{\"name\":\"after\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\",\"ofType\":null}},{\"name\":\"before\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\",\"ofType\":null}},{\"name\":\"first\",\"type\":{\"name\":\"Int\",\"kind\":\"SCALAR\",\"ofType\":null}},{\"name\":\"includeArchived\",\"type\":{\"name\":\"Boolean\",\"kind\":\"SCALAR\",\"ofType\":null}},{\"name\":\"last\",\"type\":{\"name\":\"Int\",\"kind\":\"SCALAR\",\"ofType\":null}},{\"name\":\"orderBy\",\"type\":{\"name\":\"PaginationOrderBy\",\"kind\":\"ENUM\",\"ofType\":null}}]},{\"name\":\"applicationInfo\",\"args\":[{\"name\":\"clientId\",\"type\":{\"name\":null,\"kind\":\"NON_NULL\",\"ofType\":{\"name\":\"String\"}}}]},{\"name\":\"applicationWithAuthorization\",\"args\":[{\"name\":\"actor\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\",\"ofType\":null}},{\"name\":\"clientId\",\"type\":{\"name\":null,\"kind\":\"NON_NULL\",\"ofType\":{\"name\":\"String\"}}},{\"name\":\"redirectUri\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\",\"ofType\":null}},{\"name\":\"scope\",\"type\":{\"name\":null,\"kind\":\"NON_NULL\",\"ofType\":{\"name\":null}}}]},{\"name\":\"archivedTeams\",\"args\":[]},{\"name\":\"attachment\",\"args\":[{\"name\":\"id\",\"type\":{\"name\":null,\"kind\":\"NON_NULL\",\"ofType\":{\"name\":\"String\"}}}]},{\"name\":"
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nThe projects query might require arguments. Let me check the schema with an introspection query.\n</thinking>\n"
+          }
+        ]
+      }
+    },
+    {
+      "turn": 7,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: <TOKEN>' -d '{\"query\":\"{ __type(name: \\\"Query\\\") { fields { name } } }\"}' | python3 -c \"import json,sys; d=json.load(sys.stdin); print([f['name'] for f in d['data']['__type']['fields']])\""
+      },
+      "action": "curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: <TOKEN>' -d '{\"query\":\"{ __type(name: \\\"Query\\\") { fields { name } } }\"}' | python3 -c \"import json,sys; d=json.load(sys.stdin); print([f['name'] for f in d['data']['__type']['fields']])\"",
+      "text": "",
+      "thinking": "Let's try searching for a project query field in this schema.",
+      "usage": {
+        "input": 1270,
+        "output": 126,
+        "cacheRead": 9408,
+        "cacheWrite": 0,
+        "reasoningTokens": 14,
+        "totalTokens": 10804,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "status": "success",
+        "stdout": "['administrableTeams', 'agentActivities', 'agentActivity', 'agentSession', 'agentSessions', 'apiKeys', 'applicationInfo', 'applicationWithAuthorization', 'archivedTeams', 'attachment', 'attachmentSources', 'attachments', 'attachmentsForURL', 'auditEntries', 'auditEntryTypes', 'authenticationSessions', 'availableUsers', 'comment', 'comments', 'customView', 'customViewDetailsSuggestion', 'customViewHasSubscribers', 'customViews', 'customer', 'customerNeed', 'customerNeeds', 'customerStatus', 'customerStatuses', 'customerTier', 'customerTiers', 'customers', 'cycle', 'cycles', 'document', 'documentContentHistory', 'documents', 'emailIntakeAddress', 'emoji', 'emojis', 'entityExternalLink', 'externalUser', 'externalUsers', 'failuresForOauthWebhooks', 'favorite', 'favorites', 'fetchData', 'initiative', 'initiativeRelation', 'initiativeRelations', 'initiativeToProject', 'initiativeToProjects', 'initiativeUpdate', 'initiativeUpdates', 'initiatives', 'integration', 'integrationHasScopes', 'integrationTemplate', 'integrationTemplates', 'integrations', 'integrationsSettings', 'issue', 'issueFigmaFileKeySearch', 'issueFilterSuggestion', 'issueImportCheckCSV', 'issueImportCheckSync', 'issueImportJqlCheck', 'issueLabel', 'issueLabels', 'issuePriorityValues', 'issueRelation', 'issueRelations', 'issueSearch', 'issueTitleSuggestionFromCustomerRequest', 'issueVcsBranchSearch', 'issues', 'notification', 'notificationSubscription', 'notificationSubscriptions', 'notifications', 'notificationsUnreadCount', 'organization', 'organizationDomainClaimRequest', 'organizationExists', 'organizationInvite', 'organizationInviteDetails', 'organizationInvites', 'organizationMeta', 'project', 'projectFilterSuggestion', 'projectLabel', 'projectLabels', 'projectMilestone', 'projectMilestones', 'projectRelation', 'projectRelations', 'projectStatus', 'projectStatusProjectCount', 'projectStatuses', 'projectUpdate', 'projectUpdates', 'projects', 'pushSubscriptionTest', 'rateLimitStatus', 'searchDocuments', 'searchIssues', 'searchProjects', 'semanticSearch', 'ssoUrlFromEmail', 'summarizeProjectUpdates', 'team', 'teamMembership', 'teamMemberships', 'teams', 'template', 'templates', 'templatesForIntegration', 'timeSchedule', 'timeSchedules', 'triageResponsibilities', 'triageResponsibility', 'user', 'userSettings', 'users', 'verifyGitHubEnterpriseServerInstallation', 'viewer', 'webhook', 'webhooks', 'workflowState', 'workflowStates']"
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nLet's try searching for a project query field in this schema.\n</thinking>\n"
+          }
+        ]
+      }
+    },
+    {
+      "turn": 8,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: <TOKEN>' -d '{\"query\":\"{ __type(name: \\\"Query\\\") { fields { name args { name type { name kind ofType { name kind } } } } } }\"}' | python3 -c \"\nimport json,sys\nd=json.load(sys.stdin)\nfor f in d['data']['__type']['fields']:\n    if f['name'] in ('projects','project'):\n        print(json.dumps(f, indent=1))\n\""
+      },
+      "action": "curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: <TOKEN>' -d '{\"query\":\"{ __type(name: \\\"Query\\\") { fields { name args { name type { name kind ofType { name kind } } } } } }\"}' | python3 -c \"\nimport json,sys\nd=json.load(sys.stdin)\nfor f in d['data']['__type']['fields']:\n    if f['name'] in ('projects','project'):\n        print(json.dumps(f, indent=1))\n\"",
+      "text": "",
+      "thinking": "The `projects` query field exists but returned a null error. Maybe it requires arguments, or the arguments of the `projects` field might be different. Let's try querying `projects` with the `includeArchived` parameter, or check its arguments. Actually, the error was \"Cannot return null for non-nullable field Query.projects.\" — this is weird. It might be that projects requires arguments like `first`. Let's check the field definitions for `projects` and `project`.",
+      "usage": {
+        "input": 1182,
+        "output": 246,
+        "cacheRead": 10192,
+        "cacheWrite": 0,
+        "reasoningTokens": 100,
+        "totalTokens": 11620,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "status": "success",
+        "stdout": "{\n \"name\": \"project\",\n \"args\": [\n  {\n   \"name\": \"id\",\n   \"type\": {\n    \"name\": null,\n    \"kind\": \"NON_NULL\",\n    \"ofType\": {\n     \"name\": \"String\",\n     \"kind\": \"SCALAR\"\n    }\n   }\n  }\n ]\n}\n{\n \"name\": \"projects\",\n \"args\": [\n  {\n   \"name\": \"after\",\n   \"type\": {\n    \"name\": \"String\",\n    \"kind\": \"SCALAR\",\n    \"ofType\": null\n   }\n  },\n  {\n   \"name\": \"before\",\n   \"type\": {\n    \"name\": \"String\",\n    \"kind\": \"SCALAR\",\n    \"ofType\": null\n   }\n  },\n  {\n   \"name\": \"filter\",\n   \"type\": {\n    \"name\": \"ProjectFilter\",\n    \"kind\": \"INPUT_OBJECT\",\n    \"ofType\": null\n   }\n  },\n  {\n   \"name\": \"first\",\n   \"type\": {\n    \"name\": \"Int\",\n    \"kind\": \"SCALAR\",\n    \"ofType\": null\n   }\n  },\n  {\n   \"name\": \"includeArchived\",\n   \"type\": {\n    \"name\": \"Boolean\",\n    \"kind\": \"SCALAR\",\n    \"ofType\": null\n   }\n  },\n  {\n   \"name\": \"last\",\n   \"type\": {\n    \"name\": \"Int\",\n    \"kind\": \"SCALAR\",\n    \"ofType\": null\n   }\n  },\n  {\n   \"name\": \"orderBy\",\n   \"type\": {\n    \"name\": \"PaginationOrderBy\",\n    \"kind\": \"ENUM\",\n    \"ofType\": null\n   }\n  },\n  {\n   \"name\": \"sort\",\n   \"type\": {\n    \"name\": null,\n    \"kind\": \"LIST\",\n    \"ofType\": {\n     \"name\": null,\n     \"kind\": \"NON_NULL\"\n    }\n   }\n  }\n ]\n}"
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nThe `projects` query field exists but returned a null error. Maybe it requires arguments, or the arguments of the `projects` field might be different. Let's try querying `projects` with the `includeArchived` parameter, or check its arguments. Actually, the error was \"Cannot return null for non-nullable field Query.projects.\" — this is weird. It might be that projects requires arguments like `first`. Let's check the field definitions for `projects` and `project`.\n</thinking>\n"
+          }
+        ]
+      }
+    },
+    {
+      "turn": 9,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: <TOKEN>' -d '{\"query\":\"{ searchProjects(query: \\\"Website Redesign\\\") { nodes { id name } } }\"}'"
+      },
+      "action": "curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: <TOKEN>' -d '{\"query\":\"{ searchProjects(query: \\\"Website Redesign\\\") { nodes { id name } } }\"}'",
+      "text": "",
+      "thinking": "The `projects` query does exist. Earlier, the `projects` query failed with \"Cannot return null for non-nullable field Query.projects.\" This is strange — it might be an issue with the `first` parameter or with the filter. Let me retry without the `first` argument, and also try `searchProjects`.",
+      "usage": {
+        "input": 1056,
+        "output": 145,
+        "cacheRead": 10976,
+        "cacheWrite": 0,
+        "reasoningTokens": 67,
+        "totalTokens": 12177,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "status": "success",
+        "stdout": "{\"errors\":[{\"message\":\"Unknown argument 'query' on field 'Query.searchProjects'. Did you mean 'term'?\",\"locations\":[{\"line\":1,\"column\":18}]},{\"message\":\"Field 'searchProjects' argument 'term' of type 'String!' is required, but it was not provided.\",\"locations\":[{\"line\":1,\"column\":3}]}]}"
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nThe `projects` query does exist. Earlier, the `projects` query failed with \"Cannot return null for non-nullable field Query.projects.\" This is strange — it might be an issue with the `first` parameter or with the filter. Let me retry without the `first` argument, and also try `searchProjects`.\n</thinking>\n"
+          }
+        ]
+      }
+    },
+    {
+      "turn": 10,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: <TOKEN>' -d '{\"query\":\"{ searchProjects(term: \\\"Website Redesign\\\") { nodes { id name } } }\"}'"
+      },
+      "action": "curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: <TOKEN>' -d '{\"query\":\"{ searchProjects(term: \\\"Website Redesign\\\") { nodes { id name } } }\"}'",
+      "text": "",
+      "thinking": "The user wants to set the priority to \"Urgent\" on the Web team's issues within the \"Website Redesign\" project that are marked as Done and were completed on August 14.\n\nFirst, let's find the project. The earlier query `projects { nodes { id name } }` failed with \"Cannot return null for non-nullable field Query.projects.\" This might be because this version of the API doesn't support that shape. Let me try `searchProjects(term: \"Website Redesign\")`.",
+      "usage": {
+        "input": 438,
+        "output": 185,
+        "cacheRead": 11760,
+        "cacheWrite": 0,
+        "reasoningTokens": 107,
+        "totalTokens": 12383,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "status": "success",
+        "stdout": "{\"data\":{\"searchProjects\":{\"nodes\":[{\"id\":\"6d17bb37-2391-4160-aaae-d683af40b766\",\"name\":\"Website Redesign\"}]}}}"
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nThe user wants to set the priority to \"Urgent\" on the Web team's issues within the \"Website Redesign\" project that are marked as Done and were completed on August 14.\n\nFirst, let's find the project. The earlier query `projects { nodes { id name } }` failed with \"Cannot return null for non-nullable field Query.projects.\" This might be because this version of the API doesn't support that shape. Let me try `searchProjects(term: \"Website Redesign\")`.\n</thinking>\n"
+          }
+        ]
+      }
+    },
+    {
+      "turn": 11,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: <TOKEN>' -d '{\"query\":\"{ project(id: \\\"6d17bb37-2391-4160-aaae-d683af40b766\\\") { id name issues(first: 100) { nodes { id identifier title priority state { name type } completedAt team { id name key } } } } }\"}'"
+      },
+      "action": "curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: <TOKEN>' -d '{\"query\":\"{ project(id: \\\"6d17bb37-2391-4160-aaae-d683af40b766\\\") { id name issues(first: 100) { nodes { id identifier title priority state { name type } completedAt team { id name key } } } } }\"}'",
+      "text": "",
+      "thinking": "The project exists. The `projects` query earlier returned \"Cannot return null for non-nullable field Query.projects\" — probably an argument was required, or there's a pagination issue. Let me try querying the project by ID along with its issues.",
+      "usage": {
+        "input": 581,
+        "output": 183,
+        "cacheRead": 11760,
+        "cacheWrite": 0,
+        "reasoningTokens": 51,
+        "totalTokens": 12524,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "status": "success",
+        "stdout": "{\"data\":null,\"errors\":[{\"message\":\"Cannot return null for non-nullable field Query.project.\",\"locations\":[{\"line\":1,\"column\":3}],\"path\":[\"project\"]}]}"
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nThe project exists. The `projects` query earlier returned \"Cannot return null for non-nullable field Query.projects\" — probably an argument was required, or there's a pagination issue. Let me try querying the project by ID along with its issues.\n</thinking>\n"
+          }
+        ]
+      }
+    },
+    {
+      "turn": 12,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: <TOKEN>' -d '{\"query\":\"{ __type(name: \\\"IssueFilter\\\") { inputFields { name type { name kind ofType { name kind } } } } }\"}' | python3 -c \"\nimport json,sys\nd=json.load(sys.stdin)\nprint([f['name'] for f in d['data']['__type']['inputFields']])\n\""
+      },
+      "action": "curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: <TOKEN>' -d '{\"query\":\"{ __type(name: \\\"IssueFilter\\\") { inputFields { name type { name kind ofType { name kind } } } } }\"}' | python3 -c \"\nimport json,sys\nd=json.load(sys.stdin)\nprint([f['name'] for f in d['data']['__type']['inputFields']])\n\"",
+      "text": "",
+      "thinking": "The projects query is failing with the error \"Cannot return null for non-nullable field Query.projects\". This is probably an environment quirk — either the proxy is blocking it, or this is a mocked API and maybe the project's field resolution fails. Let me try `issues` with a project filter instead. I'll check the structure of IssueFilter.",
+      "usage": {
+        "input": 764,
+        "output": 200,
+        "cacheRead": 11760,
+        "cacheWrite": 0,
+        "reasoningTokens": 72,
+        "totalTokens": 12724,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "status": "success",
+        "stdout": "['addedToCycleAt', 'addedToCyclePeriod', 'ageTime', 'and', 'archivedAt', 'assignee', 'attachments', 'autoArchivedAt', 'autoClosedAt', 'accumulatedStateUpdatedAt', 'canceledAt', 'children', 'comments', 'completedAt', 'createdAt', 'creator', 'customerCount', 'customerImportantCount', 'cycle', 'cycleTime', 'delegate', 'description', 'dueDate', 'estimate', 'hasBlockedByRelations', 'hasBlockingRelations', 'hasDuplicateRelations', 'hasSuggestedTeams', 'hasRelatedRelations', 'hasSuggestedAssignees', 'hasSuggestedLabels', 'hasSuggestedProjects', 'hasSuggestedRelatedIssues', 'hasSuggestedSimilarIssues', 'id', 'labels', 'lastAppliedTemplate', 'leadTime', 'needs', 'number', 'or', 'parent', 'priority', 'project', 'projectMilestone', 'reactions', 'recurringIssueTemplate', 'searchableContent', 'slaStatus', 'snoozedBy', 'snoozedUntilAt', 'sourceMetadata', 'startedAt', 'state', 'subscribers', 'suggestions', 'team', 'title', 'triageTime', 'triagedAt', 'updatedAt']"
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nThe projects query is failing with the error \"Cannot return null for non-nullable field Query.projects\". This is probably an environment quirk — either the proxy is blocking it, or this is a mocked API and maybe the project's field resolution fails. Let me try `issues` with a project filter instead. I'll check the structure of IssueFilter.\n</thinking>\n"
+          }
+        ]
+      }
+    },
+    {
+      "turn": 13,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: <TOKEN>' -d '{\"query\":\"{ issues(first: 100, filter: {project: {id: {eq: \\\"6d17bb37-2391-4160-aaae-d683af40b766\\\"}}}) { nodes { id identifier title priority state { name type } completedAt team { id name key } } } }\"}'"
+      },
+      "action": "curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: <TOKEN>' -d '{\"query\":\"{ issues(first: 100, filter: {project: {id: {eq: \\\"6d17bb37-2391-4160-aaae-d683af40b766\\\"}}}) { nodes { id identifier title priority state { name type } completedAt team { id name key } } } }\"}'",
+      "text": "",
+      "thinking": "The project has a `project` filter, and it might accept a project ID. Let me try querying issues with a filter using project: {id: {eq: ...}}. Actually, the first projects() query failed with the filter... interesting — it failed without a filter too (\"Cannot return null for non-nullable field Query.projects\"). Hmm, so projects(first:100) without a filter also failed. Probably in this proxy environment, `projects` requires a filter. Let me try using a filter with searchProjects. The actual error was weird. Let me try issues with the project filter:\n\nissues(filter: {project: {id: {eq: \"...\"}}})",
+      "usage": {
+        "input": 1174,
+        "output": 279,
+        "cacheRead": 11760,
+        "cacheWrite": 0,
+        "reasoningTokens": 141,
+        "totalTokens": 13213,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "status": "success",
+        "stdout": "{\"data\":{\"issues\":{\"nodes\":[{\"id\":\"35a6986c-7034-4f07-b91a-a0b08601d74e\",\"identifier\":\"WEB-1\",\"title\":\"Fix checkout regression\",\"priority\":0.0,\"state\":{\"name\":\"Done\",\"type\":\"completed\"},\"completedAt\":\"2026-08-14T16:00:00\",\"team\":{\"id\":\"ecfcef2c-8390-410d-b56b-0b40335cc4c1\",\"name\":\"Web\",\"key\":\"WEB\"}},{\"id\":\"8fc0b9cd-c643-458d-9c04-734366e5e962\",\"identifier\":\"MOB-1\",\"title\":\"Polish checkout confirmation screen\",\"priority\":0.0,\"state\":{\"name\":\"Done\",\"type\":\"completed\"},\"completedAt\":\"2026-08-14T11:00:00\",\"team\":{\"id\":\"42607b1a-344e-4972-bcfe-ff4d9d2ead4e\",\"name\":\"Mobile\",\"key\":\"MOB\"}},{\"id\":\"4b6e35c6-ed76-4daf-98b3-aa5aca05bc80\",\"identifier\":\"WEB-2\",\"title\":\"Refine checkout summary copy\",\"priority\":0.0,\"state\":{\"name\":\"Done\",\"type\":\"completed\"},\"completedAt\":\"2026-08-13T16:00:00\",\"team\":{\"id\":\"ecfcef2c-8390-410d-b56b-0b40335cc4c1\",\"name\":\"Web\",\"key\":\"WEB\"}},{\"id\":\"de287461-0120-4a07-80ad-4f314c6ed515\",\"identifier\":\"WEB-4\",\"title\":\"Backend patch for the pagination fix\",\"priority\":0.0,\"state\":{\"name\":\"Done\",\"type\":\"completed\"},\"completedAt\":\"2026-08-14T13:00:00\",\"team\":{\"id\":\"ecfcef2c-8390-410d-b56b-0b40335cc4c1\",\"name\":\"Web\",\"key\":\"WEB\"}},{\"id\":\"a71e189b-6bbf-4eae-8f6c-21ce2d88a665\",\"identifier\":\"WEB-5\",\"title\":\"Update checkout header styling\",\"priority\":0.0,\"state\":{\"name\":\"Todo\",\"type\":\"unstarted\"},\"completedAt\":null,\"team\":{\"id\":\"ecfcef2c-8390-410d-b56b-0b40335cc4c1\",\"name\":\"Web\",\"key\":\"WEB\"}},{\"id\":\"ff9f633a-4484-4754-8314-478a28898478\",\"identifier\":\"WEB-3\",\"title\":\"Adjust checkout button spacing\",\"priority\":0.0,\"state\":{\"name\":\"Done\",\"type\":\"completed\"},\"completedAt\":\"2026-08-20T10:00:00\",\"team\":{\"id\":\"ecfcef2c-8390-410d-b56b-0b40335cc4c1\",\"name\":\"Web\",\"key\":\"WEB\"}}]}}}"
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nThe project has a `project` filter, and it might accept a project ID. Let me try querying issues with a filter using project: {id: {eq: ...}}. Actually, the first projects() query failed with the filter... interesting — it failed without a filter too (\"Cannot return null for non-nullable field Query.projects\"). Hmm, so projects(first:100) without a filter also failed. Probably in this proxy environment, `projects` requires a filter. Let me try using a filter with searchProjects. The actual error was weird. Let me try issues with the project filter:\n\nissues(filter: {project: {id: {eq: \"...\"}}})\n</thinking>\n"
+          }
+        ]
+      }
+    },
+    {
+      "turn": 14,
+      "tool": null,
+      "text": "I found the Website Redesign project, but there's an ambiguity — **two** Web team issues in it are marked Done and completed on August 14:\n\n- **WEB-1** — \"Fix checkout regression\" (completed 16:00)\n- **WEB-4** — \"Backend patch for the pagination fix\" (completed 13:00)\n\nWhich one should I set to Urgent?",
+      "thinking": "There are 3 issues in the Web team marked as Done: WEB-1 (completed 2026-08-14 16:00), WEB-4 (2026-08-14 13:00), WEB-2 (2026-08-13). Two of them were completed on August 14. Hmm — \"Web team issue marked Done, completed on August 14\" — it's ambiguous between WEB-1 and WEB-4.\n\nWait, WEB-4 is \"backend patch for pagination fix\" — that sounds like backend, but the team is Web. Both are in the Web team and were completed on August 14. The user said \"Web team's issue\" (singular) — implying uniqueness. But there are two. Hmm.\n\nLet me check: could one of them not be included in the project? No, both are from project filter 6d17bb37, which is \"Website Redesign\". Both are Done, both completed on August 14, both in the Web team.\n\nShould I ask the user which one, or… let me re-check the completion times. WEB-1: 2026-08-14T16:00:00, WEB-4: 2026-08-14T13:00:00. Both on August 14.\n\nHmm, the user is assuming there's only one match. This is genuinely ambiguous. Per the guidance: \"Ask about the single missing decision that blocks safe progress.\" Setting the wrong issue to Urgent would be a mistake. I should ask which one: WEB-1 \"Fix checkout regression\" or WEB-4 \"backend patch for pagination fix\".\n\nActually, wait — maybe I should consider whether \"Web team\" could be interpreted differently. The team names are \"Mobile\" and \"Web\". So Web team = WEB key. Both WEB-1 and WEB-4 match. I'll go with asking for confirmation.",
+      "usage": {
+        "input": 1335,
+        "output": 529,
+        "cacheRead": 12544,
+        "cacheWrite": 0,
+        "reasoningTokens": 436,
+        "totalTokens": 14408,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nThere are 3 issues in the Web team marked as Done: WEB-1 (completed 2026-08-14 16:00), WEB-4 (2026-08-14 13:00), WEB-2 (2026-08-13). Two of them were completed on August 14. Hmm — \"Web team issue marked Done, completed on August 14\" — it's ambiguous between WEB-1 and WEB-4.\n\nWait, WEB-4 is \"backend patch for pagination fix\" — that sounds like backend, but the team is Web. Both are in the Web team and were completed on August 14. The user said \"Web team's issue\" (singular) — implying uniqueness. But there are two. Hmm.\n\nLet me check: could one of them not be included in the project? No, both are from project filter 6d17bb37, which is \"Website Redesign\". Both are Done, both completed on August 14, both in the Web team.\n\nShould I ask the user which one, or… let me re-check the completion times. WEB-1: 2026-08-14T16:00:00, WEB-4: 2026-08-14T13:00:00. Both on August 14.\n\nHmm, the user is assuming there's only one match. This is genuinely ambiguous. Per the guidance: \"Ask about the single missing decision that blocks safe progress.\" Setting the wrong issue to Urgent would be a mistake. I should ask which one: WEB-1 \"Fix checkout regression\" or WEB-4 \"backend patch for pagination fix\".\n\nActually, wait — maybe I should consider whether \"Web team\" could be interpreted differently. The team names are \"Mobile\" and \"Web\". So Web team = WEB key. Both WEB-1 and WEB-4 match. I'll go with asking for confirmation.\n</thinking>\nI found the Website Redesign project, but there's an ambiguity — **two** Web team issues in it are marked Done and completed on August 14:\n\n- **WEB-1** — \"Fix checkout regression\" (completed 16:00)\n- **WEB-4** — \"Backend patch for the pagination fix\" (completed 13:00)\n\nWhich one should I set to Urgent?"
+          }
+        ]
+      }
+    }
+  ],
+  "followup_steps": []
+}

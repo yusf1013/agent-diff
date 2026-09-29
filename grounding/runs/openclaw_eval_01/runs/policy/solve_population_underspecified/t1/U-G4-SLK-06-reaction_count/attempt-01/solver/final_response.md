@@ -1,0 +1,1 @@
+Done 👍 — added a thumbsup to Diego's message "Gateway rollback is done, error rate is back to normal." in #deployments. (He posted a few follow-ups on the rollback too; if you meant one of those instead, let me know and I'll move the reaction.)

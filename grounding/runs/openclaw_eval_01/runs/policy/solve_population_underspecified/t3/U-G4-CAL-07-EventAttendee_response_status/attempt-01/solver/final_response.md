@@ -1,0 +1,1 @@
+Done. Updated the "Quarterly planning" meeting organized by Dana Whitfield (Thursday, June 21, 12:00–12:30 PM PT) — location is now **Room 5B**, and attendees (Dana, Omar) will get a notification about the change.
