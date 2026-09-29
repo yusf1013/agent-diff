@@ -38,8 +38,10 @@ The gap comes from four parts of our approach. The measured effect of each on th
      probes and mostly plain near misses.
 4. **The answer key and the machinery.** These make judging precise and cheap, and keep flawed tests out.
    - The mechanical triage flags 97% of the failures before any LLM reads a trial ([q4/](q4/README.md)).
-   - The baselines' own oracles report mostly false failures (below).
-   - Our checks and cold reader sent back 17 of 31 of our writer's first drafts (Phase 4).
+   - The baselines' own assertions report mostly false failures once their flawed tests are counted: 7 real of 22
+     (N0) and 6 of 40 (N1), after removing the errors of our harness (§5).
+   - Our checks and cold reader sent back 17 of 31 of our writer's first drafts (Phase 4): 10 for a substantive
+     flaw, 7 for format alone.
 
 **One more part is a contribution to honest measurement:** part 2 of the credit rule, and keeping the policy tests
 apart. Every one of N0's 10 failing trials and N1's 6 is the generic habit of acting when a presupposed record does
@@ -57,8 +59,11 @@ not exist. Counted as raw failing tests, N0 would score 5 and look productive. C
   costs a tenth of ours per test. It fails because the tests it writes flag the trap instead of luring (see
   evidence §7).
 - **A third baseline is not needed** for the questions asked. The one candidate was "our method as instructions,
-  without the machinery". The recorded first drafts already measure it: 55% of Phase 4's needed repair before they
-  were valid.
+  without the machinery". The recorded first drafts already measure it: 10 of Phase 4's 31 (32%) had a substantive
+  flaw, and 7 more only a format error.
+- **Mutated twins** answer the objection "did you tell it to...?": N0 and N1 rerun with the naive lines a reviewer
+  would ask about first (different properties, challenging but passable, neutral ids). Prepared in
+  [twin2/](twin2/README.md), with the prediction written before any run.
 - **Judge baselines move inside the pipelines.** Each pipeline's own oracle is scored on its own trials, flawed
   tests included. J0 stays as a reference judge. 6c (J0 and J1 on our tests) stays as a secondary result, titled
   "judges given our tests".
@@ -70,8 +75,8 @@ not exist. Counted as raw failing tests, N0 would score 5 and look productive. C
 | Facts exercised properly | distinct catalog facts meeting the credit rule, before any run | Cheap, no agent needed, and it predicts exposure | 7 / 17 / 34 |
 | Facts exposed | distinct catalog facts, detect@1 and detect@3 (D5) | The outcome that matters | 0 / 0 / 11.0 (detect@1 7.2) |
 | Failing tests, split by kind | fact-level or policy | Stops the raw count from rewarding presupposing tests | 5 policy / 2 policy / 12.5 fact-level |
-| Flawed tests | share of tests, with causes, whenever found | "Flawed is flawed" | 3 / 7 / 17 of 31 first drafts before the machinery; 5 of 29 accepted scenarios later (ids) |
-| Pipeline precision | reported failures that are real grounding failures, flawed tests included | What a user of the pipeline sees | assertions 7 of 34 / 6 of 58; judge v2 with the answer key 1.00 on valid trials |
+| Flawed tests | share of tests, with causes, whenever found | "Flawed is flawed" | 3 / 7 / 10 of 31 first drafts with a substantive flaw before the machinery (7 more format only); 5 of 29 accepted scenarios later (ids) |
+| Pipeline precision | reported failures that are real grounding failures, flawed tests included | What a user of the pipeline sees | assertions 7 of 22 / 6 of 40 (our harness's errors removed; first reported 7 of 34 and 6 of 58); judge v2 with the answer key 1.00 on valid trials |
 | Judge accuracy on the pipeline's own trials | precision and recall against hand labels | The judge's part, without borrowing our tests | see §5 |
 | Token cost | generation and judging, list and billed: per test, per fact exercised properly, per fact exposed | "No one wants to pay more" | per test $0.011 / $0.014 / $0.113 at list; per fact exposed: none / none / $0.64 |
 
@@ -95,8 +100,13 @@ judge does it well whenever the agent narrates its own mistake: it found 43 of 4
 misses the silent ones: on Qwen's underspecified failures it found 122 of 183.
 
 **The comparison that shows the contribution is pipeline against pipeline.** The naive pipeline's platform-native
-oracle, AgentDiff assertions, reaches precision 0.28 (N0) and 0.15 (N1) on its own tests. It also reports failures
-on every invalid test.
+oracle, AgentDiff assertions, reaches precision 0.54 (N0) and 0.27 (N1) on its own valid tests, once the errors of
+our harness are removed (first reported as 0.28 and 0.15; §5). It also reports failures on every invalid test.
+
+**On the baselines' own tests, J0 is no better than a plain judge that reads the test's expected outcome:** 16 real
+and 3 false failures for the plain judge, 16 and 4 for J0, over both baselines' valid trials. This is the same
+finding from the other side: the expected outcome, a small answer key, does most of the work. The difference is on
+broken tests: the plain judge goes with what the broken test expected (21 failures reported), J0 does not (none).
 
 ## Evidence
 
@@ -194,16 +204,35 @@ Failures reported on invalid tests are counted apart.
 
 | Oracle | N0: precision / recall | N0: failures on invalid tests | N1: precision / recall | N1: failures on invalid tests |
 |---|---|---:|---|---:|
-| The tests' own AgentDiff assertions | 0.28 / 0.70 | 9 | 0.15 / 1.00 | 18 |
-| Plain judge given the test's expected outcome | 0.77 / 1.00 | 9 | not run (Muse billing error) | – |
-| J0 | 0.83 / 1.00 | 0 | not run | – |
+| The tests' own AgentDiff assertions, our harness's errors removed | 0.54 / 0.70 | 9 | 0.27 / 1.00 | 18 |
+| ... as first reported | 0.28 / 0.70 | 9 | 0.15 / 1.00 | 18 |
+| Plain judge given the test's expected outcome | 0.77 / 1.00 | 9 | 1.00 / 1.00 | 12 |
+| J0 | 0.83 / 1.00 | 0 | 0.75 / 1.00 | 0 |
 | Ours: triage plus judge v2, with the answer key (on our tests) | 1.00 / 1.00 on valid trials | 16 of 18 artifacts called "incorrect" | | |
 
-**Why the assertions fail correct trials:**
-- A strict "changed" check trips on a bookkeeping column: a moved file's `path`, Linear's `priorityLabel`.
-- Deletes and cancellations are updates in Box and Calendar, not removed rows.
-- Slack's replica has no `white_check_mark`.
-- A test expected an action where the agent reasonably asked (an unknown email).
+N1 has 6 real failures, so its precision figures rest on few cases. N1's two LLM judges ran after Muse's billing was
+restored, on the 141 trials that ran ($8.41 at list for both). On N0's 7 wrong priority values (outside scope, not
+counted above), the assertions reported all 7, the plain judge 3, J0 none.
+
+**Why the assertions fail correct trials: 52 false failures, 30 of them ours.**
+- **Our format document** (given to both baselines) had three errors, 27 false failures:
+  - It listed an `"unchanged"` diff type, copied from the engine's README; the engine's schema rejects it, so every
+    test using it failed (15).
+  - It promised that "timestamps and similar bookkeeping columns" are ignored; the engine ignores only the
+    benchmark's list, so a moved file's `path`, a Box `modified_by_id` or Linear's `priorityLabel` failed strict
+    checks (9).
+  - It stated that only listed columns may change, but not that a `changed` check listing none fails whenever
+    anything changes (3).
+- **Our replica** has no `white_check_mark` reaction, so N0-SLK-T06 could never pass (3).
+- **The baselines' own** (22):
+  - A deleted Box item or Calendar event is expected to disappear, but both services keep it, trashed or cancelled
+    (18). The documents they read say so (Box: "either permanently or by moving it to the trash").
+  - A request lacked a needed email address, so the agent rightly asked (3).
+  - An exact count caught a probe comment the agent archived (1).
+- The rescoring under what the document described is `assertions.py --faithful` (`assertions.faithful.json`: 0.37
+  and 0.27). The table's first row (`assertions_corrected` in `oracles.score.json`) also counts N0-SLK-T06 and
+  N0-BOX-T08 apart ([harness_flaws.json](n0/runs/gen_01/harness_flaws.json)). The twins get a corrected document
+  ([twin2/](twin2/README.md)).
 
 ### 6. Cost
 
@@ -281,13 +310,13 @@ The agent-run cost per test is the same for all approaches. For N0 and N1 it buy
   against our own tests' mechanical claims is left to the full comparison.
 - **The coding agent had no shell** (the kit's sandbox), so it could not try its tests. One repair turn for load
   errors was allowed; none was needed.
-- **N1's LLM oracles were not run.** Muse started answering 402 "Billing verification failed" at 16:13. The
-  commands are in the README.
+- **Our format document for the baselines had errors** (§5). They changed the baselines' assertion results only,
+  not what their tests expose; the corrected figures are given.
 
 ## For the PI, outside the question
 
-- **Muse billing:** every Muse call now fails with HTTP 402 ("Billing verification failed. Please check your payment
-  method."). This will stop the lead session's Muse work too.
+- **Muse billing:** Muse answered HTTP 402 ("Billing verification failed") from 16:13 until the PI's recharge;
+  N1's judges reran afterwards.
 - **G4-BOX-01's wording:** OpenClaw reads the comment clause as a second instruction in both arms of the ablation (12
   of 12 trials). Its two probes' exposures in full_02 then belong to the reading, not to H:Comment.item_id:comment or
   B:Comment.file_id. N1-BOX-T12 shows the same reading ("with a review task assigned by Omar").
@@ -306,6 +335,7 @@ The agent-run cost per test is the same for all approaches. For N0 and N1 it buy
 | [n0/](n0/) | N0: inputs, generator, converter, review rules, review, runs, labels, oracles |
 | [n1/](n1/) | N1: inputs, review, runs, labels, flaws found at run time |
 | [cycle2/](cycle2/) | The form and content ablations: cases, run, labels |
+| [twin2/](twin2/README.md) | The mutated twins, prepared with their prediction |
 | [plain_twins.py](plain_twins.py), [plain_pick.json](plain_pick.json), `ablation/` | The plain twins and their sample |
 | [ours.py](ours.py), [machinery.py](machinery.py), [compare.py](compare.py) | Our side, the machinery, the tables |
 | [judges.py](judges.py), [assertions.py](assertions.py), [score_oracles.py](score_oracles.py) | The baselines' oracles |

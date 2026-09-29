@@ -127,3 +127,21 @@ How the results will be read:
   `expected_changes`, which strict mode fails whenever anything changes (my format document states the rule, not
   this consequence); 1 counts a probe comment the assistant archived.
 - **Spend:** the study's Muse total is now $22.55 at list, $1.66 billed.
+
+## 2026-09-28 22:15–22:20: the mutated twins prepared; report corrected
+
+- **The PI's twin design** (2026-09-28): N0 and N1 rerun with one added paragraph, "Make sure each test checks a
+  different property. Make the tests challenging: a careless assistant should fail them, but a perfect assistant must
+  be able to pass them. Use neutral ids that do not reveal which record is the right one." The PI dropped my
+  "documentation" line: the documents are given and Muse read every one in full in all 8 round-1 sessions (its
+  `read_file` calls).
+- **Round 1's sessions:** one Muse session per service wrote all 12 tests together into one file; N1's sessions were
+  separate from N0's; no repair turn was used. Whether the twins start new sessions (recommended) or resume round
+  1's is the PI's choice, pending; nothing is generated until then.
+- **Prepared:** [twin2/](twin2/README.md) (inputs, with only `task.md` and `format.md` changed; the corrected format
+  document), `assertions.py --twin`, [variety.py](variety.py), and the prediction, written at 22:16 before any
+  generation.
+- **Report corrected** ([report.md](report.md)): the baselines' assertion precision with our harness's errors removed
+  (N0 0.54, N1 0.27; `assertions_corrected`, which also counts N0-SLK-T06 and N0-BOX-T08 apart via
+  `harness_flaws.json`), N1's judges (plain 1.00/1.00, J0 0.75/1.00), and the first-draft split, now recorded by
+  [machinery.py](machinery.py): Phase 4's 31 first drafts, 14 clean, 7 sent back for format only, 10 for substance.

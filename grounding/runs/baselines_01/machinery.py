@@ -19,12 +19,15 @@ SOURCES = {"phase4_muse": RUNS / "autogen_02/runs/phase4_gen",
            "arm_r_sonnet": RUNS / "autogen_01/runs/gen_arm_r",
            "arm_p_sonnet": RUNS / "autogen_01/runs/gen_arm_p",
            "arm_p_v2_sonnet": RUNS / "autogen_01/runs/gen_arm_p_v2"}
+FORMAT = "format or seed syntax (writer output did not parse or build)"
+
+
 def category(stage: str, problem: str) -> str:
     """A problem's kind, from the stage that raised it and its text."""
     low = problem.lower()
     if stage == "missing" or "jsondecodeerror" in low or "could not be built" in low or "cannot be evaluated" in low \
             or low.startswith("seed:"):
-        return "format or seed syntax (writer output did not parse or build)"
+        return FORMAT
     if stage == "replica":
         return "the replica rejects the seed or the write does not land"
     if stage == "reader":
@@ -55,15 +58,20 @@ def main():
             stats[o.get("status", "unknown")] += 1
             first = o.get("history", [{}])[0] if o.get("history") else {}
             problems_first = first.get("problems", [])
-            if not problems_first and o.get("versions", 1) == 1 and o.get("status") == "accepted":
+            clean = not problems_first and o.get("versions", 1) == 1 and o.get("status") == "accepted"
+            if clean:
                 stats["first_draft_clean"] += 1
+            brief_kinds = set()
             for h in o.get("history", []):
                 if h.get("problems"):
                     stages[h.get("stage")] += 1
                     kinds = {category(h.get("stage"), p if isinstance(p, str) else json.dumps(p))
                              for p in h["problems"]}
+                    brief_kinds |= kinds
                     for k in kinds:  # rounds sent back for each kind of problem
                         cats[k] += 1
+            if not clean:  # a brief sent back only for format, or at least once for substance
+                stats["sent_back_format_only" if brief_kinds <= {FORMAT} else "sent_back_substantive"] += 1
             stats["versions"] += o.get("versions", 0)
         out[name] = {"counts": dict(stats), "rounds_sent_back_by_stage": dict(stages),
                      "rounds_sent_back_by_problem": dict(cats.most_common())}

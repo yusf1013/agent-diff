@@ -6,6 +6,8 @@ Oracles:
 - **assertions:** the test's own AgentDiff assertions (assertions.json, from assertions.py);
 - **assertions_faithful:** the same, evaluated as our format document described them (assertions.faithful.json, from
   `assertions.py --faithful`);
+- **assertions_corrected:** assertions_faithful with the tests in harness_flaws.json (broken by our replica or our
+  format document, not by the baseline) counted apart;
 - **plain_expected:** a plain LLM judge given the test author's expected outcome (judges.py);
 - **j0:** judge_baselines_01's J0 (judges.py).
 
@@ -45,6 +47,11 @@ def main():
         if (gen / file).exists():
             oracles[name] = {f"solve_01/{k}": (not v["passed"]) if v.get("passed") is not None else None
                              for k, v in json.loads((gen / file).read_text()).items()}
+    harness = {}
+    if (gen / "harness_flaws.json").exists():
+        harness = {k: v for k, v in json.loads((gen / "harness_flaws.json").read_text()).items() if not k.startswith("_")}
+    if "assertions_faithful" in oracles:
+        oracles["assertions_corrected"] = oracles["assertions_faithful"]
     for name in ("plain_expected", "j0"):
         if (gen / f"judged_{name}").exists():
             oracles[name] = verdicts(gen / f"judged_{name}")
@@ -57,6 +64,9 @@ def main():
             says = says_by_key.get(key)
             if says is None:
                 cells["no_verdict"] += 1
+                continue
+            if name == "assertions_corrected" and case in harness:
+                cells["harness_flaw_reported_failure" if says else "harness_flaw_passed"] += 1
                 continue
             if not review.get(case, {}).get("valid", True):
                 cells["invalid_test_reported_failure" if says else "invalid_test_passed"] += 1

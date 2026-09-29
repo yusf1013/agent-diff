@@ -1,6 +1,7 @@
 """A baseline test's own oracle: its AgentDiff assertions, evaluated offline on each trial's recorded diff.
 
     python grounding/runs/fact_coverage_02/launch.py grounding.runs.baselines_01.assertions RUN_DIR [--out OUT.json]
+        [--faithful | --twin]
 
 The spec is the benchmark's: the test's assertions plus the benchmark suite's `ignore_fields` for the service
 (`examples/<service>/testsuites/<service>_bench.json`), compiled and evaluated by the backend's own engine
@@ -30,22 +31,30 @@ BOOKKEEPING = {"box": ["path", "modified_by_id"], "calendar": [],
                "linear": ["priorityLabel", "prioritySortOrder", "sortOrder"], "slack": []}
 
 
-def faithful_spec(domain: str, assertions: list) -> dict:
+def ignored_columns(domain: str) -> list[str]:
+    """The benchmark's ignored columns plus BOOKKEEPING: what the twins' corrected format document lists as ignored."""
+    return list(dict.fromkeys(list(IGNORE[domain].get("global", [])) + BOOKKEEPING[domain]))
+
+
+def make_spec(domain: str, assertions: list, mode: str = "benchmark") -> dict:
+    """benchmark: the benchmark's own ignore list. faithful (round 1): as round 1's format document described the
+    language. twin: as the twins' corrected document describes it (the listed ignored columns; no "unchanged")."""
+    if mode == "benchmark":
+        return {"version": "0.1", "ignore_fields": IGNORE[domain], "assertions": assertions}
     fixed = []
     for a in assertions:
         a = dict(a)
-        if a.get("diff_type") == "unchanged":
+        if mode == "faithful" and a.get("diff_type") == "unchanged":
             a["diff_type"], a["expected_count"] = "changed", 0
         fixed.append(a)
     ignore = json.loads(json.dumps(IGNORE[domain]))
-    ignore["global"] = list(dict.fromkeys(list(ignore.get("global", [])) + BOOKKEEPING[domain]))
+    ignore["global"] = ignored_columns(domain)
     return {"version": "0.1", "ignore_fields": ignore, "assertions": fixed}
 
 
-def evaluate(attempt: Path, faithful: bool = False) -> dict:
+def evaluate(attempt: Path, mode: str = "benchmark") -> dict:
     case = json.loads((attempt / "case.json").read_text())
-    spec = faithful_spec(case["domain"], case["baseline"]["assertions"]) if faithful else {
-        "version": "0.1", "ignore_fields": IGNORE[case["domain"]], "assertions": case["baseline"]["assertions"]}
+    spec = make_spec(case["domain"], case["baseline"]["assertions"], mode)
     diff_path = attempt / "environment" / "diff_run.json"
     if not diff_path.exists():
         return {"passed": None, "error": "no diff recorded"}
@@ -66,8 +75,10 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("run_dir", type=Path)
     ap.add_argument("--out", type=Path)
-    ap.add_argument("--faithful", action="store_true", help="evaluate as format.md described (see BOOKKEEPING)")
+    ap.add_argument("--faithful", action="store_true", help="round 1: evaluate as its format.md described (BOOKKEEPING)")
+    ap.add_argument("--twin", action="store_true", help="the twins: evaluate as their corrected format.md describes")
     args = ap.parse_args()
+    mode = "faithful" if args.faithful else "twin" if args.twin else "benchmark"
     out = {}
     for summary in sorted(args.run_dir.resolve().glob("t*/*/attempt-*/execution_summary.json")):
         attempt = summary.parent
@@ -75,7 +86,7 @@ def main():
         latest = sorted(attempt.parent.glob("attempt-*"))[-1]
         if attempt != latest:
             continue
-        out[key] = evaluate(attempt, args.faithful)
+        out[key] = evaluate(attempt, mode)
     text = json.dumps(out, indent=1, default=str)
     if args.out:
         args.out.write_text(text + "\n")
