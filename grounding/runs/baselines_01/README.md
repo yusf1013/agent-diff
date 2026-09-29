@@ -43,6 +43,7 @@ the full comparison is out of scope.
 | [n1/](n1/) | N1, N0 plus our facts: inputs, review, run, labels, flaws found at run time |
 | [cycle2/](cycle2/) | The form and content ablations: cases, run, labels |
 | [twin2/](twin2/README.md) | The mutated twins: N0 and N1 with the PI's added lines and a corrected format document |
+| [plain48/](plain48/README.md) | The plain-twin ablation on 48 randomly drawn probes |
 | `ablation/`, [plain_twins.py](plain_twins.py) | The plain twins of our probes and the originals they pair with |
 | [ours.py](ours.py), [machinery.py](machinery.py), [compare.py](compare.py) | Our side from existing records, the machinery's catches, the report's tables |
 

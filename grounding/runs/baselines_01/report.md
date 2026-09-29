@@ -28,8 +28,10 @@ The gap comes from four parts of our approach. The measured effect of each on th
    - We took 12 of our probes that had exposed a fact and removed only the substitute, keeping the request and the
      seed. Failing trials fell from 27 of 36 to 7 of 36.
    - Leaving out two pairs whose request the agent misreads in both versions, the fall is from 21 of 30 to 2 of 30.
-   - These 12 were chosen because they had exposed a fact. So this measures how much of our exposure depends on the
-     substitute, not its average effect.
+   - Those 12 were chosen because they had exposed a fact, so the PI asked for a random sample: on 48 probes drawn
+     without looking at their results, 14 fail with the substitute and 2 without it; 13 pairs fail only with it and 1
+     only without it (sign test p = 0.002); failing trials fall from 29 of 144 to 3 of 144 (§3,
+     [plain48/](plain48/README.md)).
    - Across the suite, designated near misses expose a fact in 30% of probes and plain ones in 16%.
    - The baselines' near misses are mostly plain: 39 of 48 of N0's, 37 of 58 of N1's, against 18 of 99 of our Phase 4
      decoys.
@@ -166,10 +168,17 @@ The reading of each result was fixed before the runs ([log](log.md), 14:28). Lab
 | Failing trials, without the 2 confounded pairs | 21 of 30 | 2 of 30 |
 | Pairs failing at least once | 12 of 12 | 3 of 12 |
 
+| 48 probes drawn at random (plain48), 3 trials each | With the substitute | Substitute removed |
+|---|---:|---:|
+| Probes failing at least once | 14 of 48 | 2 of 48 |
+| Failing trials | 29 of 144 | 3 of 144 |
+| Pairs failing only in this version | 13 | 1 |
+
 - **Form:** the probe lifts plain near misses from nothing to about 15% of tests. That matches our own F0 probes
   (16%).
 - **Content:** within a test, the substitute is what bites. Removed, 9 of the 10 unconfounded probes stop failing.
-  Across the suite, it doubles the probe's rate (30% against 16%).
+  On a random sample, not selected on exposure, 13 of the 14 failing probes stop failing (the fourteenth fails for
+  another reason), so the selected pairs did not overstate it.
 - **Against the reading fixed at 14:28:** cell b landed at 14%, near our F0 probes, as the second branch foresaw.
   But neither part carries "most" on its own; they multiply:
   - the form takes plain near misses from 0% to about 15% of tests;
@@ -316,8 +325,8 @@ result; the prediction was written before generation.
 6. **Measures:** the table under Q3, per arm and per domain, with counts and denominators.
 7. **Ablations, reported beside the arms:**
    - **Covers against probes:** from the runs already planned.
-   - **Plain twins on a random sample:** 48 probes (12 per service, the PI's choice), not selected on exposure, so
-     the average effect is estimated too.
+   - **Plain twins on a random sample:** done in this pilot (plain48: 14 of 48 probes fail with the substitute, 2
+     without); in the full comparison, repeat on the regenerated suite with the same rule and draw.
    - **The machinery:** first drafts, from the generation records.
    - **The judge:** the triage alone against triage plus judge v2.
 8. **Size and cost** (estimates from this pilot):
@@ -338,8 +347,8 @@ result; the prediction was written before generation.
 
 - **One agent, and small samples.**
   - 48 tests per baseline.
-  - 12 plain-twin pairs, chosen from probes that had exposed a fact, so they measure how much of our exposure depends
-    on the substitute, not the average effect.
+  - Cycle 2's 12 plain-twin pairs were chosen from probes that had exposed a fact; the random sample of 48 (plain48)
+    gives the average effect, with the same answer.
 - **Our side is the recorded full_02 run, not a same-day rerun.** The Phase 4 numbers include 5 scenarios now judged
   flawed for their ids (G4-CAL-01, -02, -06, -07, G4-LIN-06). Without them, per 48 tests: 11.6 facts exposed at
   detect@3 (7.1 at detect@1), and 31.7 exercised properly.
@@ -374,7 +383,8 @@ result; the prediction was written before generation.
 | [n0/](n0/) | N0: inputs, generator, converter, review rules, review, runs, labels, oracles |
 | [n1/](n1/) | N1: inputs, review, runs, labels, flaws found at run time |
 | [cycle2/](cycle2/) | The form and content ablations: cases, run, labels |
-| [twin2/](twin2/README.md) | The mutated twins, prepared with their prediction |
+| [twin2/](twin2/README.md) | The mutated twins: the naive fixes a reviewer would ask for, run and scored |
+| [plain48/](plain48/README.md) | The substitute's effect on 48 randomly drawn probes |
 | [plain_twins.py](plain_twins.py), [plain_pick.json](plain_pick.json), `ablation/` | The plain twins and their sample |
 | [ours.py](ours.py), [machinery.py](machinery.py), [compare.py](compare.py) | Our side, the machinery, the tables |
 | [judges.py](judges.py), [assertions.py](assertions.py), [score_oracles.py](score_oracles.py) | The baselines' oracles |

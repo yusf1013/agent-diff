@@ -36,3 +36,30 @@ A pair is **discordant** when exactly one version fails in at least one of its 3
    pairs below 0.05. If only-original pairs are no more than only-plain pairs plus 2, cycle 2's result was a
    selection effect and the report says so.
 3. Most pairs fail in neither version (at least 28 of 48).
+
+## Result (runs 2026-09-29 00:48 to 02:11; every trial labelled by hand before any summary)
+
+[score.py](score.py), [score.json](score.json), [labels.json](labels.json). 288 trials; 4 timeouts, counted as
+failures of the agent that expose no fact.
+
+| 48 random probes, 3 trials each | With the designated substitute | Plain twin |
+|---|---:|---:|
+| Probes failing at least once | **14** (29%) | **2** (4%) |
+| Failing trials | 29 of 144 | 3 of 144 |
+| Distinct facts exposed | 14 | 2 |
+
+- **Discordant pairs:** 13 fail only with the substitute, 1 only as the plain twin (the agent claimed a subscriber
+  that is not there); 1 pair fails both ways (P-AR-BOX-24-I14: asked for the task created June 3, the agent takes
+  the only pricing-table task of that person whatever its date); 33 pairs fail in neither. Two-sided sign test on the
+  discordant pairs: p = 0.002.
+- **Against the prediction:** (1) originals 14 probes and 29 trials, inside the predicted 12 to 19 and 25 to 45;
+  plain twins 2 probes, at the bottom of the predicted 2 to 7, and 3 trials, below the predicted 5 to 20. (2) The
+  bar for "the substitute carries the weight" is met: 13 against 1, p < 0.05. (3) 33 pairs fail in neither (at least
+  28 predicted).
+- **What it says:** cycle 2's result was not a selection effect. On probes drawn without looking at their results,
+  removing the substitute stops 13 of the 14 failing probes from failing, and the one left fails for a reason
+  unrelated to it; failing trials fall from 29 to 3. The substitute carries about 90% of what our probes expose on
+  this agent. Every family with an
+  exposure shows it (F1 4 to 1, F5 1 to 0, F6 3 to 1, F7 3 to 0, F8 3 to 0).
+- The 4 probes cycle 2 had twinned behave as they did there (original against plain failing trials: 2 to 0, 3 to 0,
+  3 to 2, 3 to 0).

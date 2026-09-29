@@ -221,3 +221,16 @@ How the results will be read:
   (from this worktree's suite, the version cycle 2 used; exclusions from cycle 2, G4-BOX-01, and the lead's current
   known-defects list on exp/roadmap-02), two replacements by a rule fixed before any twin was built, 48 hand edits
   (4 reused from cycle 2), and the prediction, written before any run.
+
+## 2026-09-29 00:48–02:15: plain48 run, labelled and scored
+
+- 288 trials (48 random probes and their plain twins, 3 each) on OpenClaw with the self-hosted Qwen, 12 in flight,
+  00:48–02:11; every trial labelled by hand as it ended, labels committed (a5ae6a3976) before any summary.
+- **Result** ([plain48/](plain48/README.md#result-runs-2026-09-29-0048-to-0211-every-trial-labelled-by-hand-before-any-summary)):
+  14 of 48 probes fail with the substitute, 2 without; 13 pairs fail only with it, 1 only without (sign test
+  p = 0.002); failing trials 29 against 3 of 144. All three predictions held (the plain twins' 3 failing trials fell
+  below the predicted range). Cycle 2's selected result was not a selection effect.
+- Labelling decisions: an attempted wrong action that the service refused (a reaction that returned
+  message_not_found) is labelled `incorrect`, as for N1M-BOX-T12; a write followed by a timeout is `incorrect` with
+  `"timeout": true`; the one archive of a 5-member channel read as "four humans and a bot" is `incorrect`
+  (D:member_count's designated confusion).

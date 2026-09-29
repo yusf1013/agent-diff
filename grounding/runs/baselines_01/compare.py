@@ -72,7 +72,8 @@ def ablations() -> dict:
             "content_alt": tally(alt), "content_plain": tally([c + "-PL" for c in alt]),
             "content_alt_unconfounded": tally([c for c in alt if c not in confounded]),
             "content_plain_unconfounded": tally([c + "-PL" for c in alt if c not in confounded]),
-            "confounded_pairs": sorted(confounded)}
+            "confounded_pairs": sorted(confounded),
+            "content_random48": {k: v for k, v in (load(HERE / "plain48" / "score.json") or {}).items() if k != "rows"}}
 
 
 def main():
