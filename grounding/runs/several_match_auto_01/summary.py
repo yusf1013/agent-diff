@@ -24,6 +24,34 @@ HERE = Path(__file__).resolve().parent
 # Cases whose construction was flawed after the checks passed (log: the review found them).
 FLAWED = {"SMA-AP-BOX-02-H": "a file and a folder shared an id", "SMA-BOX-23-H": "a file and a folder shared an id",
           "SMA-G4-BOX-04-E": "a file and a folder shared an id"}
+# Why a shortcut that no valid hard test defeats is not covered, in the manual investigation's terms (several_match_02
+# report, trap reach). Any other undefeated shortcut is reported as a construction gap.
+IMPRACTICAL_1000 = "impractical: a container over 1,000 records (method check 6)"
+IMPRACTICAL_999 = "impractical: a channel over 999 messages; the channel-list routes reduce to the named channel's page"
+NOT_COVERED = {
+    ("box", "list named (limit 1000)"): IMPRACTICAL_1000,
+    ("box", "list tree, one page per folder (limit 1000)"): IMPRACTICAL_1000,
+    ("box", "search extension under folder (limit 200)"): "impractical: a crowd over 200 hits",
+    ("box", "search words under folder (limit 200)"): "impractical: a crowd over 200 hits",
+    ("box", "list named, every page (limit 1000)"): "not lazy for these requests: a copy in a subfolder of the named "
+                                                    "folder is contestable (check 8), so none goes there, and every "
+                                                    "page of the named folder is the thorough route",
+    ("box-anywhere", "search words (limit 200)"): "impractical: a crowd over 200 hits",
+    ("linear", "all issues (first 1000)"): "impractical: over 250 issues in scope",
+    ("linear", "all issues (first 250)"): "impractical: over 250 issues in scope",
+    ("linear", "named team's issues (first 250)"): "not lazy for these requests: the team (named, or pinned through its "
+                                                    "state, cycle or project) is the whole scope",
+    ("linear", "all issues (first 1000) -> keep the named team"): "not lazy for these requests: the team is the whole "
+                                                                  "scope",
+    ("linear", "server filter, all conditions (first 250)"): "not lazy for these requests: the filter expresses every "
+                                                              "condition",
+    ("slack", "named channel history (limit 999)"): IMPRACTICAL_999,
+    ("slack", "channel list (default types) -> history"): IMPRACTICAL_999,
+    ("slack", "channel list (exclude archived) -> history"): IMPRACTICAL_999,
+    ("slack", "channel list (public+private) -> one page of history"): IMPRACTICAL_999,
+    ("slack", "named channel history, every page (limit 999)"): "not lazy for these requests: the named channel is "
+                                                                "the whole scope",
+}
 
 
 def load(name, default):
@@ -52,6 +80,19 @@ def main():
         if cid in FLAWED:
             reasons.append(FLAWED[cid])
         (why_not if reasons else valid)[cid] = reasons or b
+    # The covers, by the kind of record and whether the request names its container: which reached a valid easy and a
+    # valid hard test. Kinds with no route table (method.md: four services, their main record kinds) get the easy
+    # tier only.
+    by_kind = defaultdict(lambda: {"plural-worthy covers": set(), "with a valid easy test": set(),
+                                   "with a valid hard test": set()})
+    for r in build.values():
+        if "cases" not in r or not (writer.get(r["cover"]) or {}).get("plural_worthy"):
+            continue
+        k = by_kind[f"{r['table']}, {'container named' if r['pinned'] else 'no container named'}"]
+        k["plural-worthy covers"].add(r["cover"])
+        for tier, c in r["cases"].items():
+            if c.get("id") in valid:
+                k[f"with a valid {'easy' if tier[0] == 'E' else 'hard'} test"].add(r["cover"])
     kinds = defaultdict(lambda: {"shortcuts": set(), "defeated": set(), "tests": 0})
     for cid, b in valid.items():
         if b["tier"] != "H" or cid not in checks:
@@ -86,13 +127,18 @@ def main():
         "covers": len(writer), "plural-worthy": sum(1 for a in writer.values() if a.get("plural_worthy")),
         "tests generated": {"all": len(built), "easy": sum(1 for b in built.values() if b["tier"] == "E"),
                             "hard": sum(1 for b in built.values() if b["tier"] == "H"),
-                            "of them repaired versions": sum(1 for c in built if c.endswith("R"))},
+                            "of them repaired versions": sum(1 for c in built if c.endswith("R")),
+                            "of them iteration 2 (traps the first round lacked)": sum(1 for c in built
+                                                                                      if c.endswith("HP"))},
         "valid": {"all": len(valid), "easy": sum(1 for b in valid.values() if b["tier"] == "E"),
                   "hard": sum(1 for b in valid.values() if b["tier"] == "H")},
         "not valid, by reason": dict(Counter(r for rs in why_not.values() for r in rs)),
+        "covers by record kind": {k: {n: len(v) for n, v in d.items()} for k, d in
+                                  sorted(by_kind.items(), key=lambda kv: -len(kv[1]["plural-worthy covers"]))},
         "coverage by request kind": {k: {"valid hard tests": v["tests"],
                                          "shortcuts defeated": f"{len(v['defeated'])} of {len(v['shortcuts'])}",
-                                         "not defeated": sorted(v["shortcuts"] - v["defeated"])}
+                                         "not defeated": {s: NOT_COVERED.get((k, s), "a construction gap")
+                                                          for s in sorted(v["shortcuts"] - v["defeated"])}}
                                      for k, v in sorted(kinds.items())},
         "trials on valid tests": len(trials),
         "timeouts": timeouts,

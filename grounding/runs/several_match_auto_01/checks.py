@@ -25,6 +25,23 @@ DB = os.environ.get("DATABASE_URL", "postgresql://postgres@127.0.0.1:15432/agent
 BASE = os.environ.get("AGENTDIFF_BASE_URL", "http://127.0.0.1:18001")
 
 
+def _channel_ids(api, types):
+    params = {"limit": 1000, **({"types": types} if types else {})}
+    return {ch["id"] for ch in strategies.slk(api, "conversations.list", **params).get("channels", [])}
+
+
+# Iteration 2: requests about channels, whatever their condition. The manual table (strategies.SLACK_CHANNELS) filters
+# by topic words; here a shortcut is judged by whether its retrieval returns the targets at all, since the selection
+# that follows is the same on every route.
+strategies.STRATEGIES["slack-channels-any"] = {
+    "search words -> channels of the hits": (False, lambda api, e: strategies.slk_channels_of_hits(
+        api, {"topic": e["search"]})),
+    "channel list (default types)": (False, lambda api, e: _channel_ids(api, None)),
+    "channel list (public+private) [thorough]": (True, lambda api, e: _channel_ids(
+        api, "public_channel,private_channel")),
+}
+
+
 def plan(case, words):
     """The shortcut table and its parameters for this case."""
     ref = case["references"][0]
@@ -52,6 +69,8 @@ def plan(case, words):
         if pinned(q):
             return "slack", {"prefix": chan["channel_name"], "search": words, "channel": chan["channel_id"]}
         return "slack-messages", {"search": words}
+    if table == "channels":
+        return "slack-channels-any", {"search": words}
     return None, None
 
 

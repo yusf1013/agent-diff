@@ -255,6 +255,61 @@ class Builder:
             made.append("another channel" if code == "C" else "a private channel")
         return made
 
+    # Iteration 2: the traps the first round left out.
+    def trap_box_paged(self):
+        """A copy past the first page (100 items) of the named folder. The listing puts folders first, then files by
+        name (code-point order in the replica's database), so copies of one of the cover's own near misses, named to
+        sort just ahead of the copy, fill the page. Each filler still fails the near miss's condition."""
+        if "P" in self.drop:
+            return []
+        folder = str(seedkit.find_row(self.case, "box_files", self.key)["parent_id"])
+        before = copy.deepcopy(self.seed)
+        nk = self.copy_target(2, "P")
+        name = str(seedkit.find_row(self.case, "box_files", nk)["name"])
+        stem = name.rpartition(".")[0] or name
+        for c in self.ref.get("claims") or []:
+            prop = c["requirement"].split(":", 1)[-1]
+            w = seedkit.find_row(self.case, "box_files", str(c["witness"]))
+            if not w or prop.startswith(("File.name", "File.description", "File.parent")):
+                continue
+            ext = str(w["name"]).rpartition(".")[2] if "." in str(w["name"]) else ""
+            saved = copy.deepcopy(self.seed)
+            n_folders = sum(1 for r in self.seed["box_folders"] if str(r.get("parent_id")) == folder)
+            ahead = n_folders + sum(1 for r in self.seed["box_files"]
+                                    if str(r.get("parent_id")) == folder and str(r["name"]) < name)
+            fillers = [seedkit.clone(self.seed, self.domain, "box_files", str(w["id"]), {
+                "name": f"{stem} - draft {n + 1:03d}" + (f".{ext}" if ext else ""), "parent_id": folder})
+                for n in range(max(0, 101 - ahead))]
+            if not {str(x) for x in fdc.evaluate(self.seed, self.ref["query"])} & {str(f) for f in fillers}:
+                files = sorted((r for r in self.seed["box_files"] if str(r.get("parent_id")) == folder),
+                               key=lambda r: str(r["name"]))
+                for pos, r in enumerate(files, n_folders):
+                    if str(r["id"]) in self.place and pos >= 100:
+                        self.place[str(r["id"])] = "P"
+                return [f"past the first 100 items of the named folder ({len(fillers)} copies of a near miss "
+                        f"failing {c['requirement']})"]
+            self.seed.clear()  # this near miss's copies meet the request: undo, try the next one
+            self.seed.update(saved)
+        self.notes.append("page trap impossible: no near miss whose copies fail the request")
+        self.seed.clear()  # and no copy past the page either
+        self.seed.update(before)
+        self.targets.remove(nk)
+        self.place.pop(nk)
+        return []
+
+    def trap_slack_private(self):
+        """For a request about channels that does not name their visibility: a copy of the channel as a private
+        channel the actor belongs to, behind conversations.list's default (public channels only)."""
+        if "H" in self.drop or any(f.get("field") == "is_private" for f in self.ref["query"].get("filters") or []):
+            return []
+        nk = self.copy_target(2, "H", is_private=True)
+        actor = self.case["acting_user_id"]
+        members = self.seed.setdefault("channel_members", [])
+        if not any(m["channel_id"] == nk and m["user_id"] == actor for m in members):
+            members.append({"channel_id": nk, "user_id": actor,
+                            "joined_at": seedkit.find_row(self.case, "channels", nk).get("created_at")})
+        return ["a private channel the actor belongs to"]
+
     # ---------------------------------------------------------------- checks
     def checks(self):
         problems = []
@@ -290,7 +345,7 @@ def finish(b: Builder, tier, answer, cover, suffix=""):
     return case
 
 
-def build_one(cover, answer, tiers=("E", "H"), suffix="", drop=(), no_variants=False):
+def build_one(cover, answer, tiers=("E", "H"), suffix="", drop=(), no_variants=False, second=False):
     out = {"cover": cover["case_id"], "domain": cover["domain"], "table": cover["references"][0]["query"]["table"],
            "pinned": pinned(cover["references"][0]["query"]), "cases": {}}
     for tier in tiers:
@@ -312,6 +367,10 @@ def build_one(cover, answer, tiers=("E", "H"), suffix="", drop=(), no_variants=F
                     traps = [f"a search crowd failing {traps[0]}"] if traps else []
                     if traps:  # the crowd precedes nothing here; a copy after it in search order
                         b.copy_target(1, "V")
+                    if second:
+                        traps += b.trap_box_paged()
+                elif kind == "channels" and second:
+                    traps = b.trap_slack_private()
                 elif kind == "issues":
                     traps = b.trap_linear()
                 elif kind == "messages" and out["pinned"]:
@@ -400,8 +459,39 @@ def repair(drop_traps: bool):
     (HERE / "placements.json").write_text(json.dumps(placements, indent=1) + "\n")
 
 
+def iterate2():
+    """Iteration 2: hard cases with the traps the first round lacked, as SMA-<cover>-HP, for the plural-worthy covers
+    whose easy case the reader agreed on:
+    - Box files in a named folder: the first round placed only a search crowd, or nothing (5 of 6 had no hard case).
+      Now also a copy past the folder's first page.
+    - Slack requests about channels that do not name the visibility: a copy as a private channel."""
+    answers = json.loads((HERE / "writer.json").read_text())
+    verdicts = json.loads((HERE / "reader.json").read_text())
+    report = json.loads((HERE / "build.json").read_text())
+    placements = json.loads((HERE / "placements.json").read_text())
+    for cover in covers():
+        cid, q = cover["case_id"], cover["references"][0]["query"]
+        first = report.get(cid) or {}
+        easy = (first.get("cases") or {}).get("E") or {}
+        if not (easy.get("built") and (verdicts.get(easy.get("id")) or {}).get("agreed")):
+            continue
+        if not ((q["table"] == "box_files" and pinned(q)) or (q["table"] == "channels" and not pinned(q))):
+            continue
+        r = build_one(cover, answers[cid], tiers=("H",), suffix="P", second=True)
+        c = r["cases"].get("H") or {}
+        report[f"{cid}:HP"] = {**r, "iteration": 2}
+        if c.get("built"):
+            placements[c["id"]] = c["placements"]
+        print(f"{cid:12} -> {c.get('id') or '-'} built={c.get('built')} traps={c.get('traps')} "
+              f"{c.get('why') or c.get('problems') or ''} {c.get('notes') or ''}"[:400])
+    (HERE / "build.json").write_text(json.dumps(report, indent=1, default=str) + "\n")
+    (HERE / "placements.json").write_text(json.dumps(placements, indent=1) + "\n")
+
+
 if __name__ == "__main__":
-    if "--repair" in sys.argv or "--repair2" in sys.argv:
+    if "--iterate2" in sys.argv:
+        iterate2()
+    elif "--repair" in sys.argv or "--repair2" in sys.argv:
         repair("--repair2" in sys.argv)
     else:
         main(set(sys.argv[1:]))
