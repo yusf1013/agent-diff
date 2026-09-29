@@ -4,6 +4,8 @@
 
 Oracles:
 - **assertions:** the test's own AgentDiff assertions (assertions.json, from assertions.py);
+- **assertions_faithful:** the same, evaluated as our format document described them (assertions.faithful.json, from
+  `assertions.py --faithful`);
 - **plain_expected:** a plain LLM judge given the test author's expected outcome (judges.py);
 - **j0:** judge_baselines_01's J0 (judges.py).
 
@@ -39,9 +41,10 @@ def main():
         for test in (k for k in json.loads((gen / "runtime_flaws.json").read_text()) if not k.startswith("_")):
             review.setdefault(test, {})["valid"] = False
     oracles = {}
-    if (gen / "assertions.json").exists():
-        oracles["assertions"] = {f"solve_01/{k}": (not v["passed"]) if v.get("passed") is not None else None
-                                 for k, v in json.loads((gen / "assertions.json").read_text()).items()}
+    for name, file in (("assertions", "assertions.json"), ("assertions_faithful", "assertions.faithful.json")):
+        if (gen / file).exists():
+            oracles[name] = {f"solve_01/{k}": (not v["passed"]) if v.get("passed") is not None else None
+                             for k, v in json.loads((gen / file).read_text()).items()}
     for name in ("plain_expected", "j0"):
         if (gen / f"judged_{name}").exists():
             oracles[name] = verdicts(gen / f"judged_{name}")

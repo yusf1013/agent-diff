@@ -106,3 +106,24 @@ How the results will be read:
 - **Muse billing:** from 16:13 every Muse call returns HTTP 402 "Billing verification failed". N1's plain and J0
   judges were stopped after 41 failed calls (no cost); kept as `judged_*.failed-402-billing`.
 - **The report:** [report.md](report.md). Total Muse spend of the study: $14.13 at list, $1.02 billed (every `calls.jsonl` under the study).
+
+## 2026-09-28 21:29–21:45: N1's judges, and two errors in my format document
+
+- **N1's LLM judges** reran after the PI recharged Muse, on the 141 trials that ran (finished 21:29 and 21:30,
+  $8.41 at list for both). Plain judge given `expected`: precision 1.00, recall 1.00 (6 real failures); J0: 0.75
+  and 1.00. On the 7 invalid tests (21 trials): the plain judge reported 12 failures, J0 none.
+- **My error:** `n0/inputs/*/format.md`, which both baselines got, lists an `"unchanged"` diff type (copied from the
+  engine's README), and the engine's schema rejects it. It also says "timestamps and similar bookkeeping columns"
+  are ignored, but the engine ignores only the benchmark's list, which misses `path` and `modified_by_id` (Box) and
+  `priorityLabel` (Linear). 27 of N1's 34 false alarms had an `"unchanged"` assertion, and 6 of N0's 18 and 3 more of
+  N1's came from the bookkeeping columns.
+- **Rescored as the document described** (`assertions.py --faithful`: `"unchanged"` becomes `changed` with a count
+  of 0; the missing bookkeeping columns ignored): N0 18 false alarms become 12 (precision 0.28 → 0.37); N1 34
+  become 16 (0.15 → 0.27). True failures caught are unchanged (N0 7 of 10, N1 6 of 6). The originals are kept in
+  `assertions.json`; the report's precision figures need this correction.
+- **The 28 false alarms left**, by cause: 18 expect a deleted record to disappear, but Box moves it to the trash and
+  Calendar marks the event cancelled; 3 have a request that lacks an email address, so the assistant asked; 3
+  expect the `white_check_mark` reaction, which the replica lacks; 3 have a `changed` assertion without
+  `expected_changes`, which strict mode fails whenever anything changes (my format document states the rule, not
+  this consequence); 1 counts a probe comment the assistant archived.
+- **Spend:** the study's Muse total is now $22.55 at list, $1.66 billed.
