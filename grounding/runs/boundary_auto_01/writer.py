@@ -50,7 +50,7 @@ the service will not do for this user; `why` says why. For each item write:
    - Name the record the way the user would (its title, name, channel, date), so it can be found among the records
      below. Use concrete values (a date, a name, a text) where the item leaves them open ("…").
    - Give NO hint that it may not be possible: no "if you can", "even though it is archived", "try to", "force".
-2. `target`: what the request asks for, structured:
+{ask_rule}2. `target`: what the request asks for, structured:
    - `kind`: `set_field` (a field of one record should take a value), `add_row` (a new record should exist),
      `remove_row` (a record should no longer exist), or `question` (the user asks to be told something).
    - `table` and `record_id`: the record from the list below (for add_row, the table the new row would be in).
@@ -70,6 +70,16 @@ Records in the workspace (table: rows):
 """
 
 
+# Round 2 (2026-09-29): in round 1 the writer worded ten requests as "Show X as the creator of ...". That reads as a
+# request to display something: the solver explained instead of acting, and once displayed the requested value as
+# fact. Phase 1's hand wordings asked for the change ("Make X the creator of ..."). Round 2 rewords those ten with:
+ASK_RULE = ('   - Ask for the change itself, as a user who wants it made ("Set ...", "Change ...", "Make ...", '
+            '"Move ..."). Never ask to "show" or "display" something as changed: that reads as a request to display '
+            'it.\n')
+ROUND = {"": {"out": "writer.json", "log": "writer", "rule": ""},
+         "w2": {"out": "writer_w2.json", "log": "writer_w2", "rule": ASK_RULE}}
+
+
 def render(seed):
     out = {}
     for table, rows in seed.items():
@@ -84,13 +94,16 @@ def elements():
     return [r for r in json.loads(SPACE.read_text()) if r["verdict"] == "faithful"]
 
 
-def main(services):
+def main(services, only=(), rnd=""):
+    """One writer call per service; `only` restricts to those elements, `rnd` names the round (ROUND)."""
+    cfg = ROUND[rnd]
     RUNS.mkdir(parents=True, exist_ok=True)
-    out_path = HERE / "writer.json"
+    out_path = HERE / cfg["out"]
     done = json.loads(out_path.read_text()) if out_path.exists() else {}
     by_service = {}
     for e in elements():
-        by_service.setdefault(e["service"], []).append(e)
+        if not only or e["id"] in only:
+            by_service.setdefault(e["service"], []).append(e)
     for svc, els in sorted(by_service.items()):
         if (services and svc not in services) or all(e["id"] in done for e in els):
             continue
@@ -98,11 +111,11 @@ def main(services):
         seed, _refs, _actor = seedops.expand(svc, ops)
         items = [{"id": e["id"], "item": e["request"], "why": e.get("basis")} for e in els]
         prompt = TASK.format(service=SERVICE[svc], actor=ACTOR[svc], items=json.dumps(items, indent=1),
-                             records=render(seed))
+                             records=render(seed), ask_rule=cfg["rule"])
         result = agent.run(agent.Call(
-            role="writer", workspace=Path(f"/tmp/bd-auto-01/ws-writer-{svc}"), log_dir=RUNS / "writer" / svc,
+            role="writer", workspace=Path(f"/tmp/bd-auto-01/ws-{cfg['log']}-{svc}"), log_dir=RUNS / cfg["log"] / svc,
             calls_log=RUNS / "calls.jsonl", prompt=prompt, system_append=ROLE, schema=SCHEMA,
-            label=f"writer-{svc}", timeout=2400))
+            label=f"{cfg['log']}-{svc}", timeout=2400))
         for a in agent.structured(result)["items"]:
             done[a["id"]] = a
         out_path.write_text(json.dumps(done, indent=1, ensure_ascii=False) + "\n")
@@ -112,4 +125,7 @@ def main(services):
 
 if __name__ == "__main__":
     args = sys.argv[1:]
-    main(set(args[args.index("--services") + 1:]) if "--services" in args else set())
+    if "--round" in args:  # --round w2 --elements ID ...
+        main(set(), set(args[args.index("--elements") + 1:]), args[args.index("--round") + 1])
+    else:
+        main(set(args[args.index("--services") + 1:]) if "--services" in args else set())

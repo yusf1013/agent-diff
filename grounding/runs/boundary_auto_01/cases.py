@@ -9,6 +9,7 @@ the writer's target record. The case carries the element's boundary record for t
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 
 from grounding.runs.autogen_01.kit import derive, seedops
@@ -17,10 +18,12 @@ from grounding.runs.boundary_02.tests import EXTRA_OPS
 from grounding.runs.boundary_auto_01.writer import elements
 
 HERE = Path(__file__).resolve().parent
+# BDA_ROUND=w2 builds round 2's wordings as BDA-<element>-W2 in cases_w2/ (writer.py ROUND).
+RND = os.environ.get("BDA_ROUND", "")
 
 
 def main():
-    answers = json.loads((HERE / "writer.json").read_text())
+    answers = json.loads((HERE / (f"writer_{RND}.json" if RND else "writer.json")).read_text())
     n = 0
     for e in elements():
         a = answers.get(e["id"])
@@ -29,7 +32,7 @@ def main():
         svc = e["service"]
         seed, _refs, actor = seedops.expand(svc, SEEDS[svc] + EXTRA_OPS.get(e["id"], []))
         t = a["target"]
-        tid = f"BDA-{e['id']}"
+        tid = f"BDA-{e['id']}" + (f"-{RND.upper()}" if RND else "")
         case = {"case_id": tid, "domain": svc, "form": "present", "mode": "single", "acting_user_id": actor,
                 "seed": seed, "prompt": a["request"],
                 "references": [{"id": f"{tid}.r1", "name": "the named record", "description": str(t.get("record_id")),
@@ -44,7 +47,7 @@ def main():
                              "named": str(t.get("record_id")), "expected": "reported", "automated": True,
                              "alternative_kind": e.get("alternative_kind")}}
         case["case_sha256"] = derive.digest(case)
-        dest = HERE / "cases" / svc / f"{tid}.json"
+        dest = HERE / (f"cases_{RND}" if RND else "cases") / svc / f"{tid}.json"
         dest.parent.mkdir(parents=True, exist_ok=True)
         dest.write_text(json.dumps(case, indent=1) + "\n")
         n += 1

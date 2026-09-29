@@ -49,11 +49,13 @@ def digest(run: Path):
 def main(run: Path):
     space = {r["id"]: r for r in json.loads((HERE.parent / "boundary_02" / "space.json").read_text())}
     answers = json.loads((HERE / "writer.json").read_text())
+    answers_w2 = json.loads((HERE / "writer_w2.json").read_text()) if (HERE / "writer_w2.json").exists() else {}
     out = {}
     for entry in digest(run):
         eid = entry["element"]
         att = sorted((run / entry["trial"]).glob("attempt-*"))[-1]
-        spec = spec_for(space[eid]["service"], answers[eid]["target"])
+        target = (answers_w2 if entry["trial"].endswith("-W2") else answers)[eid]["target"]
+        spec = spec_for(space[eid]["service"], target)
         v, info = O.verdict(spec, att, entry)
         if v == "fail: no answer" and entry["server_error_steps"]:
             v = "review: no answer after replica server errors"

@@ -12,6 +12,7 @@ natural. Writes reader.json.
 from __future__ import annotations
 
 import json
+import os
 import sys
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
@@ -22,6 +23,8 @@ from grounding.runs.boundary_02.tests import EXTRA_OPS
 from grounding.runs.boundary_auto_01.writer import ACTOR, SERVICE, elements, render
 
 HERE = Path(__file__).resolve().parent
+# BDA_ROUND=w2 reads round 2's wordings (writer.py ROUND) and writes reader_w2.json.
+SUFFIX = f"_{os.environ['BDA_ROUND']}" if os.environ.get("BDA_ROUND") else ""
 RUNS = HERE / "runs"
 SCHEMA = {"type": "object", "properties": {
     "table": {"type": "string"}, "record_id": {"type": "string"}, "change": {"type": "string"},
@@ -69,8 +72,8 @@ def agrees(r, t):
 
 def recompute():
     """Re-apply the agreement rule to the saved verdicts (no model calls)."""
-    answers = json.loads((HERE / "writer.json").read_text())
-    path = HERE / "reader.json"
+    answers = json.loads((HERE / f"writer{SUFFIX}.json").read_text())
+    path = HERE / f"reader{SUFFIX}.json"
     done = json.loads(path.read_text())
     for eid, v in done.items():
         v["same_record"] = agrees(v, answers[eid]["target"])
@@ -85,8 +88,8 @@ def read(e, answer):
     ops = SEEDS[svc] + EXTRA_OPS.get(e["id"], [])
     seed, _refs, _actor = seedops.expand(svc, ops)
     result = agent.run(agent.Call(
-        role="reader", workspace=Path(f"/tmp/bd-auto-01/ws-reader-{e['id']}"), log_dir=RUNS / "reader" / e["id"],
-        calls_log=RUNS / "calls.jsonl", system_append=ROLE, schema=SCHEMA, label=e["id"], timeout=1800,
+        role="reader", workspace=Path(f"/tmp/bd-auto-01/ws-reader{SUFFIX}-{e['id']}"), log_dir=RUNS / f"reader{SUFFIX}" / e["id"],
+        calls_log=RUNS / "calls.jsonl", system_append=ROLE, schema=SCHEMA, label=e["id"] + SUFFIX, timeout=1800,
         prompt=TASK.format(service=SERVICE[svc], actor=ACTOR[svc], request=answer["request"], records=render(seed))))
     r = agent.structured(result)
     t = answer["target"]
@@ -96,8 +99,8 @@ def read(e, answer):
 
 
 def main(ids, concurrency):
-    answers = json.loads((HERE / "writer.json").read_text())
-    out_path = HERE / "reader.json"
+    answers = json.loads((HERE / f"writer{SUFFIX}.json").read_text())
+    out_path = HERE / f"reader{SUFFIX}.json"
     done = json.loads(out_path.read_text()) if out_path.exists() else {}
     todo = [e for e in elements() if e["id"] in answers and (e["id"] in ids if ids else e["id"] not in done)]
     with ThreadPoolExecutor(max_workers=concurrency) as pool:
