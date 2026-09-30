@@ -84,6 +84,9 @@ def show(key: str, args) -> None:
         if args.overview:
             continue
         out = stdout_of(step.get("observation"))
+        if step.get("tool") == "memory_search" and "belongs to agent main" in out:
+            print("  RESPONSE: [memory_search unavailable: the agent database belongs to agent main (harness)]")
+            continue
         if "SKILL.md" in str(action) or "/references/" in str(action):
             if not selected:
                 print("  RESPONSE: [skill documentation, %d chars; --steps %d to read]" % (len(out), i))

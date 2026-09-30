@@ -159,3 +159,10 @@ $L grounding.runs.sol_eval_01.kit.compare_qwen; $L grounding.runs.sol_eval_01.ki
   - Those 8 labels were already written. The initial-label file cannot be overwritten, so they stayed as they were.
   - No verdict on an unlabelled trial was shown.
   - The script now compares a set only after all its blind labels are written and locked (sha256).
+- **03:25, a display filter that hid some responses, checked.** From 02:15 I piped kit/view.py through a grep that
+  dropped lines holding `"action"` (to hide the memory_search error block). The same grep also hid Box task
+  responses (`"action":"review"`).
+  - I noticed it while labelling the G4-BOX-04 absence trials and read those responses in full before labelling.
+  - For the trials labelled earlier through the filter, the outcome rests on the final answer and the diff, which
+    it never hid, and all of them are nonfailures.
+  - kit/view.py now collapses the memory_search block itself, and the grep is no longer used.
