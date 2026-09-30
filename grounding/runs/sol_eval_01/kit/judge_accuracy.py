@@ -7,7 +7,8 @@ with the verdict on the attempt it was written on. Adds what `compare` leaves ou
 - mechanism agreement where both call the trial a failure (Sol's reasoning is not recorded, so the judge's
   mechanism rests on the final answer and the responses, as my label does);
 - the effective label: an adjudication or a correction replaces the initial label (both kept in their own files);
-- pooled totals over the sets, and every disagreement with both notes.
+- pooled totals, and every disagreement with both notes: `pooled` over the Muse-written half's four sets (as
+  report_01 reads it), `pooled_regen` over the regenerated half's three, `pooled_all` over all seven.
 
     python grounding/runs/fact_coverage_02/launch.py grounding.runs.sol_eval_01.kit.judge_accuracy   # eval/judge_accuracy.json
 """
@@ -19,10 +20,11 @@ from pathlib import Path
 
 from grounding.runs.autogen_01.kit.judge import COLLAPSE
 from grounding.runs.autogen_02.kit import judge2
+from grounding.runs.sol_eval_01.kit import sets
 
 STUDY = Path(__file__).resolve().parents[1]
 EVAL = STUDY / "eval"
-SETS = ("regular_p4", "regular_6b", "policy_absence", "policy_underspecified")
+SETS = tuple(sets.SETS)
 
 
 def effective_labels(name: str) -> tuple[dict, dict]:
@@ -61,9 +63,30 @@ def verdict_for(name: str, key: str, attempt: str) -> dict | None:
     return None
 
 
+def pool(sets_out: dict, names: list[str]) -> dict:
+    pooled, mech = Counter(), Counter()
+    for name in names:
+        if name not in sets_out:
+            continue
+        s = sets_out[name]
+        pooled["labelled"] += s["with_verdict"]
+        pooled["exact"] += int(s["exact_agreement"].split("/")[0])
+        pooled["collapsed"] += int(s["collapsed_agreement"].split("/")[0])
+        det = s["failure_detection"]
+        for k in ("usable_by_both", "judge_fail", "label_fail", "both_fail", "void_by_label_only", "void_by_judge_only"):
+            pooled[k] += det[k]
+        pooled["same_facts"] += int(det["same_exposed_facts_when_both_fail"].split("/")[0])
+        for pair, n in s["mechanism_label_to_judge_when_both_fail"].items():
+            mech[tuple(pair.split(" -> "))] += n
+    return {**pooled, "sets": [n for n in names if n in sets_out],
+            "precision": f"{pooled['both_fail']}/{pooled['judge_fail']}",
+            "recall": f"{pooled['both_fail']}/{pooled['label_fail']}",
+            "mechanism_agreement_when_both_fail": f"{sum(n for (a, b), n in mech.items() if a == b)}"
+                                                  f"/{sum(mech.values())}"}
+
+
 def main():
-    out, pooled = {"_about": __doc__.split("\n\n")[0], "sets": {}}, Counter()
-    pooled_mech = Counter()
+    out = {"_about": __doc__.split("\n\n")[0], "sets": {}}
     for name in SETS:
         if not (EVAL / f"labels_{name}" / f"{name}_blind.json").exists() or not (EVAL / f"judged_{name}").exists():
             continue
@@ -100,23 +123,15 @@ def main():
                              "confusion_label_to_judge": base["confusion_ref_to_judge"],
                              "mechanism_label_to_judge_when_both_fail": {f"{a} -> {b}": n for (a, b), n in mech.items()},
                              "labels_changed": changed, "differences": rows}
-        n_both = len(labels) - len(missing)
-        pooled["labelled"] += n_both
-        pooled["exact"] += exact
-        pooled["collapsed"] += int(base["collapsed_agreement"].split("/")[0])
-        for k in ("usable_by_both", "judge_fail", "label_fail", "both_fail", "void_by_label_only", "void_by_judge_only"):
-            pooled[k] += det[k]
-        pooled["same_facts"] += int(det["same_exposed_facts_when_both_fail"].split("/")[0])
-        pooled_mech.update(mech)
-    out["pooled"] = {**pooled, "precision": f"{pooled['both_fail']}/{pooled['judge_fail']}",
-                     "recall": f"{pooled['both_fail']}/{pooled['label_fail']}",
-                     "mechanism_agreement_when_both_fail": f"{sum(n for (a, b), n in pooled_mech.items() if a == b)}"
-                                                           f"/{sum(pooled_mech.values())}"}
+    out["pooled"] = pool(out["sets"], sets.of_half("muse"))
+    out["pooled_regen"] = pool(out["sets"], sets.of_half("regen"))
+    out["pooled_all"] = pool(out["sets"], list(SETS))
     (EVAL / "judge_accuracy.json").write_text(json.dumps(out, indent=1, ensure_ascii=False) + "\n")
     for name, s in out["sets"].items():
         print(name, {k: s[k] for k in ("labelled", "exact_agreement", "collapsed_agreement")}, s["failure_detection"],
               s["mechanism_label_to_judge_when_both_fail"], f"{len(s['differences'])} differences")
-    print("pooled", out["pooled"])
+    for k in ("pooled", "pooled_regen", "pooled_all"):
+        print(k, {x: y for x, y in out[k].items() if x != "sets"})
 
 
 if __name__ == "__main__":

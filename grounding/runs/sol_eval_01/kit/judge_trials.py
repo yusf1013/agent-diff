@@ -2,7 +2,9 @@
 sample is labelled by hand while the judge runs).
 
     python grounding/runs/fact_coverage_02/launch.py grounding.runs.sol_eval_01.kit.judge_trials SET [--add-retried]
-    python ... judge_trials policy_absence|policy_underspecified --partial   # the trials ended so far, judged early
+    python ... judge_trials POLICY_SET --partial   # the trials ended so far, judged early (policy sets only)
+
+SET is any set of kit/sets.py: the Muse-written half's four, or the regenerated half's three.
 
 - **Regular sets** use autogen_02's `phase4 select` unchanged (`judge.select_run` with judge2's triage: every trial
   that is not mechanically clean, 20% of the clean ones, seed 7) plus every trial of the blind sample, as the Qwen
@@ -28,6 +30,7 @@ from pathlib import Path
 from grounding.runs.autogen_01.kit import judge as v1
 from grounding.runs.autogen_02.kit import judge2, phase4  # noqa: F401  (phase4 patches v1.triage with judge2's)
 from grounding.runs.sol_eval_01.kit.score import stalled
+from grounding.runs.sol_eval_01.kit.sets import SETS, kind
 
 STUDY = Path(__file__).resolve().parents[1]
 EVAL = STUDY / "eval"
@@ -44,8 +47,8 @@ def ended_badly(attempt: Path) -> str | None:
 
 def select(name: str) -> list[dict]:
     run_dir = (STUDY / "runs" / name).resolve()
-    if name.startswith("regular"):
-        items = v1.select_run(run_dir, (STUDY / "cases" / name / "suite.json").resolve())
+    if kind(name) == "regular":
+        items = v1.select_run(run_dir, SETS[name]["suite"].resolve())
         have = {f"{i['run']}/{i['trial']}/{i['case_id']}" for i in items}
         for key in json.loads((EVAL / f"blind_{name}.json").read_text())["keys"]:
             run, trial, case_id = key.split("/")
@@ -62,7 +65,7 @@ def main():
     name = sys.argv[1]
     run_dir = (STUDY / "runs" / name).resolve()
     if "--partial" in sys.argv:
-        if not name.startswith("policy"):
+        if kind(name) == "regular":
             raise SystemExit("--partial is for the policy sets, whose every trial is judged")
         from datetime import datetime
         items = []

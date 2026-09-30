@@ -234,7 +234,7 @@ def main():
         "replaced_attempts": {"attempts": len(replaced), "trials": len({a["trial"] for a in replaced}),
                               "by_kind": dict(Counter(a["kind"] for a in replaced))},
         "judge_cost": {"calls": cost["calls"], "failed_calls": cost["failed"], "list_usd": cost["list"],
-                       "verdicts": sum(1 for _ in EVAL.glob("judged_*/*/t*/*/verdict.json"))},
+                       "verdicts": sum(1 for s in SETS for _ in EVAL.glob(f"judged_{s}/*/t*/*/verdict.json"))},
         "whatif_G4-BOX-15_9102": {
             "regular_tests_removed": {"sol": base["sol"]["tests"] - wreg["sol"]["tests"],
                                       "qwen": base["qwen_same_tests"]["tests"] - wreg["qwen_same_tests"]["tests"]},

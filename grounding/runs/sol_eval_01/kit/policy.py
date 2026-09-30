@@ -15,11 +15,20 @@ a fact failing at detect@3 when any trial of a unit holding it fails, at detect@
 
     L="python grounding/runs/fact_coverage_02/launch.py"
     $L grounding.runs.sol_eval_01.kit.policy decide [--before-br]   # eval/policy_decisions[_before_br].json (Sol and Qwen)
+    $L grounding.runs.sol_eval_01.kit.policy decide --regen [--qwen DIR ...]  # eval/policy_decisions_regen.json
+    $L grounding.runs.sol_eval_01.kit.policy decide --suite [--qwen DIR ...]  # eval/policy_decisions_suite.json (both halves)
     $L grounding.runs.sol_eval_01.kit.policy regress    # the copy on Qwen's verdicts, all units: decisions_population_*.json
     $L grounding.runs.sol_eval_01.kit.policy units      # Sol's case folders against the plans' Muse-parent units
 
 Sol's verdicts: eval/judged_policy_<mode>/. Qwen's: openclaw_eval_01/runs/policy/judged_population_<mode>,
 judged_population_6b_<mode>, and for Box units the first pass ran, judged_<mode>_look*.
+
+The regenerated half (`decide --regen`): its units are regen_01's list (suite/units.json) restricted to the units its
+cases folders hold, less any the rulings now leave out (regen_01's rulings wrapper is loaded through kit/sets.py). Its
+duplicate pair is already cut from the folder, so each request runs once. The same rule decides each cell, with no
+pre-registered order (the sequential reading then covers every unit and is not reported). Sol's verdicts:
+eval/judged_regen_<mode>_01/; Qwen's, when the regen session has judged them, from the verdict folders given with
+--qwen (judge2's layout, <dir>/<run>/<trial>/<unit>/verdict.json).
 """
 from __future__ import annotations
 
@@ -30,6 +39,7 @@ from pathlib import Path
 from grounding.runs.autogen_02.kit import sampler
 from grounding.runs.openclaw_eval_01 import policy, rulings
 from grounding.runs.report_01.kit.common import catalog, fact_id
+from grounding.runs.sol_eval_01.kit import sets
 from grounding.runs.sol_eval_01.kit.score import stalled, use_rulings_before_br
 
 STUDY = Path(__file__).resolve().parents[1]
@@ -96,7 +106,10 @@ def decide_cell(valid: list[dict], outcomes: dict, looks: list[int]) -> dict:
     if missing:
         decision["decision"] = f"incomplete: {len(missing)} valid units without verdicts"
     parts = {}
-    for name, src in (("phase4_only", "phase4"), ("6b_only", "completion_01")):
+    sources = (("phase4_only", "phase4"), ("6b_only", "completion_01"))
+    if any(u.get("source") == "regen_01" for u in valid):
+        sources += (("regen_only", "regen_01"),)
+    for name, src in sources:
         part = [u for u in valid if u.get("source") == src]
         parts[name] = {k: v for k, v in policy.pooled_decision(per_unit(part, outcomes)).items() if k != "decision"}
     return {"valid_units": len(valid), "missing": missing, **decision,
@@ -164,22 +177,91 @@ def decide(suffix: str = "") -> dict:
                              "qwen_with_g4_lin_08": decide_cell(with_clock[cell], qwen, looks)}
                       for cell, valid in cells.items()},
             "facts": {"sol": facts_view(cells, sol), "qwen_same_units": facts_view(cells, qwen)}}
-    # policy_space.py's "regular_vs_policy_facts": among the facts with a valid unit of the mode, which the regular
-    # tests expose (each agent on the same Muse-written tests, kit/compare_qwen.py) and which fail a policy unit.
-    side = EVAL / f"side_by_side_regular{suffix}.json"
-    if side.exists():
-        regular = json.loads(side.read_text())["facts_detect3"]
-        for mode in MODES:
-            overlap = {}
-            for who, reg in (("sol", "sol"), ("qwen_same_units", "qwen_same_tests")):
-                view = result[mode]["facts"][who]
-                valid, fails, exposed = set(view["facts_valid"]), set(view["facts_failing_detect3"]), set(regular[reg])
-                overlap[who] = {"facts_with_a_valid_unit": len(valid),
-                                "exposed_by_regular_and_failing_policy": len(valid & exposed & fails),
-                                "failing_policy_only": len((valid & fails) - exposed),
-                                "exposed_by_regular_only": len((valid & exposed) - fails),
-                                "neither": len(valid - exposed - fails)}
-            result[mode]["regular_vs_policy_facts"] = overlap
+    regular_vs_policy(result, EVAL / f"side_by_side_regular{suffix}.json")
+    return result
+
+
+def regular_vs_policy(result: dict, side: Path) -> None:
+    """policy_space.py's "regular_vs_policy_facts": among the facts with a valid unit of the mode, which the regular
+    tests expose (each agent on the same tests, kit/compare_qwen.py) and which fail a policy unit."""
+    if not side.exists():
+        return
+    regular = json.loads(side.read_text())["facts_detect3"]
+    for mode in MODES:
+        overlap = {}
+        for who, reg in (("sol", "sol"), ("qwen_same_units", "qwen_same_tests")):
+            if who not in result[mode]["facts"]:
+                continue
+            view = result[mode]["facts"][who]
+            valid, fails, exposed = set(view["facts_valid"]), set(view["facts_failing_detect3"]), set(regular[reg])
+            overlap[who] = {"facts_with_a_valid_unit": len(valid),
+                            "exposed_by_regular_and_failing_policy": len(valid & exposed & fails),
+                            "failing_policy_only": len((valid & fails) - exposed),
+                            "exposed_by_regular_only": len((valid & exposed) - fails),
+                            "neither": len(valid - exposed - fails)}
+        result[mode]["regular_vs_policy_facts"] = overlap
+
+
+def regen_units(mode: str) -> dict[str, list[dict]]:
+    """cell -> the regenerated half's valid units of one mode (see the docstring)."""
+    listed = json.loads((sets.REGEN / "suite" / "units.json").read_text())["units"]
+    folder = sets.SETS[f"regen_{mode}_01"]["cases"]
+    cells: dict[str, list[dict]] = {}
+    for u in listed:
+        path = folder / u["domain"] / f"{u['unit']}.json"
+        if u["mode"] != mode or not path.exists() or rulings.test_exclusion(json.loads(path.read_text())):
+            continue
+        cells.setdefault(f"{u['domain']}/{mode}", []).append({**u, "source": "regen_01"})
+    return dict(sorted(cells.items()))
+
+
+def decide_regen(qwen_dirs: list[Path]) -> dict:
+    result = {"_about": "The eight policy cells on the regenerated half's units (regen_01): Sol's verdicts, and Qwen's "
+                        "on the same units when given. Rule: openclaw_eval_01/policy.py pooled_decision."}
+    for mode in MODES:
+        cells = regen_units(mode)
+        sol = outcomes_of([EVAL / f"judged_regen_{mode}_01"])
+        mine = [d for d in qwen_dirs if mode in d.name]
+        qwen = policy.population_outcomes(mine) if mine else {}
+        result[mode] = {"units": sum(len(v) for v in cells.values()),
+                        "cells": {cell: {"sol": decide_cell(valid, sol, []),
+                                         **({"qwen_same_units": decide_cell(valid, qwen, [])} if qwen else {})}
+                                  for cell, valid in cells.items()},
+                        "facts": {"sol": facts_view(cells, sol), **({"qwen_same_units": facts_view(cells, qwen)}
+                                                                   if qwen else {})},
+                        "qwen_verdicts": [str(d) for d in mine]}
+    regular_vs_policy(result, EVAL / "side_by_side_regular_regen.json")
+    return result
+
+
+def decide_suite(qwen_dirs: list[Path]) -> dict:
+    """The eight cells on Sol's whole Muse-only suite: the first half's Muse-parent units (without G4-LIN-08's six) and
+    the regenerated half's, pooled per cell as regen_01/policy_decide.py pools Qwen's Muse-only suite. Qwen on the same
+    units (openclaw_eval_01's verdicts as qwen_outcomes reads them, and the regen session's from --qwen), and on the
+    Muse-only suite as regen_01 decides it (with G4-LIN-08's six), which must reproduce regen_01's decisions."""
+    result = {"_about": "The eight policy cells on Sol's whole Muse-only suite: the Muse-parent units of Phase 4 and 6b "
+                        "(without G4-LIN-08's six) and the regenerated half's (regen_01). Sol's verdicts, Qwen's on the "
+                        "same units, and Qwen's on regen_01's Muse-only suite (with G4-LIN-08's six). Rule: "
+                        "openclaw_eval_01/policy.py pooled_decision; no pre-registered order.",
+              "left_out_clock": sorted(left_out_clock())}
+    for mode in MODES:
+        first, regen = cell_units(mode, muse_only=True), regen_units(mode)
+        cells = {c: first.get(c, []) + regen.get(c, []) for c in sorted(set(first) | set(regen))}
+        with_clock = {}
+        for cell, seq in policy.population_plan(mode)["cells"].items():
+            valid, _ = policy.population_units(seq)
+            with_clock[cell] = [u for u in valid if u.get("source") in MUSE] + regen.get(cell, [])
+        sol = outcomes_of([EVAL / f"judged_policy_{mode}", EVAL / f"judged_regen_{mode}_01"])
+        qwen = qwen_outcomes(mode)
+        qwen.update(policy.population_outcomes([d for d in qwen_dirs if mode in d.name]))
+        result[mode] = {
+            "units": sum(len(v) for v in cells.values()),
+            "cells": {cell: {"sol": decide_cell(valid, sol, []), "qwen_same_units": decide_cell(valid, qwen, []),
+                             "qwen_with_g4_lin_08": decide_cell(with_clock[cell], qwen, [])}
+                      for cell, valid in cells.items()},
+            "facts": {"sol": facts_view(cells, sol), "qwen_same_units": facts_view(cells, qwen)},
+            "qwen_verdicts": [str(d) for d in qwen_dirs if mode in d.name]}
+    regular_vs_policy(result, EVAL / "side_by_side_regular_suite.json")
     return result
 
 
@@ -200,6 +282,17 @@ def main():
         regress()
     elif cmd == "units":
         units()
+    elif cmd == "decide" and ("--regen" in sys.argv or "--suite" in sys.argv):
+        qwen = [Path(a) for a in sys.argv[sys.argv.index("--qwen") + 1:]] if "--qwen" in sys.argv else []
+        if "--suite" in sys.argv:
+            result, out = decide_suite(qwen), "policy_decisions_suite.json"
+        else:
+            result, out = decide_regen(qwen), "policy_decisions_regen.json"
+        (EVAL / out).write_text(json.dumps(result, indent=1) + "\n")
+        for mode in MODES:
+            for cell, r in result[mode]["cells"].items():
+                print(cell, " | ".join(f"{who}: {x.get('valid_units')} units {x.get('rate')} [{x.get('p10')}, "
+                                       f"{x.get('p90')}] {x.get('decision')}" for who, x in r.items()))
     elif cmd == "decide":
         suffix = "_before_br" if "--before-br" in sys.argv else ""
         if suffix:
