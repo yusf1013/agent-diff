@@ -268,6 +268,31 @@ holds a near miss on it that my review does not rule flawed; credit follows the 
   A:Conversation.is_private, A:Reaction.reaction_type. None has a designated substitute in the catalog, so under the
   F0 rule the plain miss is the alternative and earns credit.
 
+## The funnel against the Sonnet half (report_01's Table 5)
+
+The Sonnet column is report_01's (autogen_01's arms R, P and P v2, as reported there). The writers had the same fact
+sets, but the Sonnet half drew the 16 arm-P sets twice (P and P v2, as a method comparison), and here each set once
+(plus two second draws, and the related-issue brief). So the columns compare one frozen pipeline with Muse against
+the Sonnet runs as they were, not two draws of the same design.
+
+| | Sonnet (autogen_01) | Muse (this study) |
+|---|---:|---:|
+| Briefs (distinct fact sets) | 34 | 35 (34 + the related-issue brief) |
+| Brief attempts | 50 | 37 |
+| Accepted scenarios | 49 | 34 |
+| Attempts rejected | 1 | 3 |
+| Usable scenarios after review | 48 | 34 |
+| Declared near misses | 185 | 135 |
+| Near misses ruled flawed | 7 | 7 |
+| Derived regular candidates | 285 | 216 |
+| Dropped: near miss loses its distinguishing condition | 5 | 4 |
+| Further cases excluded by validity rulings | 9 | 6 |
+| **Valid regular cases** | **271** | **206** |
+| Valid absence units | 116 | 72 |
+| Valid underspecified units | 98 | 59 |
+| Facts covered by a valid near miss | 81 (report_01's credited count, of its 81 brief facts, before the F0 rule) | 76 of 82 (all credited under the F0 rule) |
+| Writer cost, list price (billed) | $208 (subscription, $0) | $28.07 ($1.67); with the drop-F variants $38.87 ($2.38) |
+
 ## The policy variants (step 3, continued)
 
 autogen_02's drop-F derivation, unchanged, on the accepted scenarios (`runs/dropf_01` for the first 33,
