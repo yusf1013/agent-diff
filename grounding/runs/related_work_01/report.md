@@ -585,8 +585,7 @@ reported before the rest is mapped.
 
 **Cost:** mapping, about 3 to 4 session-days for about 600–700 obligations (manual work by the PI's definition); runs,
 672 trials on the self-host (no charge; about 2 to 3 hours at 12 in flight, scaled from baselines_01's estimate of
-1,700 trials in 5 to 7 hours); judge v2 on about 45% of trials at $0.028 list each, about **$8.5 list (about $0.6
-billed)**; 60 blind labels, a few hours.
+1,700 trials in 5 to 7 hours); judge v2 on about 45% of trials at $0.028 list each, about **$8.5 list**; 60 blind labels, a few hours.
 
 **Decision rules fixed before the runs** (so the numbers cannot be steered): a fact is covered only through a witness
 fdc confirms on the seed; the oracle is blind to a fact if any of its witnesses passes; a trial's failure counts for a
@@ -611,8 +610,7 @@ answers "an established automated generator".
 
 **Cost at list prices** (estimated from baselines_01's measured per-test costs: N0 $0.011 and N0M $0.025 per test;
 ClawEnvKit makes about 2 to 3 calls a task, a long generation call and a short feasibility judge): generation
-**$1.5–3**; its LLM rubric grader, about **$1–2**; our judge, about **$2**; in all **about $5–7 list (under $0.5
-billed)**; 144 trials on the self-host; about 2 days of adapter work.
+**$1.5–3**; its LLM rubric grader, about **$1–2**; our judge, about **$2**; in all **about $5–7 list**; 144 trials on the self-host; about 2 days of adapter work.
 
 **Prediction, written before any run:** its tasks leave the target present with plain look-alikes at most (its
 fixtures are generated to make the task feasible), so, like N0M, it exposes **0 or 1** facts; its own grader reports

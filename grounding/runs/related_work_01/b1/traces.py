@@ -5,8 +5,9 @@
 FeasiGen (arXiv 2605.28532, abstract): "extracts tool-calling traces from successful executions across multiple agent
 systems, identifies critical tools consistently shared across diverse execution strategies, and masks these tools".
 Here: the covers of the frozen suite (6a, 6b) that OpenClaw with the self-hosted Qwen solved in all three trials, none
-over the 8-minute budget (Box from full_02, the other services from full_03, and 6b from full_04, as the final score
-reads them); in each trial, the state-changing calls read from the agent's curl commands; the critical operations are
+over the solver's budget as the adjudicated runs list it (the PI's 10 minutes since 2026-09-29; it leaves out one
+cover, AP2-LIN-04, under either reading) (Box from full_02, the other services from full_03, and 6b from full_04, as
+the final score reads them); in each trial, the state-changing calls read from the agent's curl commands; the critical operations are
 those every trial used. No model calls. Writes solved.json.
 """
 from __future__ import annotations

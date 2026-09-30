@@ -28,6 +28,12 @@ def remove_section(text: str, heading: str) -> tuple[str, int]:
     return new, n
 
 
+def index_entry(heading: str) -> re.Pattern:
+    """The heading as a whole entry of Google Calendar's endpoint index ("…: A; B; C"), not as the prefix of a
+    longer one (PATCH /calendars/{calendarId} is a prefix of PATCH /calendars/{calendarId}/events/{eventId})."""
+    return re.compile(rf"(?<=: |; ){re.escape(heading)}(?=; |\n|$)", re.M)
+
+
 def mask_skills(skills: Path, docs: list[list[str]]) -> list[dict]:
     """Remove each (skill, heading) section; returns what was removed, and fails if a documented one is not found."""
     removed = []
@@ -38,7 +44,8 @@ def mask_skills(skills: Path, docs: list[list[str]]) -> list[dict]:
             text = path.read_text()
             new, n = remove_section(text, heading)
             if skill == "google-calendar" and path.name == "SKILL.md":  # the endpoint index lists it too
-                new = re.sub(rf"(?<=: |; ){re.escape(heading)}(; )?", "", new).replace("; \n", "\n")
+                new = index_entry(heading).sub("", new).replace("; ; ", "; ").replace(": ; ", ": ")
+                new = re.sub(r"; (?=\n|$)", "", new, flags=re.M)
             if new != text:
                 path.write_text(new)
                 removed.append({"file": str(path.relative_to(skills)), "heading": heading,
@@ -46,7 +53,9 @@ def mask_skills(skills: Path, docs: list[list[str]]) -> list[dict]:
                 hits += n
         if not hits:
             raise ValueError(f"{skill}: no section '## {heading}' to remove")
-        leftover = [str(p) for p in base.rglob("*.md") if heading in p.read_text()]
+        section = re.compile(rf"^## {re.escape(heading)}$", re.M)
+        leftover = [str(p) for p in base.rglob("*.md")
+                    if section.search(p.read_text()) or index_entry(heading).search(p.read_text())]
         if leftover:
             raise ValueError(f"{skill}: '{heading}' still appears in {leftover}")
     return removed

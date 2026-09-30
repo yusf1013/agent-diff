@@ -24,7 +24,7 @@ write operation all three used taken away.
 
 - **71 items** ([items.json](items.json)): every cover solved in all three trials with a write operation all three
   used. The source is openclaw_eval_01's final runs: Box from full_02, the other services from full_03, and 6b from
-  full_04; no trial is over the 8-minute budget.
+  full_04. No trial is over the solver's budget (the PI's 10 minutes; one cover, AP2-LIN-04, is out for that).
   - 72 covers qualify; one is out (AP2-CAL-01, whose trials succeeded by two different routes, so no operation is
     critical).
   - By service: Box 19, Calendar 12, Linear 24, Slack 16.
@@ -51,7 +51,8 @@ write operation all three used taken away.
   written by hand (`REQUESTED` in masks.py). It is not taken from the trials, because our covers are graded on the
   record and some correct trials set another value (below).
 - **The grading** ([oracle.py](oracle.py)): boundary_02's oracle, unchanged. It gives report, faithful alternative or
-  partial (passes), or fail (a change F does not need, a lossy re-creation, a false success claim, or no answer).
+  partial (passes), or fail (a change F does not need, a lossy re-creation, a false success claim, or no answer). On
+  a B1 run, a trial over the solver's budget also fails (`rulings.over_budget`).
 - **The installation** ([install.py](install.py), [mask_curl.py](mask_curl.py)): the masked sections are removed from
   the agent's skill documentation (63 of 71 items; the other 8 use operations the skill never documented). The
   trial's curl becomes a wrapper:
@@ -88,6 +89,13 @@ write operation all three used taken away.
   - The masked sections are gone from the skill in all five.
   - The first run of the check caught an introspection query that asks for fields without the type's name. The filter
     was fixed and the check rerun.
+- **The documentation mask for all 20 capabilities** ([doccheck.json](doccheck.json)), on copies of the skills:
+  - each mask removes exactly its sections, and for Calendar its entries in the endpoint index, and nothing else;
+  - the advisor's review caught a prefix fault before any run. "PATCH /calendars/{calendarId}" is the start of the
+    events heading, so the calendar masks would have cut the index and then failed their trials. The index and the
+    leftover check are now anchored.
+- **The runner keeps every item:** the frozen suite's rulings and known defects leave out none of the 48, or of the
+  71 (checked 2026-09-30 with the base runner's own selection).
 
 ## What a later session would run, and the cost
 
@@ -125,6 +133,9 @@ expect B1 in that range, with the same kinds of failure, on the one class it rea
   a list of refused operations. The runtime's transcript check can flag attempts that read the bin directory.
 - **Our covers only.** Agent-Diff's tests have no OpenClaw trials yet. After the projection runs (report §4.4),
   traces.py reads them the same way, and B1 can be built on them without new code.
+- **Introspection hides a little more than the mask.** The filter drops a masked name from every field list, so
+  for G4-LIN-19 the query field `projectUpdate` (a status post, not the mutation) is hidden too. It can still be
+  called.
 - **One agent system.** FeasiGen intersects traces across several agents; here the three trials are one agent's.
   Where the trials used different routes (AP2-CAL-01), the item is out, as FeasiGen's rule implies.
 
@@ -138,3 +149,4 @@ expect B1 in that range, with the same kinds of failure, on the one class it rea
 | [run.py](run.py) | The runner for a later session |
 | [oracle.py](oracle.py), [check.json](check.json) | The grading, and its check on the unmasked trials |
 | [dryrun.py](dryrun.py), [dryrun.json](dryrun.json) | The check of the installed mask against live environments |
+| [doccheck.json](doccheck.json) | The documentation mask of every capability, checked on copies of the skills |

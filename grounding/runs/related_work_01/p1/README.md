@@ -99,7 +99,7 @@ unique, and most of the rest are key-only duplicates that do not test the policy
 
 | Budget | Variants | Trials | Self-host time | Judge (list) | Labels |
 |---|---:|---:|---|---:|---:|
-| All that is valid (incl. probe form and unverified) | 350 | 1,050 | about 3–4 hours at 12 in flight | about $13 ($0.9 billed) | 60 |
+| All that is valid (incl. probe form and unverified) | 350 | 1,050 | about 3–4 hours at 12 in flight | about $13 list | 60 |
 | Matched to the baselines' size | 48 (8 per service and mode) | 144 | under an hour | about $2 | 30 |
 
 Throughput and judge rates are scaled from baselines_01 (about 1,700 trials in 5–7 hours at 12 in flight; judge v2

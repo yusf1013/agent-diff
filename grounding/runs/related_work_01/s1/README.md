@@ -51,6 +51,9 @@ a shortcut counts when some request's seed defeats it.
 | Calendar | 4 | – | No cards |
 | **Total (checkable)** | **15** | **3** | |
 
+- **Four of the 26 obligations sit outside this table:** Slack messages found anywhere (slack_76 and slack_77,
+  slack_108, slack_110). Our automation has no such request kind. Their routes were checked the same way, and none is
+  defeated.
 - **By behaviour:** defeats come from scope (Box, 5 requests; the named folder holds the targets only in its
   subfolders) and filter (Slack, 1 request). **Pages and visibility never:** no target is past a default page, and none
   is behind a default visibility.
