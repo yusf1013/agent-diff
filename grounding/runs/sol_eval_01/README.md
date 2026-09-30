@@ -888,7 +888,7 @@ trials there would give 12/80 = 0.15, so the decision stands.
       change to headline.py; its old outputs dated from the 8-minute budget.
   - **Texts:** the Qwen numbers in openclaw_eval_01's, regen_01's and this README, and in report_01's two texts,
     with report_01's README logging every change old → new.
-- **13:40-14:05, two kit fixes for the lead (no result changes).**
+- **13:37-13:45, two kit fixes for the lead (no result changes).**
   - autogen_01/kit/score_run.py matches a verdict to its attempt by the path from grounding/runs/ on. Before this, a
     re-score of full_04 from this worktree counted none of its 205 verdicts. Now full_02, full_03 and full_04
     re-score, adjudicate and combine byte for byte, as do this study's regen_full_01 and regular_p4 scores.
