@@ -542,8 +542,9 @@ The criterion and judge v2 grade one thing: which record the agent acted on. A t
 still do harm: write a wrong value, change fields or records the request never mentioned, or create what the
 request presumed. None of this counts in RQ4 or RQ6. We measured it mechanically from each trial's state diff and
 read every flagged trial by hand. Source: [kit/beyond.py](kit/beyond.py) → [numbers/beyond.json](numbers/beyond.json)
-(its `examples` list the trials). Trials: the 1,695 of the regular suite's final score and the 1,323 of the policy
-populations (the first pass's looks for Box's units).
+(its `examples` list the trials). Trials: the 1,689 of the regular suite's final score and the 1,323 of the policy
+populations (the first pass's looks for Box's units), which still include the 18 trials of the 6 units the two
+rulings of 2026-09-30 left out (§0.4).
 
 **Table 13. Values written, against the value the request states.** Checked where the value can be read off the
 request without interpretation.
@@ -552,7 +553,7 @@ request without interpretation.
 |---|---:|---:|---:|---:|
 | Linear priority ("…to Urgent") | 58 (31 on the target) | **42 (23 on the target)** | 91 | **63** |
 | Linear estimate ("estimate to 5") | 58 | 0 | 75 | 0 |
-| Box tag ("Add the tag X") | 105 | 0 | 198 | 0 |
+| Box tag ("Add the tag X") | 99 | 0 | 198 | 0 |
 | Slack reaction ("a :tada: reaction") | 45 | 0 | 74 | 0 (1 ambiguous: asked for a "check" reaction, which names no exact emoji; wrote "done") |
 | Slack archive or unarchive | 14 | 0 | 15 | 0 |
 | Calendar hide | 21 | 0 | 17 | 0 |
@@ -581,7 +582,7 @@ request without interpretation.
 | Wrote a record, then restored it | 6 | 0 | 2 | Renamed the wrong team, noticed, renamed it back |
 | Wrote a value already there, or a field the record lacks | 0 | 3 | 2 | "Hid" a calendar that was already hidden |
 | Posted a comment, then deleted it (no trace in the diff) | 1 | 1 | 0 | Posted "approved for launch" as the actor, then deleted it |
-| **Trials writing anything** | **547 of 1,695** | **466 of 732** | **251 of 591** | |
+| **Trials writing anything** | **541 of 1,689** | **466 of 732** | **251 of 591** | |
 
 - **The presumption habit shows here too.** In RQ6 the agent acts on a near miss when the request presumes a record;
   here it sometimes makes the presumption true instead (17 trials), by posting the comment, creating the attachment
@@ -593,12 +594,12 @@ request without interpretation.
   restorations and 5 no-op writes, and 2 more writes (comments posted and deleted) leave no trace in any diff. The
   meeting did not move: the replica stores times written through the API in UTC and seeded times as local time, so
   the diff's time columns changed while the API still shows 10:00, and the reply's time was right.
-- **A fuller value audit: values_01** ([report](../values_01/report.md)) checked all 3,018 executions for values
-  written against a value declared per scenario, side effects in the diff and the transcript, and the final reply
-  against the diff. Literal values are copied exactly (1,275 of 1,399 writes); the errors are interpretations
-  (Linear's priority scale, a colour's palette, a year taken from the run date). 179 executions carry such a finding,
-  52 with a passing grounding verdict; 96 replies state the requested value while another was written, 60 misstate a
-  priority, and 9 of 15 writes the final state does not show were not disclosed.
+- **A fuller value audit: values_01** ([report](../values_01/report.md)) checked all 3,018 executions of the earlier
+  manifest (§0.4) for values written against a value declared per scenario, side effects in the diff and the
+  transcript, and the final reply against the diff. Literal values are copied exactly (1,275 of 1,399 writes); the
+  errors are interpretations (Linear's priority scale, a colour's palette, a year taken from the run date). 179
+  executions carry such a finding, 52 with a passing grounding verdict; 96 replies state the requested value while
+  another was written, 60 misstate a priority, and 9 of 15 writes the final state does not show were not disclosed.
 
 ## RQ8. Baselines and ablations
 

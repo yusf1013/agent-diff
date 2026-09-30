@@ -377,13 +377,14 @@ side-effect classifications below retain the original author's review, except tw
 (`values_01/eval/labels.jsonl`): every write-then-restore candidate and a sample of each side-effect kind.
 
 **Table 13. Values written compared with literal values in requests.** Source:
-[beyond.json](numbers/beyond.json), using the final 1,695 regular and 1,323 policy executions.
+[beyond.json](numbers/beyond.json), using the 1,689 final regular executions and 1,323 policy-population executions,
+which still include the 18 that the two rulings removed (§0.4).
 
 | Field | Regular writes checked | Wrong | Policy writes checked | Wrong |
 |---|---:|---:|---:|---:|
 | Linear priority | 58 | **42** | 91 | **63** |
 | Linear estimate | 58 | 0 | 75 | 0 |
-| Box tag | 105 | 0 | 198 | 0 |
+| Box tag | 99 | 0 | 198 | 0 |
 | Slack reaction | 45 | 0 | 74 | 0 definite; 1 ambiguous |
 | Slack archive state | 14 | 0 | 15 | 0 |
 | Calendar hidden state | 21 | 0 | 17 | 0 |
@@ -392,7 +393,7 @@ side-effect classifications below retain the original author's review, except tw
 executions that wrote the wrong priority to the right issue, 22 still score as correct grounding: 16 cleared
 mechanical triage and six received a correct judge verdict. The remaining execution also wrote a decoy.
 
-The separate text search of **2,139 retained judge verdicts** finds wrong-value language in 55, including ten
+The separate text search of **2,115 retained judge verdicts** finds wrong-value language in 55, including ten
 graded correct; side-effect language in one; and false-claim language in two. These are keyword matches in judge
 notes, not an exhaustive error count. Source: [concise.json](numbers/concise.json), `judge_notes_on_final_executions`.
 
@@ -409,7 +410,7 @@ notes, not an exhaustive error count. Source: [concise.json](numbers/concise.jso
 | Wrote, then restored a record | 6 | 0 | 2 | Renamed the wrong team, then renamed it back. |
 | Wrote a value already there, or a field the record lacks | 0 | 3 | 2 | "Hid" a calendar that was already hidden. |
 | Posted a comment, then deleted it (no trace in the diff) | 1 | 1 | 0 | Posted "approved for launch" as the actor, then deleted it. |
-| **Executions with any write** | **547/1,695** | **466/732** | **251/591** | |
+| **Executions with any write** | **541/1,689** | **466/732** | **251/591** | |
 
 A final diff alone cannot distinguish restoration from a write of an unchanged value. Read with their
 trajectories (values_01), the 13 executions the original row counted (6, 3, 4) are 8 restorations and 5 no-op
@@ -418,13 +419,14 @@ the diff's time columns changed from 10:00 to 17:00 only because the replica sto
 in UTC and seeded times as local time; the API still shows 10:00, and the reply's time was right. Box also shows
 32 changes caused by its replica clearing omitted lock or shared-link fields; these are recorded as replica effects.
 
-**A fuller value audit: values_01.** A separate study checked all 3,018 executions for what the grounding verdict
-does not grade: values written against a value declared per scenario, side effects in the diff and the transcript,
-and the final reply against the diff ([report](../values_01/report.md)). Literal values are copied exactly: 1,275 of
-1,399 writes to a requested field hold the requested value. The errors are interpretations: Linear's priority scale
-(105 of 149), a colour's palette, and a year taken from the run date. 179 executions carry such a finding, 52 of them
-with a passing grounding verdict. Replies repeat the priority belief: 96 state the requested value while another was
-written, and 60 misstate a priority. Of 15 writes the final state does not show, 9 were not disclosed.
+**A fuller value audit: values_01.** A separate study checked all 3,018 executions of the earlier manifest (§0.4)
+for what the grounding verdict does not grade: values written against a value declared per scenario, side effects in
+the diff and the transcript, and the final reply against the diff ([report](../values_01/report.md)). Literal values
+are copied exactly: 1,275 of 1,399 writes to a requested field hold the requested value. The errors are
+interpretations: Linear's priority scale (105 of 149), a colour's palette, and a year taken from the run date. 179
+executions carry such a finding, 52 of them with a passing grounding verdict. Replies repeat the priority belief: 96
+state the requested value while another was written, and 60 misstate a priority. Of 15 writes the final state does
+not show, 9 were not disclosed.
 
 ## RQ8. Baselines and ablations
 

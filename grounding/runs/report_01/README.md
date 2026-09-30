@@ -276,6 +276,15 @@ and decisions; its `valid` keeps both cases of each duplicate pair (Linear and S
 - Unchanged: Table 13 and the other rows (values_01 agrees with them: 4 outside the candidate set, 2 changed to fit,
   2 other fields disclosed, 32 Box replica effects).
 
+- Both texts, after the two rulings: the regular trials 1,695 → 1,689; the 1,323 policy-population trials stay, now
+  said to include the 18 trials of the 6 units the rulings left out (`kit/beyond.py` reads every population trial);
+  Table 13's Box tag writes (regular) 105 → 99; "Trials writing anything" 547 of 1,695 → 541 of 1,689.
+  report_concise.md: "2,139 retained judge verdicts" → 2,115 (the note counts, 55, 1 and 2, unchanged). Sources:
+  `numbers/beyond.json` (`regular`: `trials`, `trials_writing`, `checked_writes`, box tags on files 32 + 47 and on
+  folders 15 + 5; `policy`), `numbers/concise.json` (`judge_verdicts_on_final_executions`,
+  `judge_notes_on_final_executions`).
+- Both texts, the values_01 pointer: "all 3,018 executions" → "all 3,018 executions of the earlier manifest (§0.4)".
+
 ### RQ8: the baselines on main, the Muse expectation, one coverage rule
 
 - Intro (both): report_concise.md "The baseline evidence remains on the existing baseline branch" → "The baseline
