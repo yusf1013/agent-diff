@@ -7,7 +7,7 @@
   Judging, the blind sample and the scores come after the runs.
 - The pilot (32 regular tests, one trial each) is in `../sol_pilot_01/runs/pilot_01`: 31 completed, 1 failed on
   the clock problem below; median 37 s per run, about 45k input tokens (mostly cached) and 350 output tokens.
-- **Judging and scoring (session `sol_score`, branch `exp/sol_score-01`), 2026-09-30 05:45: done.**
+- **Judging and scoring (session `sol_score`, branch `exp/sol_score-01`), 2026-09-30 06:05: done.**
   - All four sets are judged, labelled and scored. Every one of the round's 1,491 trials has a final attempt and a
     verdict; none is pending.
   - The Results below are final. One Calendar underspecified unit never ran; it cannot change its cell's decision.
@@ -105,11 +105,13 @@ $L grounding.runs.autogen_02.kit.phase4 score $S/runs/SET $S/cases/SET/suite.jso
 $L grounding.runs.sol_eval_01.kit.score adjudicate SET; $L grounding.runs.sol_eval_01.kit.score combine
 $L grounding.runs.sol_eval_01.kit.policy decide                                  # eval/policy_decisions.json
 $L grounding.runs.sol_eval_01.kit.compare_qwen; $L grounding.runs.sol_eval_01.kit.observe; $L grounding.runs.sol_eval_01.kit.cost
+$L grounding.runs.sol_eval_01.kit.judge_accuracy                               # eval/judge_accuracy.json (locked sets only)
+$L grounding.runs.sol_eval_01.kit.whatif G4-BOX-15 9102                        # one more ruling's effect, printed only
 ```
 
 ## Results
 
-*Final, 2026-09-30 05:45. Every trial of the four sets ended and is judged: 444, 405, 369 and 273 trials. The
+*Final, 2026-09-30 06:05. Every trial of the four sets ended and is judged: 444, 405, 369 and 273 trials. The
 retry pass re-ran 16 trials after 17 failed attempts (8 provider stalls, 9 other provider errors), and none is
 pending.*
 
@@ -142,7 +144,10 @@ difference. The budget is 10 minutes; no Sol trial came near it (the longest too
   - a median 37 to 53 s per trial, against Qwen's 171 to 248 s;
   - 323 to 491 output tokens per trial, and a median 0 to 17 reasoning tokens at "medium".
 - **Harness difference between the rounds:** memory_search failed in every one of the 354 Sol trials that called
-  it (details in section 4).
+  it (section 5).
+- **For the PI, one validity question** (section 6): is "Atlas Onboarding Archive" a match for "the Atlas Onboarding
+  hub"? It is labelled by the construction. A ruling that it matches would take one test and one fact from each
+  agent, and it changes no policy decision.
 
 ### 1. What Sol exposes on the regular tests
 
@@ -238,6 +243,11 @@ From the judge's notes on all 32 counted failing trials, and my blind labels.
 The 180 blind trials were drawn before the runs, 45 per set. I labelled each from its evidence alone (kit/view.py)
 and locked each set's labels with a sha256 before reading any verdict on it. 4 trials never ran: their probe or
 unit holds one of the new flawed near misses, so 176 are labelled.
+
+Two blind trials were infrastructure errors that the retry pass re-ran: `regular_6b` t2/P-G4-BOX-15-I12 and
+`policy_absence` t3/AT-G4-BOX-02-I15. Their sets were locked without them. I labelled each on its new attempt at
+09:34:31Z and re-locked the set's file. The judge wrote their verdicts at 09:35:23Z and 09:35:46Z (each lock file
+keeps both hashes). Every label is on its trial's final attempt.
 
 | Set | Labelled | Exact agreement | Failures (label / judge / both) | Same facts | Mechanism agrees |
 |---|---:|---:|---|---:|---:|
@@ -353,6 +363,31 @@ the decision stands.
 - **Judge cost:** 1,175 Muse calls (4 failed attempts retried), $32.60 at list price, $2.33 billed. The session cap
   was $10 billed.
 
+### 6. For the PI: "Atlas Onboarding Archive"
+
+G4-BOX-15's hub 9102, "Atlas Onboarding Archive", is a near miss on `A:Hub.title` for "the Atlas Onboarding hub".
+- **Both agents act on it in all three trials** of the probe P-G4-BOX-15-I11 and of the absence twin
+  AT-G4-BOX-15-I11.
+- **It is close to your Seaport ruling** (an unquoted name may be shortened), but "Archive" names a different kind
+  of hub, where "2024" only dates the folder.
+- **So it is labelled by the construction.** The lead made no ruling by analogy.
+
+If you rule it a match (a flawed near miss), the effect is as follows. kit/whatif.py adds that one entry to a
+temporary copy of the rulings file, reruns the same scoring and policy code, and saves nothing:
+- **Regular tests:** the rulings leave the probe out.
+  - Sol: 12 of 281 tests exposing, and 6 facts at detect@3 and at detect@1. The probe was Sol's only Box
+    exposure.
+  - Qwen on the same tests: 77, 46 and 32.
+- **Policy:** the absence twin leaves the Box absence cell, and two units leave the Box underspecified cell (the
+  ones claiming 9102 as a near miss).
+
+  | Box cell | Units | Sol | Qwen |
+  |---|---:|---|---|
+  | Absence | 33 | 13/99, 0.13 [0.06, 0.21], not | 67/92, 0.73 [0.64, 0.82], undecided |
+  | Underspecified | 28 | 0/84, 0.00, not | 32/75, 0.43 [0.33, 0.52], not |
+
+  No decision changes for either agent.
+
 ## Log (session sol_score)
 
 - **2026-09-30 00:40-01:05, orientation.** I read the brief, the PI's notes, the roadmap, the concise report and the
@@ -411,9 +446,15 @@ the decision stands.
     before reading any verdict on it. 4 of the 180 drawn never ran, because their probe or unit holds one of the new
     flawed near misses.
   - **Judging:** the policy trials were judged as they ended, in batches. judge2 caches a verdict per attempt, so
-    only new attempts were judged. After the retry pass, every retried attempt was judged once more (the regular
+    only new attempts were judged. After the retry pass, each re-run trial's new attempt was judged (the regular
     sets' first draw of clean trials unchanged).
   - **One unit never ran:** U-G4-CAL-05-CalendarListEntry_summary_override is "read before it runs" in
-    known_defects.json, and the runner skips it without `--read`. Its cell's decision cannot change; reported to
-    the lead.
+    known_defects.json, and the runner skips it without `--read`. Its cell's decision cannot change (worst case
+    10/62); the lead may run it with `--read`.
   - **Scoring and the side by side:** final under both rulings files (sections 1 to 5 above).
+- **05:45-06:05, final checks.**
+  - **Blinding:** every label is on its trial's final attempt. The two blind trials the retry pass re-ran were
+    labelled and their sets re-locked before their verdicts existed (section 3).
+  - **The PI's open question:** AT-G4-BOX-15's "Atlas Onboarding Archive" was flagged for the PI in my label
+    notes and in a message to the lead (04:02), not in the Results. Section 6 now states it, with the effect of a
+    ruling from kit/whatif.py.
