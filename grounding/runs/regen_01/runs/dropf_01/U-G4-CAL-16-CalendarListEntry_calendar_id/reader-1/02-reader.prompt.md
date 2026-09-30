@@ -1,0 +1,42 @@
+Step 2. These are all the records in the service:
+
+### calendar_acl_rules (7)
+{"id": "acl_target_1", "calendar_id": "garden.workshop@northwind.example", "role": "reader", "scope_type": "user", "scope_value": "sam.rivera@northwind.example", "deleted": false, "created_at": "2018-01-01T00:00:00", "updated_at": "2018-01-01T00:00:00"}
+{"id": "acl_r1_1", "calendar_id": "garden.workshop.greenhouse@northwind.example", "role": "reader", "scope_type": "user", "scope_value": "sam.rivera@northwind.example", "deleted": false, "created_at": "2018-01-01T00:00:00", "updated_at": "2018-01-01T00:00:00"}
+{"id": "acl_r2_1", "calendar_id": "garden.workshop.shed@northwind.example", "role": "reader", "scope_type": "user", "scope_value": "sam.rivera@northwind.example", "deleted": false, "created_at": "2018-01-01T00:00:00", "updated_at": "2018-01-01T00:00:00"}
+{"id": "acl_b1_1", "calendar_id": "garden.workshop.nursery@northwind.example", "role": "writer", "scope_type": "user", "scope_value": "sam.rivera@northwind.example", "deleted": false, "created_at": "2018-01-01T00:00:00", "updated_at": "2018-01-01T00:00:00"}
+{"id": "acl_b1_2", "calendar_id": "garden.workshop.nursery@northwind.example", "role": "reader", "scope_type": "user", "scope_value": "leo.park@northwind.example", "deleted": false, "created_at": "2018-01-01T00:00:00", "updated_at": "2018-01-01T00:00:00"}
+{"id": "acl_bg1_1", "calendar_id": "seed.library@northwind.example", "role": "reader", "scope_type": "user", "scope_value": "maya.chen@northwind.example", "deleted": false, "created_at": "2018-01-01T00:00:00", "updated_at": "2018-01-01T00:00:00"}
+{"id": "acl_bg2_1", "calendar_id": "tool.shed@northwind.example", "role": "reader", "scope_type": "user", "scope_value": "sam.rivera@northwind.example", "deleted": false, "created_at": "2018-01-01T00:00:00", "updated_at": "2018-01-01T00:00:00"}
+### calendar_list_entries (4)
+{"id": "cle_jordan.lee@northwind.example", "user_id": "u_actor", "calendar_id": "jordan.lee@northwind.example", "access_role": "owner", "primary": true, "selected": true, "hidden": false, "deleted": false, "created_at": "2018-01-01T00:00:00", "updated_at": "2018-01-01T00:00:00"}
+{"id": "cle_garden.workshop@northwind.example", "user_id": "u_actor", "calendar_id": "garden.workshop@northwind.example", "access_role": "owner", "primary": false, "selected": true, "hidden": false, "deleted": false, "created_at": "2018-01-01T00:00:00", "updated_at": "2018-01-01T00:00:00"}
+{"id": "cle_garden.workshop.nursery@northwind.example", "user_id": "u_actor", "calendar_id": "garden.workshop.nursery@northwind.example", "access_role": "owner", "primary": false, "selected": true, "hidden": false, "deleted": false, "created_at": "2018-01-01T00:00:00", "updated_at": "2018-01-01T00:00:00"}
+{"id": "cle_seed.library@northwind.example", "user_id": "u_actor", "calendar_id": "seed.library@northwind.example", "access_role": "owner", "primary": false, "selected": true, "hidden": false, "deleted": false, "created_at": "2018-01-01T00:00:00", "updated_at": "2018-01-01T00:00:00"}
+### calendar_users (9)
+{"id": "u_actor", "email": "jordan.lee@northwind.example", "display_name": "Jordan Lee", "self": true, "created_at": "2017-05-01T00:00:00", "updated_at": "2017-05-01T00:00:00"}
+{"id": "u_priya", "email": "priya.nair@northwind.example", "display_name": "Priya Nair", "self": false, "created_at": "2017-05-01T00:00:00", "updated_at": "2017-05-01T00:00:00"}
+{"id": "u_omar", "email": "omar.haddad@northwind.example", "display_name": "Omar Haddad", "self": false, "created_at": "2017-05-01T00:00:00", "updated_at": "2017-05-01T00:00:00"}
+{"id": "u_maya", "email": "maya.chen@northwind.example", "display_name": "Maya Chen", "self": false, "created_at": "2017-05-01T00:00:00", "updated_at": "2017-05-01T00:00:00"}
+{"id": "u_sam", "email": "sam.rivera@northwind.example", "display_name": "Sam Rivera", "self": false, "created_at": "2017-05-01T00:00:00", "updated_at": "2017-05-01T00:00:00"}
+{"id": "u_dana", "email": "dana.whitfield@northwind.example", "display_name": "Dana Whitfield", "self": false, "created_at": "2017-05-01T00:00:00", "updated_at": "2017-05-01T00:00:00"}
+{"id": "u_kenji", "email": "kenji.sato@northwind.example", "display_name": "Kenji Sato", "self": false, "created_at": "2017-05-01T00:00:00", "updated_at": "2017-05-01T00:00:00"}
+{"id": "u_aiko", "email": "aiko.mori@northwind.example", "display_name": "Aiko Mori", "self": false, "created_at": "2017-05-01T00:00:00", "updated_at": "2017-05-01T00:00:00"}
+{"id": "u_leo", "email": "leo.park@northwind.example", "display_name": "Leo Park", "self": false, "created_at": "2017-05-01T00:00:00", "updated_at": "2017-05-01T00:00:00"}
+### calendars (7)
+{"id": "jordan.lee@northwind.example", "summary": "jordan.lee@northwind.example", "description": "Primary calendar", "time_zone": "America/Los_Angeles", "owner_id": "u_actor", "data_owner": "jordan.lee@northwind.example", "deleted": false, "created_at": "2018-01-01T00:00:00", "updated_at": "2018-01-01T00:00:00"}
+{"id": "garden.workshop@northwind.example", "summary": "Garden Workshop", "description": "Spring planting schedule", "time_zone": "America/Los_Angeles", "owner_id": "u_actor", "data_owner": "jordan.lee@northwind.example", "deleted": false, "created_at": "2018-01-01T00:00:00", "updated_at": "2018-01-01T00:00:00", "location": "Plot A"}
+{"id": "garden.workshop.greenhouse@northwind.example", "summary": "Garden Workshop", "description": "Spring planting schedule", "time_zone": "America/Los_Angeles", "owner_id": "u_actor", "data_owner": "jordan.lee@northwind.example", "deleted": false, "created_at": "2018-01-01T00:00:00", "updated_at": "2018-01-01T00:00:00", "location": "Plot A"}
+{"id": "garden.workshop.shed@northwind.example", "summary": "Garden Workshop", "description": "Spring planting schedule", "time_zone": "America/Los_Angeles", "owner_id": "u_actor", "data_owner": "jordan.lee@northwind.example", "deleted": false, "created_at": "2018-01-01T00:00:00", "updated_at": "2018-01-01T00:00:00", "location": "Plot A"}
+{"id": "garden.workshop.nursery@northwind.example", "summary": "Garden Workshop", "description": "Spring planting schedule", "time_zone": "America/Los_Angeles", "owner_id": "u_actor", "data_owner": "jordan.lee@northwind.example", "deleted": false, "created_at": "2018-01-01T00:00:00", "updated_at": "2018-01-01T00:00:00", "location": "Plot A"}
+{"id": "seed.library@northwind.example", "summary": "Seed Library", "description": "Seed starting timetable", "time_zone": "America/Los_Angeles", "owner_id": "u_actor", "data_owner": "jordan.lee@northwind.example", "deleted": false, "created_at": "2018-01-01T00:00:00", "updated_at": "2018-01-01T00:00:00", "location": "Plot B"}
+{"id": "tool.shed@northwind.example", "summary": "Tool Shed Inventory", "description": "Tool storage list", "time_zone": "America/Los_Angeles", "owner_id": "u_actor", "data_owner": "jordan.lee@northwind.example", "deleted": false, "created_at": "2018-01-01T00:00:00", "updated_at": "2018-01-01T00:00:00", "location": "Plot C"}
+
+Use your own conditions from step 1 as the author's conditions, with these ids:
+- r1: the record is a calendar
+- r2: the calendar's title is Garden Workshop
+- r3: the calendar is shared with Sam Rivera
+- r4: Sam Rivera's access role on the calendar is reader
+
+The candidate records are the rows of `calendars`: jordan.lee@northwind.example, garden.workshop@northwind.example, garden.workshop.greenhouse@northwind.example, garden.workshop.shed@northwind.example, garden.workshop.nursery@northwind.example, seed.library@northwind.example, tool.shed@northwind.example.
+For every candidate, give the ids of the conditions it fails under the careful reading (an empty list if it meets all of them), whether a careful colleague could still argue that it meets the request (contestable), and a short note. Then say whether the conditions faithfully capture the request as you read it in step 1 (and what differs). For each ambiguity you listed, say whether a careful reader would genuinely be unsure which reading was meant, and whether the readings select different candidates. Say whether the request reads like something a real user would write, without hints that only a test would contain. Finally, say whether the request refers to one specific record, as "the ..." does (asks_for_one: true), as opposed to allowing any record of a kind ("a ...") or asking for several (asks_for_one: false), and why.

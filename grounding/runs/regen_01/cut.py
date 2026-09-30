@@ -8,7 +8,8 @@ Writes runs/<run>_cases/<domain>/ and runs/<run>_cases.json for:
 - `full_01`: every regular test of suite/cases (covers, probes, fact probes), with runs/full_01_cases/suite.json, the
   suite index restricted to them, which judge v2's selection and the score read;
 - `absence_01`: the absence twins of suite/units (AT-);
-- `underspecified_01`: the drop-F variants of suite/units (U-).
+- `underspecified_01`: the drop-F variants of suite/units (U-); a duplicate unit (rules.DUPLICATES) is left out,
+  since its primary is the same test.
 Refuses to overwrite a folder that exists: a run's cases are cut once, before its blind sample and its run.
 """
 from __future__ import annotations
@@ -38,6 +39,8 @@ def cut(run: str) -> None:
                 continue
             case = json.loads(path.read_text())
             why = rules.rulings.test_exclusion(case)
+            if case["case_id"] in rules.DUPLICATES:  # the PI, 2026-09-29: one test; its primary runs
+                why = f"duplicate of {rules.DUPLICATES[case['case_id']]} (same request, actor and seed)"
             if why:
                 left_out[case["case_id"]] = why
                 continue
