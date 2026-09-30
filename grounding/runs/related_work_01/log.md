@@ -203,3 +203,23 @@ is reported, not fixed.
 
 **Found on the way:** F cannot be read from the trials. Our covers are graded on the record, and 17 correct trials set
 "Urgent" as priority 4 or 0, "High" as 3, or a date a year late. F is now the request's value, written by hand.
+
+### Cycle 10: the runs the lead asked for (B1 and P1, 2026-09-30 night)
+
+- **B1 (b1_01):** started at 12 in flight. The shared host was overloaded (24 to 67 s per model request) and the first
+  12 trials all ran out OpenClaw's 600 s. I drained the runner with placeholders and restarted at 8. The lead ruled
+  that those 12 stay as recorded and are rerun on a quiet host.
+- **Paused at 81 of 144 trials** at the lead's request, so regen's runs have the host.
+- **Provisional results:**
+  - 13 of 81 trials pass, all reports;
+  - 51 run out the budget, 28 of them after a change no one asked for;
+  - 26 of 27 items fail at least once;
+  - the oracle agrees with the 17 blind labels drawn so far.
+- **Found:**
+  - **Containment:** trials that read the host, the repository and the replica's source, and three direct backend
+    writes. I reported it; the lead's scan of the final rounds found 13 of 4,464 Qwen trials and no pass from a
+    bypass.
+  - **A Calendar replica gap:** the replica cannot re-add a deleted list entry. Reported, not fixed.
+- **P1 (p1_01):** the matched 48 differ from the plan (24 absence; 24 underspecified, graded by tiers), because 67
+  of 78 valid underspecified variants sit in tests that change several records of one kind. The cases install and
+  render in judge v2's bundle. The blind sample (60) is drawn. It waits for the host.
