@@ -96,3 +96,9 @@ section. Decisions that stand go to the [roadmap](roadmap.md); this is the recor
   $13.00 at list for Muse. Candidate prompt change for the PI: the Calendar replica notes don't say where a
   calendar's data owner shows (calendarList, GET /calendars). Now replaying the other 1,696 (about 3 hours), then the
   headline numbers under Qwen's verdicts.
+- 01:3x sol_score found two of the PI's blind-review rulings missing from known_defects.json (G4-BOX-11's "Seaport
+  Archive 2024" is a match; a copy in a subfolder counts as "in the folder" for G4-BOX-02). Applied (commit
+  3405221d90): two probes leave the suite; the Qwen round is 139 of 563 tests exposing, 87 facts at detect@3, 60 at
+  detect@1; decisions unchanged. Sol is scored under the updated file, with the old reading as a second column.
+  Also from sol_score: regular_p4 judged and its 45 blind labels locked (1 failure among them); 6 of 444 trials
+  pending the retry pass.
