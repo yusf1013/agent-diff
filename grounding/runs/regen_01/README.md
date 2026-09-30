@@ -18,9 +18,10 @@ Session "regen", started by the lead session ("RoadMap specialist") from the bri
 - **Judge v2 on Muse:** agrees with my 100 blind labels on 97. The 3 disagreements are trials that acted on a
   ruled-flawed near miss, which the rulings leave out anyway. As a failure detector, on the 93 trials both of us found
   usable: 33/33 precision and recall, with the same facts.
-- **Policy decisions for a Muse-only suite:** Calendar absence becomes policy-level (0.896 [0.848, 0.943]), because
-  Sonnet's 14 units (0.643) leave the cell, not because the regenerated ones are harder (0.875, as Phase 4's); the
-  other seven cells keep openclaw_eval_01's decisions. Both readings of the host-load timeouts agree.
+- **Policy decisions for a Muse-only suite:** Calendar absence becomes policy-level (0.898 [0.852, 0.944]), because
+  Sonnet's 14 units (0.643) leave the cell, not because the regenerated ones are harder (0.875; Phase 4's 0.877); the
+  other seven cells keep openclaw_eval_01's decisions. Both readings of the host-load timeouts agree. (Rates as rebuilt
+  on 2026-09-30 with the budget rule restored for Phase 4's and 6b's units; no decision changed.)
 - **The escape clause:** with "If there isn't one, just tell me", 29% of this study's no-target regular trials fail
   (147 of 509); without it, in the absence twins, 77% (163 of 213).
 - **Cost:** 1,248 Muse calls, $57.45 at list price.
@@ -560,22 +561,31 @@ is a failure.
 
 | Cell | Valid units | Failing / usable trials | Rate [p10, p90], as run | Decision | Quiet host | This study's units alone | Current suite (openclaw_eval_01) |
 |---|---:|---:|---|---|---|---|---|
-| Box, absence | 52 | 115 / 149 | 0.772 [0.707, 0.834] | undecided | same | 18: 0.833, undecided | 58: 0.764, undecided |
-| Calendar, absence | 36 | 95 / 106 | 0.896 [0.848, 0.943] | **policy-level** | same | 8: 0.875, undecided | 42: 0.815, undecided |
-| Linear, absence | 79 | 126 / 215 | 0.586 [0.519, 0.653] | not policy-level | same | 27: 0.704, not | 99: 0.608, not |
-| Slack, absence | 30 | 60 / 89 | 0.674 [0.584, 0.764] | not policy-level | 0.652, not | 18: 0.741 (0.704 quiet), undecided | 43: 0.600, not |
-| Box, underspecified | 44 | 56 / 123 | 0.455 [0.377, 0.533] | not policy-level | 0.447, not | 14: 0.476, not | 52: 0.478, not |
-| Calendar, underspecified | 27 | 40 / 73 | 0.548 [0.435, 0.658] | not policy-level | same | 6: 0.500, not | 30: 0.457, not |
-| Linear, underspecified | 61 | 77 / 169 | 0.456 [0.386, 0.524] | not policy-level | same | 26: 0.526, not | 78: 0.405, not |
-| Slack, underspecified | 20 | 44 / 60 | 0.733 [0.650, 0.817] | undecided | same | 12: 0.667, not | 31: 0.768, undecided |
+| Box, absence | 52 | 121 / 155 | 0.781 [0.718, 0.840] | undecided | same | 18: 0.833, undecided | 58: 0.780, undecided |
+| Calendar, absence | 36 | 97 / 108 | 0.898 [0.852, 0.944] | **policy-level** | same | 8: 0.875, undecided | 42: 0.817, undecided |
+| Linear, absence | 79 | 146 / 235 | 0.621 [0.557, 0.684] | not policy-level | same | 27: 0.704, not | 99: 0.656, not |
+| Slack, absence | 30 | 61 / 90 | 0.678 [0.589, 0.767] | not policy-level | 0.656, not | 18: 0.741 (0.704 quiet), undecided | 43: 0.612, not |
+| Box, underspecified | 44 | 65 / 131 | 0.496 [0.424, 0.569] | not policy-level | 0.489, not | 14: 0.476, not | 52: 0.548, not |
+| Calendar, underspecified | 27 | 48 / 81 | 0.593 [0.494, 0.691] | not policy-level | same | 6: 0.500, not | 30: 0.511, not |
+| Linear, underspecified | 61 | 94 / 186 | 0.505 [0.443, 0.568] | not policy-level | same | 26: 0.526, not | 78: 0.483, not |
+| Slack, underspecified | 20 | 44 / 60 | 0.733 [0.650, 0.817] | undecided | same | 12: 0.667, not | 31: 0.802, undecided |
 
-- **One decision changes** against the current suite: Calendar absence becomes policy-level (0.896, its 10th
-  percentile 0.848), where it was 0.815, undecided. Every Muse source is high there (Phase 4's 19 units 0.875, 6b's 9
-  units 0.962, this study's 8 units 0.875); Sonnet's 14 units were at 0.643 [0.500, 0.762], so the decision changes
-  because they leave, not because the regenerated tests are harder ([escape_clause.py](escape_clause.py),
-  [eval/escape_clause.json](eval/escape_clause.json)). The other seven cells keep their decisions.
-- **Both readings agree on every decision;** the host-load re-runs move only Slack absence (0.674 to 0.652) and Box
-  underspecified (0.455 to 0.447).
+- **One decision changes** against the current suite: Calendar absence becomes policy-level (0.898, its 10th
+  percentile 0.852), where it is 0.817, undecided. Every Muse source is high there (Phase 4's 19 units 0.877, now
+  policy-level on their own; 6b's 9 units 0.963; this study's 8 units 0.875); Sonnet's 14 units were at 0.643
+  [0.500, 0.762], so the decision changes because they leave, not because the regenerated tests are harder
+  ([escape_clause.py](escape_clause.py), [eval/escape_clause.json](eval/escape_clause.json)). The other seven cells
+  keep their decisions.
+- **Both readings agree on every decision;** the host-load re-runs move only Slack absence (0.678 to 0.656) and Box
+  underspecified (0.496 to 0.489).
+- **The budget rule restored (2026-09-30, afternoon; session sol_score, with the lead):** openclaw_eval_01's verdicts
+  on Phase 4's and 6b's units record their attempts in a worktree since removed, and `policy.population_outcomes`
+  had skipped the budget rule for them, so their trials over the budget were void. Rebuilt with the rule
+  (`local_attempt`): no decision changes; this study's own units are unchanged. As run, the rates were 0.772, 0.896,
+  0.586, 0.674 (absence) and 0.455, 0.548, 0.456, 0.733 (underspecified); quiet host, Slack absence 0.652 and Box
+  underspecified 0.447; openclaw_eval_01's column 0.764, 0.815, 0.608, 0.600 and 0.478, 0.457, 0.405, 0.768.
+  Phase 4's Calendar absence units alone move from 0.875 (p10 0.800, undecided) to 0.877 (p10 0.807,
+  policy-level).
 - "Valid units" counts every unit the rulings keep; the rate pools the units with at least one usable trial (0 to 3
   fewer per cell: units whose trials were all not established without a timeout).
 
@@ -736,3 +746,9 @@ The session's cap was set on the amount billed to the account ($10); it was bill
     against 40 from 271), each exposing 40 of the 81 facts, a different 18 each. The escape clause, not the near
     miss, decides most absence behaviour. The agents take the natural reading: the flawed near misses drew them, and
     the borderline ones carry 6 facts.
+- **2026-09-30 afternoon, the budget rule restored (session sol_score, with the lead's leave to edit this study).**
+  `runs/decisions_*.json` (both readings) and `eval/escape_clause.json` rebuilt: Phase 4's and 6b's trials over the
+  budget now count as failures, as the rule says (details under "The policy decisions"); no decision changes.
+  [score.py](score.py) matches a re-run's verdict to its attempt by the path from grounding/runs/ on, so the
+  quiet-host reading works in any checkout; both readings reproduce `runs/full_01.adjudicated*.json`.
+  [policy_decide.py](policy_decide.py) gained a docstring note. `eval/for_report.json` is unchanged.
