@@ -252,3 +252,6 @@ section. Decisions that stand go to the [roadmap](roadmap.md); this is the recor
 - 05:24 the Sol round's runs are complete: regular p4 444 and 6b 408 attempts (9 pending the retry pass), absence
   365 completed of 369 attempts, underspecified 270 of 273; the retry pass (stalls reclassified, infrastructure
   errors rerun) started at 05:24.
+- 05:36 **the Sol round is complete:** every attempt completed after the retry pass (regular p4 444, regular 6b 405
+  over 135 cases, absence 369, underspecified 273; 3 stalls reclassified and rerun; the last infrastructure error
+  rerun by hand). Scoring of the policy sets and the final numbers are with the sol_score session.
