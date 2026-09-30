@@ -19,6 +19,7 @@ Session "harness", started by the lead session "RoadMap specialist" on 2026-09-2
 | Path | What |
 |---|---|
 | [report.md](report.md) | The deliverable |
+| [hardening.md](hardening.md) | Isolating the attempt for the next round (desk study for the lead, 2026-09-30): the options, costs, code paths, recommendation |
 | [adapter.py](adapter.py) | One case through `claude -p` or `codex exec`, on OpenClaw's environment and judge-step helpers |
 | [smoke.py](smoke.py) | Runs listed cases (from openclaw_eval_01's `full_03_cases`) through the adapter |
 | [clock/fakeclock.c](clock/fakeclock.c) | The LD_PRELOAD wall-clock shift used for Claude Code |
