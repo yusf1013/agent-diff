@@ -46,6 +46,10 @@ scenario and every policy variant, before any run; coverage by the credit rule o
 | [defects.py](defects.py) | Writes my flawed near misses (and, later, invalid variants) into `roadmap_01/known_defects.json` |
 | [coverage.py](coverage.py) | Facts covered by a valid near miss, against the briefs' facts and Sonnet's credited facts |
 | [run.py](run.py), [cut.py](cut.py), [blind.py](blind.py) | The runner (openclaw_eval_01's, with rules.py), the cases folders the runs read, the stratified blind sample |
+| [label_view.py](label_view.py), `eval/labels_<run>.json` | My blind labels, from the judge's evidence without the triage, written before any verdict |
+| [score.py](score.py) | The regular score: adjudicate.py's logic (reproduces openclaw_eval_01's full_04 exactly), the exposure filter, timeouts under host load |
+| [policy_decide.py](policy_decide.py) | The policy decisions for a Muse-only suite (Phase 4, 6b and this study's units; reproduces openclaw_eval_01's Phase 4 and 6b figures) |
+| [compare.py](compare.py), [funnel.py](funnel.py), [duplicates.py](duplicates.py) | The halves side by side; the funnel and costs; duplicate units |
 
 ## The briefs (step 1)
 
