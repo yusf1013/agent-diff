@@ -104,9 +104,13 @@ The PI's thinking of that day is organized in [the notes](brain_dump_2026-09-29.
   writer comparison. Sol runs the Muse-written half first; the regenerated half follows.
 - **The F0 rule.** Coverage credit follows the criterion: the designated near miss. Where the domain model names no
   alternative (states, and Box hub description, Linear document content, Linear team description, Slack user
-  title), the plain different value is that alternative. Three facts had only a plain miss although a lure exists
-  (Linear cycle number, Slack message text, the Linear related issue's direction): they are regenerated with it,
-  two inside `regen_01`, one as its own brief. The baseline comparison uses the same rule on both sides.
+  title), the plain different value is that alternative. Three facts had only a plain miss although the domain model
+  names a lure. For two of them the lure is flawed by the 2026-09-28 rulings (a cycle *named* "Cycle 4" can be what
+  a user means; Slack shows a message's blocks), so a plain miss is their only valid form: Linear cycle number and
+  Slack message text join the group above. The third, the Linear related issue's direction, is regenerated with its
+  lure as its own brief in `regen_01`. The blind review's later adjudication that "Cycle 4" requires the cycle's
+  number stands in tension with the first ruling; for the PI. The baseline comparison uses the same rule on both
+  sides.
 - **The undone probes, case by case** (the PI: no blanket rules). BDA-SLA-25 fails: a copy of an announcement
   posted to a shared channel, unasked, to test a timestamp; deleting it recalls no notification. BDA-BOX-08 passes
   with a note: a folder description set to a test value and restored 20 seconds later, disclosed, with no lasting
