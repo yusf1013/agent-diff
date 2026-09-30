@@ -735,46 +735,56 @@ The corrections to §5.3's S1 row: the arm used the obligation cards' plural obl
    neutral layout hides names, not the filesystem: a future round should run attempts under a restricted user or in
    a container.
 
-### 5.7 First results (2026-09-30; B1 provisional)
+### 5.7 Results (2026-09-30)
 
-**B1, masking an operation** ([b1/](b1/README.md)): 81 of 144 trials so far, 27 of the 48 selected items with at
-least one trial. The run is paused at the lead's request so another study's runs have the host. The agent is OpenClaw
+**B1, masking an operation** ([b1/](b1/README.md)): all 48 selected items, 3 trials each (144 trials), on OpenClaw
 with the self-hosted Qwen, graded by boundary_02's oracle.
+- **Reading A** is as run.
+- **Reading B** replaces the first 12 trials, which ran on an overloaded host, with their reruns on a quieter host (the
+  lead's ruling; the PI owns the timeout rule).
 
-| | B1 (so far) | Ours: boundary_auto_01 | baselines_01 |
-|---|---|---|---|
-| Agent | OpenClaw, self-hosted Qwen3.8-27B | the same model, toy harness | OpenClaw, self-hosted Qwen |
-| Tests | 27 items (of 48) | 89 valid boundary tests | none on boundaries: its failing tests all presuppose a missing record (a policy form) |
-| Tests failing at least once | **26 of 27** | 49 of 89 | – |
-| Trials passing | **13 of 81**, all reports | by the alternative, below | – |
-| Pass rate, nothing else possible | 4 of 27 | 40 of 45 | – |
-| … a re-creation possible | 5 of 42 | 31 of 92 | – |
-| … another record possible | 4 of 6 | 36 of 36 | – |
-| … a look-alike possible | 0 of 3 | 9 of 20 | – |
+| | B1, reading A | B1, reading B | Ours: boundary_auto_01 | baselines_01 |
+|---|---|---|---|---|
+| Agent | OpenClaw, self-hosted Qwen3.8-27B | the same | the same model, toy harness | OpenClaw, self-hosted Qwen |
+| Tests | 48 items | 48 items | 89 valid boundary tests | none on boundaries: its failing tests all presuppose a missing record (a policy form) |
+| Tests failing at least once | **40 of 48** | 40 of 48 | 49 of 89 | – |
+| Failing trial 1 | 30 of 48 | 28 of 48 | – | – |
+| Trials passing | **47 of 144**, all reports | 50 of 144 | by alternative, below | – |
+| Pass rate, nothing else possible | 4 of 27 | 7 of 27 | 40 of 45 | – |
+| … a re-creation possible | 8 of 63 | 8 of 63 | 31 of 92 | – |
+| … a look-alike possible | 26 of 39 | 26 of 39 | 9 of 20 | – |
+| … another record possible | 9 of 12 | 9 of 12 | 36 of 36 | – |
 
-- **How the 68 failing trials fail:**
-  - 51 ran out the solver's 600 s budget: 23 with no change, 28 after a change no one asked for;
-  - 15 more made such a change and answered: a deleted calendar-list entry, a lossy re-creation, stray test records;
-  - 1 sent the write to the backend directly, a failure by rule; two over-budget trials did too;
-  - 1 reached F with another change.
-- **The oracle agrees with all 17 blind labels drawn so far** (30 were drawn before the run; the other 13 are in the
-  unrun part).
-- **Caveats:**
-  - The first 12 trials ran while the shared host was overloaded (24 to 67 s per model request) and all ran out the
-    budget. By the lead's ruling they stay in the record and will be rerun on a quiet host; both readings go to the PI.
-    Over all 81 trials the median is 30 s per request (quartiles 26 and 37), close to 6a's pace. So most timeouts are
-    long probing, not a slow host.
-  - The harnesses differ: our boundary tests ran in the toy loop, B1 in OpenClaw.
-  - Leaving out the 9 trials that read the repository, the replica's source or their own curl wrapper: 12 of 72
-    pass.
-  - 7 calendar-list trials depend on a replica gap: the replica cannot re-add a deleted list entry. Without them,
-    13 of 74 pass.
-- **The reading so far:** with the one operation taken away by an error, the agent rarely reports it. It probes
-  until the budget runs out, often changing something no one asked for, sometimes going around the service. That is
-  FeasiGen's "false continue". The same model reports our faithful boundaries (real service limits) far more often,
-  though in another harness.
-- **So B1 measures a different behaviour from our boundary tests:** the response to an environment that seems broken,
-  not knowledge of a service's limits. That is the argument for keeping both, not for replacing ours.
+**By service (reading A):** Slack 29 of 36 trials pass; Box 8, Calendar 5 and Linear 5, each out of 36. Slack's
+`unknown_method` is read as "this method does not exist" and reported. Box's 405, Google's 404 and GraphQL's
+validation error are read as a broken environment, and the agent keeps probing.
+
+**How the 97 failing trials fail (reading A):**
+- 77 ran out the solver's 600 s budget: 44 with no change, 33 after a change no one asked for;
+- 17 made such a change and answered: a deleted calendar-list entry, a lossy re-creation, a new file version, stray
+  test records;
+- 1 sent the write to the backend directly, a failure by rule; three over-budget trials did too;
+- 1 reached F with another change;
+- 1 claimed F that did not hold.
+
+**Checks:**
+- **The oracle agrees with all 30 blind labels**, drawn before the run and labelled before any oracle output.
+- **Leaving out the 11 trials that read the repository, the replica's source or their own curl wrapper:** 46 of 133
+  pass.
+- **Leaving out the 7 calendar-list trials that depend on a replica gap:** 47 of 137 pass.
+- **The host's pace:** a median of 28.5 s per model request (quartiles 24 and 34), close to 6a's pace. So the timeouts
+  are long probing, not a slow host. On the quieter host, 9 of the 12 reruns still ran out the budget.
+
+**Reading:**
+- **The status quo's dominant boundary class elicits the "false continue" FeasiGen reports.** With the one operation
+  taken away by an error that does not say the operation is missing, the agent rarely reports it. It probes until
+  the budget runs out, often changing something no one asked for, and sometimes going around the service.
+- **Where the error names the absence** (Slack's `unknown_method`), it reports.
+- **B1 measures the response to an environment that seems broken, not knowledge of a service's limits.** Our boundary
+  tests measure the latter. The same model, in the toy harness, reports "nothing possible" boundaries 40 of 45
+  times.
+- The harnesses differ, so the comparison is indicative. The case for keeping both kinds of test stands on the
+  kinds of behaviour, not on the rates.
 
 **S1** ([s1/](s1/README.md)), done without a model:
 - Agent-Diff's seeds defeat **3 of the 15** practical lazy shortcuts our automation defeats on Slack, Box and Linear

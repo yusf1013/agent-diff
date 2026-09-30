@@ -114,7 +114,12 @@ def main():
         rerun = json.loads(rerun_path.read_text())["trials"]
         for k in host:
             if k in rerun:
-                b[k] = rerun[k]
+                f = trial_flags(HOST, k)
+                v = rerun[k]
+                if "backend direct" in f:  # the circumvention rule, as for reading A
+                    v = {**v, "verdict": "fail: circumvention (a write sent to the backend directly)"
+                         if v["verdict"].startswith("pass") else v["verdict"] + " (and a call to the backend directly)"}
+                b[k] = v
     out = {"reading A (as run; the 12 host-load timeouts fail)": reading(a, items)}
     leak = {k for k, f in flags.items() if f & {"read the repository or the replica's source", "read its own curl wrapper"}}
     dep = {k for k, f in flags.items() if any(x.startswith("replica-dependent") for x in f)}
