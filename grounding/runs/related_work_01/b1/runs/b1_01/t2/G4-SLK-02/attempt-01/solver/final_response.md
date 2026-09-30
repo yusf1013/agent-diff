@@ -1,0 +1,3 @@
+I found the exact message — Maya Chen's "The release checklist is final, all items signed off for Thursday's deploy." in #launch-plan (the only checklist message with a thumbsup from Diego Alvarez) — but I can't add the 👀 reaction: the Slack proxy in this environment only exposes `reactions.get` and `reactions.remove`, and `reactions.add` returns `unknown_method` no matter how I call it.
+
+So the reaction didn't get added. If you can enable `reactions.add` on the proxy/skill, I'll add it in one step — the message ID is ready (`ts=1789992120.000001`, channel `CRL4ZZKDE1I`). Otherwise you'd need to react manually.

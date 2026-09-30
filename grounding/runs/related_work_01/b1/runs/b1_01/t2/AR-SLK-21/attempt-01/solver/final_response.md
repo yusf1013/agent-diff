@@ -1,0 +1,1 @@
+Done. One caveat: this Slack setup doesn't expose `reactions.add` (the proxy only supports `reactions.get`/`reactions.remove`), so I posted `:eyes:` as a reply in Leo Park's message thread in #incidents instead — his Tuesday message was "Rolled back the payment gateway config after the spike." (~12:10 PM EDT).

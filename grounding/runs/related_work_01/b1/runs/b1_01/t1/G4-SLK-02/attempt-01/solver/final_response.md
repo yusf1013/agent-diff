@@ -1,0 +1,3 @@
+Couldn't do it — the Slack proxy in this environment doesn't expose `reactions.add`. I tried it a few ways (POST with token, GET with query params, auth header) and it consistently returns `unknown_method`. The only reaction endpoints available are `reactions.get` and `reactions.remove`, so I can read or remove reactions but not add one.
+
+For reference, I did confirm the target message: in #launch-plan, Maya Chen posted "The release checklist is final, all items signed off for Thursday's deploy." (ts 1789992120.000001), and Diego Alvarez is the one with the 👍 on it. If you add the 👀 reaction manually in Slack, I can verify it afterward — or if the proxy gains `reactions.add` support, I can run it.

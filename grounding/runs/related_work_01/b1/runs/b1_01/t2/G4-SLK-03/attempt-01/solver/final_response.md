@@ -1,0 +1,3 @@
+I found the message — Diego Alvarez's "Gateway rollback complete, traffic is recovering." in #deployments (ts 1789994400.000006, 12:40 EDT). But I couldn't add the reaction: the Slack API proxy in this environment only exposes a fixed set of methods, and `reactions.add` isn't one of them (it returns `unknown_method`; `reactions.get` and `reactions.remove` work, but there's no add).
+
+So the eyes reaction wasn't added — I verified the target message is the right one, it's just the API surface that's missing. If you can enable `reactions.add` on the proxy (or run `openclaw` with a full token scope), I can add it right away.
