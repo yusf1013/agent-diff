@@ -81,10 +81,12 @@ def show(key: str, args) -> None:
         print("DIFF: missing")
         return
     diff = read(dp).get("diff") or {}
+    shown = 0
     for cat, vals in diff.items():
         for i, item in enumerate(vals) if isinstance(vals, list) else []:
             if cat == "inserts" and item.get("__table__") == "calendar_sync_tokens":
                 continue
+            shown += 1
             if cat == "updates":
                 before, after = item.get("before", {}), item.get("after", {})
                 changed = {k: [before.get(k), after.get(k)] for k in sorted(set(before) | set(after))
@@ -94,8 +96,8 @@ def show(key: str, args) -> None:
                                                           "changed": changed}))
             else:
                 print(f"DIFF /diff/{cat}/{i}:", compact(item))
-    if not any(diff.values()):
-        print("DIFF: no changes")
+    if not shown:
+        print("DIFF: no changes" + (" (only calendar sync-token inserts from reads)" if any(diff.values()) else ""))
 
 
 def main():
