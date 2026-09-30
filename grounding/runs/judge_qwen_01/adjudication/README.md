@@ -27,3 +27,17 @@ judges read, and never given to a judge.
 5. Where my label and a reference label differ, both stay: I report the difference and never revise a reference
    label. A label I would change after unblinding goes to a separate corrections list, with the reason; the locked
    file stays as it was.
+
+## Verdicts I saw before labelling
+
+The run logs print each verdict's outcome and facts. Before I stopped reading them, I saw Qwen's outcome for
+these executions (the smoke run's three, and log lines while checking progress). If one of them reaches a queue,
+its label notes this. I saw no Muse verdict and no reference label for any execution.
+
+- `full_03/t1/P-AP-SLK-01-I11`, `solve_absence_look4/t1/AT-G4-BOX-07-I13`,
+  `solve_population_underspecified/t1/U-AP-SLK-04-Message_message_text` (smoke run, `runs/smoke_01`)
+- `full_04/t1/P-G4-BOX-15-I13`, `solve_population_6b_absence/t3/AT-G4-LIN-09-I12`, `full_03/t2/P-AP-SLK-01-I13`,
+  `solve_population_absence/t3/AT-G4-CAL-05-I12`, `full_03/t2/FP-G4-LIN-08-I11-I12`, `full_03/t2/P-G4-SLK-04-I11`,
+  `solve_population_underspecified/t3/U-G4-CAL-03-primary`, `full_03/t3/P-G4-SLK-08-I13`,
+  `full_03/t2/P-AP-LIN-02-I13`, `solve_population_6b_absence/t2/AT-G4-CAL-09-I11-I12`,
+  `solve_population_underspecified/t3/U-AR-BOX-24-Task_created_at` (`runs/selfhost`, log lines)
