@@ -5,7 +5,7 @@ Session "harness", started by the lead session "RoadMap specialist" on 2026-09-2
 
 ## Status
 
-- **Date:** 2026-09-30, 01:25 EDT.
+- **Date:** 2026-09-30, 01:45 EDT.
 - **Done:** the desk survey (report sections 1-3, sent to the lead); the smoke adapter ([adapter.py](adapter.py),
   [smoke.py](smoke.py), [clock/fakeclock.c](clock/fakeclock.c)); 15 smoke attempts on three tests: Claude Code with
   Sonnet 5.5 (plan) and with the self-hosted Qwen, Codex with Sol (plan: all 4 runs spent; `gpt-6.1-sol` refused, so
@@ -138,3 +138,18 @@ One entry per cycle: what changed, what ran, what was learned.
 - A flag for Codex runs with a test clock records the date Codex showed (`context_date`); added to the two recorded
   Codex Calendar runs afterwards.
 - Report sections 4-6 written; the table of attempts comes from [summarize.py](summarize.py).
+
+### Cycle 6 (01:25-01:45): review
+
+- The advisor's review. The three Anthropic quotes the reading rests on were checked on the raw pages (curl, not a
+  summarizer): the Agent SDK article (dated 2026-06-16, the June 15 pause banner verbatim), the consumer terms
+  (effective 2025-10-08, the automated-access clause), the Claude Code legal page (the developer and end-user
+  sentences).
+- The current Codex release is 0.159.2 (npm); the smoke used the VS Code extension's 0.155.0-alpha. Installed 0.159.2
+  in the scratch folder and listed the account's catalog without inference: it includes `gpt-6.1-sol`. The alpha's
+  refusal was most likely a client-version gate; a run on 0.159.2 would confirm it (not spent). 0.159.2 is also a
+  static binary, so the clock finding stands.
+- The relabelled `claude_qwen_01` attempt 01 now carries a `relabelled_after_run` note, as the backfilled Codex
+  clock flags carry theirs.
+- Report: the recommendation's first sentence names one harness (Claude Code), with Codex as a conditional add-on for
+  Sol and OpenCode as the alternative; the plan's no-overage setting is stated.
