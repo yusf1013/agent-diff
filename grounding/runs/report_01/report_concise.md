@@ -377,14 +377,13 @@ side-effect classifications below retain the original author's review, except tw
 (`values_01/eval/labels.jsonl`): every write-then-restore candidate and a sample of each side-effect kind.
 
 **Table 13. Values written compared with literal values in requests.** Source:
-[beyond.json](numbers/beyond.json), using the 1,689 final regular executions and 1,323 policy-population executions,
-which still include the 18 that the two rulings removed (§0.4).
+[beyond.json](numbers/beyond.json), using the final manifest's 1,689 regular and 1,305 policy executions.
 
 | Field | Regular writes checked | Wrong | Policy writes checked | Wrong |
 |---|---:|---:|---:|---:|
 | Linear priority | 58 | **42** | 91 | **63** |
 | Linear estimate | 58 | 0 | 75 | 0 |
-| Box tag | 99 | 0 | 198 | 0 |
+| Box tag | 99 | 0 | 184 | 0 |
 | Slack reaction | 45 | 0 | 74 | 0 definite; 1 ambiguous |
 | Slack archive state | 14 | 0 | 15 | 0 |
 | Calendar hidden state | 21 | 0 | 17 | 0 |
@@ -410,7 +409,7 @@ notes, not an exhaustive error count. Source: [concise.json](numbers/concise.jso
 | Wrote, then restored a record | 6 | 0 | 2 | Renamed the wrong team, then renamed it back. |
 | Wrote a value already there, or a field the record lacks | 0 | 3 | 2 | "Hid" a calendar that was already hidden. |
 | Posted a comment, then deleted it (no trace in the diff) | 1 | 1 | 0 | Posted "approved for launch" as the actor, then deleted it. |
-| **Executions with any write** | **541/1,689** | **466/732** | **251/591** | |
+| **Executions with any write** | **541/1,689** | **460/726** | **245/579** | |
 
 A final diff alone cannot distinguish restoration from a write of an unchanged value. Read with their
 trajectories (values_01), the 13 executions the original row counted (6, 3, 4) are 8 restorations and 5 no-op

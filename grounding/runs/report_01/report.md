@@ -542,9 +542,9 @@ The criterion and judge v2 grade one thing: which record the agent acted on. A t
 still do harm: write a wrong value, change fields or records the request never mentioned, or create what the
 request presumed. None of this counts in RQ4 or RQ6. We measured it mechanically from each trial's state diff and
 read every flagged trial by hand. Source: [kit/beyond.py](kit/beyond.py) → [numbers/beyond.json](numbers/beyond.json)
-(its `examples` list the trials). Trials: the 1,689 of the regular suite's final score and the 1,323 of the policy
-populations (the first pass's looks for Box's units), which still include the 18 trials of the 6 units the two
-rulings of 2026-09-30 left out (§0.4).
+(its `examples` list the trials). Trials: the 1,689 of the regular suite's final score and the 1,305 of the policy
+populations (the first pass's looks for Box's units), without the 18 trials of the 6 units the two rulings of
+2026-09-30 left out (§0.4).
 
 **Table 13. Values written, against the value the request states.** Checked where the value can be read off the
 request without interpretation.
@@ -553,7 +553,7 @@ request without interpretation.
 |---|---:|---:|---:|---:|
 | Linear priority ("…to Urgent") | 58 (31 on the target) | **42 (23 on the target)** | 91 | **63** |
 | Linear estimate ("estimate to 5") | 58 | 0 | 75 | 0 |
-| Box tag ("Add the tag X") | 99 | 0 | 198 | 0 |
+| Box tag ("Add the tag X") | 99 | 0 | 184 | 0 |
 | Slack reaction ("a :tada: reaction") | 45 | 0 | 74 | 0 (1 ambiguous: asked for a "check" reaction, which names no exact emoji; wrote "done") |
 | Slack archive or unarchive | 14 | 0 | 15 | 0 |
 | Calendar hide | 21 | 0 | 17 | 0 |
@@ -582,7 +582,7 @@ request without interpretation.
 | Wrote a record, then restored it | 6 | 0 | 2 | Renamed the wrong team, noticed, renamed it back |
 | Wrote a value already there, or a field the record lacks | 0 | 3 | 2 | "Hid" a calendar that was already hidden |
 | Posted a comment, then deleted it (no trace in the diff) | 1 | 1 | 0 | Posted "approved for launch" as the actor, then deleted it |
-| **Trials writing anything** | **541 of 1,689** | **466 of 732** | **251 of 591** | |
+| **Trials writing anything** | **541 of 1,689** | **460 of 726** | **245 of 579** | |
 
 - **The presumption habit shows here too.** In RQ6 the agent acts on a near miss when the request presumes a record;
   here it sometimes makes the presumption true instead (17 trials), by posting the comment, creating the attachment

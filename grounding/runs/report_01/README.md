@@ -78,7 +78,7 @@ manifest (blind_review_01, judge_qwen_01, values_01) keep their own populations.
 
 report.md and report_concise.md brought to the rebuilt numbers (brief:
 [report_update.md](../../protocols/briefs/report_update.md); session "values"). Every number is read from a file;
-none is recomputed from memory. `numbers/` and `kit/` are unchanged by this work. Format: section, old → new, source;
+none is recomputed from memory. `numbers/` and `kit/` are unchanged by this work, except the follow-up at the end. Format: section, old → new, source;
 "old" is the text before these changes.
 
 **Which numbers:** every source is read as of commit a8c046c891 (`numbers/` rebuilt in full after the two PI
@@ -400,3 +400,19 @@ and decisions; its `valid` keeps both cases of each duplicate pair (Linear and S
   "systematic value and disclosure checks" → "value and disclosure checks inside the pipeline (values_01 audited them
   once, on the earlier manifest)"; "provenance for RQ7" → "for RQ7's remaining rows"; "the selected 3,018 executions"
   → 2,994.
+
+### Follow-up: three inconsistencies in `numbers/` (2026-09-30, at the lead's request)
+
+1. **`kit/beyond.py` filters the policy side by the rulings**, as `kit/concise.py` does: `main()` skips the trials of
+   units `policy.population_units` leaves out (it applies `rulings.test_exclusion`); `policy_trials()` stays
+   unfiltered because concise.py counts the left-out trials from it. Rerun: the policy side goes from 732 and 591
+   trials to 726 and 579 (`policy_trials_left_out_by_rulings`: 6 and 12, the units AT-G4-BOX-02-I11-I12,
+   AT-G4-BOX-11-I11-I12, U-G4-BOX-11-Folder_tags, U-G4-BOX-11-Folder_description, U-G4-BOX-02-File_parent_id,
+   U-G4-BOX-02-File_collections); trials writing 466 and 251 → 460 and 245; Box tag writes checked 78 + 33 and
+   51 + 27 + 9 → 75 + 30 and 45 + 25 + 9. The regular side, the judge notes and the examples are unchanged. RQ7 in
+   both texts: "the 1,323 of the policy populations ..., which still include the 18 trials of the 6 units the two
+   rulings ... left out" → "the 1,305 ..., without the 18 trials ..." (report_concise.md: "the final manifest's 1,689
+   regular and 1,305 policy executions"); Table 13's Box tag policy writes 198 → 184; "Trials writing anything"
+   466 of 732 and 251 of 591 → 460 of 726 and 245 of 579. The hand-classified rows are unchanged: none of the six
+   units has an unrequested, no-net-change or changed-to-fit trial in `beyond.json`, and none is in
+   `values_01/eval/labels.jsonl`. Source: `numbers/beyond.json` (`policy`, `policy_trials_left_out_by_rulings`).
