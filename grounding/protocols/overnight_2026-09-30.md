@@ -64,3 +64,10 @@ section. Decisions that stand go to the [roadmap](roadmap.md); this is the recor
   suite's assertions pass 7 of 13 tests with a hand-labelled wrong-record error; the credit rule's ancestor is
   Zhong, Yu and Klein (EMNLP 2020). Next: the projection plan (Agent-Diff first, AgentDojo second) and the three
   baseline proposals.
+- 00:45 related_work done (report.md 724 lines, commit 00263f657b; merged into main as 5093ad1cec): 69 works in 35
+  cards, 12 angles (6 new); nothing tests against a model of the world the agent acts on; Agent-Diff's served
+  evaluation has no closed-world check (an extra write no assertion matches passes); its assertions pass 7 of 13
+  tests with a hand-labelled grounding error. For the PI: run ClawEnvKit as a generator baseline (48 tasks, about
+  $5–7 list, 2 days of adapters); the full Agent-Diff projection (3–4 session-days, 672 self-host trials); the
+  §5.5 baseline choices. Assigned next: the no-decision preparations P1, B2, S1, B1.
+- 00:46 sol_score launched (sixth session): scripts first, judging after each set's retry pass.
