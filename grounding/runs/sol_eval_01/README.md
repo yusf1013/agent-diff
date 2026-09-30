@@ -7,12 +7,12 @@
   Judging, the blind sample and the scores come after the runs.
 - The pilot (32 regular tests, one trial each) is in `../sol_pilot_01/runs/pilot_01`: 31 completed, 1 failed on
   the clock problem below; median 37 s per run, about 45k input tokens (mostly cached) and 350 output tokens.
-- **Judging and scoring (session `sol_score`, branch `exp/sol_score-01`), 2026-09-30 01:05:**
-  - **Done:** the question below; one finding reported to the lead and fixed by the lead (provider stalls, in the
-    log).
-  - **Running:** nothing of mine. The runs are the lead's: `regular_p4` is about 80% done.
-  - **Next:** the kit copies with regression tests on Qwen's records (no model calls); then `regular_p4` gets its
-    blind labels, judge and score.
+- **Judging and scoring (session `sol_score`, branch `exp/sol_score-01`), 2026-09-30 01:30:**
+  - **Done:** `regular_p4` is judged, labelled and scored (provisional). 5 of 148 tests expose a fact, against
+    Qwen's 47 on the same tests. Judge v2 agrees with all 45 blind labels. 6 trials are pending the retry pass.
+  - **Running:** `regular_6b` (the lead's run). Its blind trials are labelled as they finish.
+  - **Next:** judge and score `regular_6b`, then the policy sets. After `runs/retry_done.txt`, judge the retried
+    trials and update the numbers.
   - **Blocked:** nothing.
 
 ## The questions (session sol_score)
@@ -132,3 +132,20 @@ $L grounding.runs.sol_eval_01.kit.compare_qwen; $L grounding.runs.sol_eval_01.ki
       as it saw Qwen's.
     - Awareness remarks can only be measured on visible text.
     - Mechanisms that rest on reasoning (saw-mismatch-accepted against skipped-check) get less evidence.
+- **01:05-01:30, cycle 1: the kit and `regular_p4`.**
+  - **Kit copies, checked:** adjudicate, combine and the policy decision need other paths, so the kit copies them.
+    On Qwen's records the copies reproduce openclaw_eval_01's files exactly: every adjudicated file,
+    final_regular_with_6b.json, and all eight cells with their readings. No model calls.
+  - **Labels:** I labelled `regular_p4`'s 45 blind trials from the evidence only (kit/view.py shows no triage or
+    verdict), then locked them with a sha256. Then I judged the set on Muse: 284 trials, $0.50 billed.
+    - Result: 45/45 agree, and the one failure matches in outcome, fact and mechanism.
+  - **Found: two PI rulings missing from the rulings file.** While labelling `regular_6b`, I found that two of the
+    PI's rulings in blind_review_01 (Seaport Archive 2024 = Seaport Archive; "in the folder" allows subfolders)
+    never reached known_defects.json.
+    - I reported it, and the lead added them (commit 3405221d90). The Qwen round now stands at 139 of 563 tests,
+      87 and 60 facts.
+    - Sol is scored under the updated file. `--before-br` keeps the earlier file as a second column.
+  - **Found: memory_search fails in every call on the openai backend.** OpenClaw says "agent database ... belongs
+    to agent main". Sol calls it in 110 of 444 trials and then tells the user memory was unavailable. Qwen's 9 calls
+    never hit it. Reported to the lead. Outcomes are not affected.
+
