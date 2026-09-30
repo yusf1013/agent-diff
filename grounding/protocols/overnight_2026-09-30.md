@@ -307,3 +307,12 @@ section. Decisions that stand go to the [roadmap](roadmap.md); this is the recor
 - 06:4x sol_score launches Sol on the regenerated half (337 tests, trial 1 first, then 2 and 3, stop rule on the
   plan's window; default store layout kept for one harness state across the Sol round, the fix reserved for the
   next round; judge cap $25 list). No merges in the main checkout while it writes there.
+- 11:3x regen's Qwen runs complete: 1,002 executions (615 regular, 213 absence, 174 underspecified; three G4-SLK-14
+  tests left out at run time by the "Marcus Webb Jr" ruling), 100 blind labels written before any verdict; 18
+  host-load timeouts being rerun quiet, both readings to be reported; judge v2 on Muse running. The baseline arms
+  resume when the host frees (about 11:55).
+- 08:0x qwen_writer_01 (harness session, commit d48b099c16): Qwen's writer matches Muse on 12 Phase 4 briefs (12
+  of 12 accepted, 23 of 23 facts covered validly, same wording quality) at about 9x the writer time and $0; two of
+  its near misses ruled flawed on person-naming wording, with Phase 4's opposite reading beside them; its 72 tests
+  run on the self-host at 6 in flight for the exposure comparison (Muse's 74 tests on the same briefs: 19 exposing,
+  9 of 23 facts at detect@3).
