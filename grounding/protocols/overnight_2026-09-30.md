@@ -71,3 +71,8 @@ section. Decisions that stand go to the [roadmap](roadmap.md); this is the recor
   $5–7 list, 2 days of adapters); the full Agent-Diff projection (3–4 session-days, 672 self-host trials); the
   §5.5 baseline choices. Assigned next: the no-decision preparations P1, B2, S1, B1.
 - 00:46 sol_score launched (sixth session): scripts first, judging after each set's retry pass.
+- 00:55 sol_score found provider stalls: OpenClaw gives up after 120 s of silence ("LLM idle timeout") and ends
+  the turn as a timeout, which the scoring would charge to the agent (3 of the first 350 Sol runs; Qwen never ended
+  a timeout under 590 s). Now runtime rule R3 (commit fd38a82dec); the earlier ones are reclassified before the
+  retry pass. Sol's steps carry no visible thinking (about 20% of steps have visible text): the judge sees
+  commands, responses and the final answer; awareness is measured on visible text only.
