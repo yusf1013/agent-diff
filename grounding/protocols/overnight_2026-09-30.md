@@ -301,3 +301,6 @@ section. Decisions that stand go to the [roadmap](roadmap.md); this is the recor
   assigned: a report kit for the Sol numbers (numbers/sol.json); list prices only in the texts, per the PI's rule,
   with one sentence on the actual spend under contributor pricing. Noted for the policy kit: cell_stats stops at
   the first unit without verdicts (only matters when a unit is unrun).
+- 06:3x sol_score (f9b977e4e4; merged): report_01/kit/sol.py → numbers/sol.json behind the Sol section; every billed
+  figure removed from both texts (list prices only, one sentence in §12 on the actual spend at about 6.6% of list);
+  Table 18 gains the Sol judging row ($32.60 list) and the Sol agent row (8,172 requests, 19.6 agent-hours).
