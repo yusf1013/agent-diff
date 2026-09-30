@@ -410,6 +410,7 @@ are counted apart.
 | Toy harness | underspecified | 53 | 52 | 52 | 0 | 0 | 0 | 0 | 0 | 1 | 52 / 52 |
 | Toy harness | policy, mixed (Phase 4) | 30 | 30 | 29 | 0 | 0 | 1 | 0 | 0 | 0 | 29 / 29 |
 | **Toy harness** | **all** | **203** | **197** | **141** | **1** | **0** | **55** | **1** | **0** | **5** | **141 / 141** |
+| *OpenClaw, AI reference labels (blind_review_01)* | all forms, final runs | 132 | 128 | 68 | 4 | 0 | 51 | 9 | 0 | 0 | 68 / 68 |
 
 - **On OpenClaw, no false positive and no false negative** in 428 trials both call usable. With a random sample,
   these are estimates: 0 misses in 195 labelled failures bounds the miss rate below 1.5% (95%, rule of three), and
@@ -422,13 +423,23 @@ are counted apart.
 - **Toy harness.** The one false positive is a contested Slack test; the PI ruled for the judge (the acting bot
   counts as a channel member). Every trial of Phase 1 was also labelled by hand (252 trials, not blind): judge v2
   agrees on 239 (95%), and 12 of the 13 misses are trials of 4 hand-built policy variants with defects.
+- **A second reference review (blind_review_01, the last row).** Codex labelled 200 of the 2,705 final executions
+  that had no earlier label (seeded, stratified by service and form; 185 distinct cases), with the PI deciding 12
+  interpretation questions, and locked the labels before seeing any verdict or mechanical score. These are **AI
+  reference labels, not a second human annotator.** The pipeline (judge v2 where it read the execution, mechanical
+  triage otherwise) agrees on 186 of 190 executions both call non-void (68 TP, 4 FP, 0 FN, 118 TN); judge v2 alone on
+  119 of 123; triage alone on 67 of 67 (all passes). Exposed facts agree on all 68 joint failures. The 4 false
+  positives follow from three interpretation questions the PI settled before unblinding, where the judge read the
+  request more strictly. Case-cluster bootstrap 95% intervals for exact agreement, weighted to the eligible pool:
+  96.1% to 99.5% (pipeline) and 94.3% to 99.3% (judge). One execution stays uncertain by the PI's choice. Sources:
+  [blind_review_01](../blind_review_01/README.md), `numbers.json`, `uncertainty.json`, `report.md`.
 - **Coverage of the check:** 658 blind trials in all, against 3,033 judge v2 verdicts on OpenClaw and about 1,000
-  on the toy harness. The trials the judge did not read are ones the mechanical triage found clean. In `full_02`,
+  on the toy harness, plus blind_review_01's 200 final executions. The trials the judge did not read are ones the mechanical triage found clean. In `full_02`,
   the judge read 227 such clean trials (its 20% sample and the blind ones) and changed the triage's call on 2
   (baselines_01, ablation 7).
 
 **Table 10. Judges given the same trials.** Source: [judge_baselines_01](../judge_baselines_01/README.md)
-(`score.json`); the plain judge from baselines_01 on branch `exp/baselines-01` (`q4/plain_openclaw.score.json`).
+(`score.json`); the plain judge from baselines_01 (`grounding/runs/baselines_01/q4/plain_openclaw.score.json`).
 
 | Judge | What it reads | OpenClaw, 178 trials (94 mistakes): precision / recall | Toy harness, 191 blind trials (139 mistakes) |
 |---|---|---|---|

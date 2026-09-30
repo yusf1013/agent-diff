@@ -128,3 +128,19 @@ those counts.
   Sources: `openclaw_eval_01/runs/full_02.adjudicated.json` (original ids; Calendar, Linear and Slack rows of `by`)
   and `full_03.adjudicated.json` (`by`, `adjudicated`), both rebuilt with the 10-minute budget; the old source,
   openclaw_eval_01's README, still carries the 8-minute numbers.
+
+### RQ5: blind_review_01, a stale reference
+
+- Both texts: blind_review_01 added as its own paragraph and Table 9 rows (report.md: one row, judge v2 alone;
+  report_concise.md: two rows, judge v2 alone and the pipeline), stated as AI reference labels (Codex, with the PI's
+  adjudication), not a second human. Figures: pipeline 195 of 199 exact, 186 of 190 non-void (68 TP, 4 FP, 0 FN, 118
+  TN); judge v2 alone 128 of 132 exact, 119 of 123 non-void (68, 4, 0, 51), 9 void on both sides; triage 67 of 67;
+  exposed facts 68 of 68 on joint failures; 1 uncertain left out; bootstrap 95% intervals for weighted exact agreement
+  [0.961, 0.995] (pipeline) and [0.943, 0.993] (judge); 2,705 eligible, 200 drawn, 185 cases, 12 PI decisions.
+  Sources: `blind_review_01/numbers.json` (`comparators` → `judge`, `mechanical`, `pipeline`: `exact_outcome`,
+  `binary`, `binary_diagnostics`, `matrix_rows_reference_columns_comparator`, `exposed_fact_sets_joint_failures`),
+  `blind_review_01/uncertainty.json` (`intervals`), `blind_review_01/README.md` and `report.md` (scope, draw, the 12
+  PI decisions, the four disagreements).
+- report.md RQ5 "Coverage of the check": adds blind_review_01's 200 executions.
+- report.md Table 10 source, "baselines_01 on branch `exp/baselines-01`" →
+  `grounding/runs/baselines_01/q4/plain_openclaw.score.json` (file checked).
