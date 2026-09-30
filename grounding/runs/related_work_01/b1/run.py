@@ -57,6 +57,8 @@ def main():
     ap = argparse.ArgumentParser(add_help=False)
     ap.add_argument("--out", type=Path, required=True)
     ap.add_argument("--items", choices=("selection", "all"), default="selection")
+    ap.add_argument("--prepare-only", action="store_true", help="write <out>/cases and stop (to draw the blind "
+                                                                    "sample before any run)")
     known, rest = ap.parse_known_args()
     chosen = json.loads((HERE / "selection.json").read_text()) if known.items == "selection" else sorted(ITEMS)
     cases = known.out.resolve() / "cases"
@@ -68,6 +70,8 @@ def main():
         dest.write_text(src.read_text())
     write(known.out.resolve() / "b1_plan.json", {"items": chosen, "masks": {c: ITEMS[c]["refuse"] for c in chosen},
                                                  "grading": "b1/oracle.py (boundary_02's oracle, F per item)"})
+    if known.prepare_only:
+        return
     oc.build_state_dir, oc.run_attempt = build_state_dir, run_attempt
     sys.argv = [sys.argv[0], "--out", str(known.out), "--cases-dir", str(cases), *rest]
     base.main()
