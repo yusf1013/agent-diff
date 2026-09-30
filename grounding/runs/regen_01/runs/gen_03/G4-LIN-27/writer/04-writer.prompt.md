@@ -1,0 +1,5 @@
+A cold reader, who saw only the request and then the records, reports:
+- The reader says the decoy `i-web-3` (for R:issue_subscriber_user_association, conditions ['c4']) fails ['c3', 'c4']: it fails more than its own fact (High webhook issue but about secret rotation; rate-limit window is incidental timing detail. Subscriber is Priya Nair; creator Dana Whitfield does not satisfy subscribed-to.).
+- The reader says the decoy `i-web-4` (for R:issue_subscriber_user_association, conditions ['c4']) fails ['c3', 'c4']: it fails more than its own fact (High webhook failure-alert issue; rate limit is only a field to include, not the topic. Subscriber is Omar Haddad.).
+
+Fix scenario.json (edit it in place) where the reader is right. If you judge that a reading the reader raises is one a careful colleague would not take, you may keep your wording; say why in your reply. A fresh reader will read the scenario again either way. Do not add hints that only a test would contain (such as "simply" or "not the one that…") just to rule out a reading. Then reply with a short summary of what you changed or kept.

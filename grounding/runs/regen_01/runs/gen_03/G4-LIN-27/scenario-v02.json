@@ -1,0 +1,44 @@
+{
+  "scenario_id": "G4-LIN-27",
+  "domain": "linear",
+  "request": "Set the estimate to 8 on the high-priority Web team issue in Todo that Dana Whitfield is subscribed to.",
+  "answer": "one",
+  "seed": [
+    ["team", {"id": "t-web", "name": "Web", "key": "WEB"}],
+    ["issue", {"id": "i-web-1", "team": "t-web", "title": "Sync offline queue after reconnect", "state": "Todo", "assignee": "sam", "creator": "leo", "priority": 2, "subscribers": ["dana"], "ref": "target"}],
+    ["issue", {"id": "i-web-2", "team": "t-web", "title": "Retry failed webhook deliveries", "state": "Todo", "assignee": "dana", "creator": "leo", "priority": 2, "subscribers": ["priya"], "ref": "d1"}],
+    ["issue", {"id": "i-web-3", "team": "t-web", "title": "Backfill search index for archived docs", "state": "Todo", "assignee": "sam", "creator": "dana", "priority": 2, "subscribers": ["priya"], "ref": "d2"}],
+    ["issue", {"id": "i-web-4", "team": "t-web", "title": "Rate-limit public API keys per workspace", "state": "Todo", "assignee": "sam", "creator": "leo", "priority": 2, "subscribers": ["omar"], "ref": "d3"}],
+    ["issue", {"id": "i-web-5", "team": "t-web", "title": "Redesign billing settings page", "state": "In Progress", "assignee": "leo", "creator": "leo", "priority": 4, "subscribers": ["dana"]}],
+    ["issue", {"id": "i-web-6", "team": "t-web", "title": "Rotate staging database credentials", "state": "Backlog", "assignee": "leo", "creator": "leo", "priority": 3, "subscribers": []}]
+  ],
+  "conditions": [
+    {"id": "c1", "text": "high-priority", "facts": ["A:Issue.priority"]},
+    {"id": "c2", "text": "Web team issue", "facts": ["R:Issue.teamId", "A:Team.name"]},
+    {"id": "c3", "text": "in Todo", "facts": ["R:Issue.stateId", "A:WorkflowState.name"]},
+    {"id": "c4", "text": "that Dana Whitfield is subscribed to", "facts": ["R:issue_subscriber_user_association", "A:User.name"]}
+  ],
+  "reference": {
+    "name": "the issue to estimate",
+    "target": ["@target"],
+    "query": {
+      "table": "issues",
+      "filters": [
+        {"key": "f_pri", "field": "priority", "op": "eq", "value": 2, "fact": "A:Issue.priority"}
+      ],
+      "edges": [
+        {"key": "e_team", "join": {"parent": "teamId", "child": "id", "op": "eq"}, "fact": "R:Issue.teamId", "node": {"table": "teams", "filters": [{"key": "f_team", "field": "name", "op": "eq", "value": "Web", "fact": "A:Team.name"}], "edges": []}},
+        {"key": "e_state", "join": {"parent": "stateId", "child": "id", "op": "eq"}, "fact": "R:Issue.stateId", "node": {"table": "workflow_states", "filters": [{"key": "f_state", "field": "name", "op": "eq", "value": "Todo", "fact": "A:WorkflowState.name"}], "edges": []}},
+        {"key": "e_sub", "join": {"parent": "id", "child": "issueId", "op": "eq"}, "fact": "R:issue_subscriber_user_association", "node": {"table": "issue_subscriber_user_association", "filters": [], "edges": [{"key": "e_subuser", "join": {"parent": "userId", "child": "id", "op": "eq"}, "node": {"table": "users", "filters": [{"key": "f_sub", "field": "name", "op": "eq", "value": "Dana Whitfield", "fact": "A:User.name"}], "edges": []}}]}}
+      ]
+    },
+    "decoys": [
+      {"witness": "@d1", "fact": "R:issue_subscriber_user_association", "family": "F1", "substitute": "Issue.assigneeId", "mutation": {"type": "SUB", "target": "e_sub", "replacement": {"key": "e_sub", "join": {"parent": "assigneeId", "child": "id", "op": "eq"}, "node": {"table": "users", "filters": [{"key": "x", "field": "name", "op": "eq", "value": "Dana Whitfield"}], "edges": []}}}, "explanation": "Dana Whitfield is its assignee, not one of its subscribers."},
+      {"witness": "@d2", "fact": "R:issue_subscriber_user_association", "family": "F1", "substitute": "Issue.creatorId", "mutation": {"type": "SUB", "target": "e_sub", "replacement": {"key": "e_sub", "join": {"parent": "creatorId", "child": "id", "op": "eq"}, "node": {"table": "users", "filters": [{"key": "x", "field": "name", "op": "eq", "value": "Dana Whitfield"}], "edges": []}}}, "explanation": "Dana Whitfield created it but is not subscribed to it."},
+      {"witness": "@d3", "fact": "R:issue_subscriber_user_association", "family": "F0", "mutation": {"type": "DROP", "target": "e_sub"}, "explanation": "Same priority, team and state, but Omar Haddad is the subscriber instead of Dana Whitfield."}
+    ],
+    "effect": {"table": "issues", "changes": ["update"]},
+    "written": ["issues.estimate"]
+  },
+  "write": {"graphql": "mutation { issueUpdate(id: \"i-web-1\", input: {estimate: 8}) { issue { id estimate } } }"}
+}

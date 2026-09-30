@@ -1,0 +1,4 @@
+A cold reader, who saw only the request and then the records, reports:
+- The reader finds the phrase "which Omar Haddad last updated" genuinely ambiguous, in a way that changes which records match: Comma grammar favors hub, but loose comma use makes file-reading also natural. Under hub-reading 8101 matches; under file-reading no file matches because no box_files row has modified_by_id 30000000007 (Omar Haddad).
+
+Fix scenario.json (edit it in place) where the reader is right. If you judge that a reading the reader raises is one a careful colleague would not take, you may keep your wording; say why in your reply. A fresh reader will read the scenario again either way. Do not add hints that only a test would contain (such as "simply" or "not the one that…") just to rule out a reading. Then reply with a short summary of what you changed or kept.
