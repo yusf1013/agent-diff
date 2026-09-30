@@ -172,3 +172,14 @@ section. Decisions that stand go to the [roadmap](roadmap.md); this is the recor
   store; the attempt agent gets a fresh one; memory_search then works, at the cost of an embeddings request per
   call on the plan); the default path is byte-for-byte unchanged, so the running round is untouched; it goes on at
   the start of a future round. Assigned next: unit tests, then the Qwen-as-writer investigation (qwen_writer_01).
+- 02:2x related_work (commits to feae5da520; merged as f8f5112a67): the four no-decision baseline preparations, no
+  model calls. P1: 350 policy variants of Agent-Diff's tests (262 absence, 88 underspecified; underspecification
+  is thin: 44% of candidates cannot be made faithfully). B2: seven abstention suites' 2,843 boundary-type items
+  mapped onto our classes; three of our classes (read-only field, permission, state precondition; 76 of our 93
+  faithful elements) have no counterpart; τ-bench's policy-forbidden class is one we lack. S1: Agent-Diff's seeds
+  defeat 3 of the 15 practical lazy shortcuts our automation defeats on those services; 152 of 210 plural targets
+  (72%) would go unnoticed by its assertions if omitted. B1: 71 valid masked-operation items (48 selected), the
+  oracle and a runner ready. For the PI: Box's replica search reads names and descriptions, not content (B-A10);
+  P1's Linear team-name copies need a fact check; whether the boundary space should hold policy documents; 20 of
+  213 "correct" cover trials did not make exactly the requested change. Assigned: run B1's selection and P1's
+  matched 48 on the self-host tonight, with blind labels.
