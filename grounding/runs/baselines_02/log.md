@@ -54,3 +54,19 @@
   interrupted attempts a fresh attempt and keeps the old ones on disk.
 - **Cross-check** (the lead's yes to my offer): 15 baselines_01 tests re-reviewed under my hand, then compared with
   the other session's calls; the agreement is in the README. Not fully blind for the 10 twin tests (see there).
+
+## 2026-09-30, 03:12–04:10: runs and labels; paused
+
+- **Labels as the trials finished**, in batches, each before any assertion result or verdict (none has been read).
+  96 trials finished by 04:07; 95 labelled.
+- **One timeout under host load** (SN0M-BOX-T08 t2): 11 requests, 51 s mean, one of 224 s, 2.6 to 15 tokens a second
+  (the proxy's request records). It had grounded on the right file and kept retrying a remove form the replica
+  ignores. Kept apart in `runs/host_load.json`, unlabelled until its quiet rerun; `rerun.py` written for that.
+- **Paused at 04:07** at the lead's request (the regenerated half's runs time out under host load). The lead asked
+  to let the in-flight trials finish; the runner cannot drain (its only per-attempt skip is roadmap_01's
+  known-defects file, not mine to edit, and stopping the process with SIGSTOP would have stamped the in-flight
+  trials as hard-deadline timeouts), so I stopped both runners and their 6 OpenClaw processes (0.5 to 2 minutes into
+  their turns). Left as `solver_running`: SN0M-CAL-T04 t1–t3 and SN1M-CAL-T08 t1–t3, for `--retry-infrastructure`.
+- **Interim, labels only:** SN1M-BOX-T03 t1 acted on the file Leo owns instead of the one he uploaded, after one
+  search that showed both fields (a misread; R:File.created_by_id, a target-present exposure the Muse arms never
+  had); SN1M-BOX-T01 t3 and SN0M-BOX-T12 t3 acted on a near miss when nothing matched (policy). The rest are right.
