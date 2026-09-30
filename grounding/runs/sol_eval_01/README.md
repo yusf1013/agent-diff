@@ -600,8 +600,11 @@ evidence alone (kit/view.py) as its trial ended. I locked each set with a sha256
 |---|---:|---:|---|---:|---:|
 | `regen_full_01` | 45 | 45 | 4 / 4 / 4 | 4/4 | 3/4 |
 | `regen_absence_01` | 45 | 45 | 3 / 3 / 3 | 3/3 | 0/3 |
-| `regen_underspecified_01` | 45 | 45 | 2 / 2 / 2 | 2/2 | 2/2 |
-| **All** | **135** | **135** | **9 / 9 / 9** | **9/9** | **5/9** |
+| `regen_underspecified_01` | 45 | 45 | 2 / 2 / 2 | 2/2 | 2/2\* |
+| **All** | **135** | **135** | **9 / 9 / 9** | **9/9** | **5/9**\* |
+
+\* The 2 underspecified failures carry mechanism `none` on both sides by convention: acting on one of several full
+matches has no near miss to misjudge. On the 7 failures with a real mechanism, 3 agree (the first half: 4 of 7).
 
 - **Mechanism:** in all 4 differences the judge says skipped-check or misread where I say misread or
   saw-mismatch-accepted.
@@ -643,6 +646,10 @@ regen session's runs. All eight cells are "not policy-level" for Sol in both rea
   |---|---:|---:|---:|---:|
   | Absence | 4 | 8 | 1 | 57 |
   | Underspecified | 0 | 4 | 4 | 51 |
+- **Reproducing Qwen's cells depends on the regen session's worktree.** Qwen's regenerated-half verdicts record
+  their attempts' paths in `.claude/worktrees/regen/`, and `policy.population_outcomes` applies the budget rule only
+  when that path exists (49 of those policy trials are over the budget). The kit, like regen_01/policy_decide.py,
+  reproduces regen_01's cells while that worktree exists; without it, those timeouts would count as void.
 
 ### 5. Everything else
 
@@ -729,7 +736,8 @@ trials there would give 12/80 = 0.15, so the decision stands.
 - **Per fact:** absence has 184 facts with a valid unit; Sol fails 31 at detect@3 and 25 at detect@1, Qwen 150 and
   128. Underspecified has 158; Sol fails 9 and 7, Qwen 106 and 79.
 - **Judge accuracy, both halves:** 309 of 311 blind labels agree in exact outcome; the 2 differences are the first
-  half's test-validity cases. Failures: 16 / 16 / 16, with the same facts in all 16. Mechanism: 9 of 16.
+  half's test-validity cases. Failures: 16 / 16 / 16, with the same facts in all 16. Mechanism: 9 of 16, or 7 of
+  14 without the two underspecified failures whose mechanism is `none` by convention.
 - **Judge cost, both halves:** 1,946 Muse calls, $52.22 at list price.
 
 ## Log (session sol_score)
