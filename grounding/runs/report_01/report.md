@@ -773,11 +773,11 @@ ignore `fields`); two upstream covers are contestable (AR-LIN-24's "Cycle 4", G4
 [kit/mechanisms.py](kit/mechanisms.py) → [numbers/mechanisms.json](numbers/mechanisms.json). Judge v2 records the same
 mechanisms on every failing trial it reads ([numbers/exposure.json](numbers/exposure.json)).
 
-| Mechanism | Regular (22 failures) | Absence (95) | Judge v2, all 254 counted regular failures |
+| Mechanism | Regular (22 failures) | Absence (95) | Judge v2, all 255 counted regular failures |
 |---|---:|---:|---:|
-| Saw the mismatch and acted anyway | 13 | 74 (78%) | 156 (61%) |
+| Saw the mismatch and acted anyway | 13 | 74 (78%) | 164 (64%) |
 | Never checked the deciding field | 5 | 12 | 63 (25%) |
-| Checked it and misread it | 4 | 9 | 35 (14%) |
+| Checked it and misread it | 4 | 9 | 28 (11%) |
 
 - **Seeing is not stopping.** OpenClaw's agent usually inspects the deciding field, reports the difference, and acts
   on the closest record anyway ("likely a typo", "the only match"). The same model in the toy harness failed
@@ -785,14 +785,15 @@ mechanisms on every failing trial it reads ([numbers/exposure.json](numbers/expo
 - **Underspecified requests:** in 58 of 138 usable blind trials (42%) the agent asked which match was meant, which is
   right. Otherwise it acted on one match or on all of them, usually disclosing the others afterwards. In the toy
   harness it asked once in 435 trials.
-- **What bites:** near misses by partial identity (a similar name, a shared prefix) expose in 48% of their probes;
-  sibling roles or attributes 32%; neighbouring values 26%; plain near misses 21% (RQ4). Attributes are exposed more
+- **What bites:** near misses by partial identity (a similar name, a shared prefix) expose in 47% of their probes;
+  sibling roles or attributes 35%; neighbouring values 26%; plain near misses 21% (RQ4). Attributes are exposed more
   often than bindings (50% against 18% of covered facts).
 - **Habits beyond grounding** (RQ7): Linear's priority scale read upside down in 70% of priority writes; making a
   presumed record true (posting the comment the request describes, reassigning an issue to the named person);
   occasional harmful side effects.
-- **Time:** 104 of 1,695 regular trials ran past the 8-minute budget, as did 188 of 1,170 policy-population trials;
-  some agents debug a replica error until the limit (§10.4).
+- **Time:** 52 of 1,689 regular trials were ended by the 10-minute budget. Under the withdrawn 8-minute reading, 188
+  of 1,170 policy-population trials had run past 8 minutes (not recounted under the 10-minute budget). Some agents
+  debug a replica error until the limit (§10.4).
 
 ### 10.2 What the harness does to the measurement
 
@@ -804,7 +805,7 @@ mechanisms on every failing trial it reads ([numbers/exposure.json](numbers/expo
 - **The agent still notices tests.** Remarks on a trap, a decoy or a test appear in 25.6% of `full_02`'s trials,
   19.9% of `full_03`'s (opaque ids) and 22.8% of `full_04`'s ([numbers/awareness_full_03.json](numbers/awareness_full_03.json),
   [awareness_full_04.json](numbers/awareness_full_04.json)); in the toy harness, 11 of 221 and 1 of 261 trials.
-- **Ids that name roles hand over the answer.** Opaque ids raised exposure on the same 333 tests from 65 to 80 tests
+- **Ids that name roles hand over the answer.** Opaque ids raised exposure on the same 333 tests from 70 to 84 tests
   (RQ4).
 - **Some tests are right only on some days.** "On Tuesday", "overdue" and "the next milestone" need the agent's clock
   set; the date check first missed one of them.
@@ -814,7 +815,8 @@ mechanisms on every failing trial it reads ([numbers/exposure.json](numbers/expo
 - **Enforce every check.** The witness check ran from the start, but its result was ignored until the frozen
   version: 7 tests would have run with no trap.
 - **Automated checks do not replace a reader.** Domain semantics, fields the actor cannot read and contrived wording
-  reached the manual review; 8 near misses and 1 scenario were ruled out by the PI.
+  reached the manual review; 10 near misses and 1 scenario were ruled out by the PI, 2 of the near misses only after
+  blind_review_01's reading (§0.4).
 - **Covers rarely expose; probes do.** A generator that writes only target-present tests finds almost nothing on
   this agent (RQ8).
 - **Identifiers need a collision check.** The drop-F derivation silently lost 7 variants to a naming collision.
@@ -831,19 +833,22 @@ mechanisms on every failing trial it reads ([numbers/exposure.json](numbers/expo
 ## 11. Threats to validity
 
 - **One model.** Qwen3.8-27B, in two harnesses. No second model ran the final suite.
-- **One labeller.** The same person wrote the blind labels, the validity reviews and the variant reads. Labels were
-  written before the verdicts, but there is no second annotator and no inter-rater agreement.
-- **Judge validation is a sample.** 455 of about 3,000 OpenClaw verdicts have a blind label. The bounds in RQ5 hold for
-  the sampled runs.
+- **One human labeller.** The same person wrote the blind labels, the validity reviews and the variant reads. Labels
+  were written before the verdicts. blind_review_01 is a second reference review, but by an AI (Codex, with the PI's
+  adjudication), not a second human; there is no inter-rater agreement between people.
+- **Judge validation is a sample.** 455 of about 3,000 OpenClaw verdicts have a blind label, and blind_review_01 adds
+  AI reference labels on 200 final executions of the earlier manifest. The bounds in RQ5 hold for the sampled runs.
 - **Rulings made by the team.** The PI ruled on contested near misses after the first pass had been seen; the rulings
-  are recorded and applied by code, and change coverage by 1 fact.
-- **The 8-minute budget was applied after the runs,** which ran with a 10-minute limit. No policy decision changes
-  without it.
+  are recorded and applied by code, and change coverage by 1 fact. Two more, from blind_review_01's reading, were
+  applied on 2026-09-30 (§0.4).
+- **The budget.** The 10-minute budget is OpenClaw's own turn limit, which every final run used. An earlier 8-minute
+  reading, applied after the runs, was withdrawn on 2026-09-29; no policy decision depends on the choice (RQ6).
 - **The opaque-id comparison is not same-day.** The two runs are a day apart on the same self-hosted server.
 - **Replicas are not the services.** 42 facts cannot be served, and replica artifacts void some trials.
 - **Writers are confounded.** Sonnet and Muse differ in briefs, method version and judge; comparisons are descriptive.
-- **Coverage includes weak credit.** 37 facts are credited through plain near misses only, and 2 through a cover
-  only.
+- **Coverage includes weaker credit.** 37 facts are credited through plain near misses only: under the F0 rule that
+  is the designated form for 36 of them, and the 37th is being regenerated with its lure (RQ2). 2 facts are credited
+  through a cover only.
 - **Test awareness** at about 20% of trials may change the agent's behaviour in either direction.
 - **Baselines** are 48 tests per arm with one labeller and one agent.
 - **The extensions** ran on the toy harness only.

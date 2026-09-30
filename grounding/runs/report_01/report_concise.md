@@ -491,7 +491,7 @@ the need for fact-sensitive forms. Neither supplies a baseline evaluation of und
 **Several-match requests** ask for every record satisfying the conditions, testing whether search reaches all
 matches. **Capability-boundary requests** ask for changes the actor cannot perform, testing whether it reports
 the limit instead of substituting an action. Neither extension has an OpenClaw result in this report. Both are
-outside the 1,006 cases. Sources: [several-match study](../several_match_auto_01/report.md),
+outside the 998 cases. Sources: [several-match study](../several_match_auto_01/report.md),
 [boundary study](../boundary_auto_01/report.md).
 
 ## 10. Lessons
@@ -499,13 +499,13 @@ outside the 1,006 cases. Sources: [several-match study](../several_match_auto_01
 **Table 17. Failure mechanisms.** Sources: retained blind labels in [concise.json](numbers/concise.json),
 automated regular judgments in [exposure.json](numbers/exposure.json).
 
-| Mechanism | Regular blind failures (16) | Absence blind failures (67) | All counted regular failures, automated (254) |
+| Mechanism | Regular blind failures (16) | Absence blind failures (65) | All counted regular failures, automated (255) |
 |---|---:|---:|---:|
-| Saw the mismatch and acted anyway | 10 | 50 | 156 |
+| Saw the mismatch and acted anyway | 10 | 50 | 164 |
 | Skipped the deciding field | 5 | 10 | 63 |
-| Checked and misread it | 1 | 7 | 35 |
+| Checked and misread it | 1 | 5 | 28 |
 
-Seeing the mismatch often does not stop the action. Conversely, in 46/87 usable blind underspecified executions,
+Seeing the mismatch often does not stop the action. Conversely, in 45/85 usable blind underspecified executions,
 the agent asked which match was intended. The requests' permission to stop or clarify matters alongside the fact.
 
 Construction needs enforced decoy checks, an independent reader, opaque identifiers and appropriate dates for
@@ -516,13 +516,17 @@ error, and omitted Box fields can be cleared unexpectedly.
 ## 11. Limits of the evidence
 
 - One model, Qwen3.8-27B, in the OpenClaw harness; no second model has run this final suite.
-- One manual annotator; 310 retained blind labels and no inter-rater measurement. RQ7's detailed manual-review
-  provenance remains open.
-- Validity rulings were made by the team, partly after outcomes were seen. The eight-minute budget was applied
-  after executions performed under a ten-minute limit.
+- One human annotator; 306 retained blind labels and no inter-rater measurement between people. blind_review_01
+  adds AI reference labels (Codex, with the PI's adjudication) on 200 executions of the earlier manifest, not a
+  second human. RQ7's detailed manual-review provenance remains open, except the two rows values_01 re-read with an
+  itemized record.
+- Validity rulings were made by the team, partly after outcomes were seen; two came from blind_review_01's reading
+  on 2026-09-30 (§0.4). The ten-minute budget is OpenClaw's own turn limit, which every final execution used; an
+  earlier eight-minute reading, applied after the runs, was withdrawn.
 - Replicas have missing features and artifacts; 42 catalog facts are unservable.
 - Writer comparisons use different briefs and method versions. Some coverage is weaker: 37 facts have only F0
-  evidence and two have cover-only evidence.
+  evidence (under the F0 rule the designated form for 36; the 37th is being regenerated), and two have cover-only
+  evidence.
 - Policy cases can share a fact or scenario. The bootstrap samples cases; dependence can limit generalization.
 - Baseline arms are small. The cost comparison fixes token counts and caching, not model behavior or quality.
 

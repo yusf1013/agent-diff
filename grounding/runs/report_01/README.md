@@ -326,3 +326,46 @@ and decisions; its `valid` keeps both cases of each duplicate pair (Linear and S
   `full_02`'s 1,314 trials): baselines_01 `q4/numbers.json`, from the judge's verdicts, which the budget does not
   change. The baselines' own numbers are unaffected: baselines_01 counts a timeout only when the harness's turn limit
   ended the trial (`summarize_labels.py`, `plain48/score.py`).
+
+### RQ9: the case count
+
+- report_concise.md RQ9, "outside the 1,006 cases" → 998 (`numbers/concise.json`, `case_count`).
+
+### §10 Lessons
+
+- Table 17's automated column (both): 254 counted regular failures, 156 / 63 / 35 (report.md 61% / 25% / 14%) → 255,
+  164 / 63 / 28 (64% / 25% / 11%). Source: `numbers/exposure.json` (`failing_trial_mechanisms_judge_v2`).
+- report_concise.md Table 17, absence blind failures (67), misread 7 → (65), 5 (regular column unchanged). Source:
+  `numbers/concise.json` (`manual_failure_mechanisms`). report.md's hand-label columns (all runs' blind samples,
+  `numbers/mechanisms.json`) unchanged.
+- report_concise.md, "in 46/87 usable blind underspecified executions, the agent asked" → 45/85. Source:
+  `numbers/concise.json` (`underspecified_asking`: 45 asking; `judge_accuracy` → `underspecified`: 94 labelled, 9
+  void on both sides). report.md's "58 of 138" (all runs' blind samples, `mechanisms.json`) unchanged.
+- report.md §10.1 "What bites": partial identity 48% → 47%, sibling roles or attributes 32% → 35% (RQ4's families).
+- report.md §10.1 "Time": "104 of 1,695 regular trials ran past the 8-minute budget, as did 188 of 1,170
+  policy-population trials" → 52 of 1,689 ended by the 10-minute budget (`numbers/exposure.json`, `trials`); the 188
+  of 1,170 kept and marked as the withdrawn 8-minute count. **No source in `numbers/`** for 188 of 1,170, or for a
+  policy count under the 10-minute budget; left as the old figure, labelled.
+- report.md §10.2, opaque ids "from 65 to 80 tests" → "from 70 to 84" (RQ4's sources).
+- report.md §10.3, "8 near misses and 1 scenario were ruled out by the PI" → 10 near misses, 2 of them after
+  blind_review_01's reading. Source: `numbers/generator.json` (`all` → `flawed_near_misses`); this README (the two
+  rulings).
+
+### §11 Limits (threats to validity)
+
+- The budget line (both): "The 8-minute budget was applied after the runs, which ran with a 10-minute limit" / "The
+  eight-minute budget was applied after executions performed under a ten-minute limit" (no longer true) → the
+  10-minute budget is OpenClaw's own turn limit, used by every final run; the 8-minute reading, applied after the
+  runs, was withdrawn; no policy decision depends on the choice. Source: roadmap, "Decisions (2026-09-29)"; RQ6.
+- The annotator line (both): "One labeller ... no second annotator" / "One manual annotator; 310 retained blind
+  labels" → one human labeller (306 retained blind labels in report_concise.md); blind_review_01 is a second reference
+  review by an AI (Codex, with the PI's adjudication), not a second human; no inter-rater agreement between people.
+  report_concise.md adds that values_01 re-read two RQ7 rows with an itemized record. Sources:
+  `numbers/concise.json` (`blind_label_keys`, 306); `blind_review_01/README.md`; `values_01/eval/labels.jsonl`.
+- report.md "Judge validation is a sample": adds blind_review_01's 200 AI reference labels (on the earlier
+  manifest). "455 of about 3,000" unchanged (`numbers/judge.json`).
+- The rulings line (both): adds the two rulings from blind_review_01's reading, applied on 2026-09-30. "change
+  coverage by 1 fact" unchanged (`numbers/coverage.json`, `totals`: 205 claimed before the rulings, 204 covered).
+- The weak-credit line (both): the 37 plain-only facts under the F0 rule (36 designated, 1 being regenerated) and
+  the 2 cover-only facts. Sources: RQ2's (`numbers/coverage.json`, `credited_only_through_plain_near_misses`,
+  `credited_through_a_cover_only`); roadmap, "The F0 rule".
