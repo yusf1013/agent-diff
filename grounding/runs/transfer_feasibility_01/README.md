@@ -93,7 +93,7 @@ account; those who act in the seed also need their own API token.
 |---|---:|---:|---|
 | Box Hubs | 25 | 22 | Hubs exist only for "Enterprise and Enterprise Plus customers" |
 | A Box near miss created after its last modification | 9 | 8 | Box sets `created_at`; the mock's 6 impossible records cannot exist |
-| Box ownership that differs within a folder, when the test turns on ownership | 8 | 6 | "The Owner of the parent destination folder becomes the Owner" of what is in it |
+| Box ownership that differs within a folder, when the test turns on ownership | 8 | 6 | "The Owner of the parent destination folder becomes the Owner of the newly moved folder": applied to uploads too, an inference to confirm in the pilot |
 | A focus-time event on a secondary Calendar calendar | 5 | 7 | Focus time exists "only on primary calendars", for work or school accounts |
 
 **The changes, and how many tests need each** (some need several):
@@ -104,9 +104,9 @@ account; those who act in the seed also need their own API token.
 | Date shift | 204 | A server-set time becomes the seeding time, and the request's date words are rewritten to it: Box's `created_at`/`modified_at` (only `content_*` can be set at upload), Slack's message and channel times, Linear's `updatedAt` and resolved times, and the four clocked scenarios |
 | Rename | 179 | The service assigns ids, handles, emails, logins, issue identifiers and cycle numbers. Requests that name them are rewritten, or the records are created in order. Box's one collection is Favorites |
 | Several days of seeding | 143 | A near miss differs by a server-set time on a named day ("created on June 3"); its records must be created on different days |
-| Consistency | 118 | Box: the uploader is the file's creator, and a folder's owner owns what is in it. The mock breaks both in these seeds, and the real world does not allow it. The test survives, but the creator and owner fields then agree with the uploader and the folder owner, which may make it easier |
+| Consistency | 118 | Box: the uploader is the file's creator ("in most cases"), and a folder's owner owns what is in it (inferred from the move rule). The mock breaks both in these seeds, and, if the inferences hold, the real service does not allow it. The test survives, but the creator and owner fields then agree with the uploader and the folder owner, which may make it easier |
 | Paid plan | 123 | Linear Basic for more than 2 teams (88) or admin roles; Linear Business for guests and private teams (27); Box Business for file versions (10); Slack Pro for guests (7). Box Hubs' Enterprise plan (47 tests) is counted as not realizable |
-| Pilot | 58 | Linear inputs documented as internal (a document's team or initiative, team owners), sub-teams on the Free plan ("1 level"), a milestone's status (derived) |
+| Pilot | 183 | Linear inputs documented as internal (a document's team or initiative, team owners), sub-teams on the Free plan ("1 level"), a milestone's status (derived): 58 tests. And the two Box consistency rules above, which are inferred rather than quoted: 125 more |
 | UI step | 31 | Slack time zones, deactivated members, bot users and roles; Linear suspended users, admins and app users |
 | Google Workspace | 21 | Focus time and rooms need a work account and a Workspace domain |
 
@@ -177,7 +177,8 @@ All on free tiers for this sample.
   - a free workspace, owned by the PI;
   - four member accounts, with email addresses chosen so their handles match the seeds' where a request names a
     handle;
-  - one Slack app with a bot user named Agent Bot, the actor, using its bot token;
+  - a fifth member named Agent Bot as the actor, with a user token (so search works, as it did on the mock), and
+    one Slack app for the tokens;
   - user-token scopes (chat:write, reactions:write, users.profile:write), each member authorizing once.
   - The Free plan's 10-app limit is not reached.
 - **Linear:**
@@ -225,7 +226,7 @@ authentication is "handled automatically via proxy". The shim replaces the place
 
 | Host | Header the shim sends | Token |
 |---|---|---|
-| `slack.com`, `api.slack.com` | `Authorization: Bearer xoxb-…` | the app's bot token (the actor) |
+| `slack.com`, `api.slack.com` | `Authorization: Bearer xoxp-…` | a user token of the actor's account, "Agent Bot" (see the first risk) |
 | `api.linear.app` | `Authorization: lin_api_…` ("Authorization: <API_KEY>" for personal keys; OAuth uses Bearer) | the actor's personal API key |
 | `api.box.com`, `upload.box.com` | `Authorization: Bearer …` | an access token for the actor (JWT/CCG, refreshed hourly) |
 | `www.googleapis.com/calendar/v3` | `Authorization: Bearer ya29…` | the actor's OAuth access token (refreshed hourly) |
@@ -255,6 +256,18 @@ authentication is "handled automatically via proxy". The shim replaces the place
 
 ### Risks to check in the pilot
 
+- **The Slack actor.** The mock's actor is a bot, and it can search. On real Slack, `search.messages` takes only a
+  user token ("User token: search:read"). In the final OpenClaw runs, 233 of 555 Slack executions (42%) called it.
+  - With a bot token the agent loses search, a harness difference that would confound transfer.
+  - Proposal: the actor is a regular member named "Agent Bot", using a user token. Its `is_bot` flag then differs
+    from the seed's, which no sampled request depends on.
+- **Box's As-User on the free developer plan.** The plan says "not every endpoint is available", and the As-User
+  guide names no plan. Every Box test with other people depends on it, so it is the first thing to try; the fallback
+  is managed users on a Box Business trial.
+- **Box's two inferred rules** (the uploader is the creator; a folder's owner owns what is in it). One collaborator
+  upload settles both.
+- **Linear's 250-issue cap on the Free plan.** 30 executions at 10 to 20 issues each could cross it if deleted issues
+  still count; the pricing page does not say.
 - Whether Linear accepts cycles wholly in the past, documents in a team (`teamId` is internal), and team owners.
 - Slack's workspace import could keep old message timestamps (the help pages do not say). It would replace date
   shifts, but a Free workspace hides messages older than 90 days.

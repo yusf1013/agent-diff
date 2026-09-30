@@ -81,15 +81,18 @@ def seed_checks(case: dict, constructs: set[str]) -> list[tuple[str, list[str], 
                  and str(folders[str(r["parent_id"])].get("owned_by_id")) != str(r.get("owned_by_id"))]
         if stray:
             if facts & {"R:File.owned_by_id", "R:Folder.owned_by_id"}:
-                out.append(("no", [], f"{len(stray)} item(s) owned by someone other than their folder's owner, and "
-                                      "the test turns on ownership; on Box a folder's owner owns what is in it"))
+                out.append(("no", ["pilot"], f"{len(stray)} item(s) owned by someone other than their folder's owner, "
+                                             "and the test turns on ownership; on Box a folder's owner owns what is in "
+                                             "it (inferred from the move rule; confirm with one collaborator upload)"))
             else:
-                out.append(("change", ["consistency"], f"{len(stray)} item(s) owned by someone other than their "
-                                                       "folder's owner; on Box ownership follows the folder"))
+                out.append(("change", ["consistency", "pilot"], f"{len(stray)} item(s) owned by someone other than "
+                                                                "their folder's owner; on Box ownership follows the "
+                                                                "folder (inferred from the move rule)"))
         if any(f.get("uploader_display_name") and names.get(str(f.get("created_by_id"))) != f["uploader_display_name"]
                for f in seed.get("box_files", [])):
-            out.append(("change", ["consistency"], "a file's uploader is not its creator; on Box the uploader "
-                                                   "creates the file, so created_by follows the uploader"))
+            out.append(("change", ["consistency", "pilot"], "a file's uploader is not its creator; on Box the "
+                                                            "uploader creates the file ('in most cases'), so "
+                                                            "created_by follows the uploader"))
         for table in ("box_files", "box_folders"):
             for r in seed.get(table, []):
                 if r.get("created_at") and r.get("modified_at") and r["created_at"] > r["modified_at"]:
