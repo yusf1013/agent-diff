@@ -7,10 +7,16 @@ imported unchanged (known_defects.json, the opaque-id maps, `over_budget` at 600
 infrastructure void, never a budget failure. The retry pass re-runs stalls; until it has, a stalled latest attempt is
 counted here as void and listed.
 
+The rulings file is roadmap_01/known_defects.json as it now stands: since 2026-09-30 01:14 it holds two near misses
+the PI ruled matches in blind_review_01 (G4-BOX-11's "Seaport Archive 2024", G4-BOX-02's copy in a subfolder), found
+while labelling this round. `--before-br` scores with the file as it was before that change
+(eval/known_defects_before_br.json, from commit 3405221d90^), so the PI sees the difference.
+
     L="python grounding/runs/fact_coverage_02/launch.py"
-    $L grounding.runs.sol_eval_01.kit.score adjudicate regular_p4|regular_6b   # eval/<set>.adjudicated.json
-    $L grounding.runs.sol_eval_01.kit.score combine                           # eval/final_regular.json
-    $L grounding.runs.sol_eval_01.kit.score regress                           # the copies on Qwen's records
+    $L grounding.runs.sol_eval_01.kit.score adjudicate regular_p4|regular_6b [--before-br]  # eval/<set>.adjudicated[_before_br].json
+    $L grounding.runs.sol_eval_01.kit.score combine [--before-br]                          # eval/final_regular[_before_br].json
+    $L grounding.runs.sol_eval_01.kit.score qwen --before-br   # Qwen's final score with the earlier file (eval/qwen_final_regular_before_br.json)
+    $L grounding.runs.sol_eval_01.kit.score regress                                        # the copies on Qwen's records
 
 `regress` runs the copies on the Qwen round's records (full_02, full_03, full_04) and checks that they reproduce
 openclaw_eval_01's adjudicated files and final_regular_with_6b.json exactly.
@@ -34,6 +40,13 @@ QWEN = STUDY.parent / "openclaw_eval_01"
 FAIL = {"incorrect", "presented"}
 SETS = ("regular_p4", "regular_6b")
 STALL = re.compile(r"LLM idle timeout|no response from model")
+BEFORE_BR = EVAL / "known_defects_before_br.json"
+
+
+def use_rulings_before_br() -> None:
+    """Point rulings.py at the rulings file as it was before the two blind-review rulings were added."""
+    rulings.KNOWN_DEFECTS = BEFORE_BR
+    rulings._doc.cache_clear()
 
 
 def totals(tests: list[dict], key: str, key_t1: str) -> dict:
@@ -165,8 +178,11 @@ def main():
         regress()
     elif cmd == "adjudicate":
         run = sys.argv[2]
+        suffix = "_before_br" if "--before-br" in sys.argv else ""
+        if suffix:
+            use_rulings_before_br()
         out = adjudicate(run, EVAL / f"{run}.score.json", EVAL / f"judged_{run}" / run, STUDY / "runs" / run)
-        (EVAL / f"{run}.adjudicated.json").write_text(json.dumps(out, indent=1, ensure_ascii=False) + "\n")
+        (EVAL / f"{run}.adjudicated{suffix}.json").write_text(json.dumps(out, indent=1, ensure_ascii=False) + "\n")
         print(json.dumps({k: out[k] for k in ("raw", "adjudicated", "facts_lost")}, indent=1))
         print(f"left out: {len(out['left_out_tests'])} tests; not counted: {len(out['trials_not_counted'])} trials; "
               f"over the budget: {len(out['trials_over_budget'])} trials "
@@ -177,11 +193,27 @@ def main():
         for x in out["trials_not_counted"]:
             print("  NOT COUNTED", x["trial"], x["acted_on"], x["exposed"], "|", x["why"][:100])
     elif cmd == "combine":
-        parts = [(s, {"box", "calendar", "linear", "slack"}, EVAL / f"{s}.adjudicated.json") for s in SETS
-                 if (EVAL / f"{s}.adjudicated.json").exists()]
+        suffix = "_before_br" if "--before-br" in sys.argv else ""
+        parts = [(s, {"box", "calendar", "linear", "slack"}, EVAL / f"{s}.adjudicated{suffix}.json") for s in SETS
+                 if (EVAL / f"{s}.adjudicated{suffix}.json").exists()]
         result = combine(parts)
-        (EVAL / "final_regular.json").write_text(json.dumps(result, indent=1) + "\n")
+        (EVAL / f"final_regular{suffix}.json").write_text(json.dumps(result, indent=1) + "\n")
         print(json.dumps({k: result[k] for k in ("parts", "final", "by")}, indent=1))
+    elif cmd == "qwen":
+        suffix = "_before_br" if "--before-br" in sys.argv else ""
+        if suffix:
+            use_rulings_before_br()
+        runs, parts = QWEN / "runs", []
+        for run, domains in (("full_02", {"box"}), ("full_03", {"calendar", "linear", "slack"}),
+                             ("full_04", {"box", "calendar", "linear", "slack"})):
+            adj = adjudicate(run, runs / f"{run}.score.json", runs / f"judged_{run}" / run, runs / run, stalls=False)
+            path = EVAL / f"qwen_{run}.adjudicated{suffix}.json"
+            path.write_text(json.dumps(adj, indent=1) + "\n")
+            parts.append((run, domains, path))
+        result = combine(parts)
+        (EVAL / f"qwen_final_regular{suffix}.json").write_text(json.dumps(result, indent=1) + "\n")
+        print(f"Qwen{suffix}:", result["final"], "| left out:", len(result["left_out_tests"]),
+              "| not counted:", len(result["trials_not_counted"]))
     else:
         raise SystemExit(__doc__)
 

@@ -14,8 +14,9 @@ The per-fact view copies report_01/kit/policy_space.py's loop: a unit's facts (`
 a fact failing at detect@3 when any trial of a unit holding it fails, at detect@1 when its first trial does.
 
     L="python grounding/runs/fact_coverage_02/launch.py"
-    $L grounding.runs.sol_eval_01.kit.policy decide     # eval/policy_decisions.json (Sol and Qwen, both modes)
+    $L grounding.runs.sol_eval_01.kit.policy decide [--before-br]   # eval/policy_decisions[_before_br].json (Sol and Qwen)
     $L grounding.runs.sol_eval_01.kit.policy regress    # the copy on Qwen's verdicts, all units: decisions_population_*.json
+    $L grounding.runs.sol_eval_01.kit.policy units      # Sol's case folders against the plans' Muse-parent units
 
 Sol's verdicts: eval/judged_policy_<mode>/. Qwen's: openclaw_eval_01/runs/policy/judged_population_<mode>,
 judged_population_6b_<mode>, and for Box units the first pass ran, judged_<mode>_look*.
@@ -29,7 +30,7 @@ from pathlib import Path
 from grounding.runs.autogen_02.kit import sampler
 from grounding.runs.openclaw_eval_01 import policy, rulings
 from grounding.runs.report_01.kit.common import catalog, fact_id
-from grounding.runs.sol_eval_01.kit.score import stalled
+from grounding.runs.sol_eval_01.kit.score import stalled, use_rulings_before_br
 
 STUDY = Path(__file__).resolve().parents[1]
 EVAL = STUDY / "eval"
@@ -142,11 +143,13 @@ def regress() -> None:
             print(f"{cell}: reproduced ({mine['rate']} [{mine['p10']}, {mine['p90']}] {mine['decision']})")
 
 
-def decide() -> dict:
+def decide(suffix: str = "") -> dict:
     result = {"_about": "The eight policy cells on the Muse-parent units (Phase 4 and 6b), without G4-LIN-08's six "
                         "units: Sol's verdicts, and Qwen's on the same units (and on all Muse-parent units). Rule: "
                         "openclaw_eval_01/policy.py pooled_decision, fixed before the Qwen round's runs.",
               "left_out_clock": sorted(left_out_clock())}
+    if suffix:
+        result["rulings_file"] = "eval/known_defects_before_br.json (the file before the two blind-review rulings)"
     for mode in MODES:
         looks = policy.population_plan(mode)["looks"]
         sol = outcomes_of([EVAL / f"judged_policy_{mode}"])
@@ -161,16 +164,48 @@ def decide() -> dict:
                              "qwen_with_g4_lin_08": decide_cell(with_clock[cell], qwen, looks)}
                       for cell, valid in cells.items()},
             "facts": {"sol": facts_view(cells, sol), "qwen_same_units": facts_view(cells, qwen)}}
+    # policy_space.py's "regular_vs_policy_facts": among the facts with a valid unit of the mode, which the regular
+    # tests expose (each agent on the same Muse-written tests, kit/compare_qwen.py) and which fail a policy unit.
+    side = EVAL / f"side_by_side_regular{suffix}.json"
+    if side.exists():
+        regular = json.loads(side.read_text())["facts_detect3"]
+        for mode in MODES:
+            overlap = {}
+            for who, reg in (("sol", "sol"), ("qwen_same_units", "qwen_same_tests")):
+                view = result[mode]["facts"][who]
+                valid, fails, exposed = set(view["facts_valid"]), set(view["facts_failing_detect3"]), set(regular[reg])
+                overlap[who] = {"facts_with_a_valid_unit": len(valid),
+                                "exposed_by_regular_and_failing_policy": len(valid & exposed & fails),
+                                "failing_policy_only": len((valid & fails) - exposed),
+                                "exposed_by_regular_only": len((valid & exposed) - fails),
+                                "neither": len(valid - exposed - fails)}
+            result[mode]["regular_vs_policy_facts"] = overlap
     return result
+
+
+def units() -> None:
+    """Sol's policy case folders must hold exactly the plans' valid Muse-parent units without G4-LIN-08's."""
+    for mode in MODES:
+        cells = cell_units(mode, muse_only=True)
+        planned = {u["unit"] for v in cells.values() for u in v}
+        folder = {p.stem for p in (STUDY / "cases" / f"policy_{mode}").glob("*/*.json")}
+        print(mode, {"planned": len(planned), "in folder": len(folder), "planned, not in folder": sorted(planned - folder),
+                     "in folder, not planned": sorted(folder - planned)},
+              {cell: len(v) for cell, v in sorted(cells.items())})
 
 
 def main():
     cmd = sys.argv[1] if len(sys.argv) > 1 else ""
     if cmd == "regress":
         regress()
+    elif cmd == "units":
+        units()
     elif cmd == "decide":
-        result = decide()
-        (EVAL / "policy_decisions.json").write_text(json.dumps(result, indent=1) + "\n")
+        suffix = "_before_br" if "--before-br" in sys.argv else ""
+        if suffix:
+            use_rulings_before_br()
+        result = decide(suffix)
+        (EVAL / f"policy_decisions{suffix}.json").write_text(json.dumps(result, indent=1) + "\n")
         for mode in MODES:
             for cell, r in result[mode]["cells"].items():
                 print(cell, " | ".join(f"{who}: {r[who].get('valid_units')} units {r[who].get('rate')} "

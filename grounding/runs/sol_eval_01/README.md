@@ -90,7 +90,24 @@ $L grounding.runs.openclaw_eval_01.run --backend openai --trials 3 --concurrency
 ```
 
 Judging and scoring follow openclaw_eval_01's commands (judge v2 on Muse, the blind sample drawn before any
-verdict and labelled by a coding agent, `adjudicate`, the policy decision per cell).
+verdict and labelled by a coding agent, `adjudicate`, the policy decision per cell). The session sol_score ran them
+through its kit, which reuses the pipeline code unchanged and copies only what has hard-wired paths:
+
+```bash
+L="backend/.venv/bin/python grounding/runs/fact_coverage_02/launch.py"
+S=grounding/runs/sol_eval_01
+$L grounding.runs.sol_eval_01.kit.score regress; $L grounding.runs.sol_eval_01.kit.policy regress  # copies = Qwen's files
+$L grounding.runs.sol_eval_01.kit.view regular_p4/t1/G4-BOX-01 [--overview] [--steps 3,5]  # evidence only, for labels
+$L grounding.runs.sol_eval_01.kit.label KEY OUTCOME [--exposed F] [--acted ID] [--mechanism M] --note "..."
+$L grounding.runs.sol_eval_01.kit.judge_trials SET [--add-retried]             # eval/judge_SET.trials.json
+AUTOGEN_BACKEND=muse $L grounding.runs.autogen_02.kit.judge2 run --trials $S/eval/judge_SET.trials.json \
+    --out $S/eval/judged_SET --concurrency 6
+$L grounding.runs.autogen_02.kit.judge2 compare --out $S/eval/judged_SET --labels $S/eval/labels_SET/SET_blind.json --name blind
+$L grounding.runs.autogen_02.kit.phase4 score $S/runs/SET $S/cases/SET/suite.json $S/eval/judged_SET --json $S/eval/SET.score.json
+$L grounding.runs.sol_eval_01.kit.score adjudicate SET; $L grounding.runs.sol_eval_01.kit.score combine
+$L grounding.runs.sol_eval_01.kit.policy decide                                  # eval/policy_decisions.json
+$L grounding.runs.sol_eval_01.kit.compare_qwen; $L grounding.runs.sol_eval_01.kit.observe; $L grounding.runs.sol_eval_01.kit.cost
+```
 
 ## Results
 

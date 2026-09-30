@@ -10,11 +10,14 @@ counted per test from each run's score and adjudication (`trials`: over the budg
 counted with judge v2's mechanism, passing, void). Adds the per-test cross-table (both expose, only one, neither) and
 the fact overlap.
 
-    python grounding/runs/fact_coverage_02/launch.py grounding.runs.sol_eval_01.kit.compare_qwen   # eval/side_by_side_regular.json
+    python grounding/runs/fact_coverage_02/launch.py grounding.runs.sol_eval_01.kit.compare_qwen [--before-br]
+        # eval/side_by_side_regular[_before_br].json; --before-br: both agents under the rulings file as it was before
+        # the two blind-review rulings (kit/score.py; Qwen's adjudication recomputed there, eval/qwen_*_before_br.json)
 """
 from __future__ import annotations
 
 import json
+import sys
 from collections import Counter, defaultdict
 from pathlib import Path
 
@@ -77,12 +80,13 @@ def trials(parts: list[tuple[Path, Path, set[str]]], keep: set[str]) -> tuple[Co
 
 
 def main():
+    suffix = "_before_br" if "--before-br" in sys.argv else ""
     sol = []
     for s in SETS:
-        path = EVAL / f"{s}.adjudicated.json"
+        path = EVAL / f"{s}.adjudicated{suffix}.json"
         if path.exists():
             sol += [{**r, "set": s} for r in load(path)["tests"]]
-    final = load(QRUNS / "final_regular_with_6b.json")
+    final = load(EVAL / "qwen_final_regular_before_br.json" if suffix else QRUNS / "final_regular_with_6b.json")
     qwen_all = {r["case_id"]: r for r in final["tests"]}
     ids = {r["case_id"] for r in sol}
     qwen = [qwen_all[c] for c in sorted(ids) if c in qwen_all]
@@ -117,10 +121,10 @@ def main():
                             "qwen_same_tests": sorted(f"{d} {f}" for d, f in facts(qwen, "exposed"))}
     out["facts_detect1"] = {"sol": sorted(f"{d} {f}" for d, f in facts(sol, "exposed_t1")),
                             "qwen_same_tests": sorted(f"{d} {f}" for d, f in facts(qwen, "exposed_t1"))}
-    sol_parts = [(EVAL / f"{s}.score.json", EVAL / f"{s}.adjudicated.json", set(DOMAINS)) for s in SETS
-                 if (EVAL / f"{s}.adjudicated.json").exists()]
-    qwen_parts = [(QRUNS / f"{run}.score.json", QRUNS / f"{run}.adjudicated.json", set(d))
-                  for run, d in final["parts"].items()]
+    sol_parts = [(EVAL / f"{s}.score.json", EVAL / f"{s}.adjudicated{suffix}.json", set(DOMAINS)) for s in SETS
+                 if (EVAL / f"{s}.adjudicated{suffix}.json").exists()]
+    qwen_parts = [(QRUNS / f"{run}.score.json", EVAL / f"qwen_{run}.adjudicated{suffix}.json" if suffix else
+                   QRUNS / f"{run}.adjudicated.json", set(d)) for run, d in final["parts"].items()]
     st, sm = trials(sol_parts, ids)
     qt, qm = trials(qwen_parts, ids)
     out["trials"] = {"sol": dict(st), "qwen_same_tests": dict(qt)}
@@ -129,7 +133,7 @@ def main():
                      "sol_exposed": r["exposed"], "sol_exposed_t1": r["exposed_t1"],
                      "qwen_exposed": by_id_q.get(r["case_id"], {}).get("exposed"),
                      "qwen_exposed_t1": by_id_q.get(r["case_id"], {}).get("exposed_t1")} for r in sol]
-    (EVAL / "side_by_side_regular.json").write_text(json.dumps(out, indent=1) + "\n")
+    (EVAL / f"side_by_side_regular{suffix}.json").write_text(json.dumps(out, indent=1) + "\n")
     for name, g in out["groups"].items():
         print(f"{name:28} sol {g['sol']} | qwen {g['qwen_same_tests']} | tests {g['tests_exposing']} | facts "
               f"{g['facts_detect3']}")
