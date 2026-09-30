@@ -132,3 +132,12 @@ section. Decisions that stand go to the [roadmap](roadmap.md); this is the recor
   only: the login's access token read at launch into an environment variable, never written, the refresh token
   never read, runs refused near expiry; a full round waits for the PI's `claude setup-token`. Next: the 32-test
   pilot with Sonnet 5.5, its 32 trials blind-labelled, judge v2 on Muse (cap $3).
+- 02:2x regen (commit a3deb4e781; merged into main as 7dfd8ab40e, with both sets of near-miss rulings kept in
+  known_defects.json): 33 of 35 briefs accepted on the first draw (G4-LIN-30 and G4-SLK-18 rejected by the cold
+  reader as unnatural; a second draw each allowed); 202 Muse calls, $25.45 list, $1.50 billed. Review of the 33:
+  24 valid, 5 weak but valid, 4 flawed but usable; 5 of 130 near misses flawed (group B, under the 09-28 rulings);
+  7 borderline ones valid and flagged for the PI. Coverage: 74 of the briefs' 82 facts, 72 of Sonnet's 81 (66
+  through designated near misses); gained H:IssueLabel.parentId (one of the nine uncovered facts), A:Cycle.number
+  through an F8 near miss, R:IssueRelation.relatedIssueId through the reversed direction; lost as findings
+  A:Message.message_text and A:CalendarListEntry.selected (Muse built the catalog's designated substitute, which the
+  rulings make flawed). Drop-F variants generating; then the units, the blind sample, and "ready to run".
