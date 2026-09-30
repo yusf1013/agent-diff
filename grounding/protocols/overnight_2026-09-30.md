@@ -31,7 +31,13 @@ section. Decisions that stand go to the [roadmap](roadmap.md); this is the recor
    Four baseline preparations built (P1, B2, S1, B1). B1 (the masked-operation baseline, 48 items × 3): 47 of 144
    pass (50 with the quiet-host reruns); 40 of 48 items fail at least once; its agent left the service interface
    (direct backend calls, host probing, repository reads), which prompted the host-access scan of the main rounds.
-   P1 (48 matched absence/underspecified items × 3) running since 13:20.
+   P1 (the status quo's mutation: 48 matched absence/underspecified variants × 3, same agent and judge as ours):
+   absence 34 of 72 trials fail (14 of 24 variants; the agent re-creates the missing record or acts on a near miss
+   the seed happens to hold); underspecified 64 of 72 (23 of 24; the agent picks the "primary" match and discloses
+   it). Request-level failures with no facts behind them: P1 designs no near misses, so under the credit rule it
+   exposes no fact, as N0 and N1 did (its 48 variants touch 31 fact–mode requirements by occurrence, an upper
+   bound, not credit). Judge v2 agrees with 55 of the 56 blind labels not forced void (the one difference is the
+   rule's, a backend probe). $7.12 list for judging. Report §5.7 (B1 and P1), with the incidents kept in the record.
 5. **The second harness** (`harness_scout_01`, `claudecode_pilot_01`): Claude Code, with Sonnet 5.5 on your plan and the
    self-hosted Qwen, both run end to end; a 32-test Sonnet pilot: 2 failures, judge 32 of 32, 13 s per run, $0. On
    the same 32, Sol had none.
@@ -434,3 +440,10 @@ section. Decisions that stand go to the [roadmap](roadmap.md); this is the recor
   release it. Also P1's own seed builder: a deep copy of a Linear issue did not advance the team's issue counter
   (issueCreate collided, 500); fixed in its kit (cdabfd6669), the four affected variants rerun after the main run.
 - 15:4x P1's runs over (144 trials by 15:21; the 12-trial counter-collision rerun and the linear_47 attempts by 15:44); its judging is on Muse under the $3 cap. The host quiet (vLLM at 0 in flight), judge_qwen resumed the full replay at 15:46 (the remaining 1,016, then the headline recompute against the rebuilt Muse numbers, after merging main).
+- 16:0x related_work, P1 done (3f608f7428; merged as 33d477612b through the temporary worktree): the numbers are in the
+  brief (item 4). Three incidents kept in the record with both readings: its seed builder's issue-counter flaw
+  (four variants rerun as p1_01_fix), the backend freeze (8 attempts, retried), the runner's 2-hour limit (3
+  attempts, retried). The related_work session's four preparations are all run or reported (P1, B1 run; S1, B2
+  reported earlier). Checking out the merge worktree printed Git LFS's "919 files that should have been pointers"
+  (autogen_02/runs' *.jsonl under an LFS pattern added after they were committed): pre-existing, a warning only,
+  for the PI's repository list.
