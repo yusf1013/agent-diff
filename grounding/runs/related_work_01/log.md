@@ -138,3 +138,68 @@ which cycle 1 called "one trial per test". The closed-world finding is scoped to
 serves (`evaluateRun` → `AssertionEngine`). The Entity Binding Failures and FeasiGen repositories were checked
 through the GitHub API (both public, with code; EBF also with data and results). The bibliography now says which
 repositories were visited.
+
+## 2026-09-30, phase 2: the four arms that need no decision (the lead's order: P1, B2, S1, B1)
+
+### Cycle 6: P1, Agent-Diff's tests mutated ([p1/README.md](p1/README.md))
+
+The rule was fixed before generation. Absence removes the referents and cascades by foreign key; underspecified adds a
+copy that changes only keys and fields the service keeps unique. Every candidate was reviewed by hand for "can the
+action be done to each intended match". **350 runnable variants** (262 absence, 88 underspecified, 10 of them pending
+one faithfulness check on real Linear), from 722 candidates. Findings: the generic mutation is plentiful in the absence
+mode and thin in the underspecified mode. 44% of those candidates cannot be made faithfully, and most of the rest are
+key-only duplicates that do not test the policy. Fixed on the way: generated ids with spaces, rows copied twice, a
+file over 1 MB.
+
+### Cycle 7: B2, the abstention suites projected ([b2/README.md](b2/README.md))
+
+Seven suites' "cannot or should not" categories mapped onto our five boundary classes, with counts from their papers
+and data files. **2,843 items; nearly all are "no operation" of the tool-withheld kind.** Three of our classes (read-only
+field, permission, state precondition: 76 of our 93 faithful elements) have no counterpart; τ-bench's policy-forbidden
+actions are a class we lack.
+
+### Cycle 8: S1, the shortcut check on Agent-Diff's seeds ([s1/README.md](s1/README.md))
+
+**Run 1** (committed as run, 2b4f3306a2) checked 23 plural obligations. The review found flaws in my probe choices,
+not in the seeds:
+- a pick-one request (box_118);
+- two permissive source sets;
+- a search on "?";
+- one word where the request names two, and one extension where it names three;
+- a Linear "all conditions" filter that carried only the team;
+- an ordering fault that marked an extension route not applicable.
+
+The mechanical omission count was wrong both ways. All fixed by stated rules, and the probes were rerun. Accounting
+for all 60 plural obligations turned up three the first selection had missed (added).
+
+**The replica gap:** Box search in the replica reads names and descriptions, while Box's reads content (on record as
+B-A10). box_158's complete search route missed all three targets. Its search rows and box_139's are void, and the gap
+is reported, not fixed.
+
+**Results:**
+- Agent-Diff's seeds defeat 3 of the 15 practical lazy shortcuts our automation defeats on these services:
+  - Box's "list the named folder": 5 requests with the targets in subfolders; 2 of them say so, 3 rest on the card's
+    recursive reading.
+  - Slack's two word searches: slack_67.
+- Pages and visibility never; plus a guessed team in linear_32.
+- 152 of 210 targets (72%) would go unnoticed if left out. Another 18 are noticed only by a count, which a substitute
+  passes.
+
+### Cycle 9: B1, masking an operation ([b1/README.md](b1/README.md))
+
+**Built without a model:**
+- **71 items:** our covers solved in all three trials, each with the write operation all three used (FeasiGen's rule).
+- **Masks for 20 capabilities.** Each takes away the operation and its same-change equivalents: Calendar's PUT,
+  issueBatchUpdate, and attachmentCreate, which updates by URL.
+- **F by hand, per item,** and a 48-item selection (12 per service).
+- **The oracle** (boundary_02's), the documentation mask and a curl wrapper, and a runner that plugs into
+  openclaw_eval_01's runner with no change to shared code.
+
+**Checks:**
+- **The oracle on the 213 unmasked correct trials:** 193 are faithful alternatives, 17 set another value than
+  requested, and 3 changed a file's lock. That led to the note below.
+- **The dry run on live environments:** 19 of 19 calls as specified, after one fix. An introspection query asking for
+  fields without the type's name slipped through the filter.
+
+**Found on the way:** F cannot be read from the trials. Our covers are graded on the record, and 17 correct trials set
+"Urgent" as priority 4 or 0, "High" as 3, or a date a year late. F is now the request's value, written by hand.
