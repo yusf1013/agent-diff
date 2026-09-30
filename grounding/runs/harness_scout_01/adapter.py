@@ -143,7 +143,10 @@ def claude_setup(root: Path, backend: str, model: str | None, effort: str) -> di
         spec["config_dir"] = root / "config"
         spec["config_dir"].mkdir(parents=True)
         spec["model"] = model or SELFHOST_MODEL
-    spec["cmd"] = [CLAUDE_BIN, "-p", None, "--model", spec["model"], "--effort", effort,
+    # Claude Code does not know this model's window; it would compact against its default. The served window is
+    # 131,072 tokens.
+    window = ["--autocompact", "131k"] if backend == "selfhost" else []
+    spec["cmd"] = [CLAUDE_BIN, "-p", None, "--model", spec["model"], "--effort", effort, *window,
                    "--output-format", "stream-json", "--verbose", "--strict-mcp-config", "--mcp-config",
                    '{"mcpServers":{}}', "--setting-sources", "project", "--tools", CLAUDE_TOOLS,
                    "--permission-mode", "bypassPermissions"]
@@ -154,14 +157,16 @@ def claude_env(env: dict, spec: dict, backend: str) -> dict:
     env = dict(env, ENABLE_CLAUDEAI_MCP_SERVERS="false", DISABLE_AUTOUPDATER="1",
                CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC="1")
     if backend == "selfhost":
+        # ANTHROPIC_AUTH_TOKEN goes out as "Authorization: Bearer", which the self-host checks (ANTHROPIC_API_KEY
+        # would go out as x-api-key and get 401).
         env.update(CLAUDE_CONFIG_DIR=str(spec["config_dir"]), ANTHROPIC_BASE_URL=SELFHOST_URL,
-                   ANTHROPIC_API_KEY=selfhost_key())
+                   ANTHROPIC_AUTH_TOKEN=selfhost_key())
     return env
 
 
 def claude_session_file(spec: dict, session_id: str | None) -> Path | None:
     base = (spec["config_dir"] or Path.home() / ".claude") / "projects"
-    slug = re.sub(r"[/.]", "-", str(spec["work"]))
+    slug = re.sub(r"[^A-Za-z0-9-]", "-", str(spec["work"]))  # Claude Code's project folder name
     folder = base / slug
     if session_id and (folder / f"{session_id}.jsonl").exists():
         return folder / f"{session_id}.jsonl"
@@ -253,7 +258,10 @@ def codex_setup(root: Path, backend: str, model: str | None, effort: str) -> dic
     lines = []
     if backend == "selfhost":
         spec["model"] = model or SELFHOST_MODEL
-        lines += ['model_provider = "selfhost"', "", "[model_providers.selfhost]", 'name = "selfhost"',
+        # Codex has no metadata for this model and would fall back to generic defaults; the served context is
+        # 131,072 tokens (OpenClaw's rounds also capped output at 8,192, which Codex cannot set).
+        lines += ['model_provider = "selfhost"', "model_context_window = 131072", "",
+                  "[model_providers.selfhost]", 'name = "selfhost"',
                   f'base_url = "{SELFHOST_URL}/v1"', 'env_key = "SELFHOST_KEY"', 'wire_api = "responses"']
     else:
         spec["model"] = model or "gpt-6.1-sol"
@@ -284,7 +292,8 @@ def codex_steps(events: list[dict]) -> tuple[list[dict], dict]:
     """Steps from `codex exec --json`: one per command (or other tool item), with reasoning and messages kept
     alongside, in the order the items completed."""
     steps, pending_text, pending_thinking = [], [], []
-    usage = {"turns": 0, "input_tokens": 0, "cached_input_tokens": 0, "output_tokens": 0, "reasoning_output_tokens": 0}
+    usage = {"turns": 0, "input_tokens": 0, "cached_input_tokens": 0, "output_tokens": 0, "reasoning_output_tokens": 0,
+             "warnings": []}
     for ev in events:
         kind = ev.get("type")
         if kind == "item.completed":
@@ -294,6 +303,8 @@ def codex_steps(events: list[dict]) -> tuple[list[dict], dict]:
                 pending_thinking.append(item.get("text") or "")
             elif itype in ("agent_message", "assistant_message"):
                 pending_text.append(item.get("text") or "")
+            elif itype == "error":  # Codex's own notices (e.g. missing model metadata), not the agent's actions
+                usage["warnings"].append(item.get("message"))
             else:
                 if itype == "command_execution":
                     tool, args, action = "exec", {"command": item.get("command")}, item.get("command")
@@ -476,7 +487,7 @@ def run_attempt(case: dict, attempt: Path, *, harness: str, backend: str, databa
             "harness": harness, "version": version, "backend": backend, "model": spec["model"], "effort": effort,
             "command": [("<prompt>" if part == prompt else part) for part in cmd], "prompt": prompt,
             "prompt_prefix": oc.PREFIX[domain], "timeout_seconds": timeout_s, "clock": clock,
-            "env_keys": sorted(k for k in proc_env if k not in ("ANTHROPIC_API_KEY", "SELFHOST_KEY")),
+            "env_keys": sorted(proc_env),
             "secrets": "self-host key from ~/qwen-selfhost/secrets/api_key" if backend == "selfhost" else
             ("the Claude login of this machine (shared, not copied)" if harness == "claude" else
              "a copy of ~/.codex/auth.json in the run's CODEX_HOME, deleted after the run"),
@@ -513,7 +524,7 @@ def run_attempt(case: dict, attempt: Path, *, harness: str, backend: str, databa
                 shutil.move(str(session.parent), str(target))  # this run's own project folder
             write(raw_dir / "context.json", context)
             opening = json.dumps(context)
-            error = result.get("is_error") and final.startswith("API Error")
+            error = bool(result.get("is_error")) and bool(re.search(r"API Error|Failed to authenticate", final))
             termination = "timeout" if proc["killed"] else ("error" if error or not result else "done")
         else:
             steps, usage = codex_steps(events)
@@ -532,6 +543,10 @@ def run_attempt(case: dict, attempt: Path, *, harness: str, backend: str, databa
             termination = "timeout" if proc["killed"] else ("error" if failed and not final else "done")
             if backend == "plan":
                 flags["auth_unchanged"] = hashlib.sha256(CODEX_AUTH.read_bytes()).hexdigest() == spec["auth_sha256"]
+            if fake_now is not None:  # Codex tells the model the real date; record the mismatch with the test's clock
+                shown = (context.get("turn_context") or {}).get("current_date")
+                flags["context_date"] = {"shown": shown, "test_clock": fake_now.date().isoformat(),
+                                         "mismatch": shown != fake_now.date().isoformat()}
         (solver_dir / "final_response.md").write_text(final + "\n")
         record = {"test_id": case["case_id"], "question": prompt, "harness": harness, "termination": termination,
                   "final": final, "turns": [{"label": "turn1", "message": prompt, "text": final,
