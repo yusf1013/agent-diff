@@ -13,6 +13,13 @@ the fact overlap.
     python grounding/runs/fact_coverage_02/launch.py grounding.runs.sol_eval_01.kit.compare_qwen [--before-br]
         # eval/side_by_side_regular[_before_br].json; --before-br: both agents under the rulings file as it was before
         # the two blind-review rulings (kit/score.py; Qwen's adjudication recomputed there, eval/qwen_*_before_br.json)
+    python ... compare_qwen --regen   # eval/side_by_side_regular_regen.json: the regenerated half
+    python ... compare_qwen --suite   # eval/side_by_side_regular_suite.json: both halves, Sol's whole Muse-only suite
+
+The regenerated half (`--regen`): Sol's rows from eval/regen_full_01.adjudicated.json, Qwen's from the regen
+session's regen_01/runs/full_01.adjudicated.json (as run; both scored by regen_01/score.py), on the same test ids;
+the quiet-host reading of Qwen's is given for reference. `--suite` puts the two halves together (Qwen's reference:
+regen_01's Muse-only suite, the 292 Muse-written tests and the regenerated half's 205).
 """
 from __future__ import annotations
 
@@ -27,7 +34,9 @@ from grounding.runs.report_01.kit.common import fact_id
 STUDY = Path(__file__).resolve().parents[1]
 EVAL = STUDY / "eval"
 QRUNS = STUDY.parent / "openclaw_eval_01" / "runs"
+RRUNS = STUDY.parent / "regen_01" / "runs"
 SETS = ("regular_p4", "regular_6b")
+REGEN = "regen_full_01"
 DOMAINS = ("box", "calendar", "linear", "slack")
 FORMS = ("cover", "probe", "fact probe")
 
@@ -81,27 +90,39 @@ def trials(parts: list[tuple[Path, Path, set[str]]], keep: set[str]) -> tuple[Co
 
 def main():
     suffix = "_before_br" if "--before-br" in sys.argv else ""
+    regen, suite = "--regen" in sys.argv, "--suite" in sys.argv
+    if suffix and (regen or suite):
+        raise SystemExit("--before-br applies to the first half only")
+    sets = [] if regen else list(SETS)
     sol = []
-    for s in SETS:
+    for s in sets:
         path = EVAL / f"{s}.adjudicated{suffix}.json"
         if path.exists():
             sol += [{**r, "set": s} for r in load(path)["tests"]]
     final = load(EVAL / "qwen_final_regular_before_br.json" if suffix else QRUNS / "final_regular_with_6b.json")
     qwen_all = {r["case_id"]: r for r in final["tests"]}
+    suites = {s: STUDY / "cases" / s / "suite.json" for s in sets}
+    if regen or suite:
+        sol += [{**r, "set": REGEN} for r in load(EVAL / f"{REGEN}.adjudicated.json")["tests"]]
+        qwen_regen = load(RRUNS / "full_01.adjudicated.json")["tests"]
+        qwen_all.update({r["case_id"]: r for r in qwen_regen})
+        suites[REGEN] = RRUNS / "full_01_cases" / "suite.json"
     ids = {r["case_id"] for r in sol}
     qwen = [qwen_all[c] for c in sorted(ids) if c in qwen_all]
     missing = sorted(ids - set(qwen_all))
-    set_ids = {s: {m["case_id"] for m in load(STUDY / "cases" / s / "suite.json")} for s in SETS}
-    muse_ids = set_ids["regular_p4"] | set_ids["regular_6b"]
+    set_ids = {s: {m["case_id"] for m in load(path)} for s, path in suites.items()}
+    muse_ids = set().union(*(set_ids[s] for s in sets)) if sets else set()
     left_clock = set(load(STUDY / "cases" / "selection.json")["left_out_clock_after_login_expiry"])
     qwen_muse = [r for r in final["tests"] if r["case_id"] in muse_ids | left_clock]
+    if suite:
+        qwen_muse += qwen_regen
 
     groups = {"all": lambda r: True}
     groups.update({f"domain:{d}": (lambda d: lambda r: r["domain"] == d)(d) for d in DOMAINS})
     groups.update({f"form:{f}": (lambda f: lambda r: r["form"] == f)(f) for f in FORMS})
-    groups.update({f"set:{s}": (lambda s: lambda r: r["case_id"] in set_ids[s])(s) for s in SETS})
+    groups.update({f"set:{s}": (lambda s: lambda r: r["case_id"] in set_ids[s])(s) for s in suites})
     # Probes by near-miss family (exposure.py's probes_by_family): a probe holds one near miss.
-    family = {m["case_id"]: m.get("family") for s in SETS for m in load(STUDY / "cases" / s / "suite.json")
+    family = {m["case_id"]: m.get("family") for path in suites.values() for m in load(path)
               if m.get("form") == "probe"}
     for fam in sorted({f for f in family.values() if f}):
         groups[f"probe family:{fam}"] = (lambda fam: lambda r: r["form"] == "probe" and family.get(r["case_id"]) == fam)(fam)
@@ -121,15 +142,22 @@ def main():
                                                   "qwen_only": cross["-/qwen"], "neither": cross["-/-"]},
                                "facts_detect3": {"both": len(s3 & q3), "sol_only": len(s3 - q3),
                                                  "qwen_only": len(q3 - s3)}}
-    out["qwen_all_muse_tests"] = {"tests": len(qwen_muse), **totals(qwen_muse)}
+    if regen:
+        quiet = load(RRUNS / "full_01.adjudicated_quiet_host.json")["tests"]
+        out["qwen_quiet_host_same_tests"] = totals([r for r in quiet if r["case_id"] in ids])
+    else:
+        out["qwen_all_muse_tests" if not suite else "qwen_muse_only_suite"] = totals(qwen_muse)
     out["facts_detect3"] = {"sol": sorted(f"{d} {f}" for d, f in facts(sol, "exposed")),
                             "qwen_same_tests": sorted(f"{d} {f}" for d, f in facts(qwen, "exposed"))}
     out["facts_detect1"] = {"sol": sorted(f"{d} {f}" for d, f in facts(sol, "exposed_t1")),
                             "qwen_same_tests": sorted(f"{d} {f}" for d, f in facts(qwen, "exposed_t1"))}
-    sol_parts = [(EVAL / f"{s}.score.json", EVAL / f"{s}.adjudicated{suffix}.json", set(DOMAINS)) for s in SETS
+    sol_parts = [(EVAL / f"{s}.score.json", EVAL / f"{s}.adjudicated{suffix}.json", set(DOMAINS)) for s in suites
                  if (EVAL / f"{s}.adjudicated{suffix}.json").exists()]
-    qwen_parts = [(QRUNS / f"{run}.score.json", EVAL / f"qwen_{run}.adjudicated{suffix}.json" if suffix else
-                   QRUNS / f"{run}.adjudicated.json", set(d)) for run, d in final["parts"].items()]
+    qwen_parts = [] if regen else [
+        (QRUNS / f"{run}.score.json", EVAL / f"qwen_{run}.adjudicated{suffix}.json" if suffix else
+         QRUNS / f"{run}.adjudicated.json", set(d)) for run, d in final["parts"].items()]
+    if regen or suite:
+        qwen_parts.append((RRUNS / "full_01.score.json", RRUNS / "full_01.adjudicated.json", set(DOMAINS)))
     st, sm = trials(sol_parts, ids)
     qt, qm = trials(qwen_parts, ids)
     out["trials"] = {"sol": dict(st), "qwen_same_tests": dict(qt)}
@@ -138,11 +166,14 @@ def main():
                      "sol_exposed": r["exposed"], "sol_exposed_t1": r["exposed_t1"],
                      "qwen_exposed": by_id_q.get(r["case_id"], {}).get("exposed"),
                      "qwen_exposed_t1": by_id_q.get(r["case_id"], {}).get("exposed_t1")} for r in sol]
-    (EVAL / f"side_by_side_regular{suffix}.json").write_text(json.dumps(out, indent=1) + "\n")
+    name = "side_by_side_regular" + ("_regen" if regen else "_suite" if suite else suffix)
+    (EVAL / f"{name}.json").write_text(json.dumps(out, indent=1) + "\n")
     for name, g in out["groups"].items():
         print(f"{name:28} sol {g['sol']} | qwen {g['qwen_same_tests']} | tests {g['tests_exposing']} | facts "
               f"{g['facts_detect3']}")
-    print("qwen, all Muse tests:", out["qwen_all_muse_tests"])
+    for k in ("qwen_all_muse_tests", "qwen_muse_only_suite", "qwen_quiet_host_same_tests"):
+        if k in out:
+            print(k, out[k])
     print("trials", out["trials"])
     print("mechanisms", out["failing_trial_mechanisms_judge_v2"])
 

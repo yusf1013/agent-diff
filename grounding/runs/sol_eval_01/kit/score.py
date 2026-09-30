@@ -16,6 +16,7 @@ while labelling this round. `--before-br` scores with the file as it was before 
     $L grounding.runs.sol_eval_01.kit.score adjudicate SET [--before-br]      # eval/<set>.adjudicated[_before_br].json
     $L grounding.runs.sol_eval_01.kit.score combine [--before-br]              # eval/final_regular[_before_br].json
     $L grounding.runs.sol_eval_01.kit.score combine --regen                    # eval/final_regular_regen.json
+    $L grounding.runs.sol_eval_01.kit.score borderline      # eval/regen_full_01.borderline_sensitivity.json
     $L grounding.runs.sol_eval_01.kit.score qwen --before-br   # Qwen's final score with the earlier file (eval/qwen_final_regular_before_br.json)
     $L grounding.runs.sol_eval_01.kit.score regress                                        # the copies on Qwen's records
 
@@ -25,6 +26,12 @@ openclaw_eval_01's adjudicated files and final_regular_with_6b.json exactly.
 Inputs per set: `eval/<set>.score.json` (autogen_02's `phase4 score`), the verdicts in `eval/judged_<set>/<set>/`,
 and the runs in `runs/<set>/`. The regenerated half's regular set (regen_full_01) is scored alone (`combine
 --regen`), with regen_01's rulings wrapper loaded through kit/sets.py; `--before-br` applies to the first half only.
+
+The regenerated half's set is adjudicated by regen_01/score.py's `adjudicate`, unchanged: the script that scored
+Qwen's regenerated half (openclaw_eval_01's logic plus the exposure filter the lead agreed for regen_01, a fact
+counting only through a valid near miss), run on this study's layout through a folder of links. The file also records
+this kit's own `adjudicate` on the same set (`without_exposure_filter`), so any difference the filter makes shows, and
+the stalled attempts (the stall rule is this kit's; runtime rule R3 already catches stalls in these runs).
 """
 from __future__ import annotations
 
@@ -124,6 +131,59 @@ def adjudicate(run: str, score_path: Path, judged: Path, run_dir: Path, stalls: 
     return result
 
 
+def _regen_score(run: str) -> dict:
+    """regen_01/score.py's `adjudicate` (as run), unchanged, on this study's layout through a folder of links."""
+    import tempfile
+    from grounding.runs.regen_01 import score as regen_score
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp = Path(tmp)
+        (tmp / f"{run}.score.json").symlink_to(EVAL / f"{run}.score.json")
+        (tmp / f"judged_{run}").symlink_to(EVAL / f"judged_{run}")
+        (tmp / run).symlink_to((STUDY / "runs" / run).resolve())
+        return regen_score.adjudicate(run, tmp)
+
+
+def borderline_regen(run: str = "regen_full_01") -> dict:
+    """regen_01/borderline.py's sensitivity on Sol's run: the score if the PI ruled the near misses regen_01's review
+    flagged borderline (valid by the rulings) flawed. The extra rulings exist only in this process, as there."""
+    from grounding.runs.regen_01 import borderline
+    base, extra, original = _regen_score(run), borderline.borderline(), rulings._doc
+
+    def doc():
+        d = dict(original())
+        d["near_misses"] = list(d.get("near_misses", [])) + [
+            {"scenario": s, "witness": w, "ruling": "flawed", "source": "regen_01 borderline (hypothetical)"}
+            for s, w in extra]
+        return d
+
+    rulings._doc = doc
+    try:
+        alt = _regen_score(run)
+    finally:
+        rulings._doc = original
+    q = lambda out: {f"{r['domain']} {f}" for r in out["tests"] for f in r["exposed"]}  # noqa: E731
+    return {"_about": f"regen_01/borderline.py's sensitivity on Sol's {run} (kit/score.py borderline; not a ruling).",
+            "borderline_near_misses": [f"{s} {w}" for s, w in extra],
+            "as_run": base["adjudicated"], "borderline_ruled_flawed": alt["adjudicated"],
+            "facts_lost": sorted(q(base) - q(alt)),
+            "tests_left_out": sorted(t["case_id"] for t in alt["left_out_tests"]),
+            "trials_not_counted": len(alt["trials_not_counted"]) - len(base["trials_not_counted"])}
+
+
+def adjudicate_regen(run: str) -> dict:
+    """regen_01/score.py's `adjudicate` (as run) on a regenerated-half set, with this kit's own `adjudicate` beside it."""
+    out = _regen_score(run)
+    out["scored_by"] = "regen_01/score.py adjudicate, as run (the script that scored Qwen's regenerated half)"
+    raw = json.loads((EVAL / f"{run}.score.json").read_text())
+    out["facts_lost"] = sorted({f for t in raw["tests"] for f in t["exposed"]} - set(out["facts"]))
+    out["trials_stalled"] = [f"{a.parts[-3]}/{a.parts[-2]}" for a in sorted((STUDY / "runs" / run).glob("t*/*/attempt-*"))
+                             if a == sorted(a.parent.glob("attempt-*"))[-1] and stalled(a)]
+    mine = adjudicate(run, EVAL / f"{run}.score.json", EVAL / f"judged_{run}" / run, STUDY / "runs" / run)
+    out["without_exposure_filter"] = {k: mine[k] for k in ("adjudicated", "by")}
+    out["without_exposure_filter"]["facts_detect3"] = sorted({f for r in mine["tests"] for f in r["exposed"]})
+    return out
+
+
 def combine(parts: list[tuple[str, set[str], Path]]) -> dict:
     """openclaw_eval_01.combine.combine: (run, domains, adjudicated file) per part."""
     rows, left_out, not_counted, over_budget = [], [], [], []
@@ -184,7 +244,13 @@ def main():
         suffix = "_before_br" if "--before-br" in sys.argv else ""
         if suffix:
             use_rulings_before_br()
-        out = adjudicate(run, EVAL / f"{run}.score.json", EVAL / f"judged_{run}" / run, STUDY / "runs" / run)
+        if sets.SETS[run]["half"] == "regen":
+            if suffix:
+                raise SystemExit("--before-br applies to the first half only")
+            out = adjudicate_regen(run)
+            print("without the exposure filter:", out["without_exposure_filter"]["adjudicated"])
+        else:
+            out = adjudicate(run, EVAL / f"{run}.score.json", EVAL / f"judged_{run}" / run, STUDY / "runs" / run)
         (EVAL / f"{run}.adjudicated{suffix}.json").write_text(json.dumps(out, indent=1, ensure_ascii=False) + "\n")
         print(json.dumps({k: out[k] for k in ("raw", "adjudicated", "facts_lost")}, indent=1))
         print(f"left out: {len(out['left_out_tests'])} tests; not counted: {len(out['trials_not_counted'])} trials; "
@@ -195,6 +261,10 @@ def main():
             print("  LEFT OUT", x["case_id"], x["exposed_raw"], "|", x["why"][:100])
         for x in out["trials_not_counted"]:
             print("  NOT COUNTED", x["trial"], x["acted_on"], x["exposed"], "|", x["why"][:100])
+    elif cmd == "borderline":
+        out = borderline_regen()
+        (EVAL / "regen_full_01.borderline_sensitivity.json").write_text(json.dumps(out, indent=1) + "\n")
+        print(json.dumps({k: v for k, v in out.items() if k != "_about"}, indent=1))
     elif cmd == "combine":
         suffix = "_before_br" if "--before-br" in sys.argv else ""
         names, out_name = (("regen_full_01",), "final_regular_regen.json") if "--regen" in sys.argv else \
