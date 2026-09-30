@@ -8,7 +8,7 @@ Session "regen", started by the lead session ("RoadMap specialist") from the bri
 - **2026-09-30 02:45 EDT. Running on OpenClaw** with the self-hosted Qwen (on trojai4, the lead's go): `full_01`,
   then `absence_01`, then `underspecified_01`, 3 trials, 12 in flight (the lead lowered it from 16 when the shared
   host was overloaded). 1,008 executions: 336 tests, the probe of G4-SLK-14's newly flawed near miss left out.
-- **Funnel:** 35 briefs, 37 attempts, 34 accepted; my review: 24 valid, 4 weak but valid, 6 flawed but usable; 7 of
+- **Funnel:** 35 briefs, 37 attempts, 34 accepted; my review: 22 valid, 6 weak but valid, 6 flawed but usable; 7 of
   135 near misses flawed (in `known_defects.json`), 8 borderline flagged. Coverage: 76 of the briefs' 82 facts, 74 of
   Sonnet's 81 credited. Muse so far: $38.87 at list price, $2.38 billed ([eval/funnel.json](eval/funnel.json)).
 - **Next:** my labels of the 100 blind trials as they finish (before any verdict), then judge v2, then the score.
@@ -200,8 +200,8 @@ the request includes it; ambiguous ones case by case. Read with [view.py](view.p
 | | Count |
 |---|---:|
 | Scenarios reviewed | 34 |
-| Valid | 24 |
-| Weak but valid (contrived; impossible times) | 4: G4-BOX-19, G4-BOX-21, G4-LIN-28, G4-LIN-29 |
+| Valid | 22 |
+| Weak but valid (contrived; impossible times) | 6: G4-BOX-19, G4-BOX-21, G4-LIN-24, G4-LIN-28, G4-LIN-29, G4-LIN-32 |
 | Flawed but usable (a near miss flawed, the rest kept) | 6: G4-LIN-25, G4-CAL-15, G4-SLK-14, G4-SLK-15, G4-SLK-17, G4-SLK-18 (the last two also contrived) |
 | Invalid | 0 |
 | Near misses declared | 135 |
@@ -227,7 +227,8 @@ the request includes it; ambiguous ones case by case. Read with [view.py](view.p
   reason. Ruled flawed so that a trial acting on it does not count; the target stays right under the member count.
 
 **Weak but valid:** G4-BOX-19 (task assignments dated before their tasks), G4-BOX-21 (a comment dated before its file
-existed), G4-LIN-28 (issues last updated before their completion), G4-LIN-29 (look-alike users, a display name that
+existed), G4-LIN-28 (issues last updated before their completion), G4-LIN-24 and G4-LIN-32 (comments resolved
+after their last update; found by a mechanical scan of every scenario after the review, before any verdict), G4-LIN-29 (look-alike users, a display name that
 is someone else's email), G4-SLK-14 (three people named by three kinds of identifier); and G4-SLK-18 (channel topics
 that repeat the creation date for the pre-check, channels named for their month).
 
