@@ -532,6 +532,10 @@ and the blind sample) and the score come from `autogen_02.kit.phase4 select` and
   path from grounding/runs/ on, and warns on stderr when a recorded attempt cannot be found. The verdicts here record
   a removed worktree, so a re-score counted none of them before this. Re-scored from a worktree, `full_02`, `full_03`
   and `full_04` and their adjudicated and combined files reproduce byte for byte.
+- 2026-09-30, session sol_score: `policy.readings` skips a unit without verdicts for the sequential replay and the
+  spread, where `sampler.cell_stats` stopped at the first one, and counts them (`units_without_verdicts`, only when
+  there is one). Every decision file here and in regen_01 reproduces byte for byte. In sol_eval_01, Sol's cells with
+  an unrun unit get complete secondary readings; no decision or reported number changes.
 
 ## Runs
 

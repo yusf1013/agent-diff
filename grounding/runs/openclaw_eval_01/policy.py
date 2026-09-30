@@ -339,18 +339,23 @@ def readings(valid: list[dict], outcomes: dict, looks: list[int]) -> dict:
     """The other ways to read the same verdicts, for the step-5 investigation: the pre-registered sequential rule
     (one pre-chosen trial per unit, looks after 11, 18, 25 and all units, Clopper-Pearson bounds) replayed in the
     fixed order; a unit failing in any of its runs, or in all of them (bounds over units); and every trial as its own
-    draw, which overstates the evidence when a unit's runs agree."""
+    draw, which overstates the evidence when a unit's runs agree.
+
+    sampler.cell_stats stops at the first unit without verdicts (the frontier of the sequential design's looks). Here
+    every unit has run or never will, so a unit without verdicts is skipped for the sequential replay and the spread,
+    and counted (`units_without_verdicts`, present only when there is one; 2026-09-30, session sol_score)."""
     FAIL, PASS = sampler.FAIL, sampler.PASS
-    boundaries = [k for k in looks if k < len(valid)] + [len(valid)]
+    ran = [u for u in valid if outcomes.get(u["unit"])]
+    boundaries = [k for k in looks if k < len(ran)] + [len(ran)]
     sequential = {"decision": "undecided (units exhausted)"}
     for k in boundaries:
-        s = sampler.cell_stats(valid[:k], outcomes)
+        s = sampler.cell_stats(ran[:k], outcomes)
         if s["shown_above"] or s["shown_below"]:
             sequential = {"decision": "policy-level" if s["shown_above"] else "not policy-level", "at_units": k,
                           **{x: s[x] for x in ("draws", "failures", "lower_90", "upper_90")}}
             break
     else:
-        s = sampler.cell_stats(valid, outcomes)
+        s = sampler.cell_stats(ran, outcomes)
         sequential.update({x: s[x] for x in ("draws", "failures", "lower_90", "upper_90")})
 
     def over_units(rule):
@@ -366,9 +371,12 @@ def readings(valid: list[dict], outcomes: dict, looks: list[int]) -> dict:
     k, n = sum(o in FAIL for o in trials), len(trials)
     naive = {"trials": n, "failing": k, "lower_90": round(sampler.lower_bound(k, n, ALPHA), 3) if n else None,
              "upper_90": round(sampler.upper_bound(k, n, ALPHA), 3) if n else None}
-    return {"sequential_first_run": sequential, "any_of_runs": over_units(lambda us: any(o in FAIL for o in us)),
-            "all_runs": over_units(lambda us: all(o in FAIL for o in us)), "trials_as_draws": naive,
-            "spread": sampler.cell_stats(valid, outcomes)["spread"]}
+    result = {"sequential_first_run": sequential, "any_of_runs": over_units(lambda us: any(o in FAIL for o in us)),
+              "all_runs": over_units(lambda us: all(o in FAIL for o in us)), "trials_as_draws": naive,
+              "spread": sampler.cell_stats(ran, outcomes)["spread"]}
+    if len(ran) < len(valid):
+        result["units_without_verdicts"] = len(valid) - len(ran)
+    return result
 
 
 def population_6b(mode: str) -> Path:
