@@ -147,3 +147,8 @@ section. Decisions that stand go to the [roadmap](roadmap.md); this is the recor
   missing jobs were restarted at 01:42 (runs/run_regular_6b_rest.sh, concurrency 6, beside the policy pass). Lesson
   recorded for the briefs: never resolve a merge conflict in the main checkout while runs read the file; merge in a
   worktree, or stop the runs first.
+- 01:5x report_update done by the values session (merged as 0992a74d4c): report.md and report_concise.md match
+  numbers/ at a8c046c891 (998 cases, 2,994 executions); every change logged in report_01/README.md under "Text
+  changes (2026-09-30)". Left labelled in the text: §10.1's 8-minute policy count; Table 14's Ours column and Table
+  15's rows from baselines_01's pre-rebuild files; Table 11's first-pass column. Assigned next: beyond.py's policy
+  filter, baselines_01's recomputation, openclaw_eval_01's README numbers.
