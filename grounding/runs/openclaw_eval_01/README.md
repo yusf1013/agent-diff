@@ -527,6 +527,12 @@ $L grounding.runs.openclaw_eval_01.policy decide absence|underspecified --verdic
 For the regular suite, judge v2's selection (every trial that is not mechanically clean, 20% of the clean ones,
 and the blind sample) and the score come from `autogen_02.kit.phase4 select` and `phase4 score`.
 
+**Kit changes since (no result changes):**
+- 2026-09-30, session sol_score: `phase4 score` (autogen_01/kit/score_run.py) matches a verdict to its attempt by the
+  path from grounding/runs/ on, and warns on stderr when a recorded attempt cannot be found. The verdicts here record
+  a removed worktree, so a re-score counted none of them before this. Re-scored from a worktree, `full_02`, `full_03`
+  and `full_04` and their adjudicated and combined files reproduce byte for byte.
+
 ## Runs
 
 | Run | What | Result |

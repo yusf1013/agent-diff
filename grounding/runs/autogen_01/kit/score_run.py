@@ -10,14 +10,45 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from collections import defaultdict
 from pathlib import Path
 
 from grounding.runs.autogen_01.kit.judge import COLLAPSE, latest, scored_exposed, triage
 
+RUNS_ROOT = Path(__file__).resolve().parents[2]  # this repository's grounding/runs/
+MARKER = "/grounding/runs/"
+
+
+def same_attempt(recorded: str | None, attempt: Path) -> bool:
+    """Whether a verdict's recorded attempt is this attempt: the same path from grounding/runs/ on, whichever checkout
+    the judge ran in. (Until 2026-09-30 a plain string comparison: scored from another checkout than the judge's,
+    every judged trial fell back to its triage.)"""
+    if not recorded:
+        return False
+    return recorded == str(attempt) or (MARKER in recorded and
+                                        recorded.split(MARKER, 1)[1] == str(attempt).split(MARKER, 1)[-1])
+
+
+def attempt_found(recorded: str | None) -> bool:
+    """The recorded attempt exists here, where recorded or re-rooted at this repository's grounding/runs/ (as
+    openclaw_eval_01/policy.py's local_attempt resolves it)."""
+    if not recorded:
+        return False
+    return Path(recorded).exists() or (MARKER in recorded and (RUNS_ROOT / recorded.split(MARKER, 1)[1]).exists())
+
+
+def warn_unresolved(verdicts: list[Path]) -> None:
+    """Loudly, on stderr: verdicts whose attempt cannot be found, so they count only if their path from
+    grounding/runs/ on matches the scored attempt."""
+    print(f"\n*** WARNING (autogen_01/kit/score_run.py): {len(verdicts)} verdicts name an attempt that cannot be found, "
+          f"where recorded or re-rooted under {RUNS_ROOT}; each counts only if its path from grounding/runs/ on is the "
+          f"scored attempt's, else its trial falls back to the triage. ***", file=sys.stderr)
+    print(f"***   for example {verdicts[0]}\n", file=sys.stderr)
+
 
 def trial_outcomes(solver_run: Path, judged: Path) -> dict:
-    out = {}
+    out, unresolved = {}, []
     for summary in sorted(solver_run.glob("t*/*/attempt-*/execution_summary.json")):
         attempt = summary.parent
         trial, case_id = attempt.parts[-3], attempt.parts[-2]
@@ -25,13 +56,17 @@ def trial_outcomes(solver_run: Path, judged: Path) -> dict:
             continue
         verdict_path = judged / solver_run.name / trial / case_id / "verdict.json"
         v = json.loads(verdict_path.read_text()) if verdict_path.exists() else None
-        if v is not None and v.get("attempt") == str(attempt):  # a verdict on an older attempt does not count
+        if v is not None and not attempt_found(v.get("attempt")):
+            unresolved.append(verdict_path)
+        if v is not None and same_attempt(v.get("attempt"), attempt):  # a verdict on an older attempt does not count
             out[(case_id, trial)] = {"outcome": v["outcome"], "exposed": scored_exposed(v), "judged": True,
                                      "mechanism": v.get("mechanism"), "note": v.get("note")}
         else:
             _, _, tri = triage(solver_run.name, trial, attempt)
             out[(case_id, trial)] = {"outcome": tri["outcome"], "exposed": tri["exposed"] if COLLAPSE.get(
                 tri["outcome"]) == "fail" else [], "judged": False}
+    if unresolved:
+        warn_unresolved(unresolved)
     return out
 
 
