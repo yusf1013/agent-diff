@@ -6,10 +6,10 @@
   round), the model `qwen3.8-27b` served at http://127.0.0.1:18000 through its Anthropic Messages endpoint,
   `--autocompact 131k` (the served window, which Claude Code cannot know) and `--effort medium` (the level
   OpenClaw's Qwen rounds run at; see EFFORT). Changed from the kit's call: a per-call limit of WRITER_TIMEOUT
-  instead of the kit's 3600 s; the output is stream-json, so each call's init event is checked and kept; and the
-  process runs in a clean environment of its own (none of the launching session's variables) with a configuration
-  directory per brief: no login, no account, no user settings, kept for the brief's resumed rounds and outside the
-  writer's workspace.
+  instead of the kit's 3600 s and a reply cap of MAX_OUTPUT_TOKENS instead of Claude Code's 32,000 (see there); the
+  output is stream-json, so each call's init event is checked and kept; and the process runs in a clean environment
+  of its own (none of the launching session's variables) with a configuration directory per brief: no login, no
+  account, no user settings, kept for the brief's resumed rounds and outside the writer's workspace.
 - **every other role** (the cold reader): the kit's Muse path unchanged, refused once the readers' billed cost in
   this study reaches the cap ($3).
 
@@ -44,9 +44,15 @@ WINDOW = "131k"
 # ~10 tokens/s per stream the shared server gave, two of four ended at Claude Code's 32,000-token output cap with
 # only reasoning, and the window (131k) would not hold two repair rounds of that size.
 EFFORT = "medium"
-# The kit's 3600 s per writer call was sized for API models; at the self-host's speed it would measure throughput.
-# 7200 s is about 70k tokens at 10 tokens/s, more than the window leaves after the writer's reading.
-WRITER_TIMEOUT = 7200
+# Claude Code caps each reply at 32,000 output tokens for a model it does not know. Qwen drafts the whole scenario in its
+# reasoning, and some first design steps reached the cap with nothing but reasoning, at xhigh and at medium alike
+# (runs/gen_01_xhigh, runs/gen_02); Claude Code then asks it to resume, and it began again. The cap changes only the
+# request's max_tokens (thinking stays "adaptive", effort as set; captured 2026-09-30), so below it nothing changes.
+# 64,000 fits the window after the writer's reading (about 40k).
+MAX_OUTPUT_TOKENS = 64000
+# The kit's 3600 s per writer call was sized for API models; at the self-host's speed (7-13 tokens/s per stream on the
+# shared server) it would measure throughput. A first call can hold two long steps, so 4 hours.
+WRITER_TIMEOUT = 14400
 MUSE_CAP_BILLED = 3.0
 CLAUDE_BIN = shutil.which(agent.CLAUDE) or agent.CLAUDE
 _kit_run = agent.run
@@ -71,7 +77,7 @@ def writer_env(config: Path) -> dict:
             "ANTHROPIC_BASE_URL": BASE_URL, "ANTHROPIC_AUTH_TOKEN": selfhost_key(),
             # any model alias Claude Code resolves on its own goes to the same served model
             "ANTHROPIC_DEFAULT_HAIKU_MODEL": MODEL, "ANTHROPIC_DEFAULT_SONNET_MODEL": MODEL,
-            "ANTHROPIC_DEFAULT_OPUS_MODEL": MODEL}
+            "ANTHROPIC_DEFAULT_OPUS_MODEL": MODEL, "CLAUDE_CODE_MAX_OUTPUT_TOKENS": str(MAX_OUTPUT_TOKENS)}
 
 
 def writer_command(call: agent.Call, system_file: Path | None) -> list:
@@ -160,7 +166,7 @@ def run_writer(call: agent.Call) -> dict:
         result = next((e for e in reversed(events) if e.get("type") == "result"), None)
         record = {"command": cmd, "cwd": str(call.workspace), "exit": code, "stderr": stderr[-4000:],
                   "claude_config_dir": str(config), "base_url": BASE_URL, "timeout_s": WRITER_TIMEOUT,
-                  "kit_timeout_s": call.timeout}
+                  "kit_timeout_s": call.timeout, "max_output_tokens": MAX_OUTPUT_TOKENS}
         if result is not None:
             result["claude_code_estimate_usd"] = result.get("total_cost_usd")
             result["total_cost_usd"] = 0.0

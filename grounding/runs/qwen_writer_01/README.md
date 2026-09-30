@@ -4,11 +4,11 @@ Session "harness", an investigation the PI asked for, assigned by the lead ("Roa
 
 ## Status
 
-- **2026-09-30, 03:20 EDT.** The question, the design and the draw are fixed ([plan.json](plan.json)). The first
-  generation run, at Qwen's served default effort (`xhigh`), was stopped after 50 minutes (`runs/gen_01_xhigh`, see
-  cycle 2): at about 10 tokens/s per stream, each first design step took 29-32k tokens and 34-43 minutes, and 2 of 4
-  first steps ended at Claude Code's 32,000-token output cap with nothing but reasoning. Generation restarted at
-  `medium`, the level OpenClaw's Qwen rounds use (`runs/gen_02`).
+- **2026-09-30, 04:45 EDT.** The question, the design and the draw are fixed ([plan.json](plan.json)). Two
+  generation runs were stopped on the harness's limits, not on the pipeline's (cycles 2 and 3): at Qwen's served
+  default effort (`runs/gen_01_xhigh`), and at `medium` under Claude Code's 32,000-token reply cap (`runs/gen_02`,
+  which accepted 3 briefs first and keeps them). The other 9 briefs are generating at `medium` with a 64,000-token
+  cap (`runs/gen_03`). My review is under way ([eval/review.json](eval/review.json)).
 
 ## The question
 
@@ -50,9 +50,10 @@ What answers it, on 12 Phase 4 briefs that Muse already turned into accepted sce
 - **Settings:** Qwen's reasoning at `medium` (`--effort medium`), the level OpenClaw's Qwen rounds run at. The server
   accepts xhigh (its default), medium or low; Claude Code's own default, "high", is refused. The served default was
   tried first and stopped (cycle 2). Muse's writers ran at Muse's "high": all 72 writer calls of Phase 4 record
-  `reasoning_effort: high`. So the effort levels differ, a second stated confound. A writer call may run 7200 s
-  (the kit's limit, 3600 s, was sized for API models and would measure the host's throughput; the wall time is
-  reported instead). Claude Code's compaction at the served window
+  `reasoning_effort: high`. So the effort levels differ, a second stated confound. A writer reply may run to 64,000
+  output tokens (Claude Code's own cap for a model it does not know is 32,000; cycle 3) and a writer call to
+  4 hours (the kit's limit, 3600 s, was sized for API models and would measure the host's throughput; the wall
+  time is reported instead). Claude Code's compaction at the served window
   (`--autocompact 131k`); the writer reaches the endpoint directly, outside the shared limiter, so at most 4 briefs
   run at once; cost 0 (self-hosted), Claude Code's own estimate kept only as `claude_code_estimate_usd`.
 - **A second harness difference** comes with Claude Code: the kit's Claude path puts the writer prompt
@@ -115,3 +116,28 @@ What answers it, on 12 Phase 4 briefs that Muse already turned into accepted sce
   its folder). G4-BOX-03 and G4-BOX-05 had written nothing ten minutes before the kit's 3600 s limit.
 - Change for `runs/gen_02`: `--effort medium` and a 7200 s writer limit ([backend.py](backend.py)). Nothing else:
   the prompts, the checks, the reader and the round limits stay.
+
+### Cycle 3 (2026-09-30, 03:15-04:33): medium effort, stopped at Claude Code's reply cap
+
+- `runs/gen_02`: the briefs at `--effort medium`, concurrency 4, the same server load (7-13 tokens/s per stream).
+- **Accepted, each at its first version** (no check or reader rounds): G4-BOX-05 (54 minutes), G4-CAL-03
+  (62 minutes), G4-BOX-03 (73 minutes). Their largest writer replies were 30,103, 16,526 and 23,909 output tokens.
+- **First design steps at medium:** 13,978 (G4-CAL-03), 16,006 (G4-BOX-03), 30,103 (G4-BOX-05) and 32,000 output
+  tokens (G4-SLK-01, at Claude Code's cap, with nothing but reasoning: 122,000 characters). So medium halved some
+  steps and not others.
+- **What the cap does:** Claude Code adds a user message ("Output token limit hit. Resume directly — no apology, no
+  recap of what you were doing. Pick up mid-thought if that is where the cut happened. Break remaining work into
+  smaller pieces.") and continues. The reasoning stays in the prompt: Claude Code sends it back (G4-CAL-03's next
+  step had 54,071 tokens of input after 39,956 plus its 13,978), and the server keeps it (a probe: 920 prompt tokens
+  with an earlier reasoning block, 80 without). Still, G4-SLK-01's next step ran past 21,000 tokens without writing
+  anything: it began again rather than picking up.
+- **The long reasoning is design work, not a loop:** the capped 117,049-character block of cycle 2 has no repeated
+  200-character chunk (585 of 585 distinct) and drafts the whole scenario, query included, before writing it.
+- **What the cap changes in the request** (captured with a local listener, 2026-09-30): only `max_tokens` (32,000 or
+  64,000); `thinking` stays `adaptive` with no budget, `output_config.effort` stays as set. So below the cap the
+  generation is the same, and the three accepted briefs (none reached it) stand.
+- Stopped at 04:33 (G4-SLK-01 77 minutes into its first call; G4-CAL-05, G4-LIN-05 and G4-SLK-05 23, 16 and 5
+  minutes into theirs; live transcripts kept).
+- Change for `runs/gen_03` (the 9 other briefs): a 64,000-token reply cap (`CLAUDE_CODE_MAX_OUTPUT_TOKENS`, which fits
+  the window after the writer's reading of about 40k) and a 4-hour writer limit. [cases.py](cases.py) takes each
+  brief's accepted scenario from gen_02 or gen_03.

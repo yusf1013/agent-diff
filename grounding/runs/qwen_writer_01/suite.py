@@ -1,4 +1,5 @@
-"""Qwen's suite: the accepted scenarios of runs/gen_02 with opaque ids and test-side clocks, built exactly as
+"""Qwen's suite: its accepted scenarios (cases.py: one per brief, from runs/gen_02 or runs/gen_03) with opaque ids and
+test-side clocks, built exactly as
 regen_01/suite.py builds Muse's new scenarios (completion_01's method, itself openclaw_eval_01/opaque_suite.py's). No
 model or replica calls.
 
@@ -6,7 +7,7 @@ model or replica calls.
 
 For each accepted scenario (skipped: those this study's rulings leave out, rules.py):
 1. **The recorded suite:** the frozen derivation (`derive.suite_with_dropped`) of the accepted case must equal the
-   suite the orchestrator wrote (runs/gen_02/cases/), test by test.
+   suite the orchestrator wrote (runs/gen_NN/cases/), test by test.
 2. **Opaque ids:** one mapping per scenario (`autogen_01/kit/opaque_ids.py`). The derivation from the obfuscated case
    must equal the obfuscated suite, test by test, with the same drops, and every test passes `opaque_ids.check`.
    Box's ids are numbers already and come out unchanged.
@@ -23,32 +24,23 @@ import json
 import re
 import shutil
 
-from grounding.runs.qwen_writer_01 import rules  # noqa: F401  (before anything reads the rulings)
+from grounding.runs.qwen_writer_01 import cases, rules  # rules before anything reads the rulings
 from grounding.runs.autogen_01.kit import derive, opaque_ids
 from grounding.runs.autogen_01.kit.derive import digest
 from grounding.runs.completion_01.suite import clock_for, written_at
 from grounding.runs.openclaw_eval_01 import materialize, rulings
 
 HERE = rules.HERE
-GEN = HERE / "runs" / "gen_02"
 OUT = HERE / "suite"
-
-
-def accepted() -> dict:
-    out = {}
-    for path in sorted(GEN.glob("G4-*/outcome.json")):
-        o = json.loads(path.read_text())
-        if o.get("status") == "accepted":
-            out[o["scenario_id"]] = path.parent
-    return out
 
 
 def main():
     check = {"scenarios": 0, "tests": 0, "dropped": [], "ids_replaced": 0, "clocks": {}, "skipped": {}, "failures": []}
     fail = check["failures"].append
     tests_out, index, mappings = [], [], {}
-    written = written_at(GEN)
-    for sid, folder in accepted().items():
+    for sid, folder in cases.accepted().items():
+        GEN = folder.parent
+        written = written_at(GEN)
         action = rulings.actions().get(sid, "keep")
         if action.startswith("leave out"):
             check["skipped"][sid] = f"ruling: {action}"
@@ -93,7 +85,7 @@ def main():
                 opaque["case_sha256"] = digest({k: v for k, v in opaque.items() if k != "case_sha256"})
             tests_out.append(opaque)
             index.append({"case_id": test["case_id"], "domain": case["domain"], **meta,
-                          "source": "qwen_writer_01/runs/gen_02", "writer": "qwen3.8-27b",
+                          "source": f"qwen_writer_01/runs/{GEN.name}", "writer": "qwen3.8-27b",
                           "case_sha256": opaque["case_sha256"]})
     print(json.dumps({k: v for k, v in check.items() if k not in ("failures", "clocks")}, indent=1))
     if check["failures"]:

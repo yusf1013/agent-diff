@@ -1,4 +1,5 @@
-"""The generation half: Qwen's writer (runs/gen_02) against Muse's (autogen_02/runs/phase4_gen) on the drawn briefs.
+"""The generation half: Qwen's writer (the attempt that counts per brief, cases.py: runs/gen_02 or runs/gen_03) against
+Muse's (autogen_02/runs/phase4_gen) on the drawn briefs.
 No model calls.
 
     python grounding/runs/fact_coverage_02/launch.py grounding.runs.qwen_writer_01.compare_gen
@@ -22,10 +23,12 @@ import json
 from collections import Counter
 from pathlib import Path
 
+from grounding.runs.qwen_writer_01 import cases
+
 HERE = Path(__file__).resolve().parent
 RUNS = HERE.parent
 MUSE_GEN = RUNS / "autogen_02" / "runs" / "phase4_gen"
-QWEN_GEN = HERE / "runs" / "gen_02"
+STOPPED = [HERE / "runs" / "gen_01_xhigh", HERE / "runs" / "gen_02"]  # runs stopped with briefs in progress
 BRIEFS = RUNS / "autogen_02" / "inputs" / "briefs_phase4.json"
 MUSE_REVIEW = RUNS / "autogen_02" / "eval" / "phase4_review.json"
 QWEN_REVIEW = HERE / "eval" / "review.json"
@@ -113,6 +116,28 @@ def side(gen: Path, sid: str, facts: list[str], verdicts) -> dict:
     return out
 
 
+def stopped_attempts(sid: str, counted: Path | None) -> list[dict]:
+    """The brief's writer attempts in the stopped runs, other than the one that counts: writer time and output."""
+    out = []
+    for gen in STOPPED:
+        folder = gen / sid
+        if not folder.exists() or folder == counted:
+            continue
+        rows = [c for c in calls(gen) if c.get("label") == sid and c["role"] == "writer"]
+        live = folder / "writer" / "live-transcript-at-stop.jsonl"
+        steps, out_tokens = set(), 0
+        if live.exists():
+            for line in live.read_text().splitlines():
+                e = json.loads(line)
+                if e.get("type") == "assistant" and e["message"].get("id") not in steps:
+                    steps.add(e["message"].get("id"))
+                    out_tokens += (e["message"].get("usage") or {}).get("output_tokens") or 0
+        out.append({"run": gen.name, "writer_calls_done": len(rows),
+                    "writer_seconds_done": round(sum(c.get("seconds") or 0 for c in rows), 1),
+                    "stopped_call_output_tokens": out_tokens if live.exists() else None})
+    return out
+
+
 def md(header, rows):
     return "\n".join(["| " + " | ".join(header) + " |", "|" + "---|" * len(header)]
                      + ["| " + " | ".join(str(x) for x in r) + " |" for r in rows])
@@ -125,8 +150,11 @@ def main():
     result = {"briefs": {}}
     for sid in drawn:
         facts = briefs[sid]["facts"]
-        result["briefs"][sid] = {"facts": facts, "muse": side(MUSE_GEN, sid, facts, muse_verdicts),
-                                 "qwen": side(QWEN_GEN, sid, facts, lambda s, c: qwen_verdicts(s))}
+        folder = cases.attempt(sid)
+        qwen = side(folder.parent, sid, facts, lambda s, c: qwen_verdicts(s)) if folder else {"status": "not run"}
+        qwen["run"] = folder.parent.name if folder else None
+        qwen["stopped_attempts"] = stopped_attempts(sid, folder)
+        result["briefs"][sid] = {"facts": facts, "muse": side(MUSE_GEN, sid, facts, muse_verdicts), "qwen": qwen}
     totals = {}
     for who in ("muse", "qwen"):
         sides = [b[who] for b in result["briefs"].values()]
