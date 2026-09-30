@@ -99,3 +99,9 @@
 - **Labels beyond baselines_01's vocabulary, kept inside it:** a false absence on a target-present test is
   `incomplete` with `false_absence: true` (SN0M-LIN-T12 t2); a self-corrected write on a decoy is `incorrect` with
   `self_corrected: true` (SN0M-LIN-T11 t2), as judge v2's rules count any write on a decoy.
+- **Host load, judged by speed as well:** two trials timed out. The lead's criterion (few requests at over 30 s each)
+  is read with the generation speed of their requests against the run's own: over 632 requests of 200 or more
+  output tokens, the median is 15.8 tokens a second (p10 10.8, p90 20.4). SN0M-BOX-T08 t2 ran at 6.5 (below p10):
+  host load, kept apart for the quiet rerun. SN0M-SLK-T07 t1 ran at 19.5: its requests were long because it wrote
+  long (about 8k reasoning tokens after it had already removed the right reaction), so it is the agent's timeout,
+  labelled `correct` with `timeout: true` (the right write, no reply).
