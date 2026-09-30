@@ -282,15 +282,18 @@ user-facing answer: an empty reply, or one of OpenClaw's failure notices. 194 of
 
 **The headline numbers with Qwen's verdicts so far** ([headline.py](headline.py) `--fill-with-muse`;
 [runs/selfhost/headline_partial.json](runs/selfhost/headline_partial.json)). Qwen's verdict is used on the 1,123
-executions it has judged, and Muse's on the other 1,016; the same code reproduces the published numbers exactly
-from Muse's verdicts alone. This is a partial result, not the Qwen recompute.
-- **Regular suite:** 139 tests expose a fact, against 138. Facts: 88 at detect@3 against 87, and 61 at detect@1
+executions it has judged, and Muse's on the other 1,005 that today's rulings keep (of the 1,016 not yet replayed);
+the same code reproduces the published numbers exactly from Muse's verdicts alone. This is a partial result, not the
+Qwen recompute. *Rebuilt 2026-09-30 afternoon (session sol_score, the lead's leave) under today's rules: the
+10-minute budget, the blind-review rulings, each duplicate pair once. The numbers of 02:50 were under the 8-minute
+budget.*
+- **Regular suite:** 140 of 563 tests expose a fact, against 139. Facts: 88 at detect@3 against 87, and 61 at detect@1
   against 60.
   - The one new fact is Qwen's false alarm on P-G4-CAL-05-I13 (`A:CalendarListEntry.hidden`).
   - FP-G4-CAL-06 loses its first trial's exposure (Qwen's artifact call); the fact stays exposed through other
     trials.
-- **Policy stage:** all eight decisions are unchanged. Two rates move by 0.003: Box underspecified (0.581 to 0.578,
-  from Qwen's artifact call on U-G4-BOX-03) and Linear underspecified (0.508 to 0.511, from not_established in
+- **Policy stage:** all eight decisions are unchanged. Two rates move: Box underspecified (0.548 to 0.545, from
+  Qwen's artifact call on U-G4-BOX-03) and Linear underspecified (0.483 to 0.485, from not_established in
   place of incomplete on U-G4-LIN-14).
 
 **Gaps behind Qwen's artifact calls** (reported; nothing changed):
@@ -381,3 +384,4 @@ from Muse's verdicts alone. This is a partial result, not the Qwen recompute.
 | 09-30 01:40-02:41 | – | Blind labels on the 15 disagreements as they appeared (in three batches), locked 06:41:13 UTC, then unblinded | Qwen right on 9 of the 13 group disagreements, Muse on 4. Two systematic patterns: Muse credits runs that timed out before answering with their unsent conclusion (harmless under the budget rule); Qwen calls real failures artifacts when the replica notes omit the deciding field (costs exposures). Three replica-note gaps recorded. |
 | 09-30 02:39 | – | Paused at the lead's request; the queued second labelled pass cancelled | 680 of 1,696 done; resumable. |
 | 09-30 02:50-03:10 | `no_answer.py`, `headline.py --fill-with-muse`, `repeat_compare.py` | Offline, no model calls | Over the whole set, runs without an answer are mostly called not_established by both judges (Muse credits the unsent conclusion in 12 of 94 no-write ones, Qwen in 3). With Qwen's verdicts on the 1,123 judged so far, all eight policy decisions stay as published and the regular suite gains one false fact. Qwen's four artifact calls have three distinct causes (replica-notes gap; the solver's reads taken as the service's data; a contested reading), per Qwen's own notes read after unblinding. |
+| 09-30 13:50 | `headline.py` merges a duplicate pair as `decide_population` does (the PI's rule); both outputs rebuilt (session sol_score, with the lead's leave) | Offline, no model calls | With the budget rule restored in the published decisions, the code, reading attempts through its own manifest, reproduces all eight cells and the regular score exactly. The earlier outputs dated from the 8-minute budget and the rulings before the blind review. With Qwen's 1,123 verdicts, all eight decisions still match. |
