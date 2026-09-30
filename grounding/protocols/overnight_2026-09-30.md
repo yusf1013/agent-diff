@@ -236,3 +236,13 @@ section. Decisions that stand go to the [roadmap](roadmap.md); this is the recor
   trials, labelled artifact under the PI's reading. Judge cost so far $20.18 list, $1.44 billed. Absence labels on
   the second and third passes show Sol acting on near misses in absence twins (4 failures in 24). For the PI:
   AT-G4-BOX-15's "Atlas Onboarding Archive" for "the Atlas Onboarding hub", labelled by the construction.
+- 04:0x the host too loaded for three solver arms (regen's timeouts 9%, clustered on the busiest minutes): the two
+  baseline arms (B1 at 73 of 144 trials, baselines_02) pause; regen keeps the host at 12 in flight. B1 found that
+  OpenClaw's agent, running as the user with a shell, can probe the host, read the repository (the answer keys are
+  on disk) and call the replica backend directly past the curl shim; its masked operations triggered all three
+  (18 trials probed, 5 read source, 3 wrote straight to the backend). **The main rounds are clean:** a scan of every
+  final-round command (sol_eval_01/kit/host_access_scan.py) finds 13 of Qwen's 4,464 trials touching the host or
+  the backend, all endpoint probing in stuck absence probes, the one direct write in a trial judged a failure
+  anyway, no bypass producing a pass; none of Sol's 1,196 trials. For the PI: a future round should run attempts
+  under a restricted user or a container; the neutral layout hides names, not the filesystem. New replica gap:
+  Calendar cannot re-add a calendar-list entry after DELETE.
