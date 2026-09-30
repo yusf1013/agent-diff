@@ -113,3 +113,13 @@ section. Decisions that stand go to the [roadmap](roadmap.md); this is the recor
   2026-10-03 15:17 EDT, shared with the Sol round. Assigned next: Claude Code as a backend of our runner and a
   32-test Sonnet pilot (claudecode_pilot_01).
 - 01:35 the Sol policy units now run once each first, then trials 2 and 3, because of the plan's window.
+- 01:4x sol_score, regular_p4 scored (provisional, 6 of 444 trials pending the retry pass): **Sol exposes a fact in
+  5 of 148 Phase 4 tests, against Qwen's 47 on the same tests; 3 facts at detect@3 and detect@1 against Qwen's 26
+  and 20.** Every test Sol exposes, Qwen exposes too (A:Message.blocks in G4-SLK-04's three forms, A:Event.summary,
+  A:ProjectMilestone.name). 14 failing trials against 86; Sol's mechanisms mostly skipped-check (its reasoning is
+  invisible to the judge). Judge v2 agrees with all 45 blind labels and finds the one labelled failure with the
+  same fact and mechanism. A Sol trial takes a median 42 s against Qwen's 174 s, 4 tool calls, few reasoning
+  tokens at "medium". Cost of judging p4: $7.08 list, $0.50 billed. Harness difference to fix before any further
+  round: in the openai backend `memory_search` fails ("agent database belongs to agent main; requested agent
+  assistant") because the login store copied into the attempt's agent directory carries the main agent's identity;
+  Sol called it in 110 of 444 trials; no grounding outcome changes.
