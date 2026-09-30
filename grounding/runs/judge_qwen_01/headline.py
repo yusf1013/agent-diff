@@ -108,14 +108,20 @@ def policy_decisions(mode: str, verdict_of) -> dict:
     result = {}
     for cell, seq in policy.population_plan(mode)["cells"].items():
         valid, _ = policy.population_units(seq)
-        per_unit, missing = [], []
+        got = {}
         for u in valid:
-            outcomes = []
+            got[u["unit"]] = {}
             for key in by_unit.get(u["unit"], []):
                 v = verdict_of(key)
                 if v is None:
                     continue
-                outcomes.append("incorrect" if rulings.over_budget(attempt_path(key)) else v.get("outcome"))
+                got[u["unit"]][key] = "incorrect" if rulings.over_budget(attempt_path(key)) else v.get("outcome")
+        # The PI, 2026-09-29: a duplicate pair counts once, as decide_population merges it (added 2026-09-30, session
+        # sol_score, when the budget rule was restored in the published decisions).
+        valid = rulings.merge_duplicate_units(valid, got)
+        per_unit, missing = [], []
+        for u in valid:
+            outcomes = list(got.get(u["unit"], {}).values())
             usable = [o for o in outcomes if o in sampler.FAIL | sampler.PASS]
             if not outcomes:
                 missing.append(u["unit"])
