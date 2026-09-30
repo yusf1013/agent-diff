@@ -5,9 +5,10 @@ Session "values" (second assignment of the day from the lead session "RoadMap sp
 
 ## Status
 
-- **2026-09-30, 13:15 EDT.** Runs done (267 of 267 trials; one timeout under host load rerun on the quieter host) and
-  every trial labelled by hand before any assertion result or verdict was read. The label-based table is below.
-  Judge v2 is grading every trial; its numbers and its agreement with the blind samples follow when it ends.
+- **2026-09-30, 13:45 EDT. Done.** 267 of 267 trials run (one timeout under host load rerun on the quieter host),
+  every trial labelled by hand before any assertion result or verdict was read, then graded by the tests' own
+  assertions and by judge v2 (29 of 30 agreement on each blind sample). The answer, the table and the open points
+  are below.
 - **2026-09-30, 04:10 EDT. Paused at the lead's request** (the regenerated half's runs have the host). 96 of 267
   trials had finished (SN0M 45 of 132, SN1M 51 of 135) and all but one are labelled; that one timed out under host
   load and waits for a quiet rerun. The 6 trials in flight were stopped (the runner has no drain) and get fresh
@@ -202,6 +203,61 @@ task failed. SN1M's assertions miss nothing and raise one false alarm (a trial t
   counts 43 and 43; no exposure moves.
 
 
+## Judge v2 against the labels
+
+Every trial judged with the review's answer key ([judge.py](judge.py), `runs/judged_s<arm>_01/`); compared with my
+labels by judge2's own `compare` ([grade.py](grade.py), `eval/score_s<arm>.json`).
+
+| | SN0M | SN1M |
+|---|---:|---:|
+| Blind sample (30 trials each, drawn before the runs): agreement | 29 / 30 | 29 / 30 |
+| All trials: agreement | 130 / 132 | 132 / 135 |
+| Failing trials (both usable): judge precision; recall | 5 / 5; 5 / 6 | 9 / 9; 9 / 9 |
+| Facts exposed by the judge's verdicts (detect@3 / detect@1) | 2 / 2 | 3 / 3 |
+| Facts exposed by the mechanical triage alone | 4 / 2 | 2 / 2 |
+| By the labels, for reference | 3 / 2 | 2 / 2 |
+
+The five disagreements are where the rules differ, not the reading of a trajectory:
+- **Four trials I voided for a replica gap** (SN0M-CAL-T05 t2; SN1M-SLK-T05 t1 and t3; SN1M-SLK-T09 t1). The judge's
+  replica notes (autogen_02 `inputs/<domain>/replica.md`) document the Calendar gap, so it holds the agent to
+  `instances` (false absence); and they say Slack messages carry their reactions, which the replica's history does
+  not, so it holds the agent to reactions it could not see (two false absences, and one incorrect that it attributes
+  to D:reaction_count, whose near miss the agent did not touch). Both blind-sample disagreements are of this kind.
+- **The self-corrected write** (SN0M-LIN-T11 t2): the judge calls it correct, weighing the correction, though its
+  written rule counts any write on a decoy; my label follows the rule.
+
+By the judge's own verdicts the answer does not change: SN0M 2 / 2 and SN1M 3 / 3 facts, against 0 for the Muse arms.
+
+## Costs
+
+- **Generation:** Sonnet 5.5 through Claude Code, 8 sessions, 23 minutes, $3.21 at list price (Claude Code's own
+  estimate: SN0M $1.39, SN1M $1.81); the PI's plan bills $0.
+- **Judging:** judge v2 on Muse, 270 calls (the two arms and a two-trial smoke), $7.88 at list price; within the $5
+  billed cap ($0.57 billed).
+- **Qwen:** 9.1 agent-hours on the self-hosted Qwen3.8-27B, 1,898 requests, 22.3M input and 405k output tokens
+  (208k reasoning), about 2.1 hours of wall time at 6 in flight; 36 attempts stopped by the load change and the pause
+  are kept as records.
+
+## Open points
+
+1. **For the lead (report only):** autogen_02's Slack replica notes tell judge v2 that messages carry their
+   reactions; the replica's `conversations.history` and `conversations.replies` do not return them (only
+   `reactions.get` does). That shapes judge v2's calls on any Slack reaction test, in our own pipeline too.
+2. **Replica findings (report only):** the Calendar replica names an edited occurrence with its local start digits
+   and a "Z" (Google uses UTC); Linear's `teams { projects { nodes } }` fails with a non-null error; Slack history
+   omits reactions (above); and the known Calendar gap (a recurring series listed only when the window covers its
+   first start) voided one trial.
+3. **Rule readings for the PI:** a near miss gets a family only when the catalog lists it for the fact (as
+   baselines_01 did); a set gets no proper credit (crediting sets adds one fact per Sonnet arm); a write on a decoy
+   that the agent itself corrects still fails the trial (judge v2's written rule; the judge's own practice differs);
+   a timeout after the right write counts as a failing test (the PI's timeout rule), without a fact.
+4. **Small numbers:** 2 to 3 facts per arm from 48 tests, with one test (SN1M-SLK-T11) carrying half of SN1M's; a
+   second Sonnet generation would show how much of the difference from the Muse arms is the writer and how much the
+   draw (not run).
+5. **Outside the scope, frequent:** Qwen misreads Linear's priority scale (1 is Urgent): 9 trials wrote a wrong
+   value to the right issue, and in SN0M-LIN-T12 the same misreading chose the wrong issue (a fact exposure) and
+   reported a false absence.
+
 ## Layout
 
 | Path | What |
@@ -213,10 +269,12 @@ task failed. SN1M's assertions miss nothing and raise one false alarm (a trial t
 | [rereview.py](rereview.py), [rereview_01.py](rereview_01.py) | The reviewer cross-check on 15 baselines_01 tests |
 | [blind_sample.py](blind_sample.py) | The blind samples, drawn before the runs |
 | [rerun.py](rerun.py) | The quiet rerun of timeouts under host load, as new attempts |
-| [grade.py](grade.py), [tables.py](tables.py) | Judge v2's trial list and the scores; baselines_01's label-based measures on these arms |
+| [judge.py](judge.py), [grade.py](grade.py), [tables.py](tables.py) | Judge v2 with the suites' final keys; its trial lists and the scores against the labels; baselines_01's label-based measures on these arms |
 | `runs/gen_<arm>_01/` | Generation (per service: prompts, transcripts, results, workspace per round, `load.json`, `cases/`), the arm's `review.json` and `labels.json` |
 | `runs/pool_01/`, `runs/rereview_01/` | The pool (items, manifest, review, calibration) and the cross-check draw |
 | `runs/suite_sn0m_01/`, `runs/suite_sn1m_01/` | The keyed valid cases the solver runs |
-| `runs/solve_sn0m_01/`, `runs/solve_sn1m_01/` | The runs (hidden from ripgrep by `.ignore`); `runs/host_load.json` |
-| `eval/` | The blind samples |
+| `runs/solve_sn0m_01/`, `runs/solve_sn1m_01/` | The runs (hidden from ripgrep by `.ignore`); `runs/host_load.json` and the rerun's log |
+| `runs/judged_sn0m_01/`, `runs/judged_sn1m_01/` | Judge v2's verdicts, prompts and calls |
+| `runs/gen_<arm>_01/labels.json`, `assertions.twin.json`, `oracles.score.json`, `labels.summary.json`; [policy_facts.json](policy_facts.json) | The labels and the label-based measures |
+| `eval/` | The blind samples, judge v2's trial lists and the scores (`score_s<arm>.json`) |
 | [log.md](log.md) | The cycle log |
