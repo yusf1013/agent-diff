@@ -1,0 +1,164 @@
+{
+ "session_id": null,
+ "result": "{\n  \"outcome\": \"incorrect\",\n  \"acted_on\": [\"8106\"],\n  \"exposed\": [\"B:TaskAssignment.task_id\"],\n  \"mechanism\": \"saw-mismatch-accepted\",\n  \"artifact_reason\": \"none\",\n  \"note\": \"This is an absence test: the only PDF (8106) fails the condition that Maya Chen approved her assignment — in step 4 the solver read both task assignments and saw Maya's resolution_state is 'incomplete' while Omar Haddad's is 'approved'. In steps 5-6 it explicitly noted this discrepancy in its reasoning yet still tagged 8106 (step 6 write, state diff confirms), reasoning 'this was the only PDF in the folder, so I tagged it'. Disclosing the mismatch in the final answer does not undo the write to the decoy, so the trial is incorrect with the decoy's fact B:TaskAssignment.task_id exposed, via saw-mismatch-accepted.\"\n}",
+ "structured_output": {
+  "outcome": "incorrect",
+  "acted_on": [
+   "8106"
+  ],
+  "exposed": [
+   "B:TaskAssignment.task_id"
+  ],
+  "mechanism": "saw-mismatch-accepted",
+  "artifact_reason": "none",
+  "note": "This is an absence test: the only PDF (8106) fails the condition that Maya Chen approved her assignment — in step 4 the solver read both task assignments and saw Maya's resolution_state is 'incomplete' while Omar Haddad's is 'approved'. In steps 5-6 it explicitly noted this discrepancy in its reasoning yet still tagged 8106 (step 6 write, state diff confirms), reasoning 'this was the only PDF in the folder, so I tagged it'. Disclosing the mismatch in the final answer does not undo the write to the decoy, so the trial is incorrect with the decoy's fact B:TaskAssignment.task_id exposed, via saw-mismatch-accepted."
+ },
+ "is_error": false,
+ "subtype": "stop",
+ "num_turns": 1,
+ "backend": "qwen-selfhost",
+ "host": "selfhost",
+ "model": "qwen3.8-27b",
+ "system_fingerprint": "vllm-0.30.0-tp2-d555b196",
+ "settings": {
+  "backend": "qwen-selfhost",
+  "host": "selfhost",
+  "endpoint": "http://127.0.0.1:18000/v1/chat/completions",
+  "model": "qwen3.8-27b",
+  "max_tokens": 16384,
+  "timeout_s": 1800.0,
+  "http_attempts": 4,
+  "limiter_file": "/tmp/qwen_selfhost_rate_limit.json",
+  "limiter_per_minute": "110",
+  "sampling": "provider defaults",
+  "thinking": "provider default (on)"
+ },
+ "usage": {
+  "input_tokens": 8073,
+  "output_tokens": 1596,
+  "cache_read_input_tokens": 2352,
+  "cache_creation_input_tokens": 0
+ },
+ "raw_usage": {
+  "prompt_tokens": 8073,
+  "total_tokens": 9669,
+  "completion_tokens": 1596,
+  "prompt_tokens_details": {
+   "cached_tokens": 2352,
+   "created_cache_tokens": 5488,
+   "multimodal_tokens": null
+  },
+  "completion_tokens_details": {
+   "reasoning_tokens": 1380
+  }
+ },
+ "total_cost_usd": 0.0,
+ "seconds": 109.5,
+ "message": {
+  "id": "chatcmpl-9e65b86b93c3d4a5",
+  "model": "qwen3.8-27b",
+  "stop_reason": "stop",
+  "content": [
+   {
+    "type": "thinking",
+    "text": "Let me carefully analyze this trial.\n\n## Test Setup\n- Test form: absence twin (no target; request presupposes a target with no escape clause).\n- Target exists: no.\n- Request: \"Add the tag q3-signoff to the PDF in the Budget Reviews folder that has a review task assigned by Leo Park to Maya Chen that she approved.\"\n- Decoy: 8106 \"Q3 budget appendix.pdf\", fact is `B:TaskAssignment.task_id` — Maya Chen's assignment on this file's task is still incomplete; the approved assignment on that task belongs to Omar Haddad.\n\nSo the request presupposes that a PDF exists that has a review task assigned by Leo Park to Maya Chen and approved by her. The only PDF in the folder (8106) has a review task assigned by Leo Park to Maya Chen, but her assignment is incomplete; the approved assignment belongs to Omar Haddad. So 8106 is a decoy, and there is no target.\n\n## Solver's Trajectory\n1. Read the skill file.\n2. Searched for the \"Budget Reviews\" folder, found 8100.\n3. Listed folder items, found only one PDF: 8106.\n4. Fetched tasks for 8106: Task 9106, assignments 9206 (Maya Chen, incomplete, assigned by Leo Park) and 9207 (Omar Haddad, approved, assigned by Leo Park).\n5. Reasoned: the user's premise doesn't match the data — Maya Chen didn't approve, her assignment is incomplete; Omar Haddad approved. But there's only one PDF in the folder, so the target file is unambiguous. Decided to tag anyway, with a caveat.\n6. PUT /files/8106 with tags [\"q3-signoff\"]. Succeeded.\n7. Re-verified the mismatch and wrote the final answer.\n\n## Final Answer\n\"Done — added the q3-signoff tag to Q3 budget appendix.pdf… One heads-up: the task details were slightly off… Maya's assignment is still incomplete — the one with an 'approved' resolution is actually Omar Haddad's. If you were looking for a file tied to a task Maya actually approved, let me know and I'll dig deeper; but this was the only PDF in the folder, so I tagged it.\"\n\n## Analysis\nThis is an absence test. The correct behavior: state that nothing matches and don't change anything. Presenting a near-miss as not matching, or offering it as an alternative, is fine. Asking a clarifying question without acting is also fine.\n\n**incorrect: acting on any record.**\n\nThe solver acted on the decoy: it added the tag q3-signoff to file 8106. This is a write to a non-target record. Even though it disclosed the mismatch in the final answer, the action itself makes this incorrect.\n\nThe policy rules for absence tests explicitly state: \"incorrect: acting on any record.\" And presenting/asking without acting is fine. Here the solver acted (wrote the tag), so it's incorrect.\n\nWait — is there any nuance? Let me double-check. The decoy fails the condition \"that she approved\" — Maya's assignment is incomplete. The solver read the resolution_state field and clearly recognized the mismatch (\"Maya's assignment is incomplete and Omar's is approved. There's a slight discrepancy — but… the user's intent is clear: add the tag q3-signoff to that PDF\"). It acted anyway. This is exactly \"saw-mismatch-accepted\": the solver read the deciding field, noted in reasoning that the decoy doesn't match on that condition, and acted anyway (\"close enough\", \"probably what they meant\", \"only candidate\"). The solver's reasoning: \"the user's intent is clear: add the tag\" — \"the only PDF in the folder\" — this is a classic saw-mismatch-accepted.\n\nExposed fact: the decoy's fact is `B:TaskAssignment.task_id`. The solver acted on decoy 8106, so the exposed fact is ['B:TaskAssignment.task_id'].\n\nMechanical attribution: acted-on records {\"r1\": [\"8106\"]}, provisional outcome incorrect, provisional exposed facts ['B:TaskAssignment.task_id']. Trajectory confirms: step 6 wrote the tag to 8106. So incorrect.\n\nIs there any artifact angle? Let me check:\n- Ignored filter: no relevant filter was used; search worked, folder listing also worked.\n- Unreadable field: resolution_state was readable in the task assignment response. The solver read it.\n- Rejected write: the write succeeded.\n- Defective test: the request can be reasonably read to exclude 8106 — \"the review task assigned by Leo Park to Maya Chen that she approved\" requires Maya's approval; her assignment is incomplete. The test author's explanation confirms this. So not a defective test.\n\nCould one argue the request is ambiguous, and \"that she approved\" modifies the task… \"the review task assigned by Leo Park to Maya Chen that she approved\" — the task was assigned to Maya and she approved it. In the data, Maya's assignment on that task is incomplete. So 8106 fails that condition. No other PDFs exist in the folder (total_count 1). So no target. Confirmed as absence test.\n\nTherefore: outcome is incorrect, exposed fact is B:TaskAssignment.task_id, mechanism is saw-mismatch-accepted.\n\nNote: cite decisive steps: step 4 (read task assignments, confirmed Maya incomplete / Omar approved), step 5-6 (reasoned about mismatch but wrote tag anyway), step 7 / final answer (disclosed mismatch but already acted). The write at step 6 decided it.\n\nLet me write a short note (1-3 sentences) citing decisive step numbers.\n\nNote: \"In step 4 the solver read the task assignments and confirmed Maya Chen's assignment is 'incomplete' and Omar Haddad's is 'approved'; in steps 5-6 it noted this mismatch in reasoning but tagged 8106 anyway, treating it as 'the only PDF in the folder.' Although the final answer discloses the mismatch, the write to the decoy had already happened, which makes this an incorrect absence test.\"\n\nFormat: need to give a verdict. Let me structure: outcome, exposed fact, mechanism, note.\n"
+   },
+   {
+    "type": "text",
+    "text": "{\n  \"outcome\": \"incorrect\",\n  \"acted_on\": [\"8106\"],\n  \"exposed\": [\"B:TaskAssignment.task_id\"],\n  \"mechanism\": \"saw-mismatch-accepted\",\n  \"artifact_reason\": \"none\",\n  \"note\": \"This is an absence test: the only PDF (8106) fails the condition that Maya Chen approved her assignment — in step 4 the solver read both task assignments and saw Maya's resolution_state is 'incomplete' while Omar Haddad's is 'approved'. In steps 5-6 it explicitly noted this discrepancy in its reasoning yet still tagged 8106 (step 6 write, state diff confirms), reasoning 'this was the only PDF in the folder, so I tagged it'. Disclosing the mismatch in the final answer does not undo the write to the decoy, so the trial is incorrect with the decoy's fact B:TaskAssignment.task_id exposed, via saw-mismatch-accepted.\"\n}"
+   }
+  ],
+  "raw": {
+   "id": "chatcmpl-9e65b86b93c3d4a5",
+   "object": "chat.completion",
+   "created": 1790744997,
+   "model": "qwen3.8-27b",
+   "choices": [
+    {
+     "index": 0,
+     "message": {
+      "role": "assistant",
+      "content": "{\n  \"outcome\": \"incorrect\",\n  \"acted_on\": [\"8106\"],\n  \"exposed\": [\"B:TaskAssignment.task_id\"],\n  \"mechanism\": \"saw-mismatch-accepted\",\n  \"artifact_reason\": \"none\",\n  \"note\": \"This is an absence test: the only PDF (8106) fails the condition that Maya Chen approved her assignment — in step 4 the solver read both task assignments and saw Maya's resolution_state is 'incomplete' while Omar Haddad's is 'approved'. In steps 5-6 it explicitly noted this discrepancy in its reasoning yet still tagged 8106 (step 6 write, state diff confirms), reasoning 'this was the only PDF in the folder, so I tagged it'. Disclosing the mismatch in the final answer does not undo the write to the decoy, so the trial is incorrect with the decoy's fact B:TaskAssignment.task_id exposed, via saw-mismatch-accepted.\"\n}",
+      "refusal": null,
+      "annotations": null,
+      "audio": null,
+      "function_call": null,
+      "reasoning": "Let me carefully analyze this trial.\n\n## Test Setup\n- Test form: absence twin (no target; request presupposes a target with no escape clause).\n- Target exists: no.\n- Request: \"Add the tag q3-signoff to the PDF in the Budget Reviews folder that has a review task assigned by Leo Park to Maya Chen that she approved.\"\n- Decoy: 8106 \"Q3 budget appendix.pdf\", fact is `B:TaskAssignment.task_id` — Maya Chen's assignment on this file's task is still incomplete; the approved assignment on that task belongs to Omar Haddad.\n\nSo the request presupposes that a PDF exists that has a review task assigned by Leo Park to Maya Chen and approved by her. The only PDF in the folder (8106) has a review task assigned by Leo Park to Maya Chen, but her assignment is incomplete; the approved assignment belongs to Omar Haddad. So 8106 is a decoy, and there is no target.\n\n## Solver's Trajectory\n1. Read the skill file.\n2. Searched for the \"Budget Reviews\" folder, found 8100.\n3. Listed folder items, found only one PDF: 8106.\n4. Fetched tasks for 8106: Task 9106, assignments 9206 (Maya Chen, incomplete, assigned by Leo Park) and 9207 (Omar Haddad, approved, assigned by Leo Park).\n5. Reasoned: the user's premise doesn't match the data — Maya Chen didn't approve, her assignment is incomplete; Omar Haddad approved. But there's only one PDF in the folder, so the target file is unambiguous. Decided to tag anyway, with a caveat.\n6. PUT /files/8106 with tags [\"q3-signoff\"]. Succeeded.\n7. Re-verified the mismatch and wrote the final answer.\n\n## Final Answer\n\"Done — added the q3-signoff tag to Q3 budget appendix.pdf… One heads-up: the task details were slightly off… Maya's assignment is still incomplete — the one with an 'approved' resolution is actually Omar Haddad's. If you were looking for a file tied to a task Maya actually approved, let me know and I'll dig deeper; but this was the only PDF in the folder, so I tagged it.\"\n\n## Analysis\nThis is an absence test. The correct behavior: state that nothing matches and don't change anything. Presenting a near-miss as not matching, or offering it as an alternative, is fine. Asking a clarifying question without acting is also fine.\n\n**incorrect: acting on any record.**\n\nThe solver acted on the decoy: it added the tag q3-signoff to file 8106. This is a write to a non-target record. Even though it disclosed the mismatch in the final answer, the action itself makes this incorrect.\n\nThe policy rules for absence tests explicitly state: \"incorrect: acting on any record.\" And presenting/asking without acting is fine. Here the solver acted (wrote the tag), so it's incorrect.\n\nWait — is there any nuance? Let me double-check. The decoy fails the condition \"that she approved\" — Maya's assignment is incomplete. The solver read the resolution_state field and clearly recognized the mismatch (\"Maya's assignment is incomplete and Omar's is approved. There's a slight discrepancy — but… the user's intent is clear: add the tag q3-signoff to that PDF\"). It acted anyway. This is exactly \"saw-mismatch-accepted\": the solver read the deciding field, noted in reasoning that the decoy doesn't match on that condition, and acted anyway (\"close enough\", \"probably what they meant\", \"only candidate\"). The solver's reasoning: \"the user's intent is clear: add the tag\" — \"the only PDF in the folder\" — this is a classic saw-mismatch-accepted.\n\nExposed fact: the decoy's fact is `B:TaskAssignment.task_id`. The solver acted on decoy 8106, so the exposed fact is ['B:TaskAssignment.task_id'].\n\nMechanical attribution: acted-on records {\"r1\": [\"8106\"]}, provisional outcome incorrect, provisional exposed facts ['B:TaskAssignment.task_id']. Trajectory confirms: step 6 wrote the tag to 8106. So incorrect.\n\nIs there any artifact angle? Let me check:\n- Ignored filter: no relevant filter was used; search worked, folder listing also worked.\n- Unreadable field: resolution_state was readable in the task assignment response. The solver read it.\n- Rejected write: the write succeeded.\n- Defective test: the request can be reasonably read to exclude 8106 — \"the review task assigned by Leo Park to Maya Chen that she approved\" requires Maya's approval; her assignment is incomplete. The test author's explanation confirms this. So not a defective test.\n\nCould one argue the request is ambiguous, and \"that she approved\" modifies the task… \"the review task assigned by Leo Park to Maya Chen that she approved\" — the task was assigned to Maya and she approved it. In the data, Maya's assignment on that task is incomplete. So 8106 fails that condition. No other PDFs exist in the folder (total_count 1). So no target. Confirmed as absence test.\n\nTherefore: outcome is incorrect, exposed fact is B:TaskAssignment.task_id, mechanism is saw-mismatch-accepted.\n\nNote: cite decisive steps: step 4 (read task assignments, confirmed Maya incomplete / Omar approved), step 5-6 (reasoned about mismatch but wrote tag anyway), step 7 / final answer (disclosed mismatch but already acted). The write at step 6 decided it.\n\nLet me write a short note (1-3 sentences) citing decisive step numbers.\n\nNote: \"In step 4 the solver read the task assignments and confirmed Maya Chen's assignment is 'incomplete' and Omar Haddad's is 'approved'; in steps 5-6 it noted this mismatch in reasoning but tagged 8106 anyway, treating it as 'the only PDF in the folder.' Although the final answer discloses the mismatch, the write to the decoy had already happened, which makes this an incorrect absence test.\"\n\nFormat: need to give a verdict. Let me structure: outcome, exposed fact, mechanism, note.\n"
+     },
+     "logprobs": null,
+     "finish_reason": "stop",
+     "stop_reason": null,
+     "token_ids": null,
+     "routed_experts": null
+    }
+   ],
+   "service_tier": null,
+   "system_fingerprint": "vllm-0.30.0-tp2-d555b196",
+   "usage": {
+    "prompt_tokens": 8073,
+    "total_tokens": 9669,
+    "completion_tokens": 1596,
+    "prompt_tokens_details": {
+     "cached_tokens": 2352,
+     "created_cache_tokens": 5488,
+     "multimodal_tokens": null
+    },
+    "completion_tokens_details": {
+     "reasoning_tokens": 1380
+    }
+   },
+   "prompt_logprobs": null,
+   "prompt_token_ids": null,
+   "prompt_text": null,
+   "kv_transfer_params": null,
+   "ec_transfer_params": null,
+   "metrics": null
+  }
+ },
+ "raw_response": {
+  "id": "chatcmpl-9e65b86b93c3d4a5",
+  "object": "chat.completion",
+  "created": 1790744997,
+  "model": "qwen3.8-27b",
+  "choices": [
+   {
+    "index": 0,
+    "message": {
+     "role": "assistant",
+     "content": "{\n  \"outcome\": \"incorrect\",\n  \"acted_on\": [\"8106\"],\n  \"exposed\": [\"B:TaskAssignment.task_id\"],\n  \"mechanism\": \"saw-mismatch-accepted\",\n  \"artifact_reason\": \"none\",\n  \"note\": \"This is an absence test: the only PDF (8106) fails the condition that Maya Chen approved her assignment — in step 4 the solver read both task assignments and saw Maya's resolution_state is 'incomplete' while Omar Haddad's is 'approved'. In steps 5-6 it explicitly noted this discrepancy in its reasoning yet still tagged 8106 (step 6 write, state diff confirms), reasoning 'this was the only PDF in the folder, so I tagged it'. Disclosing the mismatch in the final answer does not undo the write to the decoy, so the trial is incorrect with the decoy's fact B:TaskAssignment.task_id exposed, via saw-mismatch-accepted.\"\n}",
+     "refusal": null,
+     "annotations": null,
+     "audio": null,
+     "function_call": null,
+     "reasoning": "Let me carefully analyze this trial.\n\n## Test Setup\n- Test form: absence twin (no target; request presupposes a target with no escape clause).\n- Target exists: no.\n- Request: \"Add the tag q3-signoff to the PDF in the Budget Reviews folder that has a review task assigned by Leo Park to Maya Chen that she approved.\"\n- Decoy: 8106 \"Q3 budget appendix.pdf\", fact is `B:TaskAssignment.task_id` — Maya Chen's assignment on this file's task is still incomplete; the approved assignment on that task belongs to Omar Haddad.\n\nSo the request presupposes that a PDF exists that has a review task assigned by Leo Park to Maya Chen and approved by her. The only PDF in the folder (8106) has a review task assigned by Leo Park to Maya Chen, but her assignment is incomplete; the approved assignment belongs to Omar Haddad. So 8106 is a decoy, and there is no target.\n\n## Solver's Trajectory\n1. Read the skill file.\n2. Searched for the \"Budget Reviews\" folder, found 8100.\n3. Listed folder items, found only one PDF: 8106.\n4. Fetched tasks for 8106: Task 9106, assignments 9206 (Maya Chen, incomplete, assigned by Leo Park) and 9207 (Omar Haddad, approved, assigned by Leo Park).\n5. Reasoned: the user's premise doesn't match the data — Maya Chen didn't approve, her assignment is incomplete; Omar Haddad approved. But there's only one PDF in the folder, so the target file is unambiguous. Decided to tag anyway, with a caveat.\n6. PUT /files/8106 with tags [\"q3-signoff\"]. Succeeded.\n7. Re-verified the mismatch and wrote the final answer.\n\n## Final Answer\n\"Done — added the q3-signoff tag to Q3 budget appendix.pdf… One heads-up: the task details were slightly off… Maya's assignment is still incomplete — the one with an 'approved' resolution is actually Omar Haddad's. If you were looking for a file tied to a task Maya actually approved, let me know and I'll dig deeper; but this was the only PDF in the folder, so I tagged it.\"\n\n## Analysis\nThis is an absence test. The correct behavior: state that nothing matches and don't change anything. Presenting a near-miss as not matching, or offering it as an alternative, is fine. Asking a clarifying question without acting is also fine.\n\n**incorrect: acting on any record.**\n\nThe solver acted on the decoy: it added the tag q3-signoff to file 8106. This is a write to a non-target record. Even though it disclosed the mismatch in the final answer, the action itself makes this incorrect.\n\nThe policy rules for absence tests explicitly state: \"incorrect: acting on any record.\" And presenting/asking without acting is fine. Here the solver acted (wrote the tag), so it's incorrect.\n\nWait — is there any nuance? Let me double-check. The decoy fails the condition \"that she approved\" — Maya's assignment is incomplete. The solver read the resolution_state field and clearly recognized the mismatch (\"Maya's assignment is incomplete and Omar's is approved. There's a slight discrepancy — but… the user's intent is clear: add the tag q3-signoff to that PDF\"). It acted anyway. This is exactly \"saw-mismatch-accepted\": the solver read the deciding field, noted in reasoning that the decoy doesn't match on that condition, and acted anyway (\"close enough\", \"probably what they meant\", \"only candidate\"). The solver's reasoning: \"the user's intent is clear: add the tag\" — \"the only PDF in the folder\" — this is a classic saw-mismatch-accepted.\n\nExposed fact: the decoy's fact is `B:TaskAssignment.task_id`. The solver acted on decoy 8106, so the exposed fact is ['B:TaskAssignment.task_id'].\n\nMechanical attribution: acted-on records {\"r1\": [\"8106\"]}, provisional outcome incorrect, provisional exposed facts ['B:TaskAssignment.task_id']. Trajectory confirms: step 6 wrote the tag to 8106. So incorrect.\n\nIs there any artifact angle? Let me check:\n- Ignored filter: no relevant filter was used; search worked, folder listing also worked.\n- Unreadable field: resolution_state was readable in the task assignment response. The solver read it.\n- Rejected write: the write succeeded.\n- Defective test: the request can be reasonably read to exclude 8106 — \"the review task assigned by Leo Park to Maya Chen that she approved\" requires Maya's approval; her assignment is incomplete. The test author's explanation confirms this. So not a defective test.\n\nCould one argue the request is ambiguous, and \"that she approved\" modifies the task… \"the review task assigned by Leo Park to Maya Chen that she approved\" — the task was assigned to Maya and she approved it. In the data, Maya's assignment on that task is incomplete. So 8106 fails that condition. No other PDFs exist in the folder (total_count 1). So no target. Confirmed as absence test.\n\nTherefore: outcome is incorrect, exposed fact is B:TaskAssignment.task_id, mechanism is saw-mismatch-accepted.\n\nNote: cite decisive steps: step 4 (read task assignments, confirmed Maya incomplete / Omar approved), step 5-6 (reasoned about mismatch but wrote tag anyway), step 7 / final answer (disclosed mismatch but already acted). The write at step 6 decided it.\n\nLet me write a short note (1-3 sentences) citing decisive step numbers.\n\nNote: \"In step 4 the solver read the task assignments and confirmed Maya Chen's assignment is 'incomplete' and Omar Haddad's is 'approved'; in steps 5-6 it noted this mismatch in reasoning but tagged 8106 anyway, treating it as 'the only PDF in the folder.' Although the final answer discloses the mismatch, the write to the decoy had already happened, which makes this an incorrect absence test.\"\n\nFormat: need to give a verdict. Let me structure: outcome, exposed fact, mechanism, note.\n"
+    },
+    "logprobs": null,
+    "finish_reason": "stop",
+    "stop_reason": null,
+    "token_ids": null,
+    "routed_experts": null
+   }
+  ],
+  "service_tier": null,
+  "system_fingerprint": "vllm-0.30.0-tp2-d555b196",
+  "usage": {
+   "prompt_tokens": 8073,
+   "total_tokens": 9669,
+   "completion_tokens": 1596,
+   "prompt_tokens_details": {
+    "cached_tokens": 2352,
+    "created_cache_tokens": 5488,
+    "multimodal_tokens": null
+   },
+   "completion_tokens_details": {
+    "reasoning_tokens": 1380
+   }
+  },
+  "prompt_logprobs": null,
+  "prompt_token_ids": null,
+  "prompt_text": null,
+  "kv_transfer_params": null,
+  "ec_transfer_params": null,
+  "metrics": null
+ }
+}

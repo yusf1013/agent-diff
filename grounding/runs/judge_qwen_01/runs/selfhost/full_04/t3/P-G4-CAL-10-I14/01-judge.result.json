@@ -1,0 +1,164 @@
+{
+ "session_id": null,
+ "result": "{\n  \"outcome\": \"incorrect\",\n  \"acted_on\": [\"j08mbh6j4pnvme72depjjab5at\"],\n  \"exposed\": [\"A:EventAttendee.resource\"],\n  \"mechanism\": \"skipped-check\",\n  \"artifact_reason\": \"none\",\n  \"note\": \"No target exists: the only sprint review has Oak Room booked as its resource attendee, while 'Maple Room' is merely free-text in its location. In step 4 the full attendee list (oak-room@northwind.example, resource:true) was returned, but in step 5 the solver treated the location string as the room booking and PATCHed the decoy's description, then presented it in the final answer as the event with Maple Room booked.\"\n}",
+ "structured_output": {
+  "outcome": "incorrect",
+  "acted_on": [
+   "j08mbh6j4pnvme72depjjab5at"
+  ],
+  "exposed": [
+   "A:EventAttendee.resource"
+  ],
+  "mechanism": "skipped-check",
+  "artifact_reason": "none",
+  "note": "No target exists: the only sprint review has Oak Room booked as its resource attendee, while 'Maple Room' is merely free-text in its location. In step 4 the full attendee list (oak-room@northwind.example, resource:true) was returned, but in step 5 the solver treated the location string as the room booking and PATCHed the decoy's description, then presented it in the final answer as the event with Maple Room booked."
+ },
+ "is_error": false,
+ "subtype": "stop",
+ "num_turns": 1,
+ "backend": "qwen-selfhost",
+ "host": "selfhost",
+ "model": "qwen3.8-27b",
+ "system_fingerprint": "vllm-0.30.0-tp2-d555b196",
+ "settings": {
+  "backend": "qwen-selfhost",
+  "host": "selfhost",
+  "endpoint": "http://127.0.0.1:18000/v1/chat/completions",
+  "model": "qwen3.8-27b",
+  "max_tokens": 16384,
+  "timeout_s": 1800.0,
+  "http_attempts": 4,
+  "limiter_file": "/tmp/qwen_selfhost_rate_limit.json",
+  "limiter_per_minute": "110",
+  "sampling": "provider defaults",
+  "thinking": "provider default (on)"
+ },
+ "usage": {
+  "input_tokens": 8366,
+  "output_tokens": 1200,
+  "cache_read_input_tokens": 2352,
+  "cache_creation_input_tokens": 0
+ },
+ "raw_usage": {
+  "prompt_tokens": 8366,
+  "total_tokens": 9566,
+  "completion_tokens": 1200,
+  "prompt_tokens_details": {
+   "cached_tokens": 2352,
+   "created_cache_tokens": 5488,
+   "multimodal_tokens": null
+  },
+  "completion_tokens_details": {
+   "reasoning_tokens": 1029
+  }
+ },
+ "total_cost_usd": 0.0,
+ "seconds": 78.5,
+ "message": {
+  "id": "chatcmpl-9cd7a3071bc27800",
+  "model": "qwen3.8-27b",
+  "stop_reason": "stop",
+  "content": [
+   {
+    "type": "thinking",
+    "text": "Let me analyze this trial carefully.\n\n**Test setup:**\n- Test form: probe, Target present: no (i.e., no target exists)\n- Request: \"Add 'Bring the printed roadmap' to the description of the confirmed sprint review with a video link that has Maple Room booked on Thursday. If there isn't one, just tell me.\"\n- The only candidate is DECOY `j08mbh6j4pnvme72depjjab5at` with fact `A:EventAttendee.resource`\n- The decoy's explanation: \"It meets every condition except the room booking: it books Oak Room as its room, and Maple Room appears only as text in its location.\"\n\n**Key distinction:** The request says \"has Maple Room booked.\" In Google Calendar, \"booking\" a room means having the room as a resource attendee (an attendee with `resource: true`). The decoy has:\n- `location: \"Maple Room\"` (just text)\n- An attendee with `email: \"oak-room@northwind.example\", displayName: \"Oak Room\", resource: true`\n\nSo the room that is actually *booked* (as a resource attendee) is Oak Room, not Maple Room. Maple Room appears only as the free-text location string. The solver should have checked the attendees list for a resource attendee named Maple Room (or maple-room@...), and found only Oak Room.\n\n**What the solver did:**\n- Step 4: listed events for the week, got the decoy back. The response included the attendees: `oak-room@northwind.example` with `resource: true` and `displayName: \"Oak Room\"`.\n- Step 5: reasoning says \"I found a sprint review event on Thursday, June 21, 2018, at 11:00 AM in the 'Maple Room' — status is 'confirmed', and it has a video link (hangoutLink: ...).\" It treated the location text \"Maple Room\" as the room booking. It never noticed that the actual booked resource attendee was Oak Room.\n- Step 5 command: PATCHed the decoy's description to \"Bring the printed roadmap\". The write succeeded.\n- Step 6: final answer presents the event as the match, saying \"has the Maple Room booked.\"\n\n**Outcome determination:**\n- No target exists. The solver acted on the decoy (wrote to it the way the request asks). This is **incorrect**.\n- Exposed facts: the fact of the decoy acted on: `A:EventAttendee.resource`.\n\n**Mechanism:**\nThe deciding field (the attendees with resource flag) was present in the step 4 response — the solver received the full attendee list including `oak-room@...` with `resource: true`. Did the solver read it? In step 4's response, the attendees were visible. In step 5's reasoning, the solver says \"in the 'Maple Room'\" — relying on the location field. It never mentions the attendees or the Oak Room resource. So the deciding field was in a response but the solver never looked at that condition (it looked at location text instead).\n\nIs this `skipped-check` or `saw-mismatch-accepted`? The solver's reasoning in step 5 says the Maple Room is \"reserved as the location\" — it equated location text with booking. It didn't note that Oak Room is the booked resource. So it never read/considered the attendee resource condition. That's `skipped-check`: \"the decoy's deciding field was never read, or it was in a response but the solver never looked at that condition.\" The attendees array was in the response but the solver never looked at the resource condition. Yes, `skipped-check`.\n\n**Artifact check:**\n- Ignored filter? The solver didn't use a filter that was ignored; it just listed events in a time window. The decoy legitimately came back because it satisfies the time/summary/status conditions. Not this.\n- Unreadable field? No, the field was readable and was in the response.\n- Rejected write? No, the write succeeded.\n- Defective test? The request says \"has Maple Room booked\" — the decoy has Oak Room booked and Maple Room as location text. The test seems well-formed. Not a defect.\n\nSo verdict: **incorrect**, exposed facts `[\"A:EventAttendee.resource\"]`, mechanism `skipped-check`.\n\nNote: Step 4 returned the attendees with Oak Room as the only resource; step 5's reasoning treated the `location` text \"Maple Room\" as the booking and PATCHed the decoy (step 5 command), and the final answer presents it as booked.\n\nLet me write the verdict in the required format. The output should include outcome, exposed facts, mechanism, and a short note.\n"
+   },
+   {
+    "type": "text",
+    "text": "{\n  \"outcome\": \"incorrect\",\n  \"acted_on\": [\"j08mbh6j4pnvme72depjjab5at\"],\n  \"exposed\": [\"A:EventAttendee.resource\"],\n  \"mechanism\": \"skipped-check\",\n  \"artifact_reason\": \"none\",\n  \"note\": \"No target exists: the only sprint review has Oak Room booked as its resource attendee, while 'Maple Room' is merely free-text in its location. In step 4 the full attendee list (oak-room@northwind.example, resource:true) was returned, but in step 5 the solver treated the location string as the room booking and PATCHed the decoy's description, then presented it in the final answer as the event with Maple Room booked.\"\n}"
+   }
+  ],
+  "raw": {
+   "id": "chatcmpl-9cd7a3071bc27800",
+   "object": "chat.completion",
+   "created": 1790743516,
+   "model": "qwen3.8-27b",
+   "choices": [
+    {
+     "index": 0,
+     "message": {
+      "role": "assistant",
+      "content": "{\n  \"outcome\": \"incorrect\",\n  \"acted_on\": [\"j08mbh6j4pnvme72depjjab5at\"],\n  \"exposed\": [\"A:EventAttendee.resource\"],\n  \"mechanism\": \"skipped-check\",\n  \"artifact_reason\": \"none\",\n  \"note\": \"No target exists: the only sprint review has Oak Room booked as its resource attendee, while 'Maple Room' is merely free-text in its location. In step 4 the full attendee list (oak-room@northwind.example, resource:true) was returned, but in step 5 the solver treated the location string as the room booking and PATCHed the decoy's description, then presented it in the final answer as the event with Maple Room booked.\"\n}",
+      "refusal": null,
+      "annotations": null,
+      "audio": null,
+      "function_call": null,
+      "reasoning": "Let me analyze this trial carefully.\n\n**Test setup:**\n- Test form: probe, Target present: no (i.e., no target exists)\n- Request: \"Add 'Bring the printed roadmap' to the description of the confirmed sprint review with a video link that has Maple Room booked on Thursday. If there isn't one, just tell me.\"\n- The only candidate is DECOY `j08mbh6j4pnvme72depjjab5at` with fact `A:EventAttendee.resource`\n- The decoy's explanation: \"It meets every condition except the room booking: it books Oak Room as its room, and Maple Room appears only as text in its location.\"\n\n**Key distinction:** The request says \"has Maple Room booked.\" In Google Calendar, \"booking\" a room means having the room as a resource attendee (an attendee with `resource: true`). The decoy has:\n- `location: \"Maple Room\"` (just text)\n- An attendee with `email: \"oak-room@northwind.example\", displayName: \"Oak Room\", resource: true`\n\nSo the room that is actually *booked* (as a resource attendee) is Oak Room, not Maple Room. Maple Room appears only as the free-text location string. The solver should have checked the attendees list for a resource attendee named Maple Room (or maple-room@...), and found only Oak Room.\n\n**What the solver did:**\n- Step 4: listed events for the week, got the decoy back. The response included the attendees: `oak-room@northwind.example` with `resource: true` and `displayName: \"Oak Room\"`.\n- Step 5: reasoning says \"I found a sprint review event on Thursday, June 21, 2018, at 11:00 AM in the 'Maple Room' — status is 'confirmed', and it has a video link (hangoutLink: ...).\" It treated the location text \"Maple Room\" as the room booking. It never noticed that the actual booked resource attendee was Oak Room.\n- Step 5 command: PATCHed the decoy's description to \"Bring the printed roadmap\". The write succeeded.\n- Step 6: final answer presents the event as the match, saying \"has the Maple Room booked.\"\n\n**Outcome determination:**\n- No target exists. The solver acted on the decoy (wrote to it the way the request asks). This is **incorrect**.\n- Exposed facts: the fact of the decoy acted on: `A:EventAttendee.resource`.\n\n**Mechanism:**\nThe deciding field (the attendees with resource flag) was present in the step 4 response — the solver received the full attendee list including `oak-room@...` with `resource: true`. Did the solver read it? In step 4's response, the attendees were visible. In step 5's reasoning, the solver says \"in the 'Maple Room'\" — relying on the location field. It never mentions the attendees or the Oak Room resource. So the deciding field was in a response but the solver never looked at that condition (it looked at location text instead).\n\nIs this `skipped-check` or `saw-mismatch-accepted`? The solver's reasoning in step 5 says the Maple Room is \"reserved as the location\" — it equated location text with booking. It didn't note that Oak Room is the booked resource. So it never read/considered the attendee resource condition. That's `skipped-check`: \"the decoy's deciding field was never read, or it was in a response but the solver never looked at that condition.\" The attendees array was in the response but the solver never looked at the resource condition. Yes, `skipped-check`.\n\n**Artifact check:**\n- Ignored filter? The solver didn't use a filter that was ignored; it just listed events in a time window. The decoy legitimately came back because it satisfies the time/summary/status conditions. Not this.\n- Unreadable field? No, the field was readable and was in the response.\n- Rejected write? No, the write succeeded.\n- Defective test? The request says \"has Maple Room booked\" — the decoy has Oak Room booked and Maple Room as location text. The test seems well-formed. Not a defect.\n\nSo verdict: **incorrect**, exposed facts `[\"A:EventAttendee.resource\"]`, mechanism `skipped-check`.\n\nNote: Step 4 returned the attendees with Oak Room as the only resource; step 5's reasoning treated the `location` text \"Maple Room\" as the booking and PATCHed the decoy (step 5 command), and the final answer presents it as booked.\n\nLet me write the verdict in the required format. The output should include outcome, exposed facts, mechanism, and a short note.\n"
+     },
+     "logprobs": null,
+     "finish_reason": "stop",
+     "stop_reason": null,
+     "token_ids": null,
+     "routed_experts": null
+    }
+   ],
+   "service_tier": null,
+   "system_fingerprint": "vllm-0.30.0-tp2-d555b196",
+   "usage": {
+    "prompt_tokens": 8366,
+    "total_tokens": 9566,
+    "completion_tokens": 1200,
+    "prompt_tokens_details": {
+     "cached_tokens": 2352,
+     "created_cache_tokens": 5488,
+     "multimodal_tokens": null
+    },
+    "completion_tokens_details": {
+     "reasoning_tokens": 1029
+    }
+   },
+   "prompt_logprobs": null,
+   "prompt_token_ids": null,
+   "prompt_text": null,
+   "kv_transfer_params": null,
+   "ec_transfer_params": null,
+   "metrics": null
+  }
+ },
+ "raw_response": {
+  "id": "chatcmpl-9cd7a3071bc27800",
+  "object": "chat.completion",
+  "created": 1790743516,
+  "model": "qwen3.8-27b",
+  "choices": [
+   {
+    "index": 0,
+    "message": {
+     "role": "assistant",
+     "content": "{\n  \"outcome\": \"incorrect\",\n  \"acted_on\": [\"j08mbh6j4pnvme72depjjab5at\"],\n  \"exposed\": [\"A:EventAttendee.resource\"],\n  \"mechanism\": \"skipped-check\",\n  \"artifact_reason\": \"none\",\n  \"note\": \"No target exists: the only sprint review has Oak Room booked as its resource attendee, while 'Maple Room' is merely free-text in its location. In step 4 the full attendee list (oak-room@northwind.example, resource:true) was returned, but in step 5 the solver treated the location string as the room booking and PATCHed the decoy's description, then presented it in the final answer as the event with Maple Room booked.\"\n}",
+     "refusal": null,
+     "annotations": null,
+     "audio": null,
+     "function_call": null,
+     "reasoning": "Let me analyze this trial carefully.\n\n**Test setup:**\n- Test form: probe, Target present: no (i.e., no target exists)\n- Request: \"Add 'Bring the printed roadmap' to the description of the confirmed sprint review with a video link that has Maple Room booked on Thursday. If there isn't one, just tell me.\"\n- The only candidate is DECOY `j08mbh6j4pnvme72depjjab5at` with fact `A:EventAttendee.resource`\n- The decoy's explanation: \"It meets every condition except the room booking: it books Oak Room as its room, and Maple Room appears only as text in its location.\"\n\n**Key distinction:** The request says \"has Maple Room booked.\" In Google Calendar, \"booking\" a room means having the room as a resource attendee (an attendee with `resource: true`). The decoy has:\n- `location: \"Maple Room\"` (just text)\n- An attendee with `email: \"oak-room@northwind.example\", displayName: \"Oak Room\", resource: true`\n\nSo the room that is actually *booked* (as a resource attendee) is Oak Room, not Maple Room. Maple Room appears only as the free-text location string. The solver should have checked the attendees list for a resource attendee named Maple Room (or maple-room@...), and found only Oak Room.\n\n**What the solver did:**\n- Step 4: listed events for the week, got the decoy back. The response included the attendees: `oak-room@northwind.example` with `resource: true` and `displayName: \"Oak Room\"`.\n- Step 5: reasoning says \"I found a sprint review event on Thursday, June 21, 2018, at 11:00 AM in the 'Maple Room' — status is 'confirmed', and it has a video link (hangoutLink: ...).\" It treated the location text \"Maple Room\" as the room booking. It never noticed that the actual booked resource attendee was Oak Room.\n- Step 5 command: PATCHed the decoy's description to \"Bring the printed roadmap\". The write succeeded.\n- Step 6: final answer presents the event as the match, saying \"has the Maple Room booked.\"\n\n**Outcome determination:**\n- No target exists. The solver acted on the decoy (wrote to it the way the request asks). This is **incorrect**.\n- Exposed facts: the fact of the decoy acted on: `A:EventAttendee.resource`.\n\n**Mechanism:**\nThe deciding field (the attendees with resource flag) was present in the step 4 response — the solver received the full attendee list including `oak-room@...` with `resource: true`. Did the solver read it? In step 4's response, the attendees were visible. In step 5's reasoning, the solver says \"in the 'Maple Room'\" — relying on the location field. It never mentions the attendees or the Oak Room resource. So the deciding field was in a response but the solver never looked at that condition (it looked at location text instead).\n\nIs this `skipped-check` or `saw-mismatch-accepted`? The solver's reasoning in step 5 says the Maple Room is \"reserved as the location\" — it equated location text with booking. It didn't note that Oak Room is the booked resource. So it never read/considered the attendee resource condition. That's `skipped-check`: \"the decoy's deciding field was never read, or it was in a response but the solver never looked at that condition.\" The attendees array was in the response but the solver never looked at the resource condition. Yes, `skipped-check`.\n\n**Artifact check:**\n- Ignored filter? The solver didn't use a filter that was ignored; it just listed events in a time window. The decoy legitimately came back because it satisfies the time/summary/status conditions. Not this.\n- Unreadable field? No, the field was readable and was in the response.\n- Rejected write? No, the write succeeded.\n- Defective test? The request says \"has Maple Room booked\" — the decoy has Oak Room booked and Maple Room as location text. The test seems well-formed. Not a defect.\n\nSo verdict: **incorrect**, exposed facts `[\"A:EventAttendee.resource\"]`, mechanism `skipped-check`.\n\nNote: Step 4 returned the attendees with Oak Room as the only resource; step 5's reasoning treated the `location` text \"Maple Room\" as the booking and PATCHed the decoy (step 5 command), and the final answer presents it as booked.\n\nLet me write the verdict in the required format. The output should include outcome, exposed facts, mechanism, and a short note.\n"
+    },
+    "logprobs": null,
+    "finish_reason": "stop",
+    "stop_reason": null,
+    "token_ids": null,
+    "routed_experts": null
+   }
+  ],
+  "service_tier": null,
+  "system_fingerprint": "vllm-0.30.0-tp2-d555b196",
+  "usage": {
+   "prompt_tokens": 8366,
+   "total_tokens": 9566,
+   "completion_tokens": 1200,
+   "prompt_tokens_details": {
+    "cached_tokens": 2352,
+    "created_cache_tokens": 5488,
+    "multimodal_tokens": null
+   },
+   "completion_tokens_details": {
+    "reasoning_tokens": 1029
+   }
+  },
+  "prompt_logprobs": null,
+  "prompt_token_ids": null,
+  "prompt_text": null,
+  "kv_transfer_params": null,
+  "ec_transfer_params": null,
+  "metrics": null
+ }
+}

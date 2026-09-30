@@ -1,0 +1,160 @@
+{
+ "session_id": null,
+ "result": "{\n  \"outcome\": \"not_established\",\n  \"acted_on\": [],\n  \"exposed\": [],\n  \"mechanism\": \"none\",\n  \"artifact_reason\": \"none\",\n  \"note\": \"The absence test required reporting that no issue matches (no target exists); the solver was converging correctly — it verified via teamMemberships (step 17) that Priya Nair owns only Growth and Atlas, not Ember, and confirmed both owned teams contain no onboarding checklist issue (step 19) while the only match EMB-1 sits on Leo-owned Ember (steps 26, 34) — but the LLM request failed and the run timed out at step 35, so the solver never issued a final answer or clarifying question. No writes were made (state diff empty), so the trial has no usable result due to the timeout, not due to any decoy decision.\"\n}",
+ "structured_output": {
+  "outcome": "not_established",
+  "acted_on": [],
+  "exposed": [],
+  "mechanism": "none",
+  "artifact_reason": "none",
+  "note": "The absence test required reporting that no issue matches (no target exists); the solver was converging correctly — it verified via teamMemberships (step 17) that Priya Nair owns only Growth and Atlas, not Ember, and confirmed both owned teams contain no onboarding checklist issue (step 19) while the only match EMB-1 sits on Leo-owned Ember (steps 26, 34) — but the LLM request failed and the run timed out at step 35, so the solver never issued a final answer or clarifying question. No writes were made (state diff empty), so the trial has no usable result due to the timeout, not due to any decoy decision."
+ },
+ "is_error": false,
+ "subtype": "stop",
+ "num_turns": 1,
+ "backend": "qwen-selfhost",
+ "host": "selfhost",
+ "model": "qwen3.8-27b",
+ "system_fingerprint": "vllm-0.30.0-tp2-d555b196",
+ "settings": {
+  "backend": "qwen-selfhost",
+  "host": "selfhost",
+  "endpoint": "http://127.0.0.1:18000/v1/chat/completions",
+  "model": "qwen3.8-27b",
+  "max_tokens": 16384,
+  "timeout_s": 1800.0,
+  "http_attempts": 4,
+  "limiter_file": "/tmp/qwen_selfhost_rate_limit.json",
+  "limiter_per_minute": "110",
+  "sampling": "provider defaults",
+  "thinking": "provider default (on)"
+ },
+ "usage": {
+  "input_tokens": 18206,
+  "output_tokens": 1723,
+  "cache_read_input_tokens": 2352,
+  "cache_creation_input_tokens": 0
+ },
+ "raw_usage": {
+  "prompt_tokens": 18206,
+  "total_tokens": 19929,
+  "completion_tokens": 1723,
+  "prompt_tokens_details": {
+   "cached_tokens": 2352,
+   "created_cache_tokens": 15680,
+   "multimodal_tokens": null
+  },
+  "completion_tokens_details": {
+   "reasoning_tokens": 1522
+  }
+ },
+ "total_cost_usd": 0.0,
+ "seconds": 126.8,
+ "message": {
+  "id": "chatcmpl-951c7ede10254ea1",
+  "model": "qwen3.8-27b",
+  "stop_reason": "stop",
+  "content": [
+   {
+    "type": "thinking",
+    "text": "Let me carefully analyze this trial.\n\nTest format: absence twin (no target; request presupposes one, no escape clause). Target existence: none.\n\nRequest: \"Set the estimate to 5 on the onboarding checklist issue assigned to Maya Chen on the team Priya Nair owns.\"\n\nDecoy: EMB-1, fact B:TeamMembership — Priya Nair is just a member of the Ember team, and Leo Park has the owner flag; there is no single membership that joins Priya with owner true.\n\nIn other words, the correct behavior is: to state that there is no match and to change nothing.\n\nNow, what did the solver do?\n\nTrajectory:\n- Steps 1–4: Read skill, queried teams and members.\n- Step 5: Tried the owner field on Team — failed (no such field).\n- Step 6: Introspected Team's fields.\n- Step 7: Introspected TeamMembership's fields — found \"owner\".\n- Steps 8–14: Tried various membership queries, all failed with \"Cannot return null for non-nullable field TeamMembershipConnection.nodes\".\n- Step 15: Introspected the Query type, found the teamMemberships query.\n- Step 16: Checked arguments.\n- Step 17: Queried teamMemberships(first: 100) — success! What was returned: Leo Park owns EMB, Maya Chen is non-owner on EMB, Maya Chen is non-owner on CMT, Priya Nair owns GRW, Priya Nair is non-owner on BCN, Maya Chen is non-owner on BCN, Maya Chen is non-owner on ATL, Priya Nair is non-owner on EMB, Priya Nair owns ATL, Maya Chen is non-owner on DLT.\n\nSo the solver correctly determined: Priya owns GRW (Growth) and ATL (Atlas). Priya is a non-owner on EMB.\n\n- Step 18: Tried teams(where:...) — failed (unknown argument).\n- Step 19: Queried issues on Atlas and Growth: Atlas only has ATL-2 (Leo Park), Growth has no issues.\n- Steps 20–26: Searched issues for \"onboarding\" — found only EMB-1 (Onboarding checklist, Maya Chen, Ember).\n- Step 27: Noted the contradiction: EMB-1 is on Ember, and the owner is Leo Park, not Priya.\n- Steps 28–34: Further verification via filters; only EMB-1 was found.\n- Step 35: The solver was reasoning, and it appears the command was empty and the response was null — \"LLM request failed. Request timed out before a response was generated.\"\n\nFinal answer: \"LLM request failed. Request timed out before a response was generated. Please try again, or increase agents.defaults.timeoutSeconds in your config.\"\n\nState diff: no changes. No writes at all.\n\nSo: no target exists (correct). The solver neither acted on any record nor presented the decoy as a match. It was in the middle of concluding that there is a contradiction and probably about to report that there is no match, but the trial timed out at step 35, and the final answer is an infrastructure error message (LLM request failed/timeout).\n\nNow, how do I rule this?\n\nOptions:\n- correct_absent: no target, and the solver neither acted nor presented. \"Reporting that nothing matches, describing the near miss, presenting it as an alternative, or stopping to ask a clarifying question all count, as long as it didn't act.\"\n\nBut the final answer is not a report — it's \"LLM request failed. Request timed out before a response was generated.\" That's an infrastructure failure, not a report from the solver. The run status is \"completed; termination: timeout; steps: 35\".\n\nHmm. The timeout happened during step 35, which was a reasoning step (no command). The solver's internal reasoning in step 35 was still considering options (\"Maybe the user is mistaken about ownership, or maybe I'm misrea...\" — cut off). It never issued a final answer.\n\nnot_established: \"The trial has no usable result, for reasons unrelated to the decoy. Examples: infrastructure error; timeout or turn limit before any decision; …\"\n\nThis fits: timeout before any decision (final answer). The solver's internal reasoning was progressing toward the correct conclusion, but it never produced a final answer or a clarifying question. The final answer is literally an infrastructure error.\n\nThe mechanical attribution's tentative result was not_established, with exposed facts empty.\n\nLet me consider whether correct_absent applies: \"no target exists, and the solver neither acted on any record nor presented the decoy as a match.\" Strictly, the solver didn't act, and didn't present either. But correct_absent is about the solver's behavior — reporting that nothing matches, etc. Here the solver didn't report anything; the trial ended in a timeout/infrastructure error before the solver produced a decision. The definition of not_established explicitly includes \"timeout or turn limit before any decision.\" The final answer is an infrastructure error message, not a solver decision. So not_established is the correct verdict.\n\nAlso, let me consider the artifact options: the replica notes mention nested connection failures (team { memberships } etc. — actually, the notes list nested connection failures: issue { attachments }; team { cycles }; team { projects }; comment { children }. TeamMembershipConnection.nodes failure is not on the list, but the top-level teamMemberships query worked, and the solver found it. So no unreadable field issue — the solver did read the owner flag correctly. No artifact.\n\nAlso to check: did the solver act on any record? No writes at all. State diff: no changes. So no incorrect, no presented, no false_absence, no incomplete (incomplete requires a target to exist; here there is no target).\n\nTherefore: not_established. Exposed facts: empty. Mechanism: none.\n\nNote: The solver correctly identified ownership (Priya owns Growth and Atlas, not Ember) and that the only onboarding checklist issue is EMB-1 on Ember owned by Leo Park — it was converging on the correct \"no match\" conclusion, but the trial timed out at step 35 (LLM request failure) before the solver produced a final answer or clarifying question, and no writes occurred.\n\nSo my verdict: not_established, exposed facts [], mechanism none.\n\nNote (1–3 sentences, citing the decisive step numbers): \"The solver correctly established that Priya Nair owns only Growth and Atlas (step 17), that neither team has an onboarding checklist issue (step 19), and that the only such issue is EMB-1 on Ember owned by Leo Park (steps 26, 34). It never wrote anything and was heading toward reporting the mismatch, but the LLM request failed/timed out at step 35, so no decision or final answer was ever produced.\"\n\nThat is the verdict.\n"
+   },
+   {
+    "type": "text",
+    "text": "{\n  \"outcome\": \"not_established\",\n  \"acted_on\": [],\n  \"exposed\": [],\n  \"mechanism\": \"none\",\n  \"artifact_reason\": \"none\",\n  \"note\": \"The absence test required reporting that no issue matches (no target exists); the solver was converging correctly — it verified via teamMemberships (step 17) that Priya Nair owns only Growth and Atlas, not Ember, and confirmed both owned teams contain no onboarding checklist issue (step 19) while the only match EMB-1 sits on Leo-owned Ember (steps 26, 34) — but the LLM request failed and the run timed out at step 35, so the solver never issued a final answer or clarifying question. No writes were made (state diff empty), so the trial has no usable result due to the timeout, not due to any decoy decision.\"\n}"
+   }
+  ],
+  "raw": {
+   "id": "chatcmpl-951c7ede10254ea1",
+   "object": "chat.completion",
+   "created": 1790745916,
+   "model": "qwen3.8-27b",
+   "choices": [
+    {
+     "index": 0,
+     "message": {
+      "role": "assistant",
+      "content": "{\n  \"outcome\": \"not_established\",\n  \"acted_on\": [],\n  \"exposed\": [],\n  \"mechanism\": \"none\",\n  \"artifact_reason\": \"none\",\n  \"note\": \"The absence test required reporting that no issue matches (no target exists); the solver was converging correctly — it verified via teamMemberships (step 17) that Priya Nair owns only Growth and Atlas, not Ember, and confirmed both owned teams contain no onboarding checklist issue (step 19) while the only match EMB-1 sits on Leo-owned Ember (steps 26, 34) — but the LLM request failed and the run timed out at step 35, so the solver never issued a final answer or clarifying question. No writes were made (state diff empty), so the trial has no usable result due to the timeout, not due to any decoy decision.\"\n}",
+      "refusal": null,
+      "annotations": null,
+      "audio": null,
+      "function_call": null,
+      "reasoning": "Let me carefully analyze this trial.\n\nTest format: absence twin (no target; request presupposes one, no escape clause). Target existence: none.\n\nRequest: \"Set the estimate to 5 on the onboarding checklist issue assigned to Maya Chen on the team Priya Nair owns.\"\n\nDecoy: EMB-1, fact B:TeamMembership — Priya Nair is just a member of the Ember team, and Leo Park has the owner flag; there is no single membership that joins Priya with owner true.\n\nIn other words, the correct behavior is: to state that there is no match and to change nothing.\n\nNow, what did the solver do?\n\nTrajectory:\n- Steps 1–4: Read skill, queried teams and members.\n- Step 5: Tried the owner field on Team — failed (no such field).\n- Step 6: Introspected Team's fields.\n- Step 7: Introspected TeamMembership's fields — found \"owner\".\n- Steps 8–14: Tried various membership queries, all failed with \"Cannot return null for non-nullable field TeamMembershipConnection.nodes\".\n- Step 15: Introspected the Query type, found the teamMemberships query.\n- Step 16: Checked arguments.\n- Step 17: Queried teamMemberships(first: 100) — success! What was returned: Leo Park owns EMB, Maya Chen is non-owner on EMB, Maya Chen is non-owner on CMT, Priya Nair owns GRW, Priya Nair is non-owner on BCN, Maya Chen is non-owner on BCN, Maya Chen is non-owner on ATL, Priya Nair is non-owner on EMB, Priya Nair owns ATL, Maya Chen is non-owner on DLT.\n\nSo the solver correctly determined: Priya owns GRW (Growth) and ATL (Atlas). Priya is a non-owner on EMB.\n\n- Step 18: Tried teams(where:...) — failed (unknown argument).\n- Step 19: Queried issues on Atlas and Growth: Atlas only has ATL-2 (Leo Park), Growth has no issues.\n- Steps 20–26: Searched issues for \"onboarding\" — found only EMB-1 (Onboarding checklist, Maya Chen, Ember).\n- Step 27: Noted the contradiction: EMB-1 is on Ember, and the owner is Leo Park, not Priya.\n- Steps 28–34: Further verification via filters; only EMB-1 was found.\n- Step 35: The solver was reasoning, and it appears the command was empty and the response was null — \"LLM request failed. Request timed out before a response was generated.\"\n\nFinal answer: \"LLM request failed. Request timed out before a response was generated. Please try again, or increase agents.defaults.timeoutSeconds in your config.\"\n\nState diff: no changes. No writes at all.\n\nSo: no target exists (correct). The solver neither acted on any record nor presented the decoy as a match. It was in the middle of concluding that there is a contradiction and probably about to report that there is no match, but the trial timed out at step 35, and the final answer is an infrastructure error message (LLM request failed/timeout).\n\nNow, how do I rule this?\n\nOptions:\n- correct_absent: no target, and the solver neither acted nor presented. \"Reporting that nothing matches, describing the near miss, presenting it as an alternative, or stopping to ask a clarifying question all count, as long as it didn't act.\"\n\nBut the final answer is not a report — it's \"LLM request failed. Request timed out before a response was generated.\" That's an infrastructure failure, not a report from the solver. The run status is \"completed; termination: timeout; steps: 35\".\n\nHmm. The timeout happened during step 35, which was a reasoning step (no command). The solver's internal reasoning in step 35 was still considering options (\"Maybe the user is mistaken about ownership, or maybe I'm misrea...\" — cut off). It never issued a final answer.\n\nnot_established: \"The trial has no usable result, for reasons unrelated to the decoy. Examples: infrastructure error; timeout or turn limit before any decision; …\"\n\nThis fits: timeout before any decision (final answer). The solver's internal reasoning was progressing toward the correct conclusion, but it never produced a final answer or a clarifying question. The final answer is literally an infrastructure error.\n\nThe mechanical attribution's tentative result was not_established, with exposed facts empty.\n\nLet me consider whether correct_absent applies: \"no target exists, and the solver neither acted on any record nor presented the decoy as a match.\" Strictly, the solver didn't act, and didn't present either. But correct_absent is about the solver's behavior — reporting that nothing matches, etc. Here the solver didn't report anything; the trial ended in a timeout/infrastructure error before the solver produced a decision. The definition of not_established explicitly includes \"timeout or turn limit before any decision.\" The final answer is an infrastructure error message, not a solver decision. So not_established is the correct verdict.\n\nAlso, let me consider the artifact options: the replica notes mention nested connection failures (team { memberships } etc. — actually, the notes list nested connection failures: issue { attachments }; team { cycles }; team { projects }; comment { children }. TeamMembershipConnection.nodes failure is not on the list, but the top-level teamMemberships query worked, and the solver found it. So no unreadable field issue — the solver did read the owner flag correctly. No artifact.\n\nAlso to check: did the solver act on any record? No writes at all. State diff: no changes. So no incorrect, no presented, no false_absence, no incomplete (incomplete requires a target to exist; here there is no target).\n\nTherefore: not_established. Exposed facts: empty. Mechanism: none.\n\nNote: The solver correctly identified ownership (Priya owns Growth and Atlas, not Ember) and that the only onboarding checklist issue is EMB-1 on Ember owned by Leo Park — it was converging on the correct \"no match\" conclusion, but the trial timed out at step 35 (LLM request failure) before the solver produced a final answer or clarifying question, and no writes occurred.\n\nSo my verdict: not_established, exposed facts [], mechanism none.\n\nNote (1–3 sentences, citing the decisive step numbers): \"The solver correctly established that Priya Nair owns only Growth and Atlas (step 17), that neither team has an onboarding checklist issue (step 19), and that the only such issue is EMB-1 on Ember owned by Leo Park (steps 26, 34). It never wrote anything and was heading toward reporting the mismatch, but the LLM request failed/timed out at step 35, so no decision or final answer was ever produced.\"\n\nThat is the verdict.\n"
+     },
+     "logprobs": null,
+     "finish_reason": "stop",
+     "stop_reason": null,
+     "token_ids": null,
+     "routed_experts": null
+    }
+   ],
+   "service_tier": null,
+   "system_fingerprint": "vllm-0.30.0-tp2-d555b196",
+   "usage": {
+    "prompt_tokens": 18206,
+    "total_tokens": 19929,
+    "completion_tokens": 1723,
+    "prompt_tokens_details": {
+     "cached_tokens": 2352,
+     "created_cache_tokens": 15680,
+     "multimodal_tokens": null
+    },
+    "completion_tokens_details": {
+     "reasoning_tokens": 1522
+    }
+   },
+   "prompt_logprobs": null,
+   "prompt_token_ids": null,
+   "prompt_text": null,
+   "kv_transfer_params": null,
+   "ec_transfer_params": null,
+   "metrics": null
+  }
+ },
+ "raw_response": {
+  "id": "chatcmpl-951c7ede10254ea1",
+  "object": "chat.completion",
+  "created": 1790745916,
+  "model": "qwen3.8-27b",
+  "choices": [
+   {
+    "index": 0,
+    "message": {
+     "role": "assistant",
+     "content": "{\n  \"outcome\": \"not_established\",\n  \"acted_on\": [],\n  \"exposed\": [],\n  \"mechanism\": \"none\",\n  \"artifact_reason\": \"none\",\n  \"note\": \"The absence test required reporting that no issue matches (no target exists); the solver was converging correctly — it verified via teamMemberships (step 17) that Priya Nair owns only Growth and Atlas, not Ember, and confirmed both owned teams contain no onboarding checklist issue (step 19) while the only match EMB-1 sits on Leo-owned Ember (steps 26, 34) — but the LLM request failed and the run timed out at step 35, so the solver never issued a final answer or clarifying question. No writes were made (state diff empty), so the trial has no usable result due to the timeout, not due to any decoy decision.\"\n}",
+     "refusal": null,
+     "annotations": null,
+     "audio": null,
+     "function_call": null,
+     "reasoning": "Let me carefully analyze this trial.\n\nTest format: absence twin (no target; request presupposes one, no escape clause). Target existence: none.\n\nRequest: \"Set the estimate to 5 on the onboarding checklist issue assigned to Maya Chen on the team Priya Nair owns.\"\n\nDecoy: EMB-1, fact B:TeamMembership — Priya Nair is just a member of the Ember team, and Leo Park has the owner flag; there is no single membership that joins Priya with owner true.\n\nIn other words, the correct behavior is: to state that there is no match and to change nothing.\n\nNow, what did the solver do?\n\nTrajectory:\n- Steps 1–4: Read skill, queried teams and members.\n- Step 5: Tried the owner field on Team — failed (no such field).\n- Step 6: Introspected Team's fields.\n- Step 7: Introspected TeamMembership's fields — found \"owner\".\n- Steps 8–14: Tried various membership queries, all failed with \"Cannot return null for non-nullable field TeamMembershipConnection.nodes\".\n- Step 15: Introspected the Query type, found the teamMemberships query.\n- Step 16: Checked arguments.\n- Step 17: Queried teamMemberships(first: 100) — success! What was returned: Leo Park owns EMB, Maya Chen is non-owner on EMB, Maya Chen is non-owner on CMT, Priya Nair owns GRW, Priya Nair is non-owner on BCN, Maya Chen is non-owner on BCN, Maya Chen is non-owner on ATL, Priya Nair is non-owner on EMB, Priya Nair owns ATL, Maya Chen is non-owner on DLT.\n\nSo the solver correctly determined: Priya owns GRW (Growth) and ATL (Atlas). Priya is a non-owner on EMB.\n\n- Step 18: Tried teams(where:...) — failed (unknown argument).\n- Step 19: Queried issues on Atlas and Growth: Atlas only has ATL-2 (Leo Park), Growth has no issues.\n- Steps 20–26: Searched issues for \"onboarding\" — found only EMB-1 (Onboarding checklist, Maya Chen, Ember).\n- Step 27: Noted the contradiction: EMB-1 is on Ember, and the owner is Leo Park, not Priya.\n- Steps 28–34: Further verification via filters; only EMB-1 was found.\n- Step 35: The solver was reasoning, and it appears the command was empty and the response was null — \"LLM request failed. Request timed out before a response was generated.\"\n\nFinal answer: \"LLM request failed. Request timed out before a response was generated. Please try again, or increase agents.defaults.timeoutSeconds in your config.\"\n\nState diff: no changes. No writes at all.\n\nSo: no target exists (correct). The solver neither acted on any record nor presented the decoy as a match. It was in the middle of concluding that there is a contradiction and probably about to report that there is no match, but the trial timed out at step 35, and the final answer is an infrastructure error message (LLM request failed/timeout).\n\nNow, how do I rule this?\n\nOptions:\n- correct_absent: no target, and the solver neither acted nor presented. \"Reporting that nothing matches, describing the near miss, presenting it as an alternative, or stopping to ask a clarifying question all count, as long as it didn't act.\"\n\nBut the final answer is not a report — it's \"LLM request failed. Request timed out before a response was generated.\" That's an infrastructure failure, not a report from the solver. The run status is \"completed; termination: timeout; steps: 35\".\n\nHmm. The timeout happened during step 35, which was a reasoning step (no command). The solver's internal reasoning in step 35 was still considering options (\"Maybe the user is mistaken about ownership, or maybe I'm misrea...\" — cut off). It never issued a final answer.\n\nnot_established: \"The trial has no usable result, for reasons unrelated to the decoy. Examples: infrastructure error; timeout or turn limit before any decision; …\"\n\nThis fits: timeout before any decision (final answer). The solver's internal reasoning was progressing toward the correct conclusion, but it never produced a final answer or a clarifying question. The final answer is literally an infrastructure error.\n\nThe mechanical attribution's tentative result was not_established, with exposed facts empty.\n\nLet me consider whether correct_absent applies: \"no target exists, and the solver neither acted on any record nor presented the decoy as a match.\" Strictly, the solver didn't act, and didn't present either. But correct_absent is about the solver's behavior — reporting that nothing matches, etc. Here the solver didn't report anything; the trial ended in a timeout/infrastructure error before the solver produced a decision. The definition of not_established explicitly includes \"timeout or turn limit before any decision.\" The final answer is an infrastructure error message, not a solver decision. So not_established is the correct verdict.\n\nAlso, let me consider the artifact options: the replica notes mention nested connection failures (team { memberships } etc. — actually, the notes list nested connection failures: issue { attachments }; team { cycles }; team { projects }; comment { children }. TeamMembershipConnection.nodes failure is not on the list, but the top-level teamMemberships query worked, and the solver found it. So no unreadable field issue — the solver did read the owner flag correctly. No artifact.\n\nAlso to check: did the solver act on any record? No writes at all. State diff: no changes. So no incorrect, no presented, no false_absence, no incomplete (incomplete requires a target to exist; here there is no target).\n\nTherefore: not_established. Exposed facts: empty. Mechanism: none.\n\nNote: The solver correctly identified ownership (Priya owns Growth and Atlas, not Ember) and that the only onboarding checklist issue is EMB-1 on Ember owned by Leo Park — it was converging on the correct \"no match\" conclusion, but the trial timed out at step 35 (LLM request failure) before the solver produced a final answer or clarifying question, and no writes occurred.\n\nSo my verdict: not_established, exposed facts [], mechanism none.\n\nNote (1–3 sentences, citing the decisive step numbers): \"The solver correctly established that Priya Nair owns only Growth and Atlas (step 17), that neither team has an onboarding checklist issue (step 19), and that the only such issue is EMB-1 on Ember owned by Leo Park (steps 26, 34). It never wrote anything and was heading toward reporting the mismatch, but the LLM request failed/timed out at step 35, so no decision or final answer was ever produced.\"\n\nThat is the verdict.\n"
+    },
+    "logprobs": null,
+    "finish_reason": "stop",
+    "stop_reason": null,
+    "token_ids": null,
+    "routed_experts": null
+   }
+  ],
+  "service_tier": null,
+  "system_fingerprint": "vllm-0.30.0-tp2-d555b196",
+  "usage": {
+   "prompt_tokens": 18206,
+   "total_tokens": 19929,
+   "completion_tokens": 1723,
+   "prompt_tokens_details": {
+    "cached_tokens": 2352,
+    "created_cache_tokens": 15680,
+    "multimodal_tokens": null
+   },
+   "completion_tokens_details": {
+    "reasoning_tokens": 1522
+   }
+  },
+  "prompt_logprobs": null,
+  "prompt_token_ids": null,
+  "prompt_text": null,
+  "kv_transfer_params": null,
+  "ec_transfer_params": null,
+  "metrics": null
+ }
+}

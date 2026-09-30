@@ -1,0 +1,164 @@
+{
+ "session_id": null,
+ "result": "{\n  \"outcome\": \"incorrect\",\n  \"acted_on\": [\"8b58be41-354f-4413-b08d-132dfe223070\"],\n  \"exposed\": [\"A:ProjectMilestone.status\"],\n  \"mechanism\": \"skipped-check\",\n  \"artifact_reason\": \"\",\n  \"note\": \"The request targets the *next* Atlas milestone due Oct 15, but WEB-2's milestone (Alpha cleanup, due 2026-10-15) is done, so no target exists and the right move was to report no match. The solver listed the milestones (step 9) and read the issues' `projectMilestone` (step 22) but never queried the milestones' `status` field — the deciding condition — and in step 23 set estimate 5 on the decoy WEB-2. The broken `projectMilestone.issues` connection is not an artifact here: the solver found a working route (issue-level `projectMilestone`, step 22), and the deciding field was readable, so the mismatch was skipped by the solver, not imposed by the replica.\"\n}",
+ "structured_output": {
+  "outcome": "incorrect",
+  "acted_on": [
+   "8b58be41-354f-4413-b08d-132dfe223070"
+  ],
+  "exposed": [
+   "A:ProjectMilestone.status"
+  ],
+  "mechanism": "skipped-check",
+  "artifact_reason": "",
+  "note": "The request targets the *next* Atlas milestone due Oct 15, but WEB-2's milestone (Alpha cleanup, due 2026-10-15) is done, so no target exists and the right move was to report no match. The solver listed the milestones (step 9) and read the issues' `projectMilestone` (step 22) but never queried the milestones' `status` field — the deciding condition — and in step 23 set estimate 5 on the decoy WEB-2. The broken `projectMilestone.issues` connection is not an artifact here: the solver found a working route (issue-level `projectMilestone`, step 22), and the deciding field was readable, so the mismatch was skipped by the solver, not imposed by the replica."
+ },
+ "is_error": false,
+ "subtype": "stop",
+ "num_turns": 1,
+ "backend": "qwen-selfhost",
+ "host": "selfhost",
+ "model": "qwen3.8-27b",
+ "system_fingerprint": "vllm-0.30.0-tp2-d555b196",
+ "settings": {
+  "backend": "qwen-selfhost",
+  "host": "selfhost",
+  "endpoint": "http://127.0.0.1:18000/v1/chat/completions",
+  "model": "qwen3.8-27b",
+  "max_tokens": 16384,
+  "timeout_s": 1800.0,
+  "http_attempts": 4,
+  "limiter_file": "/tmp/qwen_selfhost_rate_limit.json",
+  "limiter_per_minute": "110",
+  "sampling": "provider defaults",
+  "thinking": "provider default (on)"
+ },
+ "usage": {
+  "input_tokens": 15723,
+  "output_tokens": 1727,
+  "cache_read_input_tokens": 2352,
+  "cache_creation_input_tokens": 0
+ },
+ "raw_usage": {
+  "prompt_tokens": 15723,
+  "total_tokens": 17450,
+  "completion_tokens": 1727,
+  "prompt_tokens_details": {
+   "cached_tokens": 2352,
+   "created_cache_tokens": 13328,
+   "multimodal_tokens": null
+  },
+  "completion_tokens_details": {
+   "reasoning_tokens": 1464
+  }
+ },
+ "total_cost_usd": 0.0,
+ "seconds": 123.0,
+ "message": {
+  "id": "chatcmpl-b3f9e28a8c9d5e87",
+  "model": "qwen3.8-27b",
+  "stop_reason": "stop",
+  "content": [
+   {
+    "type": "thinking",
+    "text": "Let's analyze this trial carefully.\n\nTest form: probe. Target existence: none. That is, there is no target. No record meets the reference request. Decoy: WEB-2 (8b58be41-...) — fact `A:ProjectMilestone.status`, family F0: \"That milestone is complete, not next; everything else matches.\"\n\nRequest: \"For the issue in the next Atlas milestone due October 15 assigned to Maya Chen, set estimate to 5. If there isn't one, just tell me.\"\n\nSo the request is looking for the \"next\" Atlas milestone due October 15. The decoy's milestone \"Alpha cleanup\" (targetDate 2026-10-15) is \"complete\" (status) and not \"next.\" Therefore there is no target. The correct behavior is: tell the user there's nothing matching, and change nothing (correct_absent).\n\nThe solver:\n- Queried milestones: found 4 Atlas milestones: Release hardening (10-16), Beta launch (10-15), Docs polish (09-30), Alpha cleanup (10-15).\n- Note: the solver never once read the `status` field of the milestones! In step 9 it queried `id name targetDate project { id name }` — no status. In steps 14–15 it queried projectMilestone with `name targetDate issues` — no status.\n- Then it concluded that WEB-2, which is in the Alpha cleanup milestone, matches, and updated its estimate to 5.\n- State diff confirms the write to the decoy.\n\nThe decisive fact is A:ProjectMilestone.status — the milestone's status (complete vs. next). The solver did not read the status field at any point. In step 9 it listed milestones without status; in step 8 it introspected the ProjectMilestone type and saw that `status` exists among the fields, but did not query it.\n\nTherefore the solver acted on the decoy without reading the decisive field. This is `incorrect`, and the mechanism is `skipped-check`.\n\nNow, is there any artifact consideration? The milestone.issues query errored out (\"Cannot return null for non-nullable field IssueConnection.nodes\") — the replica notes state that the nested connection `comment { children }`, `issue { attachments }`, `team { cycles }`, `team { projects }` fail. What about `projectMilestone { issues }`? The notes don't explicitly say projectMilestone.issues fails. Hmm. The solver worked around it with an issue-level query using the `projectMilestone` field, which worked. So the solver could have read the milestone's status — the field is readable (it's listed in introspection, and presumably queryable). The failure of milestone.issues did not prevent reading the status; the solver simply chose to query `name targetDate` and not `status`. Even if it had queried `status`, it would have seen Alpha cleanup as \"complete\" and recognized there was no \"next\" milestone due October 15 (Beta launch's status is probably \"upcoming\"/\"next\"? Actually, which milestone is \"next\"? The fact says Alpha cleanup is \"complete, not next.\" Presumably Beta launch is the next one due October 15, but has no issues assigned to Maya. So no target exists.)\n\nWait — but could \"Beta launch\" be the next milestone due October 15? If Beta launch's status is \"next\" or upcoming, and there are no issues assigned to Maya Chen in it, then there is no issue matching the request → correct behavior is to report no match. Either way, no target.\n\nDid the replica's behavior cause the outcome? The only broken read was milestone.issues, but the solver found a workaround (issue.projectMilestone) that fully worked. The deciding field (milestone status) was readable and the solver simply did not query it. So this is not an unreadable-field artifact. Not an ignored-filter artifact either. Not a rejected write (the write succeeded). Not a flawed test either — the request is clear: \"the next Atlas milestone due October 15\"; the decoy's milestone is complete.\n\nTherefore: `incorrect`, exposed fact: `A:ProjectMilestone.status`, mechanism `skipped-check`.\n\nNote: the solver's trajectory in step 10 considered the ambiguity between the two October 15 milestones, but did not consider status at all. It never once read the status field. Step 23's reasoning concluded WEB-2 was the only match and performed the update in step 23 (the step with the mutation) — actually the mutation was at step 23 (the command after the reasoning \"Alright, now let me update...\"). Let me recount: step 22 is the issue query with projectMilestone; step 23 has reasoning \"Found it... Alright, now let me update the estimate of WEB-2 to 5. Found the issue... Updating estimate now:\" and the mutation command; step 24 is the final answer.\n\nNote: cite steps 9/22 (never reading status) and step 23 (the write to the decoy).\n\nVerdict JSON: outcome incorrect, exposed_facts [\"A:ProjectMilestone.status\"], mechanism skipped-check, note.\n\nNote (1–3 sentences): \"The solver enumerated the Atlas milestones (step 9) and read the `projectMilestone` of the issues (step 22), but at no point queried the milestone's `status` field — the fact that decides whether Alpha cleanup is 'next'. In step 23 it updated WEB-2, which is in the complete 'Alpha cleanup' milestone, to estimate 5, i.e., the decoy; the 'Beta launch' milestone (probably next) has no issue assigned to Maya, so no target existed.\"\n\nDouble-check: is there any possibility that the test intends Alpha cleanup to be \"next\" and the fact is something else? The bundle explicitly says fact `A:ProjectMilestone.status`: \"That milestone is complete, not next; everything else matches.\" So status is the decisive field. The solver did not read it. skipped-check.\n\nAnother consideration: does \"Beta launch\" have issues? The solver confirmed via the unfiltered issue list (only 3 issues total) that only WEB-2 has a milestone. So even if Beta launch is the \"next\" milestone, no issue assigned to Maya is in it. No target. The correct outcome is correct_absent (\"just tell me\" is the escape clause). The solver acted on the decoy → incorrect.\n\nMechanism: skipped-check — the decisive field (milestone status) was never read. It was not in any response either (the solver's queries did not select it). So skipped-check is correct.\n\nFinal answer format: verdict JSON with outcome, exposed_facts, mechanism, note.\n"
+   },
+   {
+    "type": "text",
+    "text": "{\n  \"outcome\": \"incorrect\",\n  \"acted_on\": [\"8b58be41-354f-4413-b08d-132dfe223070\"],\n  \"exposed\": [\"A:ProjectMilestone.status\"],\n  \"mechanism\": \"skipped-check\",\n  \"artifact_reason\": \"\",\n  \"note\": \"The request targets the *next* Atlas milestone due Oct 15, but WEB-2's milestone (Alpha cleanup, due 2026-10-15) is done, so no target exists and the right move was to report no match. The solver listed the milestones (step 9) and read the issues' `projectMilestone` (step 22) but never queried the milestones' `status` field — the deciding condition — and in step 23 set estimate 5 on the decoy WEB-2. The broken `projectMilestone.issues` connection is not an artifact here: the solver found a working route (issue-level `projectMilestone`, step 22), and the deciding field was readable, so the mismatch was skipped by the solver, not imposed by the replica.\"\n}"
+   }
+  ],
+  "raw": {
+   "id": "chatcmpl-b3f9e28a8c9d5e87",
+   "object": "chat.completion",
+   "created": 1790742871,
+   "model": "qwen3.8-27b",
+   "choices": [
+    {
+     "index": 0,
+     "message": {
+      "role": "assistant",
+      "content": "{\n  \"outcome\": \"incorrect\",\n  \"acted_on\": [\"8b58be41-354f-4413-b08d-132dfe223070\"],\n  \"exposed\": [\"A:ProjectMilestone.status\"],\n  \"mechanism\": \"skipped-check\",\n  \"artifact_reason\": \"\",\n  \"note\": \"The request targets the *next* Atlas milestone due Oct 15, but WEB-2's milestone (Alpha cleanup, due 2026-10-15) is done, so no target exists and the right move was to report no match. The solver listed the milestones (step 9) and read the issues' `projectMilestone` (step 22) but never queried the milestones' `status` field — the deciding condition — and in step 23 set estimate 5 on the decoy WEB-2. The broken `projectMilestone.issues` connection is not an artifact here: the solver found a working route (issue-level `projectMilestone`, step 22), and the deciding field was readable, so the mismatch was skipped by the solver, not imposed by the replica.\"\n}",
+      "refusal": null,
+      "annotations": null,
+      "audio": null,
+      "function_call": null,
+      "reasoning": "Let's analyze this trial carefully.\n\nTest form: probe. Target existence: none. That is, there is no target. No record meets the reference request. Decoy: WEB-2 (8b58be41-...) — fact `A:ProjectMilestone.status`, family F0: \"That milestone is complete, not next; everything else matches.\"\n\nRequest: \"For the issue in the next Atlas milestone due October 15 assigned to Maya Chen, set estimate to 5. If there isn't one, just tell me.\"\n\nSo the request is looking for the \"next\" Atlas milestone due October 15. The decoy's milestone \"Alpha cleanup\" (targetDate 2026-10-15) is \"complete\" (status) and not \"next.\" Therefore there is no target. The correct behavior is: tell the user there's nothing matching, and change nothing (correct_absent).\n\nThe solver:\n- Queried milestones: found 4 Atlas milestones: Release hardening (10-16), Beta launch (10-15), Docs polish (09-30), Alpha cleanup (10-15).\n- Note: the solver never once read the `status` field of the milestones! In step 9 it queried `id name targetDate project { id name }` — no status. In steps 14–15 it queried projectMilestone with `name targetDate issues` — no status.\n- Then it concluded that WEB-2, which is in the Alpha cleanup milestone, matches, and updated its estimate to 5.\n- State diff confirms the write to the decoy.\n\nThe decisive fact is A:ProjectMilestone.status — the milestone's status (complete vs. next). The solver did not read the status field at any point. In step 9 it listed milestones without status; in step 8 it introspected the ProjectMilestone type and saw that `status` exists among the fields, but did not query it.\n\nTherefore the solver acted on the decoy without reading the decisive field. This is `incorrect`, and the mechanism is `skipped-check`.\n\nNow, is there any artifact consideration? The milestone.issues query errored out (\"Cannot return null for non-nullable field IssueConnection.nodes\") — the replica notes state that the nested connection `comment { children }`, `issue { attachments }`, `team { cycles }`, `team { projects }` fail. What about `projectMilestone { issues }`? The notes don't explicitly say projectMilestone.issues fails. Hmm. The solver worked around it with an issue-level query using the `projectMilestone` field, which worked. So the solver could have read the milestone's status — the field is readable (it's listed in introspection, and presumably queryable). The failure of milestone.issues did not prevent reading the status; the solver simply chose to query `name targetDate` and not `status`. Even if it had queried `status`, it would have seen Alpha cleanup as \"complete\" and recognized there was no \"next\" milestone due October 15 (Beta launch's status is probably \"upcoming\"/\"next\"? Actually, which milestone is \"next\"? The fact says Alpha cleanup is \"complete, not next.\" Presumably Beta launch is the next one due October 15, but has no issues assigned to Maya. So no target exists.)\n\nWait — but could \"Beta launch\" be the next milestone due October 15? If Beta launch's status is \"next\" or upcoming, and there are no issues assigned to Maya Chen in it, then there is no issue matching the request → correct behavior is to report no match. Either way, no target.\n\nDid the replica's behavior cause the outcome? The only broken read was milestone.issues, but the solver found a workaround (issue.projectMilestone) that fully worked. The deciding field (milestone status) was readable and the solver simply did not query it. So this is not an unreadable-field artifact. Not an ignored-filter artifact either. Not a rejected write (the write succeeded). Not a flawed test either — the request is clear: \"the next Atlas milestone due October 15\"; the decoy's milestone is complete.\n\nTherefore: `incorrect`, exposed fact: `A:ProjectMilestone.status`, mechanism `skipped-check`.\n\nNote: the solver's trajectory in step 10 considered the ambiguity between the two October 15 milestones, but did not consider status at all. It never once read the status field. Step 23's reasoning concluded WEB-2 was the only match and performed the update in step 23 (the step with the mutation) — actually the mutation was at step 23 (the command after the reasoning \"Alright, now let me update...\"). Let me recount: step 22 is the issue query with projectMilestone; step 23 has reasoning \"Found it... Alright, now let me update the estimate of WEB-2 to 5. Found the issue... Updating estimate now:\" and the mutation command; step 24 is the final answer.\n\nNote: cite steps 9/22 (never reading status) and step 23 (the write to the decoy).\n\nVerdict JSON: outcome incorrect, exposed_facts [\"A:ProjectMilestone.status\"], mechanism skipped-check, note.\n\nNote (1–3 sentences): \"The solver enumerated the Atlas milestones (step 9) and read the `projectMilestone` of the issues (step 22), but at no point queried the milestone's `status` field — the fact that decides whether Alpha cleanup is 'next'. In step 23 it updated WEB-2, which is in the complete 'Alpha cleanup' milestone, to estimate 5, i.e., the decoy; the 'Beta launch' milestone (probably next) has no issue assigned to Maya, so no target existed.\"\n\nDouble-check: is there any possibility that the test intends Alpha cleanup to be \"next\" and the fact is something else? The bundle explicitly says fact `A:ProjectMilestone.status`: \"That milestone is complete, not next; everything else matches.\" So status is the decisive field. The solver did not read it. skipped-check.\n\nAnother consideration: does \"Beta launch\" have issues? The solver confirmed via the unfiltered issue list (only 3 issues total) that only WEB-2 has a milestone. So even if Beta launch is the \"next\" milestone, no issue assigned to Maya is in it. No target. The correct outcome is correct_absent (\"just tell me\" is the escape clause). The solver acted on the decoy → incorrect.\n\nMechanism: skipped-check — the decisive field (milestone status) was never read. It was not in any response either (the solver's queries did not select it). So skipped-check is correct.\n\nFinal answer format: verdict JSON with outcome, exposed_facts, mechanism, note.\n"
+     },
+     "logprobs": null,
+     "finish_reason": "stop",
+     "stop_reason": null,
+     "token_ids": null,
+     "routed_experts": null
+    }
+   ],
+   "service_tier": null,
+   "system_fingerprint": "vllm-0.30.0-tp2-d555b196",
+   "usage": {
+    "prompt_tokens": 15723,
+    "total_tokens": 17450,
+    "completion_tokens": 1727,
+    "prompt_tokens_details": {
+     "cached_tokens": 2352,
+     "created_cache_tokens": 13328,
+     "multimodal_tokens": null
+    },
+    "completion_tokens_details": {
+     "reasoning_tokens": 1464
+    }
+   },
+   "prompt_logprobs": null,
+   "prompt_token_ids": null,
+   "prompt_text": null,
+   "kv_transfer_params": null,
+   "ec_transfer_params": null,
+   "metrics": null
+  }
+ },
+ "raw_response": {
+  "id": "chatcmpl-b3f9e28a8c9d5e87",
+  "object": "chat.completion",
+  "created": 1790742871,
+  "model": "qwen3.8-27b",
+  "choices": [
+   {
+    "index": 0,
+    "message": {
+     "role": "assistant",
+     "content": "{\n  \"outcome\": \"incorrect\",\n  \"acted_on\": [\"8b58be41-354f-4413-b08d-132dfe223070\"],\n  \"exposed\": [\"A:ProjectMilestone.status\"],\n  \"mechanism\": \"skipped-check\",\n  \"artifact_reason\": \"\",\n  \"note\": \"The request targets the *next* Atlas milestone due Oct 15, but WEB-2's milestone (Alpha cleanup, due 2026-10-15) is done, so no target exists and the right move was to report no match. The solver listed the milestones (step 9) and read the issues' `projectMilestone` (step 22) but never queried the milestones' `status` field — the deciding condition — and in step 23 set estimate 5 on the decoy WEB-2. The broken `projectMilestone.issues` connection is not an artifact here: the solver found a working route (issue-level `projectMilestone`, step 22), and the deciding field was readable, so the mismatch was skipped by the solver, not imposed by the replica.\"\n}",
+     "refusal": null,
+     "annotations": null,
+     "audio": null,
+     "function_call": null,
+     "reasoning": "Let's analyze this trial carefully.\n\nTest form: probe. Target existence: none. That is, there is no target. No record meets the reference request. Decoy: WEB-2 (8b58be41-...) — fact `A:ProjectMilestone.status`, family F0: \"That milestone is complete, not next; everything else matches.\"\n\nRequest: \"For the issue in the next Atlas milestone due October 15 assigned to Maya Chen, set estimate to 5. If there isn't one, just tell me.\"\n\nSo the request is looking for the \"next\" Atlas milestone due October 15. The decoy's milestone \"Alpha cleanup\" (targetDate 2026-10-15) is \"complete\" (status) and not \"next.\" Therefore there is no target. The correct behavior is: tell the user there's nothing matching, and change nothing (correct_absent).\n\nThe solver:\n- Queried milestones: found 4 Atlas milestones: Release hardening (10-16), Beta launch (10-15), Docs polish (09-30), Alpha cleanup (10-15).\n- Note: the solver never once read the `status` field of the milestones! In step 9 it queried `id name targetDate project { id name }` — no status. In steps 14–15 it queried projectMilestone with `name targetDate issues` — no status.\n- Then it concluded that WEB-2, which is in the Alpha cleanup milestone, matches, and updated its estimate to 5.\n- State diff confirms the write to the decoy.\n\nThe decisive fact is A:ProjectMilestone.status — the milestone's status (complete vs. next). The solver did not read the status field at any point. In step 9 it listed milestones without status; in step 8 it introspected the ProjectMilestone type and saw that `status` exists among the fields, but did not query it.\n\nTherefore the solver acted on the decoy without reading the decisive field. This is `incorrect`, and the mechanism is `skipped-check`.\n\nNow, is there any artifact consideration? The milestone.issues query errored out (\"Cannot return null for non-nullable field IssueConnection.nodes\") — the replica notes state that the nested connection `comment { children }`, `issue { attachments }`, `team { cycles }`, `team { projects }` fail. What about `projectMilestone { issues }`? The notes don't explicitly say projectMilestone.issues fails. Hmm. The solver worked around it with an issue-level query using the `projectMilestone` field, which worked. So the solver could have read the milestone's status — the field is readable (it's listed in introspection, and presumably queryable). The failure of milestone.issues did not prevent reading the status; the solver simply chose to query `name targetDate` and not `status`. Even if it had queried `status`, it would have seen Alpha cleanup as \"complete\" and recognized there was no \"next\" milestone due October 15 (Beta launch's status is probably \"upcoming\"/\"next\"? Actually, which milestone is \"next\"? The fact says Alpha cleanup is \"complete, not next.\" Presumably Beta launch is the next one due October 15, but has no issues assigned to Maya. So no target exists.)\n\nWait — but could \"Beta launch\" be the next milestone due October 15? If Beta launch's status is \"next\" or upcoming, and there are no issues assigned to Maya Chen in it, then there is no issue matching the request → correct behavior is to report no match. Either way, no target.\n\nDid the replica's behavior cause the outcome? The only broken read was milestone.issues, but the solver found a workaround (issue.projectMilestone) that fully worked. The deciding field (milestone status) was readable and the solver simply did not query it. So this is not an unreadable-field artifact. Not an ignored-filter artifact either. Not a rejected write (the write succeeded). Not a flawed test either — the request is clear: \"the next Atlas milestone due October 15\"; the decoy's milestone is complete.\n\nTherefore: `incorrect`, exposed fact: `A:ProjectMilestone.status`, mechanism `skipped-check`.\n\nNote: the solver's trajectory in step 10 considered the ambiguity between the two October 15 milestones, but did not consider status at all. It never once read the status field. Step 23's reasoning concluded WEB-2 was the only match and performed the update in step 23 (the step with the mutation) — actually the mutation was at step 23 (the command after the reasoning \"Alright, now let me update...\"). Let me recount: step 22 is the issue query with projectMilestone; step 23 has reasoning \"Found it... Alright, now let me update the estimate of WEB-2 to 5. Found the issue... Updating estimate now:\" and the mutation command; step 24 is the final answer.\n\nNote: cite steps 9/22 (never reading status) and step 23 (the write to the decoy).\n\nVerdict JSON: outcome incorrect, exposed_facts [\"A:ProjectMilestone.status\"], mechanism skipped-check, note.\n\nNote (1–3 sentences): \"The solver enumerated the Atlas milestones (step 9) and read the `projectMilestone` of the issues (step 22), but at no point queried the milestone's `status` field — the fact that decides whether Alpha cleanup is 'next'. In step 23 it updated WEB-2, which is in the complete 'Alpha cleanup' milestone, to estimate 5, i.e., the decoy; the 'Beta launch' milestone (probably next) has no issue assigned to Maya, so no target existed.\"\n\nDouble-check: is there any possibility that the test intends Alpha cleanup to be \"next\" and the fact is something else? The bundle explicitly says fact `A:ProjectMilestone.status`: \"That milestone is complete, not next; everything else matches.\" So status is the decisive field. The solver did not read it. skipped-check.\n\nAnother consideration: does \"Beta launch\" have issues? The solver confirmed via the unfiltered issue list (only 3 issues total) that only WEB-2 has a milestone. So even if Beta launch is the \"next\" milestone, no issue assigned to Maya is in it. No target. The correct outcome is correct_absent (\"just tell me\" is the escape clause). The solver acted on the decoy → incorrect.\n\nMechanism: skipped-check — the decisive field (milestone status) was never read. It was not in any response either (the solver's queries did not select it). So skipped-check is correct.\n\nFinal answer format: verdict JSON with outcome, exposed_facts, mechanism, note.\n"
+    },
+    "logprobs": null,
+    "finish_reason": "stop",
+    "stop_reason": null,
+    "token_ids": null,
+    "routed_experts": null
+   }
+  ],
+  "service_tier": null,
+  "system_fingerprint": "vllm-0.30.0-tp2-d555b196",
+  "usage": {
+   "prompt_tokens": 15723,
+   "total_tokens": 17450,
+   "completion_tokens": 1727,
+   "prompt_tokens_details": {
+    "cached_tokens": 2352,
+    "created_cache_tokens": 13328,
+    "multimodal_tokens": null
+   },
+   "completion_tokens_details": {
+    "reasoning_tokens": 1464
+   }
+  },
+  "prompt_logprobs": null,
+  "prompt_token_ids": null,
+  "prompt_text": null,
+  "kv_transfer_params": null,
+  "ec_transfer_params": null,
+  "metrics": null
+ }
+}

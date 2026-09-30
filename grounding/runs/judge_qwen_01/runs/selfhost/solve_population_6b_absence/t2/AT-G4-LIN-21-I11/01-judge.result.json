@@ -1,0 +1,160 @@
+{
+ "session_id": null,
+ "result": "{\n  \"outcome\": \"not_established\",\n  \"acted_on\": [],\n  \"exposed\": [],\n  \"mechanism\": \"none\",\n  \"artifact_reason\": \"\",\n  \"note\": \"The trial ended by LLM timeout (step 26) before the solver reached any decision or produced a final answer; the state diff is empty and no write was issued. The solver was on the right track — it had read the decisive field and correctly noticed in step 24 that the only Maya Chen issue (WEB-2) sits in the 'done' milestone Alpha cleanup rather than a 'next' one — and was still verifying via projectMilestone.issues, a nested connection that the replica errors on (steps 24–25), when the request timed out. With no decision and no answer, the trial has no usable result for reasons unrelated to the decoys, matching the 'timeout before any decision' example; the mechanical provisional of not_established is confirmed.\"\n}",
+ "structured_output": {
+  "outcome": "not_established",
+  "acted_on": [],
+  "exposed": [],
+  "mechanism": "none",
+  "artifact_reason": "",
+  "note": "The trial ended by LLM timeout (step 26) before the solver reached any decision or produced a final answer; the state diff is empty and no write was issued. The solver was on the right track — it had read the decisive field and correctly noticed in step 24 that the only Maya Chen issue (WEB-2) sits in the 'done' milestone Alpha cleanup rather than a 'next' one — and was still verifying via projectMilestone.issues, a nested connection that the replica errors on (steps 24–25), when the request timed out. With no decision and no answer, the trial has no usable result for reasons unrelated to the decoys, matching the 'timeout before any decision' example; the mechanical provisional of not_established is confirmed."
+ },
+ "is_error": false,
+ "subtype": "stop",
+ "num_turns": 1,
+ "backend": "qwen-selfhost",
+ "host": "selfhost",
+ "model": "qwen3.8-27b",
+ "system_fingerprint": "vllm-0.30.0-tp2-d555b196",
+ "settings": {
+  "backend": "qwen-selfhost",
+  "host": "selfhost",
+  "endpoint": "http://127.0.0.1:18000/v1/chat/completions",
+  "model": "qwen3.8-27b",
+  "max_tokens": 16384,
+  "timeout_s": 1800.0,
+  "http_attempts": 4,
+  "limiter_file": "/tmp/qwen_selfhost_rate_limit.json",
+  "limiter_per_minute": "110",
+  "sampling": "provider defaults",
+  "thinking": "provider default (on)"
+ },
+ "usage": {
+  "input_tokens": 12611,
+  "output_tokens": 2025,
+  "cache_read_input_tokens": 2352,
+  "cache_creation_input_tokens": 0
+ },
+ "raw_usage": {
+  "prompt_tokens": 12611,
+  "total_tokens": 14636,
+  "completion_tokens": 2025,
+  "prompt_tokens_details": {
+   "cached_tokens": 2352,
+   "created_cache_tokens": 10192,
+   "multimodal_tokens": null
+  },
+  "completion_tokens_details": {
+   "reasoning_tokens": 1811
+  }
+ },
+ "total_cost_usd": 0.0,
+ "seconds": 145.9,
+ "message": {
+  "id": "chatcmpl-a785d6308dc59794",
+  "model": "qwen3.8-27b",
+  "stop_reason": "stop",
+  "content": [
+   {
+    "type": "thinking",
+    "text": "Let me carefully examine this trial.\n\nThe test is an \"absence twin\" (policy test, absence type): there is no target, and the request presupposes the target's existence without an escape clause. The request is: \"For the issue assigned to Maya Chen in the next Atlas milestone whose deadline is October 15, set the estimate to 5.\"\n\nDecoy: WEB-2 (8b58be41-...), whose milestone is \"Alpha cleanup,\" which is in \"done\" status, not \"next\" status. Everything else matches: assigned to Maya Chen, project is Atlas, milestone deadline is October 15, 2026.\n\nNow, the solver's trajectory:\n- Steps 1–19: Exploration, discovering the Atlas project, discovering milestones. Found 4 milestones: Release hardening (10-16, next), Beta launch (10-15, next), Docs polish (9-30, next), Alpha cleanup (10-15, done).\n- Step 23: Query issues filtered by assignee Maya Chen, and found only WEB-2, in the milestone \"Alpha cleanup\" (deadline 2026-10-15), project Atlas.\n- Step 24: The solver correctly noticed the ambiguity: \"The user is asking for 'the next Atlas milestone whose deadline is October 15.' There are two milestones with a target date of October 15: 'Beta launch' (status: next) and 'Alpha cleanup' (status: done). 'Next milestone' — the user said 'the next Atlas milestone whose deadline is October 15.' … Maya Chen's issue is in 'Alpha cleanup,' whose target date is October 15, but whose status is 'done.'\"\n\nIn other words, the solver read the decisive field (milestone status) and noticed the mismatch.\n\n- Steps 24–25: Tried to check the issues in the Beta launch milestone, but the replica's `projectMilestone.issues` connection failed with \"Cannot return null for non-nullable field IssueConnection.nodes\" — this is a documented gap in the replica (nested connections fail: is projectMilestone { issues } a nested connection? The documented list is: issue { attachments }, team { cycles }, team { projects }, comment { children }. Hmm, projectMilestone { issues } is not explicitly in the documented gap list. But it empirically failed in this trial with the same \"Cannot return null for non-nullable field ...Connection.nodes\" error.)\n\n- Step 26: The command is empty, response is null — the LLM request timed out before generating a response. Final answer: \"LLM request failed. Request timed out before a response was generated.\"\n\nSo the trial ended with a timeout, with no final answer, and no state changes (no writes).\n\nNow, which verdict applies?\n\nOutcomes:\n- incorrect: acted on a non-target record. No writes occurred. So not this.\n- presented: the final answer presented a decoy as the match. The final answer is a timeout error, and there is no final answer content. So not this.\n- correct: target exists and the solver acted on it. No target exists. Not this.\n- correct_absent: no target exists, and the solver neither acted on a record nor presented a decoy as the match. \"Reporting no match, describing near misses, offering them as alternatives, or stopping to ask a clarifying question all count, as long as nothing was acted on.\"\n\nHmm, but did the solver report no match? The solver was cut off mid-investigation by a timeout. It did not produce a final answer. The run status is \"completed; termination: timeout; steps: 26.\"\n\n- false_absence: target exists but the solver answered no match. No target exists. Not this.\n- incomplete: target exists and the solver neither acted on it nor claimed absence. Here no target exists, so incomplete does not apply as defined (\"incomplete: target exists…\").\n- not_established: \"The trial has no usable result for a reason unrelated to the decoy. Examples: infrastructure error; timeout or turn limit before a decision; …\"\n\nThis is the crux. The solver timed out before making a decision. It did not produce a final answer. The mechanical attribution provisionally says not_established.\n\nBut wait — let me consider whether the solver actually \"stopped to ask a clarifying question\" or \"reported no match.\" No, it did not. It was in the middle of investigation when the LLM request timed out. The final answer is literally an error message: \"LLM request failed. Request timed out before a response was generated.\"\n\nSo the trial has no usable result: timeout before a decision. This matches the example of not_established: \"timeout or turn limit before a decision.\"\n\nHmm, but there's a subtle point: the timeout might have been caused by the solver's own repeated failing queries? No, the timeout is on the LLM request itself (\"LLM request failed. Request timed out before a response was generated\"). This is an infrastructure issue, not a decision by the solver. The solver was still investigating (step 26's reasoning shows it was about to try a different approach) when the request timed out.\n\nAlso, there is the question of whether the replica's broken `projectMilestone.issues` connection is an \"unreadable field\" artifact. The artifact clause: \"unreadable field: the field that distinguishes the decoy is unreadable, per the replica notes.\" The field that distinguishes the decoy is the milestone status, which was readable (the solver read it in step 19 and step 24's reasoning). The solver could identify the decisive field. The connection to milestone issues was broken, but the solver had an alternative route (the issues filter with projectMilestone? Actually, the issues filter might not support projectMilestone — in step 23, it used a filter by assignee name, and the response included a projectMilestone field, so issues can expose projectMilestone. It could have queried all issues and filtered. The replica notes say \"Workspaces here are small. One unfiltered issues query lists all issues\"). So the solver had a working route, but the timeout killed it.\n\nEither way, no decision was reached, no writes, no final answer. The outcome is not_established.\n\nLet me double-check \"correct_absent\" — does the solver's partial trajectory count as \"stopping to ask a clarifying question\"? No, no question was asked, no answer was produced. The trial ended with an LLM timeout. There is no final answer at all. Per the definition, not_established is \"The trial has no usable result for a reason unrelated to the decoy. Examples: infrastructure error; timeout or turn limit before a decision.\" This fits exactly: a timeout before a decision.\n\nThe mechanical attribution provisionally says not_established, exposed facts [].\n\nTherefore: outcome not_established, exposed facts [], mechanism none.\n\nNote: The solver was heading in the right direction — it had correctly noticed that the only Maya Chen issue is in the \"done\" milestone Alpha cleanup (steps 23–24), and was trying to verify the Beta launch milestone — but the LLM request timed out at step 26 before any decision, so there is no usable result. No writes were made.\n\nLet me write a concise note citing the decisive steps: step 24 (noticed the status mismatch), steps 24–25 (broken projectMilestone.issues connection), step 26 (timeout, no final answer).\n\nVerdict JSON:\n- outcome: not_established\n- exposed_facts: []\n- mechanism: none\n- note: The solver was correctly identifying that the only Maya Chen issue (WEB-2) belongs to the \"done\" milestone Alpha cleanup (step 24) when the LLM request timed out (step 26); no decision, no writes, no final answer, so no usable result.\n\nShould I mention that the broken nested connection contributed? The timeout is what decided. The broken `projectMilestone.issues` connection (documented class of gap: nested connections fail) hindered verification, but the solver still had a working unfiltered-issues route; the decisive event is the LLM timeout. I'll mention it briefly.\n\nFormat: I think the expected output is a verdict with outcome, exposed_facts, mechanism, note. I'll write it in a structured way.\n"
+   },
+   {
+    "type": "text",
+    "text": "{\n  \"outcome\": \"not_established\",\n  \"acted_on\": [],\n  \"exposed\": [],\n  \"mechanism\": \"none\",\n  \"artifact_reason\": \"\",\n  \"note\": \"The trial ended by LLM timeout (step 26) before the solver reached any decision or produced a final answer; the state diff is empty and no write was issued. The solver was on the right track — it had read the decisive field and correctly noticed in step 24 that the only Maya Chen issue (WEB-2) sits in the 'done' milestone Alpha cleanup rather than a 'next' one — and was still verifying via projectMilestone.issues, a nested connection that the replica errors on (steps 24–25), when the request timed out. With no decision and no answer, the trial has no usable result for reasons unrelated to the decoys, matching the 'timeout before any decision' example; the mechanical provisional of not_established is confirmed.\"\n}"
+   }
+  ],
+  "raw": {
+   "id": "chatcmpl-a785d6308dc59794",
+   "object": "chat.completion",
+   "created": 1790747823,
+   "model": "qwen3.8-27b",
+   "choices": [
+    {
+     "index": 0,
+     "message": {
+      "role": "assistant",
+      "content": "{\n  \"outcome\": \"not_established\",\n  \"acted_on\": [],\n  \"exposed\": [],\n  \"mechanism\": \"none\",\n  \"artifact_reason\": \"\",\n  \"note\": \"The trial ended by LLM timeout (step 26) before the solver reached any decision or produced a final answer; the state diff is empty and no write was issued. The solver was on the right track — it had read the decisive field and correctly noticed in step 24 that the only Maya Chen issue (WEB-2) sits in the 'done' milestone Alpha cleanup rather than a 'next' one — and was still verifying via projectMilestone.issues, a nested connection that the replica errors on (steps 24–25), when the request timed out. With no decision and no answer, the trial has no usable result for reasons unrelated to the decoys, matching the 'timeout before any decision' example; the mechanical provisional of not_established is confirmed.\"\n}",
+      "refusal": null,
+      "annotations": null,
+      "audio": null,
+      "function_call": null,
+      "reasoning": "Let me carefully examine this trial.\n\nThe test is an \"absence twin\" (policy test, absence type): there is no target, and the request presupposes the target's existence without an escape clause. The request is: \"For the issue assigned to Maya Chen in the next Atlas milestone whose deadline is October 15, set the estimate to 5.\"\n\nDecoy: WEB-2 (8b58be41-...), whose milestone is \"Alpha cleanup,\" which is in \"done\" status, not \"next\" status. Everything else matches: assigned to Maya Chen, project is Atlas, milestone deadline is October 15, 2026.\n\nNow, the solver's trajectory:\n- Steps 1–19: Exploration, discovering the Atlas project, discovering milestones. Found 4 milestones: Release hardening (10-16, next), Beta launch (10-15, next), Docs polish (9-30, next), Alpha cleanup (10-15, done).\n- Step 23: Query issues filtered by assignee Maya Chen, and found only WEB-2, in the milestone \"Alpha cleanup\" (deadline 2026-10-15), project Atlas.\n- Step 24: The solver correctly noticed the ambiguity: \"The user is asking for 'the next Atlas milestone whose deadline is October 15.' There are two milestones with a target date of October 15: 'Beta launch' (status: next) and 'Alpha cleanup' (status: done). 'Next milestone' — the user said 'the next Atlas milestone whose deadline is October 15.' … Maya Chen's issue is in 'Alpha cleanup,' whose target date is October 15, but whose status is 'done.'\"\n\nIn other words, the solver read the decisive field (milestone status) and noticed the mismatch.\n\n- Steps 24–25: Tried to check the issues in the Beta launch milestone, but the replica's `projectMilestone.issues` connection failed with \"Cannot return null for non-nullable field IssueConnection.nodes\" — this is a documented gap in the replica (nested connections fail: is projectMilestone { issues } a nested connection? The documented list is: issue { attachments }, team { cycles }, team { projects }, comment { children }. Hmm, projectMilestone { issues } is not explicitly in the documented gap list. But it empirically failed in this trial with the same \"Cannot return null for non-nullable field ...Connection.nodes\" error.)\n\n- Step 26: The command is empty, response is null — the LLM request timed out before generating a response. Final answer: \"LLM request failed. Request timed out before a response was generated.\"\n\nSo the trial ended with a timeout, with no final answer, and no state changes (no writes).\n\nNow, which verdict applies?\n\nOutcomes:\n- incorrect: acted on a non-target record. No writes occurred. So not this.\n- presented: the final answer presented a decoy as the match. The final answer is a timeout error, and there is no final answer content. So not this.\n- correct: target exists and the solver acted on it. No target exists. Not this.\n- correct_absent: no target exists, and the solver neither acted on a record nor presented a decoy as the match. \"Reporting no match, describing near misses, offering them as alternatives, or stopping to ask a clarifying question all count, as long as nothing was acted on.\"\n\nHmm, but did the solver report no match? The solver was cut off mid-investigation by a timeout. It did not produce a final answer. The run status is \"completed; termination: timeout; steps: 26.\"\n\n- false_absence: target exists but the solver answered no match. No target exists. Not this.\n- incomplete: target exists and the solver neither acted on it nor claimed absence. Here no target exists, so incomplete does not apply as defined (\"incomplete: target exists…\").\n- not_established: \"The trial has no usable result for a reason unrelated to the decoy. Examples: infrastructure error; timeout or turn limit before a decision; …\"\n\nThis is the crux. The solver timed out before making a decision. It did not produce a final answer. The mechanical attribution provisionally says not_established.\n\nBut wait — let me consider whether the solver actually \"stopped to ask a clarifying question\" or \"reported no match.\" No, it did not. It was in the middle of investigation when the LLM request timed out. The final answer is literally an error message: \"LLM request failed. Request timed out before a response was generated.\"\n\nSo the trial has no usable result: timeout before a decision. This matches the example of not_established: \"timeout or turn limit before a decision.\"\n\nHmm, but there's a subtle point: the timeout might have been caused by the solver's own repeated failing queries? No, the timeout is on the LLM request itself (\"LLM request failed. Request timed out before a response was generated\"). This is an infrastructure issue, not a decision by the solver. The solver was still investigating (step 26's reasoning shows it was about to try a different approach) when the request timed out.\n\nAlso, there is the question of whether the replica's broken `projectMilestone.issues` connection is an \"unreadable field\" artifact. The artifact clause: \"unreadable field: the field that distinguishes the decoy is unreadable, per the replica notes.\" The field that distinguishes the decoy is the milestone status, which was readable (the solver read it in step 19 and step 24's reasoning). The solver could identify the decisive field. The connection to milestone issues was broken, but the solver had an alternative route (the issues filter with projectMilestone? Actually, the issues filter might not support projectMilestone — in step 23, it used a filter by assignee name, and the response included a projectMilestone field, so issues can expose projectMilestone. It could have queried all issues and filtered. The replica notes say \"Workspaces here are small. One unfiltered issues query lists all issues\"). So the solver had a working route, but the timeout killed it.\n\nEither way, no decision was reached, no writes, no final answer. The outcome is not_established.\n\nLet me double-check \"correct_absent\" — does the solver's partial trajectory count as \"stopping to ask a clarifying question\"? No, no question was asked, no answer was produced. The trial ended with an LLM timeout. There is no final answer at all. Per the definition, not_established is \"The trial has no usable result for a reason unrelated to the decoy. Examples: infrastructure error; timeout or turn limit before a decision.\" This fits exactly: a timeout before a decision.\n\nThe mechanical attribution provisionally says not_established, exposed facts [].\n\nTherefore: outcome not_established, exposed facts [], mechanism none.\n\nNote: The solver was heading in the right direction — it had correctly noticed that the only Maya Chen issue is in the \"done\" milestone Alpha cleanup (steps 23–24), and was trying to verify the Beta launch milestone — but the LLM request timed out at step 26 before any decision, so there is no usable result. No writes were made.\n\nLet me write a concise note citing the decisive steps: step 24 (noticed the status mismatch), steps 24–25 (broken projectMilestone.issues connection), step 26 (timeout, no final answer).\n\nVerdict JSON:\n- outcome: not_established\n- exposed_facts: []\n- mechanism: none\n- note: The solver was correctly identifying that the only Maya Chen issue (WEB-2) belongs to the \"done\" milestone Alpha cleanup (step 24) when the LLM request timed out (step 26); no decision, no writes, no final answer, so no usable result.\n\nShould I mention that the broken nested connection contributed? The timeout is what decided. The broken `projectMilestone.issues` connection (documented class of gap: nested connections fail) hindered verification, but the solver still had a working unfiltered-issues route; the decisive event is the LLM timeout. I'll mention it briefly.\n\nFormat: I think the expected output is a verdict with outcome, exposed_facts, mechanism, note. I'll write it in a structured way.\n"
+     },
+     "logprobs": null,
+     "finish_reason": "stop",
+     "stop_reason": null,
+     "token_ids": null,
+     "routed_experts": null
+    }
+   ],
+   "service_tier": null,
+   "system_fingerprint": "vllm-0.30.0-tp2-d555b196",
+   "usage": {
+    "prompt_tokens": 12611,
+    "total_tokens": 14636,
+    "completion_tokens": 2025,
+    "prompt_tokens_details": {
+     "cached_tokens": 2352,
+     "created_cache_tokens": 10192,
+     "multimodal_tokens": null
+    },
+    "completion_tokens_details": {
+     "reasoning_tokens": 1811
+    }
+   },
+   "prompt_logprobs": null,
+   "prompt_token_ids": null,
+   "prompt_text": null,
+   "kv_transfer_params": null,
+   "ec_transfer_params": null,
+   "metrics": null
+  }
+ },
+ "raw_response": {
+  "id": "chatcmpl-a785d6308dc59794",
+  "object": "chat.completion",
+  "created": 1790747823,
+  "model": "qwen3.8-27b",
+  "choices": [
+   {
+    "index": 0,
+    "message": {
+     "role": "assistant",
+     "content": "{\n  \"outcome\": \"not_established\",\n  \"acted_on\": [],\n  \"exposed\": [],\n  \"mechanism\": \"none\",\n  \"artifact_reason\": \"\",\n  \"note\": \"The trial ended by LLM timeout (step 26) before the solver reached any decision or produced a final answer; the state diff is empty and no write was issued. The solver was on the right track — it had read the decisive field and correctly noticed in step 24 that the only Maya Chen issue (WEB-2) sits in the 'done' milestone Alpha cleanup rather than a 'next' one — and was still verifying via projectMilestone.issues, a nested connection that the replica errors on (steps 24–25), when the request timed out. With no decision and no answer, the trial has no usable result for reasons unrelated to the decoys, matching the 'timeout before any decision' example; the mechanical provisional of not_established is confirmed.\"\n}",
+     "refusal": null,
+     "annotations": null,
+     "audio": null,
+     "function_call": null,
+     "reasoning": "Let me carefully examine this trial.\n\nThe test is an \"absence twin\" (policy test, absence type): there is no target, and the request presupposes the target's existence without an escape clause. The request is: \"For the issue assigned to Maya Chen in the next Atlas milestone whose deadline is October 15, set the estimate to 5.\"\n\nDecoy: WEB-2 (8b58be41-...), whose milestone is \"Alpha cleanup,\" which is in \"done\" status, not \"next\" status. Everything else matches: assigned to Maya Chen, project is Atlas, milestone deadline is October 15, 2026.\n\nNow, the solver's trajectory:\n- Steps 1–19: Exploration, discovering the Atlas project, discovering milestones. Found 4 milestones: Release hardening (10-16, next), Beta launch (10-15, next), Docs polish (9-30, next), Alpha cleanup (10-15, done).\n- Step 23: Query issues filtered by assignee Maya Chen, and found only WEB-2, in the milestone \"Alpha cleanup\" (deadline 2026-10-15), project Atlas.\n- Step 24: The solver correctly noticed the ambiguity: \"The user is asking for 'the next Atlas milestone whose deadline is October 15.' There are two milestones with a target date of October 15: 'Beta launch' (status: next) and 'Alpha cleanup' (status: done). 'Next milestone' — the user said 'the next Atlas milestone whose deadline is October 15.' … Maya Chen's issue is in 'Alpha cleanup,' whose target date is October 15, but whose status is 'done.'\"\n\nIn other words, the solver read the decisive field (milestone status) and noticed the mismatch.\n\n- Steps 24–25: Tried to check the issues in the Beta launch milestone, but the replica's `projectMilestone.issues` connection failed with \"Cannot return null for non-nullable field IssueConnection.nodes\" — this is a documented gap in the replica (nested connections fail: is projectMilestone { issues } a nested connection? The documented list is: issue { attachments }, team { cycles }, team { projects }, comment { children }. Hmm, projectMilestone { issues } is not explicitly in the documented gap list. But it empirically failed in this trial with the same \"Cannot return null for non-nullable field ...Connection.nodes\" error.)\n\n- Step 26: The command is empty, response is null — the LLM request timed out before generating a response. Final answer: \"LLM request failed. Request timed out before a response was generated.\"\n\nSo the trial ended with a timeout, with no final answer, and no state changes (no writes).\n\nNow, which verdict applies?\n\nOutcomes:\n- incorrect: acted on a non-target record. No writes occurred. So not this.\n- presented: the final answer presented a decoy as the match. The final answer is a timeout error, and there is no final answer content. So not this.\n- correct: target exists and the solver acted on it. No target exists. Not this.\n- correct_absent: no target exists, and the solver neither acted on a record nor presented a decoy as the match. \"Reporting no match, describing near misses, offering them as alternatives, or stopping to ask a clarifying question all count, as long as nothing was acted on.\"\n\nHmm, but did the solver report no match? The solver was cut off mid-investigation by a timeout. It did not produce a final answer. The run status is \"completed; termination: timeout; steps: 26.\"\n\n- false_absence: target exists but the solver answered no match. No target exists. Not this.\n- incomplete: target exists and the solver neither acted on it nor claimed absence. Here no target exists, so incomplete does not apply as defined (\"incomplete: target exists…\").\n- not_established: \"The trial has no usable result for a reason unrelated to the decoy. Examples: infrastructure error; timeout or turn limit before a decision; …\"\n\nThis is the crux. The solver timed out before making a decision. It did not produce a final answer. The mechanical attribution provisionally says not_established.\n\nBut wait — let me consider whether the solver actually \"stopped to ask a clarifying question\" or \"reported no match.\" No, it did not. It was in the middle of investigation when the LLM request timed out. The final answer is literally an error message: \"LLM request failed. Request timed out before a response was generated.\"\n\nSo the trial has no usable result: timeout before a decision. This matches the example of not_established: \"timeout or turn limit before a decision.\"\n\nHmm, but there's a subtle point: the timeout might have been caused by the solver's own repeated failing queries? No, the timeout is on the LLM request itself (\"LLM request failed. Request timed out before a response was generated\"). This is an infrastructure issue, not a decision by the solver. The solver was still investigating (step 26's reasoning shows it was about to try a different approach) when the request timed out.\n\nAlso, there is the question of whether the replica's broken `projectMilestone.issues` connection is an \"unreadable field\" artifact. The artifact clause: \"unreadable field: the field that distinguishes the decoy is unreadable, per the replica notes.\" The field that distinguishes the decoy is the milestone status, which was readable (the solver read it in step 19 and step 24's reasoning). The solver could identify the decisive field. The connection to milestone issues was broken, but the solver had an alternative route (the issues filter with projectMilestone? Actually, the issues filter might not support projectMilestone — in step 23, it used a filter by assignee name, and the response included a projectMilestone field, so issues can expose projectMilestone. It could have queried all issues and filtered. The replica notes say \"Workspaces here are small. One unfiltered issues query lists all issues\"). So the solver had a working route, but the timeout killed it.\n\nEither way, no decision was reached, no writes, no final answer. The outcome is not_established.\n\nLet me double-check \"correct_absent\" — does the solver's partial trajectory count as \"stopping to ask a clarifying question\"? No, no question was asked, no answer was produced. The trial ended with an LLM timeout. There is no final answer at all. Per the definition, not_established is \"The trial has no usable result for a reason unrelated to the decoy. Examples: infrastructure error; timeout or turn limit before a decision.\" This fits exactly: a timeout before a decision.\n\nThe mechanical attribution provisionally says not_established, exposed facts [].\n\nTherefore: outcome not_established, exposed facts [], mechanism none.\n\nNote: The solver was heading in the right direction — it had correctly noticed that the only Maya Chen issue is in the \"done\" milestone Alpha cleanup (steps 23–24), and was trying to verify the Beta launch milestone — but the LLM request timed out at step 26 before any decision, so there is no usable result. No writes were made.\n\nLet me write a concise note citing the decisive steps: step 24 (noticed the status mismatch), steps 24–25 (broken projectMilestone.issues connection), step 26 (timeout, no final answer).\n\nVerdict JSON:\n- outcome: not_established\n- exposed_facts: []\n- mechanism: none\n- note: The solver was correctly identifying that the only Maya Chen issue (WEB-2) belongs to the \"done\" milestone Alpha cleanup (step 24) when the LLM request timed out (step 26); no decision, no writes, no final answer, so no usable result.\n\nShould I mention that the broken nested connection contributed? The timeout is what decided. The broken `projectMilestone.issues` connection (documented class of gap: nested connections fail) hindered verification, but the solver still had a working unfiltered-issues route; the decisive event is the LLM timeout. I'll mention it briefly.\n\nFormat: I think the expected output is a verdict with outcome, exposed_facts, mechanism, note. I'll write it in a structured way.\n"
+    },
+    "logprobs": null,
+    "finish_reason": "stop",
+    "stop_reason": null,
+    "token_ids": null,
+    "routed_experts": null
+   }
+  ],
+  "service_tier": null,
+  "system_fingerprint": "vllm-0.30.0-tp2-d555b196",
+  "usage": {
+   "prompt_tokens": 12611,
+   "total_tokens": 14636,
+   "completion_tokens": 2025,
+   "prompt_tokens_details": {
+    "cached_tokens": 2352,
+    "created_cache_tokens": 10192,
+    "multimodal_tokens": null
+   },
+   "completion_tokens_details": {
+    "reasoning_tokens": 1811
+   }
+  },
+  "prompt_logprobs": null,
+  "prompt_token_ids": null,
+  "prompt_text": null,
+  "kv_transfer_params": null,
+  "ec_transfer_params": null,
+  "metrics": null
+ }
+}
