@@ -199,6 +199,16 @@ those counts.
 - report.md RQ5 "Coverage of the check": adds blind_review_01's 200 executions.
 - report.md Table 10 source, "baselines_01 on branch `exp/baselines-01`" →
   `grounding/runs/baselines_01/q4/plain_openclaw.score.json` (file checked).
+- report_concise.md Table 9, the final-execution rows after the two rulings: absence 109 labelled, 108 agree, 67 TP,
+  67/67 → 107, 106, 65, 65/65; underspecified 96, 96, 41 TP, 46 TN, 41/41 → 94, 94, 40, 45, 40/40; all 310, 309, 124
+  TP, 167 TN, 124/124 → 306, 305, 121, 166, 121/121 (regular unchanged); "291 executions both call usable" → 287; the
+  rule-of-three bound for missed failures 2.4% → 2.5% (3/121; false alarms 3/166, 1.8%, unchanged); "2,139 saved LLM
+  verdicts, of which 310" → 2,115 and 306 (879 unchanged). Source: `numbers/concise.json` (`judge_accuracy`,
+  `blind_label_keys`, `judge_verdicts_on_final_executions`, `execution_counts`).
+- Both texts, blind_review_01's population: "200 of the 2,705 final executions" → "200 of the 2,705 executions of the
+  earlier 3,018 manifest (§0.4)", as the lead asked. Source: this README, "numbers/ rebuilt in full".
+- Unchanged: report.md Table 9 (every run's blind sample, `numbers/judge.json`, which the rebuild did not move) and
+  Table 10 (`judge_comparison_final` in report_concise.md, also unchanged).
 
 ### RQ6: the policy cells and the per-fact space
 

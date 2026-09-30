@@ -267,32 +267,32 @@ alarms and missed failures. Void observations are counted separately.
 | Case type | Labelled executions | Agree | TP | FP | FN | TN | Both void | Label alone void | Same exposed facts on TP |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
 | Regular | 105 | 105 | 16 | 0 | 0 | 88 | 1 | 0 | 16/16 |
-| Absence | 109 | 108 | 67 | 0 | 0 | 33 | 8 | 1 | 67/67 |
-| Underspecified | 96 | 96 | 41 | 0 | 0 | 46 | 9 | 0 | 41/41 |
-| **All** | **310** | **309** | **124** | **0** | **0** | **167** | **18** | **1** | **124/124** |
+| Absence | 107 | 106 | 65 | 0 | 0 | 33 | 8 | 1 | 65/65 |
+| Underspecified | 94 | 94 | 40 | 0 | 0 | 45 | 9 | 0 | 40/40 |
+| **All** | **306** | **305** | **121** | **0** | **0** | **166** | **18** | **1** | **121/121** |
 | *blind_review_01, AI reference labels:* judge v2 | 132 | 128 | 68 | 4 | 0 | 51 | 9 | 0 | 68/68 |
 | *blind_review_01:* pipeline (judge v2 or triage) | 199 | 195 | 68 | 4 | 0 | 118 | 9 | 0 | 68/68 |
 
 The last two rows come from a second, separate review (below); the rest of this section uses the first four.
-There are no false positives or false negatives in the **291 executions both call usable**. The approximate
-rule-of-three 95% upper bounds are 2.4% for missed failures and 1.8% for false alarms; these describe this pooled
+There are no false positives or false negatives in the **287 executions both call usable**. The approximate
+rule-of-three 95% upper bounds are 2.5% for missed failures and 1.8% for false alarms; these describe this pooled
 sample, not a guarantee over the suite. The one void disagreement is a timeout without a write; the budget
 counts it as an agent failure regardless.
 
-The final suite has **2,139 saved LLM verdicts**, of which 310 have retained blind labels. Mechanical triage
+The final suite has **2,115 saved LLM verdicts**, of which 306 have retained blind labels. Mechanical triage
 handles the other 879 executions; the LLM also audits a sample of mechanically clean executions.
 
-**A second reference review: blind_review_01.** Codex labelled 200 of the 2,705 final executions that had no earlier
-label (seeded, stratified by service and form; 185 distinct cases), with PI decisions affecting 12 of them,
-and locked the labels before seeing any verdict or mechanical score. **These are AI reference labels, not
-a second human annotator.** The pipeline (judge v2 where it read the execution, mechanical triage otherwise) agrees
-with them on **186 of 190** executions both call non-void: 68 TP, 4 FP, 0 FN, 118 TN. Judge v2 alone agrees on 119
-of 123 and triage alone on 67 of 67 (all passes). Exposed facts agree on all 68 joint failures. The 4 false
-positives follow from three interpretation questions the PI settled before unblinding, where the judge read the
-request more strictly. Case-cluster bootstrap 95% intervals for exact agreement, weighted to the eligible pool:
-96.1% to 99.5% for the pipeline and 94.3% to 99.3% for the judge. One execution stays uncertain by the PI's choice
-and is left out. Sources: [blind_review_01](../blind_review_01/README.md), `numbers.json` (`comparators`),
-`uncertainty.json`, `report.md`.
+**A second reference review: blind_review_01.** Codex labelled 200 of the 2,705 executions of the earlier
+3,018-execution manifest (§0.4) that had no earlier label (seeded, stratified by service and form; 185 distinct
+cases), with PI decisions affecting 12 of them, and locked the labels before seeing any verdict or mechanical score.
+**These are AI reference labels, not a second human annotator.** The pipeline (judge v2 where it read the execution,
+mechanical triage otherwise) agrees with them on **186 of 190** executions both call non-void: 68 TP, 4 FP, 0 FN,
+118 TN. Judge v2 alone agrees on 119 of 123 and triage alone on 67 of 67 (all passes). Exposed facts agree on all 68
+joint failures. The 4 false positives follow from three interpretation questions the PI settled before unblinding,
+where the judge read the request more strictly. Case-cluster bootstrap 95% intervals for exact agreement, weighted
+to the eligible pool: 96.1% to 99.5% for the pipeline and 94.3% to 99.3% for the judge. One execution stays
+uncertain by the PI's choice and is left out. Sources: [blind_review_01](../blind_review_01/README.md),
+`numbers.json` (`comparators`), `uncertainty.json`, `report.md`.
 
 **Table 10. Different judges on the same 39 retained executions (21 labelled failures).** Source:
 [concise.json](numbers/concise.json), `judge_comparison_final`; original comparison design:

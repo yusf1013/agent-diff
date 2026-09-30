@@ -429,10 +429,10 @@ are counted apart.
 - **Toy harness.** The one false positive is a contested Slack test; the PI ruled for the judge (the acting bot
   counts as a channel member). Every trial of Phase 1 was also labelled by hand (252 trials, not blind): judge v2
   agrees on 239 (95%), and 12 of the 13 misses are trials of 4 hand-built policy variants with defects.
-- **A second reference review (blind_review_01, the last row).** Codex labelled 200 of the 2,705 final executions
-  that had no earlier label (seeded, stratified by service and form; 185 distinct cases), with PI decisions affecting 12
-  of them, and locked the labels before seeing any verdict or mechanical score. These are **AI
-  reference labels, not a second human annotator.** The pipeline (judge v2 where it read the execution, mechanical
+- **A second reference review (blind_review_01, the last row).** Codex labelled 200 of the 2,705 executions
+  of the earlier 3,018-trial manifest (§0.4) that had no earlier label (seeded, stratified by service and form; 185
+  distinct cases), with PI decisions affecting 12 of them, and locked the labels before seeing any verdict or
+  mechanical score. These are **AI reference labels, not a second human annotator.** The pipeline (judge v2 where it read the execution, mechanical
   triage otherwise) agrees on 186 of 190 executions both call non-void (68 TP, 4 FP, 0 FN, 118 TN); judge v2 alone on
   119 of 123; triage alone on 67 of 67 (all passes). Exposed facts agree on all 68 joint failures. The 4 false
   positives follow from three interpretation questions the PI settled before unblinding, where the judge read the
