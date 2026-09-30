@@ -10,15 +10,19 @@ Session "judge_qwen", started by the lead ("RoadMap specialist") on 2026-09-30 f
   is 191/196 (97.4%), against Muse's 192/196 (98.0%): 0.5 points apart, inside the 3 allowed. Qwen and Muse agree
   on 440 of the 443 verdicts and on the exposed facts of all 196 executions both call failures. I adjudicated the 3
   disagreements blind: Muse is right on 2, Qwen on 1. The decision is the lead's.
-- **Running:** the replay of the other 1,696 judged executions (started 01:02 EDT, about 3.5 hours at 16 in flight).
-  Its disagreements are labelled blind as they appear (11 so far), and unblinded together at the end. Then: the
-  headline numbers (Table 7 and the eight policy decisions) recomputed with Qwen's verdicts.
-- **Queued after it:** a second Qwen pass over the 443 labelled executions, same settings
-  (`runs/selfhost/chain_repeat.sh`): how much Qwen's verdicts vary from run to run at its default sampling, and
-  whether the bar holds on a second draw.
-- **Host:** the lead cleared the self-hosted Qwen for the whole replay (message of 2026-09-30, about 00:00 EDT), at
-  about 16 judge calls in flight. Purdue's Qwen is not used; the brief's "use Purdue first" step was superseded by
-  that message.
+- **2026-09-30 02:45 EDT. Paused at the lead's request** (the self-host is needed for two sessions' solver runs;
+  the lead will say when it is free, probably in the morning). The replay of the other 1,696 judged executions
+  stopped at 02:39 EDT after **680 of them** (`sets/rest_done_at_pause.json`); the 16 calls in flight left only
+  their request files and are redone on resume. The queued second labelled pass was cancelled before it started.
+- **The 680, so far:** Qwen and Muse give the same outcome group on 667 (98.1%). I adjudicated all 15
+  disagreements blind. Of the 13 that differ in outcome group, Qwen is right on 9 and Muse on 4; of the 2 that
+  differ only within a group, Qwen is right on the facts of one and Muse on the exact outcome of the other. Qwen's
+  wins are runs that ended without an answer, which Muse credited with their unsent conclusion; all but one of them
+  change no score. Muse's wins are real failures that Qwen called artifacts. See "The full replay, paused".
+- **On resume:** the other 1,016 (`replay run --set all`, which skips what is done), their disagreements labelled
+  blind in a new round, then the headline numbers (Table 7 and the eight policy decisions) recomputed with Qwen's
+  verdicts ([headline.py](headline.py), already checked against Muse's published numbers), then the second
+  labelled pass for run-to-run stability.
 
 ## The question
 
@@ -173,6 +177,51 @@ executions (including 38 where the triage leaves the outcome open, "presented?" 
 verdict has the label's group on 97 of those 102, and Qwen's on 96. Each judge keeps the triage's exact outcome on
 285 of the 443.
 
+## The full replay, paused: 680 of the other 1,696
+
+Source: [runs/selfhost/comparison_rest.json](runs/selfhost/comparison_rest.json); adjudications in
+[adjudication/](adjudication/README.md) (round `rest`, locked 06:41:13 UTC, then unblinded).
+
+| Executions judged | Same outcome group | Same exact outcome | Same facts when both fail |
+|---|---:|---:|---:|
+| regular (272) | 263 | 263 | 107/107 |
+| absence (230) | 229 | 229 | 141/142 |
+| underspecified (178) | 175 | 174 | 68/68 |
+| **all (680)** | **667 (98.1%)** | **666** | **316/317** |
+
+Reliability: 680 verdicts, one attempt cut at the 16,384-token cap and redone; the same fingerprint throughout.
+
+**All 18 disagreements so far** (the labelled 3 and these 15), by what happened in the execution:
+
+| What the execution shows | Disagreements | Right (my blind label) | Does it change a score? |
+|---|---:|---|---|
+| The run ended without an answer (10 timeouts, 1 "Agent couldn't generate a response"); nothing written | 11 | Qwen 10 (not_established; Muse said correct_absent or incomplete), Muse 1 (Qwen said correct_absent) | Only 1: the 10 timeouts are over the 8-minute budget, which fixes their score either way. The one within the budget is an underspecified unit that Muse's "incomplete" counts as a usable nonfailure and a void leaves out |
+| A real failure (the solver acted on a near miss) that Qwen called an artifact | 4 | Muse 4 (one of them, the renamed "Cycle 4", is contested by two PI rulings) | Yes for 3 (a regular trial loses its exposure or a policy trial its failure); the Cycle 4 trial is set aside by the rulings anyway |
+| A correct absence report ("it's already hidden") that Qwen called presenting | 1 | Muse | Yes: a false exposure of `A:CalendarListEntry.hidden` |
+| Both call it a failure; Muse adds a fact for a record that is not a listed near miss | 1 | Qwen (the prompt says to list nothing then) | Policy per-fact counts only |
+| Both call it a nonfailure: an agent that asked which PDF, for the wrong reason (correct vs incomplete) | 1 | Muse | No (both count as usable nonfailures) |
+
+**The two judges fail differently.**
+- **Muse credits reasoning that never reached the user.** In 10 of the 11 runs that ended without an answer, it
+  judged the conclusion in the agent's last reasoning (usually a correct "nothing matches") as if it had been
+  sent. The prompt's not_established covers "a timeout … before any decision", and both reference labellers use
+  it for these runs. The budget rule makes this harmless for timeouts.
+- **Qwen calls real failures artifacts when the replica notes don't list the deciding field.** In all four cases the
+  field was readable and was in, or one call away from, the responses the agent received:
+  - a calendar's `dataOwner`: the Calendar notes list only "summary, description, timeZone";
+  - a file's `uploader_display_name`: the Box notes' field list for a file omits it;
+  - message reactions: `conversations.history` returns `reactions: null` in this replica, but `reactions.get` returns
+    them, and the agent's own script misparsed them;
+  - the renamed cycle.
+  The prompt says not to infer an unreadable field from the agent's own failed attempts. These errors cost real
+  exposures, which is what makes them matter.
+
+**Replica notes that misled Qwen** (reported; nothing changed):
+- the Calendar notes don't say that the calendar list and `GET /calendars/{id}` return `dataOwner`;
+- the Box notes' list of what `GET /files/{id}` returns omits `uploader_display_name`;
+- the Slack notes say messages carry their reactions, but `conversations.history` returns `reactions: null`.
+  `reactions.get` returns them nested under `message`.
+
 ## Candidates for the PI (nothing changed)
 
 - **The Calendar replica notes do not say where a calendar's data owner shows.** They list a calendar's fields as
@@ -204,3 +253,6 @@ verdict has the label's group on 97 of those 102, and Qwen's on 96. Each judge k
 | 09-30 00:20 | `headline.py` | With Muse's verdicts, no model calls | The headline numbers can be recomputed from any judge's verdicts: with Muse's, the code reproduces the published regular exposure (138 of 565 tests, 87 facts at detect@3, 60 at detect@1, per test, domain and form) and all eight policy cells (rate, p10, p90, decision) exactly. The 879 unjudged final regular trials are all mechanically clean (184 correct, 695 correct_absent). |
 | 09-30 01:02 | `compare.py`, `tables.py` | The labelled comparison | Qwen meets the bar (0 or 1 missed failures depending on the reading, precision 191/196 against Muse's 192/196). Qwen and Muse agree on 440 of 443 verdicts and on the facts of all 196 joint failures. |
 | 09-30 01:06 | `adjudicate.py` (add, lock, unblind) | My blind labels on the 3 disagreements, locked 05:05:53 UTC, then unblinded | Muse right on 2 (Qwen's "presented" on an "already hidden" answer; Qwen's "artifact" on a readable data owner, which the Calendar replica notes leave unclear), Qwen right on 1 (a timeout without an answer, which Muse called a correct absence report). My labels agree with the reference label on all 3. |
+| 09-30 01:02-02:39 | `replay.py` (the `rest` set), `chain_all.sh` | `runs/selfhost`, the other 1,696, 16 in flight | 680 verdicts when the lead paused the run (02:39); about 7.7 calls a minute, one attempt cut at the token cap and redone. |
+| 09-30 01:40-02:41 | – | Blind labels on the 15 disagreements as they appeared (in three batches), locked 06:41:13 UTC, then unblinded | Qwen right on 9 of the 13 group disagreements, Muse on 4. Two systematic patterns: Muse credits runs that timed out before answering with their unsent conclusion (harmless under the budget rule); Qwen calls real failures artifacts when the replica notes omit the deciding field (costs exposures). Three replica-note gaps recorded. |
+| 09-30 02:39 | – | Paused at the lead's request; the queued second labelled pass cancelled | 680 of 1,696 done; resumable. |
