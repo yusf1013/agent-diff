@@ -207,3 +207,9 @@ section. Decisions that stand go to the [roadmap](roadmap.md); this is the recor
   (Calendar dataOwner, Box uploader_display_name, Slack reactions in history, the renamed "Cycle 4"), which costs
   exposures; on score-changing disagreements Muse is right 5 to 1. Three candidate additions to the replica notes
   for the PI. Assigned next (no host): the transfer feasibility desk study (transfer_feasibility_01).
+- 03:0x values, baselines_02 (Sonnet 5.5 as the naive writer, arms SN0M and SN1M): 96 of 96 tests load at once, $0
+  billed on the plan, 23 minutes. Blind review in one shuffled pool with 20 of ours: 109 of 116 valid (44 and 45 of
+  48; ours 20 of 20); designated near misses 57 of 113 and 75 of 130 (Muse's twins 17 of 53, 19 of 66; ours 81 of
+  99); facts exercised properly 22 and 37 (Muse's 12 and 13; ours 34.0 per 48); still no probe-form tests. Runs on
+  the self-host at 6 in flight (267 trials); blind samples of 30 per arm drawn first; a cross-check re-review of ten
+  Muse twins.
