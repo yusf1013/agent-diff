@@ -5,7 +5,8 @@ Session "values" (second assignment of the day from the lead session "RoadMap sp
 
 ## Status
 
-- **2026-09-30, 02:20 EDT.** Set up. Nothing has run yet.
+- **2026-09-30, 03:05 EDT.** Generation done: 96 of 96 tests load, every session on its first round (no repair
+  turn needed). Next: the blind review of the pool (96 tests and 20 of ours), then the lead's go-ahead for the runs.
 
 ## The question
 
