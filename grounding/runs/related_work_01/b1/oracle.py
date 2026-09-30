@@ -67,6 +67,7 @@ def grade(att: Path, item: dict, budget: bool = False) -> tuple[str, dict]:
     initial = json.loads((att / "environment/initial_state.json").read_text())
     record = next(p for p in (att / "solver").glob("*.json") if p.name not in ("config.json", "b1_mask.json"))
     v, detail = verdict(spec_for(item, initial), att, json.loads(record.read_text()))
+    detail["state_verdict"] = v  # what the state and the answer show, before the budget rule
     if budget:  # the PI's rule: a solver that runs out its budget fails the trial (rulings.BUDGET_S, limiter waits out)
         from grounding.runs.openclaw_eval_01 import rulings
         if rulings.over_budget(att):
@@ -84,8 +85,8 @@ def main():
         for trial in ("t1", "t2", "t3"):
             if args.run:
                 atts = sorted((args.run / trial / cid).glob("attempt-*"))
-                if not atts:
-                    continue
+                if not atts or json.loads((atts[-1] / "execution_summary.json").read_text()).get("status") != "completed":
+                    continue  # not run (or deferred while the run was paused)
                 att = atts[-1]
             else:
                 att = attempt(item["run"], trial, cid)
