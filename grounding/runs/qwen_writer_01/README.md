@@ -4,12 +4,12 @@ Session "harness", an investigation the PI asked for, assigned by the lead ("Roa
 
 ## Status
 
-- **2026-09-30, 08:10 EDT.** Generation and review done: Qwen's writer got all 12 briefs accepted, and my review keeps
+- **2026-09-30, 08:05 EDT.** Generation and review done: Qwen's writer got all 12 briefs accepted, and my review keeps
   all 12, with 23 of 23 facts covered validly, as Muse's did (see "Results: generation"). It took the harness three
-  stopped runs to get there (cycles 2-4) and 11.3 hours of writer time on the counted attempts, against Muse's 73
-  minutes. The suite is built (72 tests, [suite/](suite/)) and the blind sample drawn (30 trials,
-  [eval/blind_oc_01.json](eval/blind_oc_01.json)). Next: the OpenClaw run on the self-hosted Qwen (3 trials) and
-  judge v2.
+  stopped runs to get there (cycles 2-4; 7.8 writer stream-hours discarded) and 11.3 hours of writer time on the
+  counted attempts, against Muse's 73 minutes. The lead has the checkpoint message. The OpenClaw run is under way
+  (`runs/oc_01`: 72 tests, 3 trials, 6 in flight at the lead's request, OpenClaw 2026.7.1-2 as in full_03), with the
+  blind sample drawn before it (30 trials, [eval/blind_oc_01.json](eval/blind_oc_01.json)).
 
 ## The question
 
@@ -101,7 +101,12 @@ checks both writers' data alike). Numbers: [eval/generation.json](eval/generatio
   one valid near miss. Qwen's two flawed near misses (my rulings, for the PI to overrule) come from request wording
   that names a person without naming the role: "Maya Chen's onboarding checklist" also fits a file she created
   (G4-BOX-05, 9103), and "that Maya Chen uploaded" also fits a file whose first version she uploaded (G4-BOX-03, 4203).
-  Their probes are left out (rulings.json); the facts stay covered by other near misses.
+  **Phase 4's review read Muse's scenarios on the same briefs the other way:** it ruled valid Muse's G4-CAL-06 near
+  miss that holds an owner ACL grant under "Leo Park's calendar" (a possessive naming no role), and accepted Muse's
+  G4-BOX-03 target, created by Jordan, as "that Maya Chen uploaded" on its uploader field. So Qwen's near misses are
+  43 of 45 valid under my reading and 45 of 45 under Phase 4's; for the PI to settle. Coverage is 23 of 23 either
+  way. The OpenClaw run runs both probes ([rulings_run.json](rulings_run.json): nothing left out at selection), and
+  adjudication applies my rulings ([rulings.json](rulings.json)), so an overrule needs no re-run.
 - **The pipeline's path differs:** Qwen's first versions were more often mechanically sound (1 invalid JSON against
   Muse's 5; no replica observability loop like Muse's 4 on G4-CAL-05), and the reader sent back 3 of its versions
   (two for an undeclared near miss, one for unnatural wording) against 1 of Muse's.
@@ -227,3 +232,15 @@ checks both writers' data alike). Numbers: [eval/generation.json](eval/generatio
   [rulings_from_review.py](rulings_from_review.py)).
 - The blind sample for the judge: 30 of the 216 trial slots, drawn from the cases folder with seed 20260930 before any
   run ([eval/blind_oc_01.json](eval/blind_oc_01.json)).
+
+### Cycle 6 (2026-09-30, 07:58-): the OpenClaw run
+
+- `runs/oc_01` started at 07:58 at 16 in flight ([run.py](run.py); OpenClaw 2026.7.1-2, the version of full_03; the
+  self-hosted Qwen through the proxy on 18778; the 600 s turn limit). At 08:01 the lead asked for 6 in flight: the
+  self-host carries regen_01's runs at 12, its priority, and higher totals had produced host-load timeouts. Stopped
+  (the runner, then its 12 OpenClaw process groups; `runs/oc_01_children_at_stop.txt`): 1 trial had completed and is
+  kept, 16 were cut off. Restarted at 08:02 at 6 with `--retry-infrastructure`, which redoes the cut-off attempts
+  (new attempt folders; the old ones stay) and never a completed one. The trial plans (`t*/plan.json`, written once)
+  still say 16. The cut-off attempts may have left their AgentDiff environments behind.
+- The lead's rule for host load: a trial that times out with few requests, each over 30 s, is marked "timeout under
+  host load" and kept apart for a quiet rerun.
