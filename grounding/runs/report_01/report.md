@@ -3,7 +3,8 @@
 *A stub for the evaluation and results sections of a paper, written 2026-09-29 from the committed runs and brought
 to the rebuilt numbers on 2026-09-30 (the 10-minute budget, two PI rulings, duplicate policy units, blind_review_01;
 every change is logged in [README.md](README.md), "Text changes"). The numbers are those in [numbers/](numbers/) at
-commit a8c046c891. It covers the experiments, what they show and what they do not.
+commit a8c046c891, with the same day's follow-up (README, "Follow-up"): RQ7's policy side and Table 14's Ours
+column were rebuilt after it. It covers the experiments, what they show and what they do not.
 There is no introduction, background or related work. Every table names its source: a script in [kit/](kit/) and the
 JSON it writes into [numbers/](numbers/), or a run record. Rows marked "–" or "not measured" are measurements not yet
 made.*

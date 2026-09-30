@@ -83,7 +83,9 @@ none is recomputed from memory. `numbers/` and `kit/` are unchanged by this work
 
 **Which numbers:** every source is read as of commit a8c046c891 (`numbers/` rebuilt in full after the two PI
 rulings above). A first pass (commits 787c4f576b to 2b8b166f67) used the files at 663af2ce1c, before the rulings;
-the commits after the merge 3ba8bafe21 re-synced it, and the entries below give the final values. Table 11's
+the commits after the merge 3ba8bafe21 re-synced it, and the entries below give the final values. The follow-up at
+the end rebuilt `numbers/beyond.json` (5496406e9c), baselines_01's `ours.json` and `compare.json`, and
+`numbers/concise.json`'s copy of them (3787ff5159); its entries are read from those. Table 11's
 figures are read from the two decision files (`openclaw_eval_01/runs/policy/decisions_population_*.json`), the
 sources the table already cites. `numbers/policy.json` has the same rates and intervals, but its `valid` and
 `judged` count cases where the decision files count units with each duplicate pair once (Linear underspecified 79
