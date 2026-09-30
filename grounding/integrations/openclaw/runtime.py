@@ -63,7 +63,20 @@ BACKENDS = {
                  "model": {"id": "qwen3.8-27b", "name": "Qwen 3.8 27B (self-hosted)", "contextWindow": 131072,
                            "maxTokens": 8192},
                  "provider_settings": {"timeoutSeconds": 600}},
+    # "openai" (since 2026-09-29): a GPT model on the PI's OpenAI plan, through OpenClaw's own agent loop
+    # (agentRuntime "openclaw"; OpenClaw's default would hand `openai/*` turns to a bundled Codex engine, a different
+    # harness). No proxy: OpenClaw talks to OpenAI itself, with the login copied from ~/.openclaw's main agent store
+    # into the attempt's agent store (AUTH_STORE; the token lasts days, and nothing in a run refreshes it). Usage and
+    # the leak guard read OpenClaw's session transcript instead of proxy recordings; the model's context window and
+    # output cap come from OpenClaw's catalog and are recorded from the transcript.
+    "openai": {"provider": "openai", "port": None,
+               "model": {"id": os.getenv("AGENTDIFF_OPENAI_MODEL", "gpt-6.1-sol"), "contextWindow": None,
+                         "maxTokens": None},
+               "provider_settings": {"agentRuntime": {"id": "openclaw"}}, "oauth": True},
 }
+AUTH_STORE = REAL_STATE / "agents" / "main" / "agent" / "openclaw-agent.sqlite"  # holds the OpenAI login profile
+CATALOG_COPY = Path.home() / ".openclaw-runs" / "openai-catalog.json"  # a refreshed OpenAI model catalog (see copy_auth_store)
+PROVIDER_LIMIT = re.compile(r"\b429\b|rate.?limit|usage limit|quota|too many requests|insufficient_quota", re.I)
 TIMEOUT_SECONDS = 600  # OpenClaw's default agent timeout
 # What an attempt's agent can see of its own setup. OpenClaw writes the state directory's path (every skill's location,
 # the workspace, each workspace file's heading) and the agent id into every system prompt. The transfer study's
@@ -171,15 +184,25 @@ def build_state_dir(state: Path, route: str, domain: str, variant: str | None = 
     defaults["workspace"] = str(state / "workspace")
     if domain == "calendar":
         defaults["userTimezone"] = CALENDAR_TZ
-    provider = copy.deepcopy(real["models"]["providers"]["purdue"])
-    if spec["model"]:
-        model = copy.deepcopy(provider["models"][0])
-        model.update(spec["model"])
-        provider["models"] = [model]
-        agent["model"] = {"primary": f"{spec['provider']}/{model['id']}", "fallbacks": []}
-    provider.update(spec["provider_settings"])
-    provider["baseUrl"] = f"http://127.0.0.1:{spec['port']}/run/{route}/v1"
-    provider["apiKey"] = "local-proxy"  # the proxy sends the real key; nothing secret is written here
+    if spec.get("oauth"):
+        # OpenClaw's built-in provider with the login profile: no base URL, no key in the configuration, no proxy.
+        provider = copy.deepcopy(spec["provider_settings"])
+        agent["model"] = {"primary": f"{spec['provider']}/{spec['model']['id']}", "fallbacks": []}
+        # The Qwen rounds ran at OpenClaw's "medium" thinking level (its fallback for a reasoning model). For GPT
+        # models OpenClaw's fallback is the label "off", which sends no reasoning setting and leaves the model at
+        # OpenAI's default effort; the same label as the Qwen rounds, set explicitly, keeps the record comparable.
+        agent["thinkingDefault"] = spec.get("thinking", "medium")
+        copy_auth_store(agent_dir)
+    else:
+        provider = copy.deepcopy(real["models"]["providers"]["purdue"])
+        if spec["model"]:
+            model = copy.deepcopy(provider["models"][0])
+            model.update(spec["model"])
+            provider["models"] = [model]
+            agent["model"] = {"primary": f"{spec['provider']}/{model['id']}", "fallbacks": []}
+        provider.update(spec["provider_settings"])
+        provider["baseUrl"] = f"http://127.0.0.1:{spec['port']}/run/{route}/v1"
+        provider["apiKey"] = "local-proxy"  # the proxy sends the real key; nothing secret is written here
     tools = copy.deepcopy(real.get("tools", {}))
     tools.setdefault("exec", {})["pathPrepend"] = [str(state / "bin" if neutral else SHIM_DIR)]
     config = {
@@ -466,6 +489,94 @@ def cut_streams(log_dir: Path) -> list[str]:
     return cut
 
 
+def copy_auth_store(agent_dir: Path) -> None:
+    """Give the attempt's agent a consistent copy of ~/.openclaw's main agent store, which holds the OpenAI login."""
+    import sqlite3
+    if not AUTH_STORE.exists():
+        raise FileNotFoundError(f"no OpenClaw auth store at {AUTH_STORE}; log in with "
+                                f"`openclaw models auth login --provider openai --device-code`")
+    agent_dir.mkdir(parents=True, exist_ok=True)
+    target = agent_dir / "openclaw-agent.sqlite"
+    source = sqlite3.connect(f"file:{AUTH_STORE}?mode=ro", uri=True)
+    try:
+        dest = sqlite3.connect(target)
+        try:
+            with dest:
+                source.backup(dest)
+        finally:
+            dest.close()
+    finally:
+        source.close()
+    target.chmod(0o600)
+    # The provider's model catalog, which the login fetched into the main agent's plugin cache. An agent turn resolves
+    # its model against this cache and does not fetch it itself: without the copy, "Unknown model: openai/…".
+    # The main agent's cache dates from before the login and lacks newer models; `openclaw models list` refreshes the
+    # cache only in the state it runs in, so a refreshed copy is kept at CATALOG_COPY (made by listing the provider's
+    # models in an isolated state that holds the login) and preferred.
+    catalog = CATALOG_COPY if CATALOG_COPY.exists() else AUTH_STORE.parent / "plugins" / "openai" / "catalog.json"
+    if not catalog.exists():
+        raise FileNotFoundError(f"no OpenAI model catalog at {catalog}; run `openclaw models list --provider openai`")
+    dest_catalog = agent_dir / "plugins" / "openai" / "catalog.json"
+    dest_catalog.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copyfile(catalog, dest_catalog)
+    dest_catalog.chmod(0o600)
+
+
+def session_usage(rows: list[dict]) -> dict:
+    """Token usage from OpenClaw's session transcript (the assistant messages' `usage`), in proxy_usage's shape.
+    Used when no proxy sits between OpenClaw and the model (the "openai" backend)."""
+    totals = {"requests": 0, "attempts": 0, "input_tokens": 0, "output_tokens": 0, "reasoning_tokens": 0,
+              "cached_input_tokens": 0, "requests_without_usage": 0, "non_200": 0, "limiter_wait_s": 0.0,
+              "source": "openclaw session transcript"}
+    for row in rows:
+        message = row.get("message") if isinstance(row.get("message"), dict) else None
+        if not message or message.get("role") != "assistant":
+            continue
+        totals["requests"] += 1
+        totals["attempts"] += 1
+        usage = message.get("usage") or {}
+        if not usage:
+            totals["requests_without_usage"] += 1
+            continue
+        totals["input_tokens"] += int(usage.get("input") or 0) + int(usage.get("cacheRead") or 0) + \
+            int(usage.get("cacheWrite") or 0)
+        totals["cached_input_tokens"] += int(usage.get("cacheRead") or 0)
+        totals["output_tokens"] += int(usage.get("output") or 0)
+        totals["reasoning_tokens"] += int(usage.get("reasoningTokens") or 0)
+    return totals
+
+
+def transcript_leaks(state: Path, agent_id: str, case_id: str) -> list[str]:
+    """The leak guard without a proxy: what the session's opening (its working directory, the model and thinking
+    settings, the skill prompts OpenClaw stored, and the first user message) gives away of the test."""
+    rows, files = session_rows(state, agent_id)
+    parts = []
+    for row in rows:
+        message = row.get("message") if isinstance(row.get("message"), dict) else None
+        if message and message.get("role") in ("assistant", "toolResult"):
+            break  # the opening ends where the model starts answering
+        parts.append(json.dumps(row))
+    prompts = state / "agents" / agent_id / "sessions" / "skills-prompts"
+    if prompts.exists():
+        parts.extend(p.read_text(errors="replace") for p in sorted(prompts.rglob("*.txt")))
+    body = "\n".join(parts).lower()
+    if not body:
+        return ["no session transcript"]
+    scenario = re.sub(r"^(at|fp|p|uc|u|h)-", "", case_id.lower())
+    m = re.match(r"((?:[a-z]+\d?-)?[a-z]{3}-\d+)", scenario)
+    tokens = list(LEAK_TOKENS) + [case_id.lower()] + ([m.group(1)] if m else [])
+    return sorted({t for t in tokens if t in body})
+
+
+def provider_errors(stderr_text: str) -> list[str]:
+    """Rate-limit or quota messages OpenClaw printed while talking to the provider (the "openai" backend)."""
+    hits = []
+    for line in stderr_text.splitlines():
+        if PROVIDER_LIMIT.search(line):
+            hits.append(line.strip()[:200])
+    return hits[:10]
+
+
 def proxy_usage(log_dir: Path) -> dict:
     totals = {"requests": 0, "attempts": 0, "input_tokens": 0, "output_tokens": 0, "reasoning_tokens": 0,
               "requests_without_usage": 0, "non_200": 0, "limiter_wait_s": 0.0}
@@ -634,25 +745,41 @@ def run_attempt(case: dict, attempt: Path, *, database_url: str, backend_url: st
                                        if s.get("tool") == "read" and str(s.get("arguments", {}).get("path", "")).endswith("SKILL.md")})}
         if fake_now is not None:
             flags["clock_suspects"] = clock_scan(steps, [t["text"] for t in turns], real_year=domain == "calendar")
+        oauth = bool(BACKENDS[backend].get("oauth"))  # no proxy: the transcript is the only record of the model side
+        flags["model_settings"] = {row["type"]: {k: v for k, v in row.items() if k not in ("type", "id", "timestamp")}
+                                   for row in rows if row.get("type") in ("model_change", "thinking_level_change")}
         summary.update(status="completed", termination=turn1["termination"], followup=followup_info, flags=flags,
-                       turns=flags["tool_calls_turn1"], usage=proxy_usage(solver_dir / "requests"),
+                       turns=flags["tool_calls_turn1"],
+                       usage=session_usage(rows) if oauth else proxy_usage(solver_dir / "requests"),
                        turn_durations_s=[t["duration_s"] for t in turns])
-        # Infrastructure rules (same as runs/openclaw_transfer_01/infra.py, which applies them to earlier runs).
-        requests = sorted((solver_dir / "requests").glob("*.meta.json"))
-        cut = cut_streams(solver_dir / "requests")
-        if cut:
-            flags["cut_streams"] = cut
-        waited = summary["usage"].get("limiter_wait_s", 0)
-        if turn1["termination"] == "done" and cut and requests and (
-                cut[-1] == requests[-1].name.split(".")[0] or flags["compactions"]):
-            # R1: the reply was built from a truncated stream, or from the compaction OpenClaw ran to recover from one.
-            summary.update(status="infrastructure_error", error=f"R1 provider hang: model request {cut[-1]} came back as a cut stream")
-        elif turn1["termination"] == "timeout" and waited > 0.25 * timeout_s:
-            # R2: our shared request budget, not the agent, ran the clock out.
-            summary.update(status="infrastructure_error", error=f"R2 rate-limit timeout: the turn hit the {timeout_s} s "
-                                                                f"limit after {waited:.0f} s waiting for the shared rate limiter")
+        if oauth:
+            # R3: OpenClaw could not get an answer from the provider (no envelope), or the provider limited it and the
+            # turn did not finish. Both are ours to rerun, not the agent's failure.
+            stderr_text = "".join(p.read_text(errors="replace") for p in sorted(raw_dir.glob("openclaw_*.stderr.txt")))
+            limits = provider_errors(stderr_text)
+            if limits:
+                flags["provider_limits"] = limits
+            if turn1["termination"] == "error" or (limits and turn1["termination"] in ("timeout", "aborted")):
+                summary.update(status="infrastructure_error",
+                               error=f"R3 provider error: {turn1.get('meta_error') or limits or turn1['termination']}")
+        else:
+            # Infrastructure rules (same as runs/openclaw_transfer_01/infra.py, which applies them to earlier runs).
+            requests = sorted((solver_dir / "requests").glob("*.meta.json"))
+            cut = cut_streams(solver_dir / "requests")
+            if cut:
+                flags["cut_streams"] = cut
+            waited = summary["usage"].get("limiter_wait_s", 0)
+            if turn1["termination"] == "done" and cut and requests and (
+                    cut[-1] == requests[-1].name.split(".")[0] or flags["compactions"]):
+                # R1: the reply was built from a truncated stream, or from the compaction OpenClaw ran to recover from one.
+                summary.update(status="infrastructure_error", error=f"R1 provider hang: model request {cut[-1]} came back as a cut stream")
+            elif turn1["termination"] == "timeout" and waited > 0.25 * timeout_s:
+                # R2: our shared request budget, not the agent, ran the clock out.
+                summary.update(status="infrastructure_error", error=f"R2 rate-limit timeout: the turn hit the {timeout_s} s "
+                                                                    f"limit after {waited:.0f} s waiting for the shared rate limiter")
         if neutral:  # the guard: the prompt must give away nothing of the benchmark or the test
-            flags["prompt_leaks"] = prompt_leaks(solver_dir / "requests", case["case_id"])
+            flags["prompt_leaks"] = transcript_leaks(state, agent_id, case["case_id"]) if oauth else \
+                prompt_leaks(solver_dir / "requests", case["case_id"])
             if flags["prompt_leaks"]:
                 summary.update(status="infrastructure_error", error=f"prompt leak: {flags['prompt_leaks']}")
     except Exception as exc:

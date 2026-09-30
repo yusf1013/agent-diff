@@ -1,4 +1,5 @@
-"""Run the frozen suite (or another cases folder) through OpenClaw on the self-hosted Qwen, k trials per test.
+"""Run the frozen suite (or another cases folder) through OpenClaw on the self-hosted Qwen, k trials per test,
+or, with --backend openai, on a GPT model of the PI's OpenAI plan (no proxy; the launcher is not needed).
 
     SOLVER_BACKEND=selfhost python grounding/runs/fact_coverage_02/launch.py grounding.runs.openclaw_eval_01.run \
         --out grounding/runs/openclaw_eval_01/runs/<new run> [--cases-dir DIR] [--cases ID ...] [--trials 3] \
@@ -127,8 +128,11 @@ def write_plan(trial_out: Path, args, items, left_out: dict, trial: int) -> None
         "code_sha256": code_hashes(), "agent": oc.AGENT_ID, "backend": BACKEND,
         "model": f"{spec['provider']}/{spec['model']['id']}", "context_window": spec["model"]["contextWindow"],
         "max_output_tokens": spec["model"]["maxTokens"], "proxy_port": spec["port"],
-        "endpoint": os.getenv("PURDUE_BASE_URL"), "rate_limit_file": os.getenv("PURDUE_RATE_LIMIT_FILE"),
-        "rate_limit_per_minute": os.getenv("PURDUE_RATE_LIMIT_PER_MINUTE"),
+        "endpoint": None if spec.get("oauth") else os.getenv("PURDUE_BASE_URL"),
+        "rate_limit_file": None if spec.get("oauth") else os.getenv("PURDUE_RATE_LIMIT_FILE"),
+        "rate_limit_per_minute": None if spec.get("oauth") else os.getenv("PURDUE_RATE_LIMIT_PER_MINUTE"),
+        "auth": "the OpenAI plan's login profile, copied per attempt; OpenClaw's own agent loop (agentRuntime "
+                "openclaw)" if spec.get("oauth") else "the local proxy holds the key",
         "timeout_seconds_per_turn": args.timeout, "follow_up": False, "prompt_prefix": oc.PREFIX,
         "trial": trial, "trials_per_case": args.trials, "concurrency": args.concurrency,
         "cases_dir": str(args.cases_dir.relative_to(REPO_ROOT)),
@@ -181,9 +185,11 @@ def summarize(trial_out: Path) -> None:
         for k, v in (s.get("usage") or {}).items():
             if isinstance(v, (int, float)):
                 totals[k] = round(totals.get(k, 0) + v, 1)
+    cost_source = ("the OpenAI plan has no per-token charge; tokens are OpenClaw's own counts from its session "
+                   "transcript" if oc.BACKENDS[BACKEND].get("oauth") else
+                   "the self-hosted Qwen has no per-token charge; tokens are server-reported through the local proxy")
     write(trial_out / "usage_summary.json", {"attempts": rows, "usage_totals": totals, "cost_usd": 0.0,
-                                             "cost_source": "the self-hosted Qwen has no per-token charge; tokens "
-                                                            "are server-reported through the local proxy"})
+                                             "cost_source": cost_source})
 
 
 def check_proxy() -> None:
@@ -199,7 +205,10 @@ def check_proxy() -> None:
 
 
 async def main_async(args) -> None:
-    check_proxy()
+    if not oc.BACKENDS[BACKEND].get("oauth"):
+        check_proxy()
+    elif not oc.AUTH_STORE.exists():
+        raise SystemExit(f"no OpenClaw login store at {oc.AUTH_STORE}")
     items, left_out = select(args.cases_dir, args.cases, set(args.read or ()), date.today())
     trials = list(range(1, args.trials + 1))
     for k in trials:
@@ -232,8 +241,13 @@ def main() -> None:
     parser.add_argument("--database-url", default=os.getenv("DATABASE_URL",
                                                             "postgresql://postgres@127.0.0.1:15432/agentdiff_campaign"))
     parser.add_argument("--base-url", default="http://127.0.0.1:18001")
+    parser.add_argument("--backend", choices=("selfhost", "openai"), default="selfhost",
+                        help="selfhost: the self-hosted Qwen through the proxy; openai: a GPT model on the PI's "
+                             "OpenAI plan through OpenClaw's own loop (AGENTDIFF_OPENAI_MODEL, default gpt-6.1-sol)")
     args = parser.parse_args()
-    if os.getenv("SOLVER_BACKEND") != BACKEND:
+    global BACKEND
+    BACKEND = args.backend
+    if BACKEND == "selfhost" and os.getenv("SOLVER_BACKEND") != BACKEND:
         raise SystemExit("run through the launcher with SOLVER_BACKEND=selfhost (it records the shared limiter)")
     if args.concurrency > 48:
         raise SystemExit("keep at most 48 attempts in flight per session (grounding/solver/README.md)")
