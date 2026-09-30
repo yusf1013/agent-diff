@@ -55,14 +55,26 @@ the earlier reading of 8 minutes (runs between 8 and 10 minutes counted as timed
 | Number | 8 minutes (report text) | 10 minutes (numbers/) |
 |---|---:|---:|
 | Regular runs over budget | 104 | 52 |
-| Regular tests exposing a fact | 138 of 565 | 143 of 565 |
-| Facts exposed, detect@3 / detect@1 | 87 / 60 | 88 / 61 |
+| Regular tests exposing a fact | 138 of 565 | 143 of 565; 139 of 563 after the two rulings below |
+| Facts exposed, detect@3 / detect@1 | 87 / 60 | 88 / 61; 87 / 60 after the two rulings below |
 | Policy decisions | 5 not policy-level, 3 undecided | the same 5 and 3, at lower failure rates |
 | Box absence rate | 0.79 [0.74, 0.85] | 0.77 [0.71, 0.83] |
 | Slack underspecified rate | 0.82 [0.75, 0.89] | 0.77 [0.69, 0.84] |
 
 **The report texts (report.md, report_concise.md) still carry the 8-minute numbers**; their tables are to be
 updated from `numbers/` (RQ4, RQ6, §0.4's execution categories, the limits section).
+
+**Two of the PI's blind-review rulings applied to the rulings file (2026-09-30, 01:30):** G4-BOX-11's witness 8201
+("Seaport Archive 2024" matches "the Seaport Archive folder") and G4-BOX-02's witness 8112 (a copy in a subfolder
+of the named folder) are flawed, group B. Found by the sol_score session; they had never reached
+`roadmap_01/known_defects.json`. Two probes leave the suite (563 tests); Box absence has 58 valid units and Box
+underspecified 52; every decision stands.
+
+**numbers/ rebuilt in full at 02:00 (2026-09-30)** after the two rulings: `kit/concise.py` now skips the policy
+executions of units the rulings exclude and records the counts instead of asserting the old ones. The final manifest
+is **998 cases, 2,994 executions** (regular 1,689; absence 726; underspecified 579); 18 policy executions of the 6
+excluded units and 6 regular executions of the 2 excluded probes leave it. Studies that used the earlier 3,018
+manifest (blind_review_01, judge_qwen_01, values_01) keep their own populations.
 
 ## Text changes (2026-09-30)
 

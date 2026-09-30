@@ -88,3 +88,41 @@ section. Decisions that stand go to the [roadmap](roadmap.md); this is the recor
   report_01 RQ7's restore row counts no-ops as restorations and its "changed meeting time" is a storage artifact.
   Proposal: declare the requested value per written field at construction (13 kinds), mechanical checks, one added
   judge question for the residual. Assigned next: the report_update brief.
+- 01:1x judge_qwen (commit f85f957415): **Qwen meets the bar as the judge.** On 443 labelled executions (192 labelled
+  failures): 0 missed failures (strict reading; 1 void under the any-reason reading; the bar allowed 2); precision
+  191/196 (97.4%) against Muse's 192/196 (98.0%); the same verdict on 440 of 443; the same exposed facts on all 196
+  joint failures. Of the 3 disagreements (adjudicated blind, hash-locked), Muse was right on 2 and Qwen on 1. All
+  443 verdicts on the first attempt, one fingerprint, 53 minutes at 16 in flight (about 3.5 GPU-hours, $0), against
+  $13.00 at list for Muse. Candidate prompt change for the PI: the Calendar replica notes don't say where a
+  calendar's data owner shows (calendarList, GET /calendars). Now replaying the other 1,696 (about 3 hours), then the
+  headline numbers under Qwen's verdicts.
+- 01:3x sol_score found two of the PI's blind-review rulings missing from known_defects.json (G4-BOX-11's "Seaport
+  Archive 2024" is a match; a copy in a subfolder counts as "in the folder" for G4-BOX-02). Applied (commit
+  3405221d90): two probes leave the suite; the Qwen round is 139 of 563 tests exposing, 87 facts at detect@3, 60 at
+  detect@1; decisions unchanged. Sol is scored under the updated file, with the old reading as a second column.
+  Also from sol_score: regular_p4 judged and its 45 blind labels locked (1 failure among them); 6 of 444 trials
+  pending the retry pass.
+- 01:3x harness done (commit 56ef84c742; merged into main as ee61eabe70). Recommendation: **Claude Code as the second
+  harness** (Sonnet 5.5 on the plan and the self-hosted Qwen, both run end to end through the curl shim and skills;
+  the clock solved with an LD_PRELOAD shift; the init event shows no MCP servers or synced skills); Codex for Sol
+  only if one run confirms gpt-6.1-sol on the plan (the bundled 0.155 refused it: "not supported when using Codex
+  with a ChatGPT account"; 0.159.2 lists it) and with Calendar and the clocked tests left out (Codex's date cannot
+  be shifted). If one third-party harness must carry all three, OpenCode with Sonnet on an API key. For the PI:
+  the Pro-not-Max login; the Sonnet round's choice (OpenClaw's loop on an API key, about $263 list for the full
+  suite, the only same-harness comparison; or Claude Code's loop at $0); the Codex weekly window at 71%, reset
+  2026-10-03 15:17 EDT, shared with the Sol round. Assigned next: Claude Code as a backend of our runner and a
+  32-test Sonnet pilot (claudecode_pilot_01).
+- 01:35 the Sol policy units now run once each first, then trials 2 and 3, because of the plan's window.
+- 01:4x sol_score, regular_p4 scored (provisional, 6 of 444 trials pending the retry pass): **Sol exposes a fact in
+  5 of 148 Phase 4 tests, against Qwen's 47 on the same tests; 3 facts at detect@3 and detect@1 against Qwen's 26
+  and 20.** Every test Sol exposes, Qwen exposes too (A:Message.blocks in G4-SLK-04's three forms, A:Event.summary,
+  A:ProjectMilestone.name). 14 failing trials against 86; Sol's mechanisms mostly skipped-check (its reasoning is
+  invisible to the judge). Judge v2 agrees with all 45 blind labels and finds the one labelled failure with the
+  same fact and mechanism. A Sol trial takes a median 42 s against Qwen's 174 s, 4 tool calls, few reasoning
+  tokens at "medium". Cost of judging p4: $7.08 list, $0.50 billed. Harness difference to fix before any further
+  round: in the openai backend `memory_search` fails ("agent database belongs to agent main; requested agent
+  assistant") because the login store copied into the attempt's agent directory carries the main agent's identity;
+  Sol called it in 110 of 444 trials; no grounding outcome changes.
+- 02:00 report_01/numbers rebuilt in full after the two rulings (the values session, now on the report update,
+  found it half-rebuilt): the final manifest is 998 cases and 2,994 executions (563 regular tests; 242 absence and
+  193 underspecified units). The report texts are being re-synced to it.
