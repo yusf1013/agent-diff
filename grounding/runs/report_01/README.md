@@ -28,6 +28,7 @@ python grounding/runs/fact_coverage_02/launch.py grounding.runs.report_01.kit.be
 python grounding/runs/fact_coverage_02/launch.py grounding.runs.report_01.kit.mechanisms # §10
 python grounding/runs/fact_coverage_02/launch.py grounding.runs.report_01.kit.scale      # §0.4
 python grounding/runs/fact_coverage_02/launch.py grounding.runs.report_01.kit.costs      # §12
+python grounding/runs/fact_coverage_02/launch.py grounding.runs.report_01.kit.sol        # the second agent (after RQ6), from sol_eval_01/eval
 python -m grounding.runs.report_01.kit.qwen_usage                                    # §0.4: exact Qwen/OpenClaw tokens, including RQ8
 python grounding/runs/fact_coverage_02/launch.py grounding.runs.report_01.kit.concise  # concise report: writes only numbers/concise.json
 ```
@@ -455,7 +456,8 @@ and decisions; its `valid` keeps both cases of each duplicate pair (Linear and S
 ## Text changes (2026-09-30), the Sol round
 
 The second agent, GPT-6.1 Sol on OpenClaw (the Muse-written half), added to both texts at the lead's request by the
-session sol_score. Format: section, old → new, source. `numbers/` and `kit/` are unchanged.
+session sol_score. Format: section, old → new, source. `numbers/` and `kit/` are unchanged, except for the
+follow-ups' kit/sol.py and numbers/sol.json.
 
 **Sources.** Every number is read from the files of sol_eval_01 at commit fca57dd6de (merged into main in
 d32f0787b9), and none is recomputed from memory. The only arithmetic on the files' values:
@@ -556,3 +558,52 @@ All paths below are under `grounding/runs/sol_eval_01/`.
     out of reports.
   - The row, and that column, are left for the lead.
   - The new section gives list prices only. Sol itself ran on the PI's plan, with no per-token charge.
+
+### Follow-ups (2026-09-30, at the lead's request)
+
+1. **The report's convention for the Sol numbers.**
+   - New script: kit/sol.py → numbers/sol.json. It copies every number of the Sol section and of §0.4's separate
+     count from sol_eval_01's files (its docstring lists them).
+   - Its only arithmetic: sums over the four sets, shares, the per-unit failures from the policy verdicts,
+     rounding half up for display, and the what-if's differences from the final numbers.
+   - Every source note of the new sections now points at numbers/sol.json and its keys: the section's opening,
+     Tables 12a to 12c (concise) and 12a to 12f (report.md), speed and cost, the open validity question, and
+     report.md's §0.4 bullet.
+   - Two kinds of number were in no file, so sol_eval_01's kit/observe.py now records them in eval/observations.json
+     (every earlier value unchanged):
+     - the attempts the retry pass replaced, by kind (8 provider stalls, 9 other provider errors);
+     - memory_search for both agents on the same trials.
+   - sol_eval_01's kit/whatif.py writes the what-if to eval/whatif_G4-BOX-15_9102.json with `--json`.
+   - One sentence changed with it. report.md's "Qwen's 9 calls to it in `full_03` did not fail" → "On the same tests
+     and units Qwen called it 56 times, in 52 trials, and no call failed that way". The old figure came from a hand
+     check of all of `full_03`, not a file. Source: numbers/sol.json, `memory_search` → `qwen_same_tests`.
+2. **List prices only (the PI's rule).** The PI's notes of 2026-09-29 ("Decided") say the paper gives the general
+   price, never the contributor price. Every billed figure is removed, with the list price kept:
+   - **report_concise.md RQ3:** "$36.74 at list prices ($2.08 billed)" → "$36.74 at list prices".
+   - **Table 14, both texts:** "Generation cost for 48 tests: list (billed)" (report.md "per 48 tests, list
+     (billed)") → "…, list price", with each cell's bracketed billed amount removed. Concise: $0.51, $1.20, $0.67,
+     $1.14, $6.04. report.md: the same, with $5.44.
+   - **report.md RQ3:** "($0.035 and $0.046 billed)" and "($0.007 billed)" are removed.
+   - **report.md RQ9:** "$7.26 at list price ($0.52 billed)" → "$7.26 at list price", and "$5.42 ($0.38 billed)" →
+     "$5.42".
+   - **report.md §12, Table 18:**
+     - "(list price; billed in brackets)" → "(list price)", and the Billed column is removed. The Sonnet row's "$0"
+       goes with it; the Qwen row's "287.6 agent-hours" moves into its price cell.
+     - New row, as the lead asked: "Muse: judge v2 on GPT-6.1 Sol's trials (sol_eval_01, the section after RQ6) |
+       1,175 | $32.60", from numbers/sol.json, `judge_cost`.
+     - New row, for consistency with the Qwen row: "Second agent under test: GPT-6.1 Sol on the PI's OpenAI plan
+       (sol_eval_01) | 8,172 requests | no per-token charge (19.6 agent-hours)", from numbers/sol.json,
+       `speed_and_tokens`.
+     - The source note now says "from every `calls.jsonl` on the branch as of commit a8c046c891". kit/costs.py was
+       not rerun: rerun, it would also read the calls of studies added since (sol_eval_01's among them), which
+       its components do not name. The Sol rows come from numbers/sol.json.
+   - **report.md §12, unit costs:** "(Muse, list price; billed in brackets)" → "(Muse, list price)". The bracketed
+     $0.035, $0.046, $0.007, $0.002 and $0.0014 are removed.
+   - **report.md §12, the bullet** "Muse is billed at about 6.6% of its list price. … $181 at list price and $11.73
+     billed" → "Every price in this report is a list price. The actual Muse spend ran under Muse's contributor
+     pricing, at about 6.6% of list, and is recorded in numbers/costs.json and the studies' READMEs. Muse's part of
+     the OpenClaw evaluation … comes to $181 at list price." Source: numbers/costs.json, `Muse total`: $302.74 list,
+     $19.96 at contributor pricing, 6.6%.
+   - **report_concise.md §12:** the same sentence, added after the self-hosted cost note.
+   - **Unchanged:** report.md §0.1's model name `muse-spark-1.3-contributor` (a model id, not a price), and the
+     billed amounts in this README's earlier log entries and in the studies' READMEs, which are records.

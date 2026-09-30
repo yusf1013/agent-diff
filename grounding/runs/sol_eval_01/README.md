@@ -106,7 +106,7 @@ $L grounding.runs.sol_eval_01.kit.score adjudicate SET; $L grounding.runs.sol_ev
 $L grounding.runs.sol_eval_01.kit.policy decide                                  # eval/policy_decisions.json
 $L grounding.runs.sol_eval_01.kit.compare_qwen; $L grounding.runs.sol_eval_01.kit.observe; $L grounding.runs.sol_eval_01.kit.cost
 $L grounding.runs.sol_eval_01.kit.judge_accuracy                               # eval/judge_accuracy.json (locked sets only)
-$L grounding.runs.sol_eval_01.kit.whatif G4-BOX-15 9102                        # one more ruling's effect, printed only
+$L grounding.runs.sol_eval_01.kit.whatif G4-BOX-15 9102 --json                 # one more ruling's effect (eval/whatif_*.json)
 ```
 
 ## Results
@@ -347,7 +347,8 @@ the decision stands.
   - 316 final answers then tell the user that memory lookup was unavailable.
   - Cause, as the lead diagnosed it: the login store copied into the attempt's agent directory carries the main
     agent's identity, so the memory plugin refuses it. The same error blocks the auth failover after a stall.
-  - Qwen's runs never hit it: its `full_03` (999 trials) made 9 memory_search calls, none failing.
+  - Qwen's runs never hit it. On the same 1,491 tests and units it called memory_search 56 times, in 52 trials, and
+    no call failed that way (eval/observations.json, `memory_search`).
   - My reading: it changes no grounding outcome, since no trial needed memory. The lead will fix the layout before
     any further round.
 - **Awareness remarks** (openclaw_eval_01's pattern, on visible text):
@@ -374,7 +375,8 @@ G4-BOX-15's hub 9102, "Atlas Onboarding Archive", is a near miss on `A:Hub.title
 - **So it is labelled by the construction.** The lead made no ruling by analogy.
 
 If you rule it a match (a flawed near miss), the effect is as follows. kit/whatif.py adds that one entry to a
-temporary copy of the rulings file, reruns the same scoring and policy code, and saves nothing:
+temporary copy of the rulings file and reruns the same scoring and policy code. It applies no ruling; with `--json`
+it records the result in eval/whatif_G4-BOX-15_9102.json:
 - **Regular tests:** the rulings leave the probe out.
   - Sol: 12 of 281 tests exposing, and 6 facts at detect@3 and at detect@1. The probe was Sol's only Box
     exposure.
@@ -459,7 +461,16 @@ temporary copy of the rulings file, reruns the same scoring and policy code, and
   - **The PI's open question:** AT-G4-BOX-15's "Atlas Onboarding Archive" was flagged for the PI in my label
     notes and in a message to the lead (04:02), not in the Results. Section 6 now states it, with the effect of a
     ruling from kit/whatif.py.
-- **06:30, two corrections, found while writing report_01's Sol section.**
+- **06:10, two corrections, found while writing report_01's Sol section.**
   - Qwen's cache: "Qwen's proxy records no cache" was wrong. Its execution summaries hold no cache count, but its
     proxy's request records do (report_01 §0.4 reads them).
   - Qwen's median reasoning tokens: 1,141 → 1,142 (the file's 1,141.5, rounded half up).
+- **06:25, for report_01's kit (the lead's follow-up).** report_01/kit/sol.py copies the numbers of report_01's Sol
+  section from eval/*.json. Two kinds of number it cites were in no file, so kit/observe.py now records them (every
+  earlier value of eval/observations.json is unchanged):
+  - the attempts the retry pass replaced, by kind (8 provider stalls, 9 other provider errors);
+  - memory_search for both agents on the same trials. Sol: 354 trials, all failing, and 316 final answers
+    mentioning it. Qwen: 56 calls in 52 trials, none failing. This replaces the `full_03` count, which I had checked
+    by hand.
+
+  kit/whatif.py gained `--json`, and eval/whatif_G4-BOX-15_9102.json holds the section 6 numbers.

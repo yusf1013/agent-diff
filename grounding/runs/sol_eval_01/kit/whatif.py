@@ -1,5 +1,6 @@
 """What changes if the PI rules one more near miss flawed: Sol's and Qwen's regular totals on the same tests, and the
-policy cells of that near miss's service, for both agents. Prints only; nothing is saved. No model calls.
+policy cells of that near miss's service, for both agents. Prints the result; with --json also writes it to
+eval/whatif_<scenario>_<witness>.json. Nothing else is saved, and no ruling is applied. No model calls.
 
 Adds one entry ({"scenario", "witness", "ruling": "flawed"}, as the rulings file records G4-BOX-11's "Seaport
 Archive 2024") to a temporary copy of roadmap_01/known_defects.json, points openclaw_eval_01/rulings.py at it, and
@@ -7,7 +8,7 @@ reruns this kit's own copies unchanged: kit/score.py's `adjudicate` and `combine
 full_02/03/04 without it), kit/compare_qwen.py's `totals` and `facts` over the tests Sol keeps, and kit/policy.py's
 `decide_cell` and `facts_view` on the Muse-parent units.
 
-    python grounding/runs/fact_coverage_02/launch.py grounding.runs.sol_eval_01.kit.whatif G4-BOX-15 9102
+    python grounding/runs/fact_coverage_02/launch.py grounding.runs.sol_eval_01.kit.whatif G4-BOX-15 9102 [--json]
 """
 from __future__ import annotations
 
@@ -28,10 +29,13 @@ class _Rulings(type(Path())):
 
 
 def main():
-    if len(sys.argv) != 3:
+    args = [a for a in sys.argv[1:] if a != "--json"]
+    if len(args) != 2:
         raise SystemExit(__doc__)
-    scenario, witness = sys.argv[1], sys.argv[2]
+    scenario, witness = args
     domain = score._domain(scenario)
+    result = {"_about": f"What-if: {scenario}'s near miss {witness} ruled flawed (kit/whatif.py; not a ruling).",
+              "scenario": scenario, "witness": witness}
     with tempfile.TemporaryDirectory() as tmp:
         tmp = Path(tmp)
         doc = json.loads(rulings.KNOWN_DEFECTS.read_text())
@@ -55,24 +59,30 @@ def main():
             parts.append((run, domains, path))
         ids = {r["case_id"] for r in sol}
         qwen = [r for r in score.combine(parts)["tests"] if r["case_id"] in ids]
-    print(f"with {scenario} {witness} flawed: Sol's tests left out {sorted(left)}")
-    print("regular, Sol:", compare_qwen.totals(sol))
-    print("regular, Qwen on the same tests:", compare_qwen.totals(qwen))
-    print("Sol's facts at detect@3:", sorted(f"{d} {f}" for d, f in compare_qwen.facts(sol, "exposed")))
-    for mode in policy.MODES:
-        looks = policy.policy.population_plan(mode)["looks"]
-        outcomes = {"sol": policy.outcomes_of([policy.EVAL / f"judged_policy_{mode}"]),
-                    "qwen": policy.qwen_outcomes(mode)}
-        cells = policy.cell_units(mode, muse_only=True)
-        for cell, valid in sorted(cells.items()):
-            if cell.startswith(domain):
-                rows = {who: policy.decide_cell(valid, got, looks) for who, got in outcomes.items()}
-                print(f"{cell}: {len(valid)} units | " + " | ".join(
-                    f"{who} {r['failing_trials']}/{r['usable_trials']} {r['rate']} [{r['p10']}, {r['p90']}] "
-                    f"{r['decision']}" for who, r in rows.items()))
-        print(f"{mode} facts (valid, failing @3, @1):", {
-            who: (len(v["facts_valid"]), len(v["facts_failing_detect3"]), len(v["facts_failing_detect1"]))
-            for who, v in ((who, policy.facts_view(cells, got)) for who, got in outcomes.items())})
+        result["regular"] = {"sol_tests_left_out": sorted(left), "sol": compare_qwen.totals(sol),
+                             "qwen_same_tests": compare_qwen.totals(qwen),
+                             "sol_facts_detect3": sorted(f"{d} {f}" for d, f in compare_qwen.facts(sol, "exposed"))}
+        for mode in policy.MODES:
+            looks = policy.policy.population_plan(mode)["looks"]
+            outcomes = {"sol": policy.outcomes_of([policy.EVAL / f"judged_policy_{mode}"]),
+                        "qwen_same_units": policy.qwen_outcomes(mode)}
+            cells = policy.cell_units(mode, muse_only=True)
+            result[mode] = {"cells": {}, "facts": {}}
+            for cell, valid in sorted(cells.items()):
+                if cell.startswith(domain):
+                    result[mode]["cells"][cell] = {
+                        who: {k: r[k] for k in ("valid_units", "failing_trials", "usable_trials", "rate", "p10", "p90",
+                                                "decision")}
+                        for who, r in ((who, policy.decide_cell(valid, got, looks)) for who, got in outcomes.items())}
+            for who, got in outcomes.items():
+                v = policy.facts_view(cells, got)
+                result[mode]["facts"][who] = {k: len(v[k]) for k in ("facts_valid", "facts_failing_detect3",
+                                                                     "facts_failing_detect1")}
+    print(json.dumps(result, indent=1))
+    if "--json" in sys.argv:
+        out = score.EVAL / f"whatif_{scenario}_{witness}.json"
+        out.write_text(json.dumps(result, indent=1) + "\n")
+        print("wrote", out.relative_to(score.STUDY))
 
 
 if __name__ == "__main__":

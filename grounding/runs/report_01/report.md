@@ -103,7 +103,8 @@ Source: [kit/scale.py](kit/scale.py) → [numbers/scale.json](numbers/scale.json
 - **A second agent, counted apart** (the section after RQ6). GPT-6.1 Sol on OpenClaw ran 1,491 trials of the
   Muse-written half: 19.6 agent hours, 8,172 model requests, 79.3M input tokens (57.6M cached) and 0.67M output
   tokens, from OpenClaw's session transcripts. 1,488 of these trials are on the final tests and units; the rulings
-  left out one probe after its 3 trials. Source: `sol_eval_01/eval/observations.json`.
+  left out one probe after its 3 trials. Source: [numbers/sol.json](numbers/sol.json) (`scope`,
+  `speed_and_tokens`).
 
 **Self-hosted Qwen token accounting across this report (audited 2026-09-29).** The subtotal above omits
 RQ8's fresh baseline and ablation runs. [kit/qwen_usage.py](kit/qwen_usage.py) →
@@ -334,8 +335,8 @@ and §6.4, [completion_01](../completion_01/README.md).
   (`variants2.dropf_id`).
 
 **Cost of generation** (Muse, [numbers/costs.json](numbers/costs.json)): writer and reader together, $0.62 per
-accepted scenario at list price in Phase 4 and $0.82 in 6b ($0.035 and $0.046 billed); $0.126 per valid regular test
-($0.007 billed). Sonnet on the subscription: $1.78 to $5.47 per accepted scenario at list price. §12 has the rest.
+accepted scenario at list price in Phase 4 and $0.82 in 6b; $0.126 per valid regular test. Sonnet on the
+subscription: $1.78 to $5.47 per accepted scenario at list price. §12 has the rest.
 
 ## RQ4. What failures do the tests expose in a real agent harness?
 
@@ -556,8 +557,10 @@ rulings, the 10-minute budget and the 3 trials each are the Qwen round's; the ha
   out.
 - **Qwen's columns** are its final trials of the same tests and units. They differ from Tables 7 to 12, which cover
   the whole suite.
-- **Source:** [sol_eval_01](../sol_eval_01/README.md), Results, and the files in its `eval/` named under each table.
-  sol_eval_01's kit computes them. Its copies of the scoring and decision code reproduce Qwen's files exactly.
+- **Source:** [kit/sol.py](kit/sol.py) → [numbers/sol.json](numbers/sol.json), which copies every number here
+  from the `eval/` files of [sol_eval_01](../sol_eval_01/README.md); the setup facts come from its README.
+  sol_eval_01's kit wrote those files, and its copies of the scoring and decision code reproduce Qwen's files
+  exactly.
 
 **What differs in the harness setup:**
 
@@ -576,8 +579,8 @@ rulings, the 10-minute budget and the 3 trials each are the Qwen round's; the ha
   read before it runs.
 - **memory_search fails on every call.** OpenClaw's memory tool refuses the copied login, which carries the main
   agent's identity. 354 of the 1,491 trials called it, and 316 final answers tell the user that memory was
-  unavailable. No trial needed memory, so no grounding outcome changes. Qwen's 9 calls to it in `full_03` did not
-  fail.
+  unavailable. No trial needed memory, so no grounding outcome changes. On the same tests and units Qwen called it
+  56 times, in 52 trials, and no call failed that way.
 - **Sol's reasoning is not recorded.** Its tool steps carry no thinking. The record holds commands, responses, the
   final answer and occasional reasoning summaries: visible text in 1,684 of 8,487 steps. The judge therefore sees
   Sol's commands, responses and final answer with little reasoning. Mechanisms and awareness rest on that
@@ -587,9 +590,10 @@ rulings, the 10-minute budget and the 3 trials each are the Qwen round's; the ha
   - 8 provider stalls ("LLM idle timeout (120s)", made an infrastructure error during this round);
   - 9 other provider errors.
 
-**Table 12a. Exposure on the same 282 regular tests.** Source: `sol_eval_01/eval/side_by_side_regular.json`
-(`groups`, `tests_exposing`, `facts_detect3`, `trials`); Qwen's side from
-[final_regular_with_6b.json](../openclaw_eval_01/runs/final_regular_with_6b.json).
+**Table 12a. Exposure on the same 282 regular tests.** Source: [numbers/sol.json](numbers/sol.json), `regular`
+(`groups`, `probe_families`, `sol_exposing_tests`, `trials`). Qwen's side comes from
+[final_regular_with_6b.json](../openclaw_eval_01/runs/final_regular_with_6b.json) through sol_eval_01's
+side-by-side file.
 
 | | Tests | Exposing: Sol | Exposing: Qwen | Facts, detect@3 (detect@1): Sol | Facts: Qwen |
 |---|---:|---:|---:|---:|---:|
@@ -639,7 +643,7 @@ rulings, the 10-minute budget and the 3 trials each are the Qwen round's; the ha
   Sol's voids are G4-LIN-13 probes: the Linear replica returns `activeCycle: null`, and Sol concluded that the team
   has no active cycle.
 
-**Table 12b. Mechanisms of the counted failing trials** (judge v2). Same source (`failing_trial_mechanisms_judge_v2`).
+**Table 12b. Mechanisms of the counted failing trials** (judge v2). Same source (`mechanisms_judge_v2`).
 
 | Mechanism | Sol (32) | Qwen, same tests (145) |
 |---|---:|---:|
@@ -655,8 +659,8 @@ rulings, the 10-minute budget and the 3 trials each are the Qwen round's; the ha
 - **Roles and relations rarely fool it.** Owner against creator, assigner against creator, and blocking against
   related are almost always right. F1 catches Sol in 1 of 48 probes, against 20 for Qwen.
 
-**Table 12c. The eight cells on the same units.** Source: `sol_eval_01/eval/policy_decisions.json` (`cells` → `sol`,
-`qwen_same_units`: `valid_units`, `failing_trials`, `usable_trials`, `rate`, `p10`, `p90`, `decision`, `readings`).
+**Table 12c. The eight cells on the same units.** Source: [numbers/sol.json](numbers/sol.json), `policy`
+(`cells`, `totals`, `sol_failing_units`), from sol_eval_01's `policy_decisions.json`.
 The decision rule is RQ6's, unchanged. The units are the Muse-parent units without G4-LIN-08's, with Linear's
 duplicate pair counted once. Units failing some / all trials count units with a usable trial.
 
@@ -704,8 +708,8 @@ incomplete. With 3 failing trials there, the cell would be at 10 / 62 (0.16).
 Every fact Sol's regular tests expose also fails an absence unit. Another 12 absence facts and all 5 underspecified
 facts fail for Sol with no regular exposure.
 
-**Table 12e. Judge v2 against the blind labels on Sol's trials.** Source: `sol_eval_01/eval/judge_accuracy.json`
-(`sets`, `pooled`). Columns as in Table 9.
+**Table 12e. Judge v2 against the blind labels on Sol's trials.** Source: [numbers/sol.json](numbers/sol.json),
+`judge`. Columns as in Table 9.
 
 | Agent | Tests | Trials | Agree | TP | FP | FN | TN | Void (both) | Judge void only | Label void only | Same facts on TP |
 |---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
@@ -728,8 +732,9 @@ facts fail for Sol with no regular exposure.
   or saw and acted (once). With Sol's reasoning unrecorded, the mechanism is the least certain part of a verdict,
   the label's included.
 
-**Table 12f. Speed and tokens.** Source: `sol_eval_01/eval/observations.json` (per set, `sol` and
-`qwen_same_tests`), from OpenClaw's session transcripts (Sol) and the execution summaries (Qwen).
+**Table 12f. Speed and tokens.** Source: [numbers/sol.json](numbers/sol.json), `speed_and_tokens`, `awareness`
+and `judge_cost`. sol_eval_01's `observations.json` took them from OpenClaw's session transcripts (Sol) and the
+execution summaries (Qwen).
 
 | | Sol | Qwen, same trials |
 |---|---:|---:|
@@ -763,7 +768,9 @@ facts fail for Sol with no regular exposure.
 **One validity question is open for the PI.** G4-BOX-15's hub "Atlas Onboarding Archive" for "the Atlas Onboarding
 hub" is labelled by the construction. Both agents act on it in all three trials of its probe and of its absence
 twin. A ruling that it matches would remove one test and one fact (`A:Hub.title`) from each agent's results on
-these tests. It would change no policy decision. Source: sol_eval_01's README, Results §6 (`kit/whatif.py`).
+these tests. It would change no policy decision. Source: [numbers/sol.json](numbers/sol.json),
+`whatif_G4-BOX-15_9102` (sol_eval_01's `kit/whatif.py`); the question is set out in sol_eval_01's README, Results
+§6.
 
 **What the second agent shows.** The tests, the rulings and the judge carry over to a second agent unchanged:
 judge v2 agrees with 174 of 176 blind labels on Sol's trials, and finds all 7 labelled failures with the same facts.
@@ -879,7 +886,7 @@ from `full_02` as rebuilt under the 10-minute budget and the rulings. For all 29
 | Policy-level facts, designated near misses only (baselines_01's count) | 0 / 0 | 0 / 0 | 1 / 1 | 0 / 0 | – |
 | Policy-level facts, any near miss failing one fact (our rule) | 4 / 3 | 0 / 0 | 2 / 2 | 1 / 0 | – |
 | Own oracle on its valid trials: precision / recall | 0.54 / 0.70 (assertions) | 0 real, 21 false | 0.27 / 1.00 | 0.03 / 1.00 | 1.00 / 1.00 (judge v2) |
-| Generation cost per 48 tests, list (billed) | $0.51 ($0.03) | $1.20 ($0.06) | $0.67 ($0.03) | $1.14 ($0.06) | $5.44 ($0.31) |
+| Generation cost per 48 tests, list price | $0.51 | $1.20 | $0.67 | $1.14 | $5.44 |
 
 - **Asked plainly, a coding agent writes tests that expose no fact,** with or without our catalog, with or without
   the reviewer's fixes: 0 facts from 169 valid baseline tests. 48 of ours expose about 11.
@@ -979,7 +986,7 @@ policy panel is.
 - **Manual phase before it** (`several_match_02`): 4 covers, trap reach 12 of 23; the automation reaches 11 of 23 on
   the same covers and reproduces the findings. Plural probes (no target) exposed nothing in 41 trials and were
   dropped.
-- **Cost:** 144 Muse calls, $7.26 at list price ($0.52 billed).
+- **Cost:** 144 Muse calls, $7.26 at list price.
 
 ### 9.2 Capability boundaries: requests the actor cannot carry out
 
@@ -1003,7 +1010,7 @@ policy panel is.
   It is keyed to its source fact ("80 catalog facts carry a faithful write limit") and counted in its own space.
 - **The 42 unservable facts are a different axis:** only 4 of the 152 elements touch them (the Calendar sharing-rule
   limit).
-- **Cost:** 179 Muse calls, $5.42 at list price ($0.38 billed).
+- **Cost:** 179 Muse calls, $5.42 at list price.
 
 **Caveats for both** (from the studies): one agent, and the toy harness; the self-hosted model was shared with other
 sessions (13 to 38 s per turn); replica gaps voided some trials (Linear's null connections, Box folder listings that
@@ -1106,36 +1113,40 @@ mechanisms on every failing trial it reads ([numbers/exposure.json](numbers/expo
 
 ## 12. Cost
 
-**Table 18. Model spend by component** (list price; billed in brackets). Source: [kit/costs.py](kit/costs.py) →
-[numbers/costs.json](numbers/costs.json), from every `calls.jsonl` on this branch; other branches from their reports.
+**Table 18. Model spend by component** (list price). Source: [kit/costs.py](kit/costs.py) →
+[numbers/costs.json](numbers/costs.json), from every `calls.jsonl` on the branch as of commit a8c046c891; other
+studies from their reports; the Sol round's rows from [numbers/sol.json](numbers/sol.json).
 
-| Component | Calls | List | Billed |
-|---|---:|---:|---:|
-| Muse: scenario generation (writer and cold reader) | 331 | $36.74 | $2.08 |
-| Muse: policy variants (drop-F wording and reader, clones) | 1,291 | $54.42 | $3.44 |
-| Muse: drop-F and clone calibration | 446 | $21.23 | $1.36 |
-| Muse: judge v2 on OpenClaw trials | 3,037 | $89.53 | $6.21 |
-| Muse: judge v2 on the toy harness's trials | 1,067 | $46.23 | $3.12 |
-| Muse: development (smoke tests, judge v1 on Muse, settings checks) | 450 | $20.09 | $1.34 |
-| Muse: judge baselines J0 and J1 | 1,228 | $34.50 | $2.41 |
-| **Muse, this branch** | **7,850** | **$302.74** | **$19.96** |
-| Muse: baselines_01 (generation $3.53, judges $21.36) | 814 | $24.89 | $1.78 |
-| Muse: step 5's automation (several matches $7.26, boundaries $5.42) | 323 | $12.68 | $0.90 |
-| Sonnet 5 on the Claude Code subscription (autogen_01, all runs) | 1,421 | $208.02, plus $13.61 in failed calls | $0 |
-| Agent under test: self-hosted Qwen (main evaluation only; full token accounting in §0.4) | 44,575 requests | no per-call charge | 287.6 agent-hours |
+| Component | Calls | List price |
+|---|---:|---:|
+| Muse: scenario generation (writer and cold reader) | 331 | $36.74 |
+| Muse: policy variants (drop-F wording and reader, clones) | 1,291 | $54.42 |
+| Muse: drop-F and clone calibration | 446 | $21.23 |
+| Muse: judge v2 on OpenClaw trials | 3,037 | $89.53 |
+| Muse: judge v2 on the toy harness's trials | 1,067 | $46.23 |
+| Muse: development (smoke tests, judge v1 on Muse, settings checks) | 450 | $20.09 |
+| Muse: judge baselines J0 and J1 | 1,228 | $34.50 |
+| **Muse, this branch** | **7,850** | **$302.74** |
+| Muse: baselines_01 (generation $3.53, judges $21.36) | 814 | $24.89 |
+| Muse: step 5's automation (several matches $7.26, boundaries $5.42) | 323 | $12.68 |
+| Muse: judge v2 on GPT-6.1 Sol's trials (sol_eval_01, the section after RQ6) | 1,175 | $32.60 |
+| Sonnet 5 on the Claude Code subscription (autogen_01, all runs) | 1,421 | $208.02, plus $13.61 in failed calls |
+| Agent under test: self-hosted Qwen (main evaluation only; full token accounting in §0.4) | 44,575 requests | no per-call charge (287.6 agent-hours) |
+| Second agent under test: GPT-6.1 Sol on the PI's OpenAI plan (sol_eval_01) | 8,172 requests | no per-token charge (19.6 agent-hours) |
 
-**Unit costs (Muse, list price; billed in brackets):**
+**Unit costs (Muse, list price):**
 
 | Unit | Cost |
 |---|---:|
-| Accepted scenario (writer and reader) | $0.62 (Phase 4), $0.82 (6b); ($0.035, $0.046) |
-| Valid regular test | $0.126 ($0.007) |
-| Judge v2 verdict on an OpenClaw trial | $0.029 ($0.002) |
-| Judging per OpenClaw trial run (4,464) | $0.020 ($0.0014) |
+| Accepted scenario (writer and reader) | $0.62 (Phase 4), $0.82 (6b) |
+| Valid regular test | $0.126 |
+| Judge v2 verdict on an OpenClaw trial | $0.029 |
+| Judging per OpenClaw trial run (4,464) | $0.020 |
 | Baseline test (B1, B2), for comparison | $0.011 to $0.014 at list |
 
-- **Muse is billed at about 6.6% of its list price.** Muse's part of the OpenClaw evaluation (its scenarios, all
-  policy variants, and judging) comes to $181 at list price and $11.73 billed.
+- **Every price in this report is a list price.** The actual Muse spend ran under Muse's contributor pricing, at
+  about 6.6% of list, and is recorded in [numbers/costs.json](numbers/costs.json) and the studies' READMEs. Muse's
+  part of the OpenClaw evaluation (its scenarios, all policy variants, and judging) comes to $181 at list price.
 - **Not measured:** GPU cost of the self-hosted agent; the people's time for reviews and labels.
 
 ## 13. Not yet measured
