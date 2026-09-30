@@ -81,3 +81,33 @@ prompts, AgentDojo and ClawsBench in their repositories).
   feasibility, formal-specification-driven synthesis (MANTRA with SMT), failure diagnostics beyond selection.
 - **ClawsBench is not released** (repository: trajectories and docs, "coming soon"); it would be a projection
   candidate (Slack, Calendar) on release.
+
+## 2026-09-30, cycle 3: a pilot of the Agent-Diff projection, and the engine's closed world
+
+**Checked:** whether Agent-Diff's released evaluation enforces the paper's closed-world invariant ("any other insertion,
+deletion, or mutation is treated as a side effect and causes the task to fail"). It does not: `core.py`'s `evaluate`
+returns `AssertionEngine(compiled_spec).evaluate(diff)`, and the engine's `strict` flag only limits which fields may
+change on rows an assertion already matched. This repository's `assertion.py` is byte-identical to upstream `main`
+(fetched 2026-09-30); nothing in `backend/src` or `sdk` checks unexplained changes. Consistent with the saved Sonnet 5
+run of slack_67, which added a thumbs-up to the excluded pizza-combo message and passed 3 of 3 assertions.
+
+**Ran:** [pilot/agentdiff_projection_pilot.py](pilot/agentdiff_projection_pilot.py) on 8 obligations of 6 Slack tests
+(slack_67, 74, 87, 89, 104, 105), no model calls. Per obligation: the catalog facts its conditions use; the near
+misses the shared seed holds for each fact (designated alternative, or plain), computed from the seed; and whether
+the test's own assertions, compiled and run by the backend's engine, still pass when a near miss replaces the target
+in a correct diff ([pilot/agentdiff_projection_pilot.json](pilot/agentdiff_projection_pilot.json)).
+
+**Learned:**
+- **All 8 correct diffs pass** (the harness is sound).
+- **The seed holds a designated near miss for 3 of 8:** members who share an admin's first name (Morgan Stanley,
+  Robert Chen; slack_89 O1), people who posted in #engineering without being members (slack_104 O2), and the thread's
+  replies for its root (slack_105 O3). slack_87 uses the author role, but every member of the channels with a login
+  or password post is also an author, so "posted" is never told from "is in the channel".
+- **The assertions still pass with the near miss in 3 of 8:** naming the two same-first-name members (slack_89 O1),
+  listing a non-member poster (slack_104 O2; "Member Count: 15" also passes, it contains "5"), and leaving out two of
+  the four lunch questions (slack_67 O1, a several-match miss). slack_87's count catches a swapped invitee but not an
+  extra one.
+- **Two of the three designated near misses sit where the assertions are blind.** Where an assertion pins an id
+  (slack_105's parent, slack_67's pizza message, the destination channels), a substitution fails.
+- **Cost:** about 5 minutes an obligation by hand, with the obligation cards already written. Most of it is
+  mechanical: the cards already name the columns and relationships an obligation identifies by.
