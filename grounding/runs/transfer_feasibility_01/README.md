@@ -12,6 +12,9 @@ the suite's recorded seeds.
     ordinary accounts.
   - The lead's request said 563 regular tests; the final manifest (report_01, `final_execution_keys`, and
     openclaw_eval_01's `final_regular_with_6b.json`) has 565, which is what is used.
+- **The manifest used:** the classification used the 1,006-test manifest of 2026-09-29 (report_01's
+  `concise.json`). The lead reports that two probes and six policy units have since left the suite; their rows
+  in [tests.csv](tests.csv) should be dropped when the suite's new list is used.
 - **Not done:** no account was created and no call made to a real service, so every "pilot" item below is still
   open.
 
