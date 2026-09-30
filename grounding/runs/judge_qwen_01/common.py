@@ -87,8 +87,9 @@ def muse_prompt(key: str) -> tuple[str, str]:
 
 
 def labels() -> dict:
-    """Reference labels on final executions: the lead's 310 retained blind labels and blind_review_01's effective
-    labels (all 200; `has_llm` marks the 133 with a saved LLM verdict). Value: outcome, exposed, mechanism, source."""
+    """Reference labels on the current final executions: the lead's retained blind labels and blind_review_01's
+    effective labels (`has_llm` marks those with a saved LLM verdict). Keys that have left the manifest are skipped.
+    Value: outcome, exposed, mechanism, source."""
     final = set(final_keys())
     out = {}
     for f in sorted((RUNS / "openclaw_eval_01" / "eval").glob("labels_*/*_blind.json")):
@@ -101,7 +102,9 @@ def labels() -> dict:
     effective = {x["blind_id"]: x for x in load(br / "effective_labels.json")}
     for row in csv.DictReader((br / "samples.csv").open()):
         e = effective[row["blind_id"]]
-        assert row["key"] in final and row["key"] not in out
+        if row["key"] not in final:  # left the suite after the review (the manifest of 2026-09-30 dropped 24 executions)
+            continue
+        assert row["key"] not in out
         out[row["key"]] = {"outcome": e["outcome"], "exposed": sorted(e.get("exposed") or []),
                            "mechanism": e.get("mechanism"), "source": "blind_review_01", "blind_id": row["blind_id"],
                            "review_status": e.get("review_status"), "has_llm": row["source"] == "LLM"}
