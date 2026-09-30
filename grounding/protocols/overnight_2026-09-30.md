@@ -6,12 +6,15 @@ section. Decisions that stand go to the [roadmap](roadmap.md); this is the recor
 ## For the PI in the morning (written 05:40; the session log below has every detail)
 
 **Results**
-1. **GPT-6.1 Sol on OpenClaw, the Muse-written half** (`sol_eval_01`, scored by the `sol_score` session, final numbers
-   pending its last pass): Sol exposes a fact in 13 of 282 regular tests against Qwen's 78 on the same tests; 7 facts at
-   detect@3 against 47; every fact Sol exposes, Qwen exposes too. No run over budget; a median 42 s per run against
-   174 s. Judge v2 agrees with 87 of 89 blind labels (the two differences are tests your blind-review rulings make
-   flawed). Policy sets: run 3 trials each, judged; decisions pending. 16 G4-LIN-08 tests and units could not run
-   (clocked past the login's expiry).
+1. **GPT-6.1 Sol on OpenClaw, the Muse-written half** (`sol_eval_01`, final): Sol exposes a fact in 13 of 282 regular
+   tests against Qwen's 78 on the same tests; 7 facts at detect@3 and detect@1 against 47 and 33; every fact Sol
+   exposes, Qwen exposes too. Trials: 800 passing against 655; 32 counted failures against 145; 0 over budget
+   against 32. **All eight policy cells are not policy-level for Sol** (rates 0.00–0.23; on the same units Qwen is
+   0.44–0.90, Calendar absence policy-level). Per fact: absence 19 of 115 failing at detect@3 (Qwen 87),
+   underspecified 5 of 100 (Qwen 61). Judge v2 agrees with 174 of 176 blind labels and finds all 7 labelled failures
+   with the same facts; the two differences are the tests your blind-review rulings make flawed. Sol's median trial
+   37–53 s against Qwen's 171–248 s; awareness remarks in 11 of 1,491 trials against Qwen's 483. Judging cost $32.60
+   list, $2.33 billed. 16 G4-LIN-08 tests and units could not run (clocked past the login's expiry).
 2. **The judge on the self-hosted Qwen meets the bar** (`judge_qwen_01`): 0 missed of 192 labelled failures (1 under the
    any-reason reading), precision 97.4% against Muse's 98.0%, the same verdict on 440 of 443 and the same facts on
    every joint failure, at $0 per token (3.5 GPU-hours) against $13 list for Muse. The judges fail differently: Muse
@@ -290,3 +293,6 @@ section. Decisions that stand go to the [roadmap](roadmap.md); this is the recor
 - 05:36 **the Sol round is complete:** every attempt completed after the retry pass (regular p4 444, regular 6b 405
   over 135 cases, absence 369, underspecified 273; 3 stalls reclassified and rerun; the last infrastructure error
   rerun by hand). Scoring of the policy sets and the final numbers are with the sol_score session.
+- 05:5x sol_score done (commits f00d9c9940, fca57dd6de; merged as d32f0787b9): the Sol round judged and scored in
+  full; the numbers are in the morning brief. For the PI: AT-G4-BOX-15's "Atlas Onboarding Archive" with a what-if
+  (no decision changes either way). Assigned next: the Sol section in the report texts.
