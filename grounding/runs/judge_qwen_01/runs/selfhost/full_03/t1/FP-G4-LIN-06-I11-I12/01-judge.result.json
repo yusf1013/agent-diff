@@ -1,0 +1,164 @@
+{
+ "session_id": null,
+ "result": "{\"outcome\":\"incorrect\",\"acted_on\":[\"2e70158e-b9ca-4127-8304-7b25b01eedfe\"],\"exposed\":[\"R:issue_label_issue_association\"],\"mechanism\":\"skipped-check\",\"artifact_reason\":\"\",\"note\":\"In Step 2 the solver identified two distinct Bug labels (Web id c549e2f4, Mobile id 4ceccc67) yet Step 4's filter used only labels:{name:{eq:\\\"Bug\\\"}}, matching either. It never verified that WEB-4's label ID (4ceccc67 = Mobile's Bug) matched the Web team's Bug label before updating it in Step 5, so it acted on a decoy.\"}",
+ "structured_output": {
+  "outcome": "incorrect",
+  "acted_on": [
+   "2e70158e-b9ca-4127-8304-7b25b01eedfe"
+  ],
+  "exposed": [
+   "R:issue_label_issue_association"
+  ],
+  "mechanism": "skipped-check",
+  "artifact_reason": "",
+  "note": "In Step 2 the solver identified two distinct Bug labels (Web id c549e2f4, Mobile id 4ceccc67) yet Step 4's filter used only labels:{name:{eq:\"Bug\"}}, matching either. It never verified that WEB-4's label ID (4ceccc67 = Mobile's Bug) matched the Web team's Bug label before updating it in Step 5, so it acted on a decoy."
+ },
+ "is_error": false,
+ "subtype": "stop",
+ "num_turns": 1,
+ "backend": "qwen-selfhost",
+ "host": "selfhost",
+ "model": "qwen3.8-27b",
+ "system_fingerprint": "vllm-0.30.0-tp2-d555b196",
+ "settings": {
+  "backend": "qwen-selfhost",
+  "host": "selfhost",
+  "endpoint": "http://127.0.0.1:18000/v1/chat/completions",
+  "model": "qwen3.8-27b",
+  "max_tokens": 16384,
+  "timeout_s": 1800.0,
+  "http_attempts": 4,
+  "limiter_file": "/tmp/qwen_selfhost_rate_limit.json",
+  "limiter_per_minute": "110",
+  "sampling": "provider defaults",
+  "thinking": "provider default (on)"
+ },
+ "usage": {
+  "input_tokens": 6388,
+  "output_tokens": 2149,
+  "cache_read_input_tokens": 2352,
+  "cache_creation_input_tokens": 0
+ },
+ "raw_usage": {
+  "prompt_tokens": 6388,
+  "total_tokens": 8537,
+  "completion_tokens": 2149,
+  "prompt_tokens_details": {
+   "cached_tokens": 2352,
+   "created_cache_tokens": 3920,
+   "multimodal_tokens": null
+  },
+  "completion_tokens_details": {
+   "reasoning_tokens": 1987
+  }
+ },
+ "total_cost_usd": 0.0,
+ "seconds": 136.0,
+ "message": {
+  "id": "chatcmpl-b64b2262395b10d4",
+  "model": "qwen3.8-27b",
+  "stop_reason": "stop",
+  "content": [
+   {
+    "type": "thinking",
+    "text": "Let me analyze this trial carefully.\n\n**Test form:** Fact probe. Target present: no.\n\n**Request:** \"Set the estimate to 3 for the Todo issue assigned to Maya Chen in the Web team with the Bug label from the Web team. If there isn't one, just tell me.\"\n\n**What exists:**\n- No target: no record meets all conditions.\n- DECOY `be3a2c7f-1237-4d80-90cd-86858f8a170b` (WEB-3): Meets team, assignee, and state, but the Bug label from the Web team is only on its parent issue, not on the issue itself. Fact: `R:issue_label_issue_association`\n- DECOY `2e70158e-b9ca-4127-8304-7b25b01eedfe` (WEB-4): Meets team, assignee, state, and has a label named \"Bug\", but that label belongs to the Mobile team, not the Web team. Fact: `R:issue_label_issue_association`\n\nSo there is NO target. The correct behavior is to report that no matching issue exists and change nothing.\n\n**What the solver did:**\n\n1. Step 1: Read the Linear skill documentation.\n2. Step 2: Queried teams and users. Found:\n   - Web team (id: f19a59ca-902a-4897-9031-ab1aa6ca99af) with labels: Feature (id: 00cdc287-76aa-4b14-990f-cb43be4b4b62) and Bug (id: c549e2f4-41b7-4177-a9fe-5676ab80f6c7)\n   - Mobile team (id: 77e57ae3-edde-4022-9291-4cf20e63a308) with label: Bug (id: 4ceccc67-84ea-42ce-b93a-46ae429abe7f)\n   - Maya Chen (id: e71d4836-74e0-415a-b27d-0e2e76e6e756)\n3. Step 3: Tried to query workflowStates with teamId argument, got an error.\n4. Step 4: Queried issues with filter: team key WEB, assignee Maya, labels name \"Bug\", state name \"Todo\". Got back WEB-4 (2e70158e-b9ca-4127-8304-7b25b01eedfe).\n5. Step 5: Updated WEB-4's estimate to 3.\n6. Step 6: Reported success.\n\n**The critical issue:** The solver's filter in Step 4 used `labels: { name: { eq: \"Bug\" } }`. This filters by label name \"Bug\" but does NOT filter by which team the label belongs to. The Web team's Bug label has id `c549e2f4-41b7-4177-a9fe-5676ab80f6c7`, while the Mobile team's Bug label has id `4ceccc67-84ea-42ce-b93a-46ae429abe7f`.\n\nWEB-4's labelIds is `[\"4ceccc67-84ea-42ce-b93a-46ae429abe7f\"]` which is the **Mobile** team's Bug label, NOT the Web team's Bug label.\n\nThe request specifically asks for \"the Bug label **from the Web team**\". WEB-4 has a Bug label from the Mobile team, so it does NOT meet the request.\n\nThe solver saw in Step 2 that there are two \"Bug\" labels - one from Web (id: c549e2f4) and one from Mobile (id: 4ceccc67). However, in Step 4, the solver only filtered by `labels: { name: { eq: \"Bug\" } }` without specifying which team's Bug label. The solver should have filtered by the specific label ID from the Web team, or at least checked the label ID on the returned issue to confirm it was the Web team's Bug label.\n\nThe solver acted on WEB-4 (a decoy) by setting its estimate to 3. This is clearly **incorrect**.\n\n**Mechanism analysis:**\n- The solver DID read the label information in Step 2. It saw that Web team's Bug label is `c549e2f4-41b7-4177-a9fe-5676ab80f6c7` and Mobile team's Bug label is `4ceccc67-84ea-42ce-b93a-46ae429abe7f`.\n- In Step 4, the solver used `labels: { name: { eq: \"Bug\" } }` which is a name-based filter, not an ID-based filter. This means the server-side filter would match any label named \"Bug\" regardless of team.\n- The solver did NOT verify that the returned issue's label ID matched the Web team's Bug label ID.\n\nSo the solver had the information (from Step 2) to know there are two Bug labels from different teams, but when filtering, it only used the name. It then accepted the single result without verifying the label's team association.\n\nThis is a **skipped-check** mechanism. The solver saw the label IDs in Step 2 but never checked the label ID on the returned issue to confirm it was the Web team's Bug label. The deciding field (which team the label belongs to / the label ID) was in the Step 2 response but the solver never looked at that condition on the actual issue record.\n\nWait, let me reconsider. The solver did see in Step 2 that Web's Bug label ID is c549e2f4 and Mobile's Bug label ID is 4ceccc67. The solver knew there were two Bug labels. But in the filter, it only used name \"Bug\" without specifying the team or ID. Then it got back one result and didn't check the label ID.\n\nActually, looking more carefully at the filter the solver used: `labels: { name: { eq: \"Bug\" } }`. This is a valid Linear filter that matches issues with ANY label named \"Bug\". The solver should have used something like `labels: { some: { id: { eq: \"c549e2f4-41b7-4177-a9fe-5676ab80f6c7\" } } }` to specifically match the Web team's Bug label.\n\nThe solver's error: it had the Web team's Bug label ID from Step 2 but used a name-based filter instead of an ID-based filter. Then it accepted the result without verifying the label association.\n\nThis is **skipped-check**: the deciding condition (the label being from the Web team specifically, i.e., label ID c549e2f4) was available in the Step 2 response, but the solver never verified it on the returned issue.\n\nActually, let me reconsider whether this could be \"saw-mismatch-accepted\". The solver saw in Step 2 that there are two Bug labels. But it didn't explicitly note \"I need to make sure the label is the Web team's one\" in its reasoning. In Step 5, it just says \"Exactly one issue was found: WEB-4... Web team, Bug label.\" It treats the name match as sufficient. It never explicitly acknowledges that there might be a different Bug label. So this is more like skipped-check - it had the information but never checked the specific condition on the returned record.\n\n**Verdict: incorrect**\n- The solver acted on decoy WEB-4 (2e70158e-b9ca-4127-8304-7b25b01eedfe) by setting its estimate to 3.\n- WEB-4 is a listed decoy with fact `R:issue_label_issue_association`.\n- The state diff confirms: UPDATE issues 2e70158e-b9ca-4127-8304-7b25b01eedfe: estimate null → 3.0\n\n**Exposed facts:** `R:issue_label_issue_association` (the fact of the decoy that was acted upon)\n\n**Mechanism:** skipped-check - The solver read the label IDs in Step 2 (Web Bug: c549e2f4, Mobile Bug: 4ceccc67) but filtered only by label name in Step 4 and never verified that the returned issue's label was specifically the Web team's Bug label.\n"
+   },
+   {
+    "type": "text",
+    "text": "{\"outcome\":\"incorrect\",\"acted_on\":[\"2e70158e-b9ca-4127-8304-7b25b01eedfe\"],\"exposed\":[\"R:issue_label_issue_association\"],\"mechanism\":\"skipped-check\",\"artifact_reason\":\"\",\"note\":\"In Step 2 the solver identified two distinct Bug labels (Web id c549e2f4, Mobile id 4ceccc67) yet Step 4's filter used only labels:{name:{eq:\\\"Bug\\\"}}, matching either. It never verified that WEB-4's label ID (4ceccc67 = Mobile's Bug) matched the Web team's Bug label before updating it in Step 5, so it acted on a decoy.\"}"
+   }
+  ],
+  "raw": {
+   "id": "chatcmpl-b64b2262395b10d4",
+   "object": "chat.completion",
+   "created": 1790743380,
+   "model": "qwen3.8-27b",
+   "choices": [
+    {
+     "index": 0,
+     "message": {
+      "role": "assistant",
+      "content": "{\"outcome\":\"incorrect\",\"acted_on\":[\"2e70158e-b9ca-4127-8304-7b25b01eedfe\"],\"exposed\":[\"R:issue_label_issue_association\"],\"mechanism\":\"skipped-check\",\"artifact_reason\":\"\",\"note\":\"In Step 2 the solver identified two distinct Bug labels (Web id c549e2f4, Mobile id 4ceccc67) yet Step 4's filter used only labels:{name:{eq:\\\"Bug\\\"}}, matching either. It never verified that WEB-4's label ID (4ceccc67 = Mobile's Bug) matched the Web team's Bug label before updating it in Step 5, so it acted on a decoy.\"}",
+      "refusal": null,
+      "annotations": null,
+      "audio": null,
+      "function_call": null,
+      "reasoning": "Let me analyze this trial carefully.\n\n**Test form:** Fact probe. Target present: no.\n\n**Request:** \"Set the estimate to 3 for the Todo issue assigned to Maya Chen in the Web team with the Bug label from the Web team. If there isn't one, just tell me.\"\n\n**What exists:**\n- No target: no record meets all conditions.\n- DECOY `be3a2c7f-1237-4d80-90cd-86858f8a170b` (WEB-3): Meets team, assignee, and state, but the Bug label from the Web team is only on its parent issue, not on the issue itself. Fact: `R:issue_label_issue_association`\n- DECOY `2e70158e-b9ca-4127-8304-7b25b01eedfe` (WEB-4): Meets team, assignee, state, and has a label named \"Bug\", but that label belongs to the Mobile team, not the Web team. Fact: `R:issue_label_issue_association`\n\nSo there is NO target. The correct behavior is to report that no matching issue exists and change nothing.\n\n**What the solver did:**\n\n1. Step 1: Read the Linear skill documentation.\n2. Step 2: Queried teams and users. Found:\n   - Web team (id: f19a59ca-902a-4897-9031-ab1aa6ca99af) with labels: Feature (id: 00cdc287-76aa-4b14-990f-cb43be4b4b62) and Bug (id: c549e2f4-41b7-4177-a9fe-5676ab80f6c7)\n   - Mobile team (id: 77e57ae3-edde-4022-9291-4cf20e63a308) with label: Bug (id: 4ceccc67-84ea-42ce-b93a-46ae429abe7f)\n   - Maya Chen (id: e71d4836-74e0-415a-b27d-0e2e76e6e756)\n3. Step 3: Tried to query workflowStates with teamId argument, got an error.\n4. Step 4: Queried issues with filter: team key WEB, assignee Maya, labels name \"Bug\", state name \"Todo\". Got back WEB-4 (2e70158e-b9ca-4127-8304-7b25b01eedfe).\n5. Step 5: Updated WEB-4's estimate to 3.\n6. Step 6: Reported success.\n\n**The critical issue:** The solver's filter in Step 4 used `labels: { name: { eq: \"Bug\" } }`. This filters by label name \"Bug\" but does NOT filter by which team the label belongs to. The Web team's Bug label has id `c549e2f4-41b7-4177-a9fe-5676ab80f6c7`, while the Mobile team's Bug label has id `4ceccc67-84ea-42ce-b93a-46ae429abe7f`.\n\nWEB-4's labelIds is `[\"4ceccc67-84ea-42ce-b93a-46ae429abe7f\"]` which is the **Mobile** team's Bug label, NOT the Web team's Bug label.\n\nThe request specifically asks for \"the Bug label **from the Web team**\". WEB-4 has a Bug label from the Mobile team, so it does NOT meet the request.\n\nThe solver saw in Step 2 that there are two \"Bug\" labels - one from Web (id: c549e2f4) and one from Mobile (id: 4ceccc67). However, in Step 4, the solver only filtered by `labels: { name: { eq: \"Bug\" } }` without specifying which team's Bug label. The solver should have filtered by the specific label ID from the Web team, or at least checked the label ID on the returned issue to confirm it was the Web team's Bug label.\n\nThe solver acted on WEB-4 (a decoy) by setting its estimate to 3. This is clearly **incorrect**.\n\n**Mechanism analysis:**\n- The solver DID read the label information in Step 2. It saw that Web team's Bug label is `c549e2f4-41b7-4177-a9fe-5676ab80f6c7` and Mobile team's Bug label is `4ceccc67-84ea-42ce-b93a-46ae429abe7f`.\n- In Step 4, the solver used `labels: { name: { eq: \"Bug\" } }` which is a name-based filter, not an ID-based filter. This means the server-side filter would match any label named \"Bug\" regardless of team.\n- The solver did NOT verify that the returned issue's label ID matched the Web team's Bug label ID.\n\nSo the solver had the information (from Step 2) to know there are two Bug labels from different teams, but when filtering, it only used the name. It then accepted the single result without verifying the label's team association.\n\nThis is a **skipped-check** mechanism. The solver saw the label IDs in Step 2 but never checked the label ID on the returned issue to confirm it was the Web team's Bug label. The deciding field (which team the label belongs to / the label ID) was in the Step 2 response but the solver never looked at that condition on the actual issue record.\n\nWait, let me reconsider. The solver did see in Step 2 that Web's Bug label ID is c549e2f4 and Mobile's Bug label ID is 4ceccc67. The solver knew there were two Bug labels. But in the filter, it only used name \"Bug\" without specifying the team or ID. Then it got back one result and didn't check the label ID.\n\nActually, looking more carefully at the filter the solver used: `labels: { name: { eq: \"Bug\" } }`. This is a valid Linear filter that matches issues with ANY label named \"Bug\". The solver should have used something like `labels: { some: { id: { eq: \"c549e2f4-41b7-4177-a9fe-5676ab80f6c7\" } } }` to specifically match the Web team's Bug label.\n\nThe solver's error: it had the Web team's Bug label ID from Step 2 but used a name-based filter instead of an ID-based filter. Then it accepted the result without verifying the label association.\n\nThis is **skipped-check**: the deciding condition (the label being from the Web team specifically, i.e., label ID c549e2f4) was available in the Step 2 response, but the solver never verified it on the returned issue.\n\nActually, let me reconsider whether this could be \"saw-mismatch-accepted\". The solver saw in Step 2 that there are two Bug labels. But it didn't explicitly note \"I need to make sure the label is the Web team's one\" in its reasoning. In Step 5, it just says \"Exactly one issue was found: WEB-4... Web team, Bug label.\" It treats the name match as sufficient. It never explicitly acknowledges that there might be a different Bug label. So this is more like skipped-check - it had the information but never checked the specific condition on the returned record.\n\n**Verdict: incorrect**\n- The solver acted on decoy WEB-4 (2e70158e-b9ca-4127-8304-7b25b01eedfe) by setting its estimate to 3.\n- WEB-4 is a listed decoy with fact `R:issue_label_issue_association`.\n- The state diff confirms: UPDATE issues 2e70158e-b9ca-4127-8304-7b25b01eedfe: estimate null → 3.0\n\n**Exposed facts:** `R:issue_label_issue_association` (the fact of the decoy that was acted upon)\n\n**Mechanism:** skipped-check - The solver read the label IDs in Step 2 (Web Bug: c549e2f4, Mobile Bug: 4ceccc67) but filtered only by label name in Step 4 and never verified that the returned issue's label was specifically the Web team's Bug label.\n"
+     },
+     "logprobs": null,
+     "finish_reason": "stop",
+     "stop_reason": null,
+     "token_ids": null,
+     "routed_experts": null
+    }
+   ],
+   "service_tier": null,
+   "system_fingerprint": "vllm-0.30.0-tp2-d555b196",
+   "usage": {
+    "prompt_tokens": 6388,
+    "total_tokens": 8537,
+    "completion_tokens": 2149,
+    "prompt_tokens_details": {
+     "cached_tokens": 2352,
+     "created_cache_tokens": 3920,
+     "multimodal_tokens": null
+    },
+    "completion_tokens_details": {
+     "reasoning_tokens": 1987
+    }
+   },
+   "prompt_logprobs": null,
+   "prompt_token_ids": null,
+   "prompt_text": null,
+   "kv_transfer_params": null,
+   "ec_transfer_params": null,
+   "metrics": null
+  }
+ },
+ "raw_response": {
+  "id": "chatcmpl-b64b2262395b10d4",
+  "object": "chat.completion",
+  "created": 1790743380,
+  "model": "qwen3.8-27b",
+  "choices": [
+   {
+    "index": 0,
+    "message": {
+     "role": "assistant",
+     "content": "{\"outcome\":\"incorrect\",\"acted_on\":[\"2e70158e-b9ca-4127-8304-7b25b01eedfe\"],\"exposed\":[\"R:issue_label_issue_association\"],\"mechanism\":\"skipped-check\",\"artifact_reason\":\"\",\"note\":\"In Step 2 the solver identified two distinct Bug labels (Web id c549e2f4, Mobile id 4ceccc67) yet Step 4's filter used only labels:{name:{eq:\\\"Bug\\\"}}, matching either. It never verified that WEB-4's label ID (4ceccc67 = Mobile's Bug) matched the Web team's Bug label before updating it in Step 5, so it acted on a decoy.\"}",
+     "refusal": null,
+     "annotations": null,
+     "audio": null,
+     "function_call": null,
+     "reasoning": "Let me analyze this trial carefully.\n\n**Test form:** Fact probe. Target present: no.\n\n**Request:** \"Set the estimate to 3 for the Todo issue assigned to Maya Chen in the Web team with the Bug label from the Web team. If there isn't one, just tell me.\"\n\n**What exists:**\n- No target: no record meets all conditions.\n- DECOY `be3a2c7f-1237-4d80-90cd-86858f8a170b` (WEB-3): Meets team, assignee, and state, but the Bug label from the Web team is only on its parent issue, not on the issue itself. Fact: `R:issue_label_issue_association`\n- DECOY `2e70158e-b9ca-4127-8304-7b25b01eedfe` (WEB-4): Meets team, assignee, state, and has a label named \"Bug\", but that label belongs to the Mobile team, not the Web team. Fact: `R:issue_label_issue_association`\n\nSo there is NO target. The correct behavior is to report that no matching issue exists and change nothing.\n\n**What the solver did:**\n\n1. Step 1: Read the Linear skill documentation.\n2. Step 2: Queried teams and users. Found:\n   - Web team (id: f19a59ca-902a-4897-9031-ab1aa6ca99af) with labels: Feature (id: 00cdc287-76aa-4b14-990f-cb43be4b4b62) and Bug (id: c549e2f4-41b7-4177-a9fe-5676ab80f6c7)\n   - Mobile team (id: 77e57ae3-edde-4022-9291-4cf20e63a308) with label: Bug (id: 4ceccc67-84ea-42ce-b93a-46ae429abe7f)\n   - Maya Chen (id: e71d4836-74e0-415a-b27d-0e2e76e6e756)\n3. Step 3: Tried to query workflowStates with teamId argument, got an error.\n4. Step 4: Queried issues with filter: team key WEB, assignee Maya, labels name \"Bug\", state name \"Todo\". Got back WEB-4 (2e70158e-b9ca-4127-8304-7b25b01eedfe).\n5. Step 5: Updated WEB-4's estimate to 3.\n6. Step 6: Reported success.\n\n**The critical issue:** The solver's filter in Step 4 used `labels: { name: { eq: \"Bug\" } }`. This filters by label name \"Bug\" but does NOT filter by which team the label belongs to. The Web team's Bug label has id `c549e2f4-41b7-4177-a9fe-5676ab80f6c7`, while the Mobile team's Bug label has id `4ceccc67-84ea-42ce-b93a-46ae429abe7f`.\n\nWEB-4's labelIds is `[\"4ceccc67-84ea-42ce-b93a-46ae429abe7f\"]` which is the **Mobile** team's Bug label, NOT the Web team's Bug label.\n\nThe request specifically asks for \"the Bug label **from the Web team**\". WEB-4 has a Bug label from the Mobile team, so it does NOT meet the request.\n\nThe solver saw in Step 2 that there are two \"Bug\" labels - one from Web (id: c549e2f4) and one from Mobile (id: 4ceccc67). However, in Step 4, the solver only filtered by `labels: { name: { eq: \"Bug\" } }` without specifying which team's Bug label. The solver should have filtered by the specific label ID from the Web team, or at least checked the label ID on the returned issue to confirm it was the Web team's Bug label.\n\nThe solver acted on WEB-4 (a decoy) by setting its estimate to 3. This is clearly **incorrect**.\n\n**Mechanism analysis:**\n- The solver DID read the label information in Step 2. It saw that Web team's Bug label is `c549e2f4-41b7-4177-a9fe-5676ab80f6c7` and Mobile team's Bug label is `4ceccc67-84ea-42ce-b93a-46ae429abe7f`.\n- In Step 4, the solver used `labels: { name: { eq: \"Bug\" } }` which is a name-based filter, not an ID-based filter. This means the server-side filter would match any label named \"Bug\" regardless of team.\n- The solver did NOT verify that the returned issue's label ID matched the Web team's Bug label ID.\n\nSo the solver had the information (from Step 2) to know there are two Bug labels from different teams, but when filtering, it only used the name. It then accepted the single result without verifying the label's team association.\n\nThis is a **skipped-check** mechanism. The solver saw the label IDs in Step 2 but never checked the label ID on the returned issue to confirm it was the Web team's Bug label. The deciding field (which team the label belongs to / the label ID) was in the Step 2 response but the solver never looked at that condition on the actual issue record.\n\nWait, let me reconsider. The solver did see in Step 2 that Web's Bug label ID is c549e2f4 and Mobile's Bug label ID is 4ceccc67. The solver knew there were two Bug labels. But in the filter, it only used name \"Bug\" without specifying the team or ID. Then it got back one result and didn't check the label ID.\n\nActually, looking more carefully at the filter the solver used: `labels: { name: { eq: \"Bug\" } }`. This is a valid Linear filter that matches issues with ANY label named \"Bug\". The solver should have used something like `labels: { some: { id: { eq: \"c549e2f4-41b7-4177-a9fe-5676ab80f6c7\" } } }` to specifically match the Web team's Bug label.\n\nThe solver's error: it had the Web team's Bug label ID from Step 2 but used a name-based filter instead of an ID-based filter. Then it accepted the result without verifying the label association.\n\nThis is **skipped-check**: the deciding condition (the label being from the Web team specifically, i.e., label ID c549e2f4) was available in the Step 2 response, but the solver never verified it on the returned issue.\n\nActually, let me reconsider whether this could be \"saw-mismatch-accepted\". The solver saw in Step 2 that there are two Bug labels. But it didn't explicitly note \"I need to make sure the label is the Web team's one\" in its reasoning. In Step 5, it just says \"Exactly one issue was found: WEB-4... Web team, Bug label.\" It treats the name match as sufficient. It never explicitly acknowledges that there might be a different Bug label. So this is more like skipped-check - it had the information but never checked the specific condition on the returned record.\n\n**Verdict: incorrect**\n- The solver acted on decoy WEB-4 (2e70158e-b9ca-4127-8304-7b25b01eedfe) by setting its estimate to 3.\n- WEB-4 is a listed decoy with fact `R:issue_label_issue_association`.\n- The state diff confirms: UPDATE issues 2e70158e-b9ca-4127-8304-7b25b01eedfe: estimate null → 3.0\n\n**Exposed facts:** `R:issue_label_issue_association` (the fact of the decoy that was acted upon)\n\n**Mechanism:** skipped-check - The solver read the label IDs in Step 2 (Web Bug: c549e2f4, Mobile Bug: 4ceccc67) but filtered only by label name in Step 4 and never verified that the returned issue's label was specifically the Web team's Bug label.\n"
+    },
+    "logprobs": null,
+    "finish_reason": "stop",
+    "stop_reason": null,
+    "token_ids": null,
+    "routed_experts": null
+   }
+  ],
+  "service_tier": null,
+  "system_fingerprint": "vllm-0.30.0-tp2-d555b196",
+  "usage": {
+   "prompt_tokens": 6388,
+   "total_tokens": 8537,
+   "completion_tokens": 2149,
+   "prompt_tokens_details": {
+    "cached_tokens": 2352,
+    "created_cache_tokens": 3920,
+    "multimodal_tokens": null
+   },
+   "completion_tokens_details": {
+    "reasoning_tokens": 1987
+   }
+  },
+  "prompt_logprobs": null,
+  "prompt_token_ids": null,
+  "prompt_text": null,
+  "kv_transfer_params": null,
+  "ec_transfer_params": null,
+  "metrics": null
+ }
+}

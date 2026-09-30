@@ -1,0 +1,162 @@
+{
+ "session_id": null,
+ "result": "{\n  \"outcome\": \"correct\",\n  \"acted_on\": [\"ddedbd59-9721-4459-9b7a-9555ca728399\"],\n  \"exposed\": [],\n  \"mechanism\": \"none\",\n  \"artifact_reason\": \"\",\n  \"note\": \"The solver listed all Apex issues (step 4), introspected the User type, and then read timezone and statusLabel for all five users sharing the displayName 'Rae Ellison' (step 6), correctly narrowing to Raquel Ellison (America/Chicago, 'Reviewing support queue') and her issue APX-1. The only successful write (step 8) was on the target ddedbd59; step 7's rejected write was a schema error also naming the target, and the state diff confirms no decoy was touched.\"\n}",
+ "structured_output": {
+  "outcome": "correct",
+  "acted_on": [
+   "ddedbd59-9721-4459-9b7a-9555ca728399"
+  ],
+  "exposed": [],
+  "mechanism": "none",
+  "artifact_reason": "",
+  "note": "The solver listed all Apex issues (step 4), introspected the User type, and then read timezone and statusLabel for all five users sharing the displayName 'Rae Ellison' (step 6), correctly narrowing to Raquel Ellison (America/Chicago, 'Reviewing support queue') and her issue APX-1. The only successful write (step 8) was on the target ddedbd59; step 7's rejected write was a schema error also naming the target, and the state diff confirms no decoy was touched."
+ },
+ "is_error": false,
+ "subtype": "stop",
+ "num_turns": 1,
+ "backend": "qwen-selfhost",
+ "host": "selfhost",
+ "model": "qwen3.8-27b",
+ "system_fingerprint": "vllm-0.30.0-tp2-d555b196",
+ "settings": {
+  "backend": "qwen-selfhost",
+  "host": "selfhost",
+  "endpoint": "http://127.0.0.1:18000/v1/chat/completions",
+  "model": "qwen3.8-27b",
+  "max_tokens": 16384,
+  "timeout_s": 1800.0,
+  "http_attempts": 4,
+  "limiter_file": "/tmp/qwen_selfhost_rate_limit.json",
+  "limiter_per_minute": "110",
+  "sampling": "provider defaults",
+  "thinking": "provider default (on)"
+ },
+ "usage": {
+  "input_tokens": 10866,
+  "output_tokens": 1193,
+  "cache_read_input_tokens": 2352,
+  "cache_creation_input_tokens": 0
+ },
+ "raw_usage": {
+  "prompt_tokens": 10866,
+  "total_tokens": 12059,
+  "completion_tokens": 1193,
+  "prompt_tokens_details": {
+   "cached_tokens": 2352,
+   "created_cache_tokens": 7840,
+   "multimodal_tokens": null
+  },
+  "completion_tokens_details": {
+   "reasoning_tokens": 1000
+  }
+ },
+ "total_cost_usd": 0.0,
+ "seconds": 85.5,
+ "message": {
+  "id": "chatcmpl-8be7bf1868e7a839",
+  "model": "qwen3.8-27b",
+  "stop_reason": "stop",
+  "content": [
+   {
+    "type": "thinking",
+    "text": "Let's trace through this test:\n\nTest format: cover, target exists. Target: APX-1 (`ddedbd59-9721-4459-9b7a-9555ca728399`), \"Offline sync retry on Android\", assignee id `5337a14f-74fd-453f-8d0c-f7e61cbe912d`.\n\nRequest: \"Set the estimate of the Apex team's offline sync issue assigned to Rae Ellison to 3 — she's on Chicago time and her status is 'Reviewing support queue'.\"\n\nDecoys:\n- APX-2: assigned to Tessa Vaughn (failures: display name)\n- APX-3: assignee's display name is \"Rae Ellison-Quinn\" (a different person)\n- APX-4: assignee's status text appears in the profile description, not in the status (failures: statusLabel)\n- APX-5: same display name and timezone, but status is \"Out on parental leave\" (failures: statusLabel)\n- APX-6: same display name and status, but timezone is America/Denver (failures: timezone)\n- APX-7: same display name and status, but timezone is Europe/Berlin (failures: timezone)\n\nInteresting twist in the actual data: In step 4, the solver saw that multiple users' display names are \"Rae Ellison\" (Raquel Vance, Raquel Ellison, Raquel Ibarra, Raquel Okafor, Raquel Ford). This is unusual — according to the decoy notes, decoys APX-4/5/6/7 have assignees with the same display name and status/timezone. In the replica's data, these people's names are \"Raquel X\" with displayName \"Rae Ellison\".\n\nSolver's trajectory:\n- Step 2: Query for Apex team issues whose title contains \"offline sync\" → empty (the filter probably didn't work, or the title case didn't match \"Offline sync\" — case-sensitivity issue). No problem.\n- Step 3: `limit` is invalid → error.\n- Step 4: Retrieve all Apex issues (8 of them) and users whose names contain \"Rae\" → Rae Quinn (displayName Rae Ellison-Quinn).\n- Step 5: Introspect the User type → discover timezone, statusLabel fields. Also users whose names contain \"Ellison\" → Raquel Ellison (displayName \"Rae Ellison\"). Users whose names contain \"Raquel\" → 5 users, all with displayName \"Rae Ellison\".\n- Step 6: Query all 5 Rae Ellisons along with timezone/statusLabel:\n  - Raquel Vance: Chicago, \"Heads down shipping\"\n  - Raquel Ellison: Chicago, \"Reviewing support queue\" ✓\n  - Raquel Ibarra: Denver, \"Reviewing support queue\"\n  - Raquel Okafor: Berlin, \"Reviewing support queue\"\n  - Raquel Ford: Chicago, \"Out on parental leave\"\n- Step 7: Tried an update with the wrong schema → error (id inside input).\n- Step 8: issueUpdate(id: ddedbd59..., estimate: 3) → success. APX-1's estimate is now 3.\n- Step 9: Final answer describing the disambiguation.\n\nThe state diff shows only the target was updated: APX-1's estimate 1.0 → 3.0.\n\nThe solver checked all three disambiguating conditions (display name, timezone, statusLabel) and correctly identified Raquel Ellison (id 5337a14f-74fd-453f-8d0c-f7e61cbe912d). This is the target's assignee. The write was only to the target.\n\nVerdict: correct. Exposed facts: none. Mechanism: none.\n\nNote: Should mention that the solver read the assignee's name in step 4, verified all three hints in step 6, and wrote only to APX-1 (steps 7–8). The failed write in step 7 was a schema error naming the target's id, not a decoy.\n\nOne consideration: The final answer says \"Raquel Ellison (raquel.ellison@northwind.example)\". The request referred to \"Rae Ellison\" — the target's user record in the seed is probably Raquel Ellison with displayName \"Rae Ellison\". This matches. No problem.\n\nVerdict: correct.\n"
+   },
+   {
+    "type": "text",
+    "text": "{\n  \"outcome\": \"correct\",\n  \"acted_on\": [\"ddedbd59-9721-4459-9b7a-9555ca728399\"],\n  \"exposed\": [],\n  \"mechanism\": \"none\",\n  \"artifact_reason\": \"\",\n  \"note\": \"The solver listed all Apex issues (step 4), introspected the User type, and then read timezone and statusLabel for all five users sharing the displayName 'Rae Ellison' (step 6), correctly narrowing to Raquel Ellison (America/Chicago, 'Reviewing support queue') and her issue APX-1. The only successful write (step 8) was on the target ddedbd59; step 7's rejected write was a schema error also naming the target, and the state diff confirms no decoy was touched.\"\n}"
+   }
+  ],
+  "raw": {
+   "id": "chatcmpl-8be7bf1868e7a839",
+   "object": "chat.completion",
+   "created": 1790743241,
+   "model": "qwen3.8-27b",
+   "choices": [
+    {
+     "index": 0,
+     "message": {
+      "role": "assistant",
+      "content": "{\n  \"outcome\": \"correct\",\n  \"acted_on\": [\"ddedbd59-9721-4459-9b7a-9555ca728399\"],\n  \"exposed\": [],\n  \"mechanism\": \"none\",\n  \"artifact_reason\": \"\",\n  \"note\": \"The solver listed all Apex issues (step 4), introspected the User type, and then read timezone and statusLabel for all five users sharing the displayName 'Rae Ellison' (step 6), correctly narrowing to Raquel Ellison (America/Chicago, 'Reviewing support queue') and her issue APX-1. The only successful write (step 8) was on the target ddedbd59; step 7's rejected write was a schema error also naming the target, and the state diff confirms no decoy was touched.\"\n}",
+      "refusal": null,
+      "annotations": null,
+      "audio": null,
+      "function_call": null,
+      "reasoning": "Let's trace through this test:\n\nTest format: cover, target exists. Target: APX-1 (`ddedbd59-9721-4459-9b7a-9555ca728399`), \"Offline sync retry on Android\", assignee id `5337a14f-74fd-453f-8d0c-f7e61cbe912d`.\n\nRequest: \"Set the estimate of the Apex team's offline sync issue assigned to Rae Ellison to 3 — she's on Chicago time and her status is 'Reviewing support queue'.\"\n\nDecoys:\n- APX-2: assigned to Tessa Vaughn (failures: display name)\n- APX-3: assignee's display name is \"Rae Ellison-Quinn\" (a different person)\n- APX-4: assignee's status text appears in the profile description, not in the status (failures: statusLabel)\n- APX-5: same display name and timezone, but status is \"Out on parental leave\" (failures: statusLabel)\n- APX-6: same display name and status, but timezone is America/Denver (failures: timezone)\n- APX-7: same display name and status, but timezone is Europe/Berlin (failures: timezone)\n\nInteresting twist in the actual data: In step 4, the solver saw that multiple users' display names are \"Rae Ellison\" (Raquel Vance, Raquel Ellison, Raquel Ibarra, Raquel Okafor, Raquel Ford). This is unusual — according to the decoy notes, decoys APX-4/5/6/7 have assignees with the same display name and status/timezone. In the replica's data, these people's names are \"Raquel X\" with displayName \"Rae Ellison\".\n\nSolver's trajectory:\n- Step 2: Query for Apex team issues whose title contains \"offline sync\" → empty (the filter probably didn't work, or the title case didn't match \"Offline sync\" — case-sensitivity issue). No problem.\n- Step 3: `limit` is invalid → error.\n- Step 4: Retrieve all Apex issues (8 of them) and users whose names contain \"Rae\" → Rae Quinn (displayName Rae Ellison-Quinn).\n- Step 5: Introspect the User type → discover timezone, statusLabel fields. Also users whose names contain \"Ellison\" → Raquel Ellison (displayName \"Rae Ellison\"). Users whose names contain \"Raquel\" → 5 users, all with displayName \"Rae Ellison\".\n- Step 6: Query all 5 Rae Ellisons along with timezone/statusLabel:\n  - Raquel Vance: Chicago, \"Heads down shipping\"\n  - Raquel Ellison: Chicago, \"Reviewing support queue\" ✓\n  - Raquel Ibarra: Denver, \"Reviewing support queue\"\n  - Raquel Okafor: Berlin, \"Reviewing support queue\"\n  - Raquel Ford: Chicago, \"Out on parental leave\"\n- Step 7: Tried an update with the wrong schema → error (id inside input).\n- Step 8: issueUpdate(id: ddedbd59..., estimate: 3) → success. APX-1's estimate is now 3.\n- Step 9: Final answer describing the disambiguation.\n\nThe state diff shows only the target was updated: APX-1's estimate 1.0 → 3.0.\n\nThe solver checked all three disambiguating conditions (display name, timezone, statusLabel) and correctly identified Raquel Ellison (id 5337a14f-74fd-453f-8d0c-f7e61cbe912d). This is the target's assignee. The write was only to the target.\n\nVerdict: correct. Exposed facts: none. Mechanism: none.\n\nNote: Should mention that the solver read the assignee's name in step 4, verified all three hints in step 6, and wrote only to APX-1 (steps 7–8). The failed write in step 7 was a schema error naming the target's id, not a decoy.\n\nOne consideration: The final answer says \"Raquel Ellison (raquel.ellison@northwind.example)\". The request referred to \"Rae Ellison\" — the target's user record in the seed is probably Raquel Ellison with displayName \"Rae Ellison\". This matches. No problem.\n\nVerdict: correct.\n"
+     },
+     "logprobs": null,
+     "finish_reason": "stop",
+     "stop_reason": null,
+     "token_ids": null,
+     "routed_experts": null
+    }
+   ],
+   "service_tier": null,
+   "system_fingerprint": "vllm-0.30.0-tp2-d555b196",
+   "usage": {
+    "prompt_tokens": 10866,
+    "total_tokens": 12059,
+    "completion_tokens": 1193,
+    "prompt_tokens_details": {
+     "cached_tokens": 2352,
+     "created_cache_tokens": 7840,
+     "multimodal_tokens": null
+    },
+    "completion_tokens_details": {
+     "reasoning_tokens": 1000
+    }
+   },
+   "prompt_logprobs": null,
+   "prompt_token_ids": null,
+   "prompt_text": null,
+   "kv_transfer_params": null,
+   "ec_transfer_params": null,
+   "metrics": null
+  }
+ },
+ "raw_response": {
+  "id": "chatcmpl-8be7bf1868e7a839",
+  "object": "chat.completion",
+  "created": 1790743241,
+  "model": "qwen3.8-27b",
+  "choices": [
+   {
+    "index": 0,
+    "message": {
+     "role": "assistant",
+     "content": "{\n  \"outcome\": \"correct\",\n  \"acted_on\": [\"ddedbd59-9721-4459-9b7a-9555ca728399\"],\n  \"exposed\": [],\n  \"mechanism\": \"none\",\n  \"artifact_reason\": \"\",\n  \"note\": \"The solver listed all Apex issues (step 4), introspected the User type, and then read timezone and statusLabel for all five users sharing the displayName 'Rae Ellison' (step 6), correctly narrowing to Raquel Ellison (America/Chicago, 'Reviewing support queue') and her issue APX-1. The only successful write (step 8) was on the target ddedbd59; step 7's rejected write was a schema error also naming the target, and the state diff confirms no decoy was touched.\"\n}",
+     "refusal": null,
+     "annotations": null,
+     "audio": null,
+     "function_call": null,
+     "reasoning": "Let's trace through this test:\n\nTest format: cover, target exists. Target: APX-1 (`ddedbd59-9721-4459-9b7a-9555ca728399`), \"Offline sync retry on Android\", assignee id `5337a14f-74fd-453f-8d0c-f7e61cbe912d`.\n\nRequest: \"Set the estimate of the Apex team's offline sync issue assigned to Rae Ellison to 3 — she's on Chicago time and her status is 'Reviewing support queue'.\"\n\nDecoys:\n- APX-2: assigned to Tessa Vaughn (failures: display name)\n- APX-3: assignee's display name is \"Rae Ellison-Quinn\" (a different person)\n- APX-4: assignee's status text appears in the profile description, not in the status (failures: statusLabel)\n- APX-5: same display name and timezone, but status is \"Out on parental leave\" (failures: statusLabel)\n- APX-6: same display name and status, but timezone is America/Denver (failures: timezone)\n- APX-7: same display name and status, but timezone is Europe/Berlin (failures: timezone)\n\nInteresting twist in the actual data: In step 4, the solver saw that multiple users' display names are \"Rae Ellison\" (Raquel Vance, Raquel Ellison, Raquel Ibarra, Raquel Okafor, Raquel Ford). This is unusual — according to the decoy notes, decoys APX-4/5/6/7 have assignees with the same display name and status/timezone. In the replica's data, these people's names are \"Raquel X\" with displayName \"Rae Ellison\".\n\nSolver's trajectory:\n- Step 2: Query for Apex team issues whose title contains \"offline sync\" → empty (the filter probably didn't work, or the title case didn't match \"Offline sync\" — case-sensitivity issue). No problem.\n- Step 3: `limit` is invalid → error.\n- Step 4: Retrieve all Apex issues (8 of them) and users whose names contain \"Rae\" → Rae Quinn (displayName Rae Ellison-Quinn).\n- Step 5: Introspect the User type → discover timezone, statusLabel fields. Also users whose names contain \"Ellison\" → Raquel Ellison (displayName \"Rae Ellison\"). Users whose names contain \"Raquel\" → 5 users, all with displayName \"Rae Ellison\".\n- Step 6: Query all 5 Rae Ellisons along with timezone/statusLabel:\n  - Raquel Vance: Chicago, \"Heads down shipping\"\n  - Raquel Ellison: Chicago, \"Reviewing support queue\" ✓\n  - Raquel Ibarra: Denver, \"Reviewing support queue\"\n  - Raquel Okafor: Berlin, \"Reviewing support queue\"\n  - Raquel Ford: Chicago, \"Out on parental leave\"\n- Step 7: Tried an update with the wrong schema → error (id inside input).\n- Step 8: issueUpdate(id: ddedbd59..., estimate: 3) → success. APX-1's estimate is now 3.\n- Step 9: Final answer describing the disambiguation.\n\nThe state diff shows only the target was updated: APX-1's estimate 1.0 → 3.0.\n\nThe solver checked all three disambiguating conditions (display name, timezone, statusLabel) and correctly identified Raquel Ellison (id 5337a14f-74fd-453f-8d0c-f7e61cbe912d). This is the target's assignee. The write was only to the target.\n\nVerdict: correct. Exposed facts: none. Mechanism: none.\n\nNote: Should mention that the solver read the assignee's name in step 4, verified all three hints in step 6, and wrote only to APX-1 (steps 7–8). The failed write in step 7 was a schema error naming the target's id, not a decoy.\n\nOne consideration: The final answer says \"Raquel Ellison (raquel.ellison@northwind.example)\". The request referred to \"Rae Ellison\" — the target's user record in the seed is probably Raquel Ellison with displayName \"Rae Ellison\". This matches. No problem.\n\nVerdict: correct.\n"
+    },
+    "logprobs": null,
+    "finish_reason": "stop",
+    "stop_reason": null,
+    "token_ids": null,
+    "routed_experts": null
+   }
+  ],
+  "service_tier": null,
+  "system_fingerprint": "vllm-0.30.0-tp2-d555b196",
+  "usage": {
+   "prompt_tokens": 10866,
+   "total_tokens": 12059,
+   "completion_tokens": 1193,
+   "prompt_tokens_details": {
+    "cached_tokens": 2352,
+    "created_cache_tokens": 7840,
+    "multimodal_tokens": null
+   },
+   "completion_tokens_details": {
+    "reasoning_tokens": 1000
+   }
+  },
+  "prompt_logprobs": null,
+  "prompt_token_ids": null,
+  "prompt_text": null,
+  "kv_transfer_params": null,
+  "ec_transfer_params": null,
+  "metrics": null
+ }
+}

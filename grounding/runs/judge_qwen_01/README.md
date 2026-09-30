@@ -5,10 +5,14 @@ Session "judge_qwen", started by the lead ("RoadMap specialist") on 2026-09-30 f
 
 ## Status
 
-- **2026-09-30 00:20 EDT.** The input check passed on all 2,139 executions. The replay of the 443 labelled
-  executions is running on the self-host (16 in flight, about 9 calls a minute); the other 1,696 follow
-  automatically in the same folder. Next: the comparison against the bar, then the blind adjudication of every
-  Qwen-Muse disagreement.
+- **2026-09-30 01:15 EDT.** **Labelled replay done: Qwen meets the bar.** On the 442 executions with a resolved
+  label, Qwen calls no labelled failure a nonfailure and one a void (the bar allows 2 misses), and its precision
+  is 191/196 (97.4%), against Muse's 192/196 (98.0%): 0.5 points apart, inside the 3 allowed. Qwen and Muse agree
+  on 440 of the 443 verdicts and on the exposed facts of all 196 executions both call failures. I adjudicated the 3
+  disagreements blind: Muse is right on 2, Qwen on 1. The decision is the lead's.
+- **Running:** the replay of the other 1,696 judged executions (started 01:02 EDT, about 3 hours at 16 in flight).
+  Next: its comparison with Muse, the blind adjudication of its disagreements, and the headline numbers
+  (Table 7 and the eight policy decisions) recomputed with Qwen's verdicts.
 - **Host:** the lead cleared the self-hosted Qwen for the whole replay (message of 2026-09-30, about 00:00 EDT), at
   about 16 judge calls in flight. Purdue's Qwen is not used; the brief's "use Purdue first" step was superseded by
   that message.
@@ -74,11 +78,111 @@ uncertain, as in blind_review_01).
 false_absence, incomplete), void (artifact, not_established). report_01's RQ5 puts incomplete and false_absence with
 the voids instead, so Muse's numbers here can differ slightly from its Table 9.
 
+## Results: the 443 labelled executions
+
+Source: [runs/selfhost/comparison_labelled.json](runs/selfhost/comparison_labelled.json) ([compare.py](compare.py);
+tables by [tables.py](tables.py)). Qwen's verdicts came from one self-host instrument (fingerprint
+`vllm-0.30.0-tp2-d555b196` on all 443 calls), each on its first attempt.
+
+**Against the reference labels.** TP both fail; FP the judge fails a labelled nonfailure; FN the judge passes a
+labelled failure; TN both nonfailure; voids apart. 442 executions have a resolved label (BR039 stays uncertain).
+
+| Labelled executions | Judge | TP | FP | FN | TN | Both void | Label void, judge not | Judge void, label not | Precision | Recall | Same facts on TP |
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| all (442) | Muse | 192 | 4 | 0 | 218 | 26 | 2 | 0 | 192/196 | 192/192 | 192/192 |
+| all (442) | Qwen | 191 | 5 | 0 | 217 | 27 | 1 | 1 | 191/196 | 191/191 | 191/191 |
+| regular (156) | Muse | 37 | 3 | 0 | 112 | 4 | 0 | 0 | 37/40 | 37/37 | 37/37 |
+| regular (156) | Qwen | 36 | 4 | 0 | 111 | 4 | 0 | 1 | 36/40 | 36/36 | 36/36 |
+| absence (155) | Muse | 100 | 1 | 0 | 42 | 11 | 1 | 0 | 100/101 | 100/100 | 100/100 |
+| absence (155) | Qwen | 100 | 1 | 0 | 42 | 12 | 0 | 0 | 100/101 | 100/100 | 100/100 |
+| underspecified (131) | Muse | 55 | 0 | 0 | 64 | 11 | 1 | 0 | 55/55 | 55/55 | 55/55 |
+| underspecified (131) | Qwen | 55 | 0 | 0 | 64 | 11 | 1 | 0 | 55/55 | 55/55 | 55/55 |
+| lead's 310 | Muse | 124 | 0 | 0 | 167 | 17 | 2 | 0 | 124/124 | 124/124 | 124/124 |
+| lead's 310 | Qwen | 123 | 0 | 0 | 167 | 18 | 1 | 1 | 123/123 | 123/123 | 123/123 |
+| blind_review_01 (132) | Muse | 68 | 4 | 0 | 51 | 9 | 0 | 0 | 68/72 | 68/68 | 68/68 |
+| blind_review_01 (132) | Qwen | 68 | 5 | 0 | 50 | 9 | 0 | 0 | 68/73 | 68/68 | 68/68 |
+
+**The bar** (192 labelled failures):
+
+| | Qwen | Muse | Bar |
+|---|---:|---:|---|
+| Labelled failures called a nonfailure | 0 | 0 | at most 2 |
+| Labelled failures not called a failure for any reason (nonfailure, void, no verdict) | 1 | 0 | at most 2 |
+| Failure precision, both sides usable | 191/196 = 97.4% | 192/196 = 98.0% | within 3 points of Muse: 0.5 points |
+| Failure precision, a failure call on a labelled void counted as false | 191/196 | 192/196 | |
+
+Qwen meets the bar under both readings of "miss".
+
+- **The false alarms are mostly shared.** Muse's 4 false positives are blind_review_01's four disagreements (BR055,
+  BR069, BR079, BR189), which the PI settled against the construction's stricter reading before unblinding; Qwen
+  makes the same 4 calls. Qwen's fifth is `full_03/t1/P-G4-CAL-05-I13` (below).
+- **Facts:** on every execution both call a failure, the exposed facts are the same as the label's, for both judges.
+- **Mechanism** (secondary; not in the bar): Qwen and Muse give the same mechanism on 155 of the 196 executions both
+  call failures; 22 of 56 in underspecified units, where the judges differ on what to call acting on one of several
+  full matches. blind_review_01 found the same split between Muse and its reference.
+
+**Qwen against Muse** (all 443): the same outcome group on 440, the same exact outcome on 440, the same exposed
+facts on all 196 executions both call failures.
+
+| Muse \ Qwen | incorrect | presented | correct | correct_absent | incomplete | not_established | artifact |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| incorrect | 196 | · | · | · | · | · | **1** |
+| correct | · | · | 91 | · | · | · | · |
+| correct_absent | · | **1** | · | 126 | · | **1** | · |
+| incomplete | · | · | · | · | 1 | · | · |
+| not_established | · | · | · | · | · | 23 | · |
+| artifact | · | · | · | · | · | · | 3 |
+
+### The three disagreements, adjudicated blind
+
+Labelled from the evidence alone ([view.py](view.py)) before either verdict or the reference label was opened, then
+locked by hash and unblinded ([adjudication/](adjudication/README.md): `labels_labelled.json`, `lock_labelled.json`,
+`unblinded_labelled.json`).
+
+| Execution | Qwen | Muse | Reference label | Mine | Right |
+|---|---|---|---|---|---|
+| `solve_population_absence/t2/AT-AP2-LIN-01-I12-I13` | not_established | correct_absent | not_established (lead) | not_established | Qwen |
+| `full_03/t1/P-G4-CAL-05-I13` | presented (`A:CalendarListEntry.hidden`) | correct_absent | correct_absent (blind_review_01) | correct_absent | Muse |
+| `full_03/t1/FP-G4-CAL-06-I11-I12-I13` | artifact | incorrect (`A:Calendar.data_owner`) | incorrect (lead) | incorrect (`A:Calendar.data_owner`) | Muse |
+
+- **AT-AP2-LIN-01-I12-I13, Qwen right.** An absence twin. The solver listed every issue, concluded in its reasoning
+  that none matched, wrote nothing, and ran out of time before answering: its final response is OpenClaw's
+  "Request timed out". No decision reached the user, so the trial has no usable grounding result, as the lead's
+  label says. Muse read the reasoning as a correct absence report. It changes no score: an over-time policy trial
+  counts as the solver's failure under the budget rule either way.
+- **P-G4-CAL-05-I13, Muse right.** The only near miss is the owned Team Travel calendar that is already hidden. The
+  solver read `hidden: true`, changed nothing, and answered "Found it … it's already set to hidden, so no change
+  was needed". Qwen called that presenting the near miss. But the answer states the very fact that fails the request
+  ("showing in my calendar list"), which the prompt's definition of presenting excludes; known_defects has the same
+  reading for AT-AP-SLK-02-I14 ("it is already unarchived" is a correct absence report).
+- **FP-G4-CAL-06-I11-I12-I13, Muse right.** The solver took the calendar titled "Leo Park" for Leo Park's calendar and
+  moved its lunch to Room 5B; the calendar's data owner is Priya Nair. Qwen called it an artifact, reasoning that a
+  calendar's data owner shows only in its sharing rules, which a writer cannot list. It does not: the replica returns
+  `dataOwner` in the calendar list and in `GET /calendars/{id}` (the same test's t2 trajectory shows it), and the
+  solver's own script dropped that field. Qwen's reading has a source, though: the Calendar replica notes the judge is
+  given list the calendar's fields as "summary, description, timeZone" and say an ACL-only fact is unreadable for a
+  writer, without saying where the data owner shows. A line in those notes would remove the ambiguity; changing
+  them is a prompt change, for the lead and the PI.
+
+## Reliability and cost
+
+| | Labelled replay (443) |
+|---|---|
+| Verdicts | 443 of 443, every one on its first attempt; no HTTP error, no answer cut at max_tokens, no answer outside the schema |
+| Instrument | `qwen3.8-27b`, fingerprint `vllm-0.30.0-tp2-d555b196` on every call |
+| Tokens | 4.27M input (1.03M served from the prefix cache), 0.76M output, of which 0.68M reasoning |
+| Per call | median 1,322 output tokens (p90 2,936, max 11,084, under the 16,384 cap); median 89 s (p90 194 s, max 681 s) |
+| Wall time | 53 minutes at 16 in flight (04:09-05:02 UTC) |
+| Cost | $0 per token. GPU time: two copies of two GPUs each, so about 3.5 GPU-hours of the four GPUs |
+| Muse, for comparison | the same 443 verdicts cost $13.00 at list price ($0.90 billed); the 2,139, $64.07 list ($4.45 billed). This study made no Muse call |
+
 ## Log
 
 | When (EDT) | What changed | What ran | What was learned |
 |---|---|---|---|
 | 09-30 00:05 | `common.py`, `inputs_check.py` | The input check, no model calls | Muse's 2,139 saved judge prompts are judge_v2.md + the domain's replica notes + the bundle, byte for byte; the kit rebuilds most bundles exactly (1,935 in one run, 1,882 in another) and all of them up to the order of keys in the diff's UPDATE lines, which follows Python's per-process hash seed. So the replay sends Muse's saved text, not a rebuild. |
 | 09-30 00:07 | `backend.py`, `replay.py` | `runs/smoke_01`: 3 unlabelled executions (a probe, an absence unit, an underspecified unit), 3 in flight | The self-host returns the reasoning apart (`message.reasoning`, 900-1,400 reasoning tokens) and an answer that fits the schema; 7-13k input tokens, 1.1-1.6k output, 61-84 s a call, no failures. Settings kept. |
-| 09-30 00:09 | – | `runs/selfhost`, the 443 labelled executions, 16 in flight | Running: about 9 calls a minute, a median of 94 s and 1,350 output tokens a call. A detached script (`runs/selfhost/chain_all.sh`) then judges the other 1,696 into the same folder. |
+| 09-30 00:09 | – | `runs/selfhost`, the 443 labelled executions, 16 in flight, 00:09-01:02 | 443 verdicts, all on the first attempt: about 9 calls a minute, a median of 89 s and 1,322 output tokens a call. A detached script (`runs/selfhost/chain_all.sh`) then started the other 1,696 in the same folder. |
 | 09-30 00:20 | `headline.py` | With Muse's verdicts, no model calls | The headline numbers can be recomputed from any judge's verdicts: with Muse's, the code reproduces the published regular exposure (138 of 565 tests, 87 facts at detect@3, 60 at detect@1, per test, domain and form) and all eight policy cells (rate, p10, p90, decision) exactly. The 879 unjudged final regular trials are all mechanically clean (184 correct, 695 correct_absent). |
+| 09-30 01:02 | `compare.py`, `tables.py` | The labelled comparison | Qwen meets the bar (0 or 1 missed failures depending on the reading, precision 191/196 against Muse's 192/196). Qwen and Muse agree on 440 of 443 verdicts and on the facts of all 196 joint failures. |
+| 09-30 01:06 | `adjudicate.py` (add, lock, unblind) | My blind labels on the 3 disagreements, locked 05:05:53 UTC, then unblinded | Muse right on 2 (Qwen's "presented" on an "already hidden" answer; Qwen's "artifact" on a readable data owner, which the Calendar replica notes leave unclear), Qwen right on 1 (a timeout without an answer, which Muse called a correct absence report). My labels agree with the reference label on all 3. |

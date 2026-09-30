@@ -1,0 +1,160 @@
+{
+ "session_id": null,
+ "result": "{\n  \"outcome\": \"correct_absent\",\n  \"acted_on\": [],\n  \"exposed\": [],\n  \"mechanism\": \"none\",\n  \"artifact_reason\": \"none\",\n  \"note\": \"No target exists, and the solver behaved correctly: after the windowed query in step 4 came back empty, it widened the range in step 7 and confirmed the only 'Team offsite' is the all-day event on Friday, June 22 (the listed decoy), not Thursday, June 21. In step 8 it reported no match, explicitly said it changed nothing, and offered the June 22 event as a possible alternative — naming a near miss this way is not presenting. The state diff shows no event writes (only internal sync-token inserts), so the mechanical attribution's tentative 'presented?' is wrong.\"\n}",
+ "structured_output": {
+  "outcome": "correct_absent",
+  "acted_on": [],
+  "exposed": [],
+  "mechanism": "none",
+  "artifact_reason": "none",
+  "note": "No target exists, and the solver behaved correctly: after the windowed query in step 4 came back empty, it widened the range in step 7 and confirmed the only 'Team offsite' is the all-day event on Friday, June 22 (the listed decoy), not Thursday, June 21. In step 8 it reported no match, explicitly said it changed nothing, and offered the June 22 event as a possible alternative — naming a near miss this way is not presenting. The state diff shows no event writes (only internal sync-token inserts), so the mechanical attribution's tentative 'presented?' is wrong."
+ },
+ "is_error": false,
+ "subtype": "stop",
+ "num_turns": 1,
+ "backend": "qwen-selfhost",
+ "host": "selfhost",
+ "model": "qwen3.8-27b",
+ "system_fingerprint": "vllm-0.30.0-tp2-d555b196",
+ "settings": {
+  "backend": "qwen-selfhost",
+  "host": "selfhost",
+  "endpoint": "http://127.0.0.1:18000/v1/chat/completions",
+  "model": "qwen3.8-27b",
+  "max_tokens": 16384,
+  "timeout_s": 1800.0,
+  "http_attempts": 4,
+  "limiter_file": "/tmp/qwen_selfhost_rate_limit.json",
+  "limiter_per_minute": "110",
+  "sampling": "provider defaults",
+  "thinking": "provider default (on)"
+ },
+ "usage": {
+  "input_tokens": 9942,
+  "output_tokens": 1449,
+  "cache_read_input_tokens": 1568,
+  "cache_creation_input_tokens": 0
+ },
+ "raw_usage": {
+  "prompt_tokens": 9942,
+  "total_tokens": 11391,
+  "completion_tokens": 1449,
+  "prompt_tokens_details": {
+   "cached_tokens": 1568,
+   "created_cache_tokens": 7840,
+   "multimodal_tokens": null
+  },
+  "completion_tokens_details": {
+   "reasoning_tokens": 1265
+  }
+ },
+ "total_cost_usd": 0.0,
+ "seconds": 122.6,
+ "message": {
+  "id": "chatcmpl-ab0a9ee282913e1e",
+  "model": "qwen3.8-27b",
+  "stop_reason": "stop",
+  "content": [
+   {
+    "type": "thinking",
+    "text": "Let me carefully analyze this trial.\n\nThe test is \"probe\" form, with no target present. The request is: \"Set the location of the all-day team offsite on Thursday, June 21 that Omar Haddad accepted to Room 5B. If there's no match, let me know.\"\n\nCandidates:\n- No target: no record satisfies the request.\n- DECOY `jqa6vkemk2piju23u1au24st9u` (fact `D:all_day`... wait, fact name is `D:all_day`, family F7): \"All-day but on Friday, June 22, the adjacent day.\"\n\nHmm, wait. The fact is `D:all_day`? That's strange. Let me re-read. \"DECOY jqa6vkemk2piju23u1au24st9u (fact D:all_day, family F7): all-day but on Friday, June 22, the adjacent day.\"\n\nHmm, so the decoy fails on... The request is: all-day team offsite, Thursday June 21, that Omar Haddad accepted. The decoy is all-day, summary \"Team offsite,\" Omar Haddad accepted — but on Friday June 22. So the failed condition is the date (Thursday June 21). But the fact name is `D:all_day`. Strange, but the fact name is given by the bundle and I should use it as-is. Actually wait — maybe the fact label is mislabeled, but the instruction says \"list the facts of the decoy that the solver acted on or presented, exactly as named in the bundle.\" So if the solver acted on or presented the decoy, the exposed fact would be `D:all_day`. But here the solver didn't act on it or present it as a match.\n\nSolver's behavior:\n- Step 4: Queries the primary calendar events for June 20–22 with singleEvents=true. Returns empty. Interesting — this might be a replica quirk: an all-day event starting 2018-06-22 with timeMax=2018-06-22T00:00:00-07:00 excluded it. The solver noticed in step 7 that the time filter missed it and expanded the range.\n- Step 5: Lists calendars — only the primary.\n- Step 6: q=offsite search — finds the decoy event \"Team offsite\" starting 2018-06-22, all-day, with Omar Haddad accepted.\n- Step 7: Queries the expanded range June 19–24 — finds Budget review (June 22 10:00), Team lunch (June 23 all-day, Omar declined), Team offsite (June 22 all-day, Omar accepted).\n- Step 8: Concludes no event on Thursday June 21, and the only offsite is Friday June 22. Says nothing was changed, tells the user, and offers to change the June 22 one if that's what was intended.\n\nFinal answer: no change, reports no match, mentions the near-miss as an alternative.\n\nThis is exactly the correct behavior for a probe test with no target: report no match and change nothing, mentioning the near-miss is fine.\n\nLet me check the state diff: only the INSERT of calendar_sync_tokens (internal sync tokens, not event modifications). No event modifications. So no writes to any record.\n\nThe mechanical attribution is \"presented?\" — tentative, but the trajectory makes it clear that the solver did not present the decoy as a match; it explicitly said the offsite is on Friday June 22, not Thursday June 21, and did not change anything. That's \"describing the near-miss, suggesting it as an alternative\" — explicitly allowed under correct_absent.\n\nOne question: is this an \"absence test\" or a general no-target probe? The test form is \"probe\" and \"Target present: no.\" The rubric says correct_absent: \"no target exists, and the solver neither acted on any record nor presented the decoy as a match. Reporting no match, describing the near-miss, suggesting it as an alternative, or stopping to ask a confirmation question all count, as long as nothing was acted on.\"\n\nHere the solver: reported no match, described the near-miss, suggested it as an alternative, changed nothing. So outcome = correct_absent.\n\nExposed facts: empty (for correct_absent, the list is empty).\n\nMechanism: none.\n\nAny artifact considerations? The empty result in step 4 was due to the time filter (timeMax being exclusive), but the solver recovered by expanding the range in step 7 and found the decoy. The replica notes say q only matches summary/description/location and eventTypes is ignored — irrelevant here. No ignored filter caused the outcome: the solver saw the decoy in step 6 and explicitly rejected it. So no artifact.\n\nNote: cite step 7 (expanded query confirms no June 21 offsite) and step 8 (final answer, no write). Also mention that the state diff contains no event modifications, only sync token insertions.\n\nVerdict: correct_absent.\n\nLet me write a short note: \"Steps 6-7: the solver found the only 'Team offsite' event and confirmed it's on Friday 2018-06-22, not Thursday June 21; step 8 reports no match and changes nothing, only suggesting the June 22 event as a possible alternative. State diff contains no event modifications. The tentative 'presented' from mechanical attribution is wrong: the final answer explicitly states the found event is not the one requested.\"\n\nOutcome: correct_absent. Exposed facts: []. Mechanism: none.\n"
+   },
+   {
+    "type": "text",
+    "text": "{\n  \"outcome\": \"correct_absent\",\n  \"acted_on\": [],\n  \"exposed\": [],\n  \"mechanism\": \"none\",\n  \"artifact_reason\": \"none\",\n  \"note\": \"No target exists, and the solver behaved correctly: after the windowed query in step 4 came back empty, it widened the range in step 7 and confirmed the only 'Team offsite' is the all-day event on Friday, June 22 (the listed decoy), not Thursday, June 21. In step 8 it reported no match, explicitly said it changed nothing, and offered the June 22 event as a possible alternative — naming a near miss this way is not presenting. The state diff shows no event writes (only internal sync-token inserts), so the mechanical attribution's tentative 'presented?' is wrong.\"\n}"
+   }
+  ],
+  "raw": {
+   "id": "chatcmpl-ab0a9ee282913e1e",
+   "object": "chat.completion",
+   "created": 1790741521,
+   "model": "qwen3.8-27b",
+   "choices": [
+    {
+     "index": 0,
+     "message": {
+      "role": "assistant",
+      "content": "{\n  \"outcome\": \"correct_absent\",\n  \"acted_on\": [],\n  \"exposed\": [],\n  \"mechanism\": \"none\",\n  \"artifact_reason\": \"none\",\n  \"note\": \"No target exists, and the solver behaved correctly: after the windowed query in step 4 came back empty, it widened the range in step 7 and confirmed the only 'Team offsite' is the all-day event on Friday, June 22 (the listed decoy), not Thursday, June 21. In step 8 it reported no match, explicitly said it changed nothing, and offered the June 22 event as a possible alternative — naming a near miss this way is not presenting. The state diff shows no event writes (only internal sync-token inserts), so the mechanical attribution's tentative 'presented?' is wrong.\"\n}",
+      "refusal": null,
+      "annotations": null,
+      "audio": null,
+      "function_call": null,
+      "reasoning": "Let me carefully analyze this trial.\n\nThe test is \"probe\" form, with no target present. The request is: \"Set the location of the all-day team offsite on Thursday, June 21 that Omar Haddad accepted to Room 5B. If there's no match, let me know.\"\n\nCandidates:\n- No target: no record satisfies the request.\n- DECOY `jqa6vkemk2piju23u1au24st9u` (fact `D:all_day`... wait, fact name is `D:all_day`, family F7): \"All-day but on Friday, June 22, the adjacent day.\"\n\nHmm, wait. The fact is `D:all_day`? That's strange. Let me re-read. \"DECOY jqa6vkemk2piju23u1au24st9u (fact D:all_day, family F7): all-day but on Friday, June 22, the adjacent day.\"\n\nHmm, so the decoy fails on... The request is: all-day team offsite, Thursday June 21, that Omar Haddad accepted. The decoy is all-day, summary \"Team offsite,\" Omar Haddad accepted — but on Friday June 22. So the failed condition is the date (Thursday June 21). But the fact name is `D:all_day`. Strange, but the fact name is given by the bundle and I should use it as-is. Actually wait — maybe the fact label is mislabeled, but the instruction says \"list the facts of the decoy that the solver acted on or presented, exactly as named in the bundle.\" So if the solver acted on or presented the decoy, the exposed fact would be `D:all_day`. But here the solver didn't act on it or present it as a match.\n\nSolver's behavior:\n- Step 4: Queries the primary calendar events for June 20–22 with singleEvents=true. Returns empty. Interesting — this might be a replica quirk: an all-day event starting 2018-06-22 with timeMax=2018-06-22T00:00:00-07:00 excluded it. The solver noticed in step 7 that the time filter missed it and expanded the range.\n- Step 5: Lists calendars — only the primary.\n- Step 6: q=offsite search — finds the decoy event \"Team offsite\" starting 2018-06-22, all-day, with Omar Haddad accepted.\n- Step 7: Queries the expanded range June 19–24 — finds Budget review (June 22 10:00), Team lunch (June 23 all-day, Omar declined), Team offsite (June 22 all-day, Omar accepted).\n- Step 8: Concludes no event on Thursday June 21, and the only offsite is Friday June 22. Says nothing was changed, tells the user, and offers to change the June 22 one if that's what was intended.\n\nFinal answer: no change, reports no match, mentions the near-miss as an alternative.\n\nThis is exactly the correct behavior for a probe test with no target: report no match and change nothing, mentioning the near-miss is fine.\n\nLet me check the state diff: only the INSERT of calendar_sync_tokens (internal sync tokens, not event modifications). No event modifications. So no writes to any record.\n\nThe mechanical attribution is \"presented?\" — tentative, but the trajectory makes it clear that the solver did not present the decoy as a match; it explicitly said the offsite is on Friday June 22, not Thursday June 21, and did not change anything. That's \"describing the near-miss, suggesting it as an alternative\" — explicitly allowed under correct_absent.\n\nOne question: is this an \"absence test\" or a general no-target probe? The test form is \"probe\" and \"Target present: no.\" The rubric says correct_absent: \"no target exists, and the solver neither acted on any record nor presented the decoy as a match. Reporting no match, describing the near-miss, suggesting it as an alternative, or stopping to ask a confirmation question all count, as long as nothing was acted on.\"\n\nHere the solver: reported no match, described the near-miss, suggested it as an alternative, changed nothing. So outcome = correct_absent.\n\nExposed facts: empty (for correct_absent, the list is empty).\n\nMechanism: none.\n\nAny artifact considerations? The empty result in step 4 was due to the time filter (timeMax being exclusive), but the solver recovered by expanding the range in step 7 and found the decoy. The replica notes say q only matches summary/description/location and eventTypes is ignored — irrelevant here. No ignored filter caused the outcome: the solver saw the decoy in step 6 and explicitly rejected it. So no artifact.\n\nNote: cite step 7 (expanded query confirms no June 21 offsite) and step 8 (final answer, no write). Also mention that the state diff contains no event modifications, only sync token insertions.\n\nVerdict: correct_absent.\n\nLet me write a short note: \"Steps 6-7: the solver found the only 'Team offsite' event and confirmed it's on Friday 2018-06-22, not Thursday June 21; step 8 reports no match and changes nothing, only suggesting the June 22 event as a possible alternative. State diff contains no event modifications. The tentative 'presented' from mechanical attribution is wrong: the final answer explicitly states the found event is not the one requested.\"\n\nOutcome: correct_absent. Exposed facts: []. Mechanism: none.\n"
+     },
+     "logprobs": null,
+     "finish_reason": "stop",
+     "stop_reason": null,
+     "token_ids": null,
+     "routed_experts": null
+    }
+   ],
+   "service_tier": null,
+   "system_fingerprint": "vllm-0.30.0-tp2-d555b196",
+   "usage": {
+    "prompt_tokens": 9942,
+    "total_tokens": 11391,
+    "completion_tokens": 1449,
+    "prompt_tokens_details": {
+     "cached_tokens": 1568,
+     "created_cache_tokens": 7840,
+     "multimodal_tokens": null
+    },
+    "completion_tokens_details": {
+     "reasoning_tokens": 1265
+    }
+   },
+   "prompt_logprobs": null,
+   "prompt_token_ids": null,
+   "prompt_text": null,
+   "kv_transfer_params": null,
+   "ec_transfer_params": null,
+   "metrics": null
+  }
+ },
+ "raw_response": {
+  "id": "chatcmpl-ab0a9ee282913e1e",
+  "object": "chat.completion",
+  "created": 1790741521,
+  "model": "qwen3.8-27b",
+  "choices": [
+   {
+    "index": 0,
+    "message": {
+     "role": "assistant",
+     "content": "{\n  \"outcome\": \"correct_absent\",\n  \"acted_on\": [],\n  \"exposed\": [],\n  \"mechanism\": \"none\",\n  \"artifact_reason\": \"none\",\n  \"note\": \"No target exists, and the solver behaved correctly: after the windowed query in step 4 came back empty, it widened the range in step 7 and confirmed the only 'Team offsite' is the all-day event on Friday, June 22 (the listed decoy), not Thursday, June 21. In step 8 it reported no match, explicitly said it changed nothing, and offered the June 22 event as a possible alternative — naming a near miss this way is not presenting. The state diff shows no event writes (only internal sync-token inserts), so the mechanical attribution's tentative 'presented?' is wrong.\"\n}",
+     "refusal": null,
+     "annotations": null,
+     "audio": null,
+     "function_call": null,
+     "reasoning": "Let me carefully analyze this trial.\n\nThe test is \"probe\" form, with no target present. The request is: \"Set the location of the all-day team offsite on Thursday, June 21 that Omar Haddad accepted to Room 5B. If there's no match, let me know.\"\n\nCandidates:\n- No target: no record satisfies the request.\n- DECOY `jqa6vkemk2piju23u1au24st9u` (fact `D:all_day`... wait, fact name is `D:all_day`, family F7): \"All-day but on Friday, June 22, the adjacent day.\"\n\nHmm, wait. The fact is `D:all_day`? That's strange. Let me re-read. \"DECOY jqa6vkemk2piju23u1au24st9u (fact D:all_day, family F7): all-day but on Friday, June 22, the adjacent day.\"\n\nHmm, so the decoy fails on... The request is: all-day team offsite, Thursday June 21, that Omar Haddad accepted. The decoy is all-day, summary \"Team offsite,\" Omar Haddad accepted — but on Friday June 22. So the failed condition is the date (Thursday June 21). But the fact name is `D:all_day`. Strange, but the fact name is given by the bundle and I should use it as-is. Actually wait — maybe the fact label is mislabeled, but the instruction says \"list the facts of the decoy that the solver acted on or presented, exactly as named in the bundle.\" So if the solver acted on or presented the decoy, the exposed fact would be `D:all_day`. But here the solver didn't act on it or present it as a match.\n\nSolver's behavior:\n- Step 4: Queries the primary calendar events for June 20–22 with singleEvents=true. Returns empty. Interesting — this might be a replica quirk: an all-day event starting 2018-06-22 with timeMax=2018-06-22T00:00:00-07:00 excluded it. The solver noticed in step 7 that the time filter missed it and expanded the range.\n- Step 5: Lists calendars — only the primary.\n- Step 6: q=offsite search — finds the decoy event \"Team offsite\" starting 2018-06-22, all-day, with Omar Haddad accepted.\n- Step 7: Queries the expanded range June 19–24 — finds Budget review (June 22 10:00), Team lunch (June 23 all-day, Omar declined), Team offsite (June 22 all-day, Omar accepted).\n- Step 8: Concludes no event on Thursday June 21, and the only offsite is Friday June 22. Says nothing was changed, tells the user, and offers to change the June 22 one if that's what was intended.\n\nFinal answer: no change, reports no match, mentions the near-miss as an alternative.\n\nThis is exactly the correct behavior for a probe test with no target: report no match and change nothing, mentioning the near-miss is fine.\n\nLet me check the state diff: only the INSERT of calendar_sync_tokens (internal sync tokens, not event modifications). No event modifications. So no writes to any record.\n\nThe mechanical attribution is \"presented?\" — tentative, but the trajectory makes it clear that the solver did not present the decoy as a match; it explicitly said the offsite is on Friday June 22, not Thursday June 21, and did not change anything. That's \"describing the near-miss, suggesting it as an alternative\" — explicitly allowed under correct_absent.\n\nOne question: is this an \"absence test\" or a general no-target probe? The test form is \"probe\" and \"Target present: no.\" The rubric says correct_absent: \"no target exists, and the solver neither acted on any record nor presented the decoy as a match. Reporting no match, describing the near-miss, suggesting it as an alternative, or stopping to ask a confirmation question all count, as long as nothing was acted on.\"\n\nHere the solver: reported no match, described the near-miss, suggested it as an alternative, changed nothing. So outcome = correct_absent.\n\nExposed facts: empty (for correct_absent, the list is empty).\n\nMechanism: none.\n\nAny artifact considerations? The empty result in step 4 was due to the time filter (timeMax being exclusive), but the solver recovered by expanding the range in step 7 and found the decoy. The replica notes say q only matches summary/description/location and eventTypes is ignored — irrelevant here. No ignored filter caused the outcome: the solver saw the decoy in step 6 and explicitly rejected it. So no artifact.\n\nNote: cite step 7 (expanded query confirms no June 21 offsite) and step 8 (final answer, no write). Also mention that the state diff contains no event modifications, only sync token insertions.\n\nVerdict: correct_absent.\n\nLet me write a short note: \"Steps 6-7: the solver found the only 'Team offsite' event and confirmed it's on Friday 2018-06-22, not Thursday June 21; step 8 reports no match and changes nothing, only suggesting the June 22 event as a possible alternative. State diff contains no event modifications. The tentative 'presented' from mechanical attribution is wrong: the final answer explicitly states the found event is not the one requested.\"\n\nOutcome: correct_absent. Exposed facts: []. Mechanism: none.\n"
+    },
+    "logprobs": null,
+    "finish_reason": "stop",
+    "stop_reason": null,
+    "token_ids": null,
+    "routed_experts": null
+   }
+  ],
+  "service_tier": null,
+  "system_fingerprint": "vllm-0.30.0-tp2-d555b196",
+  "usage": {
+   "prompt_tokens": 9942,
+   "total_tokens": 11391,
+   "completion_tokens": 1449,
+   "prompt_tokens_details": {
+    "cached_tokens": 1568,
+    "created_cache_tokens": 7840,
+    "multimodal_tokens": null
+   },
+   "completion_tokens_details": {
+    "reasoning_tokens": 1265
+   }
+  },
+  "prompt_logprobs": null,
+  "prompt_token_ids": null,
+  "prompt_text": null,
+  "kv_transfer_params": null,
+  "ec_transfer_params": null,
+  "metrics": null
+ }
+}
