@@ -246,3 +246,6 @@ section. Decisions that stand go to the [roadmap](roadmap.md); this is the recor
   anyway, no bypass producing a pass; none of Sol's 1,196 trials. For the PI: a future round should run attempts
   under a restricted user or a container; the neutral layout hides names, not the filesystem. New replica gap:
   Calendar cannot re-add a calendar-list entry after DELETE.
+- 04:07 baselines_02 paused at 96 of 267 trials (SN0M 45, SN1M 51). Early labels: the first target-present fact
+  exposure by a naive baseline (SN1M-BOX-T03 t1: owner taken for uploader, R:File.created_by_id), two presupposing
+  policy failures, everything else right.
