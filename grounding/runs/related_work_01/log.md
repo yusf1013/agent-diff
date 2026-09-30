@@ -51,3 +51,33 @@ analysis's assertion-coverage labels ([pilot/slack_assertion_misses.json](pilot/
   read yet).
 - Denominators: one solver (Sonnet 5), one trial, grounding judgments only (not all task failures), Slack only.
   Box and Linear have obligation analyses but no labelled runs.
+
+## 2026-09-30, cycle 2: the search, the map and the cards
+
+**Searched:** the survey's bibliography (§4.5 tools, §5 synthesis); the PI's July audits as leads; arXiv and the web for
+2026 work on wrong-entity actions, coverage criteria for agents, metamorphic and property-based testing of agents,
+false-premise and infeasible requests, and automated state-based benchmark generation. Every cited arXiv entry was
+checked through the arXiv API; the works that got Run, Project or Adopt were read in their papers (and EnvScaler in its
+prompts, AgentDojo and ClawsBench in their repositories).
+
+**Learned:**
+- **Concurrent work names our failure class.** "Entity Binding Failures in Tool-Augmented Agents" (arXiv 2606.30531,
+  2026-06-29, released): 60 hand-built single-step tasks with the state in the prompt; 24–26% wrong-entity actions at
+  0% wrong-tool errors. Its per-condition results agree with ours: target-present look-alikes rarely bite (name
+  collision 20%, near duplicate and document version 0%), true ambiguity almost always does (92–100%).
+- **The paired should-act / should-abstain design exists** (AgentAbstain, 2607.10059, released): 263 pairs, one
+  controlled perturbation each, 8 categories. Missing parameter ≈ our underspecified policy, insufficient tools ≈
+  our "no operation" boundary. No presupposed-absence category, no identifying facts.
+- **The semi-automated suites leave to people exactly what we automate.** Agent-Diff's own paper: LLMs write prompt,
+  seed and assertions from uniformly sampled endpoints; people add ambiguity and distractor entities. AppWorld: hand-
+  written setup programs add distractors per scenario.
+- **The automated generators do not validate that a check rejects a wrong outcome.** ClawEnvKit (OpenClaw-native,
+  so the generator a reviewer will name) grades calls and parameters from an audit log; MCP-Bench's judge is
+  validated by a 3-point agreement rating (the PI measured ≤ 10% precision); EnvScaler's prompts ask for
+  differentiated seeds, feasible and unambiguous tasks, and positive "Has …" checks only.
+- **The credit rule has a direct ancestor:** Zhong, Yu and Klein's test-suite accuracy for text-to-SQL (EMNLP 2020)
+  keeps the smallest set of databases that tells the gold query from every one-change neighbour.
+- **Six new angles:** validity audits (ABC), language-to-query test adequacy, entity binding, abstention and
+  feasibility, formal-specification-driven synthesis (MANTRA with SMT), failure diagnostics beyond selection.
+- **ClawsBench is not released** (repository: trajectories and docs, "coming soon"); it would be a projection
+  candidate (Slack, Calendar) on release.
