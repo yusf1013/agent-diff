@@ -112,6 +112,8 @@ Parts (the lead's assignment):
 | [summarize.py](summarize.py), [pilot_summary.json](pilot_summary.json) | The pilot's numbers, with the Sol pilot's |
 | `runs/smoke_01`, `runs/pilot_01`, `runs/pilot_01.log` | The runs, in the judge layout (hidden from ripgrep by `.ignore`) |
 | `runs/judged_pilot_01/` | Judge v2's verdicts, calls log and `comparison.json` against my labels |
+| `runs/judged_sol_pilot_01/` | Judge v2's verdicts on the Sol pilot's 32 trials (the same-test row) |
+| [openai_store/](openai_store/README.md) | The fix of OpenClaw's openai backend login store (`AGENTDIFF_OPENAI_STORE=main`) and its evidence |
 
 ## Log
 
@@ -148,6 +150,15 @@ Parts (the lead's assignment):
   same facts; 32 calls, $0.048 billed, $0.69 at list price, no error.
 - [summarize.py](summarize.py): timings, tokens, list-price cost and the plan's windows, with the Sol pilot's
   numbers (read from the main checkout's `sol_pilot_01/runs/pilot_01`, which is not committed).
+
+### Cycle 4 (02:00-02:25): the Sol pilot judged, and the openai backend's store
+
+- At the lead's request, judge v2 on Muse over the Sol pilot's 32 trials (read only): the same-test table above.
+- A development task from the lead: OpenClaw's openai backend copied the login store, owned by agent `main`, into
+  the attempt agent's directory, so `memory_search` and the auth failover failed. `runtime.py` now has an opt-in
+  layout (`AGENTDIFF_OPENAI_STORE=main`) with the login in the attempt state's main agent and a fresh store for the
+  attempt agent; the default path is byte-for-byte unchanged. Three runs confirmed it
+  ([openai_store/README.md](openai_store/README.md)).
 
 ## Infrastructure rules
 
