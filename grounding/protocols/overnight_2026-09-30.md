@@ -39,9 +39,11 @@ section. Decisions that stand go to the [roadmap](roadmap.md); this is the recor
    units at 0.64 leave the cell); the other seven cells keep their decisions. The escape clause matters: 29% of
    no-target regular trials fail with "if there isn't one, just tell me", 77% of absence twins without it. Muse
    cost $57.45 list. Sol has run this half too (1,011 runs); scoring under way.
-7. **Naive baselines with Sonnet 5.5** (`baselines_02`): generated and reviewed (109 of 116 valid; more designated near
-   misses than Muse's twins, still no probes); runs paused at 96 of 267 for host capacity; the first target-present
-   exposure by a naive baseline seen.
+7. **Naive baselines with Sonnet 5.5** (`baselines_02`, complete): with Sonnet writing them, the naive tests expose
+   facts (SN0M 3 at detect@3, SN1M 2; all four Muse arms 0), still far below ours (11.3 per 48). Sonnet writes 3–4×
+   more designated look-alikes than Muse and exercises more facts (22 and 37 against 12 and 13), but writes no probes;
+   4 of the 5 exposures go through designated look-alikes. Judge v2 agrees with 29 of 30 blind labels on each arm.
+   Generation $3.21 list on the plan; judging $7.88 list.
 8. **Transfer to the real services** (`transfer_feasibility_01`): 37 tests run as is, 403 with test accounts, 476 with
    a stated change, 90 not on ordinary accounts; a 40-test case study proposed at $0 in plans.
 9. The 10-minute budget applied everywhere; both report texts brought to the current numbers (998 cases, 2,994
@@ -367,3 +369,8 @@ section. Decisions that stand go to the [roadmap](roadmap.md); this is the recor
   4 wrote straight to the backend. The oracle agrees with all 30 blind labels. Reading: masking measures the
   response to an environment that seems broken (FeasiGen's "false continue"), not knowledge of a service's limits,
   which our boundary tests measure; keep both. P1 started at 13:23.
+- 13:3x values, baselines_02 done (merged as fca0337589): the numbers are in the brief. Replica findings: Slack
+  history and replies omit reactions while the judge's replica note says messages carry them (reported now by three
+  studies: the note is the thing to fix); Calendar occurrence ids with local digits plus "Z"; Linear
+  teams{projects{nodes}} fails. Rule readings for the PI: a family only when the catalog lists it for the fact; sets
+  get no proper credit; a self-corrected write on a decoy counts; a timeout after the right write is a failing test.
