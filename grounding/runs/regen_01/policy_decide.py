@@ -14,6 +14,11 @@ source apart, and writes runs/decisions_<mode>.json. A trial over the solver's b
 --quiet-host gives the other reading (the lead: "report both readings"): this study's timeouts under host load are
 replaced by their re-runs (rerun_load.py), and it writes runs/decisions_<mode>_quiet_host.json. Phase 4's and 6b's
 trials are as the population runs left them.
+
+Note (2026-09-30, session sol_score, the lead's rule): the budget rule reads each trial's attempt where its verdict
+records it, and this study's verdicts record paths in the regen session's worktree. `P.population_outcomes` now
+re-roots a recorded path that does not exist at this repository's grounding/runs/ (`P.local_attempt`), where the run
+evidence is committed, so these decisions no longer depend on that worktree. No code here changed.
 """
 from __future__ import annotations
 

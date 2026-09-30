@@ -55,11 +55,12 @@ def left_out_clock() -> set[str]:
 
 
 def outcomes_of(verdict_dirs: list[Path]) -> dict:
-    """policy.population_outcomes, with a stalled attempt's trial dropped (void, to be re-run) instead of failed."""
+    """policy.population_outcomes, with a stalled attempt's trial dropped (void, to be re-run) instead of failed. The
+    attempt is found as the budget rule finds it (`policy.local_attempt`: the recorded path, or re-rooted here)."""
     out = policy.population_outcomes(verdict_dirs)
     for d in verdict_dirs:
         for path in d.glob("*/*/*/verdict.json"):
-            attempt = Path(json.loads(path.read_text()).get("attempt", ""))
+            attempt = policy.local_attempt(json.loads(path.read_text()).get("attempt", ""))
             if attempt.exists() and stalled(attempt):
                 out[path.parent.name].pop(path.parent.parent.name, None)
     return out

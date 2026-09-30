@@ -182,15 +182,25 @@ EXTENSION_SEED = 2026092803
 THRESHOLD, ALPHA, RESAMPLES, SEED = 0.8, 0.10, 20_000, 20260928
 
 
+def local_attempt(recorded: str) -> Path:
+    """A verdict's recorded attempt path, or, when it does not exist here (recorded in another checkout, such as a
+    session's worktree since removed), the same attempt in this repository: everything up to and including
+    "/grounding/runs/" is replaced by this repository's grounding/runs/ (2026-09-30, the lead's rule)."""
+    path = Path(recorded)
+    if path.exists() or "/grounding/runs/" not in recorded:
+        return path
+    return HERE.parent / recorded.split("/grounding/runs/", 1)[1]
+
+
 def population_outcomes(verdict_dirs: list[Path]) -> dict:
     """unit -> {trial: outcome} from judge v2's verdicts, with every trial over the solver's budget
     (`rulings.over_budget`) counted as a failure ("incorrect"): judge v2 calls a timeout not_established, which
-    would void it."""
+    would void it. The attempt is read where its verdict records it, or re-rooted here (`local_attempt`)."""
     out = sampler.verdict_outcomes(verdict_dirs)
     for d in verdict_dirs:
         for path in d.glob("*/*/*/verdict.json"):
             v = json.loads(path.read_text())
-            attempt = Path(v.get("attempt", ""))
+            attempt = local_attempt(v.get("attempt", ""))
             if attempt.exists() and rulings.over_budget(attempt):
                 out[path.parent.name][path.parent.parent.name] = "incorrect"
     return out
