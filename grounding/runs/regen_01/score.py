@@ -20,7 +20,9 @@ Reads RUNS_DIR/<RUN>.score.json (autogen_02's `phase4 score`) and RUNS_DIR/judge
 RUNS_DIR/<RUN>.adjudicated.json. RUNS_DIR is this study's runs/ unless --runs-dir names another (for checking this
 script against openclaw_eval_01's own adjudicated runs). --quiet-host gives the other reading (the lead: "report both
 readings"): each timeout under host load is replaced by its re-run on the quiet host (runs/<RUN>_load, rerun_load.py,
-judged into runs/judged_<RUN>_load), and writes RUNS_DIR/<RUN>.adjudicated_quiet_host.json.
+judged into runs/judged_<RUN>_load), and writes RUNS_DIR/<RUN>.adjudicated_quiet_host.json. A re-run's verdict is
+matched to its attempt by the path from grounding/runs/ on (`same_attempt`), so this reading works in any checkout
+(2026-09-30, session sol_score).
 """
 from __future__ import annotations
 
@@ -88,6 +90,14 @@ def valid_facts(case: dict, verdict: dict) -> set[str]:
     return {f for f in exposed if valid.get(f)}
 
 
+def same_attempt(recorded: str, attempt: Path) -> bool:
+    """A verdict's recorded attempt is this attempt: the same path from grounding/runs/ on, whichever checkout it was
+    recorded in. (2026-09-30, session sol_score, with the lead's leave: a plain string comparison matched only in the
+    regen session's own worktree, so the quiet-host reading failed in any other checkout.)"""
+    marker = "/grounding/runs/"
+    return marker in recorded and recorded.split(marker, 1)[1] == str(attempt).split(marker, 1)[-1]
+
+
 def reruns(run: str, runs_dir: Path) -> dict:
     """(trial, case id) -> (the re-run's latest attempt, judge v2's verdict on it), from runs/<RUN>_load (rerun_load.py)
     and runs/judged_<RUN>_load, for the quiet-host reading."""
@@ -96,7 +106,7 @@ def reruns(run: str, runs_dir: Path) -> dict:
         trial, case_id = verdict_path.parent.parent.name, verdict_path.parent.name
         attempts = sorted((runs_dir / f"{run}_load" / trial / case_id).glob("attempt-*"))
         verdict = json.loads(verdict_path.read_text())
-        if attempts and verdict.get("attempt") == str(attempts[-1]):
+        if attempts and same_attempt(verdict.get("attempt") or "", attempts[-1]):
             out[(trial, case_id)] = (attempts[-1], verdict)
     return out
 
