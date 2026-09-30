@@ -1,0 +1,67 @@
+{
+ "scenario_id": "G4-SLK-01",
+ "domain": "slack",
+ "request": "Invite the human Rosa Delgado in the #launch-week channel, the one with a @northwind.example address, to the #platform-launch channel.",
+ "answer": "one",
+ "seed": [
+  ["person", {"key": "rosa", "name": "Rosa Delgado", "username": "rosa", "set": {"email": "rosa.delgado@northwind.example"}, "ref": "target"}],
+  ["person", {"key": "rosaco", "name": "Rosa Delgado", "username": "rosadelgado", "set": {"email": "rosa.delgado@northwind.co"}, "ref": "e1"}],
+  ["person", {"key": "rosagm", "name": "Rosa Delgado", "username": "rosa.delgado", "set": {"email": "rosa.delgado@gmail.com"}, "ref": "e2"}],
+  ["person", {"key": "rosabot", "name": "Rosa Delgado", "username": "rosa.delgado.assistant", "bot": true, "set": {"email": "rosa.delgado.assistant@northwind.example"}, "ref": "bot"}],
+  ["channel", {"id": "C_LW", "name": "launch-week", "members": ["rosa", "rosaco", "rosagm", "rosabot"], "topic": "Run-up to the Q4 platform launch"}],
+  ["channel", {"id": "C_PLAT", "name": "platform-launch", "members": ["diego", "leo", "omar"], "topic": "Launch day coordination"}],
+  ["message", {"channel": "C_LW", "author": "rosa", "text": "Launch checklist is in the shared doc; demo script is due Friday.", "at": "2026-09-24T12:06:00Z"}],
+  ["message", {"channel": "C_PLAT", "author": "diego", "text": "Staging is green; we can cut the release train tomorrow.", "at": "2026-09-24T12:40:00Z"}]
+ ],
+ "conditions": [
+  {"id": "c1", "text": "Rosa Delgado", "facts": ["A:User.real_name"]},
+  {"id": "c2", "text": "the human", "facts": ["A:User.is_bot"]},
+  {"id": "c3", "text": "with a @northwind.example address", "facts": ["A:User.email"]},
+  {"id": "c4", "text": "in the #launch-week channel", "facts": ["R:channel_members"]}
+ ],
+ "reference": {
+  "name": "the human Rosa Delgado to invite",
+  "target": ["@target"],
+  "query": {
+   "table": "users",
+   "key": ["user_id"],
+   "filters": [
+    {"key": "f_name", "field": "real_name", "op": "eq", "value": "Rosa Delgado", "fact": "A:User.real_name"},
+    {"key": "f_bot", "field": "is_bot", "op": "eq", "value": false, "fact": "A:User.is_bot"},
+    {"key": "f_email", "field": "email", "op": "contains_ci", "value": "@northwind.example", "fact": "A:User.email"}
+   ],
+   "edges": [
+    {"key": "e_mem", "join": {"parent": "user_id", "child": "user_id", "op": "eq"}, "fact": "R:channel_members",
+     "node": {"table": "channel_members", "filters": [], "edges": [
+      {"key": "e_chan", "join": {"parent": "channel_id", "child": "channel_id", "op": "eq"},
+       "node": {"table": "channels", "filters": [
+        {"key": "f_chan", "field": "channel_name", "op": "eq", "value": "launch-week", "fact": "A:Conversation.channel_name"}
+       ], "edges": []}}
+     ]}}
+   ]
+  },
+  "decoys": [
+   {"witness": "@e1", "fact": "A:User.email", "family": "F8",
+    "substitute": "an almost-identical address, rosa.delgado@northwind.co",
+    "mutation": {"type": "DROP", "target": "f_email"},
+    "explanation": "A human named Rosa Delgado in #launch-week, but her address is rosa.delgado@northwind.co, not on the northwind.example domain."},
+   {"witness": "@e2", "fact": "A:User.email", "family": "F1",
+    "substitute": "the requested identity on the username field: handle @rosa.delgado",
+    "mutation": {"type": "DROP", "target": "f_email"},
+    "explanation": "Her Slack handle is exactly rosa.delgado, but her address is rosa.delgado@gmail.com, so she fails the @northwind.example address condition."},
+   {"witness": "@bot", "fact": "A:User.is_bot", "family": "F0",
+    "mutation": {"type": "DROP", "target": "f_bot"},
+    "explanation": "A bot account named Rosa Delgado with a @northwind.example address in #launch-week, not a human."}
+  ],
+  "effect": {"table": "channel_members", "changes": ["insert"], "key": ["channel_id", "user_id"], "field": "user_id"},
+  "written": ["channel_members.user_id"]
+ },
+ "other_references": [
+  {"name": "the #platform-launch channel", "target": ["C_PLAT"],
+   "query": {"table": "channels", "key": ["channel_id"],
+             "filters": [{"key": "f_plat", "field": "channel_name", "op": "eq", "value": "platform-launch", "fact": "A:Conversation.channel_name"}],
+             "edges": []}}
+ ],
+ "write": {"slack": "conversations.invite", "params": {"channel": "C_PLAT", "users": "@target"}},
+ "probes": []
+}

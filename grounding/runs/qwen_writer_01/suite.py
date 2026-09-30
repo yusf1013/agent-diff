@@ -1,4 +1,4 @@
-"""Qwen's suite: its accepted scenarios (cases.py: one per brief, from runs/gen_02 or runs/gen_03) with opaque ids and
+"""Qwen's suite: its accepted scenarios (cases.py: one per brief, from runs/gen_02 or runs/gen_04) with opaque ids and
 test-side clocks, built exactly as
 regen_01/suite.py builds Muse's new scenarios (completion_01's method, itself openclaw_eval_01/opaque_suite.py's). No
 model or replica calls.

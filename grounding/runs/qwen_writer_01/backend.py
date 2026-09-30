@@ -22,14 +22,20 @@ runs a trivial two-turn writer call (read, write, then an edit in the resumed se
 """
 from __future__ import annotations
 
+import http.client
 import json
 import os
+import re
 import shutil
 import signal
 import subprocess
 import sys
+import threading
 import time
+from datetime import datetime, timezone
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from urllib.parse import urlsplit
 
 from grounding.runs.autogen_01.kit import agent
 
@@ -48,7 +54,7 @@ EFFORT = "medium"
 # reasoning, and some first design steps reached the cap with nothing but reasoning, at xhigh and at medium alike
 # (runs/gen_01_xhigh, runs/gen_02); Claude Code then asks it to resume, and it began again. The cap changes only the
 # request's max_tokens (thinking stays "adaptive", effort as set; captured 2026-09-30), so below it nothing changes.
-# 64,000 fits the window after the writer's reading (about 40k).
+# 64,000 leaves room for long steps; the window relay (below) lowers it per request to what the window has left.
 MAX_OUTPUT_TOKENS = 64000
 # The kit's 3600 s per writer call was sized for API models; at the self-host's speed (7-13 tokens/s per stream on the
 # shared server) it would measure throughput. A first call can hold two long steps, so 4 hours.
@@ -67,6 +73,137 @@ def config_dir(call: agent.Call) -> Path:
     return call.workspace.parent / "claude-config"
 
 
+# ---------------------------------------------------------------- the window relay
+# The server refuses a request whose prompt and max_tokens together exceed its window (131,072 tokens): "This model's
+# maximum context length is 131072 tokens. However, you requested 64000 output tokens and your prompt contains at
+# least 67073 input tokens" (runs/gen_03, 2026-09-30). Claude Code sends the same max_tokens whatever the prompt's size
+# and does not recover from that message. (The message's "at least N input tokens" is only the window less the output
+# asked for, plus one, not the prompt's size.) So the writer talks to a relay in this process that passes every
+# request to the server unchanged, and when the server refuses one for that reason, counts the prompt's tokens with
+# the server's own counter (/v1/messages/count_tokens), lowers max_tokens to the room left (the window, less the
+# prompt, less a margin) and sends it again; each such lowering is logged. Responses stream through as they come.
+TOO_LONG = re.compile(rb"maximum context length is (\d+) tokens\. However, you requested (\d+) output tokens")
+COUNTED_FIELDS = ("model", "messages", "system", "tools", "tool_choice", "thinking")
+CLAMP_MARGIN = 256
+CLAMP_FLOOR = 1024
+HOP = {"connection", "keep-alive", "proxy-authenticate", "proxy-authorization", "te", "trailers", "transfer-encoding",
+       "upgrade", "content-length", "host"}
+RELAY = {"url": None, "log": None}
+_relay_lock = threading.Lock()
+
+
+def _log_clamp(row: dict):
+    if RELAY["log"]:
+        with _relay_lock, open(RELAY["log"], "a") as fh:
+            fh.write(json.dumps(row) + "\n")
+
+
+class _Relay(BaseHTTPRequestHandler):
+    protocol_version = "HTTP/1.1"
+
+    def log_message(self, *args):
+        pass
+
+    def do_GET(self):
+        self._relay("GET")
+
+    def do_POST(self):
+        self._relay("POST")
+
+    def _relay(self, method: str):
+        length = int(self.headers.get("Content-Length") or 0)
+        body = self.rfile.read(length) if length else None
+        headers = {k: v for k, v in self.headers.items() if k.lower() not in HOP}
+        up = urlsplit(BASE_URL)
+        for attempt in range(4):
+            conn = http.client.HTTPConnection(up.hostname, up.port, timeout=900)
+            conn.request(method, self.path, body=body, headers=headers)
+            resp = conn.getresponse()
+            if resp.status == 400 and body:
+                text = resp.read()
+                m = TOO_LONG.search(text)
+                if m and attempt < 3:
+                    window, asked = int(m.group(1)), int(m.group(2))
+                    data = json.loads(body)
+                    prompt = self._count(up, data, headers)
+                    margin = CLAMP_MARGIN * 8 ** attempt  # 256, 2048, 16384
+                    room = window - prompt - margin if prompt else asked // 2
+                    if CLAMP_FLOOR <= room < asked:
+                        data["max_tokens"] = room
+                        body = json.dumps(data).encode()
+                        try:
+                            session = json.loads((data.get("metadata") or {}).get("user_id") or "{}").get("session_id")
+                        except ValueError:
+                            session = None
+                        _log_clamp({"utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+                                    "session_id": session, "asked": asked, "prompt_tokens": prompt,
+                                    "window": window, "margin": margin, "max_tokens": room})
+                        conn.close()
+                        continue
+                self._whole(resp, text)
+                conn.close()
+                return
+            self._stream(resp)
+            conn.close()
+            return
+
+    @staticmethod
+    def _count(up, data: dict, headers: dict) -> int | None:
+        """The prompt's tokens by the server's own counter, or None."""
+        try:
+            conn = http.client.HTTPConnection(up.hostname, up.port, timeout=300)
+            conn.request("POST", "/v1/messages/count_tokens",
+                         body=json.dumps({k: data[k] for k in COUNTED_FIELDS if k in data}).encode(),
+                         headers={k: v for k, v in headers.items() if k.lower() != "accept-encoding"})
+            resp = conn.getresponse()
+            out = json.loads(resp.read()) if resp.status == 200 else {}
+            conn.close()
+            return int(out["input_tokens"]) if "input_tokens" in out else None
+        except (OSError, ValueError, http.client.HTTPException):
+            return None
+
+    def _headers(self, resp):
+        self.send_response(resp.status)
+        for k, v in resp.getheaders():
+            if k.lower() not in HOP:
+                self.send_header(k, v)
+
+    def _whole(self, resp, text: bytes):
+        self._headers(resp)
+        self.send_header("Content-Length", str(len(text)))
+        self.end_headers()
+        self.wfile.write(text)
+
+    def _stream(self, resp):
+        self._headers(resp)
+        self.send_header("Transfer-Encoding", "chunked")
+        self.end_headers()
+        try:
+            while True:
+                chunk = resp.read1(65536)
+                if not chunk:
+                    break
+                self.wfile.write(b"%x\r\n%s\r\n" % (len(chunk), chunk))
+                self.wfile.flush()
+            self.wfile.write(b"0\r\n\r\n")
+            self.wfile.flush()
+        except (BrokenPipeError, ConnectionResetError):
+            self.close_connection = True
+
+
+def start_relay(log: Path | None = None) -> str:
+    """The relay's URL; started on first use, on a free local port, in a daemon thread of this process."""
+    with _relay_lock:
+        if log is not None:
+            RELAY["log"] = log
+        if RELAY["url"] is None:
+            server = ThreadingHTTPServer(("127.0.0.1", 0), _Relay)
+            server.daemon_threads = True
+            threading.Thread(target=server.serve_forever, daemon=True).start()
+            RELAY["url"] = f"http://127.0.0.1:{server.server_address[1]}"
+    return RELAY["url"]
+
+
 def writer_env(config: Path) -> dict:
     node_bin = str(Path(os.path.realpath(shutil.which("node") or "/usr/bin/node")).parent)
     return {"HOME": str(Path.home()), "USER": os.getenv("USER", "yusf"), "LANG": "C.UTF-8", "TERM": "dumb",
@@ -74,7 +211,7 @@ def writer_env(config: Path) -> dict:
             "CLAUDE_CONFIG_DIR": str(config), "ENABLE_CLAUDEAI_MCP_SERVERS": "false", "DISABLE_AUTOUPDATER": "1",
             "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1",
             # "Authorization: Bearer", which the self-host checks (ANTHROPIC_API_KEY would go out as x-api-key: 401)
-            "ANTHROPIC_BASE_URL": BASE_URL, "ANTHROPIC_AUTH_TOKEN": selfhost_key(),
+            "ANTHROPIC_BASE_URL": start_relay(), "ANTHROPIC_AUTH_TOKEN": selfhost_key(),
             # any model alias Claude Code resolves on its own goes to the same served model
             "ANTHROPIC_DEFAULT_HAIKU_MODEL": MODEL, "ANTHROPIC_DEFAULT_SONNET_MODEL": MODEL,
             "ANTHROPIC_DEFAULT_OPUS_MODEL": MODEL, "CLAUDE_CODE_MAX_OUTPUT_TOKENS": str(MAX_OUTPUT_TOKENS)}
@@ -166,7 +303,8 @@ def run_writer(call: agent.Call) -> dict:
         result = next((e for e in reversed(events) if e.get("type") == "result"), None)
         record = {"command": cmd, "cwd": str(call.workspace), "exit": code, "stderr": stderr[-4000:],
                   "claude_config_dir": str(config), "base_url": BASE_URL, "timeout_s": WRITER_TIMEOUT,
-                  "kit_timeout_s": call.timeout, "max_output_tokens": MAX_OUTPUT_TOKENS}
+                  "kit_timeout_s": call.timeout, "max_output_tokens": MAX_OUTPUT_TOKENS,
+                  "relay": "window relay (max_tokens lowered to the room left when the server refuses)"}
         if result is not None:
             result["claude_code_estimate_usd"] = result.get("total_cost_usd")
             result["total_cost_usd"] = 0.0
@@ -219,9 +357,10 @@ def dispatch(call: agent.Call) -> dict:
     return _kit_run(call)
 
 
-def install():
+def install(clamp_log: Path | None = None):
     if agent.BACKEND != "muse":
         raise SystemExit("set AUTOGEN_BACKEND=muse: every role but the writer stays on Muse")
+    start_relay(clamp_log)
     agent.run = dispatch
 
 

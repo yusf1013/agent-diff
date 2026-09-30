@@ -2,9 +2,11 @@
 
 - **runs/gen_02** (medium effort, Claude Code's 32,000-token reply cap) accepted G4-BOX-03, G4-BOX-05 and G4-CAL-03
   before it was stopped. None of their writer replies reached the cap (largest 23,909, 30,103 and 16,526 tokens), and
-  the cap changes nothing in the request but `max_tokens`, so gen_03's one change could not have changed them.
-- **runs/gen_03** (the same with a 64,000-token cap): the other nine briefs.
-- runs/gen_01_xhigh (the served default effort, stopped) is evidence only.
+  the cap changes nothing in the request but `max_tokens`, so gen_04's changes (a 64,000-token cap, and the relay,
+  which only acts on a request the server refuses) could not have changed them.
+- **runs/gen_04** (the same with a 64,000-token cap and the window relay): the other nine briefs.
+- Evidence only: runs/gen_01_xhigh (the served default effort, stopped) and runs/gen_03 (the 64,000-token cap without
+  the relay, stopped when requests past the window were refused).
 
 A brief accepted in more than one of these runs stops everything that reads this module.
 """
@@ -15,7 +17,7 @@ from collections import defaultdict
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-RUNS = [HERE / "runs" / "gen_02", HERE / "runs" / "gen_03"]
+RUNS = [HERE / "runs" / "gen_02", HERE / "runs" / "gen_04"]
 
 
 def accepted() -> dict[str, Path]:
@@ -33,7 +35,7 @@ def accepted() -> dict[str, Path]:
 
 
 def attempt(sid: str) -> Path | None:
-    """The folder of the brief's attempt that counts: its accepted one, else its gen_03 attempt."""
+    """The folder of the brief's attempt that counts: its accepted one, else its gen_04 attempt."""
     folder = accepted().get(sid)
     if folder:
         return folder

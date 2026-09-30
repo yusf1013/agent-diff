@@ -4,11 +4,12 @@ Session "harness", an investigation the PI asked for, assigned by the lead ("Roa
 
 ## Status
 
-- **2026-09-30, 04:45 EDT.** The question, the design and the draw are fixed ([plan.json](plan.json)). Two
-  generation runs were stopped on the harness's limits, not on the pipeline's (cycles 2 and 3): at Qwen's served
-  default effort (`runs/gen_01_xhigh`), and at `medium` under Claude Code's 32,000-token reply cap (`runs/gen_02`,
-  which accepted 3 briefs first and keeps them). The other 9 briefs are generating at `medium` with a 64,000-token
-  cap (`runs/gen_03`). My review is under way ([eval/review.json](eval/review.json)).
+- **2026-09-30, 05:25 EDT.** The question, the design and the draw are fixed ([plan.json](plan.json)). Three
+  generation runs were stopped on the harness's limits, not on the pipeline's (cycles 2-4): Qwen's served default
+  effort (`runs/gen_01_xhigh`); `medium` under Claude Code's 32,000-token reply cap (`runs/gen_02`, which accepted 3
+  briefs first and keeps them); and a 64,000-token cap without a way to fit the window (`runs/gen_03`). The other 9
+  briefs are generating at `medium` with the 64,000-token cap and a window relay (`runs/gen_04`). My review is under
+  way ([eval/review.json](eval/review.json)).
 
 ## The question
 
@@ -51,7 +52,8 @@ What answers it, on 12 Phase 4 briefs that Muse already turned into accepted sce
   accepts xhigh (its default), medium or low; Claude Code's own default, "high", is refused. The served default was
   tried first and stopped (cycle 2). Muse's writers ran at Muse's "high": all 72 writer calls of Phase 4 record
   `reasoning_effort: high`. So the effort levels differ, a second stated confound. A writer reply may run to 64,000
-  output tokens (Claude Code's own cap for a model it does not know is 32,000; cycle 3) and a writer call to
+  output tokens, lowered per request to the room the window has left (Claude Code's own cap for a model it does not
+  know is 32,000; cycles 3 and 4) and a writer call to
   4 hours (the kit's limit, 3600 s, was sized for API models and would measure the host's throughput; the wall
   time is reported instead). Claude Code's compaction at the served window
   (`--autocompact 131k`); the writer reaches the endpoint directly, outside the shared limiter, so at most 4 briefs
@@ -139,5 +141,24 @@ What answers it, on 12 Phase 4 briefs that Muse already turned into accepted sce
 - Stopped at 04:33 (G4-SLK-01 77 minutes into its first call; G4-CAL-05, G4-LIN-05 and G4-SLK-05 23, 16 and 5
   minutes into theirs; live transcripts kept).
 - Change for `runs/gen_03` (the 9 other briefs): a 64,000-token reply cap (`CLAUDE_CODE_MAX_OUTPUT_TOKENS`, which fits
-  the window after the writer's reading of about 40k) and a 4-hour writer limit. [cases.py](cases.py) takes each
-  brief's accepted scenario from gen_02 or gen_03.
+  the window after the writer's reading of about 40k) and a 4-hour writer limit.
+
+### Cycle 4 (2026-09-30, 04:36-05:25): the 64,000-token cap without the room, stopped; the window relay
+
+- `runs/gen_03`, the 9 other briefs at the 64,000-token cap. Two first writer calls failed within 37 minutes (G4-LIN-05,
+  G4-CAL-05): `API Error: 400 This model's maximum context length is 131072 tokens. However, you requested 64000
+  output tokens and your prompt contains at least 67073 input tokens`. The server refuses any request whose prompt and
+  max_tokens together pass the window, and Claude Code sends the same max_tokens whatever the prompt's size (it
+  takes this model's window for 200,000). Once a writer's context passed 67,072 tokens (about 40k of reading and one
+  long step), every request failed, repair rounds included. (Claude Code's own 32,000 fits: prompts up to 99k.)
+  G4-SLK-05 and G4-SLK-01 finished their first calls (35 and 37 minutes); stopped at 05:13.
+- The server's message is no guide to the prompt: its "at least N input tokens" is the window less the output asked
+  for, plus one.
+- **The window relay** ([backend.py](backend.py)): the writer's requests go through a relay in the generation
+  process, unchanged, to the server. When the server refuses one for that reason, the relay counts the prompt with the
+  server's own counter (`/v1/messages/count_tokens`), lowers max_tokens to the window less the prompt less 256, and
+  sends it again; each lowering is logged (`runs/gen_NN/clamps.jsonl`). Tested: a 731-token prompt asking 131,000
+  (lowered to 130,085) and a 115,533-token prompt asking 64,000 (lowered to 15,283, streamed through); and Claude Code
+  through it with every request lowered (`runs/probe_03_relay`: two turns, the resume, the edit, all as before).
+- `runs/gen_04`: the 9 briefs again, the relay on. [cases.py](cases.py) takes each brief's accepted scenario from
+  gen_02 or gen_04; no request of gen_02's three was refused, so the relay would have passed them unchanged.

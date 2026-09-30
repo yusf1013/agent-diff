@@ -2,7 +2,7 @@
 reader on Muse.
 
     AUTOGEN_BACKEND=muse python grounding/runs/fact_coverage_02/launch.py grounding.runs.qwen_writer_01.generate \
-        --run grounding/runs/qwen_writer_01/runs/gen_02 [--concurrency 4] [--only ID ...]
+        --run grounding/runs/qwen_writer_01/runs/gen_NN [--concurrency 4] [--only ID ...]
 
 Without `--only`, the twelve briefs drawn in plan.json. Everything else is autogen_02's Phase 4 entry point
 (`autogen_02/kit/generate.py`: its replica notes and its robustness fix) over autogen_01's orchestrator, unchanged.
@@ -26,8 +26,10 @@ HERE = Path(__file__).resolve().parent
 
 
 def main():
-    backend.install()
     args = sys.argv[1:]
+    run = Path(args[args.index("--run") + 1]).resolve()
+    run.mkdir(parents=True, exist_ok=True)
+    backend.install(clamp_log=run / "clamps.jsonl")  # the window relay logs each lowered max_tokens there
     if "--only" not in args:
         drawn = json.loads((HERE / "plan.json").read_text())["drawn"]
         args += ["--only", *[sid for domain in sorted(drawn) for sid in drawn[domain]]]

@@ -1,4 +1,4 @@
-"""The generation half: Qwen's writer (the attempt that counts per brief, cases.py: runs/gen_02 or runs/gen_03) against
+"""The generation half: Qwen's writer (the attempt that counts per brief, cases.py: runs/gen_02 or runs/gen_04) against
 Muse's (autogen_02/runs/phase4_gen) on the drawn briefs.
 No model calls.
 
@@ -28,7 +28,7 @@ from grounding.runs.qwen_writer_01 import cases
 HERE = Path(__file__).resolve().parent
 RUNS = HERE.parent
 MUSE_GEN = RUNS / "autogen_02" / "runs" / "phase4_gen"
-STOPPED = [HERE / "runs" / "gen_01_xhigh", HERE / "runs" / "gen_02"]  # runs stopped with briefs in progress
+STOPPED = [HERE / "runs" / "gen_01_xhigh", HERE / "runs" / "gen_02", HERE / "runs" / "gen_03"]  # stopped runs
 BRIEFS = RUNS / "autogen_02" / "inputs" / "briefs_phase4.json"
 MUSE_REVIEW = RUNS / "autogen_02" / "eval" / "phase4_review.json"
 QWEN_REVIEW = HERE / "eval" / "review.json"
