@@ -87,6 +87,44 @@ the final runs use one frozen version.
      - **Runs:** on OpenClaw, compared under fact_coverage_02's decision D5.
    - **6e. Reports:** OpenClaw for first-time readers; the system (generation and judging); the baselines.
 
+## Decisions (2026-09-29, the PI's notes and the evening sync)
+
+The PI's thinking of that day is organized in [the notes](brain_dump_2026-09-29.md); the decisions:
+
+- **The solver's budget is 10 minutes.** The PI: keep 10 if every run used 10, else 8. Every one of the 3,018
+  final runs used OpenClaw's 600-second limit, so the 8-minute reading is withdrawn. Recount (2026-09-30): 143 of
+  565 regular tests expose a fact, 88 facts at detect@3, 61 at detect@1; the eight policy decisions stand at lower
+  rates (report_01/README.md, "Recount"). The report texts still show the 8-minute numbers.
+- **Models.** Muse stays the judge of record and the writer for anything new (the bulk of generation is paid for);
+  Qwen is tested as the judge beside it (study `judge_qwen_01`). A model may judge its own agent's runs. Solvers:
+  GPT-6.1 Sol now (study `sol_eval_01`), Sonnet 5.5 after; the second harness is an investigation
+  (`harness_scout_01`). Every session that labels or reviews is manual work; Opus and GPT Astra agents count.
+- **The Sonnet-written half is regenerated with Muse** through the frozen pipeline (study `regen_01`), so the
+  evaluated suite comes from one pipeline version and one writer; autogen_01's suite stays as a record and a later
+  writer comparison. Sol runs the Muse-written half first; the regenerated half follows.
+- **The F0 rule.** Coverage credit follows the criterion: the designated near miss. Where the domain model names no
+  alternative (states, and Box hub description, Linear document content, Linear team description, Slack user
+  title), the plain different value is that alternative. Three facts had only a plain miss although a lure exists
+  (Linear cycle number, Slack message text, the Linear related issue's direction): they are regenerated with it,
+  two inside `regen_01`, one as its own brief. The baseline comparison uses the same rule on both sides.
+- **The undone probes, case by case** (the PI: no blanket rules). BDA-SLA-25 fails: a copy of an announcement
+  posted to a shared channel, unasked, to test a timestamp; deleting it recalls no notification. BDA-BOX-08 passes
+  with a note: a folder description set to a test value and restored 20 seconds later, disclosed, with no lasting
+  effect (the modified date moved because of the requested attempts, not the probe).
+- **The rulings stand:** G4-CAL-10's fake video link flawed and its Oak Room valid; G4-LIN-15's and G4-LIN-11's
+  sub-team near misses valid; AP-LIN-07's near miss valid; G4-LIN-12 weak but valid.
+- **Dropped:** the calibration of the self-host against Purdue (a historical reference row now). **Kept as an
+  observation:** the awareness remarks, measured on every round.
+- **Mechanical, done or in progress:** the 2 Phase 4 policy variants lost to the naming bug are rebuilt and run when
+  Qwen has capacity; duplicate policy units of one request count once.
+- **How the work runs:** the lead session starts separate Claude Code sessions (Opus 5.5, effort max, advisor Fable,
+  own worktree and tmux session) on briefs under `briefs/`; the PI talks to them directly. Started 2026-09-29
+  23:54: `judge_qwen`, `regen`, `related_work`, `harness`, `values`.
+- **Qwen runs on trojai4 when trojai3's GPUs are taken** (`QWEN_HOST=trojai4 qwen up 2`; the setup was copied to
+  trojai4's `/data4`).
+- **Open:** the 16 G4-LIN-08 tests and units are clocked to 2026-10-16, after the OpenAI login's expiry, so they
+  cannot run on the plan as they are (shift the scenario's dates, or use an API key).
+
 ## Decisions (2026-09-28, discussion after 6a; closed the same day)
 
 - **Seed ids that leak the answer make a test flawed** (a validity issue). Ids that merely are not random are a
@@ -202,11 +240,15 @@ the final runs use one frozen version.
 | 2 | Prompt overfitting and leak audit | done and discussed | [overfit_audit.md](../runs/roadmap_01/overfit_audit.md) |
 | 2 | Domain knowledge in deterministic code | done and discussed | [domain_code_audit.md](../runs/roadmap_01/domain_code_audit.md) |
 | 3 | Agreed fixes, frozen version | done (2026-09-27), tag `grounding-freeze-01` | [roadmap_02](../runs/roadmap_02/README.md) |
-| 5 | Investigations | in progress (separate session, branch `exp/investigations-01`) | – |
+| 5 | Investigations | done (2026-09-29): several_match_02 and boundary_02 (manual methods), several_match_auto_01 and boundary_auto_01 (their automation); attribution deferred; merged into main | [several_match_auto_01](../runs/several_match_auto_01/report.md), [boundary_auto_01](../runs/boundary_auto_01/report.md) |
 | 6a | OpenClaw × self-hosted Qwen, frozen suite | done (2026-09-29), after the discussion: opaque ids, test-side clocks, the PI's rulings, every valid policy unit, the 8-minute budget. Regular suite: 104 of 429 tests expose a fact, 66 facts at detect@3 (with opaque ids more tests expose one than with the original ids: 80 against 65 on the same 333). Policy stage (with 6b's units): no cell policy-level; five not, three undecided (Box and Calendar absence, Slack underspecified), where Purdue's Qwen in the toy harness was policy-level in all 8. Judge v2 agrees with 268 of 270 blind labels. The first pass stays in the README as a record. | [openclaw_eval_01](../runs/openclaw_eval_01/README.md) |
 | 6b | The remaining briefs on OpenClaw | done (2026-09-29): 23 of the 26 briefs accepted (3 rejected), all reviewed; 136 tests, 68 absence and 49 underspecified units run on OpenClaw. 34 of the 136 tests expose a fact (22 facts at detect@3); with 6a, 138 of 565 tests and 87 facts. A naming bug in the drop-F derivation was fixed (5 lost 6b variants derived again; Phase 4 lost 2). | [completion_01](../runs/completion_01/README.md), [openclaw_eval_01](../runs/openclaw_eval_01/README.md) |
 | 6c | Judge baselines | done (2026-09-28). On Qwen's 429 labels, over the blind samples, recall is 0.72 for J0, 0.75 for J1 and 1.00 for judge v2, all at precision ≥ 0.99. On OpenClaw's 178 usable blind labels it is 0.90 for J0, 0.92 for J1 and 1.00 for judge v2, at precision ≥ 0.98. OpenClaw's agent usually says what is wrong, which a naive judge can read. | [judge_baselines_01](../runs/judge_baselines_01/README.md) |
-| 6d | Generator baselines | done in a separate session (branch `exp/baselines-01`, not merged): B1 "ask your coding agent", B2 with the fact list, their mutated twins and six ablations. The baselines expose no fact from 169 valid tests, against about 11 per 48 of ours. Summarized in report_01, RQ8. | `grounding/runs/baselines_01/` on `exp/baselines-01` |
-| 6e | Reports | in progress (2026-09-29): one report, the stub for a paper's evaluation and results sections, in place of the three planned; reader-facing pages not made | [report_01](../runs/report_01/README.md) |
+| 6d | Generator baselines | done in a separate session (branch `exp/baselines-01`, merged into main 2026-09-29): B1 "ask your coding agent", B2 with the fact list, their mutated twins and six ablations. The baselines expose no fact from 169 valid tests, against about 11 per 48 of ours. Summarized in report_01, RQ8. | `grounding/runs/baselines_01/` on `exp/baselines-01` |
+| 6e | Reports | in progress: report_01 (the paper stub) and its concise version; the texts carry the 8-minute numbers until updated from numbers/ (10-minute recount, 2026-09-30) | [report_01](../runs/report_01/README.md) |
+| 6f | GPT-6.1 Sol on OpenClaw | running (2026-09-30): the Muse-written half, 3 trials; judging and scoring after | [sol_eval_01](../runs/sol_eval_01/README.md) |
+| 6g | The judge on Qwen | running (session `judge_qwen`) | `grounding/runs/judge_qwen_01/` |
+| 6h | The Sonnet-written half regenerated with Muse | running (session `regen`) | `grounding/runs/regen_01/` |
+| 7 | Second harness; related work; failures beyond the criterion | running (sessions `harness`, `related_work`, `values`) | `harness_scout_01/`, `related_work_01/`, `values_01/` |
 
 **Open for the PI after 6a and 6b (2026-09-29):** the rulings I made under the PI's criteria (G4-CAL-10's two near misses, the sub-team near misses of G4-LIN-15 and G4-LIN-11, AP-LIN-07's d-team-f1), the 8-minute budget read retroactively (no decision changes either way), the post-freeze naming fix in `autogen_02/kit/variants2.py` and the 2 Phase 4 drop-F variants it had lost, duplicate units from one request, and G4-LIN-12. Details: [openclaw_eval_01](../runs/openclaw_eval_01/README.md), "For the PI".
