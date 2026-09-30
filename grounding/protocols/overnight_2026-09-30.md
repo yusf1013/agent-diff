@@ -45,3 +45,11 @@ section. Decisions that stand go to the [roadmap](roadmap.md); this is the recor
   ids continue Phase 4's numbering; rulings appended to known_defects.json on its branch.
 - 00:0x related_work: my brief's pointer to the MCP-Bench account was wrong; the account is now Appendix D of the
   notes; the PI's audit files are under ~/PyProj/mcp-bench.
+- 00:2x values (commit 35a9639cb4 on exp/values-01): mechanical counts on all 3,018 executions. 1,399 writes to a
+  requested field, 1,275 with the requested value; literal values always right; the errors are interpretations
+  (Linear priority 105/149; the year of an undated "July 15" in AR-BOX-24, a run-date dependency the date check
+  missed; "red" as another palette entry). Replies: 96 state a value other than the one written; 40 misstate a
+  priority merely read; 10 claim a change the diff lacks; 3 claim absence with a match present. Side effects in 43
+  executions, 14 of them fabricating the evidence the request used to identify the record. Next: the precision
+  sample and the restore cases.
+- 00:2x judge_qwen: the labelled replay running on the self-host (97 of 443 at 00:21).
