@@ -249,3 +249,6 @@ section. Decisions that stand go to the [roadmap](roadmap.md); this is the recor
 - 04:07 baselines_02 paused at 96 of 267 trials (SN0M 45, SN1M 51). Early labels: the first target-present fact
   exposure by a naive baseline (SN1M-BOX-T03 t1: owner taken for uploader, R:File.created_by_id), two presupposing
   policy failures, everything else right.
+- 05:24 the Sol round's runs are complete: regular p4 444 and 6b 408 attempts (9 pending the retry pass), absence
+  365 completed of 369 attempts, underspecified 270 of 273; the retry pass (stalls reclassified, infrastructure
+  errors rerun) started at 05:24.
