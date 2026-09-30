@@ -273,7 +273,7 @@ By the judge's own verdicts the answer does not change: SN0M 2 / 2 and SN1M 3 / 
 | `runs/gen_<arm>_01/` | Generation (per service: prompts, transcripts, results, workspace per round, `load.json`, `cases/`), the arm's `review.json` and `labels.json` |
 | `runs/pool_01/`, `runs/rereview_01/` | The pool (items, manifest, review, calibration) and the cross-check draw |
 | `runs/suite_sn0m_01/`, `runs/suite_sn1m_01/` | The keyed valid cases the solver runs |
-| `runs/solve_sn0m_01/`, `runs/solve_sn1m_01/` | The runs (hidden from ripgrep by `.ignore`); `runs/host_load.json` and the rerun's log |
+| `runs/solve_sn0m_01/`, `runs/solve_sn1m_01/` | The runs (hidden from ripgrep by `.ignore`); `runs/host_load.json` (the host-load timeout and its rerun, attempt-02) |
 | `runs/judged_sn0m_01/`, `runs/judged_sn1m_01/` | Judge v2's verdicts, prompts and calls |
 | `runs/gen_<arm>_01/labels.json`, `assertions.twin.json`, `oracles.score.json`, `labels.summary.json`; [policy_facts.json](policy_facts.json) | The labels and the label-based measures |
 | `eval/` | The blind samples, judge v2's trial lists and the scores (`score_s<arm>.json`) |
