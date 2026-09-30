@@ -29,7 +29,7 @@ def dist(values):
     if not values:
         return None
     values = sorted(values)
-    return {"n": len(values), "median": statistics.median(values), "mean": round(statistics.mean(values), 2),
+    return {"n": len(values), "median": statistics.median(values), "mean": round(statistics.mean(values), 4),
             "p90": values[min(len(values) - 1, int(0.9 * len(values)))], "max": values[-1], "sum": round(sum(values), 4)}
 
 

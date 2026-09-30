@@ -56,9 +56,9 @@ Session "harness", second assignment from the lead session "RoadMap specialist" 
 
 | | Per run (pilot mean) | Muse-written half (1,515 runs) | Full suite (3,018 runs) |
 |---|---:|---:|---:|
-| API-equivalent at list price (Claude Code's own estimate, Sonnet 5.5 at $2/$10 per million) | $0.052 | about $79 | about $157 |
+| API-equivalent at list price (Claude Code's own estimate, Sonnet 5.5 at $2/$10 per million) | $0.052 ($1.67 / 32) | about $79 | about $157 |
 | Billed on the plan | $0 | $0 | $0 (overage is off: `overageStatus: rejected`) |
-| Wall time at concurrency 6 (pilot: 32 runs in 10 min, with environment set-up) | | about 8 h | about 16 h |
+| Wall time at concurrency 6 (pilot: 32 runs in 10 min, with environment set-up, measured while the Sol round held the shared DDL lock; concurrency can go to 12) | | about 8 h | about 16 h |
 
 The plan's windows, as the pilot's runs saw them (the account's other sessions used them at the same time):
 
