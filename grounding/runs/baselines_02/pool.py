@@ -26,6 +26,33 @@ OC = HERE.parent / "openclaw_eval_01" / "runs"
 DOMAINS = ("box", "calendar", "linear", "slack")
 OURS_PER_DOMAIN, OURS_SEED, POOL_SEED = 5, 20260930, 2026093001
 USER_TABLES = {"box": "box_users", "calendar": "calendar_users", "linear": "users", "slack": "users"}
+# Fields left out of the view: defaults the seed builders fill in for every row, which no request turns on.
+NOISE = {"avatarBackgroundColor", "canAccessAnyPublicTeam", "createdIssueCount", "initials", "isAssignable", "isMe",
+         "isMentionable", "lastSeen", "organizationId", "customerTicketCount", "aiThreadSummariesEnabled",
+         "autoArchivePeriod", "cycleCooldownTime", "cycleDuration", "cycleIssueAutoAssignCompleted",
+         "cycleIssueAutoAssignStarted", "cycleLockToActive", "cycleStartDay", "cyclesEnabled", "defaultIssueEstimate",
+         "groupIssueHistory", "inheritIssueEstimation", "inheritWorkflowStatuses", "issueCount",
+         "issueEstimationAllowZero", "issueEstimationExtended", "issueEstimationType", "issueOrderingNoPriorityFirst",
+         "issueSortOrderDefaultToBottom", "requirePriorityToLeaveTriage", "scimManaged", "setIssueSortOrderOnStateChange",
+         "triageEnabled", "upcomingCycleCount", "slackIssueComments", "slackIssueStatuses", "slackNewIssue",
+         "securitySettings", "position"}
+SKIP_TABLES = {"organizations"}
+# Tables shown on one line: people and workflow states, whose other fields are the builders' defaults.
+BRIEF = {
+    ("linear", "users"): lambda r: f"{r['id']}={r.get('name')}" + ("" if r.get("active", True) else " (inactive)")
+                                   + (" (admin)" if r.get("admin") else "") + (" (guest)" if r.get("guest") else "")
+                                   + (" (app)" if r.get("app") else "") + (f" [{r.get('displayName')}]"),
+    ("linear", "workflow_states"): lambda r: f"{r['id']}={r.get('name')}@{r.get('teamId')}"
+                                             + (f"/{r['type']}" if r.get("type") else ""),
+    ("box", "box_users"): lambda r: f"{r['id']}={r.get('name')} <{r.get('login')}>"
+                                    + ("" if r.get("status", "active") == "active" else f" ({r.get('status')})"),
+    ("calendar", "calendar_users"): lambda r: f"{r['id']}={r.get('email')}",
+    ("slack", "users"): lambda r: f"{r['user_id']}={r.get('real_name')} ({r.get('username')}, "
+                                  f"display {r.get('display_name')!r}, {r.get('email')})"
+                                  + (" bot" if r.get("is_bot") else "") + ("" if r.get("is_active", True) else " inactive")
+                                  + (f" title={r['title']!r}" if r.get("title") else "")
+                                  + (f" tz={r['timezone']}" if r.get("timezone") else ""),
+}
 
 
 def our_draw() -> list[dict]:
@@ -74,10 +101,14 @@ def show(pool: Path, pid: str) -> str:
     lines = [f"# {pid} ({item['domain']})", f"Request: {item['request']}",
              f"Acting user: {item.get('acting_user_id')} {compact_row(actor, 200) if actor else ''}", "## Records"]
     for table, rows in item["seed"].items():
-        if not isinstance(rows, list) or not rows:
+        if not isinstance(rows, list) or not rows or table in SKIP_TABLES:
+            continue
+        brief = BRIEF.get((item["domain"], table))
+        if brief:
+            lines.append(f"### {table} ({len(rows)}): " + "; ".join(brief(r) for r in rows))
             continue
         lines.append(f"### {table} ({len(rows)})")
-        lines += [f"- {compact_row(r, 900)}" for r in rows]
+        lines += [f"- {compact_row({k: v for k, v in r.items() if k not in NOISE}, 900)}" for r in rows]
     if "expected" in item:
         lines += ["## The test's expected outcome", json.dumps(item["expected"], ensure_ascii=False),
                   "## The test's assertions", json.dumps(item["assertions"], ensure_ascii=False)]

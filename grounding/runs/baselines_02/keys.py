@@ -25,15 +25,22 @@ from grounding.runs.autogen_01.kit import derive
 
 HERE = Path(__file__).resolve().parent
 SUITES = {"SN0M": "suite_sn0m_01", "SN1M": "suite_sn1m_01"}
+# The key column of tables whose rows the candidates are, where it is not `id` (the bundle lists candidates by it).
+ID_KEYS = {("slack", "channels"): "channel_id", ("slack", "messages"): "message_id", ("slack", "users"): "user_id"}
 
 
-def reference(case: dict, rec: dict) -> dict:
-    return {"id": f"{case['case_id']}.r1", "name": "the record the request acts on",
+def reference(case: dict, rec: dict, n: int = 1) -> dict:
+    key = [ID_KEYS.get((case["domain"], rec["table"]), "id")]
+    return {"id": f"{case['case_id']}.r{n}", "name": "the record the request acts on",
             "description": rec.get("note") or "the record the request acts on", "use": "target",
-            "query": {"table": rec["table"], "key": ["id"]}, "expected": [str(x) for x in rec["target"]],
-            "claims": [{"requirement": n["fact"], "witness": str(n["record"]), "family": n["family"],
-                        "explanation": n["note"]} for n in rec["near_misses"]],
+            "query": {"table": rec["table"], "key": key}, "expected": [str(x) for x in rec["target"]],
+            "claims": [{"requirement": m["fact"], "witness": str(m["record"]), "family": m["family"],
+                        "explanation": m["note"]} for m in rec["near_misses"]],
             "written": [], "effect": rec["effect"], "labels": rec.get("labels") or {}}
+
+
+def references(case: dict, rec: dict) -> list[dict]:
+    return [reference(case, rec)] + [reference(case, a, n) for n, a in enumerate(rec.get("also") or [], start=2)]
 
 
 def calibration(case: dict, rec: dict) -> dict:
@@ -67,7 +74,7 @@ def main():
         per_arm.setdefault(gen_run, []).append({**rec, "test": case["case_id"]})
         if not rec["valid"]:
             continue
-        keyed = {**case, "references": [reference(case, rec)]}
+        keyed = {**case, "references": references(case, rec)}
         keyed.pop("case_sha256", None)
         keyed["case_sha256"] = derive.digest(keyed)
         dest = HERE / "runs" / SUITES[entry["source"]] / case["domain"] / f"{case['case_id']}.json"
