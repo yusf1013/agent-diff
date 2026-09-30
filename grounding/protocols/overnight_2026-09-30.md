@@ -199,3 +199,11 @@ section. Decisions that stand go to the [roadmap](roadmap.md); this is the recor
   under host load are marked so, rerun when the host is quiet, and reported in both readings, since vLLM's queue
   time is invisible to the agent clock and is our infrastructure. For the PI: the timeout rule under a shared host
   (the step-5 question) needs a ruling; and the two copies cannot serve four sessions at once.
+- 02:5x judge_qwen paused (commit 8e5028c8b8; merged as 82d59dc008) after 680 of the other 1,696: same outcome
+  group on 667 (98.1%), same facts on 316 of 317 joint failures; 15 disagreements adjudicated blind (Qwen right on
+  9 of 13 group disagreements). **The two judges fail differently:** Muse credits the conclusion in an unsent last
+  reasoning as if it had been sent (10 of 11 runs that ended without an answer; score-neutral, they are over
+  budget); Qwen calls real failures artifacts where the judge's replica notes are silent on a readable field
+  (Calendar dataOwner, Box uploader_display_name, Slack reactions in history, the renamed "Cycle 4"), which costs
+  exposures; on score-changing disagreements Muse is right 5 to 1. Three candidate additions to the replica notes
+  for the PI. Assigned next (no host): the transfer feasibility desk study (transfer_feasibility_01).
