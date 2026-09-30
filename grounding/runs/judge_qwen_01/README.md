@@ -19,10 +19,14 @@ Session "judge_qwen", started by the lead ("RoadMap specialist") on 2026-09-30 f
   differ only within a group, Qwen is right on the facts of one and Muse on the exact outcome of the other. Qwen's
   wins are runs that ended without an answer, which Muse credited with their unsent conclusion; all but one of them
   change no score. Muse's wins are real failures that Qwen called artifacts. See "The full replay, paused".
-- **On resume:** the other 1,016 (`replay run --set all`, which skips what is done), their disagreements labelled
-  blind in a new round, then the headline numbers (Table 7 and the eight policy decisions) recomputed with Qwen's
-  verdicts ([headline.py](headline.py), already checked against Muse's published numbers), then the second
-  labelled pass for run-to-run stability.
+- **On resume (the lead's order, 2026-09-30):**
+  1. The second labelled pass (`runs/selfhost/chain_repeat.sh`, about 53 minutes), which shows whether Qwen's thin
+     margin on misses holds on another draw.
+  2. The other 1,016 (`replay run --set all`, which skips what is done), their disagreements labelled blind in a new
+     round.
+  3. The headline numbers (Table 7 and the eight policy decisions) recomputed with Qwen's verdicts
+     ([headline.py](headline.py), already checked against Muse's published numbers).
+- **Waiting** for the lead's word that the host is free.
 
 ## For the report
 
