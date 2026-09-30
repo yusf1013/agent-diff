@@ -227,3 +227,12 @@ section. Decisions that stand go to the [roadmap](roadmap.md); this is the recor
   half of them failed on OpenClaw, free tiers, at most 4 people besides the actor, $0 in plans, about 2 agent-days
   of scripts and 6 hours of runs. Pilot items: Slack search needs a user token (42% of Slack executions searched);
   Box As-User on the free plan; the two inferred Box rules; Linear's 250-issue cap.
+- 03:5x sol_score, both regular sets (provisional; 9 trials pending the retry pass): **Sol exposes a fact in 13 of
+  282 Muse-written tests, Qwen 78 on the same tests; facts 7 at detect@3 and detect@1 against Qwen's 47 and 33;
+  every fact Sol exposes, Qwen exposes too** (both 12 tests, Sol only 1: G4-LIN-12's cover, Qwen only 66). Per
+  service Sol/Qwen: Box 1/25, Calendar 4/23, Linear 5/18, Slack 3/12; per form: covers 2/8, probes 8/56, fact
+  probes 3/14. Sol: 32 failing trials, none over budget, mechanisms mostly skipped-check (its reasoning is
+  invisible). Judge v2 agrees with 87 of 89 blind labels; the two differences are the Seaport and subfolder
+  trials, labelled artifact under the PI's reading. Judge cost so far $20.18 list, $1.44 billed. Absence labels on
+  the second and third passes show Sol acting on near misses in absence twins (4 failures in 24). For the PI:
+  AT-G4-BOX-15's "Atlas Onboarding Archive" for "the Atlas Onboarding hub", labelled by the construction.
