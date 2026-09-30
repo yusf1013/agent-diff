@@ -5,14 +5,13 @@ Session "regen", started by the lead session ("RoadMap specialist") from the bri
 
 ## Status
 
-- **2026-09-30 02:30 EDT. The suite is ready to run** (steps 1 to 4 done), waiting for the lead's word that the
-  self-hosted Qwen is up. 337 tests: 206 regular, 72 absence units, 59 underspecified units (1,011 executions at 3
-  trials), in `runs/full_01_cases`, `runs/absence_01_cases`, `runs/underspecified_01_cases`; the stratified blind
-  sample (100 trials) is drawn ([eval/blind_strata.json](eval/blind_strata.json)).
-- **Funnel:** 35 briefs, 37 attempts, 34 accepted; my review: 24 valid, 5 weak but valid, 5 flawed but usable; 6 of
-  135 near misses flawed (in `known_defects.json`). Coverage: 77 of the briefs' 82 facts, 75 of Sonnet's 81 credited.
-  Muse: $38.87 at list price, $2.38 billed ([eval/funnel.json](eval/funnel.json)).
-- **Running:** nothing. **Blocked:** the runs, on the lead's word.
+- **2026-09-30 02:45 EDT. Running on OpenClaw** with the self-hosted Qwen (on trojai4, the lead's go): `full_01`,
+  then `absence_01`, then `underspecified_01`, 3 trials, 12 in flight (the lead lowered it from 16 when the shared
+  host was overloaded). 1,008 executions: 336 tests, the probe of G4-SLK-14's newly flawed near miss left out.
+- **Funnel:** 35 briefs, 37 attempts, 34 accepted; my review: 24 valid, 4 weak but valid, 6 flawed but usable; 7 of
+  135 near misses flawed (in `known_defects.json`), 8 borderline flagged. Coverage: 76 of the briefs' 82 facts, 74 of
+  Sonnet's 81 credited. Muse so far: $38.87 at list price, $2.38 billed ([eval/funnel.json](eval/funnel.json)).
+- **Next:** my labels of the 100 blind trials as they finish (before any verdict), then judge v2, then the score.
 
 ## The question
 
@@ -198,14 +197,14 @@ the request includes it; ambiguous ones case by case. Read with [view.py](view.p
 |---|---:|
 | Scenarios reviewed | 34 |
 | Valid | 24 |
-| Weak but valid (contrived; impossible times) | 5: G4-BOX-19, G4-BOX-21, G4-LIN-28, G4-LIN-29, G4-SLK-14 |
-| Flawed but usable (a near miss flawed, the rest kept) | 5: G4-LIN-25, G4-CAL-15, G4-SLK-15, G4-SLK-17, G4-SLK-18 (also contrived) |
+| Weak but valid (contrived; impossible times) | 4: G4-BOX-19, G4-BOX-21, G4-LIN-28, G4-LIN-29 |
+| Flawed but usable (a near miss flawed, the rest kept) | 6: G4-LIN-25, G4-CAL-15, G4-SLK-14, G4-SLK-15, G4-SLK-17, G4-SLK-18 (the last two also contrived) |
 | Invalid | 0 |
 | Near misses declared | 135 |
-| Near misses flawed | 6 |
-| Near misses valid but borderline (flagged for the PI) | 7 |
+| Near misses flawed | 7 |
+| Near misses valid but borderline (flagged for the PI) | 8 |
 
-**The 6 flawed near misses** (all group B; in `known_defects.json`, `near_misses`, source "regen_01: …"):
+**The 7 flawed near misses** (all group B; in `known_defects.json`, `near_misses`, source "regen_01: …"):
 - **G4-LIN-25 `i-f1`:** a cycle *named* "Cycle 7" but numbered 9, for "cycle 7": the PI's AR-LIN-24 ruling.
 - **G4-CAL-15 `ev_kickoff_social`:** a calendar the user's own list shows as "Editorial Calendar" (its override),
   for "my Editorial Calendar".
@@ -214,6 +213,10 @@ the request includes it; ambiguous ones case by case. Read with [view.py](view.p
 - **G4-SLK-15 `C_DEPLOY`:** "the active launch channel" names no channel, and #deploy-ops, whose purpose is "Launch
   coordination for the go-live", is such a channel: the PI's AP-SLK-02 ruling.
 - **G4-SLK-17 `U_FELIX`:** the words only in the message's blocks, which Slack displays: the PI's AP-SLK-04 ruling.
+- **G4-SLK-14 `1789992600.000003`** (ruled 2026-09-30 after the cut, while the runs were going, before any label or
+  verdict): its fire reaction is from Marcus Webb Jr, and "Marcus Webb", unquoted, includes him. The PI ruled in
+  blind_review_01 that "the Seaport Archive folder" includes "Seaport Archive 2024" although an exact one exists
+  (known_defects G4-BOX-11); a generational suffix is dropped like a year. `A:User.real_name` loses its only near miss.
 - **G4-SLK-18 `1711109400.000003`:** "the small 5-person release channel": release-hub has six members counting the
   bot, as Slack does, but five *people*, while the target has four people and the bot. The PI's ruling that the bot
   counts as a member was about "members"; "5-person" counts people. The drop-F writer declined a variant for the same
@@ -326,12 +329,21 @@ cases folders the rulings keep, cut once).
   G4-SLK-15 `C_DEPLOY` ("Launch coordination" in the channel's *purpose*, for "the launch channel") is ruled flawed:
   a purpose says what a channel is for, and the request names no channel (AP-SLK-02). One ruling on the pattern
   would settle all three.
-- **The 7 borderline near misses ruled valid:** G4-LIN-22 `i-d4` (a sub-team's issue for "in the Web team", as
+- **A second pattern, qualifier or new meaning:** after the PI's Seaport Archive ruling (an unquoted name includes
+  the same name with a qualifier such as a year), "Marcus Webb Jr" is ruled flawed for "Marcus Webb", while "Sprint 22
+  Overflow" for "the Sprint 22 cycle" (G4-LIN-31) and "Editorial Calendar Archive" for "my Editorial Calendar"
+  (G4-CAL-15) stay valid: "Overflow" and "Archive" name a different thing. If the PI extends the ruling to them, G4-CAL-15
+  keeps no valid near miss and `A:Calendar.summary` goes with it. Handles and quoted names (`#launch-plans`,
+  `nadia.rahman.khan`, `sarod_ops`, a quoted file or document title) are exact and stay valid.
+- **The folder-descendants ruling and its Linear analogue:** the PI allows descendants for folder containment
+  (known_defects G4-BOX-02); G4-LIN-26's label nested in Platform's Mobile group is the same shape for label groups,
+  ruled valid here with the lead's sub-team rulings. None of this study's Box near misses is a subfolder copy.
+- **The 8 borderline near misses ruled valid:** G4-LIN-22 `i-d4` (a sub-team's issue for "in the Web team", as
   G4-LIN-15); G4-LIN-26 `i-web-2` (an Android label nested in Platform's Mobile group; blind_review_01 records the PI
   allowing descendants for folder wording); G4-LIN-31 `c-num` (cycle number 22 named "Cycle 22", for "the Sprint 22
   cycle"; contested under blind_review_01's number reading); G4-LIN-34 `d-team-decoy` (a document in a *project*
-  named Payments, for "in the Payments team", as AP-LIN-07's d-team-f1 but with identical names); G4-SLK-14's Marcus
-  Webb Jr (for "Marcus Webb", who also exists); G4-SLK-15 `C_RELEASE` (#release-ops, never called "launch");
+  named Payments, for "in the Payments team", as AP-LIN-07's d-team-f1 but with identical names); G4-LIN-31
+  `c-overflow` and G4-CAL-15 `ev_kickoff_arch` (above); G4-SLK-15 `C_RELEASE` (#release-ops, never called "launch");
   G4-BOX-18 `8217` (two comments and a reply, for "only has the two comments").
 - **The designated substitutes of two facts are ruled-flawed constructions,** and the team facts are out of the
   frozen pipeline's reach (Coverage, above).
