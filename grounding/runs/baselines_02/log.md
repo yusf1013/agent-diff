@@ -43,3 +43,14 @@
   summaryOverride (readable); Box adds hub items (only removal answers 501); Slack's reaction list has heart and
   thumbsup, not white_check_mark; `chat.delete` is author-only.
 - Result: 109 of 116 valid; the numbers and findings are in the README.
+
+## 2026-09-30, 03:20–03:50: runs started at the lead's load; the reviewer cross-check
+
+- **Runs:** started at 24 in flight (12 per arm) at 03:22; the lead asked for 6 in all (the self-host is shared with
+  regen's 12 and related_work's 8, and overloaded an hour earlier), so I stopped both at about two minutes: 12
+  attempts per arm had started, all still in `preflight` (no agent turn). A second start ran in the tool's background,
+  whose limit is two hours against about three needed, so I stopped it at once too (3 more attempts per arm, also in
+  `preflight`). Relaunched detached (`setsid nohup`) at 3 per arm with `--retry-infrastructure`, which gives the
+  interrupted attempts a fresh attempt and keeps the old ones on disk.
+- **Cross-check** (the lead's yes to my offer): 15 baselines_01 tests re-reviewed under my hand, then compared with
+  the other session's calls; the agreement is in the README. Not fully blind for the 10 twin tests (see there).

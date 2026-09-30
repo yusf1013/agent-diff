@@ -84,9 +84,15 @@ Code's own list-price estimate; the plan bills $0.
   request for a set gets no proper credit (rule 6 names the target-present and absence-permitted forms). Crediting
   sets would add one fact to each Sonnet arm (SN0M 23 with R:File.parent_id, SN1M 38 with D:overdue); no Muse set
   test had a designated near miss.
-- **Reviewer:** this review is mine; baselines_01's Muse arms were reviewed by another session with the same rules.
-  The near-miss counts are counts of seeded records failing exactly one condition and depend little on the reviewer;
-  the family and proper calls depend more on judgment.
+- **Reviewer cross-check** (the lead's request; [rereview.py](rereview.py), [rereview_01.py](rereview_01.py),
+  `runs/rereview_01/compare.json`): I re-reviewed a seeded draw of 15 baselines_01 tests (5 N0M, 5 N1M, 5 N1) before
+  reading the other session's calls on them. Agreement: validity and flaw cause 15 of 15, form 15 of 15, the
+  near-miss records 16 of 16, designated or plain 16 of 16 (the family itself too), proper credit on the valid tests
+  14 of 14 (the one difference is on a test both call invalid); the fact named differs on 2 of 16, both plain near
+  misses (R:Issue.stateId against my A:WorkflowState.name; R:EventAttendee.event_id against my
+  A:EventAttendee.email). The twin part is not fully blind: an audit an hour earlier had printed the other
+  session's non-F0 near misses for every twin test; the 5 N1 tests are the clean control and agree fully. So the
+  gap between the Sonnet and the Muse arms is not the reviewer's.
 
 ## The runs and the grading (stated defaults, set before the runs)
 
