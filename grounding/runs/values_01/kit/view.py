@@ -29,10 +29,12 @@ def main():
     ap.add_argument("--steps", help="one-based step numbers shown in full")
     ap.add_argument("--full", action="store_true", help="every step in full")
     ap.add_argument("--obs", type=int, default=500, help="characters of each observation")
+    ap.add_argument("--writes", action="store_true", help="only the steps that issue a write, in full")
     args = ap.parse_args()
     rows = {e["key"]: e for e in executions()}
     flags = {name: read(name) for name in ("values", "writes", "reply")}
     chosen = {int(n) for n in args.steps.split(",")} if args.steps else set()
+    from grounding.runs.values_01.kit.writes import writes_of
     for key in args.keys:
         ex = rows[key]
         c = case(ex)
@@ -44,9 +46,12 @@ def main():
                                               "expected": ref.get("expected"), "written": ref.get("written"),
                                               "claims": [{k: cl.get(k) for k in ("requirement", "witness", "explanation")}
                                                          for cl in ref.get("claims", [])]}))
+        write_steps = {w["step"] + 1 for w in writes_of(ex)} if args.writes else set()
         for i, s in enumerate(transcript(ex).get("steps", [])):
             n = i + 1
-            full = args.full or n in chosen
+            if args.writes and n not in write_steps and n not in chosen:
+                continue
+            full = args.full or n in chosen or n in write_steps
             action = s.get("action") or compact(s.get("arguments"))
             action = re.sub(r''' -H (?:'[^']*'|"[^"]*")''', "", str(action))
             print(f"STEP {n}:", action if full else short(action, 900))
