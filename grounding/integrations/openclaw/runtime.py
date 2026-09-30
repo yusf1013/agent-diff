@@ -759,9 +759,17 @@ def run_attempt(case: dict, attempt: Path, *, database_url: str, backend_url: st
             limits = provider_errors(stderr_text)
             if limits:
                 flags["provider_limits"] = limits
-            if turn1["termination"] == "error" or (limits and turn1["termination"] in ("timeout", "aborted")):
+            # A provider stall: OpenClaw gives up on a request after 120 s of silence ("LLM idle timeout") and ends
+            # the turn as aborted, long before the budget. That is the provider's failure, like R1's cut stream.
+            stall = turn1["termination"] == "timeout" and (
+                re.search(r"LLM idle timeout|no response from model", stderr_text) is not None
+                or turn1["duration_s"] < 0.9 * timeout_s)
+            if stall:
+                flags["provider_stall"] = True
+            if turn1["termination"] == "error" or stall or (limits and turn1["termination"] in ("timeout", "aborted")):
                 summary.update(status="infrastructure_error",
-                               error=f"R3 provider error: {turn1.get('meta_error') or limits or turn1['termination']}")
+                               error=f"R3 provider {'stall' if stall else 'error'}: "
+                                     f"{turn1.get('meta_error') or limits or turn1['termination']}")
         else:
             # Infrastructure rules (same as runs/openclaw_transfer_01/infra.py, which applies them to earlier runs).
             requests = sorted((solver_dir / "requests").glob("*.meta.json"))
