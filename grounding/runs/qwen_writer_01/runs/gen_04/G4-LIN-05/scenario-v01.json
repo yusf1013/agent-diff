@@ -1,0 +1,86 @@
+{
+ "scenario_id": "G4-LIN-05",
+ "domain": "linear",
+ "request": "Add the note Scope locked to the description of the Web team's current cycle, the one that ends on September 30.",
+ "answer": "one",
+ "seed": [
+  ["team", {"id": "t-web", "name": "Web", "key": "WEB"}],
+  ["team", {"id": "t-pay", "name": "Payments", "key": "PAY"}],
+  ["member", {"team": "t-web", "person": "maya"}],
+  ["member", {"team": "t-web", "person": "leo"}],
+  ["member", {"team": "t-pay", "person": "priya"}],
+  ["cycle", {"id": "c-web-40", "team": "t-web", "number": 40, "starts": "2026-09-02T00:00:00Z", "ends": "2026-09-15T23:59:59Z", "past": true}],
+  ["cycle", {"id": "c-web-41", "team": "t-web", "number": 41, "starts": "2026-09-16T00:00:00Z", "ends": "2026-09-30T23:59:59Z", "active": true, "ref": "target"}],
+  ["cycle", {"id": "c-web-42", "team": "t-web", "number": 42, "starts": "2026-09-30T00:00:00Z", "ends": "2026-10-01T23:59:59Z", "active": true, "next": true, "ref": "web42"}],
+  ["cycle", {"id": "c-pay-40", "team": "t-pay", "number": 40, "starts": "2026-09-02T00:00:00Z", "ends": "2026-09-15T23:59:59Z", "past": true}],
+  ["cycle", {"id": "c-pay-41", "team": "t-pay", "number": 41, "starts": "2026-09-16T00:00:00Z", "ends": "2026-09-30T23:59:59Z", "active": true, "ref": "pay41"}]
+ ],
+ "conditions": [
+  {"id": "c1", "text": "the Web team's", "facts": ["R:Cycle.teamId", "A:Team.name"]},
+  {"id": "c2", "text": "current cycle", "facts": ["D:current_cycle"]},
+  {"id": "c3", "text": "that ends on September 30", "facts": ["A:Cycle.endsAt"]}
+ ],
+ "reference": {
+  "name": "the Web team's active cycle ending September 30",
+  "target": ["c-web-41"],
+  "query": {
+   "table": "cycles",
+   "filters": [
+    {"key": "f_active", "field": "isActive", "op": "eq", "value": true, "fact": "D:current_cycle"},
+    {"key": "f_from", "field": "endsAt", "op": "ge", "value": "2026-09-30T00:00:00Z", "fact": "A:Cycle.endsAt"},
+    {"key": "f_to", "field": "endsAt", "op": "lt", "value": "2026-10-01T00:00:00Z"}
+   ],
+   "edges": [
+    {"key": "e_team", "join": {"parent": "teamId", "child": "id", "op": "eq"}, "fact": "R:Cycle.teamId",
+     "node": {"table": "teams", "filters": [{"key": "f_team", "field": "name", "op": "eq", "value": "Web", "fact": "A:Team.name"}], "edges": []}}
+   ]
+  },
+  "decoys": [
+   {
+    "witness": "c-web-42",
+    "fact": "A:Cycle.endsAt",
+    "family": "F1",
+    "substitute": "Cycle.startsAt — the Web cycle that starts on September 30",
+    "mutation": {
+     "type": "REPLACE",
+     "note": "the requested end date is matched against the cycle's startsAt instead of endsAt",
+     "query": {
+      "table": "cycles",
+      "key": ["id"],
+      "filters": [
+       {"key": "f_active", "field": "isActive", "op": "eq", "value": true},
+       {"key": "s_from", "field": "startsAt", "op": "ge", "value": "2026-09-30T00:00:00Z"},
+       {"key": "s_to", "field": "startsAt", "op": "lt", "value": "2026-10-01T00:00:00Z"}
+      ],
+      "edges": [
+       {"key": "e_team", "join": {"parent": "teamId", "child": "id", "op": "eq"},
+        "node": {"table": "teams", "filters": [{"key": "f_team", "field": "name", "op": "eq", "value": "Web"}], "edges": []}}
+      ]
+     }
+    },
+    "explanation": "It is the Web team's next cycle, active like the target, but September 30 is its start date — it ends October 1 — so it matches the requested date only via startsAt."
+   },
+   {
+    "witness": "c-pay-41",
+    "fact": "R:Cycle.teamId",
+    "family": "F8",
+    "substitute": "the same-numbered cycle of another team (Payments' Cycle 41)",
+    "mutation": {
+     "type": "SUB",
+     "target": "e_team",
+     "replacement": {
+      "key": "e_team",
+      "join": {"parent": "teamId", "child": "id", "op": "eq"},
+      "node": {"table": "teams", "filters": [{"key": "f_pay", "field": "name", "op": "eq", "value": "Payments"}], "edges": []}
+     }
+    },
+    "explanation": "Payments runs a Cycle 41 with the identical start and end dates and it is active too, but it belongs to the Payments team, not Web."
+   }
+  ],
+  "effect": {"table": "cycles", "changes": ["update"]},
+  "written": ["cycles.description"]
+ },
+ "other_references": [],
+ "write": {"graphql": "mutation { cycleUpdate(id: \"c-web-41\", input: {description: \"Scope locked\"}) { success } }"},
+ "probes": []
+}

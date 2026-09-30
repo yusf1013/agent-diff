@@ -4,12 +4,12 @@ Session "harness", an investigation the PI asked for, assigned by the lead ("Roa
 
 ## Status
 
-- **2026-09-30, 05:25 EDT.** The question, the design and the draw are fixed ([plan.json](plan.json)). Three
-  generation runs were stopped on the harness's limits, not on the pipeline's (cycles 2-4): Qwen's served default
-  effort (`runs/gen_01_xhigh`); `medium` under Claude Code's 32,000-token reply cap (`runs/gen_02`, which accepted 3
-  briefs first and keeps them); and a 64,000-token cap without a way to fit the window (`runs/gen_03`). The other 9
-  briefs are generating at `medium` with the 64,000-token cap and a window relay (`runs/gen_04`). My review is under
-  way ([eval/review.json](eval/review.json)).
+- **2026-09-30, 08:10 EDT.** Generation and review done: Qwen's writer got all 12 briefs accepted, and my review keeps
+  all 12, with 23 of 23 facts covered validly, as Muse's did (see "Results: generation"). It took the harness three
+  stopped runs to get there (cycles 2-4) and 11.3 hours of writer time on the counted attempts, against Muse's 73
+  minutes. The suite is built (72 tests, [suite/](suite/)) and the blind sample drawn (30 trials,
+  [eval/blind_oc_01.json](eval/blind_oc_01.json)). Next: the OpenClaw run on the self-hosted Qwen (3 trials) and
+  judge v2.
 
 ## The question
 
@@ -70,6 +70,53 @@ What answers it, on 12 Phase 4 briefs that Muse already turned into accepted sce
   clock rule for new scenarios (roadmap, 2026-09-28; as regen_01 and completion_01 apply it): every non-Calendar
   test starts at the moment its scenario's accepted version was written, or a day after its data's latest event if
   that is later. Muse's tests on these briefs ran on the real clock (2026-09-28), except G4-LIN-08's (2026-10-16).
+
+## Results: generation
+
+Twelve briefs, 23 facts. Muse's side is Phase 4's record (`autogen_02/runs/phase4_gen`), its review
+(`autogen_02/eval/phase4_review.json`) and the PI's rulings; Qwen's is the attempt that counts per brief
+([cases.py](cases.py): gen_02 for 3 briefs, gen_04 for 9) and my review ([eval/review.json](eval/review.json)).
+Both reviews use one standard for "weak but valid" (review.json, `_standard`; [eval/data_scan.py](eval/data_scan.py)
+checks both writers' data alike). Numbers: [eval/generation.json](eval/generation.json) ([compare_gen.py](compare_gen.py)).
+
+| | Muse (Phase 4) | Qwen |
+|---|---|---|
+| Accepted | 12 of 12 (by construction of the pool) | 12 of 12 |
+| Kept after review (valid or weak but valid) | 12 (2 weak but valid) | 12 (2 weak but valid) |
+| Facts covered validly | 23 of 23 | 23 of 23 |
+| Near misses: valid of declared | 44 of 44 | 43 of 45 |
+| Scenario versions | 24 | 18 |
+| Rounds: check (mechanical and replica) / reader | 11 / 1 | 3 / 3 |
+| Rejected versions by stage | invalid JSON 5, replica 4, checks 2, reader 1 | reader 3, checks 1, replica 1, invalid JSON 1 |
+| Near-miss families (writer's labels) | F0 9, F1 15, F2 3, F6 3, F7 6, F8 8 | F0 11, F1 11, F2 2, F6 1, F7 9, F8 11 |
+| Plain (F0) share | 0.20 | 0.24 |
+| Wording: natural / stilted / contrived | 7 / 3 / 2 | 7 / 3 / 2 |
+| Requests with a test-only hint / with a role ambiguity | 2 / 1 | 2 / 4 |
+| Writer wall time, counted attempts (per brief) | 73 min (2-15 min) | 11.3 h (25-112 min) |
+| Writer output tokens | 283k | 482k |
+| Writer cost (list) | $4.87 | $0 (self-hosted) |
+| Reader calls, cost (list; billed) | 26, $1.22; $0.08 | 30, $1.31; $0.09 |
+
+- **Validity and coverage are the same:** every brief accepted, every scenario kept, every fact covered by at least
+  one valid near miss. Qwen's two flawed near misses (my rulings, for the PI to overrule) come from request wording
+  that names a person without naming the role: "Maya Chen's onboarding checklist" also fits a file she created
+  (G4-BOX-05, 9103), and "that Maya Chen uploaded" also fits a file whose first version she uploaded (G4-BOX-03, 4203).
+  Their probes are left out (rulings.json); the facts stay covered by other near misses.
+- **The pipeline's path differs:** Qwen's first versions were more often mechanically sound (1 invalid JSON against
+  Muse's 5; no replica observability loop like Muse's 4 on G4-CAL-05), and the reader sent back 3 of its versions
+  (two for an undeclared near miss, one for unnatural wording) against 1 of Muse's.
+- **Near misses:** a similar mix; Qwen leans on F7 and F8 and uses fewer F1, F2 and F6. Qwen's labels are looser: F7
+  on unordered values (conversation kinds, G4-SLK-05 and G4-SLK-08), F8 where the request names no number
+  (G4-LIN-08), F0 for a creator-role substitute (G4-BOX-05).
+- **Wording:** the same distribution; the contrived ones are the same briefs on both sides (G4-CAL-05 and G4-SLK-01,
+  whose facts invite them). Qwen's requests carry more role ambiguities (4: owner or creator, first or current
+  uploader, data owner or owner access, who assigned).
+- **Data:** Qwen's seeds have more implausibilities (4 scenarios against 2; data_scan.json), one of which touches a
+  tested condition (G4-LIN-05: two overlapping active cycles; weak but valid).
+- **Cost and time:** the self-hosted writer costs nothing per token but is slow on the shared server: 25-112 minutes
+  per brief at 7-13 tokens/s per stream (Qwen reasons 14-49k tokens in a design step), and the harness needed three
+  stopped runs to find settings that work (cycles 2-4; the stopped attempts are kept, per brief, in
+  generation.json). Muse's writers took 2-15 minutes.
 
 ## Log
 
@@ -162,3 +209,21 @@ What answers it, on 12 Phase 4 briefs that Muse already turned into accepted sce
   through it with every request lowered (`runs/probe_03_relay`: two turns, the resume, the edit, all as before).
 - `runs/gen_04`: the 9 briefs again, the relay on. [cases.py](cases.py) takes each brief's accepted scenario from
   gen_02 or gen_04; no request of gen_02's three was refused, so the relay would have passed them unchanged.
+
+### Cycle 5 (2026-09-30, 05:19-07:55): generation with the relay; the review
+
+- `runs/gen_04`: all 9 accepted: G4-SLK-05 (31 min), G4-CAL-05 (51, one check round), G4-SLK-01 (59, one reader
+  round), G4-BOX-08 (27), G4-CAL-06 (56, a replica and a reader round), G4-LIN-05 (114), G4-LIN-07 (68, one reader
+  round), G4-SLK-08 (57, one invalid-JSON round), G4-LIN-08 (67). The relay lowered max_tokens on requests past a
+  67k prompt (clamps.jsonl); none was refused after it. G4-LIN-05's first design step ran to 48,973 output tokens,
+  past the old 32,000 cap.
+- My review, scenario by scenario as each was accepted ([eval/review.json](eval/review.json)), before any solver run;
+  the wording rubric fixed on Muse's twelve before any Qwen scenario existed ([eval/wording.json](eval/wording.json)).
+  The one standard for "weak but valid" was set after a plausibility scan of both sides' data
+  ([eval/data_scan.json](eval/data_scan.json)); it moved Qwen's G4-SLK-01 to weak but valid, as Muse's is.
+- The suite ([suite.py](suite.py)): 72 tests (12 covers, 15 fact probes, 45 probes; Muse's scenarios gave 74), 205 ids
+  made opaque, clocks at the written moment for Box, Linear and Slack. The rulings leave out the 2 probes of the
+  flawed near misses at run time ([rulings.json](rulings.json), from the review by
+  [rulings_from_review.py](rulings_from_review.py)).
+- The blind sample for the judge: 30 of the 216 trial slots, drawn from the cases folder with seed 20260930 before any
+  run ([eval/blind_oc_01.json](eval/blind_oc_01.json)).
