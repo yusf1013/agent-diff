@@ -334,3 +334,5 @@ section. Decisions that stand go to the [roadmap](roadmap.md); this is the recor
   backend's token is in the process environment (whether its Bash tool sees it is the first check of the next
   pilot); a cheap step now is to make the model proxy refuse unrouted requests during rounds; the openai backend
   reaches OpenAI directly and gets only the filesystem sandbox for now.
+- 11:43 Sol on the regenerated half complete: 618 regular, 216 absence and 177 underspecified attempts with the
+  retry passes done; the OpenAI plan's window held. Judging and scoring with the sol_score session.
