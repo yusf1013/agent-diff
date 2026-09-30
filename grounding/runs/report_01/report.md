@@ -1,10 +1,9 @@
 # Automated fact-discrimination tests for tool-using agents: evaluation and results
 
 *A stub for the evaluation and results sections of a paper, written 2026-09-29 from the committed runs and brought
-to the rebuilt numbers on 2026-09-30 (the 10-minute budget, duplicate policy units, blind_review_01; every change is
-logged in [README.md](README.md), "Text changes"). The numbers are those in [numbers/](numbers/) at commit
-663af2ce1c; two later PI rulings (commit 3405221d90) are not yet applied. It covers the experiments, what they show
-and what they do not.
+to the rebuilt numbers on 2026-09-30 (the 10-minute budget, two PI rulings, duplicate policy units, blind_review_01;
+every change is logged in [README.md](README.md), "Text changes"). The numbers are those in [numbers/](numbers/) at
+commit a8c046c891. It covers the experiments, what they show and what they do not.
 There is no introduction, background or related work. Every table names its source: a script in [kit/](kit/) and the
 JSON it writes into [numbers/](numbers/), or a run record. Rows marked "–" or "not measured" are measurements not yet
 made.*
@@ -89,6 +88,11 @@ Source: [kit/scale.py](kit/scale.py) → [numbers/scale.json](numbers/scale.json
 - Median trial: 152 to 282 s depending on the run.
 - **Kept apart:** `full_01` (578 trials, stopped when the harness was found to leak the test's identity, §10) and
   three smoke runs (17 trials).
+- **Two rulings of 2026-09-30.** Two of the PI's blind-review rulings, applied on 2026-09-30, made two Box near misses
+  flawed and removed 2 probes and 6 policy units (2 absence, 4 underspecified). Their trials stay in the table above,
+  since they ran. The final results use 998 cases and 2,994 trials (563 regular tests, 242 absence and 193
+  underspecified units), down from 1,006 and 3,018. blind_review_01, judge_qwen_01 and values_01 used the earlier
+  3,018-trial manifest and keep their own populations.
 - **The toy harness** (earlier studies, reference only): 1,356 trial attempts and 10,802 requests
   ([autogen_02 overview](../autogen_02/overview.md) §4).
 

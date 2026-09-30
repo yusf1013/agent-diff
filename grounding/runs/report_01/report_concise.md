@@ -1,45 +1,49 @@
 # Fact-discrimination tests for tool-using agents: concise results
 
-*2026-09-29, brought to the rebuilt numbers on 2026-09-30 (the 10-minute budget, duplicate policy units,
-blind_review_01; every change is logged in [README.md](README.md), "Text changes"). Numbers as of commit
-663af2ce1c; two later PI rulings (commit 3405221d90) are not yet applied. Main evaluation: 1,006
-methodology cases on OpenClaw with self-hosted Qwen3.8-27B. Section and table numbers follow the longer report where
-retained. Recomputed counts and the final execution manifest: [concise.json](numbers/concise.json), produced by
-[concise.py](kit/concise.py).*
+*2026-09-29, brought to the rebuilt numbers on 2026-09-30 (the 10-minute budget, two PI rulings, duplicate policy
+units, blind_review_01; every change is logged in [README.md](README.md), "Text changes"; numbers as of commit
+a8c046c891). Main evaluation: 998 methodology cases on OpenClaw with self-hosted Qwen3.8-27B. Section and table
+numbers follow the longer report where retained. Recomputed counts and the final execution manifest:
+[concise.json](numbers/concise.json), produced by [concise.py](kit/concise.py).*
 
 ## 0.4 Size of the experiment
 
-**The methodology suite contains 1,006 test cases, each executed three times: 3,018 executions.**
+**The methodology suite contains 998 test cases, each executed three times: 2,994 executions.**
 It combines tests of fact discrimination with tests of how the agent handles missing or ambiguous matches.
 
 | Test form | Sonnet scenarios | Muse scenarios | Cases | Executions |
 |---|---:|---:|---:|---:|
 | Cover: target present alongside decoys | 48 | 52 | **100** | 300 |
-| Individual probe: target absent, one decoy | 174 | 189 | **363** | 1,089 |
+| Individual probe: target absent, one decoy | 174 | 187 | **361** | 1,083 |
 | Fact probe: target absent, the decoys for one fact together | 49 | 53 | **102** | 306 |
-| **Regular subtotal** | **271** | **294** | **565** | **1,695** |
-| Absence policy: request presumes a match that does not exist | 116 | 128 | **244** | 732 |
-| Underspecified policy: several records satisfy the request | 98 | 99 | **197** | 591 |
-| **Methodology total** | **485** | **521** | **1,006** | **3,018** |
+| **Regular subtotal** | **271** | **292** | **563** | **1,689** |
+| Absence policy: request presumes a match that does not exist | 116 | 126 | **242** | 726 |
+| Underspecified policy: several records satisfy the request | 98 | 95 | **193** | 579 |
+| **Methodology total** | **485** | **513** | **998** | **2,994** |
 
 Writer columns identify the author of the parent scenario. Policy variants were subsequently derived by code
 and Muse. A scenario can produce several cases; a case has three executions. None of those counts is a count
 of model API requests: one execution normally makes several requests.
 
 **Fact probes are additional, independently executed cases.** They belong to the broader probe category but
-are excluded from the 363 individual probes. For example, two decoys for one fact can produce two individual
-probes and one fact probe containing both. Thus the suite has **100 covers and 465 probes**, followed by
-**441 policy cases**. The breakdown preserves their distinct outcomes throughout.
+are excluded from the 361 individual probes. For example, two decoys for one fact can produce two individual
+probes and one fact probe containing both. Thus the suite has **100 covers and 463 probes**, followed by
+**435 policy cases**. The breakdown preserves their distinct outcomes throughout.
 
 These counts use the final valid suite and final selected executions, with opaque identifiers where applicable.
 Replaced executions, investigation, calibration and smoke tests do not enter the main denominator. RQ8's
-separate comparison experiments are identified there. The defensible description is: **“We used 1,006 cases,
+separate comparison experiments are identified there. The defensible description is: **“We used 998 cases,
 run three times each.”** This is the evaluated suite, not a demonstrated mathematical minimum that preserves
 every coverage and exposure result.
 
-**Estimated Qwen consumption for these cases:** 371.73M input tokens, including 329.41M cached input, plus
-9.66M output tokens: **381.39M tokens total**, with **88.62% of input cached**. This uses the agreed historical
-average scaled by `3,018 / 4,464`; it is an estimate, not an exact audit of the selected executions. The historical
+**Two rulings of 2026-09-30.** Two of the PI's blind-review rulings, applied on 2026-09-30, made two Box near
+misses flawed. They removed 2 probes and 6 policy units (2 absence, 4 underspecified): 6 regular and 18 policy
+executions left the manifest, which went from 1,006 cases and 3,018 executions to 998 and 2,994. blind_review_01,
+judge_qwen_01 and values_01 used the earlier 3,018-execution manifest and keep their own populations.
+
+**Estimated Qwen consumption for these cases:** 368.77M input tokens, including 326.79M cached input, plus
+9.58M output tokens: **378.36M tokens total**, with **88.62% of input cached**. This uses the agreed historical
+average scaled by `2,994 / 4,464`; it is an estimate, not an exact audit of the selected executions. The historical
 usage records have some missing usage, which this scaling does not recover. Generation and judging tokens are
 excluded. Model cost estimates appear in §12. Sources: [Qwen usage audit](numbers/qwen_usage.json),
 [scaled estimate](numbers/concise.json).

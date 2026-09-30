@@ -80,17 +80,17 @@ manifest (blind_review_01, judge_qwen_01, values_01) keep their own populations.
 
 report.md and report_concise.md brought to the rebuilt numbers (brief:
 [report_update.md](../../protocols/briefs/report_update.md); session "values"). Every number is read from a file;
-none is recomputed from memory. `numbers/` and `kit/` are unchanged. One exception to "numbers/ is current":
-`numbers/policy.json` was written (commit 49ce3672dc) before the two duplicate policy pairs were merged (4fec9ec540,
-which re-made `openclaw_eval_01/runs/policy/decisions_population_underspecified.json`), so Table 11's figures are
-read from the two decision files, the sources the table already cites. Format: section, old → new, source.
+none is recomputed from memory. `numbers/` and `kit/` are unchanged by this work. Format: section, old → new, source;
+"old" is the text before these changes.
 
-**Which numbers:** every source below is read as of commit 663af2ce1c (after the 10-minute rebuild 49ce3672dc and
-the duplicate merge 4fec9ec540). The later commit 3405221d90 (two PI rulings from blind_review_01: 563 regular
-tests, Box absence 58 and Box underspecified 52 valid units) rebuilt `numbers/exposure.json`, `numbers/policy.json`
-and the decision files, but not `numbers/concise.json` or `numbers/coverage.json`; its numbers are not applied here.
-A reader of a later `numbers/` file will find other values than the ones logged below. Once these texts are updated,
-the Recount section's note that they "still carry the 8-minute numbers" no longer holds.
+**Which numbers:** every source is read as of commit a8c046c891 (`numbers/` rebuilt in full after the two PI
+rulings above). A first pass (commits 787c4f576b to 1908825239) used the files at 663af2ce1c, before the rulings;
+the commits after the merge 3ba8bafe21 re-synced it, and the entries below give the final values. Table 11's
+figures are read from the two decision files (`openclaw_eval_01/runs/policy/decisions_population_*.json`), the
+sources the table already cites. `numbers/policy.json` has the same rates and intervals, but its `valid` and
+`judged` count cases where the decision files count units with each duplicate pair once (Linear underspecified 79
+and 76 against 78 and 75, Slack underspecified 32 and 31 against 31 and 30). With these texts updated, the Recount
+section's note that they "still carry the 8-minute numbers" no longer holds.
 
 ### Setup (§0)
 
@@ -98,7 +98,20 @@ the Recount section's note that they "still carry the 8-minute numbers" no longe
   (or whose agent time, limiter waits excluded, passes 600 s) is the agent's failure; the 8-minute reading is
   withdrawn. Source: roadmap, "Decisions (2026-09-29)"; `openclaw_eval_01/rulings.py` (`BUDGET_S = 600`,
   `over_budget`); this README, "Recount".
-- Both texts' opening note: states the update of 2026-09-30 and points here.
+- Both texts' opening note: states the update of 2026-09-30, pins commit a8c046c891 and points here.
+- report_concise.md §0.4: 1,006 cases and 3,018 executions → 998 and 2,994; the table's individual probes 189 Muse,
+  363 cases, 1,089 executions → 187, 361, 1,083; regular subtotal 294, 565, 1,695 → 292, 563, 1,689; absence 128,
+  244, 732 → 126, 242, 726; underspecified 99, 197, 591 → 95, 193, 579; total 521, 1,006, 3,018 → 513, 998, 2,994;
+  "363 individual probes" → 361; "465 probes ... 441 policy cases" → 463 and 435; "We used 1,006 cases" → 998. The
+  token estimate 371.73M input, 329.41M cached, 9.66M output, 381.39M total, `3,018 / 4,464` → 368.77M, 326.79M,
+  9.58M, 378.36M, `2,994 / 4,464` (88.62% cached unchanged). Sources: `numbers/concise.json` (`case_count`,
+  `execution_counts`, `writers` → `forms`, `policy_by_scenario_writer`, `token_estimate`, `scope`).
+- Both texts §0.4, new paragraph (report_concise.md) or bullet (report.md), as the lead asked: the two blind-review
+  rulings applied on 2026-09-30 made two Box near misses flawed and removed 2 probes and 6 policy units (2 absence, 4
+  underspecified; 6 regular and 18 policy executions); blind_review_01, judge_qwen_01 and values_01 used the earlier
+  3,018 manifest. report.md adds that the removed units' trials stay in its opening table (`numbers/scale.json`
+  counts every trial run). Sources: this README (the rulings and the full rebuild, above); `numbers/concise.json`
+  (`excluded_policy_trials`: 6 and 12); `numbers/generator.json` (`left_out`: P-G4-BOX-02-I11, P-G4-BOX-11-I11).
 
 ### RQ2: the F0 rule
 
