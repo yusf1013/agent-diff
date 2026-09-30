@@ -293,3 +293,14 @@ How the results will be read:
   mechanism.
 - report.md now shows both rows (Q1), and a stale count is fixed there: the failing presupposing trials that count
   no fact under the designated reading are 17, not 19.
+
+## Our side recomputed (2026-09-30, the values session at the lead's request)
+
+`full_02.adjudicated.json` was rebuilt under the 10-minute budget (49ce3672dc) and the PI's rulings, so `ours.py` and
+`compare.py` were rerun as they are, with no code change. Phase 4's first pass: Calendar gains a test and a fact
+(tests exposing 12 → 13, facts 8 → 9 at detect@3, 5 → 6 at detect@1), so 42 tests expose 29 facts (41 and 28
+before). Per 48 tests: facts exposed 11.0 → 11.3 at detect@3 and 7.2 → 7.5 at detect@1, tests failing 12.5 → 12.8.
+Everything else in `compare.json` reproduces exactly; `ours.json`'s "all" section also moved (the rebuilt file keeps
+fewer Phase 3 tests: Calendar 86 → 85, Linear 143 → 142, Slack 111 → 106). `q4/analysis.py` reruns unchanged: it
+reads the judge's verdicts, which neither the budget nor the rulings change. report.md above keeps the earlier
+figures; report_01 uses these.

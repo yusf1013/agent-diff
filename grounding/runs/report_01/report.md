@@ -616,14 +616,14 @@ labelled by hand before any assertion result or judge verdict was read; one pers
 - **Mutated twins (N0M, N1M):** B1 and B2 again with the fixes a reviewer would ask for first ("each test a different
   property", "challenging but passable", "neutral ids").
 - **Ours:** Muse's Phase 4 tests, as expected values over random draws of 12 per service from its 158 tests, on the
-  first pass (`full_02`). Phase 4's final score, under the 10-minute budget, is 47 tests exposing and 26 facts; the
-  first pass had 41 and 28 as baselines_01 counted it, before the budget changed.
+  first pass (`full_02`), scored under the 10-minute budget and the rulings. Phase 4's final score is 47 tests
+  exposing and 26 facts; its first pass has 42 and 29.
 
 **Table 14. Baselines against ours, per 48 tests.** Source: baselines_01 `compare.json`, `policy_facts.json`,
 `oracles.score.json`; our policy row from [numbers/policy.json](numbers/policy.json) (`by_source`). The coverage rows
 count F1–F8 near misses on both sides; the F0 rule (RQ2) would add plain near misses for states and six facts, on
-neither side here. Our column is Phase 4's first pass as baselines_01 computed it, before the 10-minute budget, and
-is not recomputed. For all 292 Muse regular tests with final outcomes under the 10-minute budget, the expectation per
+neither side here. Our column is Phase 4's first pass, recomputed with baselines_01's scripts (`ours.py`, `compare.py`)
+from `full_02` as rebuilt under the 10-minute budget and the rulings. For all 292 Muse regular tests with final outcomes under the 10-minute budget, the expectation per
 48 tests is 12.2 facts exposed at detect@3, 7.7 at detect@1 and 14.0 tests exposing
 ([numbers/concise.json](numbers/concise.json), `equal_budget_muse_final`).
 
@@ -632,8 +632,8 @@ is not recomputed. For all 292 Muse regular tests with final outcomes under the 
 | Tests / valid | 48 / 45 | 48 / 42 | 48 / 41 | 48 / 41 | 48 of 158, all valid |
 | Near misses through a designated substitute (F1–F8) | 9 of 48 | 17 of 53 | 21 of 58 | 19 of 66 | 81 of 99 |
 | Facts exercised properly (F1–F8), valid tests | 7 | 12 | 17 | 13 | 34.0 |
-| **Facts exposed, fact-sensitive tests (detect@3 / detect@1)** | **0 / 0** | **0 / 0** | **0 / 0** | **0 / 0** | **11.0 / 7.2** |
-| Failing tests (detect@3), and their kind | 5, all presupposing | 0 | 2, presupposing | 3: 2 presupposing, 1 a timeout without a write | 12.5, all fact-level |
+| **Facts exposed, fact-sensitive tests (detect@3 / detect@1)** | **0 / 0** | **0 / 0** | **0 / 0** | **0 / 0** | **11.3 / 7.5** |
+| Failing tests (detect@3), and their kind | 5, all presupposing | 0 | 2, presupposing | 3: 2 presupposing, 1 a timeout without a write | 12.8, all fact-level |
 | Policy-level facts, designated near misses only (baselines_01's count) | 0 / 0 | 0 / 0 | 1 / 1 | 0 / 0 | – |
 | Policy-level facts, any near miss failing one fact (our rule) | 4 / 3 | 0 / 0 | 2 / 2 | 1 / 0 | – |
 | Own oracle on its valid trials: precision / recall | 0.54 / 0.70 (assertions) | 0 real, 21 false | 0.27 / 1.00 | 0.03 / 1.00 | 1.00 / 1.00 (judge v2) |
@@ -663,7 +663,9 @@ is not recomputed. For all 292 Muse regular tests with final outcomes under the 
 ### 8.2 Six ablations of our system
 
 **Table 15.** Source: baselines_01 (`cycle2/labels.json`, `plain48/score.json`, `machinery.json`,
-`q4/numbers.json`, `q4/plain_openclaw.score.json`); judge_baselines_01 `score.json`.
+`q4/numbers.json`, `q4/plain_openclaw.score.json`); judge_baselines_01 `score.json`. Row 5's counts are the first
+pass as baselines_01's log recorded them, before the 10-minute rebuild; no script recomputes them. Row 7 reruns
+unchanged: `q4/analysis.py` reads the judge's verdicts, which neither the budget nor the rulings change.
 
 | # | What is removed or swapped | Result |
 |---|---|---|

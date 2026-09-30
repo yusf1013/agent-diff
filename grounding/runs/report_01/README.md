@@ -314,7 +314,8 @@ and decisions; its `valid` keeps both cases of each duplicate pair (Linear and S
   (`numbers/concise.json`, `equal_budget_muse_final`). Row label "(credit rule)" → "(F1–F8)".
 - report.md, Phase 4's policy units: 45 failing (39 through designated near misses) and 41 (38) → 43 (37) and 32 (29);
   units and facts unchanged (60 over 56, 50 over 52). Source: `numbers/policy.json`, `by_source` → `phase4`.
-- **Not changed, no source in `numbers/`:** report.md Table 14's Ours column (34.0, 81 of 99, 11.0 / 7.2, 12.5,
+- **Not changed at first, no source in `numbers/` (Table 14 and row 7 settled by follow-up 2 below):** report.md Table
+  14's Ours column (34.0, 81 of 99, 11.0 / 7.2, 12.5,
   $5.44) and "48 of ours expose about 11": baselines_01 `ours.json` and `compare.json`, computed from
   `full_02.adjudicated.json` before the 10-minute rebuild. That file, as rebuilt, gives Phase 4's first pass 42 tests
   exposing and 29 facts (28 at detect@3 → 29, 20 → 21 at detect@1), so the column would move a little if recomputed.
@@ -416,3 +417,19 @@ and decisions; its `valid` keeps both cases of each duplicate pair (Linear and S
    466 of 732 and 251 of 591 → 460 of 726 and 245 of 579. The hand-classified rows are unchanged: none of the six
    units has an unrequested, no-net-change or changed-to-fit trial in `beyond.json`, and none is in
    `values_01/eval/labels.jsonl`. Source: `numbers/beyond.json` (`policy`, `policy_trials_left_out_by_rulings`).
+2. **baselines_01's `ours.json` and `compare.json` recomputed** with its own scripts, unchanged, from `full_02` as
+   rebuilt under the 10-minute budget and the rulings (`ours.py`, then `compare.py`). Phase 4's first pass: 41 tests
+   exposing and 28 facts → 42 and 29 (Calendar 12 → 13 tests, 8 → 9 facts at detect@3, 5 → 6 at detect@1); per 48
+   tests 11.0 / 7.2 facts → 11.3 / 7.5, tests failing 12.5 → 12.8; the draws are the same (same tests, same seed),
+   and the rest of `compare.json` reproduces exactly. report.md: the Ours bullet ("the first pass had 41 and 28 as
+   baselines_01 counted it, before the budget changed" → "its first pass has 42 and 29"), Table 14's source note ("as
+   baselines_01 computed it, before the 10-minute budget, and is not recomputed" → "recomputed with baselines_01's
+   scripts ... from `full_02` as rebuilt ...") and its Ours cells 11.0 / 7.2 → 11.3 / 7.5 and 12.5 → 12.8; "48 of
+   ours expose about 11" still holds. Table 15 row 7: `q4/analysis.py` rerun, `q4/numbers.json` unchanged (it reads
+   the judge's verdicts, which the budget and the rulings do not change); the source note says so. Row 5 (covers 2
+   of 77, probes 76 of 279, fact probes 16 of 80; designated 67 of 223, plain 9 of 56): **no script** produces it
+   (baselines_01 `log.md` records it as "existing OpenClaw data"), so it stays, labelled in the source note as the
+   first pass before the 10-minute rebuild. `numbers/concise.json` rerun (`kit/concise.py`) so its copy of
+   `compare.json` (`baseline_comparison`) matches: the same three values change, nothing else. baselines_01's
+   `log.md` records the recompute; its `report.md` keeps the earlier figures. Sources: baselines_01 `ours.json`
+   (`phase4_muse`), `compare.json` (`approaches` → `ours_phase4_per_48`), `q4/numbers.json`.
