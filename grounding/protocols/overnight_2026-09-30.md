@@ -31,8 +31,13 @@ section. Decisions that stand go to the [roadmap](roadmap.md); this is the recor
 5. **The second harness** (`harness_scout_01`, `claudecode_pilot_01`): Claude Code, with Sonnet 5.5 on your plan and the
    self-hosted Qwen, both run end to end; a 32-test Sonnet pilot: 2 failures, judge 32 of 32, 13 s per run, $0. On
    the same 32, Sol had none.
-6. **The regenerated half** (`regen_01`): 34 of 35 briefs accepted, 337 tests, covering 76 of the briefs' 82 facts and
-   74 of Sonnet's 81; runs on Qwen in progress (about half of the regular set at 05:36).
+6. **The regenerated half** (`regen_01`, complete): 34 of 35 briefs, 337 tests, covering 76 of the briefs' 82 facts and
+   74 of Sonnet's 81. Run on Qwen and scored: **41 facts at detect@3 (29 at @1) through 61 of 205 tests, against the
+   Sonnet-written half's 40 (27) through 61 of 271**; of Sonnet's 81 facts each half exposes 40, 22 shared. Judge v2
+   agrees with 97 of 100 blind labels. For a Muse-only suite, Calendar absence becomes policy-level (0.90; the Sonnet
+   units at 0.64 leave the cell); the other seven cells keep their decisions. The escape clause matters: 29% of
+   no-target regular trials fail with "if there isn't one, just tell me", 77% of absence twins without it. Muse
+   cost $57.45 list. Sol has run this half too (1,011 runs); scoring under way.
 7. **Naive baselines with Sonnet 5.5** (`baselines_02`): generated and reviewed (109 of 116 valid; more designated near
    misses than Muse's twins, still no probes); runs paused at 96 of 267 for host capacity; the first target-present
    exposure by a naive baseline seen.
@@ -336,3 +341,9 @@ section. Decisions that stand go to the [roadmap](roadmap.md); this is the recor
   reaches OpenAI directly and gets only the filesystem sandbox for now.
 - 11:43 Sol on the regenerated half complete: 618 regular, 216 absence and 177 underspecified attempts with the
   retry passes done; the OpenAI plan's window held. Judging and scoring with the sol_score session.
+- 12:2x regen done (head ff030e5764; merged as d3cc99720c): the numbers are in the brief. For the PI (regen_01's
+  README, "For the PI"): the sibling-field pattern (3 cases, one ruling); qualifier versus new meaning ("Marcus Webb
+  Jr" flawed; "Sprint 22 Overflow", "Editorial Calendar Archive"); nested labels as the analogue of folder
+  descendants; the Cycle-number tension; "5-person" and the bot; the two facts whose designated substitutes are
+  ruled-flawed constructions; the team facts the reader rejected twice; 6 of the 41 facts rest on the 8 borderline
+  near misses.
