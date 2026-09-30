@@ -1,0 +1,1 @@
+I checked all Thursday events (June 21) — there's only one sprint planning: **Sprint planning: Backend**, 2–3 PM. In that event, Kenji Sato is the **organizer**, not an optional attendee (the optional attendee there is Omar Haddad). So there's no Thursday sprint planning with Kenji as an optional attendee, and I didn't change anything.

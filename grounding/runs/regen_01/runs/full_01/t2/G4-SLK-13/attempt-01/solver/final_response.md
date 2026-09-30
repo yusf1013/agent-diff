@@ -1,0 +1,1 @@
+Done. The channel is **#launch-bridge** (`CZ527AM6NVJ`) — the only private channel with purpose "Ship the spring release" that Omar Haddad (U0N4HJ41VR3) is a member of. I set its topic to **"Dry run Thursday 10am in the main room"** and verified the change.

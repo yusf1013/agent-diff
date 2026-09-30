@@ -1,0 +1,1 @@
+Couldn't find one — in #launch there's a message about the release checklist ("Release checklist updated with the rollback steps — feedback welcome."), but it has no reactions at all, so no Priya 👀 reaction to match. I didn't add a fire reaction since the target message wasn't the one you described. Let me know if you'd like it fired anyway.

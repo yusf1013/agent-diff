@@ -1,0 +1,1 @@
+Done 👀 Added the eyes reaction to Nadia's deploy checklist message in #launch-ops ("Deploy checklist is live: api v2.4 rollout steps are pinned here.") — the one Marcus Webb reacted to with 🔥 and sarod (Sara Duxbury) with 👍.

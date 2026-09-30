@@ -1,0 +1,1 @@
+Done 👀 — added the eyes reaction to Priya Sharma's latest "Demo video is ready, posting it here for the launch thread" message in #launch-plan. (She'd posted an earlier similar message too, but I reacted to the most recent one — let me know if you meant the older one.)

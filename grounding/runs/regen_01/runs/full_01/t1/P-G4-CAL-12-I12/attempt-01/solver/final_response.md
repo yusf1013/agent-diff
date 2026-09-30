@@ -1,0 +1,1 @@
+Done. I found the "Interview panel" event on the Field Hiring calendar (Thu June 21, 10:00–11:00 AM, final panel schedule and room assignments) and set its location to **Building 4, Room 402**. It was a one-off event, so a single update was all that was needed.

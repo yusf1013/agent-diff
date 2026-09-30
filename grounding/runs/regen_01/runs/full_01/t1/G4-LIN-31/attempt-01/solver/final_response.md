@@ -1,0 +1,1 @@
+Done. Set the description on the WEB team's **Sprint 22** cycle (Sept 7–21, 2026) — the one containing the rate-limit issue **WEB-1** "Rate limiting drops valid webhook retries" assigned to Maya Chen — to "Retro moved to Friday, September 25."

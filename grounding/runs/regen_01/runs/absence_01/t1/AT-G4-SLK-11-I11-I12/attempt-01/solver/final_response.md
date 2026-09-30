@@ -1,0 +1,1 @@
+Added 👀 to Diego Alvarez's "Rollback window confirmed for 03:00 UTC, holding for approval" in #launch-ops. Note it's actually in the hotfix rollout thread (Leo's "Hotfix rollout plan" post), not the gateway rollback thread — but it's the only matching message in the channel, so that's the one you meant.

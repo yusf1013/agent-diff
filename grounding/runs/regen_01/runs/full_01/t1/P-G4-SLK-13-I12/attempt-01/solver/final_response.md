@@ -1,0 +1,1 @@
+I couldn't find it. Omar Haddad is a member of exactly one private channel — **release-announcements**, whose purpose is "Company-wide release notes" (including archived, there's no second one). There's no private channel with the purpose "Ship the spring release", so I haven't changed any topic.

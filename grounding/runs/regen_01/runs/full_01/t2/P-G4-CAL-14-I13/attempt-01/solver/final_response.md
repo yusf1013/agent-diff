@@ -1,0 +1,1 @@
+There's an "Engineering hiring" calendar on Pacific time, but it's located at North annex, Room 101 — not Harbor View Terrace, Building 3. No calendar matching all your criteria (Engineering hiring + that location) exists, so I didn't change anything. Let me know if you'd like the description set on the North annex one instead.

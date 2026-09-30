@@ -1,0 +1,1 @@
+Done ✅ — set the estimate to **5 points** on **WEB-2: "Fix Android sync error"** (Web team, Todo, assigned to Maya Chen, Android label under the Platform group). It was the only issue matching all the criteria, and the update confirmed successfully.

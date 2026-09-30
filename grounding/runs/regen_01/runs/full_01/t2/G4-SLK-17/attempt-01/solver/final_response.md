@@ -1,0 +1,1 @@
+Done. In #outages, three posts mentioned the lattice outage, and only nadia.rahman's ("Heads up: lattice outage in eu-west, failover started, tracking here.") drew exactly two replies. I invited her (U95R3UI3S0W) to #followups — invite succeeded, channel is now at 3 members.

@@ -1,0 +1,1 @@
+Done. The post in #outages with exactly two replies was "Heads up: lattice outage in eu-west, failover started." (ts 1789995000.000017) — and the user who posted it (UI7JCQSHX5T) has been invited to #followups. The other threads had 3 or 4 replies, so it was the clear match.

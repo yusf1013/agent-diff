@@ -1,0 +1,1 @@
+Done — Omar Haddad is now invited to **#release-ops** (topic: "Go-live checklist and cutover plan"). That was the only launch channel matching that topic, so no ambiguity. He's in the channel (now 4 members).

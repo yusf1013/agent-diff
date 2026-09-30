@@ -1,0 +1,1 @@
+I checked, but there's no such channel: three private channels have the purpose "Ship the spring release" — `release-desk`, `release-ops`, and `release-sync` — and Omar Haddad isn't a member of any of them (I verified the archived ones too, no matches). So I haven't changed any topic. If you'd like me to set it on one of those three specifically, just say which.

@@ -1,0 +1,1 @@
+Done ✅ — set **WEB-2: Fix Android sync error** (Todo, Maya Chen, Web team) to an estimate of **5 points**. It's the only issue matching all criteria — WEB-3 also looks similar, but its Android label is in the Release group, not Platform.

@@ -1,0 +1,1 @@
+Done. The matching comment — Priya Nair, "The rollback plan is approved, proceed with the weekend cutover" (Sept 12) — is on **PLA-4 · Search ranking drop on mobile**, and its estimate is now set to **5**.

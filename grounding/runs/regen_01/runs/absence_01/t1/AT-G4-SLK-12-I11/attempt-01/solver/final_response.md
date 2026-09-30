@@ -1,0 +1,1 @@
+Done. Archived **#launch-coverage** — the private channel with topic "Launch checklist for the spring release," which includes Leo Park as a member (along with Diego Alvarez). Verified it's now marked as archived. The other private channel (`#hiring`) didn't match either criterion, so it was left alone.

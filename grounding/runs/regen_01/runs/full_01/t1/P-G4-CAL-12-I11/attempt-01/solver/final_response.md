@@ -1,0 +1,1 @@
+Done — there's an "Interview panel" event on a Field Hiring calendar (Wed, Jun 20, 1:00–2:00 PM PT). I've set its location to **Building 4, Room 402**. No other Field Hiring calendars had an interview event.

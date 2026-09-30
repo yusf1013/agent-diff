@@ -1,0 +1,1 @@
+Done 👀 — added the eyes reaction to Priya Sharma's Sep 15 message in #launch-plan: "Demo video is ready, sharing the link here for final review." (Note: Diego Alvarez posted a similar message that day, but I reacted only to Priya's as requested.)

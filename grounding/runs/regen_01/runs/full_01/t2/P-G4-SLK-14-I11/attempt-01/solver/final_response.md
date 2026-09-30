@@ -1,0 +1,1 @@
+Done — added the 👀 reaction to the deploy checklist in #launch-ops ("Deploy checklist is live: api v2.4 rollout steps are pinned here," posted by Nadia Rahman, with the fire reaction from Marcus Webb and thumbsup from sarod). Verified it's live on the message.

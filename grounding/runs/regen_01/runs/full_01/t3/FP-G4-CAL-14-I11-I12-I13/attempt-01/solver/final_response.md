@@ -1,0 +1,1 @@
+Done. I found the Engineering hiring calendar (Pacific time, referenced Harbor View Terrace, Building 3) and updated its description to **"Summer interview schedule for the 2018 cohort"** — the change is confirmed.

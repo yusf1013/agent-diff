@@ -1,0 +1,1 @@
+Done. Added the `launch-ready` tag to the **Launch pack – internal** folder (ID 8203) in Design Archive — it's the match: 4.5 MB, last modified May 14, 2026. Confirmed the tag is now set on the folder.

@@ -1,0 +1,1 @@
+Done — added 🔥 to the "Release checklist: sign-off thread is open." message in #launch (Priya's 👍 is on it). One note: Priya also thumbs-upped an earlier checklist message ("Release checklist updated with the rollback steps"), so if that was the one you meant, say the word and I'll add the fire reaction there too.

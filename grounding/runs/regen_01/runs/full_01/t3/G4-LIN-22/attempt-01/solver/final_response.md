@@ -1,0 +1,1 @@
+Done — set the estimate to **5** on **WEB-1: "Checkout latency spikes under load"** (Web team, created by Maya Chen on June 10). There was a second issue from her in that window (WEB-2, created June 9), but WEB-1 is the one matching the June 10 date.

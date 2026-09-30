@@ -1,0 +1,1 @@
+Done — added 🔥 to the #launch message: **"Release checklist is ready for final review — please take a look before the freeze."** It's the release-checklist message Priya Sharma reacted to with 👀 (the other eyes reactions belonged to a different user).

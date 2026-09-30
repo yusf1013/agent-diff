@@ -1,0 +1,1 @@
+Done. Updated the **Web team's Sprint 22** cycle (Sep 7–21, the one containing Maya's rate-limit issue WEB-1 "Rate limiting drops valid webhook retries") to the description: *Retro moved to Friday, September 25.*

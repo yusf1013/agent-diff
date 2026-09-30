@@ -1,0 +1,1 @@
+The "Atlas Launch" hub that Omar Haddad last updated (hub 8201) contains only one file: **Harbor Point photos.pdf**. There's no file called "Harbor Point survey - Whitfield.pdf" in it, so I didn't add the `launch-ready` tag.

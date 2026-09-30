@@ -1,0 +1,1 @@
+Done 👀 — one small note: the message was actually in **#launch-plans** (plural), not #launch-plan. Priya posted "Demo video is ready, final cut linked here." at 9:50 AM on Sept 15, and I've added the eyes reaction to it.

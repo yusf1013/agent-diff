@@ -1,0 +1,1 @@
+Done 👀 — added the eyes reaction to the deploy checklist message ("Deploy checklist is live: api v2.4 rollout steps are pinned here.") in #launch-ops, confirmed as the one with fire from Marcus Webb and thumbsup from sarod.

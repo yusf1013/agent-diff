@@ -1,0 +1,1 @@
+Done. Archived **#launch-coverage** (`C64UYR7D2QL`) — the private channel with topic "Launch checklist for the spring release" and Leo Park (UCYPJ7OZGJ9) as a member. The other private channel (`hiring`) didn't match either criterion, so no ambiguity.

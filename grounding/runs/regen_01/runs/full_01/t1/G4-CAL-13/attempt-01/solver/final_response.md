@@ -1,0 +1,1 @@
+Done. **Sprint planning** (Thursday 10:00–11:00 AM, with Kenji Sato as optional attendee) now has its location set to **Room 5B**. I skipped sending notifications to attendees since it's just a location tweak.

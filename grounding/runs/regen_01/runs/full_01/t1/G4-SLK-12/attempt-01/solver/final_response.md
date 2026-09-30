@@ -1,0 +1,1 @@
+Done. Archived **#launch-ops** (`CPUKW150G54`) — it's the private channel with the purpose "Launch checklist for the spring release" and Leo Park is a member. (I skipped #launch-coverage, which only has that phrasing in its topic, not its purpose.)

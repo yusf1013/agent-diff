@@ -1,0 +1,1 @@
+No match — I checked #outages and there's only one post about the lattice outage (Hannah's: "Heads up: lattice outage in eu-west, failover started"), and it drew just one reply, not two. So there's no user to invite to #followups. Let me know if you meant something slightly different (e.g., any post in #outages, or a post with at least one reply).

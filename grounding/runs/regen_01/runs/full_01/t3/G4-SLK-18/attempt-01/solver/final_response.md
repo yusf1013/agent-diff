@@ -1,0 +1,1 @@
+Done 👀 — added the eyes reaction to the "deploy checklist is green" message in **release-gateway** (the 5-person channel from March 12, 2024), posted by **Kira Novak**, who's the workspace admin. There was a second identical message in that channel from Tomas Reyes — I reacted to Kira's, not that one.
