@@ -105,3 +105,17 @@
   host load, kept apart for the quiet rerun. SN0M-SLK-T07 t1 ran at 19.5: its requests were long because it wrote
   long (about 8k reasoning tokens after it had already removed the right reaction), so it is the agent's timeout,
   labelled `correct` with `timeout: true` (the right write, no reply).
+
+## 2026-09-30, 13:00–13:20: the rerun, the labels complete, the grading
+
+- **Quiet rerun** (`rerun.py`, 13:02): SN0M-BOX-T08 t2 as attempt-02 on the quieter host (my runs done, related_work's
+  B1 still running): 6 requests at 13.5 to 22.5 tokens a second, 53 s, the right record. The old attempt stays.
+- **Keys regenerated** after the runs (`keys.py`), with SN0M-CAL-T05's occurrence id; `judge.py` grades with them.
+- **Labels complete** (267), before any assertion result or verdict. Then, in order: the tests' own assertions
+  (`assertions.py --twin`), baselines_01's label measures (`tables.py`), judge v2 on every trial (`judge.py`; a
+  two-trial smoke first, which agreed with the labels).
+- **Own assertions, SN0M:** the 15 false alarms of five target tests come from `changed` assertions without
+  `expected_changes`, which the format document asks for; counted against the oracle, and reported with those
+  tests apart too.
+- **Judge runs:** the sequential loop and a parallel SN1M run could have judged the same trials twice; I stopped the
+  loop's shell (its SN0M judge ran on) so SN1M is judged by one process.

@@ -5,7 +5,7 @@ Session "values" (second assignment of the day from the lead session "RoadMap sp
 
 ## Status
 
-- **2026-09-30, 13:40 EDT.** Runs done (267 of 267 trials; one timeout under host load rerun on the quieter host) and
+- **2026-09-30, 13:15 EDT.** Runs done (267 of 267 trials; one timeout under host load rerun on the quieter host) and
   every trial labelled by hand before any assertion result or verdict was read. The label-based table is below.
   Judge v2 is grading every trial; its numbers and its agreement with the blind samples follow when it ends.
 - **2026-09-30, 04:10 EDT. Paused at the lead's request** (the regenerated half's runs have the host). 96 of 267
@@ -27,6 +27,20 @@ they catch come from requests that presuppose a missing record) is a property of
 agent that wrote them? We regenerate the two arms that matter, N0M and N1M
 ([baselines_01](../baselines_01/report.md) §8), with a stronger coding agent, Sonnet 5.5 through Claude Code, at the
 same 48-test budget, and measure them the same way.
+
+## The answer
+
+**The naive result does not hold unchanged for a stronger writer.** With Sonnet 5.5 as the writer, the naive tests
+expose facts: SN0M 3 (2 at detect@1) and SN1M 2 (2) at detect@3, where the four Muse arms exposed none in 169 valid
+tests; and half of their failing tests (5 of 10, leaving aside one timeout after a right write) are target-present
+tests failing on a look-alike, not presupposing requests. Four of the five exposures come through a designated look-alike (F1, F3, F4, F7).
+
+**It holds in kind and in size.** Target-present tests still rarely bite: 5 of the 73 valid target-present Sonnet
+tests expose a fact (SN0M 3 of 34, SN1M 2 of 39), against 2 of 77 of our covers and 0 of 76 for N0 and N1; no Sonnet
+test is a probe (no target, absence permitted), the form that makes ours bite. So the form is still the main gate;
+Sonnet's three to four times more designated look-alikes turn that small rate into a few facts. At the same budget,
+48 Sonnet tests expose 2 to 3 facts where 48 of ours expose 11.3 (Phase 4) and 12.2 at detect@3, 7.7 at detect@1, with
+14.0 tests exposing (all 292 Muse tests, `report_01/numbers/concise.json`, `equal_budget_muse_final`).
 
 ## Setup
 
@@ -171,8 +185,22 @@ counts the write on the decoy, so without self-corrected trials SN0M is 2 / 2); 
 (SN1M-BOX-T03 t1: the owner taken for the uploader) and H:messages.parent_id (SN1M-SLK-T11, 3 of 3: Diego's reply
 reacted to instead of the message it answers). Four of the five come through a designated look-alike (F1, F3, F4,
 F7); one through a plain near miss (F0, the canceled duplicate). The own-oracle row: SN0M's five target tests omit
-`expected_changes` on the changed record, which the format document requires, so 16 right trials fail their own
-assertions; SN1M's assertions miss nothing and raise one false alarm (a trial that asked instead of acting).
+`expected_changes` on the changed record, which the format document requires ("list every column you expect to
+change"), so 15 right trials fail their own assertions; with those five tests counted apart SN0M's own oracle is
+0.86 / 1.00, and its one remaining false alarm is the false-absence trial, where the assertion is right that the
+task failed. SN1M's assertions miss nothing and raise one false alarm (a trial that asked instead of acting).
+
+**Sensitivities** (the answer survives each):
+- **Self-corrected writes:** SN0M-LIN-T11 t2 created the relation reversed, then fixed it; counted, as judge v2 counts
+  any write on a decoy. Without it SN0M is 2 / 2. SN1M-SLK-T09 t2 also corrected a stray write, but the replica caused
+  that one (no reactions in history, so every message looked tied), so its final, right grounding stands.
+- **Disputable wordings:** all three fact-level trials of SN1M-SLK-T11 read "the message that Diego answered with ..."
+  as Diego's reply; without that test SN1M is 1 / 1. SN0M-LIN-T03 turns on an implicit difference (the request
+  matches the canceled duplicate's title; my review flagged it); without it and the self-corrected trial, SN0M is
+  1 / 1. Removing every disputable exposure still leaves both arms above 0.
+- **Voided trials:** counting the three tests with gap-voided trials invalid (cause b) instead would make the valid
+  counts 43 and 43; no exposure moves.
+
 
 ## Layout
 
