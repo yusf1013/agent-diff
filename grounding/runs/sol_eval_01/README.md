@@ -858,7 +858,7 @@ trials there would give 12/80 = 0.15, so the decision stands.
     - After the merge, the first half's files reproduce byte for byte.
     - report_01's numbers/sol.json is unchanged. Its verdict count now reads only the first half's sets (commit
       bd08e3baab, the one change outside this folder).
-- **13:10-13:35, the lead's last task, and what it found.** The lead asked the budget rule to re-root a recorded
+- **13:00-13:10, the lead's last task, and what it found.** The lead asked the budget rule to re-root a recorded
   attempt path that does not exist (strip everything up to "/grounding/runs/"), and to show the numbers unchanged.
   - The rule (`policy.local_attempt`) worked. On copies of regen's verdicts moved to a checkout that doesn't exist,
     49 over-budget trials fell to void before it and matched after it.
@@ -869,7 +869,7 @@ trials there would give 12/80 = 0.15, so the decision stands.
   - For each of the 1,743, the committed attempt's step count equals the judge prompt's, so re-rooting finds the
     attempt that was judged.
   - I committed nothing to this branch, put the fix on `exp/sol_score-01-reroot`, and asked the lead.
-- **13:40-14:30, the rebuild (the lead: "Rebuild").**
+- **13:12-13:35, the rebuild (the lead: "Rebuild").**
   - **Code:** `population_outcomes` warns on stderr, with counts per verdict folder, when an attempt cannot be found
     (tested: it fires on unresolvable paths and stays silent on all 21 real verdict folders).
     regen_01/score.py matches a re-run's verdict by the path from grounding/runs/ on.
