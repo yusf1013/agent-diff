@@ -28,7 +28,10 @@ section. Decisions that stand go to the [roadmap](roadmap.md); this is the recor
 4. **Related work** (`related_work_01`): 69 works, 12 angles; concurrent work names our failure class (Entity Binding
    Failures, arXiv 2606.30531) and agrees with our look-alike results; ClawEnvKit is the generator baseline to run;
    Agent-Diff's served evaluation has no closed-world check; the credit rule's ancestor is Zhong, Yu and Klein 2020.
-   Four baseline preparations built (P1, B2, S1, B1); B1 running.
+   Four baseline preparations built (P1, B2, S1, B1). B1 (the masked-operation baseline, 48 items × 3): 47 of 144
+   pass (50 with the quiet-host reruns); 40 of 48 items fail at least once; its agent left the service interface
+   (direct backend calls, host probing, repository reads), which prompted the host-access scan of the main rounds.
+   P1 (48 matched absence/underspecified items × 3) running since 13:20.
 5. **The second harness** (`harness_scout_01`, `claudecode_pilot_01`): Claude Code, with Sonnet 5.5 on your plan and the
    self-hosted Qwen, both run end to end; a 32-test Sonnet pilot: 2 failures, judge 32 of 32, 13 s per run, $0. On
    the same 32, Sol had none.
@@ -38,7 +41,7 @@ section. Decisions that stand go to the [roadmap](roadmap.md); this is the recor
    agrees with 97 of 100 blind labels. For a Muse-only suite, Calendar absence becomes policy-level (0.90; the Sonnet
    units at 0.64 leave the cell); the other seven cells keep their decisions. The escape clause matters: 29% of
    no-target regular trials fail with "if there isn't one, just tell me", 77% of absence twins without it. Muse
-   cost $57.45 list. Sol has run this half too (1,011 runs); scoring under way.
+   cost $57.45 list. Sol's run of this half is in item 1.
 7. **Naive baselines with Sonnet 5.5** (`baselines_02`, complete): with Sonnet writing them, the naive tests expose
    facts (SN0M 3 at detect@3, SN1M 2; all four Muse arms 0), still far below ours (11.3 per 48). Sonnet writes 3–4×
    more designated look-alikes than Muse and exercises more facts (22 and 37 against 12 and 13), but writes no probes;
@@ -48,6 +51,9 @@ section. Decisions that stand go to the [roadmap](roadmap.md); this is the recor
    a stated change, 90 not on ordinary accounts; a 40-test case study proposed at $0 in plans.
 9. The 10-minute budget applied everywhere; both report texts brought to the current numbers (998 cases, 2,994
    executions after two of your blind-review rulings reached the rulings file); a framing proposal for your point 5.
+   One correction under way (13:xx): the 10-minute rebuild of the policy numbers had silently dropped the budget rule
+   for the Qwen round's 1,743 policy verdicts (their attempt paths pointed into a removed worktree); no decision
+   changes, some Qwen policy rates move up; the sol_score session is rebuilding every affected file.
 
 **Decisions for you**
 1. The Sonnet round: OpenClaw's loop on an API key (about $263 list for the full suite, the only same-harness
