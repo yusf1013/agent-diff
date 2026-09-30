@@ -1,0 +1,1 @@
+Read note.txt, then write out.txt with the same text in upper case. Reply with one word: done.
