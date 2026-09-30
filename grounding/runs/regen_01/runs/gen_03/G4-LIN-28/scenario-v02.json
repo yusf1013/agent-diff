@@ -1,0 +1,73 @@
+{
+  "scenario_id": "G4-LIN-28",
+  "domain": "linear",
+  "request": "Set the estimate to 3 on the issue in the Web team's Done state that was completed on September 18 and whose description mentions the offline cache rollback.",
+  "answer": "one",
+  "seed": [
+    ["team", {"id": "t-web", "name": "Web", "key": "WEB"}],
+    ["team", {"id": "t-mob", "name": "Mobile", "key": "MOB"}],
+    ["issue", {"id": "i-web-1", "team": "t-web", "title": "Checkout totals mismatch on storefront", "state": "Done", "due": "2026-09-25", "description": "This fixes the checkout totals and covers the offline cache rollback procedure for storefront clients.", "set": {"completedAt": "2026-09-18T15:00:00Z"}}],
+    ["issue", {"id": "i-web-2", "team": "t-web", "title": "Search ranking drop for accessories", "state": "Done", "due": "2026-09-25", "description": "Search relevance fix covering the offline cache rollback notes from the storefront review.", "set": {"completedAt": "2026-09-19T15:00:00Z"}}],
+    ["issue", {"id": "i-web-3", "team": "t-web", "title": "Promo banner overlap on tablet", "state": "Done", "due": "2026-09-18", "description": "Promo layout work informed by the offline cache rollback runbook.", "set": {"completedAt": "2026-09-10T15:00:00Z"}}],
+    ["issue", {"id": "i-web-4", "team": "t-web", "title": "Offline cache rollback for kiosk mode", "state": "Done", "due": "2026-09-25", "description": "Kiosk layout refresh for the home screen; no backend changes.", "set": {"completedAt": "2026-09-18T14:00:00Z"}}],
+    ["issue", {"id": "i-web-5", "team": "t-web", "title": "Receipt email duplicates", "state": "Done", "due": "2026-09-26", "description": "Dedupe logic for receipt emails after retry.", "set": {"completedAt": "2026-09-18T16:00:00Z"}}],
+    ["comment", {"id": "c-1", "issue": "i-web-5", "author": "maya", "body": "Heads up, the offline cache rollback steps are documented in the runbook."}],
+    ["issue", {"id": "i-mob-1", "team": "t-mob", "title": "Push notification delay", "state": "Done", "due": "2026-09-25", "description": "Push retry work covering the offline cache rollback procedure for mobile clients.", "set": {"completedAt": "2026-09-18T15:30:00Z"}}],
+    ["issue", {"id": "i-web-9", "team": "t-web", "title": "Footer link updates", "state": "Todo", "description": "Update the footer links for the help center."}],
+    ["issue", {"id": "i-mob-9", "team": "t-mob", "title": "Onboarding tooltip copy", "state": "In Progress", "description": "Rewrite the onboarding tooltips."}]
+  ],
+  "conditions": [
+    {"id": "c1", "text": "in the Web team's Done state", "facts": ["R:Issue.stateId", "A:WorkflowState.name", "A:Team.name"]},
+    {"id": "c2", "text": "completed on September 18", "facts": ["A:Issue.completedAt"]},
+    {"id": "c3", "text": "whose description mentions the offline cache rollback", "facts": ["A:Issue.description"]}
+  ],
+  "reference": {
+    "name": "the issue to estimate",
+    "target": ["i-web-1"],
+    "query": {
+      "table": "issues",
+      "filters": [
+        {"key": "f_c_from", "field": "completedAt", "op": "ge", "value": "2026-09-18T00:00:00Z", "fact": "A:Issue.completedAt"},
+        {"key": "f_c_to", "field": "completedAt", "op": "lt", "value": "2026-09-19T00:00:00Z", "fact": "A:Issue.completedAt"},
+        {"key": "f_desc", "field": "description", "op": "contains_ci", "value": "offline cache rollback", "fact": "A:Issue.description"}
+      ],
+      "edges": [
+        {"key": "e_state", "join": {"parent": "stateId", "child": "id", "op": "eq"}, "fact": "R:Issue.stateId",
+         "node": {"table": "workflow_states",
+                  "filters": [{"key": "f_state", "field": "name", "op": "eq", "value": "Done", "fact": "A:WorkflowState.name"}],
+                  "edges": [
+                    {"key": "e_team", "join": {"parent": "teamId", "child": "id", "op": "eq"},
+                     "node": {"table": "teams",
+                              "filters": [{"key": "f_team", "field": "name", "op": "eq", "value": "Web", "fact": "A:Team.name"}],
+                              "edges": []}}
+                  ]}}
+      ]
+    },
+    "decoys": [
+      {"witness": "i-web-2", "fact": "A:Issue.completedAt", "family": "F7",
+       "substitute": "the adjacent day",
+       "mutation": {"type": "DROP", "target": "f_c_to"},
+       "explanation": "It meets the state and description conditions but was completed on September 19, the adjacent day."},
+      {"witness": "i-web-3", "fact": "A:Issue.completedAt", "family": "F1",
+       "substitute": "Issue.dueDate",
+       "mutation": {"type": "DROP", "target": "f_c_from"},
+       "explanation": "Its due date is September 18, but it was completed on September 10."},
+      {"witness": "i-web-4", "fact": "A:Issue.description", "family": "F1",
+       "substitute": "Issue.title",
+       "mutation": {"type": "DROP", "target": "f_desc"},
+       "explanation": "Its title mentions the offline cache rollback, but its description does not."},
+      {"witness": "i-web-5", "fact": "A:Issue.description", "family": "F2",
+       "substitute": "a comment on the issue",
+       "mutation": {"type": "DROP", "target": "f_desc"},
+       "explanation": "A comment on the issue mentions the offline cache rollback, but the issue description does not."},
+      {"witness": "i-mob-1", "fact": "R:Issue.stateId", "family": "F8",
+       "substitute": "same-named state of another team",
+       "mutation": {"type": "DROP", "target": "f_team"},
+       "explanation": "It is in the Mobile team's Done state, a same-named state of another team, not the Web team's."}
+    ],
+    "effect": {"table": "issues", "changes": ["update"]},
+    "written": ["issues.estimate"]
+  },
+  "other_references": [],
+  "write": {"graphql": "mutation { issueUpdate(id: \"i-web-1\", input: {estimate: 3}) { issue { id estimate } } }"}
+}

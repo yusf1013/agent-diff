@@ -1,0 +1,87 @@
+{
+  "scenario_id": "G4-CAL-14",
+  "domain": "calendar",
+  "request": "Set the description of the Engineering hiring calendar located at Harbor View Terrace, Building 3, on Pacific time to Summer interview schedule for the 2018 cohort.",
+  "answer": "one",
+  "seed": [
+    ["calendar", {"id": "hire-eng@northwind.example", "summary": "Engineering hiring", "owner": "actor", "access": "owner", "tz": "America/Los_Angeles", "location": "Harbor View Terrace, Building 3", "description": "Interview rooms and panel rota."}],
+    ["calendar", {"id": "hire-eng-downtown@northwind.example", "summary": "Engineering hiring", "owner": "actor", "access": "owner", "tz": "America/Los_Angeles", "location": "Downtown office, Floor 12", "description": "Overflow panels meet at Harbor View Terrace, Building 3 on Fridays."}],
+    ["calendar", {"id": "hire-eng-south@northwind.example", "summary": "Engineering hiring", "owner": "actor", "access": "owner", "tz": "America/Los_Angeles", "location": "South campus, Room 204", "description": "Panel calendar for the south campus."}],
+    ["event", {"id": "ev_south_kickoff", "calendar": "hire-eng-south@northwind.example", "summary": "Hiring kickoff", "start": "2018-06-19T10:00:00", "end": "2018-06-19T11:00:00", "organizer": "actor", "location": "Harbor View Terrace, Building 3", "description": "Kickoff for the hiring panel."}],
+    ["calendar", {"id": "hire-eng-north@northwind.example", "summary": "Engineering hiring", "owner": "actor", "access": "owner", "tz": "America/Los_Angeles", "location": "North annex, Room 101", "description": "Backup interview slots."}],
+    ["calendar", {"id": "mktg-sync@northwind.example", "summary": "Marketing sync", "owner": "actor", "access": "owner", "tz": "America/Los_Angeles", "location": "Riverside pavilion", "description": "Weekly marketing updates."}],
+    ["calendar", {"id": "design-crit@northwind.example", "summary": "Design crit", "owner": "actor", "access": "owner", "tz": "America/New_York", "location": "Midtown studio, Floor 4", "description": "Thursday design reviews."}]
+  ],
+  "conditions": [
+    {"id": "c1", "text": "the Engineering hiring calendar", "facts": ["A:Calendar.summary"]},
+    {"id": "c2", "text": "located at Harbor View Terrace, Building 3", "facts": ["A:Calendar.location"]},
+    {"id": "c3", "text": "on Pacific time", "facts": ["A:Calendar.time_zone"]}
+  ],
+  "reference": {
+    "name": "the Engineering hiring calendar to update",
+    "target": ["hire-eng@northwind.example"],
+    "query": {
+      "table": "calendars",
+      "filters": [
+        {"key": "f_sum", "field": "summary", "op": "eq", "value": "Engineering hiring", "fact": "A:Calendar.summary"},
+        {"key": "f_loc", "field": "location", "op": "contains_ci", "value": "Harbor View Terrace, Building 3", "fact": "A:Calendar.location"},
+        {"key": "f_tz", "field": "time_zone", "op": "eq", "value": "America/Los_Angeles", "fact": "A:Calendar.time_zone"}
+      ],
+      "edges": []
+    },
+    "decoys": [
+      {
+        "witness": "hire-eng-downtown@northwind.example",
+        "fact": "A:Calendar.location",
+        "family": "F1",
+        "substitute": "Calendar.description mentions the requested location",
+        "mutation": {
+          "type": "REPLACE",
+          "note": "calendar location replaced by calendar description",
+          "query": {
+            "table": "calendars",
+            "filters": [
+              {"key": "f_sum", "field": "summary", "op": "eq", "value": "Engineering hiring"},
+              {"key": "f_desc", "field": "description", "op": "contains_ci", "value": "Harbor View Terrace, Building 3"},
+              {"key": "f_tz", "field": "time_zone", "op": "eq", "value": "America/Los_Angeles"}
+            ],
+            "edges": []
+          }
+        },
+        "explanation": "Its description mentions Harbor View Terrace, Building 3, but its own location is Downtown office, Floor 12."
+      },
+      {
+        "witness": "hire-eng-south@northwind.example",
+        "fact": "A:Calendar.location",
+        "family": "F2",
+        "substitute": "Event.location on one of the calendar's events",
+        "mutation": {
+          "type": "REPLACE",
+          "note": "calendar location replaced by an event location on that calendar",
+          "query": {
+            "table": "calendars",
+            "filters": [
+              {"key": "f_sum", "field": "summary", "op": "eq", "value": "Engineering hiring"},
+              {"key": "f_tz", "field": "time_zone", "op": "eq", "value": "America/Los_Angeles"}
+            ],
+            "edges": [
+              {"key": "e_ev", "join": {"parent": "id", "child": "calendar_id", "op": "eq"}, "node": {"table": "calendar_events", "filters": [{"key": "x_loc", "field": "location", "op": "contains_ci", "value": "Harbor View Terrace, Building 3"}], "edges": []}}
+            ]
+          }
+        },
+        "explanation": "One of its events meets at Harbor View Terrace, Building 3, but the calendar itself is located at South campus, Room 204."
+      },
+      {
+        "witness": "hire-eng-north@northwind.example",
+        "fact": "A:Calendar.location",
+        "family": "F0",
+        "substitute": "another location value",
+        "mutation": {"type": "DROP", "target": "f_loc"},
+        "explanation": "It matches on name and time zone but is simply located elsewhere: North annex, Room 101."
+      }
+    ],
+    "effect": {"table": "calendars", "changes": ["update"]},
+    "written": ["calendars.description"]
+  },
+  "write": {"method": "PATCH", "path": "/calendars/hire-eng@northwind.example", "body": {"description": "Summer interview schedule for the 2018 cohort."}}
+}

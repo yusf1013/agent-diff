@@ -10,8 +10,6 @@ import json
 from collections import defaultdict
 from pathlib import Path
 
-from grounding.runs.autogen_01.kit.derive import normalize_effects
-
 HERE = Path(__file__).resolve().parent
 RUNS = HERE / "runs"
 CHOICES = HERE / "inputs" / "choices.json"
@@ -46,6 +44,7 @@ def accepted() -> dict[str, Path]:
 
 def accepted_cases() -> list[dict]:
     """The accepted cases, as the policy derivations take them (autogen_02's `normalize_effects`)."""
+    from grounding.runs.autogen_01.kit.derive import normalize_effects  # here, so that accepted() needs no backend
     out = []
     for sid, folder in accepted().items():
         case = json.loads((folder / "case.json").read_text())

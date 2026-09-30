@@ -1,0 +1,9 @@
+The replica pre-checks found these problems:
+- Replica install or read failed: IntegrityError: (psycopg2.errors.UniqueViolation) duplicate key value violates unique constraint "uq_channel_team_name"
+DETAIL:  Key (team_id, channel_name)=(T1, launch-ops) already exists.
+
+[SQL: INSERT INTO "slack_campaign_8777b57243d648cab6bb5ef187fcf98c"."channels" ("channel_id", "channel_name", "team_id", "topic_text", "purpose_text", "is_private", "is_dm", "is_gc", "created_at", "is_archived") VALUES (%(v0)s, %(v1)s, %(v2)s, %(v3)s, %(v4)s, %(v5)s, %(v6)s, %(v7)s, %(v8)s, %(v9)s)]
+[parameters: {'v0': 'C_LAUNCH_PURP', 'v1': 'launch-ops', 'v2': 'T1', 'v3': 'Team socials and shout-outs', 'v4': 'Go-live checklist and cutover plan', 'v5': False, 'v6': False, 'v7': False, 'v8': datetime.datetime(2026, 1, 5, 9, 0), 'v9': False}]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+
+Fix scenario.json (edit it in place), then reply with a short summary of what you changed.

@@ -1,0 +1,5 @@
+A cold reader, who saw only the request and then the records, reports:
+- The reader finds the phrase "that is described as owning offline sync" genuinely ambiguous, in a way that changes which records match: Without records, both attachments are grammatical and plausible: issues and teams both have descriptions. Under issue-reading no candidate matches because issues carry no such description; under team-reading only i-mob-1 matches all filters.
+- The reader finds the request unnatural: Real user would name the team directly ('Mobile' / MOB-1), not stack three field-level clues: visibility plus key substring plus description text.
+
+Fix scenario.json (edit it in place) where the reader is right. If you judge that a reading the reader raises is one a careful colleague would not take, you may keep your wording; say why in your reply. A fresh reader will read the scenario again either way. Do not add hints that only a test would contain (such as "simply" or "not the one that…") just to rule out a reading. Then reply with a short summary of what you changed or kept.

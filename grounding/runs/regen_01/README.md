@@ -5,10 +5,13 @@ Session "regen", started by the lead session ("RoadMap specialist") from the bri
 
 ## Status
 
-- **2026-09-30 00:45 EDT.** Briefs mapped (35). The lead answered every question (below). Pilot batch `gen_01`: 4 of
-  4 briefs accepted, all 4 reviewed valid; G4-LIN-35 has the reversed-direction near miss on its first attempt.
-- **Running:** batch `gen_02`, the 18 remaining Box, Calendar and Slack briefs (concurrency 6). Next: batch `gen_03`,
-  the 13 remaining Linear briefs; my review of each accepted scenario as it lands; then the drop-F variants.
+- **2026-09-30 01:45 EDT.** Generation done: **33 of 35 briefs accepted**, 2 rejected by the cold reader (G4-LIN-30,
+  G4-SLK-18); $25.45 at list price, $1.50 billed. **All 33 reviewed** before any run: 24 valid, 5 weak but valid, 4
+  flawed but usable; 5 of 130 near misses flawed (now in `roadmap_01/known_defects.json` on this branch), 7 valid but
+  borderline (flagged). Coverage: 74 of the briefs' 82 facts, 72 of Sonnet's 81 credited facts (below).
+- **Running:** the drop-F derivation (`runs/dropf_01`, 33 scenarios, one job per fact).
+- **Next:** my read of every accepted variant; then the suite, the units and the cases folders; the blind sample.
+- **Asked of the lead:** a second draw for the two rejected briefs (below, "Coverage").
 - **Blocked:** nothing. The runs on OpenClaw wait for the lead's word that the self-hosted Qwen is up.
 
 ## The question
@@ -40,6 +43,10 @@ scenario and every policy variant, before any run; coverage by the credit rule o
 | [cases.py](cases.py) | The accepted scenario used per brief (one; inputs/choices.json names it if a brief has several) |
 | [suite.py](suite.py), [policy_units.py](policy_units.py), [variants.py](variants.py) | completion_01's suite, policy-unit and drop-F scripts, pointed at this study |
 | [rules.py](rules.py) | openclaw_eval_01's rulings taught this study's opaque ids, with the 10-minute budget |
+| [view.py](view.py) | My review viewer: a scenario's history, request, near misses and whole seed (never agent input) |
+| [defects.py](defects.py) | Writes my flawed near misses (and, later, invalid variants) into `roadmap_01/known_defects.json` |
+| [coverage.py](coverage.py) | Facts covered by a valid near miss, against the briefs' facts and Sonnet's credited facts |
+| [run.py](run.py), [cut.py](cut.py), [blind.py](blind.py) | The runner (openclaw_eval_01's, with rules.py), the cases folders the runs read, the stratified blind sample |
 
 ## The briefs (step 1)
 
@@ -137,6 +144,118 @@ to prefer them. My review applies the PI's rulings to whatever comes back.
 - **Ids** continue Phase 4's numbering; the suite index carries `source` = `regen_01/runs/gen_NN`. report_01 is not
   edited here: when done, I tell the lead what its `WRITERS` map needs.
 
+## Generation (step 2)
+
+Each brief was generated once through the frozen generator (writer, code checks, replica pre-checks, cold reader;
+up to 6 check rounds and 2 reader rounds), in three batches. Per brief: [batches.py](batches.py).
+
+| Batch | Briefs | Accepted | Rejected | Muse calls (failed) | List price | Billed |
+|---|---:|---:|---:|---:|---:|---:|
+| `gen_01` (pilot) | 4 | 4 | 0 | 24 (0) | $2.94 | $0.18 |
+| `gen_02` (Box, Calendar, Slack) | 18 | 17 | 1 | 113 (1) | $13.01 | $0.78 |
+| `gen_03` (Linear) | 13 | 12 | 1 | 65 (2) | $9.50 | $0.54 |
+| **All** | **35** | **33** | **2** | **202 (3)** | **$25.45** | **$1.50** |
+
+- **Rejected, both by the cold reader for unnatural wording** (the pipeline's final answer on a brief; no retry
+  without the lead's word):
+  - **G4-LIN-30** (team key, description, privacy; Sonnet's AP-LIN-03 failed the same way in arm P): three
+    versions, each identifying a team by its privacy flag, a key fragment and its description, read as "constructed
+    to force a lookup".
+  - **G4-SLK-18** (member count, channel creation date, workspace role): six check rounds (a seed-helper argument,
+    duplicate users, a near miss that also matched, a creation date no read shows as a date, a type error), then
+    three reader rounds ("a real user would name the channel").
+- **The 3 failed calls** were Muse stream timeouts (180 s idle), two on G4-LIN-30's writer and one on G4-SLK-18's;
+  the orchestrator resumed the same session, as it does after a missing scenario. They are counted in the costs.
+- **What the checks caught** (per version: [batches.py](batches.py), each brief's `outcome.json`): invalid JSON (the
+  most common: 13 versions), query nodes without a table or a wrong key, near misses the claim check did not kill,
+  anchors that vanished with the target, write calls with GraphQL syntax errors, unreadable values, and reader
+  findings: stacked metadata wording, attachment ambiguities, undeclared near misses, a near miss failing two
+  conditions.
+
+## My review (step 3)
+
+Every accepted scenario, before any run ([eval/review.json](eval/review.json)), by the PI's criteria of 2026-09-28 and
+the rulings in `known_defects.json`: a near miss is flawed when the agent cannot check it, or when a natural reading of
+the request includes it; ambiguous ones case by case. Read with [view.py](view.py) and the replica's reads.
+
+| | Count |
+|---|---:|
+| Scenarios reviewed | 33 |
+| Valid | 24 |
+| Weak but valid (contrived; impossible times) | 5: G4-BOX-19, G4-BOX-21, G4-LIN-28, G4-LIN-29, G4-SLK-14 |
+| Flawed but usable (a near miss flawed, the rest kept) | 4: G4-LIN-25, G4-CAL-15, G4-SLK-15, G4-SLK-17 |
+| Invalid | 0 |
+| Near misses declared | 130 |
+| Near misses flawed | 5 |
+| Near misses valid but borderline (flagged for the PI) | 7 |
+
+**The 5 flawed near misses** (all group B; in `known_defects.json`, `near_misses`, source "regen_01: …"):
+- **G4-LIN-25 `i-f1`:** a cycle *named* "Cycle 7" but numbered 9, for "cycle 7": the PI's AR-LIN-24 ruling.
+- **G4-CAL-15 `ev_kickoff_social`:** a calendar the user's own list shows as "Editorial Calendar" (its override),
+  for "my Editorial Calendar".
+- **G4-CAL-15 `ev_kickoff_draft`:** a second "Editorial Calendar" of the user's, only not selected for display; the
+  accepted wording no longer names the display flag, which Sonnet's AP-CAL-01 and AP2-CAL-01 did.
+- **G4-SLK-15 `C_DEPLOY`:** "the active launch channel" names no channel, and #deploy-ops, whose purpose is "Launch
+  coordination for the go-live", is such a channel: the PI's AP-SLK-02 ruling.
+- **G4-SLK-17 `U_FELIX`:** the words only in the message's blocks, which Slack displays: the PI's AP-SLK-04 ruling.
+
+**Weak but valid:** G4-BOX-19 (task assignments dated before their tasks), G4-BOX-21 (a comment dated before its file
+existed), G4-LIN-28 (issues last updated before their completion), G4-LIN-29 (look-alike users, a display name that
+is someone else's email), G4-SLK-14 (three people named by three kinds of identifier).
+
+**Replica defects met, reported, not fixed:** Linear's `documentUpdate` and `attachmentUpdate` apply the change but
+answer with an error (G4-LIN-23, G4-LIN-33, G4-LIN-34); the nested `issue { attachments }` connection fails
+(G4-LIN-33); the issues filter on subscribers is ignored (G4-LIN-27). All three are in the replica notes judge v2
+reads; none makes a test unanswerable.
+
+## Coverage
+
+By [coverage.py](coverage.py): a fact is covered when an accepted scenario holds a near miss on it that my review
+does not rule flawed.
+
+| | Covered | Of |
+|---|---:|---:|
+| The briefs' facts | 74 | 82 |
+| Sonnet's credited facts (report_01) | 72 | 81 |
+| Through a designated near miss (F1 to F8) | 66 | 74 covered |
+
+- **Gained against the Sonnet half:** `H:IssueLabel.parentId` (G4-LIN-26, F4; one of the nine servable facts no
+  valid scenario covered); `A:Cycle.number` now with a designated near miss (G4-LIN-25, F8) where Sonnet's was F0
+  only; `R:IssueRelation.relatedIssueId` with the reversed direction (G4-LIN-35, F3), the lure the brief asked for.
+- **Lost with the two rejected briefs (6 facts):** `A:Team.key`, `A:Team.description`, `A:Team.private`
+  (G4-LIN-30); `D:member_count`, `A:Conversation.created_at`, `A:WorkspaceMembership.role` (G4-SLK-18). No other
+  Muse scenario covers them. **Proposed to the lead:** a second draw of these two briefs, under new run names and
+  counted as attempts. Their failures were the reader's and the checks' (stochastic), and the Sonnet half itself
+  drew every arm-P fact set twice.
+- **Lost because the only near miss is the designated one, ruled flawed (2 facts): a finding for the PI.**
+  `A:Message.message_text` (G4-SLK-17: blocks) and `A:CalendarListEntry.selected` (G4-CAL-15: a display flag the
+  wording no longer names). The catalog's designated substitute for message text *is* the blocks construction the PI
+  ruled flawed, and the method tells the writer to prefer designated substitutes; for the selected flag, the wording
+  that would make the near miss valid ("that's selected for display") is what the reader pushes out as unnatural. A
+  second draw would most likely reproduce both, so none is proposed. Both facts are covered in the Sonnet half only
+  through plain near misses.
+- **Not in any brief:** `B:EventAttendee.event_id` (Sonnet's AR-CAL-23 split attendee); Muse's G4-CAL-07 covers it.
+- **Covered only through plain near misses (8):** A:Folder.shared_link, A:EventAttendee.optional,
+  A:Comment.resolvedAt, A:User.guest, A:Conversation.channel_name, A:Conversation.is_archived,
+  A:Conversation.is_private, A:Reaction.reaction_type (report_01's F0 counting rule is open with the PI).
+
+## For the PI (from this study)
+
+- **One pattern, three rulings:** the requested words sit in a sibling text field. G4-CAL-11 `ev_plan_loc` (the
+  roadmap in the event's *location*, for "covering the roadmap") and G4-CAL-12 `ev_panel_f1` ("onsite interviews" in
+  the calendar's *location*, for "about onsite interviews") are ruled valid: a location says where, not what about.
+  G4-SLK-15 `C_DEPLOY` ("Launch coordination" in the channel's *purpose*, for "the launch channel") is ruled flawed:
+  a purpose says what a channel is for, and the request names no channel (AP-SLK-02). One ruling on the pattern
+  would settle all three.
+- **The 7 borderline near misses ruled valid:** G4-LIN-22 `i-d4` (a sub-team's issue for "in the Web team", as
+  G4-LIN-15); G4-LIN-26 `i-web-2` (an Android label nested in Platform's Mobile group; blind_review_01 records the PI
+  allowing descendants for folder wording); G4-LIN-31 `c-num` (cycle number 22 named "Cycle 22", for "the Sprint 22
+  cycle"; contested under blind_review_01's number reading); G4-LIN-34 `d-team-decoy` (a document in a *project*
+  named Payments, for "in the Payments team", as AP-LIN-07's d-team-f1 but with identical names); G4-SLK-14's Marcus
+  Webb Jr (for "Marcus Webb", who also exists); G4-SLK-15 `C_RELEASE` (#release-ops, never called "launch");
+  G4-BOX-18 `8217` (two comments and a reply, for "only has the two comments").
+- **The designated substitutes of two facts are ruled-flawed constructions** (Coverage, above).
+
 ## Log
 
 - **2026-09-30 00:06 EDT, cycle 0 (setup).** Read the shared rules, the brief, the PI's notes, the roadmap, the
@@ -161,3 +280,18 @@ to prefer them. My review applies the PI's rulings to whatever comes back.
   and 6b's id folders, so a flawed near miss of this study would not be recognized under its opaque id. It also still
   reads the withdrawn 8-minute budget. `rules.py` adds this study's id folder and uses 10 minutes, without editing
   openclaw_eval_01. The `.gitattributes` LFS pattern for this study's transcripts mirrors completion_01's.
+- **00:32 to 01:35 EDT, cycle 2 (`gen_02`, `gen_03`, run side by side, concurrency 6 and 5).** 31 briefs: 29
+  accepted, 2 rejected (G4-SLK-18, G4-LIN-30; above). Reviewed each scenario as it landed.
+  - **Learned, about the writer:** Muse realizes the designated substitute when one exists (the reversed relation,
+    the cycle's name, the message's blocks, the calendar-list override), which is right for coverage and wrong where
+    the PI has ruled that construction flawed. Its most common defect is invalid JSON, which the checks return.
+  - **Learned, about validity:** the recurring review questions are containment (sub-team, nested label group,
+    project for team), display names (list override, cycle name, display name), and where a word sits (location,
+    purpose, blocks). Dates are safe: every date-bearing value sits 10:00 to 16:00 UTC or has no zone.
+  - **Kept for the PI:** the three sibling-field cases and the seven borderline near misses (above).
+- **01:30 EDT, cycle 3 (the drop-F derivation, `runs/dropf_01`)**, started on the 33 accepted scenarios; each
+  accepted variant gets my read before it runs.
+- **01:40 EDT.** `defects.py` wrote the 5 flawed near misses into `roadmap_01/known_defects.json` (the lead's option
+  (a)); the advisor agreed with the flawed set and suggested presenting the sibling-field cases together, retrying
+  only the rejected briefs, and filtering exposures to facts with a valid near miss when scoring (a cover trial that
+  acts on the target and a flawed near miss is otherwise counted).
