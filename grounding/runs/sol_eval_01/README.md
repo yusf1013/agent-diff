@@ -896,4 +896,15 @@ trials there would give 12/80 = 0.15, so the decision stands.
     sequential replay and spread in the cells with an unrun unit (U-G4-CAL-05; under the earlier rulings, the six
     removed Box units): e.g. Calendar underspecified's spread now covers its 20 run units instead of the 10 before
     U-G4-CAL-05. Decisions and the any- and all-run readings are unchanged; no text cites these fields.
+- **13:46-13:50, the judges' cache check (the lead's last assignment; no model call).**
+  - judge2's and autogen_01's `judge_one` compared a cached verdict's recorded attempt with the attempt as strings.
+    They now use `same_attempt` from autogen_01/kit/judge.py, shared with score_run.
+  - `judge_one` decides through a read-only `cache_hit`, and `judge2 check-cache` counts with the same function.
+  - **From this worktree, before and after the fix** (cached / stale):
+    - `judged_regen_full_01`: 0 / 377 → 377 / 0.
+    - `judged_policy_absence`: 0 / 369 → 369 / 0.
+    - openclaw_eval_01's `judged_full_04`: 0 / 205 → 205 / 0.
+  - No verdict file was renamed or rewritten: the hashes of all 951 are unchanged.
+  - Still correct: a scratch copy of a verdict recording an older attempt still counts as stale. The trials file's
+    own items still hit (377 of 377). full_04 re-scores byte for byte, and both regressions pass.
 

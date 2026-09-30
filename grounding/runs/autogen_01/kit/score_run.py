@@ -14,20 +14,9 @@ import sys
 from collections import defaultdict
 from pathlib import Path
 
-from grounding.runs.autogen_01.kit.judge import COLLAPSE, latest, scored_exposed, triage
+from grounding.runs.autogen_01.kit.judge import COLLAPSE, MARKER, latest, same_attempt, scored_exposed, triage
 
 RUNS_ROOT = Path(__file__).resolve().parents[2]  # this repository's grounding/runs/
-MARKER = "/grounding/runs/"
-
-
-def same_attempt(recorded: str | None, attempt: Path) -> bool:
-    """Whether a verdict's recorded attempt is this attempt: the same path from grounding/runs/ on, whichever checkout
-    the judge ran in. (Until 2026-09-30 a plain string comparison: scored from another checkout than the judge's,
-    every judged trial fell back to its triage.)"""
-    if not recorded:
-        return False
-    return recorded == str(attempt) or (MARKER in recorded and
-                                        recorded.split(MARKER, 1)[1] == str(attempt).split(MARKER, 1)[-1])
 
 
 def attempt_found(recorded: str | None) -> bool:

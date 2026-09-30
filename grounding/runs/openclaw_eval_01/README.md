@@ -536,6 +536,14 @@ and the blind sample) and the score come from `autogen_02.kit.phase4 select` and
   spread, where `sampler.cell_stats` stopped at the first one, and counts them (`units_without_verdicts`, only when
   there is one). Every decision file here and in regen_01 reproduces byte for byte. In sol_eval_01, Sol's cells with
   an unrun unit get complete secondary readings; no decision or reported number changes.
+- 2026-09-30, session sol_score: the judges' verdict caches (autogen_02/kit/judge2.py `judge_one`, autogen_01/kit/
+  judge.py `judge_one`) recognize a cached verdict by its attempt's path from grounding/runs/ on (`same_attempt`,
+  shared with score_run). Before this, a re-judge from another checkout would have set aside and re-judged every
+  verdict. `judge2 check-cache` counts what the cache would return, reading only.
+  - From a worktree, the counts went from all stale to all cached: `judged_full_04` 205 (recording a removed
+    worktree), and sol_eval_01's `judged_regen_full_01` 377 and `judged_policy_absence` 369 (recording the main
+    checkout).
+  - No model was called, and no verdict file was renamed or rewritten (951 verdict hashes unchanged).
 
 ## Runs
 

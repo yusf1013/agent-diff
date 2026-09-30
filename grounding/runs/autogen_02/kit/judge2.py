@@ -4,6 +4,7 @@
     AUTOGEN_BACKEND=muse python ... judge2 run --trials trials.json --out DIR [--concurrency 4]
     python ... judge2 select-panel > panel.json    # fact_coverage_02's 24 labelled P1/P3 trials
     python ... judge2 compare --out DIR --labels LABELS.json [LABELS.json ...]
+    python ... judge2 check-cache --out DIR --runs RUN_DIR [--trials trials.json]   # reads only; no model call
 
 What changes from v1 (kit/prompts/judge_v2.md; v1 stays frozen in autogen_01):
 - the prompt's "Policy tests" section: the absence test (per-fact twin, or fact_coverage_02's panel P1) and the
@@ -113,16 +114,40 @@ def select_panel() -> list[dict]:
     return items
 
 
-def judge_one(item: dict, out: Path, calls_log: Path) -> dict:
+def cache_hit(item: dict, out: Path) -> tuple[bool | None, Path, Path]:
+    """What judge_one finds in its cache for this item, reading only: True if it returns the cached verdict, False if
+    it sets that verdict aside and judges again (a verdict on another attempt), None if there is none. Also the
+    attempt judged and the verdict's path. judge_one decides with this, and `check-cache` counts with it."""
     run_dir = Path(item["run_dir"])
     # A named attempt (for a blind label written on an attempt that a retry later superseded), else the latest.
     attempt = Path(item["attempt"]) if item.get("attempt") else v1.latest(run_dir, item["trial"], item["case_id"])
-    dest = out / item["run"] / item["trial"] / item["case_id"]
-    verdict_path = dest / "verdict.json"
-    if verdict_path.exists():
+    verdict_path = out / item["run"] / item["trial"] / item["case_id"] / "verdict.json"
+    if not verdict_path.exists():
+        return None, attempt, verdict_path
+    old = json.loads(verdict_path.read_text())
+    return v1.same_attempt(old.get("attempt"), attempt), attempt, verdict_path
+
+
+def check_cache(out: Path, run_dir: Path, trials: list[dict] | None = None) -> dict:
+    """cached / stale / none over the items judge_one would get: the trials file's, or one per verdict of the run
+    in the folder, with the run's latest attempts. Reads only: no model call, no file written or renamed."""
+    if trials is None:
+        trials = [{"run_dir": str(run_dir), "run": run_dir.name, "trial": v.parent.parent.name,
+                   "case_id": v.parent.name} for v in sorted((out / run_dir.name).glob("t*/*/verdict.json"))]
+    counts = {"items": len(trials), "cached": 0, "stale": 0, "none": 0}
+    for item in trials:
+        hit = cache_hit(item, out)[0]
+        counts["cached" if hit else "none" if hit is None else "stale"] += 1
+    return counts
+
+
+def judge_one(item: dict, out: Path, calls_log: Path) -> dict:
+    hit, attempt, verdict_path = cache_hit(item, out)
+    dest = verdict_path.parent
+    if hit:
+        return json.loads(verdict_path.read_text())
+    if hit is False:
         old = json.loads(verdict_path.read_text())
-        if old.get("attempt") == str(attempt):
-            return old
         verdict_path.rename(dest / f"verdict-{Path(old.get('attempt', 'unknown')).name}.json")
     case, summary, tri = triage(item["run"], item["trial"], attempt)
     # The policy concerns the record the request acts on (the first reference); another reference, such as the
@@ -240,6 +265,10 @@ def main():
     c.add_argument("--name", help="writes comparison_<name>.json instead of comparison.json")
     c.add_argument("--also", type=Path, nargs="+", help="more verdict folders (verdicts on named attempts)")
     c.add_argument("--attempts", type=Path, help="JSON: key -> the attempt folder its label was written on")
+    k = sub.add_parser("check-cache", help="count what judge_one would find cached; reads only, no model call")
+    k.add_argument("--out", type=Path, required=True)
+    k.add_argument("--runs", type=Path, required=True, help="the run folder, in this checkout")
+    k.add_argument("--trials", type=Path, help="the trials file judge2 run would get (default: one per verdict)")
     args = parser.parse_args()
     if args.cmd == "select":
         print(json.dumps(select([p.resolve() for p in args.runs]), indent=1))
@@ -247,6 +276,10 @@ def main():
         print(json.dumps(select_panel(), indent=1))
     elif args.cmd == "run":
         run(json.loads(args.trials.read_text()), args.out.resolve(), args.concurrency)
+    elif args.cmd == "check-cache":
+        trials = json.loads(args.trials.read_text()) if args.trials else None
+        print(json.dumps({"out": str(args.out), "runs": str(args.runs),
+                          **check_cache(args.out.resolve(), args.runs.resolve(), trials)}))
     else:
         result = compare(args.out.resolve(), [p.resolve() for p in args.labels],
                          [p.resolve() for p in args.also or []],

@@ -25,6 +25,17 @@ from grounding.runs.fact_coverage_02.analyze import current
 
 KIT = Path(__file__).resolve().parent
 STUDY = KIT.parent
+MARKER = "/grounding/runs/"
+
+
+def same_attempt(recorded: str | None, attempt: Path) -> bool:
+    """Whether a verdict's recorded attempt is this attempt: the same path from grounding/runs/ on, whichever checkout
+    the judge ran in. Used by the judges' verdict caches and by score_run. (Until 2026-09-30 a plain string comparison:
+    from another checkout than the judge's, every cached verdict looked stale, and a re-score counted none.)"""
+    if not recorded:
+        return False
+    return recorded == str(attempt) or (MARKER in recorded and
+                                        recorded.split(MARKER, 1)[1] == str(attempt).split(MARKER, 1)[-1])
 FC2 = STUDY.parent / "fact_coverage_02"
 WORKSPACES = Path("/tmp/autogen-5840209d/ws/judge")
 OUTCOMES = ["incorrect", "presented", "correct", "correct_absent", "false_absence", "incomplete", "not_established",
@@ -132,7 +143,7 @@ def judge_one(item: dict, out: Path, form_of: dict, calls_log: Path) -> dict:
     verdict_path = dest / "verdict.json"
     if verdict_path.exists():
         old = json.loads(verdict_path.read_text())
-        if old.get("attempt") == str(attempt):
+        if same_attempt(old.get("attempt"), attempt):
             return old
         # A newer attempt of this trial exists (a retry): keep the old verdict as evidence and judge again.
         verdict_path.rename(dest / f"verdict-{Path(old.get('attempt', 'unknown')).name}.json")
