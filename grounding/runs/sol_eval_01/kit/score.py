@@ -13,8 +13,9 @@ while labelling this round. `--before-br` scores with the file as it was before 
 (eval/known_defects_before_br.json, from commit 3405221d90^), so the PI sees the difference.
 
     L="python grounding/runs/fact_coverage_02/launch.py"
-    $L grounding.runs.sol_eval_01.kit.score adjudicate regular_p4|regular_6b [--before-br]  # eval/<set>.adjudicated[_before_br].json
-    $L grounding.runs.sol_eval_01.kit.score combine [--before-br]                          # eval/final_regular[_before_br].json
+    $L grounding.runs.sol_eval_01.kit.score adjudicate SET [--before-br]      # eval/<set>.adjudicated[_before_br].json
+    $L grounding.runs.sol_eval_01.kit.score combine [--before-br]              # eval/final_regular[_before_br].json
+    $L grounding.runs.sol_eval_01.kit.score combine --regen                    # eval/final_regular_regen.json
     $L grounding.runs.sol_eval_01.kit.score qwen --before-br   # Qwen's final score with the earlier file (eval/qwen_final_regular_before_br.json)
     $L grounding.runs.sol_eval_01.kit.score regress                                        # the copies on Qwen's records
 
@@ -22,7 +23,8 @@ while labelling this round. `--before-br` scores with the file as it was before 
 openclaw_eval_01's adjudicated files and final_regular_with_6b.json exactly.
 
 Inputs per set: `eval/<set>.score.json` (autogen_02's `phase4 score`), the verdicts in `eval/judged_<set>/<set>/`,
-and the runs in `runs/<set>/`.
+and the runs in `runs/<set>/`. The regenerated half's regular set (regen_full_01) is scored alone (`combine
+--regen`), with regen_01's rulings wrapper loaded through kit/sets.py; `--before-br` applies to the first half only.
 """
 from __future__ import annotations
 
@@ -33,6 +35,7 @@ from collections import defaultdict
 from pathlib import Path
 
 from grounding.runs.openclaw_eval_01 import rulings
+from grounding.runs.sol_eval_01.kit import sets  # noqa: F401  (regen_01's rulings wrapper)
 
 STUDY = Path(__file__).resolve().parents[1]
 EVAL = STUDY / "eval"
@@ -194,10 +197,12 @@ def main():
             print("  NOT COUNTED", x["trial"], x["acted_on"], x["exposed"], "|", x["why"][:100])
     elif cmd == "combine":
         suffix = "_before_br" if "--before-br" in sys.argv else ""
-        parts = [(s, {"box", "calendar", "linear", "slack"}, EVAL / f"{s}.adjudicated{suffix}.json") for s in SETS
+        names, out_name = (("regen_full_01",), "final_regular_regen.json") if "--regen" in sys.argv else \
+            (SETS, f"final_regular{suffix}.json")
+        parts = [(s, {"box", "calendar", "linear", "slack"}, EVAL / f"{s}.adjudicated{suffix}.json") for s in names
                  if (EVAL / f"{s}.adjudicated{suffix}.json").exists()]
         result = combine(parts)
-        (EVAL / f"final_regular{suffix}.json").write_text(json.dumps(result, indent=1) + "\n")
+        (EVAL / out_name).write_text(json.dumps(result, indent=1) + "\n")
         print(json.dumps({k: result[k] for k in ("parts", "final", "by")}, indent=1))
     elif cmd == "qwen":
         suffix = "_before_br" if "--before-br" in sys.argv else ""

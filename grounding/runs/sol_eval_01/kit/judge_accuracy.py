@@ -19,10 +19,11 @@ from pathlib import Path
 
 from grounding.runs.autogen_01.kit.judge import COLLAPSE
 from grounding.runs.autogen_02.kit import judge2
+from grounding.runs.sol_eval_01.kit import sets
 
 STUDY = Path(__file__).resolve().parents[1]
 EVAL = STUDY / "eval"
-SETS = ("regular_p4", "regular_6b", "policy_absence", "policy_underspecified")
+SETS = tuple(sets.SETS)
 
 
 def effective_labels(name: str) -> tuple[dict, dict]:

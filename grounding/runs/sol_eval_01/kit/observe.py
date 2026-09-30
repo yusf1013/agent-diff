@@ -15,7 +15,9 @@ source both agents share.
     python grounding/runs/fact_coverage_02/launch.py grounding.runs.sol_eval_01.kit.observe   # eval/observations.json
 
 Qwen's records of the same tests: 6a's Box tests from full_02 (ids unchanged), its Calendar, Linear and Slack tests
-from full_03, 6b's from full_04; policy units from the population runs (Box's first-pass units from the looks).
+from full_03, 6b's from full_04; policy units from the population runs (Box's first-pass units from the looks). For
+the regenerated half: the regen session's runs of the same sets (regen_01/runs/full_01, absence_01,
+underspecified_01), once they exist.
 """
 from __future__ import annotations
 
@@ -28,12 +30,13 @@ from grounding.runs.autogen_01.kit import bundle
 from grounding.runs.autogen_01.kit.judge import latest
 from grounding.runs.openclaw_eval_01 import rulings
 from grounding.runs.openclaw_eval_01.test_awareness import AWARE, texts
+from grounding.runs.sol_eval_01.kit import sets
 from grounding.runs.sol_eval_01.kit.score import stalled
 
 STUDY = Path(__file__).resolve().parents[1]
 RUNS = STUDY / "runs"
 QRUNS = STUDY.parent / "openclaw_eval_01" / "runs"
-SETS = ("regular_p4", "regular_6b", "policy_absence", "policy_underspecified")
+SETS = tuple(sets.SETS)
 
 
 def sol_attempts(name: str):
@@ -144,7 +147,8 @@ def main():
               for s in ("regular_p4", "regular_6b")}
     out = {"_about": __doc__.split("\n\n")[0], "sets": {}}
     for name in SETS:
-        mode = name.split("_", 1)[1] if name.startswith("policy") else None
+        mode = None if sets.kind(name) == "regular" else sets.kind(name)
+        qwen_run = sets.SETS[name].get("qwen_run")
         if not (RUNS / name).exists():
             continue
         sol_rows, qwen_rows, aw = [], [], {"sol": [], "qwen_all": [], "qwen_final": [], "pairs": 0}
@@ -158,7 +162,10 @@ def main():
             case = json.loads((attempt / "case.json").read_text())
             sixb = case_id in suites["regular_6b"] if not mode else \
                 (STUDY.parent / "completion_01" / "suite" / "units" / case["domain"] / f"{case_id}.json").exists()
-            q = qwen_attempt(case_id, trial, case["domain"], sixb, mode)
+            if qwen_run:
+                q = latest(qwen_run, trial, case_id) if (qwen_run / trial / case_id).exists() else None
+            else:
+                q = qwen_attempt(case_id, trial, case["domain"], sixb, mode)
             if q is not None:
                 qwen_rows.append({**usage_row(q), "trial": f"{trial}/{case_id}"})
             if row["status"] != "completed":
