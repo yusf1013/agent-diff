@@ -1,0 +1,1 @@
+I checked, and there's no such message in your DM with Priya Sharma — the DM history is empty. The only "billing migration is live" message I can find from her is in the public **#billing** channel (from a few days ago: "Billing migration is live across all tiers. Please report any regressions here."). If you want, I can add the thumbsup there instead.

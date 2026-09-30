@@ -132,7 +132,7 @@ def test_scenario_of():
 def write_case(root, domain, case_id):
     path = root / domain / f"{case_id}.json"
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps({"case_id": case_id, "domain": domain, "case_sha256": "x"}))
+    path.write_text(json.dumps({"case_id": case_id, "domain": domain, "case_sha256": "x", "references": []}))
 
 
 def test_selection_applies_the_known_defects(tmp_path, monkeypatch):
@@ -162,7 +162,74 @@ def test_known_defects_have_a_frozen_suite_action():
     assert all(e["frozen_suite"] for e in entries)
     actions = run.defect_actions()
     assert actions["G4-CAL-06"].startswith("keep") and actions["G4-BOX-05"] == "keep"
-    assert run.date_limit(actions["G4-LIN-02"]) == date(2026, 9, 30)
+    # G4-LIN-02 ran "until 2026-09-30" before the discussion of 2026-09-28; it now runs on a test-side clock instead
+    assert actions["G4-LIN-02"] == "keep" and run.date_limit(actions["G4-LIN-02"]) is None
+    clocks = {c["scenario"]: c["now"] for c in doc["clocks"]}
+    assert clocks["G4-LIN-02"] == "2026-09-25T16:00:00Z"
+    assert run.date_limit("keep until 2026-09-30") == date(2026, 9, 30)  # the form still parses
+
+
+def fake_login_store(path, owner="main"):
+    """An agent database as OpenClaw writes it: its owner in schema_meta, one stored profile."""
+    import sqlite3
+    path.parent.mkdir(parents=True, exist_ok=True)
+    con = sqlite3.connect(path)
+    con.execute("CREATE TABLE schema_meta (meta_key TEXT PRIMARY KEY, role TEXT, agent_id TEXT)")
+    con.execute("INSERT INTO schema_meta VALUES ('primary', 'agent', ?)", (owner,))
+    con.execute("CREATE TABLE auth_profile_store (profile_id TEXT)")
+    con.execute("INSERT INTO auth_profile_store VALUES ('openai:default')")
+    con.commit()
+    con.close()
+
+
+def store_owner(path):
+    import sqlite3
+    con = sqlite3.connect(f"file:{path}?mode=ro", uri=True)
+    try:
+        return con.execute("SELECT agent_id FROM schema_meta WHERE meta_key = 'primary'").fetchone()[0]
+    finally:
+        con.close()
+
+
+@pytest.fixture
+def openai_login(tmp_path, workspace, monkeypatch):
+    fake_login_store(tmp_path / "login" / "openclaw-agent.sqlite")
+    catalog = tmp_path / "openai-catalog.json"
+    catalog.write_text('{"providers": {"openai": {}}}')
+    monkeypatch.setattr(oc, "AUTH_STORE", tmp_path / "login" / "openclaw-agent.sqlite")
+    monkeypatch.setattr(oc, "CATALOG_COPY", catalog)
+    monkeypatch.setattr(oc, "real_config", lambda: fake_config(workspace))
+    return catalog
+
+
+def test_openai_login_store_default_layout(tmp_path, openai_login, monkeypatch):
+    """Without AGENTDIFF_OPENAI_STORE the login store is copied into the attempt agent's directory, as the Sol
+    round's runs have it."""
+    monkeypatch.delenv("AGENTDIFF_OPENAI_STORE", raising=False)
+    state = tmp_path / "state"
+    oc.build_state_dir(state, "tok123456", "slack", backend="openai", neutral=True)
+    agent_dir = state / "agents" / oc.NEUTRAL_AGENT_ID / "agent"
+    assert store_owner(agent_dir / "openclaw-agent.sqlite") == "main"
+    assert (agent_dir / "plugins" / "openai" / "catalog.json").read_text() == openai_login.read_text()
+    assert not (state / "agents" / "main").exists()
+
+
+def test_openai_login_store_main_layout(tmp_path, openai_login, monkeypatch):
+    """AGENTDIFF_OPENAI_STORE=main: the login store is the attempt state's main agent store (read through by
+    OpenClaw), the attempt agent has no store of its own until OpenClaw makes one, and the catalog is in both; the
+    written configuration is the default layout's."""
+    monkeypatch.delenv("AGENTDIFF_OPENAI_STORE", raising=False)
+    default = oc.build_state_dir(tmp_path / "state", "tok123456", "slack", backend="openai", neutral=True)
+    monkeypatch.setenv("AGENTDIFF_OPENAI_STORE", "main")
+    state = tmp_path / "state_main"
+    config = oc.build_state_dir(state, "tok123456", "slack", backend="openai", neutral=True)
+    main_dir = state / "agents" / "main" / "agent"
+    agent_dir = state / "agents" / oc.NEUTRAL_AGENT_ID / "agent"
+    assert store_owner(main_dir / "openclaw-agent.sqlite") == "main"
+    assert not (agent_dir / "openclaw-agent.sqlite").exists()
+    for directory in (main_dir, agent_dir):
+        assert (directory / "plugins" / "openai" / "catalog.json").read_text() == openai_login.read_text()
+    assert json.dumps(config).replace(str(state), "STATE") == json.dumps(default).replace(str(tmp_path / "state"), "STATE")
 
 
 def test_selfhost_proxy_needs_the_launcher():

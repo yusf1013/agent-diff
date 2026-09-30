@@ -1,0 +1,76 @@
+{
+ "scenario_id": "G4-SLK-05",
+ "domain": "slack",
+ "request": "In my DM with Diego Alvarez, add a raised-hands reaction to the message he posted about the Meridian invoice deadline.",
+ "answer": "one",
+ "seed": [
+  ["dm", {"id": "D_DIEGO", "person": "diego", "ref": "dm_diego"}],
+  ["message", {"channel": "D_DIEGO", "author": "diego", "text": "Hey, is the Meridian invoice deadline still the 15th? I need the reminder sent before Friday.", "at": "2026-09-29T12:06:00Z", "ref": "msg_target"}],
+  ["channel", {"id": "G_MER", "name": "meridian", "members": ["diego", "aisha"], "gc": true, "ref": "g_mer"}],
+  ["message", {"channel": "G_MER", "author": "diego", "text": "For the record: the Meridian invoice deadline is the 15th, and finance is waiting on it.", "at": "2026-09-29T12:14:00Z", "ref": "msg_group"}],
+  ["message", {"channel": "G_MER", "author": "aisha", "text": "Can someone sync the Meridian discount terms with the group?", "at": "2026-09-29T12:20:00Z", "ref": "bg_group"}],
+  ["channel", {"id": "C_VENDOR", "name": "vendors", "members": ["diego", "aisha", "omar"], "private": true, "topic": "Vendor contracts and renewals", "ref": "c_vendor"}],
+  ["message", {"channel": "C_VENDOR", "author": "diego", "text": "Reminder for the vendor list: the Meridian invoice deadline is the 15th.", "at": "2026-09-29T11:42:00Z", "ref": "msg_priv"}],
+  ["message", {"channel": "C_VENDOR", "author": "omar", "text": "Onboarding for the Meridian account is done; access is live.", "at": "2026-09-29T11:15:00Z", "ref": "bg_vendor"}],
+  ["channel", {"id": "C_FIN", "name": "finance", "members": ["diego", "aisha", "leo", "omar"], "topic": "Company finance updates", "ref": "c_fin"}],
+  ["message", {"channel": "C_FIN", "author": "diego", "text": "Heads up team: the Meridian invoice deadline is the 15th; please don't slip it.", "at": "2026-09-29T11:05:00Z", "ref": "msg_pub"}],
+  ["message", {"channel": "C_FIN", "author": "aisha", "text": "Meridian signed the renewal; I'll close out the ticket.", "at": "2026-09-29T10:31:00Z", "ref": "bg_fin"}]
+ ],
+ "conditions": [
+  {"id": "c1", "text": "in my DM with", "facts": ["A:Conversation.is_dm"]},
+  {"id": "c2", "text": "Diego Alvarez", "facts": ["R:channel_members"]},
+  {"id": "c3", "text": "the message he posted", "facts": ["R:messages.user_id"]},
+  {"id": "c4", "text": "about the Meridian invoice deadline", "facts": ["A:Message.message_text"]}
+ ],
+ "reference": {
+  "name": "Diego's message about the Meridian invoice deadline, in the actor's DM with him",
+  "target": ["@msg_target"],
+  "query": {
+   "table": "messages",
+   "key": ["message_id"],
+   "filters": [
+    {"key": "f_text", "field": "message_text", "op": "contains_ci", "value": "invoice deadline", "fact": "A:Message.message_text"}
+   ],
+   "edges": [
+    {"key": "e_chan", "join": {"parent": "channel_id", "child": "channel_id", "op": "eq"},
+     "fact": "R:messages.channel_id",
+     "node": {
+      "table": "channels",
+      "filters": [
+       {"key": "f_dm", "field": "is_dm", "op": "eq", "value": 1, "fact": "A:Conversation.is_dm"}
+      ],
+      "edges": [
+       {"key": "e_partner", "join": {"parent": "channel_id", "child": "channel_id", "op": "eq"},
+        "fact": "R:channel_members",
+        "node": {"table": "channel_members",
+                 "filters": [{"key": "f_partner", "field": "user_id", "op": "eq", "value": "U_DIEGO"}],
+                 "edges": []}}
+      ]}
+    },
+    {"key": "e_author", "join": {"parent": "user_id", "child": "user_id", "op": "eq"},
+     "fact": "R:messages.user_id",
+     "node": {"table": "users",
+              "filters": [{"key": "f_author", "field": "real_name", "op": "eq", "value": "Diego Alvarez"}],
+              "edges": []}}
+   ]
+  },
+  "decoys": [
+   {"witness": "@msg_group", "fact": "A:Conversation.is_dm", "family": "F7",
+    "substitute": "a group DM (multi-person direct message) that contains Diego and one other person",
+    "mutation": {"type": "DROP", "target": "f_dm"},
+    "explanation": "Diego posted the same message in a three-person group DM, the nearest kind of conversation on the wrong side of a one-on-one direct message."},
+   {"witness": "@msg_priv", "fact": "A:Conversation.is_dm", "family": "F1",
+    "substitute": "a private channel: the sibling privacy flag (is_private) set on a channel instead of the DM flag (is_dm)",
+    "mutation": {"type": "DROP", "target": "f_dm"},
+    "explanation": "Diego posted it in the private #vendors channel, which is not public like a DM is, but it is a channel, not a direct message."},
+   {"witness": "@msg_pub", "fact": "A:Conversation.is_dm", "family": "F0",
+    "mutation": {"type": "DROP", "target": "f_dm"},
+    "explanation": "Diego posted it in the public #finance channel instead of in the DM."}
+  ],
+  "effect": {"table": "message_reactions", "changes": ["insert"], "key": ["message_id", "user_id", "reaction_type"], "field": "message_id"},
+  "written": ["message_reactions.reaction_type"]
+ },
+ "other_references": [],
+ "write": {"slack": "reactions.add", "params": {"channel": "@dm_diego", "timestamp": "@msg_target", "name": "raised_hands"}},
+ "probes": []
+}

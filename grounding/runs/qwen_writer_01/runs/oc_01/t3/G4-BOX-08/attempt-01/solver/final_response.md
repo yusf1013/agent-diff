@@ -1,0 +1,1 @@
+Done. Added **Analyst call script.docx** to the **Q3 Earnings Review** hub (Maya Chen's, containing the Earnings deck.pdf and the Earnings Materials folder). Confirmed successful — the hub now has both items.

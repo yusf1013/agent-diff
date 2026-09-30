@@ -1,0 +1,79 @@
+{
+  "scenario_id": "G4-SLK-01",
+  "domain": "slack",
+  "request": "Add a check reaction to the 2.4 rollout message in #releases — the human one that lena.hart@northwind.example has already reacted with 👀 to.",
+  "answer": "one",
+  "seed": [
+    ["person", {"key": "lhart", "name": "Lena Hart", "set": {"email": "lena.hart@northwind.example"}}],
+    ["person", {"key": "lhartman", "name": "Lena Hartmann", "set": {"email": "lena.hartmann@northwind.example"}}],
+    ["person", {"key": "lh", "name": "Lena Hart", "username": "lh", "display": "Lena Hart", "set": {"email": "l.hart@northwind.example"}}],
+    ["person", {"key": "deploybot", "name": "Deploy Bot", "bot": true, "set": {"email": "deploy-bot@northwind.example"}}],
+    ["channel", {"id": "C_REL", "name": "releases", "members": ["priya", "diego", "omar", "aisha", "lhart", "lhartman", "lh", "deploybot"]}],
+    ["channel", {"id": "C_INC", "name": "incidents", "members": ["priya", "diego"]}],
+    ["message", {"channel": "C_REL", "author": "deploybot", "text": "Nightly build #4812 passed — no action needed.", "at": "2026-09-28T11:00:00Z", "ref": "b3"}],
+    ["message", {"channel": "C_REL", "author": "priya", "text": "Rollout 2.4.0 is halfway through the fleet — the dashboards look clean.", "at": "2026-09-28T11:20:00Z", "ref": "target"}],
+    ["reaction", {"message": "@target", "person": "lhart", "name": "eyes", "at": "2026-09-28T11:25:00Z"}],
+    ["message", {"channel": "C_REL", "author": "diego", "text": "Rollout 2.4.0: holding at 40% until the canary dashboards settle.", "at": "2026-09-28T11:45:00Z", "ref": "d1"}],
+    ["reaction", {"message": "@d1", "person": "lhartman", "name": "eyes", "at": "2026-09-28T11:50:00Z"}],
+    ["message", {"channel": "C_REL", "author": "omar", "text": "Rollout 2.4.0: the last 10% of the fleet are on now.", "at": "2026-09-28T12:10:00Z", "ref": "d2"}],
+    ["reaction", {"message": "@d2", "person": "lh", "name": "eyes", "at": "2026-09-28T12:15:00Z"}],
+    ["message", {"channel": "C_REL", "author": "deploybot", "text": "Rollout 2.4.0: canary promoted — 100% of the fleet.", "at": "2026-09-28T12:30:00Z", "ref": "d3"}],
+    ["reaction", {"message": "@d3", "person": "lhart", "name": "eyes", "at": "2026-09-28T12:35:00Z"}],
+    ["message", {"channel": "C_REL", "author": "aisha", "text": "The 2.5 staging build is ready for a look.", "at": "2026-09-28T12:50:00Z", "ref": "b1"}],
+    ["message", {"channel": "C_INC", "author": "diego", "text": "Gateway 502s started at 12:02 UTC — investigating.", "at": "2026-09-28T12:55:00Z", "ref": "b2"}]
+  ],
+  "conditions": [
+    {"id": "c1", "text": "in #releases", "facts": ["R:messages.channel_id", "A:Conversation.channel_name"]},
+    {"id": "c2", "text": "the 2.4 rollout message", "facts": ["A:Message.message_text"]},
+    {"id": "c3", "text": "the human one", "facts": ["R:messages.user_id", "A:User.is_bot"]},
+    {"id": "c4", "text": "that lena.hart@northwind.example has already reacted with 👀 to", "facts": ["R:message_reactions", "A:Reaction.reaction_type", "A:User.email"]}
+  ],
+  "reference": {
+    "name": "the 2.4 rollout message to react to",
+    "target": ["@target"],
+    "query": {
+      "table": "messages",
+      "key": ["message_id"],
+      "filters": [
+        {"key": "f_text", "field": "message_text", "op": "contains_ci", "value": "rollout 2.4", "fact": "A:Message.message_text"}
+      ],
+      "edges": [
+        {"key": "e_chan", "join": {"parent": "channel_id", "child": "channel_id", "op": "eq"}, "fact": "R:messages.channel_id",
+         "node": {"table": "channels", "filters": [
+           {"key": "f_chan", "field": "channel_name", "op": "eq", "value": "releases", "fact": "A:Conversation.channel_name"}],
+           "edges": []}},
+        {"key": "e_auth", "join": {"parent": "user_id", "child": "user_id", "op": "eq"}, "fact": "R:messages.user_id",
+         "node": {"table": "users", "filters": [
+           {"key": "f_bot", "field": "is_bot", "op": "eq", "value": false, "fact": "A:User.is_bot"}],
+           "edges": []}},
+        {"key": "e_rx", "join": {"parent": "message_id", "child": "message_id", "op": "eq"}, "fact": "R:message_reactions",
+         "node": {"table": "message_reactions", "filters": [
+           {"key": "f_eyes", "field": "reaction_type", "op": "eq", "value": "eyes", "fact": "A:Reaction.reaction_type"}],
+           "edges": [
+             {"key": "e_rxuser", "join": {"parent": "user_id", "child": "user_id", "op": "eq"},
+              "node": {"table": "users", "filters": [
+                {"key": "f_email", "field": "email", "op": "eq", "value": "lena.hart@northwind.example", "fact": "A:User.email"}],
+                "edges": []}}
+           ]}}
+      ]
+    },
+    "decoys": [
+      {"witness": "@d1", "fact": "A:User.email", "family": "F8",
+       "substitute": "a reactor whose email begins with the requested one: lena.hartmann@northwind.example",
+       "mutation": {"type": "DROP", "target": "f_email"},
+       "explanation": "Lena Hartmann (lena.hartmann@northwind.example) put the 👀 on this human's rollout update; her email is not lena.hart@northwind.example."},
+      {"witness": "@d2", "fact": "A:User.email", "family": "F1",
+       "substitute": "User.display_name — the reactor's display name is \"Lena Hart\" but their email is l.hart@northwind.example",
+       "mutation": {"type": "DROP", "target": "f_email"},
+       "explanation": "A different person named Lena Hart (the contractor, l.hart@northwind.example) put the 👀 on this one; only the employee's email is the requested one."},
+      {"witness": "@d3", "fact": "A:User.is_bot", "family": "F0",
+       "mutation": {"type": "DROP", "target": "f_bot"},
+       "explanation": "Deploy Bot posted this rollout update and lena.hart@northwind.example 👀-ed it, but it is the bot's post, not a human's."}
+    ],
+    "effect": {"table": "message_reactions", "changes": ["insert"], "key": ["message_id", "user_id", "reaction_type"], "field": "message_id"},
+    "written": ["message_reactions.reaction_type"]
+  },
+  "other_references": [],
+  "write": {"slack": "reactions.add", "params": {"channel": "C_REL", "timestamp": "@target", "name": "check"}},
+  "probes": []
+}

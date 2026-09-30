@@ -1,0 +1,66 @@
+{
+ "scenario_id": "G4-CAL-05",
+ "domain": "calendar",
+ "request": "Please change the display name of the calendar entry that's currently showing in my list as 'APAC team' — the one I have write access to but don't own — to 'APAC team 2018'.",
+ "answer": "one",
+ "seed": [
+  ["calendar", {"id": "apac@northwind.example", "summary": "APAC", "owner": "kenji", "access": "writer", "override": "APAC team", "hidden": false, "selected": true}],
+  ["calendar", {"id": "apac-notes@northwind.example", "summary": "APAC notes", "owner": "actor", "access": "owner", "override": "APAC team", "hidden": false, "selected": true}],
+  ["calendar", {"id": "apac-team@northwind.example", "summary": "APAC team", "owner": "kenji", "access": "writer", "override": "APAC", "hidden": false, "selected": true}],
+  ["calendar", {"id": "apac-team-2017@northwind.example", "summary": "APAC team (2017)", "owner": "dana", "access": "writer", "override": "APAC team", "hidden": true, "selected": true}],
+  ["calendar", {"id": "apac-team-old@northwind.example", "summary": "Legacy APAC team", "owner": "dana", "access": "writer", "override": "APAC team (old)", "hidden": false, "selected": true}],
+  ["calendar", {"id": "sales@northwind.example", "summary": "Sales", "owner": "sam", "access": "reader", "hidden": false, "selected": true}],
+  ["calendar", {"id": "holidays@northwind.example", "summary": "Holidays", "owner": "actor", "access": "owner", "override": "US Holidays", "hidden": false, "selected": false}]
+ ],
+ "conditions": [
+  {"id": "c1", "text": "currently showing in my list", "facts": ["A:CalendarListEntry.hidden"]},
+  {"id": "c2", "text": "as 'APAC team'", "facts": ["A:CalendarListEntry.summary_override"]},
+  {"id": "c3", "text": "the one I have write access to but don't own", "facts": ["A:CalendarListEntry.access_role"]}
+ ],
+ "reference": {
+  "name": "the calendar list entry shown as 'APAC team' to rename",
+  "target": ["cle_apac@northwind.example"],
+  "query": {
+   "table": "calendar_list_entries",
+   "filters": [
+    {"key": "f_vis", "field": "hidden", "op": "eq", "value": false, "fact": "A:CalendarListEntry.hidden"},
+    {"key": "f_name", "field": "summary_override", "op": "eq", "value": "APAC team", "fact": "A:CalendarListEntry.summary_override"},
+    {"key": "f_role", "field": "access_role", "op": "eq", "value": "writer", "fact": "A:CalendarListEntry.access_role"}
+   ],
+   "edges": []
+  },
+  "decoys": [
+   {"witness": "cle_apac-notes@northwind.example", "fact": "A:CalendarListEntry.access_role", "family": "F7",
+    "substitute": "the owner role, the level above writer on the access-role scale",
+    "mutation": {"type": "DROP", "target": "f_role"},
+    "explanation": "Jordan's own calendar, displayed as 'APAC team' and visible, but his access role on it is owner, so it is not the one shared with him as a writer."},
+   {"witness": "cle_apac-team@northwind.example", "fact": "A:CalendarListEntry.summary_override", "family": "F1",
+    "substitute": "the calendar's own name 'APAC team' (Calendar.summary) behind a custom display name of 'APAC'",
+    "mutation": {"type": "REPLACE", "note": "the entry's display name replaced by the calendar's own summary",
+     "query": {"table": "calendar_list_entries",
+       "filters": [
+        {"key": "f_vis", "field": "hidden", "op": "eq", "value": false},
+        {"key": "f_role", "field": "access_role", "op": "eq", "value": "writer"}],
+       "edges": [{"key": "e_cal", "join": {"parent": "calendar_id", "child": "id", "op": "eq"},
+         "node": {"table": "calendars", "filters": [{"key": "f_calsum", "field": "summary", "op": "eq", "value": "APAC team"}], "edges": []}}]}},
+    "explanation": "Jordan is a writer on it and it is visible, and the calendar itself is named 'APAC team', but the entry's custom display name is 'APAC', so it is not shown as 'APAC team'."},
+   {"witness": "cle_apac-team-old@northwind.example", "fact": "A:CalendarListEntry.summary_override", "family": "F8",
+    "substitute": "a display name that contains the requested one: 'APAC team (old)'",
+    "mutation": {"type": "REPLACE", "note": "exact display-name match relaxed to a case-insensitive substring",
+     "query": {"table": "calendar_list_entries",
+       "filters": [
+        {"key": "f_vis", "field": "hidden", "op": "eq", "value": false},
+        {"key": "f_name", "field": "summary_override", "op": "contains_ci", "value": "APAC team"},
+        {"key": "f_role", "field": "access_role", "op": "eq", "value": "writer"}],
+       "edges": []}},
+    "explanation": "A visible writer calendar whose display name merely starts with 'APAC team' ('APAC team (old)'), not 'APAC team' itself."},
+   {"witness": "cle_apac-team-2017@northwind.example", "fact": "A:CalendarListEntry.hidden", "family": "F0",
+    "mutation": {"type": "DROP", "target": "f_vis"},
+    "explanation": "Its display name is 'APAC team' and Jordan is a writer on it, but the entry is hidden in his list, so it is not the one currently showing."}
+  ],
+  "effect": {"table": "calendar_list_entries", "changes": ["update"]},
+  "written": ["calendar_list_entries.summary_override"]
+ },
+ "write": {"method": "PATCH", "path": "/users/me/calendarList/apac@northwind.example", "body": {"summaryOverride": "APAC team 2018"}},
+ "probes": [["GET", "/users/me/calendarList?showHidden=true", null]]
+}

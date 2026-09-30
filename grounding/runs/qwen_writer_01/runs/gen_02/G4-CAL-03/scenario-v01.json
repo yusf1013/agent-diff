@@ -1,0 +1,92 @@
+{
+ "scenario_id": "G4-CAL-03",
+ "domain": "calendar",
+ "request": "Move the Thursday product sync on my main calendar to Conference Room C.",
+ "answer": "one",
+ "seed": [
+  ["calendar", {"id": "jordan.lee.home@northwind.example", "summary": "Jordan Lee (Home)", "owner": "actor"}],
+  ["calendar", {"id": "family@northwind.example", "summary": "Family", "owner": "actor"}],
+  ["event", {"id": "ev_sync_main", "calendar": "primary", "summary": "Product sync", "start": "2018-06-21T09:00:00", "end": "2018-06-21T10:00:00", "attendees": [["priya", "accepted"], ["omar", "accepted"]]}],
+  ["event", {"id": "ev_sync_home", "calendar": "jordan.lee.home@northwind.example", "summary": "Product sync", "start": "2018-06-21T09:00:00", "end": "2018-06-21T10:00:00"}],
+  ["event", {"id": "ev_sync_family", "calendar": "family@northwind.example", "summary": "Product sync", "start": "2018-06-21T09:00:00", "end": "2018-06-21T10:00:00"}],
+  ["event", {"id": "ev_sync_wed", "calendar": "primary", "summary": "Product sync", "start": "2018-06-20T09:00:00", "end": "2018-06-20T10:00:00"}],
+  ["event", {"id": "ev_retro", "calendar": "primary", "summary": "Product retrospective", "start": "2018-06-21T13:00:00", "end": "2018-06-21T14:00:00"}],
+  ["event", {"id": "ev_dinner", "calendar": "family@northwind.example", "summary": "Team dinner", "start": "2018-06-21T19:00:00", "end": "2018-06-21T21:00:00"}],
+  ["event", {"id": "ev_1on1", "calendar": "primary", "summary": "1:1 with Kenji", "start": "2018-06-18T11:00:00", "end": "2018-06-18T11:30:00"}],
+  ["event", {"id": "ev_dentist", "calendar": "primary", "summary": "Dentist", "start": "2018-06-23T08:30:00", "end": "2018-06-23T09:00:00"}]
+ ],
+ "conditions": [
+  {"id": "c1", "text": "the product sync", "facts": ["A:Event.summary"]},
+  {"id": "c2", "text": "Thursday", "facts": ["A:Event.start", "D:local_time"]},
+  {"id": "c3", "text": "on my main calendar", "facts": ["R:Event.calendar_id", "D:primary"]}
+ ],
+ "reference": {
+  "name": "the product sync to move",
+  "target": ["ev_sync_main"],
+  "query": {
+   "table": "calendar_events",
+   "key": ["id"],
+   "filters": [
+    {"key": "f_title", "field": "summary", "op": "contains_ci", "value": "product sync", "fact": "A:Event.summary"},
+    {"key": "f_from", "field": "start_datetime", "op": "ge", "value": "2018-06-21T00:00:00", "fact": "A:Event.start"},
+    {"key": "f_to", "field": "start_datetime", "op": "lt", "value": "2018-06-22T00:00:00"}
+   ],
+   "edges": [
+    {"key": "e_cal", "join": {"parent": "calendar_id", "child": "id", "op": "eq"}, "fact": "R:Event.calendar_id",
+     "node": {"table": "calendars", "filters": [],
+              "edges": [
+               {"key": "e_pri", "join": {"parent": "id", "child": "calendar_id", "op": "eq"},
+                "node": {"table": "calendar_list_entries",
+                         "filters": [{"key": "f_pri", "field": "primary", "op": "eq", "value": true, "fact": "D:primary"}],
+                         "edges": []}}
+              ]}}
+   ]
+  },
+  "decoys": [
+   {"witness": "ev_sync_home", "fact": "D:primary", "family": "F6",
+    "substitute": "a secondary calendar with a similar name, 'Jordan Lee (Home)'",
+    "mutation": {"type": "REPLACE", "note": "the primary calendar is replaced by the similarly named secondary calendar",
+      "query": {
+       "table": "calendar_events", "key": ["id"],
+       "filters": [
+        {"key": "f_title", "field": "summary", "op": "contains_ci", "value": "product sync"},
+        {"key": "f_from", "field": "start_datetime", "op": "ge", "value": "2018-06-21T00:00:00"},
+        {"key": "f_to", "field": "start_datetime", "op": "lt", "value": "2018-06-22T00:00:00"}
+       ],
+       "edges": [
+        {"key": "e_cal", "join": {"parent": "calendar_id", "child": "id", "op": "eq"},
+         "node": {"table": "calendars",
+                  "filters": [{"key": "f_home", "field": "summary", "op": "eq", "value": "Jordan Lee (Home)"}],
+                  "edges": []}}
+       ]
+      }},
+    "explanation": "Fails 'on my main calendar': an identical product sync sits on 'Jordan Lee (Home)', a secondary calendar that sounds like the actor's own but is not the primary one."},
+   {"witness": "ev_sync_family", "fact": "D:primary", "family": "F0",
+    "mutation": {"type": "REPLACE", "note": "the primary calendar is replaced by the 'Family' calendar",
+      "query": {
+       "table": "calendar_events", "key": ["id"],
+       "filters": [
+        {"key": "f_title", "field": "summary", "op": "contains_ci", "value": "product sync"},
+        {"key": "f_from", "field": "start_datetime", "op": "ge", "value": "2018-06-21T00:00:00"},
+        {"key": "f_to", "field": "start_datetime", "op": "lt", "value": "2018-06-22T00:00:00"}
+       ],
+       "edges": [
+        {"key": "e_cal", "join": {"parent": "calendar_id", "child": "id", "op": "eq"},
+         "node": {"table": "calendars",
+                  "filters": [{"key": "f_family", "field": "summary", "op": "eq", "value": "Family"}],
+                  "edges": []}}
+       ]
+      }},
+    "explanation": "Fails 'on my main calendar': the Family calendar also carries a 'Product sync' that Thursday, but it is a plain secondary calendar."},
+   {"witness": "ev_sync_wed", "fact": "A:Event.start", "family": "F7", "substitute": "the adjacent day",
+    "mutation": {"type": "DROP", "target": "f_from"},
+    "explanation": "Fails 'Thursday': the product sync also happens on the main calendar on Wednesday, the day before."},
+   {"witness": "ev_retro", "fact": "A:Event.summary", "family": "F8", "substitute": "a similarly named meeting",
+    "mutation": {"type": "DROP", "target": "f_title"},
+    "explanation": "Fails 'the product sync': it is the product retrospective, on the main calendar on Thursday."}
+  ],
+  "effect": {"table": "calendar_events", "changes": ["update"]},
+  "written": ["calendar_events.location"]
+ },
+ "write": {"method": "PATCH", "path": "/calendars/jordan.lee@northwind.example/events/ev_sync_main", "body": {"location": "Conference Room C"}}
+}
