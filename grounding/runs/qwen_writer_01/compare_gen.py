@@ -1,4 +1,4 @@
-"""The generation half: Qwen's writer (runs/gen_01) against Muse's (autogen_02/runs/phase4_gen) on the drawn briefs.
+"""The generation half: Qwen's writer (runs/gen_02) against Muse's (autogen_02/runs/phase4_gen) on the drawn briefs.
 No model calls.
 
     python grounding/runs/fact_coverage_02/launch.py grounding.runs.qwen_writer_01.compare_gen
@@ -25,7 +25,7 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 RUNS = HERE.parent
 MUSE_GEN = RUNS / "autogen_02" / "runs" / "phase4_gen"
-QWEN_GEN = HERE / "runs" / "gen_01"
+QWEN_GEN = HERE / "runs" / "gen_02"
 BRIEFS = RUNS / "autogen_02" / "inputs" / "briefs_phase4.json"
 MUSE_REVIEW = RUNS / "autogen_02" / "eval" / "phase4_review.json"
 QWEN_REVIEW = HERE / "eval" / "review.json"

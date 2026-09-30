@@ -1,4 +1,4 @@
-"""Qwen's suite: the accepted scenarios of runs/gen_01 with opaque ids and test-side clocks, built exactly as
+"""Qwen's suite: the accepted scenarios of runs/gen_02 with opaque ids and test-side clocks, built exactly as
 regen_01/suite.py builds Muse's new scenarios (completion_01's method, itself openclaw_eval_01/opaque_suite.py's). No
 model or replica calls.
 
@@ -6,7 +6,7 @@ model or replica calls.
 
 For each accepted scenario (skipped: those this study's rulings leave out, rules.py):
 1. **The recorded suite:** the frozen derivation (`derive.suite_with_dropped`) of the accepted case must equal the
-   suite the orchestrator wrote (runs/gen_01/cases/), test by test.
+   suite the orchestrator wrote (runs/gen_02/cases/), test by test.
 2. **Opaque ids:** one mapping per scenario (`autogen_01/kit/opaque_ids.py`). The derivation from the obfuscated case
    must equal the obfuscated suite, test by test, with the same drops, and every test passes `opaque_ids.check`.
    Box's ids are numbers already and come out unchanged.
@@ -30,7 +30,7 @@ from grounding.runs.completion_01.suite import clock_for, written_at
 from grounding.runs.openclaw_eval_01 import materialize, rulings
 
 HERE = rules.HERE
-GEN = HERE / "runs" / "gen_01"
+GEN = HERE / "runs" / "gen_02"
 OUT = HERE / "suite"
 
 
@@ -93,7 +93,7 @@ def main():
                 opaque["case_sha256"] = digest({k: v for k, v in opaque.items() if k != "case_sha256"})
             tests_out.append(opaque)
             index.append({"case_id": test["case_id"], "domain": case["domain"], **meta,
-                          "source": "qwen_writer_01/runs/gen_01", "writer": "qwen3.8-27b",
+                          "source": "qwen_writer_01/runs/gen_02", "writer": "qwen3.8-27b",
                           "case_sha256": opaque["case_sha256"]})
     print(json.dumps({k: v for k, v in check.items() if k not in ("failures", "clocks")}, indent=1))
     if check["failures"]:

@@ -4,11 +4,12 @@
 - **role "writer"**: `claude -p` with the kit's own flags (`agent._command`: restricted mode, file tools only, no MCP,
   edits accepted inside the workspace, the writer prompt appended to the system prompt, `--resume` for every repair
   round), the model `qwen3.8-27b` served at http://127.0.0.1:18000 through its Anthropic Messages endpoint,
-  `--autocompact 131k` (the served window, which Claude Code cannot know) and `--effort xhigh` (the served default;
-  Claude Code's own default, "high", is refused by the server). Changed from the kit's call: the output
-  is stream-json, so each call's init event is checked and kept, and the process runs in a clean environment of its
-  own (none of the launching session's variables) with a configuration directory per brief: no login, no account,
-  no user settings, kept for the brief's resumed rounds and outside the writer's workspace.
+  `--autocompact 131k` (the served window, which Claude Code cannot know) and `--effort medium` (the level
+  OpenClaw's Qwen rounds run at; see EFFORT). Changed from the kit's call: a per-call limit of WRITER_TIMEOUT
+  instead of the kit's 3600 s; the output is stream-json, so each call's init event is checked and kept; and the
+  process runs in a clean environment of its own (none of the launching session's variables) with a configuration
+  directory per brief: no login, no account, no user settings, kept for the brief's resumed rounds and outside the
+  writer's workspace.
 - **every other role** (the cold reader): the kit's Muse path unchanged, refused once the readers' billed cost in
   this study reaches the cap ($3).
 
@@ -37,9 +38,15 @@ MODEL = "qwen3.8-27b"
 BASE_URL = os.environ.get("SELFHOST_ANTHROPIC_URL", "http://127.0.0.1:18000")
 KEY_FILE = Path(os.environ.get("SELFHOST_KEY_FILE", Path.home() / "qwen-selfhost" / "secrets" / "api_key"))
 WINDOW = "131k"
-# The served default. Without --effort, Claude Code sends "high", which the self-host refuses ("Supported types are
-# xhigh (default), medium, and low"); judge_qwen_01's judge ran at the served default too.
-EFFORT = "xhigh"
+# The level OpenClaw's Qwen rounds run at (integrations/openclaw/runtime.py: "medium" thinking). The self-host accepts
+# xhigh (its default), medium or low; without --effort, Claude Code sends "high", which it refuses. The served default
+# was tried first (runs/gen_01_xhigh, 2026-09-30): each first design step took 29-32k tokens and 34-43 minutes at the
+# ~10 tokens/s per stream the shared server gave, two of four ended at Claude Code's 32,000-token output cap with
+# only reasoning, and the window (131k) would not hold two repair rounds of that size.
+EFFORT = "medium"
+# The kit's 3600 s per writer call was sized for API models; at the self-host's speed it would measure throughput.
+# 7200 s is about 70k tokens at 10 tokens/s, more than the window leaves after the writer's reading.
+WRITER_TIMEOUT = 7200
 MUSE_CAP_BILLED = 3.0
 CLAUDE_BIN = shutil.which(agent.CLAUDE) or agent.CLAUDE
 _kit_run = agent.run
@@ -137,7 +144,7 @@ def run_writer(call: agent.Call) -> dict:
         (call.log_dir / f"{stem}.prompt.md").write_text(call.prompt)
         cmd = writer_command(call, system_file)
         start = time.time()
-        stdout, stderr, code = run_process(cmd, env, call.workspace, call.prompt, call.timeout)
+        stdout, stderr, code = run_process(cmd, env, call.workspace, call.prompt, WRITER_TIMEOUT)
         seconds = time.time() - start
         (call.log_dir / f"{stem}.events.jsonl").write_text(stdout)
         events = []
@@ -152,7 +159,8 @@ def run_writer(call: agent.Call) -> dict:
             raise RuntimeError(f"writer {call.label}: the init event failed the isolation check: {check['problems']}")
         result = next((e for e in reversed(events) if e.get("type") == "result"), None)
         record = {"command": cmd, "cwd": str(call.workspace), "exit": code, "stderr": stderr[-4000:],
-                  "claude_config_dir": str(config), "base_url": BASE_URL}
+                  "claude_config_dir": str(config), "base_url": BASE_URL, "timeout_s": WRITER_TIMEOUT,
+                  "kit_timeout_s": call.timeout}
         if result is not None:
             result["claude_code_estimate_usd"] = result.get("total_cost_usd")
             result["total_cost_usd"] = 0.0

@@ -2,7 +2,7 @@
 reader on Muse.
 
     AUTOGEN_BACKEND=muse python grounding/runs/fact_coverage_02/launch.py grounding.runs.qwen_writer_01.generate \
-        --run grounding/runs/qwen_writer_01/runs/gen_01 [--concurrency 4] [--only ID ...]
+        --run grounding/runs/qwen_writer_01/runs/gen_02 [--concurrency 4] [--only ID ...]
 
 Without `--only`, the twelve briefs drawn in plan.json. Everything else is autogen_02's Phase 4 entry point
 (`autogen_02/kit/generate.py`: its replica notes and its robustness fix) over autogen_01's orchestrator, unchanged.

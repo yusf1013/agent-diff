@@ -4,8 +4,11 @@ Session "harness", an investigation the PI asked for, assigned by the lead ("Roa
 
 ## Status
 
-- **2026-09-30, 02:30 EDT.** The question, the design and the draw are fixed ([plan.json](plan.json)); the writer
-  backend passed its probe. Generation of the 12 briefs started (`runs/gen_01`).
+- **2026-09-30, 03:20 EDT.** The question, the design and the draw are fixed ([plan.json](plan.json)). The first
+  generation run, at Qwen's served default effort (`xhigh`), was stopped after 50 minutes (`runs/gen_01_xhigh`, see
+  cycle 2): at about 10 tokens/s per stream, each first design step took 29-32k tokens and 34-43 minutes, and 2 of 4
+  first steps ended at Claude Code's 32,000-token output cap with nothing but reasoning. Generation restarted at
+  `medium`, the level OpenClaw's Qwen rounds use (`runs/gen_02`).
 
 ## The question
 
@@ -44,10 +47,12 @@ What answers it, on 12 Phase 4 briefs that Muse already turned into accepted sce
   and its catalog and chat protocols are Meta's own (probed on 2026-09-30: it fetches `/muse-code/models` first and
   rejects other shapes). So a difference between the halves measures the model and the harness together, as
   judge_qwen_01 reported for the judge.
-- **Settings:** Qwen's reasoning at the served default, `xhigh` (`--effort xhigh`: Claude Code's own default,
-  "high", is refused by the server, which accepts xhigh, medium or low; judge_qwen_01's judge ran at the served
-  default too; Muse's writers ran at Muse's "high": all 72 writer calls of Phase 4 record `reasoning_effort: high`);
-  Claude Code's compaction at the served window
+- **Settings:** Qwen's reasoning at `medium` (`--effort medium`), the level OpenClaw's Qwen rounds run at. The server
+  accepts xhigh (its default), medium or low; Claude Code's own default, "high", is refused. The served default was
+  tried first and stopped (cycle 2). Muse's writers ran at Muse's "high": all 72 writer calls of Phase 4 record
+  `reasoning_effort: high`. So the effort levels differ, a second stated confound. A writer call may run 7200 s
+  (the kit's limit, 3600 s, was sized for API models and would measure the host's throughput; the wall time is
+  reported instead). Claude Code's compaction at the served window
   (`--autocompact 131k`); the writer reaches the endpoint directly, outside the shared limiter, so at most 4 briefs
   run at once; cost 0 (self-hosted), Claude Code's own estimate kept only as `claude_code_estimate_usd`.
 - **A second harness difference** comes with Claude Code: the kit's Claude path puts the writer prompt
@@ -86,3 +91,27 @@ What answers it, on 12 Phase 4 briefs that Muse already turned into accepted sce
   and Write, no MCP server, model `qwen3.8-27b`; it read `note.txt`, wrote `out.txt` and edited it in the resumed
   session; only `qwen3.8-27b` in the usage; Qwen's reasoning comes back as thinking blocks; no key and no account
   email in the evidence. The opening context is about 10k tokens (Claude Code's system prompt and tool definitions).
+
+### Cycle 2 (2026-09-30, 02:24-03:14): generation at the served default, stopped
+
+- `runs/gen_01_xhigh`: the first 4 briefs (G4-BOX-03, G4-BOX-05, G4-CAL-03, G4-SLK-01) at `--effort xhigh`,
+  concurrency 4, with regen_01's OpenClaw run on the same server (its trials hold a 10-minute budget, so I kept my
+  concurrency at 4). The server gave each writer stream about 10 tokens/s (measured from the connections' byte
+  counts, about 126 bytes per streamed token, and from `/metrics`).
+- Each writer read the docs and domain files (about 32-40k tokens of context), then reasoned in one step
+  ([xhigh_steps.json](runs/gen_01_xhigh/xhigh_steps.json)):
+
+  | Brief | First design step: output tokens | Reasoning (characters) | Ended with | Minutes |
+  |---|---|---|---|---|
+  | G4-CAL-03 | 29,621 | 100,300 | a Write of scenario.json | 34 |
+  | G4-SLK-01 | 28,809 | 105,375 | a Grep (still exploring) | 37 |
+  | G4-BOX-03 | 32,000 | 108,282 | Claude Code's output cap (`max_tokens`), no text, no tool call | 43 |
+  | G4-BOX-05 | 32,000 | 117,049 | the same cap | 43 |
+
+- G4-CAL-03's first writer call took 46 minutes (2,783 s); its scenario passed the mechanical checks and the replica
+  pre-checks, and the cold reader sent it back (a near miss that fails two conditions). Its repair would have been
+  another step of the same size, and the context (about 70k after the first call) would not have held two.
+- Stopped at 03:14 (orchestrator and writers killed; each writer's live transcript and G4-CAL-03's scenario kept in
+  its folder). G4-BOX-03 and G4-BOX-05 had written nothing ten minutes before the kit's 3600 s limit.
+- Change for `runs/gen_02`: `--effort medium` and a 7200 s writer limit ([backend.py](backend.py)). Nothing else:
+  the prompts, the checks, the reader and the round limits stay.

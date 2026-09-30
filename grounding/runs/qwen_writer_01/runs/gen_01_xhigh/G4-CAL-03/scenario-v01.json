@@ -1,0 +1,94 @@
+{
+ "scenario_id": "G4-CAL-03",
+ "domain": "calendar",
+ "request": "On my primary calendar, move Thursday's 10 a.m. Q3 numbers review with Maya Chen to Room 4A.",
+ "answer": "one",
+ "seed": [
+  ["calendar", {"id": "jordan.lee.archive@northwind.example", "summary": "Primary", "owner": "actor",
+                "access": "owner", "tz": "America/Los_Angeles", "description": "Imported from the old account"}],
+  ["calendar", {"id": "apac@northwind.example", "summary": "APAC team", "owner": "kenji", "access": "writer",
+                "tz": "Asia/Tokyo"}],
+  ["event", {"id": "ev_q3_review", "calendar": "primary", "summary": "Q3 numbers review",
+             "start": "2018-06-21T10:00:00", "end": "2018-06-21T11:00:00", "organizer": "actor",
+             "attendees": [["maya", "accepted"], ["omar", "accepted"]], "location": "Zoom"}],
+  ["event", {"id": "ev_q3_arch", "calendar": "jordan.lee.archive@northwind.example", "summary": "Q3 numbers review",
+             "start": "2018-06-21T10:00:00", "end": "2018-06-21T11:00:00", "organizer": "actor",
+             "attendees": [["maya", "accepted"], ["omar", "accepted"]], "location": "Zoom"}],
+  ["event", {"id": "ev_q3_apac", "calendar": "apac@northwind.example", "summary": "Q3 numbers review",
+             "start": "2018-06-21T10:00:00", "end": "2018-06-21T11:00:00", "organizer": "actor",
+             "attendees": [["maya", "accepted"], ["omar", "accepted"]], "location": "Zoom"}],
+  ["event", {"id": "ev_sync", "calendar": "primary", "summary": "Design sync",
+             "start": "2018-06-21T15:00:00", "end": "2018-06-21T15:30:00", "organizer": "priya",
+             "attendees": [["maya", "tentative"], ["priya", "accepted"]]}],
+  ["event", {"id": "ev_focus", "calendar": "primary", "summary": "Focus time",
+             "start": "2018-06-21T13:00:00", "end": "2018-06-21T14:30:00", "organizer": "actor",
+             "event_type": "focusTime"}],
+  ["event", {"id": "ev_offsite", "calendar": "jordan.lee.archive@northwind.example", "summary": "Q3 offsite planning",
+             "start": "2018-06-23T10:00:00", "end": "2018-06-23T12:00:00", "organizer": "actor",
+             "attendees": [["omar", "needsAction"]]}],
+  ["event", {"id": "ev_apac_plan", "calendar": "apac@northwind.example", "summary": "APAC planning",
+             "start": "2018-06-22T09:00:00", "end": "2018-06-22T10:00:00", "organizer": "kenji",
+             "attendees": [["aiko", "accepted"]]}]
+ ],
+ "conditions": [
+  {"id": "c1", "text": "Q3 numbers review", "facts": ["A:Event.summary"]},
+  {"id": "c2", "text": "with Maya Chen", "facts": ["A:EventAttendee.email", "R:EventAttendee.event_id"]},
+  {"id": "c3", "text": "Thursday's 10 a.m.", "facts": ["A:Event.start"]},
+  {"id": "c4", "text": "my primary calendar", "facts": ["D:primary"]}
+ ],
+ "reference": {
+  "name": "the Q3 numbers review to move",
+  "target": ["ev_q3_review"],
+  "query": {
+   "table": "calendar_events",
+   "key": ["id"],
+   "filters": [
+    {"key": "f_title", "field": "summary", "op": "contains_ci", "value": "Q3 numbers review", "fact": "A:Event.summary"},
+    {"key": "f_start", "field": "start_datetime", "op": "ge", "value": "2018-06-21T10:00:00", "fact": "A:Event.start"},
+    {"key": "f_start_end", "field": "start_datetime", "op": "lt", "value": "2018-06-21T11:00:00"}
+   ],
+   "edges": [
+    {"key": "e_att", "join": {"parent": "id", "child": "event_id", "op": "eq"}, "fact": "R:EventAttendee.event_id",
+     "node": {"table": "calendar_event_attendees", "filters": [
+       {"key": "f_att", "field": "email", "op": "eq", "value": "maya.chen@northwind.example",
+        "fact": "A:EventAttendee.email"}], "edges": []}},
+    {"key": "e_cal", "join": {"parent": "calendar_id", "child": "id", "op": "eq"},
+     "node": {"table": "calendars", "filters": [], "edges": [
+       {"key": "e_list", "join": {"parent": "id", "child": "calendar_id", "op": "eq"},
+        "node": {"table": "calendar_list_entries", "filters": [
+          {"key": "f_primary", "field": "primary", "op": "eq", "value": true, "fact": "D:primary"}],
+         "edges": []}}]}}
+   ]
+  },
+  "decoys": [
+   {"witness": "ev_q3_arch", "fact": "D:primary", "family": "F6",
+    "substitute": "a secondary calendar whose display name is 'Primary'",
+    "mutation": {"type": "REPLACE", "note": "the list entry's primary flag replaced by the calendar's display name",
+     "query": {
+      "table": "calendar_events", "key": ["id"],
+      "filters": [
+       {"key": "f_title", "field": "summary", "op": "contains_ci", "value": "Q3 numbers review"},
+       {"key": "f_start", "field": "start_datetime", "op": "ge", "value": "2018-06-21T10:00:00"},
+       {"key": "f_start_end", "field": "start_datetime", "op": "lt", "value": "2018-06-21T11:00:00"}],
+      "edges": [
+       {"key": "e_att", "join": {"parent": "id", "child": "event_id", "op": "eq"},
+        "node": {"table": "calendar_event_attendees", "filters": [
+          {"key": "f_att", "field": "email", "op": "eq", "value": "maya.chen@northwind.example"}], "edges": []}},
+       {"key": "e_cal", "join": {"parent": "calendar_id", "child": "id", "op": "eq"},
+        "node": {"table": "calendars", "filters": [
+          {"key": "f_name", "field": "summary", "op": "contains_ci", "value": "primary"}], "edges": []}}]
+     }},
+    "explanation": "Identical review at the same time, but on the imported secondary calendar named 'Primary', which is not the actor's primary calendar."},
+   {"witness": "ev_q3_apac", "fact": "D:primary", "family": "F0",
+    "substitute": "simply another calendar on the list",
+    "mutation": {"type": "DROP", "target": "f_primary"},
+    "explanation": "Identical review at the same time, but on the APAC team calendar, not the primary calendar."}
+  ],
+  "effect": {"table": "calendar_events", "changes": ["update"]},
+  "written": ["calendar_events.location"]
+ },
+ "other_references": [],
+ "write": {"method": "PATCH", "path": "/calendars/jordan.lee@northwind.example/events/ev_q3_review",
+           "body": {"location": "Room 4A"}},
+ "probes": [["GET", "/users/me/calendarList", null]]
+}
