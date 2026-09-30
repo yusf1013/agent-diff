@@ -4,12 +4,16 @@
 units, blind_review_01; every change is logged in [README.md](README.md), "Text changes"; numbers as of commit
 a8c046c891, with the same day's follow-up for RQ7's policy side). Main evaluation: 998 methodology cases on OpenClaw
 with self-hosted Qwen3.8-27B. Section and table numbers follow the longer report where retained. Recomputed counts
-and the final execution manifest: [concise.json](numbers/concise.json), produced by [concise.py](kit/concise.py).*
+and the final execution manifest: [concise.json](numbers/concise.json), produced by [concise.py](kit/concise.py). The
+second agent, GPT-6.1 Sol (the section after RQ6), was added on 2026-09-30 from the files of
+[sol_eval_01](../sol_eval_01/README.md) at commit fca57dd6de.*
 
 ## 0.4 Size of the experiment
 
 **The methodology suite contains 998 test cases, each executed three times: 2,994 executions.**
 It combines tests of fact discrimination with tests of how the agent handles missing or ambiguous matches.
+A second agent, GPT-6.1 Sol, ran 496 of the 513 Muse cases in the same harness. Its **1,488 executions** are
+counted apart from the 2,994 and reported after RQ6.
 
 | Test form | Sonnet scenarios | Muse scenarios | Cases | Executions |
 |---|---:|---:|---:|---:|
@@ -362,6 +366,142 @@ cases despite no regular exposure. They reveal behavior that the 563 regular cas
 Thus the accounting is **563 regular cases + 435 policy cases = 998**, with three executions per case.
 The roughly 400 policy requirements are one component of that suite, not the entire methodology.
 
+## A second agent: GPT-6.1 Sol on the same harness
+
+GPT-6.1 Sol ran the Muse-written half of the suite on OpenClaw, with the same judge (v2 on Muse), rulings and
+ten-minute budget, three executions per case. It ran **496 of the 513 Muse cases** (282 regular, 123 absence and 91
+underspecified): **1,488 executions**, plus 3 of a probe that the rulings of 2026-09-30 left out after it ran. The Qwen
+columns below are its final executions of the same cases, so they differ from Tables 7–12, which cover all 998 cases.
+Source: [sol_eval_01](../sol_eval_01/README.md), Results, and the `eval/` files named under each table.
+
+**What differs from the Qwen round:**
+
+- **Access and thinking.** Sol ran on the PI's OpenAI plan in OpenClaw's own agent loop, with no proxy; usage comes
+  from OpenClaw's session transcripts. Its thinking level is "medium", set explicitly. Qwen ran at "medium" as
+  OpenClaw's fallback for a reasoning model; for GPT models the fallback is "off", which leaves OpenAI's default.
+- **16 cases left out.** G4-LIN-08's 10 regular and 6 policy cases run under a test clock (2026-10-16) past the
+  login's expiry (2026-10-10), and OpenClaw then fails before the first model call. One more underspecified case,
+  U-G4-CAL-05-CalendarListEntry_summary_override, awaits the PI's reading and did not run.
+- **memory_search fails.** OpenClaw's memory tool refuses the login copied into each execution, which carries the
+  main agent's identity. 354 of the 1,491 executions called it; none needed memory, and 316 final answers mention
+  the failure.
+- **No visible reasoning.** Sol's record holds commands, responses, final answers and occasional reasoning
+  summaries. The judge's mechanisms and the awareness count below rest on that visible text.
+- **Infrastructure.** 17 failed attempts in 16 executions were re-run and never scored: 8 provider stalls and 9
+  other provider errors.
+
+**Table 12a. Regular cases: Sol and Qwen on the same 282.** Source: `sol_eval_01/eval/side_by_side_regular.json`
+(`groups`, `trials`).
+
+| Group | Cases | Exposing: Sol | Exposing: Qwen | Facts @3: Sol | Facts @3: Qwen | Facts @1: Sol | Facts @1: Qwen |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| **All** | **282** | **13 (4.6%)** | **78 (27.7%)** | **7** | **47** | **7** | **33** |
+| Box | 81 | 1 | 25 | 1 | 18 | 1 | 14 |
+| Calendar | 60 | 4 | 23 | 2 | 11 | 2 | 9 |
+| Linear | 103 | 5 | 18 | 3 | 13 | 3 | 6 |
+| Slack | 38 | 3 | 12 | 1 | 5 | 1 | 4 |
+| Cover | 51 | 2 | 8 | 2 | 8 | 1 | 5 |
+| Individual probe | 181 | 8 | 56 | 7 | 43 | 7 | 31 |
+| Fact probe | 50 | 3 | 14 | 3 | 14 | 3 | 6 |
+
+| Executions of the 282 cases | Sol | Qwen |
+|---|---:|---:|
+| Counted grounding failures | 32 | 145 |
+| Pass | 800 | 655 |
+| Ended by the budget | 0 | 32 |
+| Fail only on flawed decoys | 11 | 11 |
+| Void | 3 | 3 |
+| **All** | **846** | **846** |
+
+Every fact Sol exposes, Qwen exposes too: 12 cases expose a fact for both agents, 1 for Sol only and 66 for Qwen
+only.
+
+- **What Sol exposes.** All 7 facts are attributes:
+  - four partial names (F8 decoys expose in 5 of its 8 exposing probes);
+  - three structured fields it did not read (Slack message blocks, a Calendar room resource, a Linear milestone's
+    status).
+- **How it fails.** In judge v2's mechanisms, Sol mostly never checked the deciding field: 23 of 32 counted
+  failures (misread 8, saw the mismatch and acted 1). Qwen mostly saw the mismatch and acted anyway (79 of 145).
+- **Voids.** Sol's 3 void executions come from a Linear replica defect.
+
+**Table 12b. The eight policy cells on the same cases.** Source: `sol_eval_01/eval/policy_decisions.json` (`cells`
+→ `sol`, `qwen_same_units`): RQ6's fixed rule on the Muse-parent policy cases, without G4-LIN-08's. Linear
+underspecified counts its duplicate pair once, as in Table 11.
+
+| Service and mode | Cases | Sol: failing / usable | Sol: rate [p10, p90] | Sol: decision | Qwen: failing / usable | Qwen: rate [p10, p90] | Qwen: decision |
+|---|---:|---:|---|---|---:|---|---|
+| Box, absence | 34 | 16/102 | 0.16 [0.09, 0.24] | Not policy-level | 70/95 | 0.74 [0.65, 0.82] | Undecided |
+| Calendar, absence | 28 | 19/83 | 0.23 [0.13, 0.33] | Not policy-level | 74/82 | 0.90 [0.85, 0.95] | Policy-level |
+| Linear, absence | 49 | 13/147 | 0.09 [0.04, 0.14] | Not policy-level | 68/125 | 0.54 [0.45, 0.63] | Not policy-level |
+| Slack, absence | 12 | 4/36 | 0.11 [0.00, 0.22] | Not policy-level | 20/35 | 0.57 [0.42, 0.72] | Not policy-level |
+| Box, underspecified | 30 | 0/90 | 0.00 [0.00, 0.00] | Not policy-level | 36/81 | 0.44 [0.35, 0.53] | Not policy-level |
+| Calendar, underspecified | 21 | 7/59 | 0.12 [0.03, 0.22] | Not policy-level* | 31/55 | 0.56 [0.43, 0.69] | Not policy-level |
+| Linear, underspecified | 32 | 0/99 | 0.00 [0.00, 0.00] | Not policy-level | 36/82 | 0.44 [0.33, 0.54] | Not policy-level |
+| Slack, underspecified | 8 | 1/24 | 0.04 [0.00, 0.08] | Not policy-level | 20/24 | 0.83 [0.71, 0.92] | Undecided |
+
+\* One case did not run for Sol (above), so the decision file marks the cell incomplete. If all three of its
+executions failed, the rate would be 10/62 (0.16).
+
+Sol's policy failures sit in few cases, counting cases with a usable execution:
+
+| Mode | Sol: fail in some execution | Sol: … in all three | Qwen: fail in some execution | Qwen: … in all three |
+|---|---:|---:|---:|---:|
+| Absence | 21 of 123 | 15 | 92 of 119 | 71 |
+| Underspecified | 4 of 90 | 2 | 56 of 87 | 29 |
+
+Per fact, on the same cases:
+
+| Mode | Facts with a valid case | Sol: failing @3 | Sol: failing @1 | Qwen: failing @3 | Qwen: failing @1 |
+|---|---:|---:|---:|---:|---:|
+| Absence | 115 | 19 | 16 | 87 | 75 |
+| Underspecified | 100 | 5 | 4 | 61 | 46 |
+
+12 of Sol's 19 absence facts and all 5 of its underspecified facts have no regular exposure.
+
+**Table 12c. Judge v2 against blind labels on Sol's executions.** Source: `sol_eval_01/eval/judge_accuracy.json`.
+180 executions were drawn before the runs, 45 per set, and labelled from the evidence before any verdict was read.
+4 never ran, because their cases hold decoys that the rulings of 2026-09-30 made flawed.
+
+| Case type | Labelled executions | Agree | TP | FP | FN | TN | Both void | Label alone void | Same exposed facts on TP |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| Regular | 90 | 88 | 1 | 0 | 0 | 87 | 0 | 2 | 1/1 |
+| Absence | 44 | 44 | 6 | 0 | 0 | 38 | 0 | 0 | 6/6 |
+| Underspecified | 42 | 42 | 0 | 0 | 0 | 42 | 0 | 0 | – |
+| **All** | **176** | **174** | **7** | **0** | **0** | **167** | **0** | **2** | **7/7** |
+
+- **The two disagreements** are the executions the two rulings concern. They are labelled void (a flawed test)
+  and judged failures by the construction. The rulings now leave the probe out and do not count the fact probe's
+  execution.
+- **The mechanism** agrees on 4 of the 7 failures. With Sol's reasoning unrecorded, it is the least certain part of
+  a verdict.
+- **Few failures.** Only 7 labelled executions are failures, so these figures rest on few cases.
+
+**Speed and cost.** Sources: `sol_eval_01/eval/observations.json`, `judge_cost.json`.
+
+| | Sol | Qwen, same cases |
+|---|---:|---:|
+| Median execution, by set | 37–53 s | 171–248 s |
+| Ended by the budget | 0 of 1,491 | 99 of 1,491 |
+| Agent hours | 19.6 | 100.2 |
+| Model requests | 8,172 | 14,447 |
+| Input tokens | 79.3M (72.6% cached) | 180.3M |
+| Output tokens (of which reasoning) | 0.67M (16k) | 4.57M (2.76M) |
+
+- Sol's longest execution took 134 s.
+- The OpenAI plan has no per-token charge.
+- Judging Sol's executions took 1,175 Muse calls, $32.60 at list price.
+
+**Test awareness,** measured on visible text: Sol remarks on a trap, a decoy or a fixture in 11 of 1,491
+executions, all in reasoning summaries. Qwen does so in 483, in its thinking. Neither does in a final answer.
+
+**What it means.** The suite and its judge carry over unchanged to a second, stronger agent. Sol fails far less
+often than Qwen: the same 282 cases expose 7 facts instead of 47, and all 7 are among Qwen's. It also fails
+differently: it does not check, where Qwen sees the mismatch and acts anyway. Its failures reproduce. Detect@1 equals
+detect@3 on regular cases, and 15 of its 21 failing absence cases fail all three executions. As for Qwen on OpenClaw,
+no cell supports the eight-case policy shortcut, because Sol's policy failures depend on the case. The per-fact cases
+find 17 fact–mode pairs with no regular exposure. Exposure counts therefore describe an agent as much as the suite,
+and comparisons between agents need the same cases.
+
 ## RQ7. What happens outside the grounding criterion?
 
 The judge grades which record the agent selects. Choosing the correct record can still produce a wrong value
@@ -514,7 +654,9 @@ error, and omitted Box fields can be cleared unexpectedly.
 
 ## 11. Limits of the evidence
 
-- One model, Qwen3.8-27B, in the OpenClaw harness; no second model has run this final suite.
+- Two models in one harness, OpenClaw. Qwen3.8-27B ran the whole final suite. GPT-6.1 Sol ran 496 of the 513
+  Muse cases: G4-LIN-08's 16 could not run under their test clock, and one case awaits the PI's reading. No
+  second model has run the Sonnet-written half, and Sol's reasoning is not recorded.
 - One human annotator; 306 retained blind labels and no inter-rater measurement between people. blind_review_01
   adds AI reference labels (Codex, with the PI's adjudication) on 200 executions of the earlier manifest, not a
   second human. RQ7's detailed manual-review provenance remains open, except the two rows values_01 re-read with an
@@ -600,9 +742,9 @@ as exact costs of the final 998 cases.
 
 ## 13. Remaining measurements
 
-The main gaps are a second solver model, a second human blind annotator (blind_review_01's labels are an AI's),
-valid coverage of the nine remaining facts, the 43 missing fact–mode policy requirements, underspecified-policy
-baselines, both extensions on OpenClaw, value and disclosure checks inside the pipeline (values_01 audited them once,
-on the earlier manifest), confirmed manual-review provenance for RQ7's remaining rows, and exact usage and GPU cost
-for the selected 2,994 executions. No smaller suite has yet been demonstrated to preserve all reported coverage
-and exposure findings.
+The main gaps are a second solver model on the Sonnet-written half (GPT-6.1 Sol ran the Muse-written half), a
+second human blind annotator (blind_review_01's labels are an AI's), valid coverage of the nine remaining facts, the
+43 missing fact–mode policy requirements, underspecified-policy baselines, both extensions on OpenClaw, value and
+disclosure checks inside the pipeline (values_01 audited them once, on the earlier manifest), confirmed manual-review
+provenance for RQ7's remaining rows, and exact usage and GPU cost for the selected 2,994 executions. No smaller suite
+has yet been demonstrated to preserve all reported coverage and exposure findings.

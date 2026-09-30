@@ -451,3 +451,108 @@ and decisions; its `valid` keeps both cases of each duplicate pair (Linear and S
    run's final attempts; the same count under the withdrawn 8-minute rule gives the earlier 188. Source:
    `openclaw_eval_01/README.md`, Summary (follow-up 3). baselines_01's `report.md` gets a dated pointer to the
    recomputed `ours.json` (11.3 / 7.5, 12.8 per 48 tests).
+
+## Text changes (2026-09-30), the Sol round
+
+The second agent, GPT-6.1 Sol on OpenClaw (the Muse-written half), added to both texts at the lead's request by the
+session sol_score. Format: section, old → new, source. `numbers/` and `kit/` are unchanged.
+
+**Sources.** Every number is read from the files of sol_eval_01 at commit fca57dd6de (merged into main in
+d32f0787b9), and none is recomputed from memory. The only arithmetic on the files' values:
+- sums over the four sets, and agent hours from seconds;
+- percentages;
+- TN by subtraction, and the rule-of-three bounds;
+- rounding half up.
+
+All paths below are under `grounding/runs/sol_eval_01/`.
+
+- `eval/side_by_side_regular.json`:
+  - `groups`, per group `sol`, `qwen_same_tests` and `tests_exposing`; the groups are all, domain, form, set and
+    probe family;
+  - `facts_detect3`, `trials`, `failing_trial_mechanisms_judge_v2`.
+- `eval/policy_decisions.json`: per mode, `cells` → `sol` and `qwen_same_units`, and `facts` and
+  `regular_vs_policy_facts`.
+  - The cell fields are `valid_units`, `missing`, `failing_trials`, `usable_trials`, `rate`, `p10`, `p90`,
+    `decision`, `phase4_only` and `6b_only`.
+  - From `readings`: `any_of_runs` and `all_runs`, with their `failing` and `units`.
+  - Rates and bounds are rounded half up from the file's three decimals.
+  - Not used: `readings` → `spread` and `sequential_first_run`, which stop at the first unit without verdicts. For
+    Sol's Calendar underspecified cell that is the unit that did not run, so they cover only its first 10 units.
+- `eval/judge_accuracy.json`: `sets` and `pooled`.
+  - Per set: `labelled`, `exact_agreement`, `collapsed_agreement`, and `failure_detection` (`usable_by_both`,
+    `judge_fail`, `label_fail`, `both_fail`, `void_by_label_only`, `same_exposed_facts_when_both_fail`).
+  - TN = usable by both − TP − FP − FN.
+  - The rule-of-three bounds are 3/167 and 3/7.
+- `eval/observations.json`, per set, with sums over the four sets:
+  - `sol` and `qwen_same_tests`: `seconds`, `tool_calls`, `requests`, `input`, `cached`, `output` and `reasoning`
+    (median, sum, max), `over_budget`, `trials_with_reasoning_tokens`;
+  - `awareness` and `sol_steps_with_visible_text`.
+- `eval/judge_cost.json`: `total` (1,175 calls, 4 failed, $32.60 list). There are 1,171 verdict files under
+  `eval/judged_*`.
+- `README.md`:
+  - "What runs" and "The harness, and what differs from the Qwen round";
+  - Results §2: how Sol fails, and the examples;
+  - Results §5: the 17 failed attempts (8 stalls, 9 other), memory_search (354, 316), awareness, and the Calendar
+    surprise;
+  - Results §6: the open validity question, with `kit/whatif.py`.
+- The case counts:
+  - `cases/selection.json` (`left_out_clock_after_login_expiry`, 10) and `cases/policy_selection.json`
+    (`left_out_clock`, 6);
+  - `eval/regular_6b.adjudicated.json` (`left_out_tests`: P-G4-BOX-02-I11, after its 3 trials);
+  - the run folders with attempts: 444, 405, 369 and 273 trials; 148, 135, 123 and 91 cases.
+  - 496 cases = 282 + 123 + 91, and 1,488 executions = 3 × 496. The 513 Muse cases are report_concise.md §0.4's
+    Muse column: 292 + 126 + 95.
+
+**Both texts:**
+- **Opening note.** It adds that the Sol round was added on 2026-09-30 from sol_eval_01's files at commit
+  fca57dd6de.
+- **§0.4, the Sol executions as a separate count.**
+  - report_concise.md adds a sentence after the scope sentence: Sol ran 496 of the 513 Muse cases; its 1,488
+    executions are counted apart from the 2,994 and reported after RQ6.
+  - report.md adds a bullet after the toy harness's: 1,491 trials, 19.6 agent hours, 8,172 model requests, 79.3M
+    input tokens (57.6M cached) and 0.67M output tokens. 1,488 of the trials are on the final tests and units.
+- **A new section after RQ6, "A second agent: GPT-6.1 Sol on the same harness".**
+  - Tables 12a to 12c in report_concise.md and 12a to 12f in report.md. They are numbered after Table 12, so later
+    tables keep their numbers.
+  - The harness differences: thinking "medium" set explicitly, no proxy, memory_search failing, G4-LIN-08's 16
+    tests and units left out, U-G4-CAL-05-CalendarListEntry_summary_override not run, Sol's reasoning unrecorded,
+    and the infrastructure re-runs.
+  - Regular exposure side by side, by service and form. report.md adds the writer set, near-miss families and
+    mechanisms.
+  - Trials by outcome, and the eight cells with both agents' rates and decisions.
+  - Units failing some or all trials, and the per-fact view.
+  - Judge accuracy on the 176 blind labels.
+  - Speed, tokens and cost, awareness, and what it means.
+  - report.md adds the open validity question (G4-BOX-15, "Atlas Onboarding Archive").
+  - Qwen's columns there are its final trials of the same tests and units, not Tables 7 to 12's totals.
+- **Limits.**
+  - report_concise.md §11: "One model, Qwen3.8-27B, in the OpenClaw harness; no second model has run this final
+    suite." → two models in one harness. Qwen3.8-27B ran the whole final suite. GPT-6.1 Sol ran 496 of the 513 Muse
+    cases (G4-LIN-08's 16 could not run under their test clock; one case awaits the PI's reading). No second model
+    has run the Sonnet-written half, and Sol's reasoning is not recorded.
+  - report.md §11: "**One model.** Qwen3.8-27B, in two harnesses. No second model ran the final suite." → "**Two
+    models, the second on half the suite.**", with the same statement.
+
+**report.md only (consistency with the new section):**
+- **§0.1.** A new bullet, "A second agent under test": GPT-6.1 Sol in the same OpenClaw harness, on the
+  Muse-written half, reported after RQ6.
+- **RQ4.** "**Not measured:** a second model or harness under the same final suite and rules." → a second model,
+  GPT-6.1 Sol, ran the Muse-written half (the section after RQ6). Not measured: a second harness under the final
+  suite and rules, and a second model on the Sonnet-written half.
+- **RQ8.** "a second agent under test" (not measured) → "these baselines and ablations on a second agent (GPT-6.1
+  Sol ran only the Muse-written half of the suite, the section after RQ6)".
+- **§13.** "A second model and harness on the final suite | –" → "A second model on the Sonnet-written half, and a
+  second harness on the final suite | – (GPT-6.1 Sol ran the Muse-written half: the section after RQ6)".
+
+**report_concise.md only:**
+- **§13.** "a second solver model" → "a second solver model on the Sonnet-written half (GPT-6.1 Sol ran the
+  Muse-written half)".
+
+**Not changed:**
+- Tables 1 to 18, `numbers/`, and every Qwen figure outside the new section.
+- **§12, both texts.** There is no row for the Sol round's judging (1,175 Muse calls, $32.60 list).
+  - report.md's Table 18 has a Billed column (Muse contributor pricing). The PI's notes of 2026-09-29
+    ([brain_dump_2026-09-29.md](../../protocols/brain_dump_2026-09-29.md), "Decided") keep contributor pricing
+    out of reports.
+  - The row, and that column, are left for the lead.
+  - The new section gives list prices only. Sol itself ran on the PI's plan, with no per-token charge.
