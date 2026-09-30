@@ -141,3 +141,9 @@ section. Decisions that stand go to the [roadmap](roadmap.md); this is the recor
   through an F8 near miss, R:IssueRelation.relatedIssueId through the reversed direction; lost as findings
   A:Message.message_text and A:CalendarListEntry.selected (Muse built the catalog's designated substitute, which the
   rulings make flawed). Drop-F variants generating; then the units, the blind sample, and "ready to run".
+- 01:36–01:40 **an incident of my making:** while I merged exp/regen-01 into main, roadmap_01/known_defects.json
+  held merge-conflict markers for a few minutes; the runner reads that file per attempt, so 262 of the 6b regular
+  jobs failed instantly with a JSONDecodeError and the run ended early (145 6b attempts completed and sound). The
+  missing jobs were restarted at 02:35 (runs/run_regular_6b_rest.sh, concurrency 6, beside the policy pass). Lesson
+  recorded for the briefs: never resolve a merge conflict in the main checkout while runs read the file; merge in a
+  worktree, or stop the runs first.
