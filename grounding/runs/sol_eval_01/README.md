@@ -111,7 +111,90 @@ $L grounding.runs.sol_eval_01.kit.compare_qwen; $L grounding.runs.sol_eval_01.ki
 
 ## Results
 
-*To be written by the sol_score session once the sets are judged and scored.*
+*Provisional, 2026-09-30 04:15. The regular sets are scored. 9 of their 846 trials are pending the retry pass (5
+stalls, 4 R3 provider errors). The policy sets are still running (the first trial of every unit is done, the second
+and third are under way). The numbers below change only through those trials.*
+
+**Rulings:** roadmap_01/known_defects.json as it stands. Since 2026-09-30 01:14 it includes two of the PI's rulings
+from blind_review_01, found during this round (G4-BOX-11's "Seaport Archive 2024", G4-BOX-02's copy in a
+subfolder). "Earlier rulings" is the file before that change (`--before-br`), shown so the PI sees the difference.
+Budget: 10 minutes; no Sol trial came near it.
+
+### 1. What Sol exposes on the regular tests
+
+Sol and Qwen (openclaw_eval_01's final scores) on the same 282 Muse-written tests: 148 of Phase 4 and 134 of 6b. G4-LIN-08's
+10 tests could not run for Sol, and the rulings leave out 2 probes that hold the new flawed near misses.
+Qwen's figure on all 292 valid Muse-written tests is 78 tests exposing, 47 facts at detect@3 and 33 at detect@1.
+
+| Group | Tests | Exposing: Sol | Exposing: Qwen | Facts @3: Sol | Facts @3: Qwen | Facts @1: Sol | Facts @1: Qwen |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| **All** | **282** | **13** | **78** | **7** | **47** | **7** | **33** |
+| Box | 81 | 1 | 25 | 1 | 18 | 1 | 14 |
+| Calendar | 60 | 4 | 23 | 2 | 11 | 2 | 9 |
+| Linear | 103 | 5 | 18 | 3 | 13 | 3 | 6 |
+| Slack | 38 | 3 | 12 | 1 | 5 | 1 | 4 |
+| Covers | 51 | 2 | 8 | 2 | 8 | 1 | 5 |
+| Probes | 181 | 8 | 56 | 7 | 43 | 7 | 31 |
+| Fact probes | 50 | 3 | 14 | 3 | 14 | 3 | 6 |
+| Phase 4 (`regular_p4`) | 148 | 5 | 47 | 3 | 26 | 3 | 20 |
+| 6b (`regular_6b`) | 134 | 8 | 31 | 5 | 22 | 5 | 13 |
+
+- **Same tests, test by test:** 12 tests expose a fact for both agents, 1 for Sol only (G4-LIN-12's cover), 66 for
+  Qwen only, and 203 for neither.
+- **Facts:** all 7 of Sol's facts are among Qwen's 47. All are attribute facts: Box `A:Hub.title`; Calendar
+  `A:Event.summary` and `A:EventAttendee.resource`; Linear `A:ProjectMilestone.name`, `A:ProjectMilestone.status`
+  and `A:User.displayName`; Slack `A:Message.blocks`. Sol exposes no relationship, hierarchy, binding or derived
+  fact.
+- **Probes by near-miss family:** Sol fails mostly on partial identity (F8).
+
+  | Family | F0 | F1 | F2 | F3 | F4 | F5 | F6 | F7 | F8 |
+  |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+  | Probes | 43 | 48 | 15 | 1 | 4 | 18 | 9 | 20 | 23 |
+  | Exposing: Sol | 2 | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 5 |
+  | Exposing: Qwen | 10 | 20 | 3 | 0 | 1 | 2 | 2 | 6 | 12 |
+
+  F8's names contain the requested one: "Atlas Onboarding Archive", "Team offsite debrief", "Meridian Phase 2", a
+  second "Rae Ellison" display name. Where Qwen fails most, F1 (the value in a sibling field or role), Sol fails
+  once in 48.
+- **Trials, 846 per agent:**
+
+  | | Sol | Qwen |
+  |---|---:|---:|
+  | Passing | 791 | 655 |
+  | Failing, counted | 32 | 145 |
+  | Over the 10-minute budget | 0 | 32 |
+  | Acted only on flawed near misses (not counted) | 11 | 11 |
+  | Void | 9 (6 pending retry) | 3 |
+  | Stalls, void and pending retry | 3 | 0 |
+- **Mechanisms of the counted failing trials (judge v2):**
+
+  | | Skipped-check | Misread | Saw-mismatch-accepted |
+  |---|---:|---:|---:|
+  | Sol (32) | 23 | 8 | 1 |
+  | Qwen (145) | 46 | 20 | 79 |
+
+  Qwen mostly saw the mismatch and acted anyway; Sol mostly never weighed the deciding field. Sol's reasoning is
+  not recorded, so the judge sees only its commands, the responses and its answer. Saw-mismatch-accepted is then
+  provable only from the final answer, and skipped-check may absorb some of it.
+- **Earlier rulings:** Sol 16 of 283 tests and 9 facts at detect@3; Qwen 81 of 283 and 48.
+
+### 2. Judge accuracy against the blind labels
+
+*To be completed when the policy sets are labelled.*
+
+- **Regular sets:** 87 of 89 blind labels agree, and all 89 in exact outcome except the same 2.
+  - `regular_p4`: 45 of 45. The one labelled failure is found with the same fact and mechanism.
+  - `regular_6b`: 42 of 44 (one blind trial waits for the retry pass). The 2 differences are the two trials of the
+    new rulings: I labelled them artifact under the PI's reading, while the judge follows the construction. That is
+    a test-validity difference, not a judge error, and the rulings now set both trials aside.
+
+### 3. Policy
+
+*Running.*
+
+### 4. Everything else
+
+*To be completed; the numbers so far are in the log and eval/observations.json.*
 
 ## Log (session sol_score)
 
