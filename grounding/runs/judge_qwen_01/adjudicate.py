@@ -1,5 +1,7 @@
 """The manual adjudication of Qwen-Muse disagreements: lock my labels, then unblind (no model calls).
 
+    python grounding/runs/fact_coverage_02/launch.py grounding.runs.judge_qwen_01.adjudicate add NAME KEY --outcome O \
+        [--acted IDS] [--exposed FACTS] [--mechanism M] [--artifact-reason R] [--steps S] --confidence C --reason R
     python grounding/runs/fact_coverage_02/launch.py grounding.runs.judge_qwen_01.adjudicate lock NAME
     python grounding/runs/fact_coverage_02/launch.py grounding.runs.judge_qwen_01.adjudicate unblind NAME --out runs/selfhost
 
@@ -23,6 +25,35 @@ from pathlib import Path
 from grounding.runs.judge_qwen_01.common import HERE, cls, labels, load, muse_verdict
 
 ADJ = HERE / "adjudication"
+
+
+OUTCOMES = ("incorrect", "presented", "correct", "correct_absent", "false_absence", "incomplete", "not_established",
+            "artifact")
+MECHANISMS = ("skipped-check", "saw-mismatch-accepted", "misread", "none")
+
+
+def add(name: str, key: str, outcome: str, acted: str, exposed: str, mechanism: str, artifact_reason: str,
+        steps: str, confidence: str, reason: str):
+    """Record one label (before the lock only; a key is written once)."""
+    if (ADJ / f"lock_{name}.json").exists():
+        raise SystemExit("locked: corrections after the lock go to corrections_NAME.json")
+    if key not in load(ADJ / f"queue_{name}.json"):
+        raise SystemExit(f"{key} is not in the queue")
+    if outcome not in OUTCOMES or mechanism not in MECHANISMS:
+        raise SystemExit("unknown outcome or mechanism")
+    path = ADJ / f"labels_{name}.json"
+    doc = load(path) if path.exists() else {"_about": "My blind labels on the Qwen-Muse disagreements (README.md). "
+                                                      "Written from view.py's evidence before any verdict or "
+                                                      "reference label was opened."}
+    if key in doc:
+        raise SystemExit(f"{key} already has a label")
+    split = lambda text: [x.strip() for x in text.split(",") if x.strip()]
+    doc[key] = {"outcome": outcome, "acted_on": split(acted), "exposed": sorted(split(exposed)),
+                "mechanism": mechanism, "artifact_reason": artifact_reason, "decisive_steps": steps,
+                "confidence": confidence, "reason": reason, "labelled_utc": datetime.now(timezone.utc).isoformat()}
+    path.write_text(json.dumps(doc, indent=1, ensure_ascii=False) + "\n")
+    queue = load(ADJ / f"queue_{name}.json")
+    print(f"{key}: {outcome} {split(exposed)}; {sum(k in doc for k in queue)}/{len(queue)} labelled")
 
 
 def lock(name: str):
@@ -87,13 +118,27 @@ def unblind(name: str, out: Path):
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
+    ad = sub.add_parser("add")
+    ad.add_argument("name")
+    ad.add_argument("key")
+    ad.add_argument("--outcome", required=True)
+    ad.add_argument("--acted", default="")
+    ad.add_argument("--exposed", default="")
+    ad.add_argument("--mechanism", default="none")
+    ad.add_argument("--artifact-reason", default="")
+    ad.add_argument("--steps", default="")
+    ad.add_argument("--confidence", choices=["high", "medium", "low"], required=True)
+    ad.add_argument("--reason", required=True)
     lk = sub.add_parser("lock")
     lk.add_argument("name")
     ub = sub.add_parser("unblind")
     ub.add_argument("name")
     ub.add_argument("--out", type=Path, required=True)
     args = ap.parse_args()
-    if args.cmd == "lock":
+    if args.cmd == "add":
+        add(args.name, args.key, args.outcome, args.acted, args.exposed, args.mechanism, args.artifact_reason,
+            args.steps, args.confidence, args.reason)
+    elif args.cmd == "lock":
         lock(args.name)
     else:
         unblind(args.name, args.out if args.out.is_absolute() else HERE / args.out)

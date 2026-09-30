@@ -5,8 +5,10 @@ Session "judge_qwen", started by the lead ("RoadMap specialist") on 2026-09-30 f
 
 ## Status
 
-- **2026-09-30 00:05 EDT.** Setup. The input check passed on all 2,139 executions (below). The backend and the replay
-  driver are being written; no Qwen call has been made yet.
+- **2026-09-30 00:20 EDT.** The input check passed on all 2,139 executions. The replay of the 443 labelled
+  executions is running on the self-host (16 in flight, about 9 calls a minute); the other 1,696 follow
+  automatically in the same folder. Next: the comparison against the bar, then the blind adjudication of every
+  Qwen-Muse disagreement.
 - **Host:** the lead cleared the self-hosted Qwen for the whole replay (message of 2026-09-30, about 00:00 EDT), at
   about 16 judge calls in flight. Purdue's Qwen is not used; the brief's "use Purdue first" step was superseded by
   that message.
@@ -76,4 +78,7 @@ the voids instead, so Muse's numbers here can differ slightly from its Table 9.
 
 | When (EDT) | What changed | What ran | What was learned |
 |---|---|---|---|
-| 09-30 00:05 | `common.py`, `inputs_check.py` | The input check, no model calls | Muse's 2,139 saved judge prompts are judge_v2.md + the domain's replica notes + the bundle, byte for byte; the kit rebuilds 1,935 bundles exactly and the other 204 up to the order of keys in the diff's UPDATE lines (Python's per-process set order). So the replay sends Muse's saved text, not a rebuild. |
+| 09-30 00:05 | `common.py`, `inputs_check.py` | The input check, no model calls | Muse's 2,139 saved judge prompts are judge_v2.md + the domain's replica notes + the bundle, byte for byte; the kit rebuilds most bundles exactly (1,935 in one run, 1,882 in another) and all of them up to the order of keys in the diff's UPDATE lines, which follows Python's per-process hash seed. So the replay sends Muse's saved text, not a rebuild. |
+| 09-30 00:07 | `backend.py`, `replay.py` | `runs/smoke_01`: 3 unlabelled executions (a probe, an absence unit, an underspecified unit), 3 in flight | The self-host returns the reasoning apart (`message.reasoning`, 900-1,400 reasoning tokens) and an answer that fits the schema; 7-13k input tokens, 1.1-1.6k output, 61-84 s a call, no failures. Settings kept. |
+| 09-30 00:09 | – | `runs/selfhost`, the 443 labelled executions, 16 in flight | Running: about 9 calls a minute, a median of 94 s and 1,350 output tokens a call. A detached script (`runs/selfhost/chain_all.sh`) then judges the other 1,696 into the same folder. |
+| 09-30 00:20 | `headline.py` | With Muse's verdicts, no model calls | The headline numbers can be recomputed from any judge's verdicts: with Muse's, the code reproduces the published regular exposure (138 of 565 tests, 87 facts at detect@3, 60 at detect@1, per test, domain and form) and all eight policy cells (rate, p10, p90, decision) exactly. The 879 unjudged final regular trials are all mechanically clean (184 correct, 695 correct_absent). |
