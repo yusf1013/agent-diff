@@ -85,3 +85,5 @@
   `artifact`. Trials 1 and 3 found the series (a `showDeleted` listing, then `instances`) and edited the right
   occurrence, so the test stays valid.
 - **Replica finding (report only):** the occurrence ids use local wall-clock digits with a "Z", unlike Google's UTC.
+- **Replica finding (report only):** `teams { projects { nodes { ... } } }` fails with "Cannot return null for
+  non-nullable field ProjectConnection.nodes" (SN1M-LIN-T05 t2, step 9); it did not decide the trial.
