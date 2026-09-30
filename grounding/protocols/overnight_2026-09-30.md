@@ -126,3 +126,9 @@ section. Decisions that stand go to the [roadmap](roadmap.md); this is the recor
 - 02:00 report_01/numbers rebuilt in full after the two rulings (the values session, now on the report update,
   found it half-rebuilt): the final manifest is 998 cases and 2,994 executions (563 regular tests; 242 absence and
   193 underspecified units). The report texts are being re-synced to it.
+- 02:1x harness (commit c6210f8594): a Claude Code backend with OpenClaw's contract (claudecode_pilot_01/backend.py,
+  run.py reusing openclaw_eval_01's selection): two smoke runs in 12–13 s, the context date matching each test's
+  clock, no MCP servers, no leaks, no account email. Authentication for tonight, approved by the lead for the pilot
+  only: the login's access token read at launch into an environment variable, never written, the refresh token
+  never read, runs refused near expiry; a full round waits for the PI's `claude setup-token`. Next: the 32-test
+  pilot with Sonnet 5.5, its 32 trials blind-labelled, judge v2 on Muse (cap $3).
