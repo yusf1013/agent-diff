@@ -7,7 +7,7 @@ Session "values" (second assignment of the day from the lead session "RoadMap sp
 
 - **2026-09-30, 03:15 EDT.** Blind review done ([review_pool_01.py](review_pool_01.py), committed before the pool's
   manifest was read): 109 of 116 valid, SN0M 44 of 48, SN1M 45 of 48, ours 20 of 20. Answer keys and the keyed suites
-  built (`keys.py`); blind samples drawn. Next: the runs (started 03:30), then the labels, then the grading.
+  built (`keys.py`); blind samples drawn. Next: the runs (started 03:12, 6 in flight in all), then the labels, then the grading.
 - **2026-09-30, 02:33 EDT.** Generation done: 96 of 96 tests load, every session on its first round (no repair turn
   needed).
 
@@ -97,8 +97,10 @@ Code's own list-price estimate; the plan bills $0.
 ## The runs and the grading (stated defaults, set before the runs)
 
 - **Runs:** `runs/solve_sn0m_01` (44 valid SN0M tests) and `runs/solve_sn1m_01` (45 valid SN1M tests), 3 trials each
-  (267 trials), OpenClaw with the self-hosted Qwen through the proxy on 18778, the 600-second budget, 12 in flight
-  per arm (24 in all, the lead's cap). The runner's own selection leaves none of them out (checked without running).
+  (267 trials), OpenClaw with the self-hosted Qwen through the proxy on 18778, the 600-second budget, 3 in flight
+  per arm (6 in all: the lead's cap, the host being shared with two other studies). A timeout with few requests
+  at over 30 s each is marked "timeout under host load" and kept apart for a quiet rerun (the lead's rule); any
+  other timeout is the agent's failure. The runner's own selection leaves none of them out (checked without running).
   Only valid tests run: baselines_01 also ran its invalid tests, so its count of failures its assertions report on
   invalid tests has no counterpart here; the per-valid-trial oracle measures stay comparable.
 - **Blind samples,** drawn before the runs from the cases folders alone (`eval/blind_solve_sn0m_01.json`, seed
