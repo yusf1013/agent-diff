@@ -76,3 +76,29 @@ section. Decisions that stand go to the [roadmap](roadmap.md); this is the recor
   a timeout under 590 s). Now runtime rule R3 (commit fd38a82dec); the earlier ones are reclassified before the
   retry pass. Sol's steps carry no visible thinking (about 20% of steps have visible text): the judge sees
   commands, responses and the final answer; awareness is measured on visible text only.
+- 01:0x values done (commit 7ecf7f3828; merged into main): 179 of 3,018 executions (31 scenarios) carry a finding the
+  grounding verdict cannot see, 52 of them passing grounding (23 wrote the wrong value to the right record, 27
+  misstate priorities in the reply). Literal values are copied exactly; the errors are interpretations (Linear's
+  priority scale 105/149; a palette; a year from the run date; a substitute reaction). Side effects by cause: agent
+  (14 fabricated the identifying evidence, 4 outside the candidate set, 2 reassigned to fit, 1 full PUT reset
+  replies) and replica (17 cleared Box fields, 15 imperfect repairs). Precision 1.00 on every mechanical flag read;
+  prose-stance checks weak; 30 unflagged writers had no missed error. For the PI: AR-BOX-24 as a known defect with a
+  clock; five replica findings (Slack history omits reactions; no white_check_mark; Calendar stores API-written
+  times in UTC but seeded ones as local; Linear attachmentLinkURL resolves by URL; Box 412 after a comment);
+  report_01 RQ7's restore row counts no-ops as restorations and its "changed meeting time" is a storage artifact.
+  Proposal: declare the requested value per written field at construction (13 kinds), mechanical checks, one added
+  judge question for the residual. Assigned next: the report_update brief.
+- 01:1x judge_qwen (commit f85f957415): **Qwen meets the bar as the judge.** On 443 labelled executions (192 labelled
+  failures): 0 missed failures (strict reading; 1 void under the any-reason reading; the bar allowed 2); precision
+  191/196 (97.4%) against Muse's 192/196 (98.0%); the same verdict on 440 of 443; the same exposed facts on all 196
+  joint failures. Of the 3 disagreements (adjudicated blind, hash-locked), Muse was right on 2 and Qwen on 1. All
+  443 verdicts on the first attempt, one fingerprint, 53 minutes at 16 in flight (about 3.5 GPU-hours, $0), against
+  $13.00 at list for Muse. Candidate prompt change for the PI: the Calendar replica notes don't say where a
+  calendar's data owner shows (calendarList, GET /calendars). Now replaying the other 1,696 (about 3 hours), then the
+  headline numbers under Qwen's verdicts.
+- 01:3x sol_score found two of the PI's blind-review rulings missing from known_defects.json (G4-BOX-11's "Seaport
+  Archive 2024" is a match; a copy in a subfolder counts as "in the folder" for G4-BOX-02). Applied (commit
+  3405221d90): two probes leave the suite; the Qwen round is 139 of 563 tests exposing, 87 facts at detect@3, 60 at
+  detect@1; decisions unchanged. Sol is scored under the updated file, with the old reading as a second column.
+  Also from sol_score: regular_p4 judged and its 45 blind labels locked (1 failure among them); 6 of 444 trials
+  pending the retry pass.
