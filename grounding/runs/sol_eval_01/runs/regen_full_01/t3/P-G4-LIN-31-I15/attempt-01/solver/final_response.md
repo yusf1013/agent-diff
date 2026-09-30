@@ -1,0 +1,1 @@
+No matching cycle found. **Sprint 22** starts September 7, but its rate-limit issue, **PLT-1 — “Rate limit errors lack retry guidance,”** is assigned to **Leo Park**, not Maya Chen. I left the description unchanged.

@@ -1,0 +1,3 @@
+There isn’t a matching cycle. **Sprint 22** contains Maya Chen’s rate-limit issue (**API-2**), but it starts **August 24** and ends **September 7**, rather than starting September 7.
+
+I left its description unchanged.

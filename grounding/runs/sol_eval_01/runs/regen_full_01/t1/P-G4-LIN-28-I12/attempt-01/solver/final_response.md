@@ -1,0 +1,1 @@
+No matching issue found. The Web team’s Done issue **WEB-3 — Promo banner overlap on tablet** mentions the offline cache rollback, but it was completed on **September 10**, not September 18. I left its estimate unchanged.

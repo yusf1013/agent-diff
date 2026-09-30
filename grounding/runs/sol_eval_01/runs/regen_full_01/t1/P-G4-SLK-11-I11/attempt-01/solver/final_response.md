@@ -1,0 +1,1 @@
+There’s no reply from Diego Alvarez confirming the rollback window in the gateway rollback plan thread in #launch-ops, so I didn’t add a reaction. His similar message is in a separate deploy-freeze discussion.

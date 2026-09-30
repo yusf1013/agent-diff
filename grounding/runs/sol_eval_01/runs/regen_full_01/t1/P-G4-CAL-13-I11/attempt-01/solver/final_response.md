@@ -1,0 +1,1 @@
+I didn’t find a sprint planning event on Thursday, June 21 with Kenji Sato as an optional attendee. The “Sprint planning: Backend” event has Kenji as the organizer, not an optional attendee, so I left it unchanged.

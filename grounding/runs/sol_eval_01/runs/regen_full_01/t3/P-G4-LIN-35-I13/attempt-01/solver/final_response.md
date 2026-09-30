@@ -1,0 +1,1 @@
+No issue matches all those criteria. The Todo issue assigned to Maya Chen with the Bug label is **WEB-8 — Add haptic feedback on purchase**, but it isn’t blocked by **Checkout rollout**. I left its estimate unchanged.

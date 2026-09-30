@@ -1,0 +1,1 @@
+No matching issue found. The login redirect issue reported by victor.chen@northwind.example, **WEB-2 — “Login redirect loops on Safari,”** is assigned to guest collaborator **Nina Hartley**, not **Nina Hart**. I left its estimate unchanged.

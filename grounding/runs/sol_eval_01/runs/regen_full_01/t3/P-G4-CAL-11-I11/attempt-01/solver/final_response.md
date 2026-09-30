@@ -1,0 +1,1 @@
+I didn’t find a Thursday sprint planning meeting covering the roadmap that ends at 11am. The June 21 meeting from 10–11am is about the Q3 hiring plan; “Roadmap war room” is only its location. I left it unchanged.

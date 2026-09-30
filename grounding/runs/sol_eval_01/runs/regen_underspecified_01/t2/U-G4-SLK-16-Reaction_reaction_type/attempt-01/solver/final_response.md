@@ -1,0 +1,5 @@
+Priya reacted to three release-checklist messages in #launch. Which should I add 🔥 to?
+
+- “Release checklist: sign-off thread is open.”
+- “Release checklist updated with the rollback steps — feedback welcome.”
+- “Release checklist is ready for final review — please take a look before the freeze.”

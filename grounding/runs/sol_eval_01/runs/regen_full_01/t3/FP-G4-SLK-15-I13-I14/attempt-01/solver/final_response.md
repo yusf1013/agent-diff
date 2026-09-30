@@ -1,0 +1,1 @@
+No active launch channel has the topic “Go-live checklist and cutover plan.” #launch-planning has that text as its **purpose**, but its topic is “Sprint board and standup notes,” so I didn’t invite Omar.
