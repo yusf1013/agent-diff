@@ -324,3 +324,13 @@ section. Decisions that stand go to the [roadmap](roadmap.md); this is the recor
   question). For the PI: two person-naming readings ("Maya Chen's" as owner or creator; "uploaded" as first or
   current version) on which Phase 4 read Muse's briefs the other way, and an "open link" reading solvers took.
   Confounds recorded: Claude Code's writer path and effort medium; the reply cap and window relay.
+- 12:3x harness, hardening.md (d6b40284aa; merged): recommendation for the next round: each attempt in bubblewrap
+  with a minimal filesystem and an empty network namespace bridged to two host-side proxies (the model proxy and a
+  new per-attempt replica proxy that forwards only that environment's service paths, applies masks and logs
+  refusals); about a day and a half to build, negligible per run (OpenClaw starts in 25 ms sandboxed). Not a
+  separate user (needs sudo, leaves loopback open); not a container (same guarantee, more machinery). A token in
+  the shim would not help (the agent can read the shim); the per-attempt socket is the capability. For the PI: the
+  replica on 18001 answers any local process without a key, and this machine has other accounts; the Claude Code
+  backend's token is in the process environment (whether its Bash tool sees it is the first check of the next
+  pilot); a cheap step now is to make the model proxy refuse unrouted requests during rounds; the openai backend
+  reaches OpenAI directly and gets only the filesystem sandbox for now.
