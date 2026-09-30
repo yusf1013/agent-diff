@@ -195,6 +195,10 @@ finds ambiguity and undeclared matches. Manual review still found domain misunde
 | Underspecified | 209 | 12 | 197 | 98 | 99 | 591 |
 | **Total** | **464** | **23** | **441** | **214** | **227** | **1,323** |
 
+Two underspecified pairs are one request each (U-AP-SLK-03 and U-G4-LIN-14; `openclaw_eval_01/rulings.py`,
+`DUPLICATE_UNITS`). Both cases of each pair ran and count here; RQ6's policy statistic counts each pair once, so its
+underspecified denominator is 195 cases (439 policy cases in all).
+
 Absence variants remove the probe's permission to report no match. Underspecified variants drop an identifying
 condition or introduce an additional full match. The correct response is to report absence, or seek clarification
 before changing a record. Policy units are separate cases, even when derived from the same parent scenario.

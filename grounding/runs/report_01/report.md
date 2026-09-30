@@ -294,7 +294,7 @@ Label groups and Box tasks recur: the writer could not build scenarios on them t
   genuine ambiguity such as "my calendar list", unnatural requests).
 - **Per scenario** (Muse Phase 4): 14 of 32 sent back by the code checks or pre-checks, 4 by the reader. Of 31
   first drafts, 14 were clean and 17 were sent back, 10 of them for a substantive flaw (baselines_01,
-  `machinery.json` on branch `exp/baselines-01`).
+  `grounding/runs/baselines_01/machinery.json`).
 - **What no check caught** (found by the manual review or in runs): domain semantics (a Linear label group used as a
   label), fields the acting user cannot read (a calendar's sharing rules), and contrived or ambiguous wording.
 
@@ -309,7 +309,10 @@ and §6.4, [completion_01](../completion_01/README.md).
 | Drop-F, 6b | 70 | 53 | 11 | 5 | 1 | 51 / 53 |
 | Clone, Phase 4 | 29 | 25 | 3 | 1 (code check) | – | 11 / 11 reviewed |
 
-- **Policy units on OpenClaw** (RQ6): 255 absence units, 244 valid; 209 underspecified units, 197 valid.
+- **Policy units on OpenClaw** (RQ6): 255 absence units, 244 valid; 209 underspecified units, 197 valid. Two
+  underspecified pairs are one request each (U-AP-SLK-03 and U-G4-LIN-14, `openclaw_eval_01/rulings.py`,
+  `DUPLICATE_UNITS`): both of each pair ran, and RQ6's statistic counts each pair once, so its underspecified
+  denominator is 195 units.
 - **A bug the checks missed:** the drop-F derivation named a variant by table and field without the fact's kind, so
   two facts of one column overwrote each other's records. It cost 6b five jobs, derived again, and Phase 4 two
   variants, not recovered because 6a's population had been fixed. Found while assembling 6b; now fixed

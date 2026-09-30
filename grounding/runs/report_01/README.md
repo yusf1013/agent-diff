@@ -91,3 +91,13 @@ read from the two decision files, the sources the table already cites. Format: s
   regenerated (Linear R:IssueRelation.relatedIssueId). Sources: `numbers/coverage.json`
   (`credited_only_through_plain_near_misses`, the 37 ids); roadmap, "Decisions (2026-09-29)", "The F0 rule".
   Counts unchanged (37, 167, the per-family figures).
+
+### RQ3: duplicate policy units, a stale reference
+
+- report.md RQ3 "Policy units on OpenClaw": adds that two underspecified pairs are one request each (U-AP-SLK-03,
+  U-G4-LIN-14) and count once in RQ6's statistic: 197 → 195 underspecified units there. report_concise.md Table 6:
+  a note with the same; the table's executed counts stay (197 valid cases, 441 policy, 591 and 1,323 executions),
+  since both cases of each pair ran. Sources: `openclaw_eval_01/rulings.py` (`DUPLICATE_UNITS`);
+  `openclaw_eval_01/runs/policy/decisions_population_underspecified.json` (`valid_units` 56 + 30 + 78 + 31 = 195).
+- report.md RQ3, "`machinery.json` on branch `exp/baselines-01`" → `grounding/runs/baselines_01/machinery.json`
+  (merged into main; file checked).
