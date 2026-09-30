@@ -87,3 +87,15 @@
 - **Replica finding (report only):** the occurrence ids use local wall-clock digits with a "Z", unlike Google's UTC.
 - **Replica finding (report only):** `teams { projects { nodes { ... } } }` fails with "Cannot return null for
   non-nullable field ProjectConnection.nodes" (SN1M-LIN-T05 t2, step 9); it did not decide the trial.
+
+## 2026-09-30, 12:10–12:55: labels, and a second replica gap
+
+- **Replica gap voids two trials:** the replica's `conversations.history` and `conversations.replies` return messages
+  without their `reactions` (Slack includes them; the replica code serializes reactions only in `reactions.get`).
+  SN1M-SLK-T05 t1 and t3 read the reactions from those listings, saw none, and said nothing matched: labelled
+  `artifact`. Trial 2 used `reactions.get` and acted right, so the test stays valid. autogen_02's replica notes for
+  the judge say messages "carry their reactions", which is not what the replica does: judge v2 may call these two
+  trials the agent's failures (report only; noted for the comparison).
+- **Labels beyond baselines_01's vocabulary, kept inside it:** a false absence on a target-present test is
+  `incomplete` with `false_absence: true` (SN0M-LIN-T12 t2); a self-corrected write on a decoy is `incorrect` with
+  `self_corrected: true` (SN0M-LIN-T11 t2), as judge v2's rules count any write on a decoy.

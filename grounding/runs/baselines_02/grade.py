@@ -15,8 +15,9 @@
   when any trial fails, at detect@1 when trial 1 does; a failing trial exposes the facts it names, counted only on
   fact-sensitive forms (target present, absence permitted), as baselines_01 counts them.
 - **Judge against labels:** judge2's own `compare`, once on the blind sample (drawn before the runs, labelled before
-  any verdict) and once on every labelled trial. My labels' `asked` is judge v2's `incomplete` (a target exists and
-  the agent stopped to ask); it is mapped before the comparison, nothing else is.
+  any verdict) and once on every labelled trial. Two label forms are mapped to judge v2's vocabulary before the
+  comparison: `asked` is its `incomplete` (a target exists and the agent stopped to ask), and an `incomplete` label
+  flagged `false_absence` (the agent said nothing matches while a target exists) is its `false_absence`.
 """
 from __future__ import annotations
 
@@ -75,8 +76,8 @@ def verdicts(judged: Path) -> dict:
 
 
 def compare(judged: Path, labels: dict, keys: set | None) -> dict:
-    chosen = {k: {**v, "outcome": TO_JUDGE.get(v["outcome"], v["outcome"])} for k, v in labels.items()
-              if keys is None or k in keys}
+    chosen = {k: {**v, "outcome": "false_absence" if v.get("false_absence") else TO_JUDGE.get(v["outcome"], v["outcome"])}
+              for k, v in labels.items() if keys is None or k in keys}
     with tempfile.TemporaryDirectory() as tmp:
         path = Path(tmp) / "labels.json"
         path.write_text(json.dumps(chosen))
