@@ -17,6 +17,10 @@
   - The Results are final: "Results: the regenerated half" and "Results: the whole Muse-only suite" below.
   - Sol exposes a fact in 7 of the 205 regenerated tests (Qwen 61), with 6 facts at detect@3 (Qwen 41). No policy
     cell is policy-level for Sol, in either half or in both together.
+- **2026-09-30 afternoon, the budget rule restored in Qwen's policy numbers** (the lead's decision; the Log). Qwen's
+  first-round policy verdicts had lost the budget rule at the 10-minute rebuild, because their attempt paths point
+  into a removed worktree. Qwen's policy columns below are rebuilt with it: rates rise, no decision changes, and
+  every Sol number is unchanged.
 
 ## The questions (session sol_score)
 
@@ -189,7 +193,7 @@ difference. The budget is 10 minutes; no Sol trial came near it (the longest too
 - **Sol's failures repeat.** A test Sol fails, it usually fails in all three trials: detect@1 equals detect@3 (7
   and 7), where Qwen has 33 and 47.
 - **Policy: none of the eight cells is policy-level for Sol, and none is undecided.** Its failure rates run from
-  0.00 to 0.23. On the same units Qwen's run from 0.44 to 0.90; Qwen's Calendar absence cell is policy-level, and
+  0.00 to 0.23. On the same units Qwen's run from 0.51 to 0.91; Qwen's Calendar absence cell is policy-level, and
   two of its cells are undecided.
   - In absence tests Sol mostly reports the mismatch and asks. In underspecified tests it lists the matches and
     asks: it acted without asking in 8 of 272 usable trials.
@@ -330,17 +334,18 @@ keeps both hashes). Every label is on its trial's final attempt.
 The fixed rule (openclaw_eval_01/policy.py `pooled_decision`): the rate is failing trials over usable trials; a
 cluster bootstrap resamples units; a cell is policy-level if p10 > 0.8, not if p90 < 0.8. The units are the
 Muse-parent units (Phase 4 and 6b) without G4-LIN-08's six, with the duplicate pair merged. Qwen is read on the same
-units from its population runs (Box's first-pass units from the looks).
+units from its population runs (Box's first-pass units from the looks). Qwen's columns were rebuilt on 2026-09-30
+(afternoon) with the budget rule restored (the Log): its rates rise and no decision changes.
 
 | Cell | Units | Sol: failing / usable | Sol: rate [p10, p90] | Sol | Qwen: failing / usable | Qwen: rate [p10, p90] | Qwen |
 |---|---:|---:|---|---|---:|---|---|
-| Box absence | 34 | 16/102 | 0.16 [0.09, 0.24] | not | 70/95 | 0.74 [0.65, 0.82] | undecided |
-| Calendar absence | 28 | 19/83 | 0.23 [0.13, 0.33] | not | 74/82 | 0.90 [0.85, 0.95] | **policy-level** |
-| Linear absence | 49 | 13/147 | 0.09 [0.04, 0.14] | not | 68/125 | 0.54 [0.45, 0.63] | not |
-| Slack absence | 12 | 4/36 | 0.11 [0.00, 0.22] | not | 20/35 | 0.57 [0.42, 0.72] | not |
-| Box underspecified | 30 | 0/90 | 0.00 [0.00, 0.00] | not | 36/81 | 0.44 [0.35, 0.53] | not |
-| Calendar underspecified | 21 | 7/59 | 0.12 [0.03, 0.22] | not* | 31/55 | 0.56 [0.43, 0.69] | not |
-| Linear underspecified | 32 | 0/99 | 0.00 [0.00, 0.00] | not | 36/82 | 0.44 [0.33, 0.54] | not |
+| Box absence | 34 | 16/102 | 0.16 [0.09, 0.24] | not | 76/101 | 0.75 [0.67, 0.83] | undecided |
+| Calendar absence | 28 | 19/83 | 0.23 [0.13, 0.33] | not | 76/84 | 0.91 [0.85, 0.95] | **policy-level** |
+| Linear absence | 49 | 13/147 | 0.09 [0.04, 0.14] | not | 88/145 | 0.61 [0.52, 0.69] | not |
+| Slack absence | 12 | 4/36 | 0.11 [0.00, 0.22] | not | 21/36 | 0.58 [0.42, 0.72] | not |
+| Box underspecified | 30 | 0/90 | 0.00 [0.00, 0.00] | not | 45/89 | 0.51 [0.42, 0.59] | not |
+| Calendar underspecified | 21 | 7/59 | 0.12 [0.03, 0.22] | not* | 39/63 | 0.62 [0.51, 0.73] | not |
+| Linear underspecified | 32 | 0/99 | 0.00 [0.00, 0.00] | not | 53/99 | 0.54 [0.45, 0.63] | not |
 | Slack underspecified | 8 | 1/24 | 0.04 [0.00, 0.08] | not | 20/24 | 0.83 [0.71, 0.92] | undecided |
 
 \* One Calendar unit, U-G4-CAL-05-CalendarListEntry_summary_override, never ran for Sol: known_defects.json marks
@@ -354,13 +359,13 @@ the decision stands.
   | Absence | 21 of 123 | 15 |
   | Underspecified | 4 of 90 | 2 |
 
-  Qwen fails in some trial of 92 of 119 absence units and 56 of 87 underspecified units.
+  Qwen fails in some trial of 98 of 123 absence units and 73 of 91 underspecified units.
 - **Per fact** (report_01's policy_space loop):
 
   | Mode | Facts with a valid unit | Sol fails: @3 | Sol fails: @1 | Qwen fails: @3 | Qwen fails: @1 |
   |---|---:|---:|---:|---:|---:|
-  | Absence | 115 | 19 | 16 | 87 | 75 |
-  | Underspecified | 100 | 5 | 4 | 61 | 46 |
+  | Absence | 115 | 19 | 16 | 93 | 83 |
+  | Underspecified | 100 | 5 | 4 | 82 | 63 |
 - **Regular and policy, per fact (Sol):**
 
   | Mode | Regular exposure and policy failure | Policy failure only | Regular only | Neither |
@@ -370,7 +375,7 @@ the decision stands.
 - **By writer:** Phase 4 and 6b units agree for Sol. Absence rates are 0.19 and 0.13 (Box), 0.18 and 0.33
   (Calendar), 0.15 and 0.07 (Linear), 0.15 and 0.00 (Slack).
 - **Earlier rulings:** the same decisions. The 6 units the new rulings remove (2 absence, 4 underspecified, all Box)
-  never ran for Sol. Qwen's Box absence rate is 0.75 with them, against 0.74 without.
+  never ran for Sol. Qwen's Box absence rate is 0.77 with them, against 0.75 without.
 
 ### 5. Everything else
 
@@ -445,8 +450,8 @@ it records the result in eval/whatif_G4-BOX-15_9102.json:
 
   | Box cell | Units | Sol | Qwen |
   |---|---:|---|---|
-  | Absence | 33 | 13/99, 0.13 [0.06, 0.21], not | 67/92, 0.73 [0.64, 0.82], undecided |
-  | Underspecified | 28 | 0/84, 0.00, not | 32/75, 0.43 [0.33, 0.52], not |
+  | Absence | 33 | 13/99, 0.13 [0.06, 0.21], not | 73/98, 0.75 [0.66, 0.83], undecided |
+  | Underspecified | 28 | 0/84, 0.00, not | 41/83, 0.49 [0.40, 0.58], not |
 
   No decision changes for either agent.
 
@@ -646,10 +651,11 @@ regen session's runs. All eight cells are "not policy-level" for Sol in both rea
   |---|---:|---:|---:|---:|
   | Absence | 4 | 8 | 1 | 57 |
   | Underspecified | 0 | 4 | 4 | 51 |
-- **Reproducing Qwen's cells depends on the regen session's worktree.** Qwen's regenerated-half verdicts record
-  their attempts' paths in `.claude/worktrees/regen/`, and `policy.population_outcomes` applies the budget rule only
-  when that path exists (49 of those policy trials are over the budget). The kit, like regen_01/policy_decide.py,
-  reproduces regen_01's cells while that worktree exists; without it, those timeouts would count as void.
+- **Reproducing Qwen's cells no longer depends on the regen session's worktree.** Qwen's regenerated-half verdicts
+  record their attempts' paths in `.claude/worktrees/regen/`, where `policy.population_outcomes` used to look for
+  them (49 of those policy trials are over the budget). Since 2026-09-30 it re-roots a path that does not exist at
+  this repository, where the run records are committed, and warns if an attempt still cannot be found (the Log,
+  "the budget rule restored").
 
 ### 5. Everything else
 
@@ -717,24 +723,24 @@ same tests and units. Sol's first half lacks G4-LIN-08's 10 tests and 6 units (s
 
 **Policy** (kit/policy.py `decide --suite`, eval/policy_decisions_suite.json). The units are the first half's
 Muse-parent units and the regenerated half's; no pre-registered order. The last column is regen_01's own table, which
-the kit reproduces exactly.
+the kit reproduces exactly. Qwen's columns are as rebuilt with the budget rule restored (2026-09-30, the Log).
 
 | Cell | Units | Sol: failing / usable | Sol: rate [p10, p90] | Sol | Qwen, same units | Qwen, regen_01's suite |
 |---|---:|---:|---|---|---|---|
-| Box absence | 52 | 19/156 | 0.122 [0.064, 0.179] | not | 0.772 [0.707, 0.834], undecided | same |
-| Calendar absence | 36 | 21/107 | 0.196 [0.117, 0.278] | not | 0.896 [0.848, 0.943], **policy-level** | same |
-| Linear absence | 76 | 23/228 | 0.101 [0.061, 0.140] | not | 0.607 [0.539, 0.673], not | 79 units: 0.586 [0.519, 0.653], not |
-| Slack absence | 30 | 14/90 | 0.156 [0.078, 0.244] | not | 0.674 [0.584, 0.764], not | same |
-| Box underspecified | 44 | 0/132 | 0.000 [0.000, 0.000] | not | 0.455 [0.377, 0.533], not | same |
-| Calendar underspecified | 27 | 9/77 | 0.117 [0.040, 0.195] | not\* | 0.548 [0.435, 0.658], not | same |
-| Linear underspecified | 58 | 5/177 | 0.028 [0.006, 0.052] | not | 0.481 [0.411, 0.550], not | 61 units: 0.456 [0.386, 0.524], not |
+| Box absence | 52 | 19/156 | 0.122 [0.064, 0.179] | not | 0.781 [0.718, 0.840], undecided | same |
+| Calendar absence | 36 | 21/107 | 0.196 [0.117, 0.278] | not | 0.898 [0.852, 0.944], **policy-level** | same |
+| Linear absence | 76 | 23/228 | 0.101 [0.061, 0.140] | not | 0.642 [0.577, 0.705], not | 79 units: 0.621 [0.557, 0.684], not |
+| Slack absence | 30 | 14/90 | 0.156 [0.078, 0.244] | not | 0.678 [0.589, 0.767], not | same |
+| Box underspecified | 44 | 0/132 | 0.000 [0.000, 0.000] | not | 0.496 [0.424, 0.569], not | same |
+| Calendar underspecified | 27 | 9/77 | 0.117 [0.040, 0.195] | not\* | 0.593 [0.494, 0.691], not | same |
+| Linear underspecified | 58 | 5/177 | 0.028 [0.006, 0.052] | not | 0.531 [0.467, 0.594], not | 61 units: 0.505 [0.443, 0.568], not |
 | Slack underspecified | 20 | 1/60 | 0.017 [0.000, 0.033] | not | 0.733 [0.650, 0.817], undecided | same |
 
 \* U-G4-CAL-05-CalendarListEntry_summary_override never ran for Sol (first half, section 4 there). Three failing
 trials there would give 12/80 = 0.15, so the decision stands.
 
-- **Per fact:** absence has 184 facts with a valid unit; Sol fails 31 at detect@3 and 25 at detect@1, Qwen 150 and
-  128. Underspecified has 158; Sol fails 9 and 7, Qwen 106 and 79.
+- **Per fact:** absence has 184 facts with a valid unit; Sol fails 31 at detect@3 and 25 at detect@1, Qwen 156 and
+  136. Underspecified has 158; Sol fails 9 and 7, Qwen 126 and 96.
 - **Judge accuracy, both halves:** 309 of 311 blind labels agree in exact outcome; the 2 differences are the first
   half's test-validity cases. Failures: 16 / 16 / 16, with the same facts in all 16. Mechanism: 9 of 16, or 7 of
   14 without the two underspecified failures whose mechanism is `none` by convention.
@@ -852,3 +858,33 @@ trials there would give 12/80 = 0.15, so the decision stands.
     - After the merge, the first half's files reproduce byte for byte.
     - report_01's numbers/sol.json is unchanged. Its verdict count now reads only the first half's sets (commit
       bd08e3baab, the one change outside this folder).
+- **13:10-13:35, the lead's last task, and what it found.** The lead asked the budget rule to re-root a recorded
+  attempt path that does not exist (strip everything up to "/grounding/runs/"), and to show the numbers unchanged.
+  - The rule (`policy.local_attempt`) worked. On copies of regen's verdicts moved to a checkout that doesn't exist,
+    49 over-budget trials fell to void before it and matched after it.
+  - **The numbers did not stay unchanged.** All 1,743 first-round Qwen policy verdicts record their attempts in
+    `.claude/worktrees/roadmap-02`, since removed, and `population_outcomes` skipped the rule for any attempt it
+    could not find. So the Qwen round's policy decisions had lacked the rule since the 10-minute rebuild
+    (49ce3672dc): at c2347dd2e2 Linear absence was 202/294, at 49ce3672dc 160/263.
+  - For each of the 1,743, the committed attempt's step count equals the judge prompt's, so re-rooting finds the
+    attempt that was judged.
+  - I committed nothing to this branch, put the fix on `exp/sol_score-01-reroot`, and asked the lead.
+- **13:40-14:30, the rebuild (the lead: "Rebuild").**
+  - **Code:** `population_outcomes` warns on stderr, with counts per verdict folder, when an attempt cannot be found
+    (tested: it fires on unresolvable paths and stays silent on all 21 real verdict folders).
+    regen_01/score.py matches a re-run's verdict by the path from grounding/runs/ on.
+  - **Rebuilt, in dependency order:** openclaw_eval_01's population decisions; regen_01's decisions (both readings)
+    and escape clause (for_report unchanged); this study's policy decisions (first half, before-BR, suite) and
+    what-if (regen unchanged); report_01's numbers/policy.json and numbers/sol.json (concise.json unchanged);
+    judge_qwen_01's headline outputs.
+  - **Checks:**
+    - No pooled decision changed in any file. Some secondary readings did (any-of-runs, and in this study's Qwen
+      columns the sequential replay).
+    - Every Sol field is unchanged: in each changed file of this study and in numbers/sol.json, only `qwen*` fields
+      differ.
+    - `score regress` and `policy regress` pass.
+    - judge_qwen_01's headline.py resolves attempts through its own manifest. It now reproduces all eight rebuilt
+      cells and the regular score exactly, once it merges duplicate pairs as the PI's rule says. That was one
+      change to headline.py; its old outputs dated from the 8-minute budget.
+  - **Texts:** the Qwen numbers in openclaw_eval_01's, regen_01's and this README, and in report_01's two texts,
+    with report_01's README logging every change old → new.
