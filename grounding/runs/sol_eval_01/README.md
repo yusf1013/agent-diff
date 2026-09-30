@@ -326,9 +326,10 @@ the decision stands.
   |---|---:|---:|
   | Input | 42k to 58k | 80k to 102k |
   | Output | 323 to 491 | 2,016 to 3,102 |
-  | Reasoning | 0 to 17 | 1,141 to 1,940 |
+  | Reasoning | 0 to 17 | 1,142 to 1,940 |
 
-  - Sol's cache: 69 to 75% of input is cached. Qwen's proxy records no cache.
+  - Sol's cache: 69 to 75% of input is cached. Qwen's execution summaries hold no cache count (its proxy's
+    request records do: 88.3% of input cached over its result runs, report_01 §0.4).
   - Sol's totals over 1,491 trials: 79.3M input (57.6M cached), 667k output, and 16k reasoning tokens.
   - Sol's reasoning at thinking "medium": most requests report 0 reasoning tokens. The largest count is 121 in one
     trial, and only 690 of 1,491 trials record any.
@@ -458,3 +459,7 @@ temporary copy of the rulings file, reruns the same scoring and policy code, and
   - **The PI's open question:** AT-G4-BOX-15's "Atlas Onboarding Archive" was flagged for the PI in my label
     notes and in a message to the lead (04:02), not in the Results. Section 6 now states it, with the effect of a
     ruling from kit/whatif.py.
+- **06:30, two corrections, found while writing report_01's Sol section.**
+  - Qwen's cache: "Qwen's proxy records no cache" was wrong. Its execution summaries hold no cache count, but its
+    proxy's request records do (report_01 §0.4 reads them).
+  - Qwen's median reasoning tokens: 1,141 → 1,142 (the file's 1,141.5, rounded half up).
