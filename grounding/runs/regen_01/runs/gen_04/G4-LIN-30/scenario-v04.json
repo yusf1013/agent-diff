@@ -1,0 +1,101 @@
+{
+  "scenario_id": "G4-LIN-30",
+  "domain": "linear",
+  "request": "Please set the 'Login fails on checkout' issue to High priority. It is in the private PAY* team that handles checkout billing.",
+  "answer": "one",
+  "seed": [
+    ["team", {"id": "t-pay", "name": "Payments", "key": "PAY", "set": {"description": "Handles checkout billing and payout integrations for the storefront.", "private": true}}],
+    ["team", {"id": "t-sup", "name": "PAY Support", "key": "SUP", "set": {"description": "Handles checkout billing escalations and merchant payouts.", "private": true}}],
+    ["team", {"id": "t-payb", "name": "Checkout Billing", "key": "PAYB", "set": {"description": "Support analytics dashboards and weekly reporting.", "private": true}}],
+    ["team", {"id": "t-com", "name": "Commerce", "key": "COM", "set": {"description": "Oversees checkout billing across all storefronts.", "private": false}}],
+    ["team", {"id": "t-pays", "name": "Payout Services", "key": "PAYS", "parent": "t-com", "set": {"description": "Settlement and reconciliation tooling for payouts.", "private": true}}],
+    ["team", {"id": "t-payr", "name": "Refunds", "key": "PAYR", "set": {"description": "Handles checkout billing refunds and chargebacks.", "private": false}}],
+    ["team", {"id": "t-web", "name": "Web", "key": "WEB", "set": {"description": "Marketing site content and SEO.", "private": false}}],
+    ["issue", {"id": "i-pay-1", "team": "t-pay", "title": "Login fails on checkout", "priority": 4, "ref": "target"}],
+    ["issue", {"id": "i-sup-1", "team": "t-sup", "title": "Login fails on checkout", "priority": 4}],
+    ["issue", {"id": "i-payb-1", "team": "t-payb", "title": "Login fails on checkout", "priority": 4}],
+    ["issue", {"id": "i-pays-1", "team": "t-pays", "title": "Login fails on checkout", "priority": 4}],
+    ["issue", {"id": "i-payr-1", "team": "t-payr", "title": "Login fails on checkout", "priority": 4}],
+    ["issue", {"id": "i-web-9", "team": "t-web", "title": "Homepage hero copy needs refresh", "priority": 3}]
+  ],
+  "conditions": [
+    {"id": "c1", "text": "'Login fails on checkout'", "facts": ["A:Issue.title"]},
+    {"id": "c2", "text": "PAY* team", "facts": ["A:Team.key"]},
+    {"id": "c3", "text": "that handles checkout billing", "facts": ["A:Team.description"]},
+    {"id": "c4", "text": "private", "facts": ["A:Team.private"]}
+  ],
+  "reference": {
+    "name": "the checkout issue to reprioritize",
+    "target": ["i-pay-1"],
+    "query": {
+      "table": "issues",
+      "filters": [
+        {"key": "f_title", "field": "title", "op": "contains_ci", "value": "Login fails on checkout", "fact": "A:Issue.title"}
+      ],
+      "edges": [
+        {"key": "e_team", "join": {"parent": "teamId", "child": "id", "op": "eq"}, "fact": "R:Issue.teamId",
+         "node": {
+           "table": "teams",
+           "filters": [
+             {"key": "f_key", "field": "key", "op": "contains_ci", "value": "PAY", "fact": "A:Team.key"},
+             {"key": "f_desc", "field": "description", "op": "contains_ci", "value": "checkout billing", "fact": "A:Team.description"},
+             {"key": "f_priv", "field": "private", "op": "eq", "value": true, "fact": "A:Team.private"}
+           ],
+           "edges": []
+         }}
+      ]
+    },
+    "decoys": [
+      {"witness": "i-sup-1", "fact": "A:Team.key", "family": "F1",
+       "substitute": "Team.name",
+       "mutation": {"type": "DROP", "target": "f_key"},
+       "explanation": "Its team is named PAY Support but its key is SUP, so it fails the key condition while matching description and privacy."},
+      {"witness": "i-payb-1", "fact": "A:Team.description", "family": "F1",
+       "substitute": "Team.name",
+       "mutation": {"type": "DROP", "target": "f_desc"},
+       "explanation": "Its team is named Checkout Billing but its description is about analytics dashboards, so it fails the description condition."},
+      {"witness": "i-pays-1", "fact": "A:Team.description", "family": "F2",
+       "substitute": "the description on the parent team",
+       "mutation": {
+         "type": "REPLACE",
+         "note": "description moved from the team to its parent team",
+         "query": {
+           "table": "issues",
+           "filters": [
+             {"key": "f_title", "field": "title", "op": "contains_ci", "value": "Login fails on checkout"}
+           ],
+           "edges": [
+             {"key": "e_team", "join": {"parent": "teamId", "child": "id", "op": "eq"},
+              "node": {
+                "table": "teams",
+                "filters": [
+                  {"key": "f_key", "field": "key", "op": "contains_ci", "value": "PAY"},
+                  {"key": "f_priv", "field": "private", "op": "eq", "value": true}
+                ],
+                "edges": [
+                  {"key": "e_parent", "join": {"parent": "parentId", "child": "id", "op": "eq"},
+                   "node": {
+                     "table": "teams",
+                     "filters": [
+                       {"key": "f_pdesc", "field": "description", "op": "contains_ci", "value": "checkout billing"}
+                     ],
+                     "edges": []
+                   }}
+                ]
+              }}
+           ]
+         }
+       },
+       "explanation": "The checkout-billing description belongs to its parent Commerce team, not to the Payout Services team itself."},
+      {"witness": "i-payr-1", "fact": "A:Team.private", "family": "F0",
+       "substitute": "a public team",
+       "mutation": {"type": "DROP", "target": "f_priv"},
+       "explanation": "Its team matches key and description but is public, not private."}
+    ],
+    "effect": {"table": "issues", "changes": ["update"]},
+    "written": ["issues.priority"]
+  },
+  "other_references": [],
+  "write": {"graphql": "mutation { issueUpdate(id: \"i-pay-1\", input: {priority: 2}) { success } }"},
+  "probes": []
+}
