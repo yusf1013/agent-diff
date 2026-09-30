@@ -6,7 +6,9 @@ today's rulings, the 10-minute budget, the exposure filter). No model calls.
     python grounding/runs/fact_coverage_02/launch.py grounding.runs.regen_01.compare [--no-regen]
 
 Writes eval/compare_regular.json: per half, tests, tests exposing a fact, facts at detect@3 and @1, by service and
-form. A test belongs to the half of its scenario's writer (the suite indexes' `source`).
+form, and which of the 81 facts report_01 credits to the Sonnet half each half exposes at detect@3 (facts qualified
+by service, as report_01 and coverage.py count them). A test belongs to the half of its scenario's writer (the suite
+indexes' `source`).
 """
 from __future__ import annotations
 
@@ -19,6 +21,7 @@ from grounding.runs.regen_01 import score
 
 HERE = Path(__file__).resolve().parent
 OE_RUNS = HERE.parent / "openclaw_eval_01" / "runs"
+REPORT = HERE.parent / "report_01" / "numbers" / "concise.json"  # as coverage.py: the Sonnet half's 81 credited facts
 
 
 def half(scenario: str) -> str:
@@ -31,6 +34,11 @@ def totals(rows: list[dict]) -> dict:
     return {"tests": len(rows), "tests_exposing": sum(1 for r in rows if r["exposed"]),
             "facts_detect3": len({f for r in rows for f in r["exposed"]}),
             "facts_detect1": len({f for r in rows for f in r["exposed_t1"]})}
+
+
+def qualified(rows: list[dict]) -> set[str]:
+    """The facts exposed at detect@3, qualified by service ("linear A:Cycle.name")."""
+    return {f"{r['domain']} {f}" for r in rows for f in r["exposed"]}
 
 
 def main():
@@ -61,9 +69,22 @@ def main():
     if "Muse" in result["halves"] and "Muse regenerated" in result["halves"]:
         both = groups["Muse"] + groups["Muse regenerated"]
         result["halves"]["Muse-only suite"] = {"all": totals(both), "facts": sorted({f for r in both for f in r["exposed"]})}
+    the81 = {f"{d} {f}" for d, fs in json.loads(REPORT.read_text())["writers"]["Sonnet"]["coverage"].items() for f in fs}
+    result["the_81"] = {"facts": len(the81)}
+    for name in ("Sonnet", "Muse regenerated"):
+        if name in groups:
+            hit = qualified(groups[name]) & the81
+            result["the_81"][name] = {"exposed_detect3": len(hit), "facts": sorted(hit)}
+    if "Sonnet" in groups and "Muse regenerated" in groups:
+        s3, r3 = qualified(groups["Sonnet"]) & the81, qualified(groups["Muse regenerated"]) & the81
+        result["the_81"]["both"] = sorted(s3 & r3)
+        result["the_81"]["sonnet_only"] = sorted(s3 - r3)
+        result["the_81"]["regenerated_only"] = sorted(r3 - s3)
     (HERE / "eval" / "compare_regular.json").write_text(json.dumps(result, indent=1) + "\n")
     for name, h in result["halves"].items():
         print(name, h["all"])
+    print({k: (v if not isinstance(v, dict) else v.get("exposed_detect3")) for k, v in result["the_81"].items()
+           if not isinstance(v, list)}, {k: len(v) for k, v in result["the_81"].items() if isinstance(v, list)})
     print(extra)
 
 
