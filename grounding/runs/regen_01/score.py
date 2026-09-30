@@ -8,10 +8,13 @@ trials acting only on flawed near misses not counted), with two additions. No mo
   it; when it names none (the agent presented a near miss without acting), a fact counts if the test holds a valid
   near miss on it. adjudicate.py drops a trial only when every acted-on record is flawed, so a cover trial that acts on
   the target and a flawed near miss would otherwise credit the flawed near miss's fact.
-- **Timeouts under host load** (the lead, 2026-09-30): a trial that OpenClaw's turn limit ended after fewer than 10
-  model requests, each over 30 s, timed out because the shared self-host was overloaded, not because of the agent. It
-  is listed apart; the numbers are given with it counted as the budget rule counts it (the solver's failure,
-  exposing no fact) and with it left out, until it is re-run on a quiet host.
+- **Timeouts under host load** (the lead, 2026-09-30: "a trial that times out with fewer than 10 requests at over
+  30 s each"): a trial that OpenClaw's turn limit ended after fewer than 10 completed model requests whose median
+  took over 30 s timed out because the shared self-host was overloaded, not because of the agent. (Read literally,
+  "each over 30 s" misses such trials whenever one early, short-context request was quick; `literal` records whether
+  every completed request took over 30 s.) They are listed apart, with their request counts and times; the numbers
+  count them as the budget rule does (the solver's failure, exposing no fact) until they are re-run on a quiet host.
+  Request times come from the attempt's solver/requests.tar.xz (the proxy's records, archived when the attempt ends).
 
 Reads RUNS_DIR/<RUN>.score.json (autogen_02's `phase4 score`) and RUNS_DIR/judged_<RUN>/<RUN>/ (judge v2); writes
 RUNS_DIR/<RUN>.adjudicated.json. RUNS_DIR is this study's runs/ unless --runs-dir names another (for checking this
@@ -20,7 +23,9 @@ script against openclaw_eval_01's own adjudicated runs).
 from __future__ import annotations
 
 import json
+import statistics
 import sys
+import tarfile
 from collections import defaultdict
 from pathlib import Path
 
@@ -38,15 +43,30 @@ def totals(tests: list[dict], key: str, key_t1: str) -> dict:
             "facts_detect1": len({f for t in tests for f in t[key_t1]})}
 
 
+def request_times(attempt: Path) -> list[dict]:
+    """Each model request's time and ending, from the archived proxy records (or the live folder)."""
+    out = []
+    archive = attempt / "solver" / "requests.tar.xz"
+    if archive.exists():
+        with tarfile.open(archive) as tar:
+            for name in sorted(n for n in tar.getnames() if n.endswith(".meta.json")):
+                out.append(json.load(tar.extractfile(name)))
+    else:
+        out = [json.loads(p.read_text()) for p in sorted((attempt / "solver" / "requests").glob("*.meta.json"))]
+    return out
+
+
 def under_load(attempt: Path) -> dict | None:
-    """The trial's requests, if OpenClaw's turn limit ended it under host load (the lead's criterion)."""
+    """The trial's request times, if OpenClaw's turn limit ended it under host load (the lead's criterion, read as
+    the median; see the module's docstring)."""
     summary = json.loads((attempt / "execution_summary.json").read_text())
     if summary.get("termination") != "timeout":
         return None
-    durations = [json.loads(p.read_text()).get("duration_s") or 0
-                 for p in sorted((attempt / "solver" / "requests").glob("*.meta.json"))]
-    if len(durations) < LOAD_REQUESTS and durations and all(d > LOAD_SECONDS for d in durations):
-        return {"requests": len(durations), "min_s": round(min(durations), 1), "max_s": round(max(durations), 1)}
+    done = [m.get("duration_s") or 0 for m in request_times(attempt) if m.get("finish_reason")]
+    if done and len(done) < LOAD_REQUESTS and statistics.median(done) > LOAD_SECONDS:
+        return {"completed_requests": len(done), "median_s": round(statistics.median(done), 1),
+                "min_s": round(min(done), 1), "max_s": round(max(done), 1), "model_time_s": round(sum(done)),
+                "literal": all(d > LOAD_SECONDS for d in done)}
     return None
 
 
