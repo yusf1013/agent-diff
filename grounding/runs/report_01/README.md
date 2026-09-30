@@ -214,42 +214,45 @@ those counts.
 
 Table 11 in both texts is read from `openclaw_eval_01/runs/policy/decisions_population_absence.json` and
 `decisions_population_underspecified.json` (`valid_units`, `failing_trials`, `usable_trials`, `rate`, `p10`, `p90`,
-`decision`, `readings.spread`, the writers' parts), rounded half up. `numbers/policy.json` agrees for the six cells the
-merge did not touch; for Linear and Slack underspecified it predates the merge (79 and 32 valid units, p10/p90 0.343
-/ 0.469 and 0.69 / 0.844).
+`decision`, `readings`, the writers' parts), rounded half up. `numbers/policy.json` has the same rates, intervals
+and decisions; its `valid` keeps both cases of each duplicate pair (Linear and Slack underspecified 79 and 32).
 
-- Table 11: Box absence 142/179, 0.79 [0.74, 0.85], spread 6/4/11/38 → 132/171, 0.77 [0.71, 0.83], 6/4/10/33;
-  Calendar absence 104/126, 0.83 [0.77, 0.88], 3/2/9/28 → 101/124, 0.82 [0.75, 0.87], 4/1/8/27; Linear absence
-  202/294, 0.69 [0.64, 0.74], 17/13/14/52 → 160/263, 0.61 [0.55, 0.67], 21/12/9/35; Slack absence 80/129, 0.62
-  [0.54, 0.70], 10/5/9/19 → 75/125, 0.60 [0.52, 0.68], 10/5/5/19; Box underspecified 97/167, 0.58 [0.52, 0.65],
-  10/15/9/21 → 71/145, 0.49 [0.42, 0.56], 11/12/6/13; Calendar underspecified 52/90, 0.58 [0.49, 0.67], 6/7/6/11 →
-  37/81, 0.46 [0.36, 0.56], 8/5/3/8; Linear underspecified 79 units, 120/236, 0.51 [0.45, 0.57], 25/10/19/24 → 78,
-  83/205, 0.41 [0.34, 0.47], 25/10/5/17; Slack underspecified 32 units, 79/96, 0.82 [0.75, 0.89], 2/3/5/22 → 31,
-  63/82, 0.77 [0.69, 0.84], 2/3/4/12. Decisions unchanged. (report_concise.md shows no spread.) report.md adds a note
-  on the merge, the spread (units with exactly 3 usable trials, `autogen_02/kit/sampler.py`, `cell_stats`) and the
-  first-pass column (the first pass's own record, not recomputed).
+- Table 11: Box absence 142/179, 0.79 [0.74, 0.85], spread 6/4/11/38 → 58 units, 126/165, 0.76 [0.70, 0.82],
+  6/4/10/31; Calendar absence 104/126, 0.83 [0.77, 0.88], 3/2/9/28 → 101/124, 0.82 [0.75, 0.87], 4/1/8/27; Linear
+  absence 202/294, 0.69 [0.64, 0.74], 17/13/14/52 → 160/263, 0.61 [0.55, 0.67], 21/12/9/35; Slack absence 80/129,
+  0.62 [0.54, 0.70], 10/5/9/19 → 75/125, 0.60 [0.52, 0.68], 10/5/5/19; Box underspecified 56 units, 97/167, 0.58
+  [0.52, 0.65], 10/15/9/21 → 52, 65/136, 0.48 [0.41, 0.55], 10/12/6/12; Calendar underspecified 52/90, 0.58 [0.49,
+  0.67], 6/7/6/11 → 37/81, 0.46 [0.36, 0.56], 8/5/3/8; Linear underspecified 79 units, 120/236, 0.51 [0.45, 0.57],
+  25/10/19/24 → 78, 83/205, 0.41 [0.34, 0.47], 25/10/5/17; Slack underspecified 32 units, 79/96, 0.82 [0.75, 0.89],
+  2/3/5/22 → 31, 63/82, 0.77 [0.69, 0.84], 2/3/4/12. Decisions unchanged. (report_concise.md shows no spread.) Both
+  texts add a note on the duplicate pairs and on the two rulings (2 Box absence and 4 Box underspecified units left
+  out); report.md also on the spread (units with exactly 3 usable trials, `autogen_02/kit/sampler.py`,
+  `cell_stats`) and on the first-pass column (the first pass's own record, not recomputed). report_concise.md's
+  source line names the decision files, which `numbers/policy.json` copies.
 - The budget bullet (report.md) and sentence (report_concise.md), "With over-budget trials left as the judge called
   them, the rates are 0.77, 0.82, 0.61, 0.60 and 0.49, 0.46, 0.41, 0.77" / "Removing the eight-minute budget rule
-  changes rates but none of these decisions" → the 10-minute rates are those above; under the withdrawn 8-minute
-  reading they were 0.79, 0.83, 0.69, 0.62 and 0.58, 0.58, 0.51, 0.82, with the same decisions. Source for the old
-  rates: `numbers/policy.json` at 49ce3672dc^ (the previous Table 11).
+  changes rates but none of these decisions" → the rates in Table 11 are the 10-minute ones; under the withdrawn
+  8-minute reading, before the two rulings, they were 0.79, 0.83, 0.69, 0.62 and 0.58, 0.58, 0.51, 0.82, with the same
+  decisions. Source for the old rates: `numbers/policy.json` at 49ce3672dc^ (the previous Table 11).
 - report.md, writers in the Calendar cells: absence 0.90 (Phase 4), 0.96 (6b) against 0.64 → 0.88, 0.96 against
   0.64; underspecified 0.71 and 0.53 against 0.37 → 0.64 and 0.27 against 0.23. Source: the decision files,
   `phase3_only`, `phase4_only`, `6b_only`.
-- Table 12 (both): facts failing detect@3 169 / 140 / 309 → 159 / 113 / 272; detect@1 145 / 111 / 256 → 131 / 81 /
-  212; both 82 / 62 → 79 / 54; policy only 87 / 78 → 80 / 59; regular only 2 / 12 → 6 / 21; neither 26 / 21 → 32 /
-  39. Source: `numbers/policy.json` (`totals`, `regular_vs_policy_facts`); these count facts, which the merge does not
-  change. report.md's units row, "Valid units, all run and judged 244 / 197 / 441" → "all run" 244 / 197 (195 with
-  each duplicate pair once) / 441 (439), plus "with a usable trial" 240 / 189 / 429 (the decision files' `units`,
-  summed over the four cells; `policy.json`'s `judged`, 240 / 191, predates the merge). report_concise.md keeps "Valid
-  executable cases" 244 / 197 / 441 (both cases of a pair ran).
-- Prose: report.md "Of the 84 facts ... 82 also fail it. Another 87 facts" → 85, 79, 80; report_concise.md "Another
-  87 facts ... and 78" → 80 and 59; report.md "Muse's Phase 4 scenarios alone ... 45 failing; ... 41 failing" → 43
-  and 32 (`policy.json`, `by_source` → `phase4`; the duplicate pairs are in 6b and Phase 3, so Phase 4's units are
-  unchanged); report.md's answer "169 facts ... 140 (309 ..., 256 ...)" → 159, 113 (272, 212).
-- Not changed: the first-pass column, the readings bullet (any-of-runs: Box absence, Calendar absence and Slack
-  underspecified policy-level, the others undecided or not; all-runs: none policy-level; checked in the decision
-  files).
+- report.md, the readings bullet: unchanged, and still true in the decision files (any of runs: Box absence,
+  Calendar absence and Slack underspecified policy-level, Linear and Slack absence undecided, the other three not;
+  all runs: every cell not policy-level).
+- Table 12 (both): valid units 244 / 197 / 441 → 242 / 193 / 435 (report.md: "(191 with each duplicate pair once)",
+  "(433)", and a row "with a usable trial" 238 / 185 / 423, the decision files' `units` summed; the row label "all run
+  and judged" → "all run"); facts with a valid unit 197 / 173 / 370 (91% of 408; report_concise.md 90.7%) → 195 /
+  170 / 365 (89%; 89.5%); facts failing at detect@3 169 / 140 / 309 → 157 / 111 / 268; at detect@1 145 / 111 / 256 →
+  129 / 80 / 209; both 82 / 62 → 77 / 52; policy only 87 / 78 → 80 / 59; regular only 2 / 12 → 6 / 21; neither 26 /
+  21 → 32 / 38. Source: `numbers/policy.json` (`totals`, `regular_vs_policy_facts`, `per_fact_space`).
+- Prose: report.md "Of the 84 facts ... 82 also fail it. Another 87 facts" → 83, 77, 80; report_concise.md "Why 441
+  cases ... The 441 cases cover 370/408 ... (90.7%). Another 87 facts ... and 78 ... the 565 regular cases" → 435,
+  365/408 (89.5%), 80, 59, 563; "565 regular cases + 441 policy cases = 1,006" → "563 + 435 = 998"; report.md
+  "Muse's Phase 4 scenarios alone ... 45 failing; ... 41 failing" → 43 and 32 (`numbers/policy.json`, `by_source`
+  → `phase4`; the two rulings and the duplicate pairs are outside Phase 4); report.md's answer "169 facts ... 140
+  (309 ..., 256 ...)" → 157, 111 (268, 209).
+- Not changed: the first-pass column (the first pass's own record).
 
 ### RQ7: corrections from values_01, and a pointer to it
 
