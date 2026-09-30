@@ -433,3 +433,4 @@ section. Decisions that stand go to the [roadmap](roadmap.md); this is the recor
   requests on one team (an agent running curls in parallel) can hold the lock while blocking the loop that would
   release it. Also P1's own seed builder: a deep copy of a Linear issue did not advance the team's issue counter
   (issueCreate collided, 500); fixed in its kit (cdabfd6669), the four affected variants rerun after the main run.
+- 15:4x P1's runs over (144 trials by 15:21; the 12-trial counter-collision rerun and the linear_47 attempts by 15:44); its judging is on Muse under the $3 cap. The host quiet (vLLM at 0 in flight), judge_qwen resumed the full replay at 15:46 (the remaining 1,016, then the headline recompute against the rebuilt Muse numbers, after merging main).
