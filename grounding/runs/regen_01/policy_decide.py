@@ -30,12 +30,16 @@ RUN = {"absence": "absence_01", "underspecified": "underspecified_01"}
 
 
 def regen_cells(mode: str) -> dict[str, list[dict]]:
+    """This study's valid units per cell: the cut's list, less any unit the rulings leave out now (a ruling made after
+    the cut, such as G4-SLK-14's 'Marcus Webb Jr' near miss; the runner leaves such a unit out as well)."""
     run = RUN[mode]
     kept = json.loads((RUNS / f"{run}_cases.json").read_text())["tests"]
     by_unit = {u["unit"]: u for u in json.loads((HERE / "suite" / "units.json").read_text())["units"]}
     cells = defaultdict(list)
     for uid in kept:
         u = by_unit[uid]
+        if rules.rulings.test_exclusion(json.loads((RUNS / f"{run}_cases" / u["domain"] / f"{uid}.json").read_text())):
+            continue
         cells[f"{u['domain']}/{mode}"].append({**u, "source": "regen_01"})
     return cells
 
