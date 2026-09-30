@@ -1,4 +1,5 @@
-"""The generation funnel of this study, as report_01's Table 5 counts it, with the policy units and the Muse cost.
+"""The generation funnel of this study, as report_01's Table 5 counts it, with the policy units and the Muse cost
+(generation, drop-F variants, and judge v2's verdicts in runs/judged_*).
 No model calls; plain python3 is enough (run after suite.py, policy_units.py and cut.py).
 
     python3 grounding/runs/regen_01/funnel.py [--json]
@@ -46,6 +47,8 @@ def main():
         status[r["status"]] = status.get(r["status"], 0) + 1
     gen_calls = [c for g in sorted(RUNS.glob("gen_*")) for c in calls(g)]
     dropf_calls = [c for d in sorted(RUNS.glob("dropf_*")) for c in calls(d)]
+    judged = {d.name: calls(d) for d in sorted(RUNS.glob("judged_*")) if d.is_dir()}
+    judge_calls = [c for rows in judged.values() for c in rows]
     result = {
         "briefs": 35, "brief_attempts": len(outcomes),
         "accepted_scenarios": sum(o["status"] == "accepted" for o in outcomes),
@@ -62,7 +65,9 @@ def main():
                            "read_invalid": sum(not v["valid"] for v in variants.values()),
                            "duplicates": sum("duplicate" in why for why in cut["underspecified_01"]["left_out"].values()),
                            "left_out": len(cut["underspecified_01"]["left_out"]), "valid": len(cut["underspecified_01"]["tests"])},
-        "cost": {"generation": cost(gen_calls), "drop_f": cost(dropf_calls), "all": cost(gen_calls + dropf_calls)},
+        "cost": {"generation": cost(gen_calls), "drop_f": cost(dropf_calls),
+                 "judge": {**cost(judge_calls), "by_folder": {name: cost(rows) for name, rows in judged.items()}},
+                 "all": cost(gen_calls + dropf_calls + judge_calls)},
     }
     result["tests_to_run"] = result["regular"]["valid"] + result["absence"]["valid"] + result["underspecified"]["valid"]
     if "--json" in sys.argv:
