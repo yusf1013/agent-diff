@@ -415,3 +415,10 @@ section. Decisions that stand go to the [roadmap](roadmap.md); this is the recor
   judge's verdict cache (`autogen_02/kit/judge2.py:124`, `autogen_01/kit/judge.py:135`: a re-judge from another
   checkout would treat every cached verdict as stale and call Muse again) is assigned as the third fix, to be proved
   without a model call.
+- 14:2x sol_score's third fix merged (608476c9cc; main fast-forwarded): both judges' verdict caches (`judge2.judge_one`,
+  autogen_01's `judge_one`) recognize a cached verdict by the attempt's path from grounding/runs/ on, through one
+  `same_attempt` in autogen_01/kit/judge.py; `judge2 check-cache` counts cached / stale / none without a model
+  call. From a worktree, before the fix, 0 of 951 verdicts across three folders counted as cached (a re-judge would
+  have called Muse for all of them); after it, 951 of 951, no verdict file touched (sha256 identical), a stale
+  verdict still caught. Checked from the main checkout: full_04's 205 verdicts (recorded in the removed worktree)
+  count as cached; score regress passes. sol_score's assignment is closed.
