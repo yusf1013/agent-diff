@@ -1,9 +1,12 @@
 # Automated fact-discrimination tests for tool-using agents: evaluation and results
 
-*A stub for the evaluation and results sections of a paper, written 2026-09-29 from the committed runs. It covers
-the experiments, what they show and what they do not. There is no introduction, background or related work. Every
-table names its source: a script in [kit/](kit/) and the JSON it writes into [numbers/](numbers/), or a run record.
-Rows marked "–" or "not measured" are measurements not yet made.*
+*A stub for the evaluation and results sections of a paper, written 2026-09-29 from the committed runs and brought
+to the rebuilt numbers on 2026-09-30 (the 10-minute budget, two PI rulings, duplicate policy units, blind_review_01;
+every change is logged in [README.md](README.md), "Text changes"). The numbers are those in [numbers/](numbers/) at
+commit a8c046c891. It covers the experiments, what they show and what they do not.
+There is no introduction, background or related work. Every table names its source: a script in [kit/](kit/) and the
+JSON it writes into [numbers/](numbers/), or a run record. Rows marked "–" or "not measured" are measurements not yet
+made.*
 
 ## 0. Setup
 
@@ -60,9 +63,10 @@ a PDF whose comment says the same thing but was posted by someone else.
   `team-design@…`). Before the final runs every made-up id was replaced by a random-looking one in the service's
   format, and tests that depend on today's date run with the agent's clock set to a fitting day. Box's ids are
   numbers and did not change.
-- **The 8-minute budget.** A trial whose agent time, rate-limiter waits excluded, passes 8 minutes is the agent's
-  failure. For a policy unit it counts as failing; in a regular test it exposes no fact. It was applied
-  retroactively; OpenClaw ran with a 10-minute limit.
+- **The 10-minute budget.** A trial that OpenClaw's own 600-second turn limit ends, or whose agent time,
+  rate-limiter waits excluded, passes 600 s, is the agent's failure. For a policy unit it counts as failing; in a
+  regular test it exposes no fact. Every final run used that limit; an earlier reading of 8 minutes (trials past 8
+  minutes counted as timed out) was withdrawn on 2026-09-29.
 - **The policy decision rule** was fixed in code before the runs ([policy.py](../openclaw_eval_01/policy.py)):
   - every run of every valid unit counts, with units as independent draws;
   - the rate is failing trials over usable trials, with a cluster bootstrap over units (20,000 resamples, seed
@@ -84,6 +88,11 @@ Source: [kit/scale.py](kit/scale.py) → [numbers/scale.json](numbers/scale.json
 - Median trial: 152 to 282 s depending on the run.
 - **Kept apart:** `full_01` (578 trials, stopped when the harness was found to leak the test's identity, §10) and
   three smoke runs (17 trials).
+- **Two rulings of 2026-09-30.** Two of the PI's blind-review rulings, applied on 2026-09-30, made two Box near misses
+  flawed and removed 2 probes and 6 policy units (2 absence, 4 underspecified). Their trials stay in the table above,
+  since they ran. The final results use 998 cases and 2,994 trials (563 regular tests, 242 absence and 193
+  underspecified units), down from 1,006 and 3,018. blind_review_01, judge_qwen_01 and values_01 used the earlier
+  3,018-trial manifest and keep their own populations.
 - **The toy harness** (earlier studies, reference only): 1,356 trial attempts and 10,802 requests
   ([autogen_02 overview](../autogen_02/overview.md) §4).
 
@@ -152,7 +161,7 @@ bookkeeping column, a configuration field, and so on).
   alternative).
 - **The 42 facts the replicas cannot serve** are 38 replica gaps (features the real services have and the replicas
   lack, mostly Linear) and 4 real limits (Calendar sharing rules the acting user cannot read). Source:
-  `grounding/runs/boundary_01/report.md` on branch `exp/automation-01`. The generator's briefs never draw them.
+  [boundary_01/report.md](../boundary_01/report.md) (merged into main). The generator's briefs never draw them.
 
 **Table 2. The same four services under route-based criteria.** Source: [counts.md](../fact_coverage_01/catalog/counts.md).
 
@@ -231,11 +240,19 @@ Label groups and Box tasks recur: the writer could not build scenarios on them t
   alone. Their probes were dropped because the near miss lost its trap once the target was removed, while the claim
   still passes the check in the cover. All 101 covers pass the reference check again here.
 - **Near-miss family.** 167 facts have at least one near miss through a designated substitute (F1–F8). 37 are
-  credited only through plain near misses (F0). 30 of those are state attributes, where another value is the
-  designated alternative; the other 7 are 5 text attributes, `A:Cycle.number` and `R:IssueRelation.relatedIssueId`.
-  Plain near misses expose less often than designated ones (RQ4, RQ8), so these 37 are covered by the rule but
-  tested more weakly.
-- **Facts per family** (a fact counted once per family it has): F1 81, F0 71, F8 41, F7 38, F2 30, F5 22, F6 13,
+  credited only through plain near misses (F0). Under the F0 rule (roadmap, 2026-09-29), a plain difference is the
+  designated alternative where the domain model names no other, which covers 36 of the 37:
+  - 30 state attributes, where another value is the alternative;
+  - 4 facts for which the domain model names no lure: Box `A:Hub.description`, Linear `A:Document.content` and
+    `A:Team.description`, Slack `A:User.title`;
+  - 2 whose lure the 2026-09-28 rulings make flawed, so a plain near miss is their only valid form: Linear
+    `A:Cycle.number` (a cycle *named* "Cycle 4" can be what a user means) and Slack `A:Message.message_text` (Slack
+    shows a message's blocks).
+
+  The 37th, Linear `R:IssueRelation.relatedIssueId` (the related issue's direction), has only a plain near miss
+  although the domain model names a lure; it is being regenerated with its lure (regen_01). Plain near misses expose
+  less often than designated ones (RQ4, RQ8).
+- **Facts per family** (a fact counted once per family it has): F1 81, F0 71, F8 40, F7 38, F2 30, F5 22, F6 13,
   F4 5, F3 1.
 
 ## RQ3. How well does the generator perform?
@@ -254,18 +271,18 @@ Label groups and Box tasks recur: the writer could not build scenarios on them t
 | Versions per accepted scenario, median (max) | 1 (5) | 2 (5) | 2 (6) | 2 (7) | – | |
 | Manual review: scenarios valid / flawed but usable / invalid | 16 / 1 / 1 | 11 / 4 / 0 | 15 / 1 / 0 | 24 / 5 / 0 | 21 / 2 / 0 | **87 / 13 / 1** |
 | Near misses declared | 67 | 56 | 62 | 99 | 93 | **377** |
-| … ruled flawed by the PI (rulings) | 2 | 3 | 2 | 0 | 1 | **8** |
+| … ruled flawed by the PI (rulings) | 2 | 3 | 2 | 0 | 3 | **10** |
 | Regular tests derived (cover, probe, fact probe) | 108 | 84 | 93 | 159 | 138 | **582** |
 | … dropped by the witness check | 0 | 3 | 2 | 1 | 1 | **7** |
-| … left out by the rulings | 4 | 3 | 2 | 0 | 1 | **10** |
-| **Valid regular tests** | **104** | **78** | **89** | **158** | **136** | **565** |
+| … left out by the rulings | 4 | 3 | 2 | 0 | 3 | **12** |
+| **Valid regular tests** | **104** | **78** | **89** | **158** | **134** | **563** |
 | Facts covered (RQ2) | 37 | 40 | 44 | 58 | 69 | **204** |
 
 - **Acceptance:** 101 of 108 brief runs (94%) gave an accepted scenario. The runs overlap: P v2 reran P's 16 briefs
   and 6b reran 3 of Phase 4's (G4-BOX-02, G4-CAL-08, G4-LIN-03). Of the 89 distinct briefs, 86 have an accepted
   scenario and 3 never did (G4-BOX-10, G4-LIN-18, G4-LIN-03). A brief is rejected when no version passes every check
   within the round limit; in the cases whose record gives the reason, the cold reader kept finding a problem.
-- **Validity:** 100 of 101 accepted scenarios are usable; 1 is invalid (AR-LIN-25). Of all derived tests, 565 of
+- **Validity:** 100 of 101 accepted scenarios are usable; 1 is invalid (AR-LIN-25). Of all derived tests, 563 of
   582 (97%) are valid. "Flawed but usable" means a contestable near miss or contrived wording; the PI's rulings
   decide what is left out.
 - **Sonnet versus Muse** is descriptive only: different briefs, facts, method versions and judges. Muse's scenarios
@@ -283,7 +300,7 @@ Label groups and Box tasks recur: the writer could not build scenarios on them t
   genuine ambiguity such as "my calendar list", unnatural requests).
 - **Per scenario** (Muse Phase 4): 14 of 32 sent back by the code checks or pre-checks, 4 by the reader. Of 31
   first drafts, 14 were clean and 17 were sent back, 10 of them for a substantive flaw (baselines_01,
-  `machinery.json` on branch `exp/baselines-01`).
+  `grounding/runs/baselines_01/machinery.json`).
 - **What no check caught** (found by the manual review or in runs): domain semantics (a Linear label group used as a
   label), fields the acting user cannot read (a calendar's sharing rules), and contrived or ambiguous wording.
 
@@ -298,68 +315,72 @@ and §6.4, [completion_01](../completion_01/README.md).
 | Drop-F, 6b | 70 | 53 | 11 | 5 | 1 | 51 / 53 |
 | Clone, Phase 4 | 29 | 25 | 3 | 1 (code check) | – | 11 / 11 reviewed |
 
-- **Policy units on OpenClaw** (RQ6): 255 absence units, 244 valid; 209 underspecified units, 197 valid.
+- **Policy units on OpenClaw** (RQ6): 255 absence units, 242 valid; 209 underspecified units, 193 valid (the two
+  rulings of 2026-09-30 left out 2 and 4 Box units). Two underspecified pairs are one request each (U-AP-SLK-03 and
+  U-G4-LIN-14, `openclaw_eval_01/rulings.py`, `DUPLICATE_UNITS`): both of each pair ran, and RQ6's statistic counts
+  each pair once, so its underspecified denominator is 191 units.
 - **A bug the checks missed:** the drop-F derivation named a variant by table and field without the fact's kind, so
   two facts of one column overwrote each other's records. It cost 6b five jobs, derived again, and Phase 4 two
   variants, not recovered because 6a's population had been fixed. Found while assembling 6b; now fixed
   (`variants2.dropf_id`).
 
 **Cost of generation** (Muse, [numbers/costs.json](numbers/costs.json)): writer and reader together, $0.62 per
-accepted scenario at list price in Phase 4 and $0.82 in 6b ($0.035 and $0.046 billed); $0.125 per valid regular test
+accepted scenario at list price in Phase 4 and $0.82 in 6b ($0.035 and $0.046 billed); $0.126 per valid regular test
 ($0.007 billed). Sonnet on the subscription: $1.78 to $5.47 per accepted scenario at list price. §12 has the rest.
 
 ## RQ4. What failures do the tests expose in a real agent harness?
 
-The 565 valid regular tests ran on OpenClaw with the self-hosted Qwen3.8-27B, 3 trials each: Box's tests from
+The 563 valid regular tests ran on OpenClaw with the self-hosted Qwen3.8-27B, 3 trials each: Box's tests from
 `full_02`, the other services' from the opaque-id re-run `full_03`, and 6b's from `full_04`. Every verdict is judge
-v2's (RQ5 measures it), under the PI's rulings and the 8-minute budget.
+v2's (RQ5 measures it), under the PI's rulings and the 10-minute budget.
 
 **Table 7. Exposure by service.** Source: [final_regular_with_6b.json](../openclaw_eval_01/runs/final_regular_with_6b.json);
 [kit/exposure.py](kit/exposure.py) → [numbers/exposure.json](numbers/exposure.json).
 
 | Service | Tests | Tests exposing a fact | Facts exposed, detect@3 | detect@1 | Facts covered | Share of covered facts exposed (detect@3) |
 |---|---:|---:|---:|---:|---:|---:|
-| Box | 139 | 39 | 27 | 21 | 56 | 48% |
-| Calendar | 103 | 32 | 17 | 12 | 34 | 50% |
-| Linear | 213 | 45 | 30 | 19 | 80 | 38% |
-| Slack | 110 | 22 | 13 | 8 | 34 | 38% |
-| **All** | **565** | **138 (24%)** | **87** | **60** | **204** | **43%** |
+| Box | 137 | 35 | 26 | 20 | 56 | 46% |
+| Calendar | 103 | 34 | 17 | 13 | 34 | 50% |
+| Linear | 213 | 47 | 31 | 19 | 80 | 39% |
+| Slack | 110 | 23 | 13 | 8 | 34 | 38% |
+| **All** | **563** | **139 (25%)** | **87** | **60** | **204** | **43%** |
 
 **Table 8. Exposure by test form, writer and kind of fact.** Same source.
 
 | | Tests | Exposing | Facts, detect@3 (detect@1) |
 |---|---:|---:|---:|
 | Cover (target present) | 100 | 12 (12%) | 12 (6) |
-| Probe (one near miss, absence permitted) | 363 | 101 (28%) | 79 (55) |
-| Fact probe (all near misses of a fact) | 102 | 25 (25%) | 25 (14) |
+| Probe (one near miss, absence permitted) | 361 | 103 (29%) | 79 (55) |
+| Fact probe (all near misses of a fact) | 102 | 24 (24%) | 24 (12) |
 | Sonnet R | 104 | 24 (23%) | 19 of 37 covered (13) |
-| Sonnet P | 78 | 17 (22%) | 12 of 40 (7) |
-| Sonnet P v2 | 89 | 18 (20%) | 15 of 44 (10) |
-| Muse Phase 4 | 158 | 45 (28%) | 26 of 58 (19) |
-| Muse 6b | 136 | 34 (25%) | 22 of 69 (14) |
+| Sonnet P | 78 | 18 (23%) | 13 of 40 (7) |
+| Sonnet P v2 | 89 | 19 (21%) | 15 of 44 (10) |
+| Muse Phase 4 | 158 | 47 (30%) | 26 of 58 (20) |
+| Muse 6b | 134 | 31 (23%) | 22 of 69 (13) |
 
 | Kind of fact | Covered | Exposed, detect@3 | detect@1 |
 |---|---:|---:|---:|
-| A attribute | 117 | 59 (50%) | 41 |
-| R relationship | 48 | 19 (40%) | 13 |
+| A attribute | 117 | 59 (50%) | 42 |
+| R relationship | 48 | 19 (40%) | 12 |
 | H hierarchy | 5 | 1 | 1 |
 | B binding | 22 | 4 (18%) | 2 |
 | D derived | 12 | 4 (33%) | 3 |
 
 - **Probes carry the exposure.** With the target present, the agent picks the right record far more often: 12% of
-  covers expose a fact against 28% of probes. Covers are still needed for credit on 2 facts (RQ2) and test the
+  covers expose a fact against 29% of probes. Covers are still needed for credit on 2 facts (RQ2) and test the
   write itself.
-- **By near-miss family** (probes): designated substitutes 84 of 282 (30%) against plain F0 near misses 17 of 81
-  (21%). F8 partial identity (a similar name, a shared prefix) exposes most: 25 of 52 probes (48%); then F1 sibling
-  role or attribute 31 of 98 (32%), F7 neighbouring value 13 of 50 (26%), F6 representation 4 of 16, F2 indirection
-  6 of 32 (19%), F5 split binding 4 of 28 (14%).
-- **Trials:** of 1,695, 254 fail and count (15%), 1,310 pass, 104 ran over the 8-minute budget (no exposure), 14
-  failed only on flawed near misses (not counted) and 13 are void.
+- **By near-miss family** (probes): designated substitutes 86 of 280 (31%) against plain F0 near misses 17 of 81
+  (21%). F8 partial identity (a similar name, a shared prefix) exposes most: 24 of 51 probes (47%); then F1 sibling
+  role or attribute 34 of 98 (35%), F7 neighbouring value 13 of 50 (26%), F6 representation 5 of 16, F2 indirection
+  5 of 31 (16%), F5 split binding 4 of 28 (14%).
+- **Trials:** of 1,689, 255 fail and count (15%), 1,348 pass, 52 were ended by the 10-minute budget (no exposure),
+  20 failed only on flawed near misses (not counted) and 14 are void.
 
 **Opaque ids matter.** Before the final runs, the Calendar, Linear and Slack tests had seed ids that could name a
-record's role. On the same 333 tests, with the same rules and judge, the opaque-id re-run exposes more: 80 tests
-against 65 and 48 facts against 42 (Calendar 23 → 25 tests, Linear 23 → 33, Slack 19 → 22). The two runs are a day
-apart, not interleaved. Source: [openclaw_eval_01](../openclaw_eval_01/README.md), "Results: the regular suite".
+record's role. On the same 333 tests, with the same rules and judge, the opaque-id re-run exposes more: 84 tests
+against 70 and 48 facts against 44 (Calendar 23 → 27 tests, Linear 26 → 34, Slack 21 → 23). The two runs are a day
+apart, not interleaved. Source: [full_02.adjudicated.json](../openclaw_eval_01/runs/full_02.adjudicated.json) (the
+original ids) and [full_03.adjudicated.json](../openclaw_eval_01/runs/full_03.adjudicated.json), `by`.
 
 **Reference: the same model in the toy harness.** Qwen on Purdue ran 332 of these tests earlier, with the original
 ids, before the rulings; autogen_01's arms were judged by judge v1 (Sonnet), Phase 4 by judge v2. Not comparable
@@ -395,6 +416,7 @@ are counted apart.
 | Toy harness | underspecified | 53 | 52 | 52 | 0 | 0 | 0 | 0 | 0 | 1 | 52 / 52 |
 | Toy harness | policy, mixed (Phase 4) | 30 | 30 | 29 | 0 | 0 | 1 | 0 | 0 | 0 | 29 / 29 |
 | **Toy harness** | **all** | **203** | **197** | **141** | **1** | **0** | **55** | **1** | **0** | **5** | **141 / 141** |
+| *OpenClaw, AI reference labels (blind_review_01)* | all forms, final runs | 132 | 128 | 68 | 4 | 0 | 51 | 9 | 0 | 0 | 68 / 68 |
 
 - **On OpenClaw, no false positive and no false negative** in 428 trials both call usable. With a random sample,
   these are estimates: 0 misses in 195 labelled failures bounds the miss rate below 1.5% (95%, rule of three), and
@@ -407,13 +429,23 @@ are counted apart.
 - **Toy harness.** The one false positive is a contested Slack test; the PI ruled for the judge (the acting bot
   counts as a channel member). Every trial of Phase 1 was also labelled by hand (252 trials, not blind): judge v2
   agrees on 239 (95%), and 12 of the 13 misses are trials of 4 hand-built policy variants with defects.
+- **A second reference review (blind_review_01, the last row).** Codex labelled 200 of the 2,705 executions
+  of the earlier 3,018-trial manifest (§0.4) that had no earlier label (seeded, stratified by service and form; 185
+  distinct cases), with PI decisions affecting 12 of them, and locked the labels before seeing any verdict or
+  mechanical score. These are **AI reference labels, not a second human annotator.** The pipeline (judge v2 where it read the execution, mechanical
+  triage otherwise) agrees on 186 of 190 executions both call non-void (68 TP, 4 FP, 0 FN, 118 TN); judge v2 alone on
+  119 of 123; triage alone on 67 of 67 (all passes). Exposed facts agree on all 68 joint failures. The 4 false
+  positives follow from three interpretation questions the PI settled before unblinding, where the judge read the
+  request more strictly. Case-cluster bootstrap 95% intervals for exact agreement, weighted to the eligible pool:
+  96.1% to 99.5% (pipeline) and 94.3% to 99.3% (judge). One execution stays uncertain by the PI's choice. Sources:
+  [blind_review_01](../blind_review_01/README.md), `numbers.json`, `uncertainty.json`, `report.md`.
 - **Coverage of the check:** 658 blind trials in all, against 3,033 judge v2 verdicts on OpenClaw and about 1,000
-  on the toy harness. The trials the judge did not read are ones the mechanical triage found clean. In `full_02`,
+  on the toy harness, plus blind_review_01's 200 final executions. The trials the judge did not read are ones the mechanical triage found clean. In `full_02`,
   the judge read 227 such clean trials (its 20% sample and the blind ones) and changed the triage's call on 2
   (baselines_01, ablation 7).
 
 **Table 10. Judges given the same trials.** Source: [judge_baselines_01](../judge_baselines_01/README.md)
-(`score.json`); the plain judge from baselines_01 on branch `exp/baselines-01` (`q4/plain_openclaw.score.json`).
+(`score.json`); the plain judge from baselines_01 (`grounding/runs/baselines_01/q4/plain_openclaw.score.json`).
 
 | Judge | What it reads | OpenClaw, 178 trials (94 mistakes): precision / recall | Toy harness, 191 blind trials (139 mistakes) |
 |---|---|---|---|
@@ -443,14 +475,19 @@ the runs (§0.3). Every valid unit of the generated scenarios ran, 3 trials each
 
 | Cell | Valid units | Failing / usable trials | Rate [p10, p90] | Units failing 0 / 1 / 2 / 3 of 3 | **Decision** | First pass (fewer units) | Same model, toy harness |
 |---|---:|---:|---|---|---|---|---|
-| Box, absence | 60 | 142 / 179 | 0.79 [0.74, 0.85] | 6 / 4 / 11 / 38 | **undecided** | undecided (0.75) | policy-level |
-| Calendar, absence | 42 | 104 / 126 | 0.83 [0.77, 0.88] | 3 / 2 / 9 / 28 | **undecided** | not policy-level | policy-level |
-| Linear, absence | 99 | 202 / 294 | 0.69 [0.64, 0.74] | 17 / 13 / 14 / 52 | **not policy-level** | not policy-level | policy-level |
-| Slack, absence | 43 | 80 / 129 | 0.62 [0.54, 0.70] | 10 / 5 / 9 / 19 | **not policy-level** | not policy-level | policy-level |
-| Box, underspecified | 56 | 97 / 167 | 0.58 [0.52, 0.65] | 10 / 15 / 9 / 21 | **not policy-level** | not policy-level | policy-level |
-| Calendar, underspecified | 30 | 52 / 90 | 0.58 [0.49, 0.67] | 6 / 7 / 6 / 11 | **not policy-level** | not policy-level | policy-level |
-| Linear, underspecified | 79 | 120 / 236 | 0.51 [0.45, 0.57] | 25 / 10 / 19 / 24 | **not policy-level** | not policy-level | policy-level |
-| Slack, underspecified | 32 | 79 / 96 | 0.82 [0.75, 0.89] | 2 / 3 / 5 / 22 | **undecided** | undecided (0.80) | policy-level |
+| Box, absence | 58 | 126 / 165 | 0.76 [0.70, 0.82] | 6 / 4 / 10 / 31 | **undecided** | undecided (0.75) | policy-level |
+| Calendar, absence | 42 | 101 / 124 | 0.82 [0.75, 0.87] | 4 / 1 / 8 / 27 | **undecided** | not policy-level | policy-level |
+| Linear, absence | 99 | 160 / 263 | 0.61 [0.55, 0.67] | 21 / 12 / 9 / 35 | **not policy-level** | not policy-level | policy-level |
+| Slack, absence | 43 | 75 / 125 | 0.60 [0.52, 0.68] | 10 / 5 / 5 / 19 | **not policy-level** | not policy-level | policy-level |
+| Box, underspecified | 52 | 65 / 136 | 0.48 [0.41, 0.55] | 10 / 12 / 6 / 12 | **not policy-level** | not policy-level | policy-level |
+| Calendar, underspecified | 30 | 37 / 81 | 0.46 [0.36, 0.56] | 8 / 5 / 3 / 8 | **not policy-level** | not policy-level | policy-level |
+| Linear, underspecified | 78 | 83 / 205 | 0.41 [0.34, 0.47] | 25 / 10 / 5 / 17 | **not policy-level** | not policy-level | policy-level |
+| Slack, underspecified | 31 | 63 / 82 | 0.77 [0.69, 0.84] | 2 / 3 / 4 / 12 | **undecided** | undecided (0.80) | policy-level |
+
+Two underspecified pairs are one request each (RQ3), so each pair counts once: Linear 79 → 78 and Slack 32 → 31
+valid units, the pair's trials pooled. The two rulings of 2026-09-30 left out 2 Box absence and 4 Box
+underspecified units (§0.4). The spread counts units with exactly 3 usable trials. The first-pass column
+is the first pass's own record, not recomputed.
 
 - **The same model is policy-level in all eight cells in the toy harness, and in none on OpenClaw:** five cells are
   shown not policy-level and three are undecided with every unit used. The harness changes the answer.
@@ -462,10 +499,10 @@ the runs (§0.3). Every valid unit of the generated scenarios ran, 3 trials each
 - **Readings other than the fixed one** (the same file, `readings`): if a unit counts as failing when any of its 3
   trials fails, Box absence, Calendar absence and Slack underspecified become policy-level and the others stay
   undecided or not; if a unit must fail all 3, every cell is not policy-level.
-- **The 8-minute budget changes no decision.** With over-budget trials left as the judge called them, the rates are
-  0.77, 0.82, 0.61, 0.60 (absence) and 0.49, 0.46, 0.41, 0.77 (underspecified).
+- **The budget reading changes no decision.** Under the withdrawn 8-minute reading, before the two rulings, the rates
+  were 0.79, 0.83, 0.69, 0.62 (absence) and 0.58, 0.58, 0.51, 0.82 (underspecified), with the same eight decisions.
 - **Writers differ.** In both Calendar cells, units from Muse's scenarios fail more often than units from Sonnet's:
-  absence 0.90 (Phase 4) and 0.96 (6b) against 0.64; underspecified 0.71 and 0.53 against 0.37.
+  absence 0.88 (Phase 4) and 0.96 (6b) against 0.64; underspecified 0.64 and 0.27 against 0.23.
 
 **Table 12. The per-fact policy space.** Same source (`totals`, `regular_vs_policy_facts`, `by_source`).
 
@@ -473,30 +510,31 @@ the runs (§0.3). Every valid unit of the generated scenarios ran, 3 trials each
 |---|---:|---:|---:|
 | Requirements (one per covered fact) | 204 | 204 | 408 |
 | Units derived (every fact of every scenario) | 255 | 209 | 464 |
-| Valid units, all run and judged | 244 | 197 | 441 |
-| Facts with a valid unit | 197 | 173 | 370 (91% of 408) |
-| Facts failing at least one trial (detect@3) | 169 | 140 | 309 |
-| Facts failing the first trial (detect@1) | 145 | 111 | 256 |
-| … of those with a unit: also exposed by a regular test | 82 | 62 | |
-| … failing the policy unit only | 87 | 78 | |
-| … exposed by a regular test only | 2 | 12 | |
-| … neither | 26 | 21 | |
+| Valid units, all run | 242 | 193 (191 with each duplicate pair once) | 435 (433) |
+| … with a usable trial | 238 | 185 | 423 |
+| Facts with a valid unit | 195 | 170 | 365 (89% of 408) |
+| Facts failing at least one trial (detect@3) | 157 | 111 | 268 |
+| Facts failing the first trial (detect@1) | 129 | 80 | 209 |
+| … of those with a unit: also exposed by a regular test | 77 | 52 | |
+| … failing the policy unit only | 80 | 59 | |
+| … exposed by a regular test only | 6 | 21 | |
+| … neither | 32 | 38 | |
 
 - **Units exceed requirements** because a fact can have near misses in several scenarios; the unit is the scenario's
   fact. Some facts have no valid unit (a derivation not possible, a variant declined or ruled invalid).
-- **The same facts show up in both kinds of test.** Of the 84 facts that a regular test exposes and that have an
-  absence unit, 82 also fail it. Another 87 facts pass every regular test but fail when the request presumes the
+- **The same facts show up in both kinds of test.** Of the 83 facts that a regular test exposes and that have an
+  absence unit, 77 also fail it. Another 80 facts pass every regular test but fail when the request presumes the
   record: the agent can check the fact when it may report absence, and does not when the request presumes a match.
 - **Per-fact counting of policy failures.** A policy failure is attributed to the fact of the near miss acted on
   (absence) or of the condition dropped (underspecified), exactly as in regular tests. The totals above count facts,
   not failing tests.
-- **Muse's Phase 4 scenarios alone** (for comparison with the baselines, RQ8): 60 absence units over 56 facts, 45
-  failing; 50 underspecified units over 52 facts, 41 failing.
+- **Muse's Phase 4 scenarios alone** (for comparison with the baselines, RQ8): 60 absence units over 56 facts, 43
+  failing; 50 underspecified units over 52 facts, 32 failing.
 
 **Answer to RQ6.** For Qwen in the toy harness the policy tests collapse to 8. For the same model in OpenClaw they
 do not: failures depend on the fact, and a per-fact policy space of about 400 tests is what finds them. On this
-agent it found absence failures on 169 facts and underspecified failures on 140 (309 fact and mode pairs at
-detect@3, 256 at detect@1).
+agent it found absence failures on 157 facts and underspecified failures on 111 (268 fact and mode pairs at
+detect@3, 209 at detect@1).
 
 ## RQ7. What do the trials show outside the grounding criterion?
 
@@ -504,8 +542,9 @@ The criterion and judge v2 grade one thing: which record the agent acted on. A t
 still do harm: write a wrong value, change fields or records the request never mentioned, or create what the
 request presumed. None of this counts in RQ4 or RQ6. We measured it mechanically from each trial's state diff and
 read every flagged trial by hand. Source: [kit/beyond.py](kit/beyond.py) → [numbers/beyond.json](numbers/beyond.json)
-(its `examples` list the trials). Trials: the 1,695 of the regular suite's final score and the 1,323 of the policy
-populations (the first pass's looks for Box's units).
+(its `examples` list the trials). Trials: the 1,689 of the regular suite's final score and the 1,323 of the policy
+populations (the first pass's looks for Box's units), which still include the 18 trials of the 6 units the two
+rulings of 2026-09-30 left out (§0.4).
 
 **Table 13. Values written, against the value the request states.** Checked where the value can be read off the
 request without interpretation.
@@ -514,7 +553,7 @@ request without interpretation.
 |---|---:|---:|---:|---:|
 | Linear priority ("…to Urgent") | 58 (31 on the target) | **42 (23 on the target)** | 91 | **63** |
 | Linear estimate ("estimate to 5") | 58 | 0 | 75 | 0 |
-| Box tag ("Add the tag X") | 105 | 0 | 198 | 0 |
+| Box tag ("Add the tag X") | 99 | 0 | 198 | 0 |
 | Slack reaction ("a :tada: reaction") | 45 | 0 | 74 | 0 (1 ambiguous: asked for a "check" reaction, which names no exact emoji; wrote "done") |
 | Slack archive or unarchive | 14 | 0 | 15 | 0 |
 | Calendar hide | 21 | 0 | 17 | 0 |
@@ -537,25 +576,36 @@ request without interpretation.
 | Created the record the request presumed | 3 | 10 | 2 | Asked to tag "the PDF … with a top-level comment by Dana Whitfield saying 'approved for launch'", it tagged a PDF and posted that comment itself (Box, 14 trials); created the attachment it was asked to rename (Linear, 1) |
 | Changed the record to fit the request | – | 2 | – | Asked for "the issue assigned to the active human admin", it reassigned a bot's issue to the admin, then set the estimate, and said so |
 | Changed other fields on the record, disclosed | 2 | – | – | Hid a calendar and also unchecked it |
-| Changed other fields, harmful | – | 1 | – | Moving a meeting to Room 5B, it also moved it from 10:00 to 17:00 (a time-zone error) and reset the attendees' replies, then reported the old time |
+| Changed other fields, harmful | – | 1 | – | Moving a meeting to Room 5B with a full update, it reset both attendees' accepted replies (the diff's time columns moved 10:00 → 17:00 only in the replica's storage, below) |
 | Other small writes | 2 | – | – | Opened a Slack DM; set a document icon |
 | Acted on a record outside the test's declared set | 0 | 4 | 0 | Hid "Team Calendar", a calendar that is not one of the near misses |
-| Wrote a record, then restored it | 6 | 3 | 4 | Renamed the wrong team, noticed, renamed it back |
-| **Trials writing anything** | **547 of 1,695** | **466 of 732** | **251 of 591** | |
+| Wrote a record, then restored it | 6 | 0 | 2 | Renamed the wrong team, noticed, renamed it back |
+| Wrote a value already there, or a field the record lacks | 0 | 3 | 2 | "Hid" a calendar that was already hidden |
+| Posted a comment, then deleted it (no trace in the diff) | 1 | 1 | 0 | Posted "approved for launch" as the actor, then deleted it |
+| **Trials writing anything** | **541 of 1,689** | **466 of 732** | **251 of 591** | |
 
 - **The presumption habit shows here too.** In RQ6 the agent acts on a near miss when the request presumes a record;
   here it sometimes makes the presumption true instead (17 trials), by posting the comment, creating the attachment
   or reassigning the issue.
 - **Replica effects, not the agent's:** Box's replica clears a file's shared link and lock when an update omits
   them. 32 trials show such a change; it is a replica defect, recorded, not scored.
-- **Not measured:** values whose request needs interpretation (dates, free text, colours, time zones), except where a
-  flagged trial showed one; a check of disclosure (whether the final reply reports what was written).
+- **Corrections from values_01's hand reading** (its `eval/labels.jsonl`). The restore row first counted the 13
+  trials whose diff shows a record touched and left unchanged (6, 3, 4); read with their trajectories they are 8
+  restorations and 5 no-op writes, and 2 more writes (comments posted and deleted) leave no trace in any diff. The
+  meeting did not move: the replica stores times written through the API in UTC and seeded times as local time, so
+  the diff's time columns changed while the API still shows 10:00, and the reply's time was right.
+- **A fuller value audit: values_01** ([report](../values_01/report.md)) checked all 3,018 executions of the earlier
+  manifest (§0.4) for values written against a value declared per scenario, side effects in the diff and the
+  transcript, and the final reply against the diff. Literal values are copied exactly (1,275 of 1,399 writes); the
+  errors are interpretations (Linear's priority scale, a colour's palette, a year taken from the run date). 179
+  executions carry such a finding, 52 with a passing grounding verdict; 96 replies state the requested value while
+  another was written, 60 misstate a priority, and 9 of 15 writes the final state does not show were not disclosed.
 
 ## RQ8. Baselines and ablations
 
-A separate study, baselines_01 (branch `exp/baselines-01`, `grounding/runs/baselines_01/report.md` and
-`compare.json`), compares our tests with what a coding agent writes when asked directly, and removes parts of our
-system one at a time. Everything below ran on the same agent (OpenClaw, Qwen3.8-27B, k = 3). Each baseline trial was
+A separate study, baselines_01 ([`grounding/runs/baselines_01/report.md`](../baselines_01/report.md) and
+`compare.json`, now on main), compares our tests with what a coding agent writes when asked directly, and removes
+parts of our system one at a time. Everything below ran on the same agent (OpenClaw, Qwen3.8-27B, k = 3). Each baseline trial was
 labelled by hand before any assertion result or judge verdict was read; one person labelled.
 
 ### 8.1 Two baselines
@@ -566,17 +616,22 @@ labelled by hand before any assertion result or judge verdict was read; one pers
 - **Mutated twins (N0M, N1M):** B1 and B2 again with the fixes a reviewer would ask for first ("each test a different
   property", "challenging but passable", "neutral ids").
 - **Ours:** Muse's Phase 4 tests, as expected values over random draws of 12 per service from its 158 tests, on the
-  first pass (`full_02`). Phase 4's final score is close: 45 tests exposing and 26 facts, against 41 and 28 in the
-  first pass.
+  first pass (`full_02`). Phase 4's final score, under the 10-minute budget, is 47 tests exposing and 26 facts; the
+  first pass had 41 and 28 as baselines_01 counted it, before the budget changed.
 
 **Table 14. Baselines against ours, per 48 tests.** Source: baselines_01 `compare.json`, `policy_facts.json`,
-`oracles.score.json`; our policy row from [numbers/policy.json](numbers/policy.json) (`by_source`).
+`oracles.score.json`; our policy row from [numbers/policy.json](numbers/policy.json) (`by_source`). The coverage rows
+count F1–F8 near misses on both sides; the F0 rule (RQ2) would add plain near misses for states and six facts, on
+neither side here. Our column is Phase 4's first pass as baselines_01 computed it, before the 10-minute budget, and
+is not recomputed. For all 292 Muse regular tests with final outcomes under the 10-minute budget, the expectation per
+48 tests is 12.2 facts exposed at detect@3, 7.7 at detect@1 and 14.0 tests exposing
+([numbers/concise.json](numbers/concise.json), `equal_budget_muse_final`).
 
 | | B1: N0 | B1 + fixes: N0M | B2: N1 | B2 + fixes: N1M | Ours (Phase 4) |
 |---|---:|---:|---:|---:|---:|
 | Tests / valid | 48 / 45 | 48 / 42 | 48 / 41 | 48 / 41 | 48 of 158, all valid |
 | Near misses through a designated substitute (F1–F8) | 9 of 48 | 17 of 53 | 21 of 58 | 19 of 66 | 81 of 99 |
-| Facts exercised properly (credit rule), valid tests | 7 | 12 | 17 | 13 | 34.0 |
+| Facts exercised properly (F1–F8), valid tests | 7 | 12 | 17 | 13 | 34.0 |
 | **Facts exposed, fact-sensitive tests (detect@3 / detect@1)** | **0 / 0** | **0 / 0** | **0 / 0** | **0 / 0** | **11.0 / 7.2** |
 | Failing tests (detect@3), and their kind | 5, all presupposing | 0 | 2, presupposing | 3: 2 presupposing, 1 a timeout without a write | 12.5, all fact-level |
 | Policy-level facts, designated near misses only (baselines_01's count) | 0 / 0 | 0 / 0 | 1 / 1 | 0 / 0 | – |
@@ -591,7 +646,7 @@ labelled by hand before any assertion result or judge verdict was read; one pers
   as raw failing tests, B1 (5) would look productive; counted as facts, it is not.
 - **Policy-level failures counted by fact.** Our policy tests count the fact of the near miss acted on (RQ6), so the
   baselines' presupposing tests should too. Our own Phase 4 policy units, with every one run: 60 absence units over
-  56 facts, 45 failing (39 through designated near misses); 50 underspecified units over 52 facts, 41 failing (38).
+  56 facts, 43 failing (37 through designated near misses); 50 underspecified units over 52 facts, 32 failing (29).
   These are not per 48 tests: our regular suite has no presupposing tests, and the policy units are generated
   apart.
 - **A counting difference we found in the baseline study.** It counts a plain near miss (F0) as exposing its fact in
@@ -718,11 +773,11 @@ ignore `fields`); two upstream covers are contestable (AR-LIN-24's "Cycle 4", G4
 [kit/mechanisms.py](kit/mechanisms.py) → [numbers/mechanisms.json](numbers/mechanisms.json). Judge v2 records the same
 mechanisms on every failing trial it reads ([numbers/exposure.json](numbers/exposure.json)).
 
-| Mechanism | Regular (22 failures) | Absence (95) | Judge v2, all 254 counted regular failures |
+| Mechanism | Regular (22 failures) | Absence (95) | Judge v2, all 255 counted regular failures |
 |---|---:|---:|---:|
-| Saw the mismatch and acted anyway | 13 | 74 (78%) | 156 (61%) |
+| Saw the mismatch and acted anyway | 13 | 74 (78%) | 164 (64%) |
 | Never checked the deciding field | 5 | 12 | 63 (25%) |
-| Checked it and misread it | 4 | 9 | 35 (14%) |
+| Checked it and misread it | 4 | 9 | 28 (11%) |
 
 - **Seeing is not stopping.** OpenClaw's agent usually inspects the deciding field, reports the difference, and acts
   on the closest record anyway ("likely a typo", "the only match"). The same model in the toy harness failed
@@ -730,14 +785,15 @@ mechanisms on every failing trial it reads ([numbers/exposure.json](numbers/expo
 - **Underspecified requests:** in 58 of 138 usable blind trials (42%) the agent asked which match was meant, which is
   right. Otherwise it acted on one match or on all of them, usually disclosing the others afterwards. In the toy
   harness it asked once in 435 trials.
-- **What bites:** near misses by partial identity (a similar name, a shared prefix) expose in 48% of their probes;
-  sibling roles or attributes 32%; neighbouring values 26%; plain near misses 21% (RQ4). Attributes are exposed more
+- **What bites:** near misses by partial identity (a similar name, a shared prefix) expose in 47% of their probes;
+  sibling roles or attributes 35%; neighbouring values 26%; plain near misses 21% (RQ4). Attributes are exposed more
   often than bindings (50% against 18% of covered facts).
 - **Habits beyond grounding** (RQ7): Linear's priority scale read upside down in 70% of priority writes; making a
   presumed record true (posting the comment the request describes, reassigning an issue to the named person);
   occasional harmful side effects.
-- **Time:** 104 of 1,695 regular trials ran past the 8-minute budget, as did 188 of 1,170 policy-population trials;
-  some agents debug a replica error until the limit (§10.4).
+- **Time:** 52 of 1,689 regular trials were ended by the 10-minute budget. Under the withdrawn 8-minute reading, 188
+  of 1,170 policy-population trials had run past 8 minutes (not recounted under the 10-minute budget). Some agents
+  debug a replica error until the limit (§10.4).
 
 ### 10.2 What the harness does to the measurement
 
@@ -749,7 +805,7 @@ mechanisms on every failing trial it reads ([numbers/exposure.json](numbers/expo
 - **The agent still notices tests.** Remarks on a trap, a decoy or a test appear in 25.6% of `full_02`'s trials,
   19.9% of `full_03`'s (opaque ids) and 22.8% of `full_04`'s ([numbers/awareness_full_03.json](numbers/awareness_full_03.json),
   [awareness_full_04.json](numbers/awareness_full_04.json)); in the toy harness, 11 of 221 and 1 of 261 trials.
-- **Ids that name roles hand over the answer.** Opaque ids raised exposure on the same 333 tests from 65 to 80 tests
+- **Ids that name roles hand over the answer.** Opaque ids raised exposure on the same 333 tests from 70 to 84 tests
   (RQ4).
 - **Some tests are right only on some days.** "On Tuesday", "overdue" and "the next milestone" need the agent's clock
   set; the date check first missed one of them.
@@ -759,7 +815,8 @@ mechanisms on every failing trial it reads ([numbers/exposure.json](numbers/expo
 - **Enforce every check.** The witness check ran from the start, but its result was ignored until the frozen
   version: 7 tests would have run with no trap.
 - **Automated checks do not replace a reader.** Domain semantics, fields the actor cannot read and contrived wording
-  reached the manual review; 8 near misses and 1 scenario were ruled out by the PI.
+  reached the manual review; 10 near misses and 1 scenario were ruled out by the PI, 2 of the near misses only after
+  blind_review_01's reading (§0.4).
 - **Covers rarely expose; probes do.** A generator that writes only target-present tests finds almost nothing on
   this agent (RQ8).
 - **Identifiers need a collision check.** The drop-F derivation silently lost 7 variants to a naming collision.
@@ -776,19 +833,22 @@ mechanisms on every failing trial it reads ([numbers/exposure.json](numbers/expo
 ## 11. Threats to validity
 
 - **One model.** Qwen3.8-27B, in two harnesses. No second model ran the final suite.
-- **One labeller.** The same person wrote the blind labels, the validity reviews and the variant reads. Labels were
-  written before the verdicts, but there is no second annotator and no inter-rater agreement.
-- **Judge validation is a sample.** 455 of about 3,000 OpenClaw verdicts have a blind label. The bounds in RQ5 hold for
-  the sampled runs.
+- **One human labeller.** The same person wrote the blind labels, the validity reviews and the variant reads. Labels
+  were written before the verdicts. blind_review_01 is a second reference review, but by an AI (Codex, with the PI's
+  adjudication), not a second human; there is no inter-rater agreement between people.
+- **Judge validation is a sample.** 455 of about 3,000 OpenClaw verdicts have a blind label, and blind_review_01 adds
+  AI reference labels on 200 final executions of the earlier manifest. The bounds in RQ5 hold for the sampled runs.
 - **Rulings made by the team.** The PI ruled on contested near misses after the first pass had been seen; the rulings
-  are recorded and applied by code, and change coverage by 1 fact.
-- **The 8-minute budget was applied after the runs,** which ran with a 10-minute limit. No policy decision changes
-  without it.
+  are recorded and applied by code, and change coverage by 1 fact. Two more, from blind_review_01's reading, were
+  applied on 2026-09-30 (§0.4).
+- **The budget.** The 10-minute budget is OpenClaw's own turn limit, which every final run used. An earlier 8-minute
+  reading, applied after the runs, was withdrawn on 2026-09-29; no policy decision depends on the choice (RQ6).
 - **The opaque-id comparison is not same-day.** The two runs are a day apart on the same self-hosted server.
 - **Replicas are not the services.** 42 facts cannot be served, and replica artifacts void some trials.
 - **Writers are confounded.** Sonnet and Muse differ in briefs, method version and judge; comparisons are descriptive.
-- **Coverage includes weak credit.** 37 facts are credited through plain near misses only, and 2 through a cover
-  only.
+- **Coverage includes weaker credit.** 37 facts are credited through plain near misses only: under the F0 rule that
+  is the designated form for 36 of them, and the 37th is being regenerated with its lure (RQ2). 2 facts are credited
+  through a cover only.
 - **Test awareness** at about 20% of trials may change the agent's behaviour in either direction.
 - **Baselines** are 48 tests per arm with one labeller and one agent.
 - **The extensions** ran on the toy harness only.
@@ -818,7 +878,7 @@ mechanisms on every failing trial it reads ([numbers/exposure.json](numbers/expo
 | Unit | Cost |
 |---|---:|
 | Accepted scenario (writer and reader) | $0.62 (Phase 4), $0.82 (6b); ($0.035, $0.046) |
-| Valid regular test | $0.125 ($0.007) |
+| Valid regular test | $0.126 ($0.007) |
 | Judge v2 verdict on an OpenClaw trial | $0.029 ($0.002) |
 | Judging per OpenClaw trial run (4,464) | $0.020 ($0.0014) |
 | Baseline test (B1, B2), for comparison | $0.011 to $0.014 at list |
@@ -835,9 +895,9 @@ mechanisms on every failing trial it reads ([numbers/exposure.json](numbers/expo
 | Baselines for the policy tests (neither baseline wrote an underspecified test) | – |
 | The several-match and boundary extensions on OpenClaw | – |
 | Baselines for the extensions | – |
-| A second annotator on the blind samples | – |
-| Value checks for dates, free text and time zones (RQ7) | – |
-| Disclosure: does the final reply report what was written? | – |
+| A second human annotator on the blind samples | – (blind_review_01's reference labels are an AI's, RQ5) |
+| Value checks for dates, free text and time zones (RQ7) | Audited once by values_01, on the earlier manifest (RQ7); not part of the pipeline |
+| Disclosure: does the final reply report what was written? | Audited once by values_01 (RQ7); not part of the pipeline |
 | The 9 servable facts left uncovered (label groups, Box tasks) | – |
 | Phase 4's 2 drop-F variants lost to the naming bug | – |
 | The full baseline comparison proposed in baselines_01 | – |
