@@ -5,10 +5,11 @@ Session "values", started 2026-09-29 by the lead session ("RoadMap specialist").
 
 ## Status
 
-- **2026-09-30, cycle 1 done:** the checks are built and run on all 3,018 executions ([kit/](kit/), outputs in
-  `data/`). Counts in `data/counts.json`. **Next:** the hand-read precision sample, the restore cases, the recall
-  checks against the blind labels, then the report.
-- Nothing is blocked. No model calls so far ($0).
+- **2026-09-30, done:** the report is [report.md](report.md): the check definitions, the counts, the hand reading
+  (123 labels on 99 executions, 30 recall reads), precision per check, recall, examples and the value-layer proposal.
+  Three development cycles (log below). No model calls ($0).
+- **For the lead:** AR-BOX-24 as a known-defects candidate (a test-side clock); five replica findings; a correction to
+  report_01's RQ7 restore row. Waiting for the next assignment.
 
 ## The question
 
@@ -42,7 +43,7 @@ the reply (what the agent said it did or found). Test validity, solver failures 
 
 1. **Value specifications.** The cases carry no structured requested value: it lives in the request's wording.
    For each of the 100 scenarios I write the requested value of each written field by hand, with its comparator.
-   A mechanical extractor over the request is measured against these specifications.
+   (A mechanical extractor over the request was dropped: the proposal is to declare the value at construction.)
 2. **Written values**, on every execution that writes: dates and times (with time zones), free text (exact,
    normalized, paraphrased, wrong), booleans and states, enumerations, and records named as values.
 3. **Side effects:** from the diff (other rows, other fields, inserts) and from the transcript (write commands whose
@@ -62,8 +63,14 @@ Run from the repository root with the backend's Python, in this order (each writ
 python grounding/runs/fact_coverage_02/launch.py grounding.runs.values_01.kit.values   # values written, side effects in the diff
 python grounding/runs/fact_coverage_02/launch.py grounding.runs.values_01.kit.writes   # write commands in the transcript
 python grounding/runs/fact_coverage_02/launch.py grounding.runs.values_01.kit.reply    # the reply against the diff
+python grounding/runs/fact_coverage_02/launch.py grounding.runs.values_01.kit.times    # R5: stated times (Calendar)
 python grounding/runs/fact_coverage_02/launch.py grounding.runs.values_01.kit.counts   # the counts
+python grounding/runs/fact_coverage_02/launch.py grounding.runs.values_01.kit.precision     # precision from eval/labels.jsonl
+python grounding/runs/fact_coverage_02/launch.py grounding.runs.values_01.kit.labels_check  # recall against the blind labels
+python grounding/runs/fact_coverage_02/launch.py grounding.runs.values_01.kit.view KEY --writes  # evidence for reading
 ```
+
+`kit.sample` drew the reading sample once (seed 20260930, [eval/sample.json](eval/sample.json)); do not rerun it.
 
 | File | What |
 |---|---|
@@ -71,8 +78,12 @@ python grounding/runs/fact_coverage_02/launch.py grounding.runs.values_01.kit.co
 | [kit/specs.py](kit/specs.py) | The requested value of every written field, per scenario, written by hand from the requests |
 | [kit/values.py](kit/values.py) | Values written against the specifications; other fields, records and tables changed; no-net-change rows |
 | [kit/writes.py](kit/writes.py) | Write commands in the transcript: rejected, undone, or absent from the diff |
-| [kit/reply.py](kit/reply.py) | What the reply claims against the diff (R1 to R4) |
+| [kit/reply.py](kit/reply.py) | What the reply claims against the diff (R1 to R4, R2c) |
+| [kit/times.py](kit/times.py) | R5: times the reply states for the Calendar event written |
 | [kit/counts.py](kit/counts.py) | The counts, with denominators, by service, form and grounding outcome, clustered by scenario |
+| [kit/sample.py](kit/sample.py), [kit/view.py](kit/view.py) | The seeded reading draw; the evidence-only viewer (no verdicts) |
+| [kit/precision.py](kit/precision.py), [kit/labels_check.py](kit/labels_check.py) | Precision from the labels; recall against the earlier blind labels |
+| [eval/labels.jsonl](eval/labels.jsonl) | Every hand label (stratum, label, note, evidence) |
 
 ## Log
 
@@ -104,3 +115,43 @@ python grounding/runs/fact_coverage_02/launch.py grounding.runs.values_01.kit.co
   message, `conversations.open` is a lookup, Linear identifiers (WEB-3) map to ids, and only a mutation's own `id`
   names its record. Value checks compare only rows of the change the request asks for (an opened DM is not a topic
   write); position matters only where the request says "at the end".
+
+### The lead's steer (2026-09-30)
+
+"AR-BOX-24's 'July 15' is a test-side date dependency the date check missed (like AR-SLK-21), not only an agent
+error. Record it as a candidate for the known-defects list with a test-side clock, and keep those 20 writes apart in
+the value counts so the PI can read the numbers either way. Same for anything else whose right answer depends on the
+run date." Done: a `run_date` flag in the specifications and its own row in every count. No other value depends on
+the run date for these runs (AP-LIN-04's and AP2-LIN-04's "October 20" would after 2026-10-20).
+
+### The hand reading (2026-09-30)
+
+- The draw (seeded, committed before reading): 61 precision reads over 14 checks, every restore candidate (16), and
+  30 unflagged writers for recall. Read in an evidence-only viewer; no verdict or note was read.
+- **Restore cases, read with their trajectories and the PI's three questions** (authorized? lasting effects? called
+  for?): 8 restorations, 2 comments created then deleted, 5 no-ops, 1 parser false positive. RQ7's restore row
+  counts no-ops as restorations; its "changed meeting time" is the replica storing API-written times in UTC.
+- What the reading found beyond the flags: an undisclosed write-and-revert (P-AR-LIN-21-I16: "I left everything
+  unchanged"), which no diff check sees; probe writes provoked by Linear's error-but-applied answers; Calendar writes
+  that email attendees; a replica gap (Slack's history omits reactions); `attachmentLinkURL` resolving by URL.
+
+### Cycle 2 (2026-09-30): fixes from the reading, two additions
+
+- **Fixed:** Linear mutations with other name endings (`attachmentLinkURL`, `documentMove`) were missed; the Box
+  body fallback read `unzip -d` as a POST (now only the curl invocation, and later not with `-G`, a regression this
+  cycle introduced and caught); modal verbs ("may have been set") read as claims; markdown bold hid priority pairs;
+  proposals ("Want me to set ... ? (Or ...)") and the requested action ("to High") were read as statements.
+- **Added:** R2c (a write that did not stand, not disclosed), a prior-value check for written issues ("was Low"), and
+  a count of Calendar writes that ask the service to email attendees.
+- **Effect:** R1 10 -> 8 (two false positives gone), R4 40 -> 52 (15 new, all true; 3 false positives gone), R2c 8
+  (6 true), T 16 -> 15 (the parser false positive gone; 4 more mutations seen).
+
+### Cycle 3 (2026-09-30): R4 recall, R5
+
+- The earlier labels showed R4 missing priority statements on lines without the word "priority" ("(currently
+  High)"), in tables, and on lines that also hold a question. Now: question sentences are dropped, not lines; tables
+  with a Priority column are read; "currently <name>" counts. R4 52 -> 60 (9 new, all true; 1 false positive gone).
+- R5, a bounded probe for the brief's "times": stated time ranges for the Calendar event written, against its stored
+  times in its own and the user's zone. 158 of 159 comparable replies match; the one mismatch is an hour off. The
+  parser needed two fixes ("AM/PM" and "11:00-12:00 AM" read literally).
+- Stopped here: the remaining misses are statements that name no issue or state other facts, which need a reader.
