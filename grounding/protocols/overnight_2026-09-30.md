@@ -213,3 +213,7 @@ section. Decisions that stand go to the [roadmap](roadmap.md); this is the recor
   99); facts exercised properly 22 and 37 (Muse's 12 and 13; ours 34.0 per 48); still no probe-form tests. Runs on
   the self-host at 6 in flight (267 trials); blind samples of 30 per arm drawn first; a cross-check re-review of ten
   Muse twins.
+- 03:1x values, baselines_02 cross-check (544b851bed): on 15 baselines_01 tests re-reviewed blind (5 N1 fully blind as
+  the control), validity, flaw cause, form, near-miss records, family and proper credit agree with the other
+  session's calls (15/15, 16/16, 14/14); the fact named differs on 2 plain near misses. The Sonnet-versus-Muse
+  structure gap is not a reviewer effect. Runs going at 3+3 in flight.
