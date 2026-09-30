@@ -166,7 +166,7 @@ direction, has only a plain decoy although the domain model names a lure; it is 
 [generator.json](numbers/generator.json), aggregated by writer; brief outcomes and manual scenario reviews from
 the [Sonnet study](../autogen_01/report.md), [Muse study](../autogen_02/report.md) and
 [completion study](../completion_01/README.md). Rejected construction candidates below are not additional
-cases in the 1,006-case evaluation.
+cases in the 998-case evaluation.
 
 | | Sonnet | Muse | Total |
 |---|---:|---:|---:|
@@ -176,15 +176,15 @@ cases in the 1,006-case evaluation.
 | Infrastructure failures | 0 | 1 | 1 |
 | Usable scenarios after review | 48 | 52 | 100 |
 | Declared decoys | 185 | 192 | 377 |
-| Decoys ruled flawed | 7 | 1 | 8 |
+| Decoys ruled flawed | 7 | 3 | 10 |
 | Derived regular candidates | 285 | 297 | 582 |
 | Dropped: decoy loses its distinguishing condition | 5 | 2 | 7 |
-| Further cases excluded by validity rulings | 9 | 1 | 10 |
-| **Valid regular cases** | **271** | **294** | **565** |
+| Further cases excluded by validity rulings | 9 | 3 | 12 |
+| **Valid regular cases** | **271** | **292** | **563** |
 
 There were 89 distinct briefs across the 108 attempts; 86 produced an accepted scenario. Of 101 accepted
 scenarios, manual review classified 87 as valid, 13 as flawed but usable, and one as invalid. After the case-level
-checks and rulings, **565/582 derived candidates (97.1%)** remain. Writer comparisons are descriptive: the
+checks and rulings, **563/582 derived candidates (96.7%)** remain. Writer comparisons are descriptive: the
 writers received different briefs and operated under different method versions.
 
 The checks catch different problems: code finds decoys that violate two conditions or cease to work without the
@@ -196,20 +196,20 @@ finds ambiguity and undeclared matches. Manual review still found domain misunde
 
 | Policy form | Candidates | Excluded | Valid cases | Sonnet parent | Muse parent | Executions |
 |---|---:|---:|---:|---:|---:|---:|
-| Absence | 255 | 11 | 244 | 116 | 128 | 732 |
-| Underspecified | 209 | 12 | 197 | 98 | 99 | 591 |
-| **Total** | **464** | **23** | **441** | **214** | **227** | **1,323** |
+| Absence | 255 | 13 | 242 | 116 | 126 | 726 |
+| Underspecified | 209 | 16 | 193 | 98 | 95 | 579 |
+| **Total** | **464** | **29** | **435** | **214** | **221** | **1,305** |
 
 Two underspecified pairs are one request each (U-AP-SLK-03 and U-G4-LIN-14; `openclaw_eval_01/rulings.py`,
 `DUPLICATE_UNITS`). Both cases of each pair ran and count here; RQ6's policy statistic counts each pair once, so its
-underspecified denominator is 195 cases (439 policy cases in all).
+underspecified denominator is 191 cases (433 policy cases in all).
 
 Absence variants remove the probe's permission to report no match. Underspecified variants drop an identifying
 condition or introduce an additional full match. The correct response is to report absence, or seek clarification
 before changing a record. Policy units are separate cases, even when derived from the same parent scenario.
 
-Muse's writer and reader cost **$36.74 at list prices ($2.08 billed)** for 52 accepted scenarios and 294 valid
-regular cases: **$0.71 per accepted scenario**, or **$0.125 per valid regular case**. These are generation costs;
+Muse's writer and reader cost **$36.74 at list prices ($2.08 billed)** for 52 accepted scenarios and 292 valid
+regular cases: **$0.71 per accepted scenario**, or **$0.126 per valid regular case**. These are generation costs;
 §12 estimates the agent-under-test inference separately. Source: [costs.json](numbers/costs.json).
 
 ## RQ4. What failures do the tests expose on OpenClaw?

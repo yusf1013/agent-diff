@@ -271,18 +271,18 @@ Label groups and Box tasks recur: the writer could not build scenarios on them t
 | Versions per accepted scenario, median (max) | 1 (5) | 2 (5) | 2 (6) | 2 (7) | – | |
 | Manual review: scenarios valid / flawed but usable / invalid | 16 / 1 / 1 | 11 / 4 / 0 | 15 / 1 / 0 | 24 / 5 / 0 | 21 / 2 / 0 | **87 / 13 / 1** |
 | Near misses declared | 67 | 56 | 62 | 99 | 93 | **377** |
-| … ruled flawed by the PI (rulings) | 2 | 3 | 2 | 0 | 1 | **8** |
+| … ruled flawed by the PI (rulings) | 2 | 3 | 2 | 0 | 3 | **10** |
 | Regular tests derived (cover, probe, fact probe) | 108 | 84 | 93 | 159 | 138 | **582** |
 | … dropped by the witness check | 0 | 3 | 2 | 1 | 1 | **7** |
-| … left out by the rulings | 4 | 3 | 2 | 0 | 1 | **10** |
-| **Valid regular tests** | **104** | **78** | **89** | **158** | **136** | **565** |
+| … left out by the rulings | 4 | 3 | 2 | 0 | 3 | **12** |
+| **Valid regular tests** | **104** | **78** | **89** | **158** | **134** | **563** |
 | Facts covered (RQ2) | 37 | 40 | 44 | 58 | 69 | **204** |
 
 - **Acceptance:** 101 of 108 brief runs (94%) gave an accepted scenario. The runs overlap: P v2 reran P's 16 briefs
   and 6b reran 3 of Phase 4's (G4-BOX-02, G4-CAL-08, G4-LIN-03). Of the 89 distinct briefs, 86 have an accepted
   scenario and 3 never did (G4-BOX-10, G4-LIN-18, G4-LIN-03). A brief is rejected when no version passes every check
   within the round limit; in the cases whose record gives the reason, the cold reader kept finding a problem.
-- **Validity:** 100 of 101 accepted scenarios are usable; 1 is invalid (AR-LIN-25). Of all derived tests, 565 of
+- **Validity:** 100 of 101 accepted scenarios are usable; 1 is invalid (AR-LIN-25). Of all derived tests, 563 of
   582 (97%) are valid. "Flawed but usable" means a contestable near miss or contrived wording; the PI's rulings
   decide what is left out.
 - **Sonnet versus Muse** is descriptive only: different briefs, facts, method versions and judges. Muse's scenarios
@@ -315,17 +315,17 @@ and §6.4, [completion_01](../completion_01/README.md).
 | Drop-F, 6b | 70 | 53 | 11 | 5 | 1 | 51 / 53 |
 | Clone, Phase 4 | 29 | 25 | 3 | 1 (code check) | – | 11 / 11 reviewed |
 
-- **Policy units on OpenClaw** (RQ6): 255 absence units, 244 valid; 209 underspecified units, 197 valid. Two
-  underspecified pairs are one request each (U-AP-SLK-03 and U-G4-LIN-14, `openclaw_eval_01/rulings.py`,
-  `DUPLICATE_UNITS`): both of each pair ran, and RQ6's statistic counts each pair once, so its underspecified
-  denominator is 195 units.
+- **Policy units on OpenClaw** (RQ6): 255 absence units, 242 valid; 209 underspecified units, 193 valid (the two
+  rulings of 2026-09-30 left out 2 and 4 Box units). Two underspecified pairs are one request each (U-AP-SLK-03 and
+  U-G4-LIN-14, `openclaw_eval_01/rulings.py`, `DUPLICATE_UNITS`): both of each pair ran, and RQ6's statistic counts
+  each pair once, so its underspecified denominator is 191 units.
 - **A bug the checks missed:** the drop-F derivation named a variant by table and field without the fact's kind, so
   two facts of one column overwrote each other's records. It cost 6b five jobs, derived again, and Phase 4 two
   variants, not recovered because 6a's population had been fixed. Found while assembling 6b; now fixed
   (`variants2.dropf_id`).
 
 **Cost of generation** (Muse, [numbers/costs.json](numbers/costs.json)): writer and reader together, $0.62 per
-accepted scenario at list price in Phase 4 and $0.82 in 6b ($0.035 and $0.046 billed); $0.125 per valid regular test
+accepted scenario at list price in Phase 4 and $0.82 in 6b ($0.035 and $0.046 billed); $0.126 per valid regular test
 ($0.007 billed). Sonnet on the subscription: $1.78 to $5.47 per accepted scenario at list price. §12 has the rest.
 
 ## RQ4. What failures do the tests expose in a real agent harness?

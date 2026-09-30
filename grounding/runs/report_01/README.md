@@ -131,13 +131,25 @@ section's note that they "still carry the 8-minute numbers" no longer holds.
 - Both texts, facts per family: F8 41 → 40 (the two rulings left one fact without a valid F8 near miss); the others
   unchanged. Source: `numbers/coverage.json` (`facts_per_family`).
 
-### RQ3: duplicate policy units, a stale reference
+### RQ3: the two rulings, duplicate policy units, a stale reference
 
-- report.md RQ3 "Policy units on OpenClaw": adds that two underspecified pairs are one request each (U-AP-SLK-03,
-  U-G4-LIN-14) and count once in RQ6's statistic: 197 → 195 underspecified units there. report_concise.md Table 6:
-  a note with the same; the table's executed counts stay (197 valid cases, 441 policy, 591 and 1,323 executions),
-  since both cases of each pair ran. Sources: `openclaw_eval_01/rulings.py` (`DUPLICATE_UNITS`);
-  `openclaw_eval_01/runs/policy/decisions_population_underspecified.json` (`valid_units` 56 + 30 + 78 + 31 = 195).
+- Table 5 (both), after the two rulings: near misses ruled flawed 8 → 10 (Muse 6b 1 → 3); tests left out by the
+  rulings 10 → 12 (6b 1 → 3); valid regular tests 565 → 563 (6b 136 → 134; report_concise.md's Muse 294 → 292);
+  report.md "565 of 582 (97%)" → 563 (97% unchanged); report_concise.md "565/582 (97.1%)" → "563/582 (96.7%)".
+  Source: `numbers/generator.json` (`flawed_near_misses`, `left_out_by_rulings`, `valid_total`, `valid`).
+- report.md "Policy units on OpenClaw": 244 → 242 absence and 197 → 193 underspecified valid units, naming the two
+  rulings (2 and 4 Box units left out); adds that two underspecified pairs are one request each (U-AP-SLK-03,
+  U-G4-LIN-14) and count once in RQ6's statistic, 191 units there. Sources: `numbers/policy.json` (`totals`:
+  `units`, `valid`); `openclaw_eval_01/rulings.py` (`DUPLICATE_UNITS`); the decision files (`valid_units`,
+  52 + 30 + 78 + 31 = 191).
+- report_concise.md Table 6: excluded 11 and 12 → 13 and 16; valid 244 and 197 → 242 and 193; Muse parents 128 and
+  99 → 126 and 95; executions 732 and 591 → 726 and 579; totals 23, 441, 227, 1,323 → 29, 435, 221, 1,305. A new note
+  on the duplicate pairs: both cases of each pair ran and count here; RQ6's statistic counts each pair once (191
+  underspecified cases, 433 policy cases in all). Sources: `numbers/policy.json` (`totals`), `numbers/concise.json`
+  (`policy_by_scenario_writer`, `execution_counts`); the decision files.
+- Cost per valid regular test (both) $0.125 → $0.126 ($0.007 billed unchanged), and report_concise.md's "294 valid
+  regular cases" → 292: `numbers/costs.json`, $36.74 list and $2.08 billed, over Muse's 292 valid regular tests (the
+  old figure reproduces with 294). report_concise.md "the 1,006-case evaluation" → 998.
 - report.md RQ3, "`machinery.json` on branch `exp/baselines-01`" → `grounding/runs/baselines_01/machinery.json`
   (merged into main; file checked).
 
