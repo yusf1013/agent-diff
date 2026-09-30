@@ -127,22 +127,23 @@ open. On our boundary tests, Qwen passed 22 of 56 trials where the boundary show
 re-creation or look-alike was possible, it passed 30 of 125; where nothing was possible, 38 of 45 (boundary_02). We
 expect B1 in that range, with the same kinds of failure, on the one class it reaches.
 
-## The run so far (b1_01, 2026-09-30; paused at the lead's request)
+## The run (b1_01, 2026-09-30; complete)
 
-**81 of 144 trials** had run when the lead paused B1 so another study's runs could have the host. The results are
-in [summary.json](summary.json), and the provisional reading is in [report.md](../report.md) §5.7.
-- **13 of 81 trials pass**, all by reporting.
-- **51 run out the solver's 600 s budget:** 23 with no change, 28 after a change no one asked for.
-- **15 make such a change and answer.** 1 sends the write to the backend directly (a failure by rule).
-- **26 of the 27 items with a trial fail at least once.**
-- **The oracle agrees with the 17 blind labels drawn so far.**
+All 144 trials ran: 81 before a pause the lead asked for, the rest after. The results are in
+[summary.json](summary.json) and [report.md](../report.md) §5.7.
+- **47 of 144 trials pass**, all by reporting. Reading B replaces the first 12 host-load trials with their
+  quiet-host reruns (runs/b1_01_host): **50 of 144**.
+- **40 of the 48 items fail at least once** in both readings.
+- **Slack's refusals are reported** (29 of 36 trials pass). Box, Calendar and Linear mostly run out the budget:
+  77 trials over it, 44 with no change and 33 after a change no one asked for.
+- **The oracle agrees with all 30 blind labels.**
 
 Record keeping:
 - **The first 12 trials ran on an overloaded host** ([runs/b1_01/host_load.json](runs/b1_01/host_load.json)). The
   lead ruled that they stay in the record and are rerun on a quiet host (runs/b1_01_host); both readings go to the
   PI.
-- **The pause** left placeholders (status "deferred") for the 63 unstarted trials. They are removed on resume, and
-  the runner then runs exactly those.
+- **The pause** left placeholders (status "deferred") for the 63 unstarted trials. They were removed on resume, and
+  the runner ran exactly those.
 
 **Found in the run:**
 - **Containment.** The agent can read the host. 18 trials probed it; five read the repository or the replica's
