@@ -27,8 +27,9 @@ reference row.
 rulings as of 2026-09-30, read from the rebuilt scores ([full_02](runs/full_02.adjudicated.json),
 [full_03](runs/full_03.adjudicated.json), [full_04](runs/full_04.adjudicated.json),
 [final_regular.json](runs/final_regular.json), [final_regular_with_6b.json](runs/final_regular_with_6b.json)) and
-the two `runs/policy/decisions_population_*.json`. The first pass below ("The first pass (2026-09-28), a record")
-and the sections after it are a record and keep their numbers.*
+the two `runs/policy/decisions_population_*.json`, rebuilt the same afternoon with the budget rule restored (see
+"Results: the policy stage"). The first pass below ("The first pass (2026-09-28), a record") and the sections after
+it are a record and keep their numbers.*
 
 - **Regular suite**, under the PI's rulings and the 10-minute budget:
   - 6a: 108 of 429 tests expose a fact, with 66 facts at detect@3 and 47 at detect@1.
@@ -37,8 +38,8 @@ and the sections after it are a record and keep their numbers.*
     fact against 70 with the original ids, and 48 facts against 44. Most of the rise is in Linear, whose made-up ids
     named records' roles most often.
 - **Policy stage**, on every valid unit of 6a and 6b:
-  - No cell is policy-level. Five are shown not policy-level; three are undecided: Box absence (0.76), Calendar
-    absence (0.82) and Slack underspecified (0.77).
+  - No cell is policy-level. Five are shown not policy-level; three are undecided: Box absence (0.78), Calendar
+    absence (0.82) and Slack underspecified (0.80).
   - The first pass had the same picture from fewer units, except Calendar absence, then not policy-level. Qwen in the
     toy harness was policy-level in all eight.
   - The budget changes no decision: the withdrawn 8-minute reading gives the same eight outcomes.
@@ -126,14 +127,23 @@ things before this study's numbers were final. The first pass (`full_02` and the
 
 | Cell | Valid units | Failing trials | Rate [p10, p90] | Decision | First pass | Qwen, toy harness |
 |---|---|---|---|---|---|---|
-| Box, absence | 58 | 126 / 165 | 0.764 [0.703, 0.822] | undecided | undecided (0.75) | policy-level |
-| Calendar, absence | 42 | 101 / 124 | 0.815 [0.750, 0.873] | undecided | not policy-level | policy-level |
-| Linear, absence | 99 | 160 / 263 | 0.608 [0.552, 0.665] | not policy-level | not policy-level | policy-level |
-| Slack, absence | 43 | 75 / 125 | 0.600 [0.517, 0.680] | not policy-level | not policy-level | policy-level |
-| Box, underspecified | 52 | 65 / 136 | 0.478 [0.406, 0.551] | not policy-level | not policy-level | policy-level |
-| Calendar, underspecified | 30 | 37 / 81 | 0.457 [0.355, 0.561] | not policy-level | not policy-level | policy-level |
-| Linear, underspecified | 78 | 83 / 205 | 0.405 [0.342, 0.468] | not policy-level | not policy-level | policy-level |
-| Slack, underspecified | 31 | 63 / 82 | 0.768 [0.691, 0.843] | undecided | undecided (0.80) | policy-level |
+| Box, absence | 58 | 135 / 173 | 0.780 [0.723, 0.837] | undecided | undecided (0.75) | policy-level |
+| Calendar, absence | 42 | 103 / 126 | 0.817 [0.754, 0.873] | undecided | not policy-level | policy-level |
+| Linear, absence | 99 | 193 / 294 | 0.656 [0.602, 0.710] | not policy-level | not policy-level | policy-level |
+| Slack, absence | 43 | 79 / 129 | 0.612 [0.535, 0.690] | not policy-level | not policy-level | policy-level |
+| Box, underspecified | 52 | 85 / 155 | 0.548 [0.481, 0.615] | not policy-level | not policy-level | policy-level |
+| Calendar, underspecified | 30 | 46 / 90 | 0.511 [0.422, 0.611] | not policy-level | not policy-level | policy-level |
+| Linear, underspecified | 78 | 114 / 236 | 0.483 [0.425, 0.542] | not policy-level | not policy-level | policy-level |
+| Slack, underspecified | 31 | 77 / 96 | 0.802 [0.731, 0.869] | undecided | undecided (0.80) | policy-level |
+
+- **The budget rule restored (2026-09-30, afternoon; session sol_score, with the lead):** from the 10-minute rebuild
+  (49ce3672dc) until this rebuild, the table lacked the budget rule for every policy trial. The verdicts record their
+  attempts in a worktree since removed (`.claude/worktrees/roadmap-02`), and `policy.population_outcomes` skipped
+  a trial whose attempt it could not find, so a trial over the budget kept the judge's not_established and was void.
+  It now re-roots such a path at this repository (`local_attempt`) and warns on stderr if an attempt still cannot be
+  found. No decision changes. The rates were 0.764, 0.815, 0.608, 0.600 (absence) and 0.478, 0.457, 0.405, 0.768
+  (underspecified), on 165, 124, 263, 125 and 136, 81, 205, 82 usable trials. One other reading changes: a unit
+  failing in any of its runs is now undecided, not "not policy-level", in Box and Calendar underspecified.
 
 - **What ran:** `policy/solve_population_absence` (136 units) and `…_underspecified` (137 units) for 6a, Box's
   first-pass units keeping their verdicts; `…_6b_absence` (68) and `…_6b_underspecified` (49) for 6b.
@@ -146,8 +156,8 @@ things before this study's numbers were final. The first pass (`full_02` and the
 - **Under the withdrawn 8-minute reading** (and before the rulings of 2026-09-30), the rates were 0.793, 0.825,
   0.687, 0.620 (absence) and 0.581, 0.578, 0.508, 0.823 (underspecified). The decisions are the same.
 - **By writer:** in both Calendar cells the Muse-written scenarios (Phase 4, 6b) fail more often than the Sonnet-
-  written ones (Phase 3). For absence the rates are 0.88 and 0.96 against 0.64; for underspecified, 0.64 and 0.27
-  against 0.23.
+  written ones (Phase 3). For absence the rates are 0.88 and 0.96 against 0.64; for underspecified, 0.67 and 0.47
+  against 0.26.
 - **How it fails** (the blind samples): in absence tests, most failures come after the agent has seen the mismatch.
   It says the near miss fails a condition and acts on it anyway. In underspecified tests, it asks which match was
   meant in about half of the trials. Otherwise it acts on one match or on all of them, usually disclosing the others
