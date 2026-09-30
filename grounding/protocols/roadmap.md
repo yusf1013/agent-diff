@@ -87,6 +87,36 @@ the final runs use one frozen version.
      - **Runs:** on OpenClaw, compared under fact_coverage_02's decision D5.
    - **6e. Reports:** OpenClaw for first-time readers; the system (generation and judging); the baselines.
 
+8. **Dates that never go stale (an investigation, 2026-09-30).** The PI's question: *how can a test that depends on
+   dates be right on any day it is run, without adding overhead to the LLMs in the pipeline?* Today every date in a
+   scenario is absolute and the test runs the agent under a shifted clock (step 3's "dates are controlled on the
+   test side"), which fails wherever the agent's process cannot be back- or forward-dated: the 16 G4-LIN-08 tests
+   are clocked past the OpenAI login's expiry; Codex and Claude Code carry their own dates. The investigation
+   compares the mechanical options: dates rendered from offsets against an anchor at environment creation (the
+   writer keeps writing absolute dates; a pipeline step converts them to offsets from the scenario's clock, and the
+   suite renders them against the real date, weekday preserved where a request names one, time zones and DST in the
+   calendar's zone); the shifted clock kept only where rendering cannot reach; or both. It must cover seeds,
+   prompts, expected outputs, the judge's inputs and the replica's "now", and be applied to every date-sensitive
+   test in the suite, then verified by re-running the Calendar tests and the clocked tests on a day other than
+   their original one. Owner: a session on a brief; the design is discussed with the PI before it is applied.
+
+## Decisions (2026-09-30, the PI's afternoon review)
+
+- **The Muse-only suite is the suite.** With the Sonnet-written half regenerated with Muse (6h), the evaluated
+  suite is the Muse-written half plus the regenerated half (487 regular tests and their policy units); the
+  Sonnet-written half stays as a comparison, not as part of the suite. Both agents have run it: Qwen (6a/6b for the
+  first half, regen_01 for the second) and Sol (6f); the comparison is in sol_eval_01, "Results: the whole Muse-only
+  suite". report_01's main tables are rebuilt on this suite (the next report update).
+- **Qwen becomes the judge if the full replay holds.** The labelled pass (6g) is within the margin of error (recall
+  the same, precision 0.6 points below Muse's). If the full replay and its headline recompute keep that near
+  equivalence, later rounds are judged on the self-hosted Qwen, at no token cost; Muse stays the reference for
+  blind-label adjudication.
+- **Qwen as a writer: a sample study, lower priority.** The Muse-written tests stay. A larger sample than the
+  12-brief pilot (qwen_writer_01), of the order of 40 briefs drawn across the services, is written by Qwen with the
+  same protocol and compared with Muse's tests on the same briefs. Loaded when the host idles; nothing waits on it.
+- **Dates that never go stale: an investigation, then applied throughout.** Step 8 below. The PI's standing request:
+  tests must not depend on the real date, and the fix must add no work for the writer or the other pipeline models.
+
 ## Decisions (2026-09-29, the PI's notes and the evening sync)
 
 The PI's thinking of that day is organized in [the notes](brain_dump_2026-09-29.md); the decisions:
