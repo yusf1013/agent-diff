@@ -152,3 +152,11 @@ section. Decisions that stand go to the [roadmap](roadmap.md); this is the recor
   changes (2026-09-30)". Left labelled in the text: §10.1's 8-minute policy count; Table 14's Ours column and Table
   15's rows from baselines_01's pre-rebuild files; Table 11's first-pass column. Assigned next: beyond.py's policy
   filter, baselines_01's recomputation, openclaw_eval_01's README numbers.
+- 02:0x harness, claudecode_pilot_01 done (commits to 8c70467512; merged as f4779e926b): Sonnet 5.5 on Claude Code
+  on the Sol pilot's 32 tests, one trial each: all 32 completed; blind labels 7 correct, 23 correct_absent, 2
+  incorrect (G4-LIN-04, FP-G4-LIN-06); judge v2 agrees 32 of 32 with the same facts; median 13 s per run against
+  Sol's 37 s; $0.052 per run at list, $0 billed (about $79 for the Muse-written half, $157 for the full suite);
+  plan windows over the pilot: five-hour 41% → 45%, seven-day 11% → 12%, shared with the sessions. For the PI: a
+  full round waits for a `claude setup-token` token (~/.config/claude-solver/oauth_token) made from the plan that
+  is really Max; confirm effort medium, tools Bash/Read/Skill, no follow-up. Assigned next: the same-test Sol
+  comparison on the pilot's 32, then the openai backend's store layout behind a flag.
