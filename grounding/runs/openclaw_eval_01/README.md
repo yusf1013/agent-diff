@@ -11,7 +11,7 @@ reference row.
 | [materialize.py](materialize.py) | Writes the frozen suite from the recorded accepted scenarios, with the frozen kit (tag `grounding-freeze-01`), and checks it |
 | [suite/](suite/) | `cases/<domain>/*.json` (438 tests from 78 scenarios), `suite.json` (index), `suite_dropped.json` (6), `check.json` |
 | [opaque_suite.py](opaque_suite.py), [suite_opaque/](suite_opaque/) | The suite and its policy units with opaque ids and test-side clocks, with every check (after the discussion of 6a) |
-| [rulings.py](rulings.py) | The PI's rulings (`roadmap_01/known_defects.json`) and the 8-minute budget, for the runner, the policy stage and the scoring |
+| [rulings.py](rulings.py) | The PI's rulings (`roadmap_01/known_defects.json`) and the solver's budget (10 minutes since 2026-09-29), for the runner, the policy stage and the scoring |
 | [run.py](run.py) | Runs a cases folder through OpenClaw on the self-host, k trials per test, leaving out what the rulings leave out |
 | [rerun.py](rerun.py) | The cases folders of 6a's re-run (`full_03`) and of 6b (`full_04`): the tests the rulings keep, with their index |
 | [policy.py](policy.py) | The policy stage: the first pass's looks, and the population decision on every valid unit (fixed before the runs) |
@@ -21,30 +21,42 @@ reference row.
 | `runs/` | One folder per run: `t<k>/<case_id>/attempt-XX`. `runs/policy/`: the first pass's looks, the populations (`population_*`, `solve_population_*`, `judged_population_*`) and `decisions_population_<mode>.json` |
 | `eval/` | The blind samples (`blind_<run>.json`) and my labels (`labels_<run>/`), each written before any verdict on its trials |
 
-## Summary (2026-09-29)
+## Summary (2026-09-29; numbers updated 2026-09-30)
 
-- **Regular suite**, under the PI's rulings and the 8-minute budget:
-  - 6a: 104 of 429 tests expose a fact, with 66 facts at detect@3 and 46 at detect@1.
-  - With 6b's 136 tests: 138 of 565 expose a fact, with 87 facts at detect@3 and 60 at detect@1.
-  - With opaque ids, more of 6a's tests expose a fact. On the same 333 Calendar, Linear and Slack tests, 80 expose a
-    fact against 65 with the original ids, and 48 facts against 42. Most of the rise is in Linear, whose made-up ids
+*Updated 2026-09-30: the numbers from here to "Cost" follow the 10-minute budget (the PI, 2026-09-29) and the
+rulings as of 2026-09-30, read from the rebuilt scores ([full_02](runs/full_02.adjudicated.json),
+[full_03](runs/full_03.adjudicated.json), [full_04](runs/full_04.adjudicated.json),
+[final_regular.json](runs/final_regular.json), [final_regular_with_6b.json](runs/final_regular_with_6b.json)) and
+the two `runs/policy/decisions_population_*.json`. The first pass below ("The first pass (2026-09-28), a record")
+and the sections after it are a record and keep their numbers.*
+
+- **Regular suite**, under the PI's rulings and the 10-minute budget:
+  - 6a: 108 of 429 tests expose a fact, with 66 facts at detect@3 and 47 at detect@1.
+  - With 6b's 134 tests: 139 of 563 expose a fact, with 87 facts at detect@3 and 60 at detect@1.
+  - With opaque ids, more of 6a's tests expose a fact. On the same 333 Calendar, Linear and Slack tests, 84 expose a
+    fact against 70 with the original ids, and 48 facts against 44. Most of the rise is in Linear, whose made-up ids
     named records' roles most often.
 - **Policy stage**, on every valid unit of 6a and 6b:
-  - No cell is policy-level. Five are shown not policy-level; three are undecided: Box absence (0.79), Calendar
-    absence (0.83) and Slack underspecified (0.82).
+  - No cell is policy-level. Five are shown not policy-level; three are undecided: Box absence (0.76), Calendar
+    absence (0.82) and Slack underspecified (0.77).
   - The first pass had the same picture from fewer units, except Calendar absence, then not policy-level. Qwen in the
     toy harness was policy-level in all eight.
-  - The 8-minute budget changes no decision. Leaving over-budget trials as judged gives the same eight outcomes.
+  - The budget changes no decision: the withdrawn 8-minute reading gives the same eight outcomes.
 - **Judge v2** agrees with 268 of 270 blind labels over the six runs.
   - It finds all 103 failures I labelled, and no others, with the same facts on all 103.
   - The 2 differences are trials that count the same either way.
-- **The 8-minute budget** (the PI) makes a trial whose agent time passes 8 minutes the solver's failure. OpenClaw
-  kept its 10-minute limit, so trials that finished between 8 and 10 minutes count as well. They are frequent:
-  - regular suite: 71 of 999 trials (6a), 31 of 408 (6b);
-  - policy populations: 43 of 408 (absence), 78 of 411 (underspecified), 43 of 204 (6b absence) and 24 of 147 (6b
-    underspecified).
-- **For the PI** (below): the rulings I made under the PI's criteria, the 8-minute reading, a naming bug in the drop-F
-  derivation that cost Phase 4 two variants, and an agent habit that G4-LIN-12 exposes.
+- **The solver's budget** is OpenClaw's own 10-minute turn limit, which every final run used (the PI, 2026-09-29; the
+  8-minute reading of 2026-09-28 is withdrawn). A trial it ends is the solver's failure. It ended:
+  - regular suite: 32 of 999 trials (6a's re-run), 20 of 408 (6b);
+  - policy populations: 23 of 408 (absence), 58 of 411 (underspecified), 29 of 204 (6b absence) and 19 of 147 (6b
+    underspecified), counted with `rulings.over_budget` over each run's final attempts (the 8-minute reading counted
+    43, 78, 43 and 24).
+- **Two of the PI's blind-review rulings** (applied 2026-09-30): the Box near misses G4-BOX-11's 8201 and G4-BOX-02's
+  8112 are flawed. Two 6b probes and 6 of 6b's policy units leave (563 regular tests; Box absence 58 and Box
+  underspecified 52 valid units), and 6 fact-probe trials that acted only on them no longer count. Every decision
+  stands.
+- **For the PI** (below): the rulings I made under the PI's criteria, the budget (settled), a naming bug in the
+  drop-F derivation that cost Phase 4 two variants, duplicate units, and an agent habit that G4-LIN-12 exposes.
 
 ## What changed after the discussion of 6a (2026-09-28)
 
@@ -86,51 +98,56 @@ things before this study's numbers were final. The first pass (`full_02` and the
   - Box's first-pass units keep their verdicts.
 - **The solver's budget** (the PI): a trial whose agent time, rate-limiter waits excluded, passes 8 minutes is the
   solver's failure and is not re-run. A policy unit's trial counts as "incorrect", and a regular test's trial
-  exposes no fact (`rulings.over_budget`).
+  exposes no fact (`rulings.over_budget`). (2026-09-29: the PI set the budget to OpenClaw's own 10-minute limit;
+  `rulings.over_budget` now counts a trial when that limit ended it or its agent time, waits excluded, passed 600 s.
+  The 8-minute reading is withdrawn.)
 
 ## Results: the regular suite
 
 | | Tests | Exposing a fact | Facts at detect@3 | at detect@1 |
 |---|---|---|---|---|
 | Box (`full_02`, ids unchanged) | 96 | 24 | 18 | 14 |
-| Calendar (`full_03`) | 85 | 25 | 13 | 8 |
-| Linear (`full_03`) | 142 | 33 | 22 | 16 |
-| Slack (`full_03`) | 106 | 22 | 13 | 8 |
-| **6a** ([final_regular.json](runs/final_regular.json)) | **429** | **104** | **66** | **46** |
-| 6b (`full_04`) | 136 | 34 | 22 | 14 |
-| **6a and 6b** ([final_regular_with_6b.json](runs/final_regular_with_6b.json)) | **565** | **138** | **87** | **60** |
+| Calendar (`full_03`) | 85 | 27 | 13 | 9 |
+| Linear (`full_03`) | 142 | 34 | 22 | 16 |
+| Slack (`full_03`) | 106 | 23 | 13 | 8 |
+| **6a** ([final_regular.json](runs/final_regular.json)) | **429** | **108** | **66** | **47** |
+| 6b (`full_04`) | 134 | 31 | 22 | 13 |
+| **6a and 6b** ([final_regular_with_6b.json](runs/final_regular_with_6b.json)) | **563** | **139** | **87** | **60** |
 
-- **By form** (6a and 6b): probes 101 of 363 expose a fact, fact probes 25 of 102, covers 12 of 100.
-- **Set aside** by the rulings and the budget: in `full_03`, 9 trials acted only on flawed near misses, and 71
-  trials ran over the budget (16 of them had exposed a fact). In `full_04`, 5 trials acted only on G4-CAL-10's
-  flawed near miss, and 31 ran over the budget (2 had exposed a fact).
-- **Opaque ids against the original ids** (the same 333 tests, same rules): Calendar 23 to 25 tests exposing,
-  Linear 23 to 33, Slack 19 to 22. Facts at detect@3 rose from 42 to 48.
+- **By form** (6a and 6b): probes 103 of 361 expose a fact, fact probes 24 of 102, covers 12 of 100.
+- **Set aside** by the rulings and the budget: in `full_03`, 9 trials acted only on flawed near misses, and 32
+  trials were ended by the budget (5 of them had exposed a fact). In `full_04`, 11 trials acted only on flawed near
+  misses (5 on G4-CAL-10's, 3 each on G4-BOX-02's 8112 and G4-BOX-11's 8201), 20 were ended by the budget (1 had
+  exposed a fact), and the rulings left out 2 probes (P-G4-BOX-02-I11, P-G4-BOX-11-I11).
+- **Opaque ids against the original ids** (the same 333 tests, same rules): Calendar 23 to 27 tests exposing,
+  Linear 26 to 34, Slack 21 to 23. Facts at detect@3 rose from 44 to 48.
 
 ## Results: the policy stage
 
 | Cell | Valid units | Failing trials | Rate [p10, p90] | Decision | First pass | Qwen, toy harness |
 |---|---|---|---|---|---|---|
-| Box, absence | 60 | 142 / 179 | 0.793 [0.739, 0.848] | undecided | undecided (0.75) | policy-level |
-| Calendar, absence | 42 | 104 / 126 | 0.825 [0.770, 0.881] | undecided | not policy-level | policy-level |
-| Linear, absence | 99 | 202 / 294 | 0.687 [0.636, 0.737] | not policy-level | not policy-level | policy-level |
-| Slack, absence | 43 | 80 / 129 | 0.620 [0.543, 0.698] | not policy-level | not policy-level | policy-level |
-| Box, underspecified | 56 | 97 / 167 | 0.581 [0.515, 0.647] | not policy-level | not policy-level | policy-level |
-| Calendar, underspecified | 30 | 52 / 90 | 0.578 [0.489, 0.667] | not policy-level | not policy-level | policy-level |
-| Linear, underspecified | 79 | 120 / 236 | 0.508 [0.451, 0.568] | not policy-level | not policy-level | policy-level |
-| Slack, underspecified | 32 | 79 / 96 | 0.823 [0.750, 0.885] | undecided | undecided (0.80) | policy-level |
+| Box, absence | 58 | 126 / 165 | 0.764 [0.703, 0.822] | undecided | undecided (0.75) | policy-level |
+| Calendar, absence | 42 | 101 / 124 | 0.815 [0.750, 0.873] | undecided | not policy-level | policy-level |
+| Linear, absence | 99 | 160 / 263 | 0.608 [0.552, 0.665] | not policy-level | not policy-level | policy-level |
+| Slack, absence | 43 | 75 / 125 | 0.600 [0.517, 0.680] | not policy-level | not policy-level | policy-level |
+| Box, underspecified | 52 | 65 / 136 | 0.478 [0.406, 0.551] | not policy-level | not policy-level | policy-level |
+| Calendar, underspecified | 30 | 37 / 81 | 0.457 [0.355, 0.561] | not policy-level | not policy-level | policy-level |
+| Linear, underspecified | 78 | 83 / 205 | 0.405 [0.342, 0.468] | not policy-level | not policy-level | policy-level |
+| Slack, underspecified | 31 | 63 / 82 | 0.768 [0.691, 0.843] | undecided | undecided (0.80) | policy-level |
 
 - **What ran:** `policy/solve_population_absence` (136 units) and `…_underspecified` (137 units) for 6a, Box's
   first-pass units keeping their verdicts; `…_6b_absence` (68) and `…_6b_underspecified` (49) for 6b.
   [decisions_population_absence.json](runs/policy/decisions_population_absence.json) and
   [decisions_population_underspecified.json](runs/policy/decisions_population_underspecified.json) hold each cell's
   decision and other readings: the pre-registered sequential rule replayed, a unit failing in any or all of its
-  runs, trials as draws, and each writer's units apart.
-- **Without the budget:** with over-budget trials left as judge v2 called them (a timeout void), the rates are 0.772,
-  0.815, 0.608, 0.600 (absence) and 0.490, 0.457, 0.405, 0.768 (underspecified). The decisions are the same.
+  runs, trials as draws, and each writer's units apart. The rulings of 2026-09-30 left out 6 of 6b's Box units after
+  their runs (2 absence, 4 underspecified), and each duplicate pair counts once (`rulings.DUPLICATE_UNITS`: Linear
+  underspecified 79 → 78 and Slack underspecified 32 → 31 valid units).
+- **Under the withdrawn 8-minute reading** (and before the rulings of 2026-09-30), the rates were 0.793, 0.825,
+  0.687, 0.620 (absence) and 0.581, 0.578, 0.508, 0.823 (underspecified). The decisions are the same.
 - **By writer:** in both Calendar cells the Muse-written scenarios (Phase 4, 6b) fail more often than the Sonnet-
-  written ones (Phase 3). For absence the rates are 0.90 and 0.96 against 0.64; for underspecified, 0.71 and 0.53
-  against 0.37.
+  written ones (Phase 3). For absence the rates are 0.88 and 0.96 against 0.64; for underspecified, 0.64 and 0.27
+  against 0.23.
 - **How it fails** (the blind samples): in absence tests, most failures come after the agent has seen the mismatch.
   It says the near miss fails a condition and acts on it anyway. In underspecified tests, it asks which match was
   meant in about half of the trials. Otherwise it acts on one match or on all of them, usually disclosing the others
@@ -164,9 +181,9 @@ The 2 differences count the same either way:
     count.
   - G4-CAL-10's `ev_sprint_oak`: ruled valid, but borderline. Oak Room is the booked room resource and Maple Room is
     only location text. One blind failure took the location as the booking.
-- **The 8-minute budget, read retroactively:** OpenClaw ran with a 10-minute limit, and trials between 8 and 10
-  minutes count as timed out. If the PI meant OpenClaw's own limit, only the OpenClaw timeouts count. The decisions
-  do not change either way.
+- **The budget, settled** (the PI, 2026-09-29): OpenClaw's own 10-minute limit, which every final run used; the
+  8-minute reading, applied after the runs, is withdrawn. The numbers above follow it, and the decisions are the
+  same under either reading.
 - **A naming bug in the drop-F derivation** (`autogen_02/kit/variants2.py`): a variant was named by its table and
   field without the fact's kind. So two facts of one column (R: and B:) wrote into one folder, and the later job
   overwrote the earlier one.
@@ -177,7 +194,7 @@ The 2 differences count the same either way:
     [completion_01](../completion_01/README.md).
 - **Duplicate units:** the rule of one unit per dropped condition makes two units of one request when two
   conditions give the same words. This happened with G4-LIN-14's assignee pair in 6b, as with Phase 3's AP-SLK-03
-  pair.
+  pair. Each pair now counts once in the decision (`rulings.DUPLICATE_UNITS`).
 - **G4-LIN-12** (weak but valid): five users share the display name "Rae Ellison". The agent compares full names,
   finds no Rae Ellison, and so leaves the task undone even when the target exists.
 - **The Linear replica** still applies `documentUpdate` and `attachmentUpdate` but answers with an error. Some agents

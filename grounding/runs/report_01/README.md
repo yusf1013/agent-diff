@@ -402,7 +402,7 @@ and decisions; its `valid` keeps both cases of each duplicate pair (Linear and S
   once, on the earlier manifest)"; "provenance for RQ7" → "for RQ7's remaining rows"; "the selected 3,018 executions"
   → 2,994.
 
-### Follow-up: three inconsistencies in `numbers/` (2026-09-30, at the lead's request)
+### Follow-up: three inconsistencies the report update found (2026-09-30, at the lead's request)
 
 1. **`kit/beyond.py` filters the policy side by the rulings**, as `kit/concise.py` does: `main()` skips the trials of
    units `policy.population_units` leaves out (it applies `rulings.test_exclusion`); `policy_trials()` stays
@@ -433,3 +433,13 @@ and decisions; its `valid` keeps both cases of each duplicate pair (Linear and S
    `compare.json` (`baseline_comparison`) matches: the same three values change, nothing else. baselines_01's
    `log.md` records the recompute; its `report.md` keeps the earlier figures. Sources: baselines_01 `ours.json`
    (`phase4_muse`), `compare.json` (`approaches` → `ours_phase4_per_48`), `q4/numbers.json`.
+3. **openclaw_eval_01's README** brought to the 10-minute budget and the rulings as of 2026-09-30: the Summary, the
+   two Results sections and "For the PI" (6a 104 → 108 of 429 tests, 46 → 47 facts at detect@1; 6b 136 → 134 tests,
+   34 → 31 exposing, 14 → 13 facts at detect@1; together 138 of 565 → 139 of 563; per service, form, set-aside
+   trials, opaque-id comparison and the eight cells as in report_01), with a dated note that the first pass below
+   is a record. No report_01 text changes. Sources: `openclaw_eval_01/runs/full_0{2,3,4}.adjudicated.json`,
+   `final_regular.json`, `final_regular_with_6b.json`, `policy/decisions_population_*.json`. The population runs'
+   over-budget trials are in no file; they were counted with `rulings.over_budget` over each run's final attempts
+   (the same count with the old 480-second rule gives the README's old 43, 78, 43 and 24 exactly): 23 of 408, 58 of
+   411, 29 of 204 and 19 of 147, 129 of 1,170 in all. That total is the 10-minute count for report.md §10.1's
+   labelled "188 of 1,170"; it is not applied there.
