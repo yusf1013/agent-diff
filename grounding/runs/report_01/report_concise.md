@@ -158,7 +158,7 @@ probes. These sets overlap. Two facts rely on covers alone: Box `R:Comment.file_
 and team description, Slack user title). For 2 more, the lure is flawed by the 2026-09-28 rulings (Linear cycle
 number, Slack message text), so a plain decoy is their only valid form. The last, the Linear related issue's
 direction, has only a plain decoy although the domain model names a lure; it is being regenerated with its lure
-(regen_01). Facts credited per family, with overlap: F0 71, F1 81, F2 30, F3 1, F4 5, F5 22, F6 13, F7 38, F8 41.
+(regen_01). Facts credited per family, with overlap: F0 71, F1 81, F2 30, F3 1, F4 5, F5 22, F6 13, F7 38, F8 40.
 
 ## RQ3. How well does the generator perform?
 

@@ -113,6 +113,11 @@ section's note that they "still carry the 8-minute numbers" no longer holds.
   counts every trial run). Sources: this README (the rulings and the full rebuild, above); `numbers/concise.json`
   (`excluded_policy_trials`: 6 and 12); `numbers/generator.json` (`left_out`: P-G4-BOX-02-I11, P-G4-BOX-11-I11).
 
+### RQ1: a stale reference
+
+- report.md RQ1, "`grounding/runs/boundary_01/report.md` on branch `exp/automation-01`" → a link to
+  `../boundary_01/report.md`, merged into main (file checked).
+
 ### RQ2: the F0 rule
 
 - report.md RQ2 "Near-miss family" and report_concise.md RQ2 (the 37 facts credited only through plain near
@@ -122,7 +127,9 @@ section's note that they "still carry the 8-minute numbers" no longer holds.
   A:User.title); 2 whose lure the rulings make flawed (Linear A:Cycle.number, Slack A:Message.message_text); 1 being
   regenerated (Linear R:IssueRelation.relatedIssueId). Sources: `numbers/coverage.json`
   (`credited_only_through_plain_near_misses`, the 37 ids); roadmap, "Decisions (2026-09-29)", "The F0 rule".
-  Counts unchanged (37, 167, the per-family figures).
+  Counts unchanged (37, 167).
+- Both texts, facts per family: F8 41 → 40 (the two rulings left one fact without a valid F8 near miss); the others
+  unchanged. Source: `numbers/coverage.json` (`facts_per_family`).
 
 ### RQ3: duplicate policy units, a stale reference
 

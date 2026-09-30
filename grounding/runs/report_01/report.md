@@ -161,7 +161,7 @@ bookkeeping column, a configuration field, and so on).
   alternative).
 - **The 42 facts the replicas cannot serve** are 38 replica gaps (features the real services have and the replicas
   lack, mostly Linear) and 4 real limits (Calendar sharing rules the acting user cannot read). Source:
-  `grounding/runs/boundary_01/report.md` on branch `exp/automation-01`. The generator's briefs never draw them.
+  [boundary_01/report.md](../boundary_01/report.md) (merged into main). The generator's briefs never draw them.
 
 **Table 2. The same four services under route-based criteria.** Source: [counts.md](../fact_coverage_01/catalog/counts.md).
 
@@ -252,7 +252,7 @@ Label groups and Box tasks recur: the writer could not build scenarios on them t
   The 37th, Linear `R:IssueRelation.relatedIssueId` (the related issue's direction), has only a plain near miss
   although the domain model names a lure; it is being regenerated with its lure (regen_01). Plain near misses expose
   less often than designated ones (RQ4, RQ8).
-- **Facts per family** (a fact counted once per family it has): F1 81, F0 71, F8 41, F7 38, F2 30, F5 22, F6 13,
+- **Facts per family** (a fact counted once per family it has): F1 81, F0 71, F8 40, F7 38, F2 30, F5 22, F6 13,
   F4 5, F3 1.
 
 ## RQ3. How well does the generator perform?
