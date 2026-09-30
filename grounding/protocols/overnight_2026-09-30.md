@@ -192,3 +192,10 @@ section. Decisions that stand go to the [roadmap](roadmap.md); this is the recor
   description); message_text and CalendarListEntry.selected uncovered because their designated near miss is the
   ruled-flawed construction; three "word in a sibling field" borderline cases for one ruling on the pattern. Runs
   started on the self-host at 16 in flight.
+- 02:4x the self-host overloaded (two PCIe copies on trojai4; trojai3 still fully taken): the judge replay at 16 in
+  flight, regen's runs at 16 and B1 at 8 gave 24–67 s per model request, and B1's first 12 Box trials ran out the
+  10-minute limit on host slowness (9–25 requests each, no limiter waits). Decisions: the judge replay pauses (its
+  labelled result stands); regen drops to 12 in flight; B1 stays at 8 and P1 waits for it; trials that time out
+  under host load are marked so, rerun when the host is quiet, and reported in both readings, since vLLM's queue
+  time is invisible to the agent clock and is our infrastructure. For the PI: the timeout rule under a shared host
+  (the step-5 question) needs a ruling; and the two copies cannot serve four sessions at once.
