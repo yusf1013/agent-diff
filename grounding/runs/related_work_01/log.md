@@ -29,3 +29,25 @@ quality control); the EnvScaler paper and README.
   derived from an LLM-written "challenging task"; the reward is the fraction passed. Their validity evidence is that
   stronger models win more often on 50 sampled scenarios, and that Claude-4.5-Sonnet's quality scores of the
   environments (not of the checks) agree with manual judgments.
+
+## 2026-09-30, cycle 1: what already exists for the AgentDiff projection
+
+**Checked:** whether the repository already holds runs of an established suite with hand labels, before planning
+any new run. It does, for Slack: `grounding/reference_labels/slack/` holds finalized hand labels (198 obligation
+judgments) of the latest saved run of each of the 59 AgentDiff Slack tests (slack_57–115). The runs
+(`grounding/runs/slack_baseline/`) are Claude Sonnet 5 via Bedrock, one trial per test, and keep AgentDiff's own
+evaluation. [pilot/slack_assertion_misses.py](pilot/slack_assertion_misses.py) crosses the two with the obligation
+analysis's assertion-coverage labels ([pilot/slack_assertion_misses.json](pilot/slack_assertion_misses.json)).
+
+**Learned:**
+- **13 of 59 tests have a demonstrated grounding error; the suite's own assertions pass 7 of those 13.** 9 of the
+  18 incorrect obligations sit in runs the assertions passed.
+- **The misses sit where the annotation said the assertions do not look:** of the 18 incorrect obligations, 10 are
+  on obligations the assertions leave unchecked, 7 on partially checked ones, 1 on a fully checked one (slack_105
+  O3, whose run the assertions failed). The annotation-level coverage labels predict the behavioural misses.
+- **11 of the 18 are on obligations the annotation calls underspecified**, 7 on resolved ones. The established
+  suite's failures come mostly from its own natural ambiguity, which our design puts in the policy tests.
+- 6 tests fail their assertions with no grounding error; they are failures of another kind or false failures (not
+  read yet).
+- Denominators: one solver (Sonnet 5), one trial, grounding judgments only (not all task failures), Slack only.
+  Box and Linear have obligation analyses but no labelled runs.
