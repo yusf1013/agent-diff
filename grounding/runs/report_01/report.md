@@ -487,19 +487,20 @@ the runs (§0.3). Every valid unit of the generated scenarios ran, 3 trials each
 
 | Cell | Valid units | Failing / usable trials | Rate [p10, p90] | Units failing 0 / 1 / 2 / 3 of 3 | **Decision** | First pass (fewer units) | Same model, toy harness |
 |---|---:|---:|---|---|---|---|---|
-| Box, absence | 58 | 126 / 165 | 0.76 [0.70, 0.82] | 6 / 4 / 10 / 31 | **undecided** | undecided (0.75) | policy-level |
-| Calendar, absence | 42 | 101 / 124 | 0.82 [0.75, 0.87] | 4 / 1 / 8 / 27 | **undecided** | not policy-level | policy-level |
-| Linear, absence | 99 | 160 / 263 | 0.61 [0.55, 0.67] | 21 / 12 / 9 / 35 | **not policy-level** | not policy-level | policy-level |
-| Slack, absence | 43 | 75 / 125 | 0.60 [0.52, 0.68] | 10 / 5 / 5 / 19 | **not policy-level** | not policy-level | policy-level |
-| Box, underspecified | 52 | 65 / 136 | 0.48 [0.41, 0.55] | 10 / 12 / 6 / 12 | **not policy-level** | not policy-level | policy-level |
-| Calendar, underspecified | 30 | 37 / 81 | 0.46 [0.36, 0.56] | 8 / 5 / 3 / 8 | **not policy-level** | not policy-level | policy-level |
-| Linear, underspecified | 78 | 83 / 205 | 0.41 [0.34, 0.47] | 25 / 10 / 5 / 17 | **not policy-level** | not policy-level | policy-level |
-| Slack, underspecified | 31 | 63 / 82 | 0.77 [0.69, 0.84] | 2 / 3 / 4 / 12 | **undecided** | undecided (0.80) | policy-level |
+| Box, absence | 58 | 135 / 173 | 0.78 [0.72, 0.84] | 6 / 5 / 10 / 36 | **undecided** | undecided (0.75) | policy-level |
+| Calendar, absence | 42 | 103 / 126 | 0.82 [0.75, 0.87] | 4 / 1 / 9 / 28 | **undecided** | not policy-level | policy-level |
+| Linear, absence | 99 | 193 / 294 | 0.66 [0.60, 0.71] | 21 / 13 / 10 / 52 | **not policy-level** | not policy-level | policy-level |
+| Slack, absence | 43 | 79 / 129 | 0.61 [0.54, 0.69] | 10 / 6 / 8 / 19 | **not policy-level** | not policy-level | policy-level |
+| Box, underspecified | 52 | 85 / 155 | 0.55 [0.48, 0.62] | 10 / 14 / 11 / 16 | **not policy-level** | not policy-level | policy-level |
+| Calendar, underspecified | 30 | 46 / 90 | 0.51 [0.42, 0.61] | 8 / 8 / 4 / 10 | **not policy-level** | not policy-level | policy-level |
+| Linear, underspecified | 78 | 114 / 236 | 0.48 [0.43, 0.54] | 25 / 15 / 13 / 23 | **not policy-level** | not policy-level | policy-level |
+| Slack, underspecified | 31 | 77 / 96 | 0.80 [0.73, 0.87] | 2 / 3 / 6 / 19 | **undecided** | undecided (0.80) | policy-level |
 
 Two underspecified pairs are one request each (RQ3), so each pair counts once: Linear 79 → 78 and Slack 32 → 31
 valid units, the pair's trials pooled. The two rulings of 2026-09-30 left out 2 Box absence and 4 Box
 underspecified units (§0.4). The spread counts units with exactly 3 usable trials. The first-pass column
-is the first pass's own record, not recomputed.
+is the first pass's own record, not recomputed. A trial the 10-minute budget ended counts as a failure (restored in
+these numbers on 2026-09-30: README, "Follow-up: the budget rule restored").
 
 - **The same model is policy-level in all eight cells in the toy harness, and in none on OpenClaw:** five cells are
   shown not policy-level and three are undecided with every unit used. The harness changes the answer.
@@ -514,7 +515,7 @@ is the first pass's own record, not recomputed.
 - **The budget reading changes no decision.** Under the withdrawn 8-minute reading, before the two rulings, the rates
   were 0.79, 0.83, 0.69, 0.62 (absence) and 0.58, 0.58, 0.51, 0.82 (underspecified), with the same eight decisions.
 - **Writers differ.** In both Calendar cells, units from Muse's scenarios fail more often than units from Sonnet's:
-  absence 0.88 (Phase 4) and 0.96 (6b) against 0.64; underspecified 0.64 and 0.27 against 0.23.
+  absence 0.88 (Phase 4) and 0.96 (6b) against 0.64; underspecified 0.67 and 0.47 against 0.26.
 
 **Table 12. The per-fact policy space.** Same source (`totals`, `regular_vs_policy_facts`, `by_source`).
 
@@ -523,30 +524,30 @@ is the first pass's own record, not recomputed.
 | Requirements (one per covered fact) | 204 | 204 | 408 |
 | Units derived (every fact of every scenario) | 255 | 209 | 464 |
 | Valid units, all run | 242 | 193 (191 with each duplicate pair once) | 435 (433) |
-| … with a usable trial | 238 | 185 | 423 |
+| … with a usable trial | 242 | 191 | 433 |
 | Facts with a valid unit | 195 | 170 | 365 (89% of 408) |
-| Facts failing at least one trial (detect@3) | 157 | 111 | 268 |
-| Facts failing the first trial (detect@1) | 129 | 80 | 209 |
-| … of those with a unit: also exposed by a regular test | 77 | 52 | |
-| … failing the policy unit only | 80 | 59 | |
-| … exposed by a regular test only | 6 | 21 | |
-| … neither | 32 | 38 | |
+| Facts failing at least one trial (detect@3) | 163 | 136 | 299 |
+| Facts failing the first trial (detect@1) | 142 | 107 | 249 |
+| … of those with a unit: also exposed by a regular test | 79 | 60 | |
+| … failing the policy unit only | 84 | 76 | |
+| … exposed by a regular test only | 4 | 13 | |
+| … neither | 28 | 21 | |
 
 - **Units exceed requirements** because a fact can have near misses in several scenarios; the unit is the scenario's
   fact. Some facts have no valid unit (a derivation not possible, a variant declined or ruled invalid).
 - **The same facts show up in both kinds of test.** Of the 83 facts that a regular test exposes and that have an
-  absence unit, 77 also fail it. Another 80 facts pass every regular test but fail when the request presumes the
+  absence unit, 79 also fail it. Another 84 facts pass every regular test but fail when the request presumes the
   record: the agent can check the fact when it may report absence, and does not when the request presumes a match.
 - **Per-fact counting of policy failures.** A policy failure is attributed to the fact of the near miss acted on
   (absence) or of the condition dropped (underspecified), exactly as in regular tests. The totals above count facts,
   not failing tests.
 - **Muse's Phase 4 scenarios alone** (for comparison with the baselines, RQ8): 60 absence units over 56 facts, 43
-  failing; 50 underspecified units over 52 facts, 32 failing.
+  failing; 50 underspecified units over 52 facts, 41 failing.
 
 **Answer to RQ6.** For Qwen in the toy harness the policy tests collapse to 8. For the same model in OpenClaw they
 do not: failures depend on the fact, and a per-fact policy space of about 400 tests is what finds them. On this
-agent it found absence failures on 157 facts and underspecified failures on 111 (268 fact and mode pairs at
-detect@3, 209 at detect@1).
+agent it found absence failures on 163 facts and underspecified failures on 136 (299 fact and mode pairs at
+detect@3, 249 at detect@1).
 
 ## A second agent: GPT-6.1 Sol on the same harness
 
@@ -666,20 +667,20 @@ duplicate pair counted once. Units failing some / all trials count units with a 
 
 | Cell | Units | Sol: failing / usable | Sol: rate [p10, p90] | Sol: units failing some / all | **Sol** | Qwen: failing / usable | Qwen: rate [p10, p90] | Qwen: units failing some / all | **Qwen** |
 |---|---:|---:|---|---:|---|---:|---|---:|---|
-| Box, absence | 34 | 16 / 102 | 0.16 [0.09, 0.24] | 6 / 5 | **not** | 70 / 95 | 0.74 [0.65, 0.82] | 27 / 21 | **undecided** |
-| Calendar, absence | 28 | 19 / 83 | 0.23 [0.13, 0.33] | 7 / 6 | **not** | 74 / 82 | 0.90 [0.85, 0.95] | 27 / 22 | **policy-level** |
-| Linear, absence | 49 | 13 / 147 | 0.09 [0.04, 0.14] | 6 / 3 | **not** | 68 / 125 | 0.54 [0.45, 0.63] | 29 / 23 | **not** |
-| Slack, absence | 12 | 4 / 36 | 0.11 [0.00, 0.22] | 2 / 1 | **not** | 20 / 35 | 0.57 [0.42, 0.72] | 9 / 5 | **not** |
-| Box, underspecified | 30 | 0 / 90 | 0.00 [0.00, 0.00] | 0 / 0 | **not** | 36 / 81 | 0.44 [0.35, 0.53] | 20 / 7 | **not** |
-| Calendar, underspecified | 21 | 7 / 59 | 0.12 [0.03, 0.22] | 3 / 2 | **not**\* | 31 / 55 | 0.56 [0.43, 0.69] | 13 / 9 | **not** |
-| Linear, underspecified | 32 | 0 / 99 | 0.00 [0.00, 0.00] | 0 / 0 | **not** | 36 / 82 | 0.44 [0.33, 0.54] | 15 / 8 | **not** |
+| Box, absence | 34 | 16 / 102 | 0.16 [0.09, 0.24] | 6 / 5 | **not** | 76 / 101 | 0.75 [0.67, 0.83] | 29 / 22 | **undecided** |
+| Calendar, absence | 28 | 19 / 83 | 0.23 [0.13, 0.33] | 7 / 6 | **not** | 76 / 84 | 0.91 [0.85, 0.95] | 27 / 22 | **policy-level** |
+| Linear, absence | 49 | 13 / 147 | 0.09 [0.04, 0.14] | 6 / 3 | **not** | 88 / 145 | 0.61 [0.52, 0.69] | 33 / 26 | **not** |
+| Slack, absence | 12 | 4 / 36 | 0.11 [0.00, 0.22] | 2 / 1 | **not** | 21 / 36 | 0.58 [0.42, 0.72] | 9 / 5 | **not** |
+| Box, underspecified | 30 | 0 / 90 | 0.00 [0.00, 0.00] | 0 / 0 | **not** | 45 / 89 | 0.51 [0.42, 0.59] | 24 / 8 | **not** |
+| Calendar, underspecified | 21 | 7 / 59 | 0.12 [0.03, 0.22] | 3 / 2 | **not**\* | 39 / 63 | 0.62 [0.51, 0.73] | 17 / 10 | **not** |
+| Linear, underspecified | 32 | 0 / 99 | 0.00 [0.00, 0.00] | 0 / 0 | **not** | 53 / 99 | 0.54 [0.45, 0.63] | 24 / 10 | **not** |
 | Slack, underspecified | 8 | 1 / 24 | 0.04 [0.00, 0.08] | 1 / 0 | **not** | 20 / 24 | 0.83 [0.71, 0.92] | 8 / 5 | **undecided** |
 
 \* U-G4-CAL-05-CalendarListEntry_summary_override did not run for Sol (above), so the decision file marks the cell
 incomplete. With 3 failing trials there, the cell would be at 10 / 62 (0.16).
 
 - **No Sol cell is policy-level, and none is undecided.** Sol's rates run from 0.00 to 0.23. On the same units,
-  Qwen's run from 0.44 to 0.90: its Calendar absence cell is policy-level here, and two cells are undecided. On all
+  Qwen's run from 0.51 to 0.91: its Calendar absence cell is policy-level here, and two cells are undecided. On all
   valid units (Table 11), Qwen's Calendar absence cell is undecided at 0.82.
 - **Other readings.** Every Sol cell stays not policy-level if a unit counts as failing when any trial fails, and
   also if it must fail all three (`readings`).
@@ -698,12 +699,12 @@ incomplete. With 3 failing trials there, the cell would be at 10 / 62 (0.16).
 | | Absence: Sol | Absence: Qwen | Underspecified: Sol | Underspecified: Qwen |
 |---|---:|---:|---:|---:|
 | Facts with a valid unit | 115 | 115 | 100 | 100 |
-| Facts failing at least one trial (detect@3) | 19 | 87 | 5 | 61 |
-| Facts failing the first trial (detect@1) | 16 | 75 | 4 | 46 |
-| … also exposed by a regular test | 7 | 40 | 0 | 27 |
-| … failing the policy unit only | 12 | 47 | 5 | 34 |
-| … exposed by a regular test only | 0 | 5 | 5 | 14 |
-| … neither | 96 | 23 | 90 | 25 |
+| Facts failing at least one trial (detect@3) | 19 | 93 | 5 | 82 |
+| Facts failing the first trial (detect@1) | 16 | 83 | 4 | 63 |
+| … also exposed by a regular test | 7 | 42 | 0 | 32 |
+| … failing the policy unit only | 12 | 51 | 5 | 50 |
+| … exposed by a regular test only | 0 | 3 | 5 | 9 |
+| … neither | 96 | 19 | 90 | 9 |
 
 Every fact Sol's regular tests expose also fails an absence unit. Another 12 absence facts and all 5 underspecified
 facts fail for Sol with no regular exposure.
@@ -895,7 +896,7 @@ from `full_02` as rebuilt under the 10-minute budget and the rulings. For all 29
   as raw failing tests, B1 (5) would look productive; counted as facts, it is not.
 - **Policy-level failures counted by fact.** Our policy tests count the fact of the near miss acted on (RQ6), so the
   baselines' presupposing tests should too. Our own Phase 4 policy units, with every one run: 60 absence units over
-  56 facts, 43 failing (37 through designated near misses); 50 underspecified units over 52 facts, 32 failing (29).
+  56 facts, 43 failing (37 through designated near misses); 50 underspecified units over 52 facts, 41 failing (38).
   These are not per 48 tests: our regular suite has no presupposing tests, and the policy units are generated
   apart.
 - **A counting difference we found in the baseline study.** It counts a plain near miss (F0) as exposing its fact in

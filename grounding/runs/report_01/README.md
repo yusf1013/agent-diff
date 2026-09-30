@@ -607,3 +607,64 @@ All paths below are under `grounding/runs/sol_eval_01/`.
    - **report_concise.md §12:** the same sentence, added after the self-hosted cost note.
    - **Unchanged:** report.md §0.1's model name `muse-spark-1.3-contributor` (a model id, not a price), and the
      billed amounts in this README's earlier log entries and in the studies' READMEs, which are records.
+
+### Follow-up: the budget rule restored (2026-09-30)
+
+At the lead's request (session sol_score, with leave to edit this study). **Why:** the 1,743 policy verdicts of the
+Qwen round record their attempts in `.claude/worktrees/roadmap-02`, since removed. `policy.population_outcomes`
+applies the budget rule only to an attempt it can find, so from the 10-minute rebuild (49ce3672dc) on, a trial the
+budget ended kept the judge's not_established and was void instead of failing. The rule now re-roots such a path at
+this repository (`policy.local_attempt`) and warns on stderr when an attempt still cannot be found.
+kit/policy_space.py → numbers/policy.json and kit/sol.py → numbers/sol.json were re-run; numbers/concise.json is
+unchanged. **No decision changes, and no Sol number changes.** One secondary reading moves: a unit failing in any of
+its runs is undecided, not "not policy-level", in Box and Calendar underspecified (the sentence "Readings other than
+the fixed one" still holds).
+
+**report.md** (old → new):
+- **Table 11** (failing / usable, rate [p10, p90], units failing 0 / 1 / 2 / 3 of 3):
+  - Box absence: 126 / 165, 0.76 [0.70, 0.82], 6 / 4 / 10 / 31 → 135 / 173, 0.78 [0.72, 0.84], 6 / 5 / 10 / 36.
+  - Calendar absence: 101 / 124, 4 / 1 / 8 / 27 → 103 / 126, 4 / 1 / 9 / 28 (rate unchanged at 0.82 [0.75, 0.87]).
+  - Linear absence: 160 / 263, 0.61 [0.55, 0.67], 21 / 12 / 9 / 35 → 193 / 294, 0.66 [0.60, 0.71], 21 / 13 / 10 / 52.
+  - Slack absence: 75 / 125, 0.60 [0.52, 0.68], 10 / 5 / 5 / 19 → 79 / 129, 0.61 [0.54, 0.69], 10 / 6 / 8 / 19.
+  - Box underspecified: 65 / 136, 0.48 [0.41, 0.55], 10 / 12 / 6 / 12 → 85 / 155, 0.55 [0.48, 0.62], 10 / 14 / 11 / 16.
+  - Calendar underspecified: 37 / 81, 0.46 [0.36, 0.56], 8 / 5 / 3 / 8 → 46 / 90, 0.51 [0.42, 0.61], 8 / 8 / 4 / 10.
+  - Linear underspecified: 83 / 205, 0.41 [0.34, 0.47], 25 / 10 / 5 / 17 → 114 / 236, 0.48 [0.43, 0.54],
+    25 / 15 / 13 / 23.
+  - Slack underspecified: 63 / 82, 0.77 [0.69, 0.84], 2 / 3 / 4 / 12 → 77 / 96, 0.80 [0.73, 0.87], 2 / 3 / 6 / 19.
+  - The note under the table gains one sentence: a trial the budget ended counts as a failure, restored here.
+- **RQ6, "Writers differ":** Calendar underspecified 0.64 and 0.27 against 0.23 → 0.67 and 0.47 against 0.26.
+- **Table 12:** with a usable trial 238 / 185 / 423 → 242 / 191 / 433; detect@3 157 / 111 / 268 → 163 / 136 / 299;
+  detect@1 129 / 80 / 209 → 142 / 107 / 249; also exposed by a regular test 77 / 52 → 79 / 60; policy unit only
+  80 / 59 → 84 / 76; regular test only 6 / 21 → 4 / 13; neither 32 / 38 → 28 / 21.
+- **RQ6 bullets:** "77 also fail it. Another 80 facts" → "79 … Another 84 facts"; Phase 4 alone, underspecified
+  "32 failing" → "41 failing".
+- **Answer to RQ6:** 157 and 111 facts (268 pairs at detect@3, 209 at detect@1) → 163 and 136 (299, 249).
+- **RQ8, Phase 4's own policy units:** underspecified "32 failing (29)" → "41 failing (38)".
+- **Table 12c, Qwen's columns** (failing / usable, rate [p10, p90], units failing some / all):
+  - Box absence: 70 / 95, 0.74 [0.65, 0.82], 27 / 21 → 76 / 101, 0.75 [0.67, 0.83], 29 / 22.
+  - Calendar absence: 74 / 82, 0.90 → 76 / 84, 0.91 (bounds and units unchanged).
+  - Linear absence: 68 / 125, 0.54 [0.45, 0.63], 29 / 23 → 88 / 145, 0.61 [0.52, 0.69], 33 / 26.
+  - Slack absence: 20 / 35, 0.57 → 21 / 36, 0.58.
+  - Box underspecified: 36 / 81, 0.44 [0.35, 0.53], 20 / 7 → 45 / 89, 0.51 [0.42, 0.59], 24 / 8.
+  - Calendar underspecified: 31 / 55, 0.56 [0.43, 0.69], 13 / 9 → 39 / 63, 0.62 [0.51, 0.73], 17 / 10.
+  - Linear underspecified: 36 / 82, 0.44 [0.33, 0.54], 15 / 8 → 53 / 99, 0.54 [0.45, 0.63], 24 / 10.
+  - Slack underspecified unchanged. The decisions are unchanged.
+  - The bullet below: Qwen's rates "from 0.44 to 0.90" → "from 0.51 to 0.91".
+- **Table 12d, Qwen's columns (absence / underspecified):** detect@3 87 / 61 → 93 / 82; detect@1 75 / 46 → 83 / 63;
+  also exposed 40 / 27 → 42 / 32; policy unit only 47 / 34 → 51 / 50; regular test only 5 / 14 → 3 / 9; neither
+  23 / 25 → 19 / 9.
+
+**report_concise.md** (old → new):
+- **Table 11:** the same failing / usable counts and rates as report.md's Table 11; the note below gains the same
+  sentence.
+- **Table 12:** detect@3 157 / 111 / 268 → 163 / 136 / 299; detect@1 129 / 80 / 209 → 142 / 107 / 249; both
+  77 / 52 → 79 / 60; policy only 80 / 59 → 84 / 76; regular only 6 / 21 → 4 / 13; neither 32 / 38 → 28 / 21.
+  The sentence after it: "Another 80 facts … and 59" → "Another 84 facts … and 76".
+- **Table 12b, Qwen's columns:** as report.md's Table 12c.
+- **Cases failing some / all executions, Qwen:** absence 92 of 119, 71 → 98 of 123, 75; underspecified 56 of 87,
+  29 → 73 of 91, 33.
+- **Per fact, Qwen:** absence 87 / 75 → 93 / 83; underspecified 61 / 46 → 82 / 63.
+
+**Unchanged:** every decision; every Sol number; the withdrawn 8-minute reading's rates (a record); the first-pass
+column (its own record, which never used the budget rule); the valid unit counts; the regular numbers (the regular
+adjudication reads the run folders, not the verdicts' recorded paths).

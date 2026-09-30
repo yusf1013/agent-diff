@@ -327,21 +327,23 @@ which [policy.json](numbers/policy.json) copies; its valid counts keep both case
 
 | Service and mode | Valid cases | Failing / usable executions | Rate [p10, p90] | Decision |
 |---|---:|---:|---|---|
-| Box, absence | 58 | 126/165 | 0.76 [0.70, 0.82] | Undecided |
-| Calendar, absence | 42 | 101/124 | 0.82 [0.75, 0.87] | Undecided |
-| Linear, absence | 99 | 160/263 | 0.61 [0.55, 0.67] | Not policy-level |
-| Slack, absence | 43 | 75/125 | 0.60 [0.52, 0.68] | Not policy-level |
-| Box, underspecified | 52 | 65/136 | 0.48 [0.41, 0.55] | Not policy-level |
-| Calendar, underspecified | 30 | 37/81 | 0.46 [0.36, 0.56] | Not policy-level |
-| Linear, underspecified | 78 | 83/205 | 0.41 [0.34, 0.47] | Not policy-level |
-| Slack, underspecified | 31 | 63/82 | 0.77 [0.69, 0.84] | Undecided |
+| Box, absence | 58 | 135/173 | 0.78 [0.72, 0.84] | Undecided |
+| Calendar, absence | 42 | 103/126 | 0.82 [0.75, 0.87] | Undecided |
+| Linear, absence | 99 | 193/294 | 0.66 [0.60, 0.71] | Not policy-level |
+| Slack, absence | 43 | 79/129 | 0.61 [0.54, 0.69] | Not policy-level |
+| Box, underspecified | 52 | 85/155 | 0.55 [0.48, 0.62] | Not policy-level |
+| Calendar, underspecified | 30 | 46/90 | 0.51 [0.42, 0.61] | Not policy-level |
+| Linear, underspecified | 78 | 114/236 | 0.48 [0.43, 0.54] | Not policy-level |
+| Slack, underspecified | 31 | 77/96 | 0.80 [0.73, 0.87] | Undecided |
 
 **Five cells are not policy-level and three remain undecided.** Every cell includes cases that always fail and
 cases that never fail. This evidence does not support replacing the policy suite with eight representative
 cases. The budget reading changes rates but none of these decisions: under the withdrawn eight-minute reading,
 before the two rulings, the rates were 0.79, 0.83, 0.69, 0.62 (absence) and 0.58, 0.58, 0.51, 0.82 (underspecified).
 Two underspecified pairs are one request each and count once here (Linear 79 → 78 and Slack 32 → 31 cases, RQ3). The
-two rulings of 2026-09-30 left out 2 Box absence and 4 Box underspecified cases (§0.4).
+two rulings of 2026-09-30 left out 2 Box absence and 4 Box underspecified cases (§0.4). An execution the ten-minute
+budget ended counts as a failure (restored in these numbers on 2026-09-30; README, "Follow-up: the budget rule
+restored").
 
 **Table 12. Per-fact policy results.** Source: [policy.json](numbers/policy.json).
 The last column counts **fact–mode pairs**, so the same fact may contribute once to each mode.
@@ -351,16 +353,16 @@ The last column counts **fact–mode pairs**, so the same fact may contribute on
 | Requirements: one per covered fact and mode | 204 | 204 | 408 |
 | Valid executable cases | 242 | 193 | 435 |
 | Facts with a valid policy case | 195 | 170 | 365 |
-| Facts failing @3 | 157 | 111 | 268 |
-| Facts failing @1 | 129 | 80 | 209 |
-| Of facts with a case: both regular exposure and policy failure @3 | 77 | 52 | — |
-| Policy failure only | 80 | 59 | — |
-| Regular exposure only | 6 | 21 | — |
-| Neither | 32 | 38 | — |
+| Facts failing @3 | 163 | 136 | 299 |
+| Facts failing @1 | 142 | 107 | 249 |
+| Of facts with a case: both regular exposure and policy failure @3 | 79 | 60 | — |
+| Policy failure only | 84 | 76 | — |
+| Regular exposure only | 4 | 13 | — |
+| Neither | 28 | 21 | — |
 
 Why **435 cases for 408 requirements**? A fact can occur in several scenarios, each producing a policy case,
 while some facts have no valid derivation. The 435 cases cover 365/408 fact–mode requirements (89.5%).
-Another **80 facts** fail absence policy cases despite no regular exposure, and **59** fail underspecified
+Another **84 facts** fail absence policy cases despite no regular exposure, and **76** fail underspecified
 cases despite no regular exposure. They reveal behavior that the 563 regular cases alone miss.
 
 Thus the accounting is **563 regular cases + 435 policy cases = 998**, with three executions per case.
@@ -431,13 +433,13 @@ underspecified counts its duplicate pair once, as in Table 11.
 
 | Service and mode | Cases | Sol: failing / usable | Sol: rate [p10, p90] | Sol: decision | Qwen: failing / usable | Qwen: rate [p10, p90] | Qwen: decision |
 |---|---:|---:|---|---|---:|---|---|
-| Box, absence | 34 | 16/102 | 0.16 [0.09, 0.24] | Not policy-level | 70/95 | 0.74 [0.65, 0.82] | Undecided |
-| Calendar, absence | 28 | 19/83 | 0.23 [0.13, 0.33] | Not policy-level | 74/82 | 0.90 [0.85, 0.95] | Policy-level |
-| Linear, absence | 49 | 13/147 | 0.09 [0.04, 0.14] | Not policy-level | 68/125 | 0.54 [0.45, 0.63] | Not policy-level |
-| Slack, absence | 12 | 4/36 | 0.11 [0.00, 0.22] | Not policy-level | 20/35 | 0.57 [0.42, 0.72] | Not policy-level |
-| Box, underspecified | 30 | 0/90 | 0.00 [0.00, 0.00] | Not policy-level | 36/81 | 0.44 [0.35, 0.53] | Not policy-level |
-| Calendar, underspecified | 21 | 7/59 | 0.12 [0.03, 0.22] | Not policy-level* | 31/55 | 0.56 [0.43, 0.69] | Not policy-level |
-| Linear, underspecified | 32 | 0/99 | 0.00 [0.00, 0.00] | Not policy-level | 36/82 | 0.44 [0.33, 0.54] | Not policy-level |
+| Box, absence | 34 | 16/102 | 0.16 [0.09, 0.24] | Not policy-level | 76/101 | 0.75 [0.67, 0.83] | Undecided |
+| Calendar, absence | 28 | 19/83 | 0.23 [0.13, 0.33] | Not policy-level | 76/84 | 0.91 [0.85, 0.95] | Policy-level |
+| Linear, absence | 49 | 13/147 | 0.09 [0.04, 0.14] | Not policy-level | 88/145 | 0.61 [0.52, 0.69] | Not policy-level |
+| Slack, absence | 12 | 4/36 | 0.11 [0.00, 0.22] | Not policy-level | 21/36 | 0.58 [0.42, 0.72] | Not policy-level |
+| Box, underspecified | 30 | 0/90 | 0.00 [0.00, 0.00] | Not policy-level | 45/89 | 0.51 [0.42, 0.59] | Not policy-level |
+| Calendar, underspecified | 21 | 7/59 | 0.12 [0.03, 0.22] | Not policy-level* | 39/63 | 0.62 [0.51, 0.73] | Not policy-level |
+| Linear, underspecified | 32 | 0/99 | 0.00 [0.00, 0.00] | Not policy-level | 53/99 | 0.54 [0.45, 0.63] | Not policy-level |
 | Slack, underspecified | 8 | 1/24 | 0.04 [0.00, 0.08] | Not policy-level | 20/24 | 0.83 [0.71, 0.92] | Undecided |
 
 \* One case did not run for Sol (above), so the decision file marks the cell incomplete. If all three of its
@@ -447,15 +449,15 @@ Sol's policy failures sit in few cases, counting cases with a usable execution:
 
 | Mode | Sol: fail in some execution | Sol: … in all three | Qwen: fail in some execution | Qwen: … in all three |
 |---|---:|---:|---:|---:|
-| Absence | 21 of 123 | 15 | 92 of 119 | 71 |
-| Underspecified | 4 of 90 | 2 | 56 of 87 | 29 |
+| Absence | 21 of 123 | 15 | 98 of 123 | 75 |
+| Underspecified | 4 of 90 | 2 | 73 of 91 | 33 |
 
 Per fact, on the same cases:
 
 | Mode | Facts with a valid case | Sol: failing @3 | Sol: failing @1 | Qwen: failing @3 | Qwen: failing @1 |
 |---|---:|---:|---:|---:|---:|
-| Absence | 115 | 19 | 16 | 87 | 75 |
-| Underspecified | 100 | 5 | 4 | 61 | 46 |
+| Absence | 115 | 19 | 16 | 93 | 83 |
+| Underspecified | 100 | 5 | 4 | 82 | 63 |
 
 12 of Sol's 19 absence facts and all 5 of its underspecified facts have no regular exposure.
 
