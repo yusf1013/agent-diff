@@ -1,7 +1,11 @@
 # Bibliography
 
 *Every work cited in [report.md](report.md), grouped by the angle of the map. arXiv entries give the first
-version's date; titles, authors and dates were fetched from the arXiv API on 2026-09-30.*
+version's date; titles, authors and dates were fetched from the arXiv API on 2026-09-30.
+Repositories actually visited on 2026-09-30: Agent-Diff (upstream evaluation code), ClawEnvKit (local clone at the
+upstream head), EnvScaler (its `scen_generator/` prompts), ClawsBench, Entity Binding Failures and FeasiGen (GitHub
+API: contents), and the READMEs of AgentDojo, AppWorld, τ²-bench and WorkBench. The other `[code]` links are as the
+papers give them and were not visited.*
 
 **Unpublished, the PI's own:** the MCP-Bench audit on Gmail (`~/PyProj/mcp-bench/specops_tests/audit/overall_report.md`),
 the judge-robustness note (`~/PyProj/mcp-bench/logs/judge_robustness_2026-08-03/README.md`), and the July–August

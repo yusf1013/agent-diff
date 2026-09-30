@@ -127,3 +127,14 @@ server; BFCL's multi-turn categories (its v3 blog); ABC's 38% (38% of τ-bench's
 unsolvable, and a do-nothing agent passes it). Corrected on a full read: a claim about the survey's quality checks
 (restated as what its own summary lists), EnvScaler's wording (its prompts discourage look-alikes, they do not forbid
 them), a verdict inconsistency for the angle-J suites, and two unverified details.
+
+## 2026-09-30, cycle 5: review fixes
+
+After the advisor's review: the card count is **69 works in 35 cards** (not 34; the 72 bibliography entries are
+those 69, WebArena, the survey and XData's journal version). The Slack pilot's labels are **grounding errors** under
+the ground-truth protocol (a wrong or incomplete referent: slack_67 O1 is an omission, some others are topical
+misresolutions), not "wrong-record" errors, and the runs are the latest saved run per test (the manifest's rule),
+which cycle 1 called "one trial per test". The closed-world finding is scoped to the evaluation path the platform
+serves (`evaluateRun` → `AssertionEngine`). The Entity Binding Failures and FeasiGen repositories were checked
+through the GitHub API (both public, with code; EBF also with data and results). The bibliography now says which
+repositories were visited.

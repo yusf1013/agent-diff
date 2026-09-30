@@ -7,7 +7,7 @@ theirs, from their papers or repositories, checked on 2026-09-30; numbers about 
 
 ## Status
 
-- **2026-09-30, done:** the map (12 angles, 6 of them new), 34 cards, the verdict table, two pilots on existing
+- **2026-09-30, done:** the map (12 angles, 6 of them new), cards for 69 works in 35 blocks, the verdict table, two pilots on existing
   evidence (no model calls), the projection plan, the baseline proposals, the claims file ([claims.md](claims.md):
   every claim about another work, quoted from its source with the fetch date).
 - **Running:** nothing. **Blocked:** nothing. Every arm proposed below waits for the PI's go-ahead.
@@ -32,10 +32,11 @@ theirs, from their papers or repositories, checked on 2026-09-30; numbers about 
    ambiguity by hand; AppWorld hand-writes them per scenario; the automated generators check solvability, not
    whether a check rejects a wrong outcome.
 5. **The projection works, and the pilots show why it matters** (§4). On saved Sonnet 5 runs of Agent-Diff's 59
-   Slack tests, its assertions pass **7 of the 13 tests with a hand-labelled wrong-record error**. On 8 obligations
+   Slack tests, its assertions pass **7 of the 13 tests with a hand-labelled grounding error** (a wrong or incomplete
+   referent). On 8 obligations
    checked by hand, its seed holds a designated near miss for 3, and its assertions still pass with that near miss in
-   place for 2 of those 3. The released engine has no closed-world check, so an extra write to a wrong record fails
-   nothing. The full projection (all 224 tests, four measures) costs about 3–4 session-days of mapping, 672 trials on
+   place for 2 of those 3. The evaluation path the platform serves (`evaluateRun` → `AssertionEngine`) has no
+   closed-world check, so an extra write to a wrong record fails nothing no assertion matches. The full projection (all 224 tests, four measures) costs about 3–4 session-days of mapping, 672 trials on
    the self-host and about $8.5 list (§4.4).
 6. **The missing baselines** (§5). One principle: the form's concept in plain words, the same inputs, nothing of the
    method. Three arms per form: the coding agent given the concept, a mechanical mutation of an existing suite, and a
@@ -60,7 +61,7 @@ The brief proposed six angles; six more appeared. "New" marks those.
 | K | **New:** formal-specification-driven synthesis | A symbolic model or solver validates generated checks | MANTRA (SMT), LOGIGEN, AutoWebWorld (FSM) | The PI's "requirements in B, decision coverage" presentation idea has precedents |
 | L | **New:** failure diagnostics beyond selection | False success, fabrication after tool failure, skipped or ignored tool results | False success in τ²/AppWorld, fabrication after tool failure, ToolFailBench | The "other failures" of the PI's point C and RQ7 |
 
-**What the angles share, and what none of them has.** Across the 34 works carded below, none defines its tests
+**What the angles share, and what none of them has.** Across the 69 works carded below (in 35 cards), none defines its tests
 against a model of the world the agent acts on, none builds its distractors from a stated alternative of a stated
 fact and checks mechanically that each distractor fails exactly that fact, and none reports how its own checks do
 against hand labels of wrong-record actions (the ARE verifier, validated on 450 hand-labelled trajectories of all
@@ -85,14 +86,15 @@ status quo on our own services.
   prompt, seed and assertions; people check executability and raise ambiguity by removing identifiers, adding typos
   or adding distractor entities. Its coverage notion is the API surface (endpoints, operation types, task horizon).
 - *Oracle:* declarative assertions on the state diff. The paper adds a closed-world rule (any change no assertion
-  explains fails the task), but the released engine does not implement it: it evaluates the assertions only, so an
-  extra write that no assertion matches passes ([claims.md](claims.md), repository facts). No evidence is reported on
+  explains fails the task), but the evaluation path the platform serves (`evaluateRun` → `AssertionEngine`) does not
+  implement it: it evaluates the assertions only, so an extra write that no assertion matches passes ([claims.md](claims.md), repository facts). No evidence is reported on
   whether the assertions tell a correct run from a wrong-record run.
 - *Overlap:* the same services, replicas and harness contract. Our obligation analysis of 164 of its tests (Slack,
   Box, Linear; Calendar not yet done) found 440 identifying obligations; 160 of 164 tests have at least one; the
   assertions fully check 243, partly check 53 and leave 144 unchecked
   (`grounding/domains/{slack,box,linear}/analysis/metrics.json`). On saved Sonnet 5 runs of the 59 Slack tests,
-  the suite's own assertions pass **7 of the 13 tests that have a hand-labelled wrong-record error**, and 17 of the
+  the suite's own assertions pass **7 of the 13 tests that have a hand-labelled grounding error** (a wrong or
+  incomplete referent), and 17 of the
   18 wrong obligations are ones the assertions check partly or not at all ([pilot](pilot/slack_assertion_misses.json)).
 - **Verdict: Project** (the status-quo row, the best candidate; plan in §4).
 
@@ -374,7 +376,8 @@ and SQL for robustness. **Verdict: Explain away** as baselines (they test a quer
 
 ### I. Entity binding in tool agents (new)
 
-**Entity Binding Failures in Tool-Augmented Agents** (Babu and Indukuri, 2026-06-29; released). The same failure
+**Entity Binding Failures in Tool-Augmented Agents** (Babu and Indukuri, 2026-06-29; its repository holds code, data
+and results, checked 2026-09-30). The same failure
 class, named concurrently: "the agent may choose the right tool and still act on the wrong external entity".
 - *Tests:* 60 hand-built diagnostic tasks over email, calendar, documents, customer records and issue tracking;
   conditions: unambiguous, name collision, document version, temporal, account collision, near duplicate,
@@ -494,7 +497,8 @@ already requires.
 Two pilots, no model calls ([log](log.md), cycles 1 and 3):
 
 - **Behaviour** ([slack_assertion_misses.py](pilot/slack_assertion_misses.py)): saved Sonnet 5 runs of all 59 Slack
-  tests, one trial each, with finalized hand labels. 13 tests have a wrong-record error; **the suite's own assertions
+  tests, the latest saved run of each (the reference-label manifest's rule), with finalized hand labels. 13 tests
+  have a grounding error (a wrong or incomplete referent); **the suite's own assertions
   pass 7 of the 13**. Of the 18 wrong obligations, 10 are ones the assertions leave unchecked, 7 partly checked, 1
   fully checked (and that run failed its assertions). 11 of the 18 are on obligations the annotation calls
   underspecified.
@@ -507,19 +511,20 @@ Two pilots, no model calls ([log](log.md), cycles 1 and 3):
 | slack_104 O2 | who is in #engineering, count and names | people who posted there without being members | **yes** (a count of 15 also passes: it contains "5") |
 | slack_105 O3 | the thread's root message | the thread's two replies | no (the parent is pinned) |
 | slack_87 O1 | everyone who posted about login or password | none: every member of those channels is also an author | no, but an extra invitee passes |
-| slack_67 O1 | all lunch questions in #random | none (plain only) | **yes** when two of the four are left out |
+| slack_67 O1 | all lunch questions in #random | none (plain only) | **yes** when the two lunch questions the assertions do not pin are left out (the same two Sonnet left out) |
 | slack_67 O2 | the pizza-combo message | none (plain only) | no (the message is pinned) |
 | slack_74 O2, slack_89 O2 | #general, #random | plain only | no (the channel is pinned) |
 
 Designated near misses exist for 3 of the 8; **the assertions are blind to 2 of those 3**. Where an assertion pins an
-id, a substitution fails; where it matches a substring of a reply, it passes. The pilot also showed that the released
-engine has no closed-world check: an extra write that no assertion matches does not fail a test (log, cycle 3).
+id, a substitution fails; where it matches a substring of a reply, it passes. The pilot also showed that the
+evaluation path the platform serves (`evaluateRun` → `AssertionEngine`) has no closed-world check: an extra write
+that no assertion matches does not fail a test (log, cycle 3).
 
 ### 4.3 Feasibility of five suites
 
 | Suite | Tests and checks public | Overlap with our services | Our catalog for it | Can OpenClaw drive it | Its oracle | Rank |
 |---|---|---|---|---|---|---|
-| **Agent-Diff** | yes (repository, Hugging Face) | all four | exists (255 facts) | yes, today | state-diff assertions; no closed world in the engine | **1** |
+| **Agent-Diff** | yes (repository, Hugging Face) | all four | exists (255 facts) | yes, today | state-diff assertions; no closed-world check in the served evaluation | **1** |
 | **AgentDojo** (Slack 21 + Workspace 40 user tasks) | yes (Python) | Slack; calendar, drive (≈ Box), email | to build: small Python models, about 40–60 facts, a day | a bridge: serve its tool functions over HTTP and write one skill, like our curl wrapper; a day or two | deterministic Python over pre and post environment | **2** |
 | **WorkBench** (690 tasks from 69 templates) | yes | calendar, project management | to build: five tables, a day | the same kind of bridge | every database compared with the expected one | **3** |
 | **τ²-bench** (retail, airline, telecom) | yes | none | to build: small databases | a bridge plus its LLM user simulator (a second model per run) | final database against the gold actions' | **4** |
@@ -713,6 +718,7 @@ ours.
   web search; the angles are a map, not a systematic review. Works after July 2026 are thinly covered.
 - **Claims about other works** rest on their papers and repositories as fetched on 2026-09-30 ([claims.md](claims.md)
   quotes each). Their numbers are theirs; the PI's MCP-Bench audit is unpublished.
-- **The pilots are small:** 59 Slack tests with one Sonnet 5 trial each; 8 obligations for the projection method.
+- **The pilots are small:** 59 Slack tests with one saved Sonnet 5 run each (the latest per test); 8 obligations for
+  the projection method.
   They show the method works and what it costs, not the suite-wide numbers.
 - **No new model runs:** every arm in §4 and §5 is a proposal with a cost and a prediction, none run.

@@ -380,6 +380,12 @@ Source: <https://arxiv.org/abs/2607.04686>, fetched 2026-09-30.
   user request.” State-based evaluation: “comparing the backend system's state after all function calls are executed
   at the end of each turn.”
 
+- **Entity Binding Failures and FeasiGen are public** (GitHub API, fetched 2026-09-30):
+  <https://api.github.com/repos/R-Suresh/EntityBindingFailures>: “Diagnostic benchmark for right-tool, wrong-entity
+  failures in tool-augmented LLM agents.”, contents include `code/`, `data/`, `results/`;
+  <https://api.github.com/repos/LeonChengg/FeasiGen>: “Code for the work "Do Agents Know What They Can't Do? …"”,
+  contents `configs/`, `scripts/`, `src/`.
+
 ## The PI's own evidence (unpublished)
 
 - `~/PyProj/mcp-bench/specops_tests/audit/overall_report.md`: the headline table (Empty 5 TP / 601 FP, 0.83%;

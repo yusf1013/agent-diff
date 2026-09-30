@@ -8,7 +8,7 @@ report_01, other studies, the replicas or the frozen pipeline.
 ## Status
 
 - **Date:** 2026-09-30.
-- **Done:** the deliverable, [report.md](report.md): the map (12 angles, 6 new), 34 cards, the verdict table, two
+- **Done:** the deliverable, [report.md](report.md): the map (12 angles, 6 new), cards for 69 works in 35 blocks, the verdict table, two
   pilots on existing evidence (no model calls), the projection plan (Agent-Diff first; the ClawEnvKit arm sized), the
   proposals for the policy, several-match and boundary baselines. [claims.md](claims.md) quotes every claim about
   another work with its source and fetch date.
