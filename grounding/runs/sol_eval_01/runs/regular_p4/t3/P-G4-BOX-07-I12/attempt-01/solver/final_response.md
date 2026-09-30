@@ -1,0 +1,1 @@
+I couldn’t find a Product Launch hub containing both **Field Photos** and **Launch Plan**. The Product Launch hub contains **Studio Photos** and **Launch Plan.pdf**, so I left its description unchanged.

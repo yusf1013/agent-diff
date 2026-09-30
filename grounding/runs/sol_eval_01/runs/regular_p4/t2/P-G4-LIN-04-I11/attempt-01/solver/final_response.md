@@ -1,0 +1,1 @@
+I found **WEB-2 — “Checkout crash on Safari”**, but Linear’s API returned errors when I tried to check its attachments. I couldn’t verify the “Crash log” link from PagerDuty uploaded by Maya Chen, so I left the estimate unchanged.

@@ -1,0 +1,1 @@
+The **Seaport Archive** folder mentions the lighthouse in its description, but it isn’t tagged **“harbor”**—its tags are **“restoration”** and **“permits.”** No folder matched all your criteria, so I made no changes.

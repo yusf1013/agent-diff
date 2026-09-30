@@ -1,0 +1,1 @@
+I didn’t find a matching high-priority Payments issue last updated on September 12. The two refund-retry timeout issues were last updated on September 8 (PAY-5) and September 13 (PAY-4), so I left their estimates unchanged.

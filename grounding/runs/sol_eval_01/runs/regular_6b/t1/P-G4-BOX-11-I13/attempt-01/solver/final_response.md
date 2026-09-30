@@ -1,0 +1,1 @@
+No matching folder found. The **Seaport Archive** folder is tagged `harbor` (and `lighthouse`), but its description mentions marina dredging at Harbor Point—not the lighthouse. I left its tags unchanged.

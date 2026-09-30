@@ -1,0 +1,1 @@
+I didn’t find a message matching all those details. The “Release cut is ready” message in #releases has a 🎉 reaction, but its author’s email is **a.torre@northwind.example**, not **ana.torre@northwind.example**. I didn’t add a reaction.

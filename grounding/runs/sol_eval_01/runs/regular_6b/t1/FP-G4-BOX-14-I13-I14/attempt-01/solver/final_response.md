@@ -1,0 +1,1 @@
+There isn’t a matching agreement in **Vendor Contracts**. Both locked version-6 agreements—**Dune Vendor Agreement.pdf** and **Eddy Vendor Agreement.pdf**—lack the `renewal` tag. No changes were made.

@@ -1,0 +1,1 @@
+Hidden **Team Travel** from your Google Calendar list. The calendar and its events haven’t been deleted.

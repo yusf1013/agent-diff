@@ -1,0 +1,1 @@
+I found a **Seaport Archive** folder tagged **harbor**, but its description mentions marina dredging at Harbor Point—not the lighthouse. No folder matched all your criteria, so I didn’t change any tags.

@@ -1,0 +1,1 @@
+I couldn’t find a sprint retrospective in **Room 5B** created by Kenji Sato. The one he created is in **Room 5A**; Room 5B is only mentioned in its description as the previous session’s location. I left its color unchanged.

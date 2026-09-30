@@ -1,0 +1,1 @@
+I couldn’t find a **Product Launch** hub containing both the **Field Photos folder** and the **Launch Plan file**. One has a Field Photos contact sheet file; the other has a Studio Photos folder. No description was changed.

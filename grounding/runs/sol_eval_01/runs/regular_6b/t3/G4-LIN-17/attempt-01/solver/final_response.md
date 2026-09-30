@@ -1,0 +1,1 @@
+Set the estimate to **5** for [WEB-3 — API rate limiting under load](https://linear.app/northwind/issue/WEB-3), the Web team issue assigned to Maya Chen that blocks **WEB-1 — Checkout crash on Safari**.

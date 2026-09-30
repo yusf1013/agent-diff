@@ -1,0 +1,1 @@
+Updated [WEB-3 — API rate limiting under load](https://linear.app/northwind/issue/WEB-3), the Web team issue assigned to Maya Chen that blocks “Checkout crash on Safari.” Its estimate is now **5** (previously 2).

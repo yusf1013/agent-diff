@@ -1,0 +1,1 @@
+There isn’t a matching hub. The two **Atlas Onboarding** hubs mentioning vendor contracts were created on **March 5** and **January 20**—the latter was updated, not created, on March 4. I made no changes.

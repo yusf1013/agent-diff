@@ -1,0 +1,1 @@
+There isn’t a message matching all those conditions. The “Release cut is ready” message in #releases with a bot’s 🎉 reaction is from **a.torre@northwind.example**, not **ana.torre@northwind.example**. I didn’t add a reaction.

@@ -1,0 +1,1 @@
+I found a checkout-outage message in #incident-review by Nadia Rahman, a Data Analyst with the America/Chicago time zone, but her Slack account is deactivated. No message matched the “still with the company” requirement, so I didn’t add a reaction.

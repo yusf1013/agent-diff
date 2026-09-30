@@ -1,0 +1,5 @@
+Set the estimate to **5** for [WEB-2 — Fix import timeouts](https://linear.app/northwind/issue/WEB-2), assigned to **Maya Chen** in Atlas’s **Alpha cleanup** milestone, due **October 15, 2026**.
+
+Linear confirmed the update.
+
+*Memory lookup was unavailable; I verified the issue directly in Linear.*

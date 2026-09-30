@@ -1,0 +1,5 @@
+I found “Sprint review” on Thursday, June 21, 2–3 PM PDT, with a video link and Maple Room accepted—but the event is **tentative**, not confirmed.
+
+Should I add “Bring the printed roadmap” to that event’s description?
+
+Memory lookup was unavailable; I checked Google Calendar directly.

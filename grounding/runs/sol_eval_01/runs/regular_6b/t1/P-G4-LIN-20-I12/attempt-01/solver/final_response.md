@@ -1,0 +1,1 @@
+There isn’t a top-level comment by Maya Chen mentioning the rollback plan on **Checkout latency spikes (WEB-1)**. The rollback-plan mention is in a reply by Omar Haddad, so I made no changes.

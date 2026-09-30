@@ -1,0 +1,1 @@
+There isn’t a matching top-level comment on [Checkout latency spikes (WEB-1)](https://linear.app/northwind/issue/WEB-1). Maya Chen’s comment mentioning the rollback plan is a reply, not a top-level comment, so I left it unchanged.

@@ -1,0 +1,1 @@
+I didn’t find an all-day team offsite on Thursday, June 21 that Omar Haddad accepted. I found an all-day **“Team offsite debrief”** that he accepted, but left it unchanged because it’s a different event.
