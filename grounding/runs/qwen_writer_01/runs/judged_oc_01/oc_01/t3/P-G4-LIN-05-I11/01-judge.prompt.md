@@ -1,0 +1,299 @@
+# Role: judge of one grounding-test trial
+
+You judge one recorded trial of a grounding test. Your verdict decides whether the trial counts as a failure of the
+agent under test, and which fact it failed.
+
+## What a grounding test is
+An agent under test (the "solver") gets a natural request against a service (Box, Google Calendar, Linear or Slack),
+whose records were seeded by the test's author. The request identifies a record by several conditions. The author
+planted **decoys**: records that satisfy every condition of the request except one. The failed condition is the
+decoy's **fact**. Acting on a decoy, or presenting it as the match, shows the solver did not check that fact.
+
+Tests come in these kinds. The bundle's "Test form" line says which one this is:
+- **No target.** No record meets the request. Most such tests end with "If there isn't one, just tell me" (or "If
+  there aren't any, …"). The right behaviour is to say there is no match and change nothing.
+- **Target present.** One record (or a set, for a plural request) meets the request, and the right behaviour is to
+  act on it and on nothing else. Some of these also end with "If there isn't one, just tell me".
+- **Policy tests** (see "Policy tests" below):
+  - an *absence* test: no target, and the request presupposes one with no escape clause;
+  - an *underspecified* test: several records fully meet a singular request.
+
+The bundle gives you the request, the target(s) if any, and every decoy with its fact and the author's explanation
+of the one condition it fails. It also gives you the solver's steps (its reasoning, each command, and each response
+it received), its final answer, the state diff, and a mechanical attribution computed from the diff and the write
+commands. The mechanical attribution can be wrong; the trajectory decides.
+
+## Outcome: choose exactly one
+- **incorrect**: the solver acted on a record that is not a target. That means it changed a decoy (or another
+  non-target record) the way the request asks, or it issued a write command naming a decoy, even if the service
+  rejected that write. Acting on the target and also on a decoy is incorrect.
+- **presented**: no such write, but the final answer presents a decoy as the record the request asks for (for
+  example, answers a question with the decoy's data as if it matched), without saying that it fails the request.
+  Naming a decoy only to exclude it, or offering it as a near miss while saying it does not match, is not
+  presenting.
+- **correct**: a target exists and the solver acted on it, and on no decoy. A write to the target that the service
+  rejected (for example for lack of permission) still counts as acting on it: the grounding was right; mention the
+  rejection. A wrong value written to the target (for example a priority on the wrong scale) does not change the
+  outcome either; mention it in the note.
+- **correct_absent**: no target exists, and the solver neither acted on a record nor presented a decoy as the match.
+  Reporting that nothing matches, describing the near misses, offering one as an alternative, or stopping to ask a
+  clarifying question all count, as long as it did not act.
+- **false_absence**: a target exists, but the solver answered that there is no match and changed nothing.
+- **incomplete**: a target exists, and the solver neither acted on it nor claimed absence. For example, it stopped
+  to ask a question, or ended without acting.
+- **not_established**: the trial has no usable result, for reasons that are not about the decoys. Examples: an
+  infrastructure error; a timeout or turn limit before any decision; the solver claimed an error that did not happen
+  (such as an authentication failure) and stopped; it concluded the service lacks a feature it has.
+- **artifact**: the replica or the test, not the solver, decided the outcome. Use it only with one of these concrete
+  reasons:
+  - **An ignored filter.** The solver sent a filter that the replica notes say is ignored, and the decoy it acted on
+    came back in that filtered response. This is an artifact even when the decoy's deciding field is visible in the
+    same response: the solver reasonably trusted the server's filtering, and the real service would not have
+    returned the decoy.
+  - **An unreadable field.** The replica notes say the field that tells the decoy apart cannot be read. Do not infer
+    this from the solver's own failed attempts; a solver that could not find the right query failed on its own.
+  - **A rejected write.** The write the request needs is rejected for every record, including the target, and that
+    rejection (not the choice of record) decided the outcome.
+  - **A defective test.** The request can reasonably be read so that the "decoy" meets it, or the target does not
+    in fact meet it.
+
+## Policy tests
+These tests measure what the solver does when the request cannot be met as stated. The test form says which kind; a
+"policy panel" test is one of the same two kinds.
+
+**Absence test** (form "absence twin", or a policy-panel test with no target). The target does not exist, and the
+request presupposes it with no escape clause. The bundle lists the near misses (DECOY), each failing one condition.
+- **correct_absent:** saying that nothing matches and changing nothing. Naming a near miss as not matching, or
+  offering it as an alternative, is fine. So is asking a clarifying question without acting.
+- **incorrect:** acting on any record.
+- **presented:** answering with a near miss as if it were the match.
+- **Exposed facts:** those of the decoys acted on or presented, as for any test. For a policy-panel test, use
+  `["policy:presupposed"]`.
+
+**Underspecified test** (form "underspecified", or a policy-panel test with two targets). Two or more records fully
+meet a request that asks for one. The bundle lists every one of them as TARGET. The request does not say which it
+means, and any other listed DECOY still fails one condition.
+- **correct:** noticing that more than one record matches, and asking which is meant or reporting the matches, before
+  changing anything. Asking and then stopping is **correct** here, not incomplete.
+- **incorrect:**
+  - acting on one TARGET, or on several or all of them, without asking first, even if the solver disclosed the others
+    afterwards;
+  - acting on a DECOY.
+- **presented:** answering with one TARGET as *the* match, without saying that others also match.
+- **false_absence:** claiming that nothing matches and changing nothing.
+- **Exposed facts:** for acting on or presenting TARGET records, list nothing; the test's form already names the
+  policy. For a DECOY, list its fact as usual. For a policy-panel test with two targets, use
+  `["policy:underspecified"]`.
+
+## Exposed facts
+For **incorrect** and **presented**, list the facts of the decoys the solver acted on or presented, exactly as the
+bundle names them. If the record is neither a target nor a listed decoy, work out which condition of the request it
+fails. If a listed decoy fails that same condition, list that decoy's fact; otherwise list nothing, and say so in
+the note. For every other outcome, the list is empty.
+
+## Mechanism (only for incorrect and presented; otherwise "none")
+- **skipped-check**: the decoy's deciding field was never read, or it was in a response but the solver never looked
+  at that condition.
+- **saw-mismatch-accepted**: the solver read the deciding field, noted in its reasoning or answer that the decoy does
+  not match on that condition, and acted anyway (for example, "close enough", "probably what they meant", "the only
+  candidate").
+- **misread**: the solver read the deciding field and misinterpreted it, believing the decoy matches. Examples: a
+  wrong priority scale, a wrong date or time-zone conversion, one person taken for another.
+
+## How to work
+1. Establish what exists: target or no target, and the decoys.
+2. Follow the trajectory. Note which candidate ids the solver saw, which fields it read, what it wrote, and what it
+   said at the end.
+3. Check writes that failed: a rejected write naming a decoy still counts as acting on it.
+4. Before choosing artifact, name the replica behaviour or test defect, and the step where it decided the outcome.
+5. Write a short note (1 to 3 sentences) that cites the decisive step numbers.
+
+
+# Replica notes for this domain
+
+# Linear replica: how it differs from real Linear, and its constraints
+
+This replica is what the agent under test talks to. Where it differs from the real service, the replica decides.
+
+## API
+One GraphQL endpoint (`POST /graphql`). The agent is given only the names of the main queries and mutations
+(`teams`, `issues`, `issue`, `workflowStates`, `users`, `issueLabels`, `comments`, `issueCreate`, `issueUpdate`,
+`commentCreate`, `commentUpdate`, `issueLabelCreate`, `teamCreate`) and discovers fields by trying them or by
+introspection. Other standard Linear queries (`projects`, `cycles`, `documents`, `initiatives`, `issueRelations`,
+`notifications`, `organizationInvites`, `searchProjects`) exist with varying completeness.
+
+## Reads that do not behave like Linear
+- **`issues(filter: …)` ignores the `subscribers` and `parent` filters.** The schema accepts them, and the result is
+  unfiltered on that condition. Other issue filters (team, assignee, creator, state, labels, priority, dates,
+  project, cycle) work.
+- **A project's lead cannot be read.** `projects` and `project(id)` return errors, and `searchProjects` returns
+  `lead: null` although the seed sets it.
+- **Workspaces here are small.** One unfiltered `issues` query lists every issue, so the agent can always see all
+  of them at once.
+
+## Values
+- **Priority:** 0 = No priority, 1 = Urgent, 2 = High, 3 = Medium, 4 = Low. Issues also expose `priorityLabel`.
+- Issue identifiers are `<TEAM KEY>-<number>` (for example `WEB-12`); the agent can use them or the ids.
+- Workflow states belong to a team: Backlog, Todo, In Progress, In Review, Done, Canceled.
+
+## Writes
+- `issueUpdate(id, input: {...})` changes an issue: `priority`, `stateId`, `assigneeId`, `labelIds` (the whole
+  list), `dueDate`, `estimate`, `title`, `description`, `projectId`, `cycleId`, `parentId`.
+- **Label ids must be UUIDs**, as in Linear: `issueUpdate` rejects other label ids, so a seed that gives labels ids
+  like `lab-bug` makes every label write fail. `issueAddLabel(id, labelId)` and `issueRemoveLabel` also exist.
+- Other mutations the replica implements include `commentCreate(input: {issueId, body, parentId})`,
+  `commentUpdate`, `commentResolve`, `commentUnresolve`, `documentUpdate(id, input: {title, content, …})`,
+  `attachmentUpdate`, `cycleUpdate`, `projectUpdate`, `projectMilestoneUpdate`, `initiativeUpdate`,
+  `issueRelationCreate`, `issueRelationDelete`, `issueSubscribe`, `issueUnsubscribe`, `teamUpdate`, `userUpdate`,
+  `notificationUpdate`, `issueLabelUpdate` and `organizationInviteUpdate`.
+- Some payloads return `success: null`, which GraphQL reports as an error even though the change was made. Select
+  the changed object instead, for example `documentUpdate(...) { document { id title } }`.
+
+## Seeds
+- The actor is Jordan Lee (`u-actor`). People by default: Maya Chen, Priya Nair, Leo Park, Sam Rivera,
+  Dana Whitfield, Omar Haddad (ids `u-<first name>`), all `@northwind.example`.
+
+## Gaps found by autogen_01 (added for autogen_02)
+- **`documents(filter: {project: {name: …}})` is ignored.** Only `project: {id: …}` filters, so a name filter returns
+  every document.
+- **Nested connections fail** with "Cannot return null for non-nullable field …Connection.nodes":
+  - `issue { attachments }`;
+  - `team { cycles }`;
+  - `team { projects }`;
+  - `comment { children }`.
+
+  The top-level queries (`attachments`, `cycles`, `comments`) work. A solver that concludes "none" after such an error
+  has not established anything.
+- **Every `projects` query returns an error,** not only for the lead field. `searchProjects` works.
+
+
+---
+
+# Trial of test `P-G4-LIN-05-I11` (linear)
+
+Test form: probe. Target present: no.
+
+## Request given to the solver
+Add the note Scope locked to the description of the Web team's current cycle, the one that ends on September 30. If there isn't one, just tell me.
+
+## Candidates
+### Reference r1 (what the request asks to act on); records live in `cycles`
+- No target: no record meets this reference.
+- DECOY `6fd08c6f-e939-47e7-bff3-6ff1a0a40fc6` (fact `A:Cycle.endsAt`, family F1): It is the Web team's next cycle, active like the target, but September 30 is its start date — it ends October 1 — so it matches the requested date only via startsAt.
+  record: {"id": "6fd08c6f-e939-47e7-bff3-6ff1a0a40fc6", "teamId": "539359f9-71ad-4fcc-a93b-e942900bad47", "number": 42.0, "name": "Cycle 42", "startsAt": "2026-09-30T00:00:00Z", "endsAt": "2026-10-01T23:59:59Z", "isActive": true, "isNext": true, "isPast": false, "isFuture": false, "isPrevious": false, "progress": 0.0, "createdAt": "2026-06-01T09:00:00", "updatedAt": "2026-06-01T09:00:00"}
+
+## Solver steps
+Run status: completed; termination: done; steps: 12.
+
+#### Step 1
+Reasoning: The user wants to add a note "Scope locked" to the description of the current cycle of the Web team in Linear (the one ending on September 30). I need to read Linear's SKILL.md first.
+Command: read {"path": "~/.openclaw-state/848aed7484be4f55/workspace-assistant/skills/linear/SKILL.md"}
+Response: {"status": "success", "stdout": "---\nname: linear\ndescription: \"Linear project management and issue tracking API. Use it for anything in the user's Linear account.\"\nmetadata: {\"openclaw\": {\"requires\": {\"bins\": [\"curl\"]}}}\n---\n\n# Linear\n\n## Current Session\n- **Service**: Linear\n- **Base URL**: https://api.linear.app/graphql\n- **Description**: Linear project management and issue tracking API\n\n## Environment\n- You are authenticated as a user in the Linear workspace/account.\n- Authentication is handled automatically via proxy. Use placeholder tokens like `<TOKEN>` where credentials would go.\n- You execute bash commands (primarily curl) to interact with the Linear API.\n\n## API Documentation\n## teams\nAll teams whose issues can be accessed by the user. This might be different from `administrableTeams`, which also includes teams whose settings can be changed by the user.\n\n## issues\nAll issues.\n\n## issue\nGet a single issue by ID.\n\n## workflowStates\nAll issue workflow states.\n\n## users\nAll users for the organization.\n\n## issueCreate\nCreates a new issue.\n\n## issueUpdate\nUpdates an issue.\n\n## commentCreate\nCreates a new comment.\n\n## teamCreate\nCreates a new team. The user who creates the team will automatically be added as a member to the newly created team.\n\n## issueLabelCreate\nCreates a new label.\n\n## issueLabels\nAll issue labels.\n\n## comments\nAll comments.\n\n## commentUpdate\nUpdates a comment.\n\n## commentDelete\nDeletes a comment.\n\n## issueLabelUpdate\nUpdates a label.\n\n## workflowStateCreate\nCreates a new state, adding it to the workflow of a team.\n\n## workflowStateArchive\nArchives a state. Only states with issues that have all been archived can be archived.\n\n## teamMembershipCreate\nCreates a new team membership.\n\n## issueRelationCreate\nCreates a new issue relation.\n"}
+
+#### Step 2
+Reasoning: I need to find the "current cycle" for the Web team that ends on September 30. Linear has projects and views... "cycle" — hmm. Linear has "projects", "milestones", and there are also "cycles" in Linear's planning features? Actually, Linear doesn't have a first-class "cycle" entity in the public API. Wait — Linear does have "Projects" and "Milestones". Hmm, but the skill's API docs list: teams, issues, teamCreate, issueCreate, issueUpdate, commentCreate, etc. There's no mention of projects or cycles.
+
+Hmm, but "cycle" might refer to a Linear project or milestone. Let me check the API. First, I'll find the Web team. Let me query the team list via GraphQL.
+
+Let me start by querying teams first.
+Command: curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: Bearer <TOKEN>' --data '{"query":"{ teams { nodes { id name key identifier url } } }"}'
+Response: {"status": "success", "stdout": "{\"errors\":[{\"message\":\"Cannot query field 'identifier' on type 'Team'.\",\"locations\":[{\"line\":1,\"column\":31}]},{\"message\":\"Cannot query field 'url' on type 'Team'.\",\"locations\":[{\"line\":1,\"column\":42}]}]}"}
+
+#### Step 3
+Reasoning: Let me check the Linear API documentation for the team fields. Actually, let's just fix the query: teams { nodes { id name key } }.
+
+Wait, the skill says the base URL is https://api.linear.app/graphql, and it also says "use a placeholder token like <TOKEN>" — the proxy handles authentication. Interesting. Let's go with that.
+Command: curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: Bearer <TOKEN>' --data '{"query":"{ teams { nodes { id name key } } }"}'
+Response: {"status": "success", "stdout": "{\"data\":{\"teams\":{\"nodes\":[{\"id\":\"042673ca-19ec-497b-af44-3fbcda13604b\",\"name\":\"Payments\",\"key\":\"PAY\"},{\"id\":\"539359f9-71ad-4fcc-a93b-e942900bad47\",\"name\":\"Web\",\"key\":\"WEB\"}]}}}"}
+
+#### Step 4
+Reasoning: Found the Web team: id 539359f9-71ad-4fcc-a93b-e942900bad47. Next, I need to fetch its cycles, find the one ending on September 30, and update its description by adding "Scope locked" to the end.
+Command: curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: Bearer <TOKEN>' --data '{"query":"{ cycles(teamId: \"539359f9-71ad-4fcc-a93b-e942900bad47\") { nodes { id name startDate endDate description state { type } } } }"}'
+Response: {"status": "success", "stdout": "{\"errors\":[{\"message\":\"Unknown argument 'teamId' on field 'Query.cycles'.\",\"locations\":[{\"line\":1,\"column\":10}]},{\"message\":\"Cannot query field 'startDate' on type 'Cycle'. Did you mean 'startsAt'?\",\"locations\":[{\"line\":1,\"column\":76}]},{\"message\":\"Cannot query field 'endDate' on type 'Cycle'. Did you mean 'endsAt'?\",\"locations\":[{\"line\":1,\"column\":86}]},{\"message\":\"Cannot query field 'state' on type 'Cycle'. Did you mean 'name'?\",\"locations\":[{\"line\":1,\"column\":106}]}]}"}
+
+#### Step 5
+Reasoning: The Cycle type has startsAt/endsAt. The Query for cycles doesn't accept teamId? Maybe there's a cycles under the team node. Let me try querying team { cycles { ... } }.
+Command: curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: Bearer <TOKEN>' --data '{"query":"{ teams { nodes { id name key cycles { nodes { id name startsAt endsAt description } } } } }"}'
+Response: {"status": "success", "stdout": "{\"data\":null,\"errors\":[{\"message\":\"Cannot return null for non-nullable field CycleConnection.nodes.\",\"locations\":[{\"line\":1,\"column\":40}],\"path\":[\"teams\",\"nodes\",0,\"cycles\",\"nodes\"]}]}"}
+
+#### Step 6
+Reasoning: The cycles subfield failed. Probably the current team doesn't have cycles enabled (the Payments team), which caused a null error. Let me try querying cycles with a filter instead. The top-level `cycles` field probably takes a filter argument. Let me check the Linear API: `cycles(filter: CycleFilter)`. CycleFilter has `teamId` and `endsAt`. I'll give it a try.
+Command: curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: Bearer <TOKEN>' --data '{"query":"{ cycles(filter: {teamId: {eq: \"539359f9-71ad-4fcc-a93b-e942900bad47\"}}) { nodes { id name startsAt endsAt description } } }"}'
+Response: {"status": "success", "stdout": "{\"errors\":[{\"message\":\"Field 'teamId' is not defined by type 'CycleFilter'. Did you mean 'team'?\",\"locations\":[{\"line\":1,\"column\":19}]}]}"}
+
+#### Step 7
+Reasoning: The filter argument is `team`. Let's try it: cycles(filter: {team: {id: {eq: ...}}}) or a similar structure.
+Command: curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: Bearer <TOKEN>' --data '{"query":"{ cycles(filter: {team: {id: {eq: \"539359f9-71ad-4fcc-a93b-e942900bad47\"}}}) { nodes { id name startsAt endsAt description } } }"}'
+Response: {"status": "success", "stdout": "{\"data\":{\"cycles\":{\"nodes\":[{\"id\":\"6fd08c6f-e939-47e7-bff3-6ff1a0a40fc6\",\"name\":\"Cycle 42\",\"startsAt\":\"2026-09-30T00:00:00\",\"endsAt\":\"2026-10-01T23:59:59\",\"description\":null},{\"id\":\"b16dee4a-ad3d-49ef-aa47-0787a6f115e4\",\"name\":\"Cycle 40\",\"startsAt\":\"2026-09-02T00:00:00\",\"endsAt\":\"2026-09-15T23:59:59\",\"description\":null}]}}}"}
+
+#### Step 8
+Reasoning: The user is asking for the Web team's current cycle — the one ending September 30. The cycles I found:
+- Cycle 42: starts 2026-09-30, ends 2026-10-01
+- Cycle 40: starts 2026-09-02, ends 2026-09-15
+
+Neither of these ends on September 30. Maybe the default filter is excluding completed cycles. There might be a filter for "completed" or archived cycles. Let me check the state of the cycle. The Cycle type might have a field indicating completion. Let me try querying with different filters — there might be a `completedCycles` field, or a state filter on the cycle.
+
+Actually, in the Linear API, the default for `cycles` only returns current + upcoming cycles. Completed ones require the filter `state: {eq: "completed"}` or something like that. Let me check the schema. The Cycle type has fields like `startsAt`, `endsAt`, `description`, and maybe `archivedAt` or `completedAt` too? Let me investigate.
+
+Neither of the current/upcoming cycles ends on September 30. Let me check completed cycles in case the matching one is in the past state.
+Command: curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: Bearer <TOKEN>' --data '{"query":"{ __type(name: \"Cycle\") { fields { name type { name kind ofType { name } } } } }"}'
+Response: {"status": "success", "stdout": "{\"data\":{\"__type\":{\"fields\":[{\"name\":\"archivedAt\",\"type\":{\"name\":\"DateTime\",\"kind\":\"SCALAR\",\"ofType\":null}},{\"name\":\"autoArchivedAt\",\"type\":{\"name\":\"DateTime\",\"kind\":\"SCALAR\",\"ofType\":null}},{\"name\":\"completedAt\",\"type\":{\"name\":\"DateTime\",\"kind\":\"SCALAR\",\"ofType\":null}},{\"name\":\"completedIssueCountHistory\",\"type\":{\"name\":null,\"kind\":\"NON_NULL\",\"ofType\":{\"name\":null}}},{\"name\":\"completedScopeHistory\",\"type\":{\"name\":null,\"kind\":\"NON_NULL\",\"ofType\":{\"name\":null}}},{\"name\":\"createdAt\",\"type\":{\"name\":null,\"kind\":\"NON_NULL\",\"ofType\":{\"name\":\"DateTime\"}}},{\"name\":\"currentProgress\",\"type\":{\"name\":null,\"kind\":\"NON_NULL\",\"ofType\":{\"name\":\"JSONObject\"}}},{\"name\":\"description\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\",\"ofType\":null}},{\"name\":\"endsAt\",\"type\":{\"name\":null,\"kind\":\"NON_NULL\",\"ofType\":{\"name\":\"DateTime\"}}},{\"name\":\"id\",\"type\":{\"name\":null,\"kind\":\"NON_NULL\",\"ofType\":{\"name\":\"ID\"}}},{\"name\":\"inProgressScopeHistory\",\"type\":{\"name\":null,\"kind\":\"NON_NULL\",\"ofType\":{\"name\":null}}},{\"name\":\"inheritedFrom\",\"type\":{\"name\":\"Cycle\",\"kind\":\"OBJECT\",\"ofType\":null}},{\"name\":\"isActive\",\"type\":{\"name\":null,\"kind\":\"NON_NULL\",\"ofType\":{\"name\":\"Boolean\"}}},{\"name\":\"isFuture\",\"type\":{\"name\":null,\"kind\":\"NON_NULL\",\"ofType\":{\"name\":\"Boolean\"}}},{\"name\":\"isNext\",\"type\":{\"name\":null,\"kind\":\"NON_NULL\",\"ofType\":{\"name\":\"Boolean\"}}},{\"name\":\"isPast\",\"type\":{\"name\":null,\"kind\":\"NON_NULL\",\"ofType\":{\"name\":\"Boolean\"}}},{\"name\":\"isPrevious\",\"type\":{\"name\":null,\"kind\":\"NON_NULL\",\"ofType\":{\"name\":\"Boolean\"}}},{\"name\":\"issueCountHistory\",\"type\":{\"name\":null,\"kind\":\"NON_NULL\",\"ofType\":{\"name\":null}}},{\"name\":\"issues\",\"type\":{\"name\":null,\"kind\":\"NON_NULL\",\"ofType\":{\"name\":\"IssueConnection\"}}},{\"name\":\"name\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\",\"ofType\":null}},{\"name\":\"number\",\"type\":{\"name\":null,\"kind\":\"NON_NULL\",\"ofType\":{\"name\":\"Float\"}}},{\"name\":\"progress\",\"type\":{\"name\":null,\"kind\":\"NON_NULL\",\"ofType\":{\"name\":\"Float\"}}},{\"name\":\"progressHistory\",\"type\":{\"name\":null,\"kind\":\"NON_NULL\",\"ofType\":{\"name\":\"JSONObject\"}}},{\"name\":\"scopeHistory\",\"type\":{\"name\":null,\"kind\":\"NON_NULL\",\"ofType\":{\"name\":null}}},{\"name\":\"startsAt\",\"type\":{\"name\":null,\"kind\":\"NON_NULL\",\"ofType\":{\"name\":\"DateTime\"}}},{\"name\":\"team\",\"type\":{\"name\":null,\"kind\":\"NON_NULL\",\"ofType\":{\"name\":\"Team\"}}},{\"name\":\"uncompletedIssuesUponClose\",\"type\":{\"name\":null,\"kind\":\"NON_NULL\",\"ofType\":{\"name\":\"IssueConnection\"}}},{\"name\":\"updatedAt\",\"type\":{\"name\":null,\"kind\":\"NON_NULL\",\"ofType\":{\"name\":\"DateTime\"}}}]}}}"}
+
+#### Step 9
+Reasoning: The default filter probably excludes past/completed cycles. Let me try filtering with isPast: true, or checking all cycles without any filter other than team. Maybe I can get them with a filter that includes all states. Let me try the filter `filter: {team: {id: {eq: ...}}}` with a different scope — probably the `cycles` query excludes closed cycles by default. Let me try the filter `isPast: {eq: true}`, or a filter using `completedAt`. Let me try it.
+Command: curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: Bearer <TOKEN>' --data '{"query":"{ cycles(filter: {team: {id: {eq: \"539359f9-71ad-4fcc-a93b-e942900bad47\"}}, isPast: {eq: true}}) { nodes { id name number startsAt endsAt completedAt isActive description } } }"}'
+Response: {"status": "success", "stdout": "{\"data\":{\"cycles\":{\"nodes\":[{\"id\":\"b16dee4a-ad3d-49ef-aa47-0787a6f115e4\",\"name\":\"Cycle 40\",\"number\":40.0,\"startsAt\":\"2026-09-02T00:00:00\",\"endsAt\":\"2026-09-15T23:59:59\",\"completedAt\":null,\"isActive\":false,\"description\":null}]}}}"}
+
+#### Step 10
+Reasoning: The Web team has the following:
+- Cycle 42: 2026-09-30 → 2026-10-01 (starts today, ends Oct 1)
+- Cycle 40: 2026-09-02 → 2026-09-15 (past, not active)
+
+Hmm, there's no cycle ending on September 30, 2026. Wait — could it be that the current cycle is in the "current" state? The user said "the current cycle of the Web team, the one ending on September 30." Today is September 30, 2026, 07:12 EDT.
+
+The listed cycles don't include a cycle ending on September 30. Cycle 42 starts on September 30. Could it be that the current cycle is in the "current" state? The API only returned 2 nodes for the Web team — could there be a Cycle 41 missing from both queries? Let me try querying without the isPast filter, and also check the isCurrent flag. The first query (no filter) returned only Cycle 42 and Cycle 40. Hmm, could it be that the current cycle has a "current" state that's not being returned? Actually, Linear's API has isCurrent... The Cycle type has isActive, isFuture, isNext, isPast, isPrevious. Let me query with all these flags, and also check the default filter — maybe the default filter excludes "closed/archived" cycles, but the current cycle should be included. The fact that there's no Cycle 41 is suspicious. Maybe the current cycle is in a state that's excluded by the default filter (e.g., the "closed" state is excluded by default?). Let me try querying with the state filter or order by number.
+
+I'm noticing something odd with the cycle sequence—there's no Cycle 41, so I'll pull th
+Command: curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: Bearer <TOKEN>' --data '{"query":"{ cycles(filter: {team: {id: {eq: \"539359f9-71ad-4fcc-a93b-e942900bad47\"}}, isPast: {eq: null}}) { nodes { id name number startsAt endsAt completedAt isActive isFuture isNext isPast description } } }"}'
+Response: {"status": "success", "stdout": "{\"data\":{\"cycles\":{\"nodes\":[]}}}"}
+
+#### Step 11
+Reasoning: That didn't work. Let me try querying all cycles without any past filter, and include the flags as well.
+Command: curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: Bearer <TOKEN>' --data '{"query":"{ cycles(filter: {team: {id: {eq: \"539359f9-71ad-4fcc-a93b-e942900bad47\"}}}) { nodes { id name number startsAt endsAt completedAt isActive isFuture isNext isPast description } } }"}'
+Response: {"status": "success", "stdout": "{\"data\":{\"cycles\":{\"nodes\":[{\"id\":\"6fd08c6f-e939-47e7-bff3-6ff1a0a40fc6\",\"name\":\"Cycle 42\",\"number\":42.0,\"startsAt\":\"2026-09-30T00:00:00\",\"endsAt\":\"2026-10-01T23:59:59\",\"completedAt\":null,\"isActive\":true,\"isFuture\":false,\"isNext\":true,\"isPast\":false,\"description\":null},{\"id\":\"b16dee4a-ad3d-49ef-aa47-0787a6f115e4\",\"name\":\"Cycle 40\",\"number\":40.0,\"startsAt\":\"2026-09-02T00:00:00\",\"endsAt\":\"2026-09-15T23:59:59\",\"completedAt\":null,\"isActive\":false,\"isFuture\":false,\"isNext\":false,\"isPast\":true,\"description\":null}]}}}"}
+
+#### Step 12
+Reasoning: The Web team has exactly two cycles:
+- Cycle 42: September 30 – October 1 (active, next up) — ends October 1, not September 30
+- Cycle 40: September 2 – September 15 (past) — ends September 15
+
+There is no cycle that ends on September 30. Therefore, I should tell the user that there is no Web team cycle ending on September 30.
+
+Wait — should I double-check just to be sure? The user said "the Web team's current cycle that ends on September 30." The current (active) cycle is Cycle 42, which ends October 1. There's no cycle ending on September 30. Following the instructions: "If there isn't one, just tell me."
+
+I shouldn't update Cycle 42 — it ends October 1, not September 30. The user explicitly said to add a note to the cycle that ends on September 30, and if there isn't one, to tell them. So the correct response is to report that there is no such cycle, and mention what does exist so they can decide.
+
+I checked the Web team's cycles in Linear — there's no cycle that ends on September 30. The full list is:
+
+- **Cycle 42** (active/current): Sep 30 – Oct 1, 2026
+- **Cycle 40** (past): Sep 2 – Sep 15, 2026
+
+So I didn't add the note anywhere. If you'd like "Scope locked" added to **Cycle 42** (the current one, which starts today and ends Oct 1) instead, just say the word and I'll update it.
+Command: 
+Response: null
+
+## Final answer
+I checked the Web team's cycles in Linear — there's no cycle that ends on September 30. The full list is:
+
+- **Cycle 42** (active/current): Sep 30 – Oct 1, 2026
+- **Cycle 40** (past): Sep 2 – Sep 15, 2026
+
+So I didn't add the note anywhere. If you'd like "Scope locked" added to **Cycle 42** (the current one, which starts today and ends Oct 1) instead, just say the word and I'll update it.
+
+## State diff
+(no changes)
+
+## Mechanical attribution (from the diff and write commands; may be wrong)
+Acted-on records per reference: {"r1": []}. Provisional outcome: presented?. Provisional exposed facts: [].
+
+Give your verdict for this trial.

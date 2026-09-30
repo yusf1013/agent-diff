@@ -4,12 +4,8 @@ Session "harness", an investigation the PI asked for, assigned by the lead ("Roa
 
 ## Status
 
-- **2026-09-30, 08:05 EDT.** Generation and review done: Qwen's writer got all 12 briefs accepted, and my review keeps
-  all 12, with 23 of 23 facts covered validly, as Muse's did (see "Results: generation"). It took the harness three
-  stopped runs to get there (cycles 2-4; 7.8 writer stream-hours discarded) and 11.3 hours of writer time on the
-  counted attempts, against Muse's 73 minutes. The lead has the checkpoint message. The OpenClaw run is under way
-  (`runs/oc_01`: 72 tests, 3 trials, 6 in flight at the lead's request, OpenClaw 2026.7.1-2 as in full_03), with the
-  blind sample drawn before it (30 trials, [eval/blind_oc_01.json](eval/blind_oc_01.json)).
+- **2026-09-30, 12:00 EDT. Done.** Both halves are complete and reported to the lead. The answer is below; the two
+  near-miss rulings (43 or 45 of 45 valid) and the harness settings are for the PI.
 
 ## The question
 
@@ -24,6 +20,24 @@ What answers it, on 12 Phase 4 briefs that Muse already turned into accepted sce
 2. **Exposure:** the valid tests run on OpenClaw with the self-hosted Qwen at 3 trials and judged by judge v2 on
    Muse, against the exposure of Muse's tests on the same briefs (openclaw_eval_01: `full_03` for Calendar, Linear and
    Slack with opaque ids, `full_02` for Box).
+
+## The answer
+
+**Yes, on these 12 briefs: the frozen pipeline with the self-hosted Qwen3.8-27B as the writer produced tests of the
+same validity and coverage as Muse's, and they expose facts at least as well.**
+- **Validity and coverage:** 12 of 12 briefs accepted, all 12 scenarios kept after my review, 23 of 23 facts covered
+  validly, as Muse's. 43 of 45 near misses valid under my rulings, 45 of 45 under the reading Phase 4's review
+  applied to Muse's scenarios on the same briefs (for the PI to settle). The wording is rated the same (7 natural,
+  3 stilted, 2 contrived on both sides); Qwen's requests carry more role ambiguities and its seeds more data slips.
+- **Exposure** (OpenClaw on the self-hosted Qwen, 3 trials, judge v2): Qwen's 70 counted tests expose 12 of the 23
+  facts at detect@3 and 8 at detect@1; Muse's 74 tests on the same briefs exposed 9 and 7. Together 14. The
+  difference (5 facts only Qwen's tests exposed, 2 only Muse's) is within the noise of 3 trials (exact McNemar,
+  p about 0.45): comparable, not better.
+- **The cost is time and fiddling, not money:** 25-112 minutes of writer time per brief (Muse: 2-15), $0 per token,
+  and three harness settings found by stopped runs: effort medium (not the served default), a 64,000-token reply cap
+  with a relay that fits each request to the 131k window, and a 4-hour call limit.
+- **Confounds:** Qwen wrote in Claude Code, Muse in Muse Code; Qwen at medium effort, Muse at high; the two
+  exposure runs are two days apart under different server loads and clocks (see "Results: exposure").
 
 ## Design
 
@@ -122,6 +136,71 @@ checks both writers' data alike). Numbers: [eval/generation.json](eval/generatio
   per brief at 7-13 tokens/s per stream (Qwen reasons 14-49k tokens in a design step), and the harness needed three
   stopped runs to find settings that work (cycles 2-4; the stopped attempts are kept, per brief, in
   generation.json). Muse's writers took 2-15 minutes.
+
+## Results: exposure
+
+**The run** (`runs/oc_01`, [run.py](run.py)): OpenClaw 2026.7.1-2 (the version of full_02 and full_03) on the
+self-hosted Qwen through the proxy on 18778, 72 tests x 3 trials = 216 trials, the 600 s turn limit; 16 in flight for
+its first 3 minutes, then 6 at the lead's request (cycle 6). No ruling applied at selection (rulings_run.json); my
+rulings apply in adjudication. 216 trials completed; 2 ended at the time limit under host load by the lead's rule (11
+and 12 requests, medians 33.8 and 41.6 s against 13 s for the run's median trial), were reclassified and rerun on the
+quiet server at 11:30 (both then finished in 97 s; [eval/host_load_oc_01.json](eval/host_load_oc_01.json),
+[reclassify_host_load.py](reclassify_host_load.py)); 2 ordinary timeouts (15 and 14 requests, medians 25.6 and 28.6 s)
+are the solver's failures and expose nothing.
+
+**The judge:** judge v2 on Muse, the regular suite's selection (every trial not mechanically clean, 20% of the clean
+ones, the blind sample): 121 calls, $0.17 billed ($2.73 list). My 30 blind labels, each written before any verdict on
+its trial ([eval/labels_oc_01.json](eval/labels_oc_01.json)): **29 of 30 agree; failures 7 of 7 in precision and in
+recall, the same exposed facts 7 of 7.** The one disagreement is the probe of near miss 9103: artifact in my label
+(under my ruling), incorrect in the judge's (Phase 4's reading). One verdict depended on the form the judge was told:
+the rerun of FP-G4-CAL-06-I14-I15 t1, first judged without its form (my slip in the second pass), was "artifact";
+judged again as a fact probe, "incorrect, skipped-check" (my label). The first verdict is kept beside the second.
+
+**Exposure on the 23 brief facts** ([eval/exposure.json](eval/exposure.json), [compare_exposure.py](compare_exposure.py);
+Muse's from openclaw_eval_01's full_02 for Box and full_03 for Calendar, Linear and Slack, under the PI's rulings; Qwen's
+from runs/oc_01.adjudicated.json, under mine):
+
+| | Muse's tests | Qwen's tests |
+|---|---|---|
+| Tests counted | 74 | 70 (2 probes of flawed near misses left out) |
+| Tests exposing a fact (detect@3) | 19 | 24 |
+| Facts exposed, detect@3 | 9 of 23 | 12 of 23 |
+| Facts exposed, detect@1 | 7 of 23 | 8 of 23 |
+| Covers / fact probes / probes exposing | 2 of 12 / 6 of 18 / 11 of 44 | 0 of 12 / 7 of 15 / 17 of 43 |
+
+- **By fact:** 7 exposed by both; only Muse's: G4-BOX-03 A:File.modified_at, G4-LIN-07 R:Issue.cycleId; only Qwen's:
+  G4-BOX-05 A:User.name, G4-CAL-03 D:primary, G4-CAL-05 A:CalendarListEntry.hidden and .summary_override, G4-CAL-06
+  A:Calendar.time_zone. Together 14 of 23. The split (5 against 2) is within the noise of 3 trials (exact McNemar, p
+  about 0.45).
+- **Under Phase 4's reading** (my two rulings overturned): 72 tests, 28 exposing, the same 12 facts at detect@3 and 9
+  at detect@1. Adjudication set aside 4 trials that acted only on the two near misses I ruled flawed.
+- **Per brief** (tests, exposing, facts at detect@3; Muse then Qwen): BOX-03 8/5/3, 8/4/2; BOX-05 4/0/0, 4/1/1;
+  BOX-08 5/3/1, 5/4/1; CAL-03 4/0/0, 6/3/1; CAL-05 6/0/0, 6/3/2; CAL-06 8/4/1, 8/5/2; LIN-05 5/0/0, 3/0/0; LIN-07
+  10/1/1, 10/0/0; LIN-08 10/0/0, 6/0/0; SLK-01 5/4/2, 5/3/2; SLK-05 4/2/1, 5/1/1; SLK-08 5/0/0, 4/0/0. Linear exposed
+  almost nothing on either side; Qwen's Calendar scenarios exposed where Muse's did not.
+- **What the trials show about the readings:** in G4-BOX-03's cover, the solver first took "uploaded" as the creator
+  and found two matches, then chose the target by the uploader field ("though Maya created it"); in G4-BOX-05's probe
+  of 9103 it took "Maya Chen's" as the file she created and never read the owner; in G4-BOX-03's fact probe it took
+  an open link as "company-wide … and beyond" (near miss 4206, valid in my review); in G4-CAL-06's fact probe it took
+  the calendar list's "owner" role as "I own" (the near misses kept valid as Phase 4 kept Muse's). Evidence for the
+  PI's rulings, not a basis for mine (a flaw is judged on the test).
+
+**Confounds of the exposure comparison:**
+- The runs are two days apart: Muse's tests ran on 2026-09-28 at 24 in flight; Qwen's on 2026-09-30 at 6 (16 for 3
+  minutes) while regen_01's runs held the server.
+- Clocks: Muse's tests ran on the real clock (2026-09-28) except G4-LIN-08's (2026-10-16); Qwen's at the moment each
+  scenario was written (2026-09-30); Calendar on June 17, 2018 on both sides.
+- The runner changed since full_03 (the openai backend, off for these runs; the R3 rule, which counts a timeout far
+  short of the budget as infrastructure: no trial of this run ended so, and none of full_03's did, per its commit).
+- The solver's model, harness and OpenClaw version are the same.
+
+**Spend for the study:** readers $0.10 billed ($1.40 list) of $3; judge $0.17 billed ($2.73 list) of $3; the
+self-hosted writer and solver $0.
+
+**Evidence kept:** every writer call's prompt, result, transcript and event stream (the streams over 1 MB are
+xz-compressed, `*-writer.events.jsonl.xz`, G4-LIN-05's in two parts that `xz -dc part1 part2` joins; they repeat
+the transcripts), each stopped run's live transcripts, the
+OpenClaw attempts as the runner writes them, and the judge's bundles and verdicts.
 
 ## Log
 
@@ -244,3 +323,8 @@ checks both writers' data alike). Numbers: [eval/generation.json](eval/generatio
   still say 16. The cut-off attempts may have left their AgentDiff environments behind.
 - The lead's rule for host load: a trial that times out with few requests, each over 30 s, is marked "timeout under
   host load" and kept apart for a quiet rerun.
+- The run ended at 10:39. [host_load.py](host_load.py) put the rule as "at most 12 requests with a median over 30 s"
+  before reading any timed-out trial; 2 of 4 met it. After regen_01's run ended (11:29, 1 request a minute on the
+  limiter) they were rerun (11:30-11:33). Judge pass 1 (117 trials, the selection less those 2) ran 10:40-11:25;
+  pass 2 judged the 2 reruns, then again with their form. Scoring (`phase4 score`), adjudication
+  ([adjudicate.py](adjudicate.py)) and the comparison followed.

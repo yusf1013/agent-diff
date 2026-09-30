@@ -1,0 +1,1 @@
+I checked your main calendar for a "product sync" on Thursday (June 21) and found no matching event. The only Thursday event is "Product retrospective" at 1:00–2:00 PM — if that's the one you meant, let me know and I'll move it to Conference Room C.
