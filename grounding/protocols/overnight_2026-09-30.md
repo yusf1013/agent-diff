@@ -304,3 +304,6 @@ section. Decisions that stand go to the [roadmap](roadmap.md); this is the recor
 - 06:3x sol_score (f9b977e4e4; merged): report_01/kit/sol.py → numbers/sol.json behind the Sol section; every billed
   figure removed from both texts (list prices only, one sentence in §12 on the actual spend at about 6.6% of list);
   Table 18 gains the Sol judging row ($32.60 list) and the Sol agent row (8,172 requests, 19.6 agent-hours).
+- 06:4x sol_score launches Sol on the regenerated half (337 tests, trial 1 first, then 2 and 3, stop rule on the
+  plan's window; default store layout kept for one harness state across the Sol round, the fix reserved for the
+  next round; judge cap $25 list). No merges in the main checkout while it writes there.
