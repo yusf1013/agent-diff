@@ -427,24 +427,24 @@ written, and 60 misstate a priority. Of 15 writes the final state does not show,
 
 ## RQ8. Baselines and ablations
 
-These are **separate OpenClaw comparison experiments**, outside the 1,006-case methodology count and its token
-estimate. The baseline evidence remains on the existing baseline branch; the relevant summaries are included in
-[concise.json](numbers/concise.json), `baseline_comparison` and `baseline_policy_facts`.
+These are **separate OpenClaw comparison experiments**, outside the 998-case methodology count and its token
+estimate. The baseline study is [baselines_01](../baselines_01/report.md), now on main; the relevant summaries are
+included in [concise.json](numbers/concise.json), `baseline_comparison` and `baseline_policy_facts`.
 
 N0 asks Muse directly to write tests using the API and seeding documentation. N1 additionally supplies the fact
 catalog. N0M and N1M add reviewer guidance about variety, difficulty and neutral identifiers. Each arm produces
 48 tests, 12 per service, with manual labels written before reading assertion or judge results.
 
 **Table 14. Baselines versus a 48-test Muse budget.** Our column is the exact expected value from uniform draws
-of 12 valid cases per service from **all 294 Muse regular cases**, using final outcomes. It is not an additional run.
+of 12 valid cases per service from **all 292 Muse regular cases**, using final outcomes. It is not an additional run.
 
 | | N0 | N0M | N1 | N1M | Methodology: Muse |
 |---|---:|---:|---:|---:|---:|
-| **Valid / generated tests** | **45/48** | **42/48** | **41/48** | **41/48** | **48/48 sampled from 294 valid** |
+| **Valid / generated tests** | **45/48** | **42/48** | **41/48** | **41/48** | **48/48 sampled from 292 valid** |
 | Designated decoys / all declared decoys | 9/48 | 17/53 | 21/58 | 19/66 | — |
 | Facts covered through designated decoys, valid tests | 7 | 12 | 17 | 13 | **38.3** |
 | **Regular facts exposed @3** | **0** | **0** | **0** | **0** | **12.2** |
-| **Regular facts exposed @1** | **0** | **0** | **0** | **0** | **7.9** |
+| **Regular facts exposed @1** | **0** | **0** | **0** | **0** | **7.7** |
 | Failing tests @3, including policy and timeouts | 5 | 0 | 2 | 3 | 14.0 exposing tests |
 | Policy facts failing @3, designated decoys only | 0 | 0 | 1 | 0 | — |
 | Policy facts failing @1, designated decoys only | 0 | 0 | 1 | 0 | — |
@@ -452,12 +452,14 @@ of 12 valid cases per service from **all 294 Muse regular cases**, using final o
 | Policy facts failing @1, all decoy families | 3 | 0 | 2 | 0 | — |
 | Own oracle precision, corrected for harness errors | 0.54 | 0 (21 false positives) | 0.27 | 0.03 | See RQ5 |
 | Own oracle recall, same correction | 0.70 | Undefined: no true failures | 1.00 | 1.00 | See RQ5 |
-| Generation cost for 48 tests: list (billed) | $0.51 ($0.03) | $1.20 ($0.06) | $0.67 ($0.03) | $1.14 ($0.06) | $6.00 ($0.34) |
+| Generation cost for 48 tests: list (billed) | $0.51 ($0.03) | $1.20 ($0.06) | $0.67 ($0.03) | $1.14 ($0.06) | $6.04 ($0.34) |
 
-The coverage row uses the baseline study's narrower F1–F8 rule on both sides. Under the main report's rule,
-including F0, the Muse expectation is **47.7 covered facts**. Writer cost is amortized across all 294 valid Muse
-cases. The baseline and methodology failure-count row describes different kinds of failure, so it is not a
-direct measure of fact-discrimination effectiveness.
+The coverage row applies one rule to both sides: a fact counts when a valid test has an F1–F8 decoy for it
+(baselines_01's rule; in this table, "designated" means F1–F8). The F0 rule (RQ2) would also credit plain decoys
+for states and for the six facts without a usable lure; neither side is counted that way here. Counting every plain
+decoy, the Muse expectation is **47.8 covered facts**; the baseline summaries give only the F1–F8 count. Writer cost
+is amortized across all 292 valid Muse cases. The baseline and methodology failure-count row describes different
+kinds of failure, so it is not a direct measure of fact-discrimination effectiveness.
 
 Across **169 valid baseline tests, no fact is exposed in a regular, fact-sensitive test**. Baseline failures with
 writes occur in presupposing requests, with one additional timeout-only test. Those still yield policy evidence:
@@ -465,7 +467,7 @@ N0 exposes four policy facts at detect@3 and three at detect@1. **That pair is n
 avoid the original ambiguous `4 / 3` notation. Fractions such as `45/48` instead mean valid out of generated.
 
 **Table 15. Component comparisons.** Sources: baseline summaries in [concise.json](numbers/concise.json),
-the [paired-probe study](../../../.claude/worktrees/baselines-01/grounding/runs/baselines_01/plain48/README.md),
+the [paired-probe study](../baselines_01/plain48/README.md),
 and Tables 8–10. Paired variants are distinct experimental conditions, not replacements of the main suite.
 
 | Component | OpenClaw evidence |
@@ -473,9 +475,9 @@ and Tables 8–10. Paired variants are distinct experimental conditions, not rep
 | Probe form | N0 covers expose in 0/36 cases; its probe variants expose in 4/28, finding four facts @3 and three @1. |
 | Designated lure, targeted comparison | In 12 selected probes, failing executions fall from 27/36 to 7/36 when the lure is replaced with a plain difference; excluding two confounded pairs gives 21/30 versus 2/30. |
 | Designated lure, random comparison | Both variants of 48 randomly selected probes ran fresh: exposure in 14/48 with the lure versus 2/48 with a plain difference; 29/144 versus 3/144 executions. Discordant pairs: 13 versus one, paired sign test p = 0.002. |
-| Forms in the methodology suite | Covers expose in 12/100, individual probes in 101/363, fact probes in 25/102. These are observations across different cases, not a controlled removal experiment. |
+| Forms in the methodology suite | Covers expose in 12/100, individual probes in 103/361, fact probes in 24/102. These are observations across different cases, not a controlled removal experiment. |
 | Construction checks and reader | In a documented 31-draft Muse subset, 17 drafts were returned: ten for substantive flaws and seven for format. These are construction attempts, not extra solver cases. |
-| Mechanical triage | 879/3,018 final executions have no LLM verdict; the other 2,139 include audits of clean results. Triage-alone accuracy has not been recomputed for this restricted scope. |
+| Mechanical triage | 879/2,994 final executions have no LLM verdict; the other 2,115 include audits of clean results. Triage-alone accuracy has not been recomputed for this restricted scope. |
 | Judge inputs | On the 39 shared retained executions, recall is 90.5% for the plain judge and J0, 95.2% for J1, and 100% for the methodology judge (Table 10). |
 
 The paired random comparison supports the contribution of the designated lure. The baseline results support

@@ -601,9 +601,9 @@ request without interpretation.
 
 ## RQ8. Baselines and ablations
 
-A separate study, baselines_01 (branch `exp/baselines-01`, `grounding/runs/baselines_01/report.md` and
-`compare.json`), compares our tests with what a coding agent writes when asked directly, and removes parts of our
-system one at a time. Everything below ran on the same agent (OpenClaw, Qwen3.8-27B, k = 3). Each baseline trial was
+A separate study, baselines_01 ([`grounding/runs/baselines_01/report.md`](../baselines_01/report.md) and
+`compare.json`, now on main), compares our tests with what a coding agent writes when asked directly, and removes
+parts of our system one at a time. Everything below ran on the same agent (OpenClaw, Qwen3.8-27B, k = 3). Each baseline trial was
 labelled by hand before any assertion result or judge verdict was read; one person labelled.
 
 ### 8.1 Two baselines
@@ -614,17 +614,22 @@ labelled by hand before any assertion result or judge verdict was read; one pers
 - **Mutated twins (N0M, N1M):** B1 and B2 again with the fixes a reviewer would ask for first ("each test a different
   property", "challenging but passable", "neutral ids").
 - **Ours:** Muse's Phase 4 tests, as expected values over random draws of 12 per service from its 158 tests, on the
-  first pass (`full_02`). Phase 4's final score is close: 45 tests exposing and 26 facts, against 41 and 28 in the
-  first pass.
+  first pass (`full_02`). Phase 4's final score, under the 10-minute budget, is 47 tests exposing and 26 facts; the
+  first pass had 41 and 28 as baselines_01 counted it, before the budget changed.
 
 **Table 14. Baselines against ours, per 48 tests.** Source: baselines_01 `compare.json`, `policy_facts.json`,
-`oracles.score.json`; our policy row from [numbers/policy.json](numbers/policy.json) (`by_source`).
+`oracles.score.json`; our policy row from [numbers/policy.json](numbers/policy.json) (`by_source`). The coverage rows
+count F1–F8 near misses on both sides; the F0 rule (RQ2) would add plain near misses for states and six facts, on
+neither side here. Our column is Phase 4's first pass as baselines_01 computed it, before the 10-minute budget, and
+is not recomputed. For all 292 Muse regular tests with final outcomes under the 10-minute budget, the expectation per
+48 tests is 12.2 facts exposed at detect@3, 7.7 at detect@1 and 14.0 tests exposing
+([numbers/concise.json](numbers/concise.json), `equal_budget_muse_final`).
 
 | | B1: N0 | B1 + fixes: N0M | B2: N1 | B2 + fixes: N1M | Ours (Phase 4) |
 |---|---:|---:|---:|---:|---:|
 | Tests / valid | 48 / 45 | 48 / 42 | 48 / 41 | 48 / 41 | 48 of 158, all valid |
 | Near misses through a designated substitute (F1–F8) | 9 of 48 | 17 of 53 | 21 of 58 | 19 of 66 | 81 of 99 |
-| Facts exercised properly (credit rule), valid tests | 7 | 12 | 17 | 13 | 34.0 |
+| Facts exercised properly (F1–F8), valid tests | 7 | 12 | 17 | 13 | 34.0 |
 | **Facts exposed, fact-sensitive tests (detect@3 / detect@1)** | **0 / 0** | **0 / 0** | **0 / 0** | **0 / 0** | **11.0 / 7.2** |
 | Failing tests (detect@3), and their kind | 5, all presupposing | 0 | 2, presupposing | 3: 2 presupposing, 1 a timeout without a write | 12.5, all fact-level |
 | Policy-level facts, designated near misses only (baselines_01's count) | 0 / 0 | 0 / 0 | 1 / 1 | 0 / 0 | – |
@@ -639,7 +644,7 @@ labelled by hand before any assertion result or judge verdict was read; one pers
   as raw failing tests, B1 (5) would look productive; counted as facts, it is not.
 - **Policy-level failures counted by fact.** Our policy tests count the fact of the near miss acted on (RQ6), so the
   baselines' presupposing tests should too. Our own Phase 4 policy units, with every one run: 60 absence units over
-  56 facts, 45 failing (39 through designated near misses); 50 underspecified units over 52 facts, 41 failing (38).
+  56 facts, 43 failing (37 through designated near misses); 50 underspecified units over 52 facts, 32 failing (29).
   These are not per 48 tests: our regular suite has no presupposing tests, and the policy units are generated
   apart.
 - **A counting difference we found in the baseline study.** It counts a plain near miss (F0) as exposing its fact in

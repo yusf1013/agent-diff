@@ -246,3 +246,45 @@ merge did not touch; for Linear and Slack underspecified it predates the merge (
   "have not received a systematic value audit" (report_concise.md).
 - Unchanged: Table 13 and the other rows (values_01 agrees with them: 4 outside the candidate set, 2 changed to fit,
   2 other fields disclosed, 32 Box replica effects).
+
+### RQ8: the baselines on main, the Muse expectation, one coverage rule
+
+- Intro (both): report_concise.md "The baseline evidence remains on the existing baseline branch" → "The baseline
+  study is baselines_01 (link), now on main"; "outside the 1,006-case methodology count" → 998
+  (`numbers/concise.json`, `case_count`). report.md "(branch `exp/baselines-01`, ...)" → a link to
+  `../baselines_01/report.md`, now on main (file checked).
+- report_concise.md Table 14, the Muse column: "all 294 Muse regular cases" and "sampled from 294 valid" → 292;
+  facts exposed @1 7.9 → 7.7; covered facts counting every plain decoy 47.7 → 47.8; exposed @3 (12.2), exposing tests
+  (14.0) and F1–F8 coverage (38.3) come out unchanged. Source: `numbers/concise.json` (`equal_budget_muse_final`;
+  `writers` → `Muse` → `exposure`, 292 tests). Writer cost $6.00 ($0.34) → $6.04 ($0.34), recomputed as the text
+  describes it: `numbers/costs.json`, "Muse: scenario generation (writer and cold reader)", $36.74 list and $2.08
+  billed, × 48 / 292 (the old figure reproduces with 294).
+- report_concise.md, the coverage-row note: "uses the baseline study's narrower F1–F8 rule on both sides. Under the
+  main report's rule, including F0, ..." → one rule on both sides, F1–F8 ("designated" means F1–F8 in this table);
+  the F0 rule would also credit plain decoys for states and the six facts without a usable lure, on neither side
+  here; counting every plain decoy 47.8; the baseline summaries give only the F1–F8 count. Sources: roadmap, "The F0
+  rule" ("The baseline comparison uses the same rule on both sides"); `kit/concise.py` (`designated_facts_covered`
+  leaves out F0); `baselines_01/n0/review_gen_01.py` ("proper": an F1–F8 near miss in a fact-sensitive form);
+  `numbers/concise.json` (`baseline_comparison`, no any-family count for the baselines).
+- report_concise.md Table 15: the paired-probe link `../../../.claude/worktrees/baselines-01/...` →
+  `../baselines_01/plain48/README.md` (file checked); forms 101/363 and 25/102 → 103/361 and 24/102 (covers 12/100
+  unchanged; `numbers/exposure.json`, `by_form`); triage "879/3,018 ... the other 2,139" → "879/2,994 ... the other
+  2,115" (`numbers/concise.json`, `judge_verdicts_on_final_executions`, `execution_counts`).
+- report.md: "Phase 4's final score is close: 45 tests exposing and 26 facts, against 41 and 28 in the first pass"
+  → 47 and 26 under the 10-minute budget, the first pass's 41 and 28 "as baselines_01 counted it, before the budget
+  changed" (`numbers/exposure.json`, `by_writer` → `Muse Phase 4`; baselines_01 `ours.json`).
+- report.md Table 14: the source note adds that the coverage rows count F1–F8 on both sides (the F0 rule on neither),
+  that the Ours column is Phase 4's first pass as baselines_01 computed it, not recomputed, and the final-outcome
+  expectation for all 292 Muse regular tests: 12.2 facts at detect@3, 7.7 at detect@1, 14.0 tests exposing
+  (`numbers/concise.json`, `equal_budget_muse_final`). Row label "(credit rule)" → "(F1–F8)".
+- report.md, Phase 4's policy units: 45 failing (39 through designated near misses) and 41 (38) → 43 (37) and 32 (29);
+  units and facts unchanged (60 over 56, 50 over 52). Source: `numbers/policy.json`, `by_source` → `phase4`.
+- **Not changed, no source in `numbers/`:** report.md Table 14's Ours column (34.0, 81 of 99, 11.0 / 7.2, 12.5,
+  $5.44) and "48 of ours expose about 11": baselines_01 `ours.json` and `compare.json`, computed from
+  `full_02.adjudicated.json` before the 10-minute rebuild. That file, as rebuilt, gives Phase 4's first pass 42 tests
+  exposing and 29 facts (28 at detect@3 → 29, 20 → 21 at detect@1), so the column would move a little if recomputed.
+  report.md Table 15 row 5 (first pass: covers 2 of 77, probes 76 of 279, fact probes 16 of 80; designated 67 of 223,
+  plain 9 of 56): baselines_01 `log.md`, from `full_02` before the rebuild. Row 7 (triage against judge v2 on
+  `full_02`'s 1,314 trials): baselines_01 `q4/numbers.json`, from the judge's verdicts, which the budget does not
+  change. The baselines' own numbers are unaffected: baselines_01 counts a timeout only when the harness's turn limit
+  ended the trial (`summarize_labels.py`, `plain48/score.py`).
