@@ -1,0 +1,1 @@
+Done — your Roadmap review (Wed Jun 20, 10:00–11:00 AM) now has the location set to **Boardroom**, and attendees Aiko and Leo were notified. (There's also another "Roadmap review" at 3 PM that Priya is hosting — I left that one untouched.)

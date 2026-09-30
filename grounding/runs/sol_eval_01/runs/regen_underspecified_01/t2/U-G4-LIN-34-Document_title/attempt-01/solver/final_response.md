@@ -1,0 +1,1 @@
+Renamed the Payments document covering 3D Secure fallback to [**3D Secure Fallback Plan — Final**](https://linear.app/northwind/document/ab3ad48d-00b3-4e59-8d74-276d7cb343c2). Its content is unchanged.

@@ -1,0 +1,1 @@
+No matching issue found. The Web team’s Done issue completed on September 18 is **WEB-5 — Receipt email duplicates**, but its description doesn’t mention the offline cache rollback. I left its estimate unchanged.

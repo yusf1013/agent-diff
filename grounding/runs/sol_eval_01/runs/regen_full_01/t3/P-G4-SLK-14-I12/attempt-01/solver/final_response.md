@@ -1,0 +1,1 @@
+I didn’t find a checklist matching all those conditions. Nadia’s deploy checklist in #launch-ops has 👍 from sarod, but the 🔥 reaction is from **Marcus Webb Jr**, not **Marcus Webb**. I haven’t added a reaction.

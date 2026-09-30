@@ -1,0 +1,3 @@
+I couldn’t find an **Engineering hiring** calendar at **Harbor View Terrace, Building 3** in Pacific time. The one I found is in Pacific time but located at **North annex, Room 101**.
+
+No changes were made.

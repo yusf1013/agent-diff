@@ -1,0 +1,1 @@
+I couldn’t find a message from Priya Sharma in #launch-plan on September 15 saying the demo video is ready, so I didn’t add a reaction.

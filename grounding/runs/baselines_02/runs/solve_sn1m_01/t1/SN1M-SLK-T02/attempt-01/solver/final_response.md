@@ -1,0 +1,1 @@
+Done — added a :heart: to the Release 4.2 sign-off message in #releases (the one with the Approve button, from Diego). There were two other sign-off posts without that button, so I picked the correct one.

@@ -1,0 +1,1 @@
+Done. All four messages in #kudos had 0 reactions (a tie), so I added :fire: to the most recent one — "Great demo today, Aisha." The API confirmed it (`already_reacted` on the second attempt), though the channel history feed hasn't started reflecting the reaction count yet.

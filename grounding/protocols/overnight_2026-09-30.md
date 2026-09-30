@@ -28,7 +28,10 @@ section. Decisions that stand go to the [roadmap](roadmap.md); this is the recor
 4. **Related work** (`related_work_01`): 69 works, 12 angles; concurrent work names our failure class (Entity Binding
    Failures, arXiv 2606.30531) and agrees with our look-alike results; ClawEnvKit is the generator baseline to run;
    Agent-Diff's served evaluation has no closed-world check; the credit rule's ancestor is Zhong, Yu and Klein 2020.
-   Four baseline preparations built (P1, B2, S1, B1); B1 running.
+   Four baseline preparations built (P1, B2, S1, B1). B1 (the masked-operation baseline, 48 items × 3): 47 of 144
+   pass (50 with the quiet-host reruns); 40 of 48 items fail at least once; its agent left the service interface
+   (direct backend calls, host probing, repository reads), which prompted the host-access scan of the main rounds.
+   P1 (48 matched absence/underspecified items × 3) running since 13:20.
 5. **The second harness** (`harness_scout_01`, `claudecode_pilot_01`): Claude Code, with Sonnet 5.5 on your plan and the
    self-hosted Qwen, both run end to end; a 32-test Sonnet pilot: 2 failures, judge 32 of 32, 13 s per run, $0. On
    the same 32, Sol had none.
@@ -38,14 +41,19 @@ section. Decisions that stand go to the [roadmap](roadmap.md); this is the recor
    agrees with 97 of 100 blind labels. For a Muse-only suite, Calendar absence becomes policy-level (0.90; the Sonnet
    units at 0.64 leave the cell); the other seven cells keep their decisions. The escape clause matters: 29% of
    no-target regular trials fail with "if there isn't one, just tell me", 77% of absence twins without it. Muse
-   cost $57.45 list. Sol has run this half too (1,011 runs); scoring under way.
-7. **Naive baselines with Sonnet 5.5** (`baselines_02`): generated and reviewed (109 of 116 valid; more designated near
-   misses than Muse's twins, still no probes); runs paused at 96 of 267 for host capacity; the first target-present
-   exposure by a naive baseline seen.
+   cost $57.45 list. Sol's run of this half is in item 1.
+7. **Naive baselines with Sonnet 5.5** (`baselines_02`, complete): with Sonnet writing them, the naive tests expose
+   facts (SN0M 3 at detect@3, SN1M 2; all four Muse arms 0), still far below ours (11.3 per 48). Sonnet writes 3–4×
+   more designated look-alikes than Muse and exercises more facts (22 and 37 against 12 and 13), but writes no probes;
+   4 of the 5 exposures go through designated look-alikes. Judge v2 agrees with 29 of 30 blind labels on each arm.
+   Generation $3.21 list on the plan; judging $7.88 list.
 8. **Transfer to the real services** (`transfer_feasibility_01`): 37 tests run as is, 403 with test accounts, 476 with
    a stated change, 90 not on ordinary accounts; a 40-test case study proposed at $0 in plans.
 9. The 10-minute budget applied everywhere; both report texts brought to the current numbers (998 cases, 2,994
    executions after two of your blind-review rulings reached the rulings file); a framing proposal for your point 5.
+   One correction under way (13:xx): the 10-minute rebuild of the policy numbers had silently dropped the budget rule
+   for the Qwen round's 1,743 policy verdicts (their attempt paths pointed into a removed worktree); no decision
+   changes, some Qwen policy rates move up; the sol_score session is rebuilding every affected file.
 
 **Decisions for you**
 1. The Sonnet round: OpenClaw's loop on an API key (about $263 list for the full suite, the only same-harness
@@ -359,3 +367,16 @@ section. Decisions that stand go to the [roadmap](roadmap.md); this is the recor
   re-roots attempt paths against the repository and warns when one cannot be resolved; sol_score is rebuilding
   every affected file (decisions, report numbers and texts, regen's and sol_eval_01's Qwen columns) with a logged
   old → new for each. Every Sol number is unchanged.
+- 13:2x related_work, B1 done (commit 6b8f16fd35; 48 masked-operation items, 144 trials on Qwen, boundary_02's
+  oracle): 47 of 144 trials pass as run (50 with the 12 host-load reruns); 40 of 48 items fail at least once. By
+  service, Slack 29 of 36 pass (its "unknown_method" reads as "no such method"); Box, Calendar and Linear 5–8 of 36
+  (a 405, a 404 or a GraphQL error reads as a broken environment and the agent probes until the budget ends: 77 of
+  the 97 failures ran out the budget, 33 of them after an unrequested change); 17 made such a change and answered;
+  4 wrote straight to the backend. The oracle agrees with all 30 blind labels. Reading: masking measures the
+  response to an environment that seems broken (FeasiGen's "false continue"), not knowledge of a service's limits,
+  which our boundary tests measure; keep both. P1 started at 13:23.
+- 13:3x values, baselines_02 done (merged as fca0337589): the numbers are in the brief. Replica findings: Slack
+  history and replies omit reactions while the judge's replica note says messages carry them (reported now by three
+  studies: the note is the thing to fix); Calendar occurrence ids with local digits plus "Z"; Linear
+  teams{projects{nodes}} fails. Rule readings for the PI: a family only when the catalog lists it for the fact; sets
+  get no proper credit; a self-corrected write on a decoy counts; a timeout after the right write is a failing test.

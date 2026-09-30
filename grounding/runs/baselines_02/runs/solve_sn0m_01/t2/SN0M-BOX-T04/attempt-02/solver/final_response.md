@@ -1,0 +1,1 @@
+Done — added **New-Hire Checklist.pdf** to the **Onboarding** hub. (There were a couple of similarly named hubs — "Onboarding Archive" and "Onboarding (Sales)" — so I matched the exact "Onboarding" one; let me know if you meant one of those instead.)

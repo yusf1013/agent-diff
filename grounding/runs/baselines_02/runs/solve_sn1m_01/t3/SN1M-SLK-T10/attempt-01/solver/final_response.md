@@ -1,0 +1,1 @@
+Done — replied "I'll take it" in #finance. One note: the invoice number was slightly off in your request. Maya's message was about invoice **#8814** ("still unpaid, who owns it?") — #8841 was Omar's, and that one's already paid. I replied in Maya's #8814 thread since that's the one where "I'll take it" makes sense. Let me know if you actually wanted it somewhere else.

@@ -1,0 +1,1 @@
+Done. Tuesday's Cedar room Team sync at 11:00–11:30 AM (the one showing you as free) is now renamed to **Team sync (open door)**. There were other Team syncs that day (Orchid room, and another Cedar at 9 AM that blocks your time), so I left those alone.

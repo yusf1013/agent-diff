@@ -1,0 +1,1 @@
+Done. I found three copies of the Harbor Services Agreement in the Contracts folder — Copy A (sent to Harbor, not yet returned) and Copy C (signed by Northwind only) don't match, so I tagged **Harbor Services Agreement - Copy B.pdf**, which is fully executed (signed by both Harbor and Northwind on 14 Aug 2026). It now has the `executed` tag.

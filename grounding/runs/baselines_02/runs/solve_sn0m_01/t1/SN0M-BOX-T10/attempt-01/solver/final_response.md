@@ -1,0 +1,1 @@
+Done. Tagged **"Harbor Services Agreement - Copy B.pdf"** (in Contracts) with `executed` — that's the copy fully signed by both Harbor and Northwind (Aug 14, 2026). I left the other two copies untouched: Copy A was still out for signature, and Copy C only had Northwind's signature.

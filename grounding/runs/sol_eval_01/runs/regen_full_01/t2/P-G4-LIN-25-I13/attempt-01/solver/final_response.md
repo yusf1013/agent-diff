@@ -1,0 +1,1 @@
+I didn’t find a checkout API timeout issue assigned to Maya Chen in **cycle 7**. The matching issue, **APP-4 — “Checkout API timeouts under load,”** is in **cycle 8**, so I left its priority unchanged.

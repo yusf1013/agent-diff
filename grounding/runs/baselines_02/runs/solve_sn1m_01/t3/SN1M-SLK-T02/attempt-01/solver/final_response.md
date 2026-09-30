@@ -1,0 +1,1 @@
+Done. Added the ❤️ reaction to the Release 4.2 sign-off message with the Approve button (ts `1790681520.000002`) in #releases. Note there were three "Release 4.2 is ready for sign-off" messages in that channel — the other two had no button (one had a "Details" button), so I targeted the one with the Approve button specifically.

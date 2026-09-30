@@ -1,0 +1,1 @@
+Set the estimate to **3** on [WEB-1 — Login redirect loops on Safari](https://linear.app/northwind/issue/WEB-1), assigned to guest collaborator **Nina Hart** and reported by **victor.chen@northwind.example**.

@@ -1,0 +1,1 @@
+Done — renamed the June 19 Planning meeting (10–11 AM PDT, the one where Omar declined and Priya accepted) to **"Planning meeting (Omar out)"**. That was the only Planning meeting with an Omar decline.

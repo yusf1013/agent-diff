@@ -1,0 +1,1 @@
+Done ✅ — "Team offsite" is on the **Tokyo trips** calendar for **June 27, 9am–5pm**. The calendar is set to America/Los_Angeles, so I scheduled it in PT — let me know if you meant a different time zone.
