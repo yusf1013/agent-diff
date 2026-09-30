@@ -13,7 +13,9 @@
   channel or comment).
 
 Regular tests: every trial of the final score (openclaw_eval_01 `final_regular_with_6b.json`). Policy tests: every
-trial of the population runs, and of the first pass's looks for Box's units (whose verdicts the population kept).
+trial of the population runs, and of the first pass's looks for Box's units (whose verdicts the population kept),
+except the units the PI's rulings leave out (`policy.population_units`, which applies `rulings.test_exclusion`), as
+concise.py counts them. `policy_trials()` itself stays unfiltered: concise.py counts the left-out trials from it.
 
     python grounding/runs/fact_coverage_02/launch.py grounding.runs.report_01.kit.beyond
 
@@ -25,6 +27,7 @@ import json
 import re
 from collections import Counter, defaultdict
 
+from grounding.runs.openclaw_eval_01 import policy as oc_policy
 from grounding.runs.report_01.kit.common import RUNS, load, write
 
 OC = RUNS / "openclaw_eval_01/runs"
@@ -178,6 +181,12 @@ def policy_trials():
             yield atts[-1], f"{mode}/{k}/{unit}", mode
 
 
+def valid_policy_units() -> dict[str, set[str]]:
+    """Each mode's valid population units, by the PI's rulings (the same set concise.py keeps)."""
+    return {mode: {u["unit"] for seq in oc_policy.population_plan(mode)["cells"].values()
+                   for u in oc_policy.population_units(seq)[0]} for mode in ("absence", "underspecified")}
+
+
 def summarize(recs):
     out = {"trials": len(recs), "trials_writing": sum(r["wrote"] for r in recs),
            "trials_writing_declared": sum(r["wrote_declared"] for r in recs),
@@ -260,8 +269,13 @@ def main():
                 mention[f"on {where}: read; note mentions the priority (outcome {j['outcome']})"] += 1
             else:
                 mention[f"on {where}: read; note silent on the value (outcome {j['outcome']})"] += 1
+    valid = valid_policy_units()
     policy = defaultdict(list)
+    left_out = Counter()
     for a, key, mode in policy_trials():
+        if a.parent.name not in valid[mode]:  # a unit the rulings exclude (2026-09-30: G4-BOX-11's and G4-BOX-02's)
+            left_out[mode] += 1
+            continue
         r = analyse(a, key)
         if r:
             policy[mode].append(r)
@@ -275,6 +289,7 @@ def main():
            "regular_covers_only": summarize([r for r in regular if r["trial"].split("/")[-1].split("-")[0]
                                              not in ("P", "FP")]),
            "policy": {m: summarize(v) for m, v in policy.items()},
+           "policy_trials_left_out_by_rulings": dict(left_out),
            "priority_errors": dict(pr.most_common()),
            "judge_on_value_error_trials": dict(mention),
            "judge_notes": judge_notes(),

@@ -78,12 +78,14 @@ manifest (blind_review_01, judge_qwen_01, values_01) keep their own populations.
 
 report.md and report_concise.md brought to the rebuilt numbers (brief:
 [report_update.md](../../protocols/briefs/report_update.md); session "values"). Every number is read from a file;
-none is recomputed from memory. `numbers/` and `kit/` are unchanged by this work. Format: section, old → new, source;
+none is recomputed from memory. `numbers/` and `kit/` are unchanged by this work, except the follow-up at the end. Format: section, old → new, source;
 "old" is the text before these changes.
 
 **Which numbers:** every source is read as of commit a8c046c891 (`numbers/` rebuilt in full after the two PI
 rulings above). A first pass (commits 787c4f576b to 2b8b166f67) used the files at 663af2ce1c, before the rulings;
-the commits after the merge 3ba8bafe21 re-synced it, and the entries below give the final values. Table 11's
+the commits after the merge 3ba8bafe21 re-synced it, and the entries below give the final values. The follow-up at
+the end rebuilt `numbers/beyond.json` (5496406e9c), baselines_01's `ours.json` and `compare.json`, and
+`numbers/concise.json`'s copy of them (3787ff5159); its entries are read from those. Table 11's
 figures are read from the two decision files (`openclaw_eval_01/runs/policy/decisions_population_*.json`), the
 sources the table already cites. `numbers/policy.json` has the same rates and intervals, but its `valid` and
 `judged` count cases where the decision files count units with each duplicate pair once (Linear underspecified 79
@@ -314,7 +316,8 @@ and decisions; its `valid` keeps both cases of each duplicate pair (Linear and S
   (`numbers/concise.json`, `equal_budget_muse_final`). Row label "(credit rule)" → "(F1–F8)".
 - report.md, Phase 4's policy units: 45 failing (39 through designated near misses) and 41 (38) → 43 (37) and 32 (29);
   units and facts unchanged (60 over 56, 50 over 52). Source: `numbers/policy.json`, `by_source` → `phase4`.
-- **Not changed, no source in `numbers/`:** report.md Table 14's Ours column (34.0, 81 of 99, 11.0 / 7.2, 12.5,
+- **Not changed at first, no source in `numbers/` (Table 14 and row 7 settled by follow-up 2 below):** report.md Table
+  14's Ours column (34.0, 81 of 99, 11.0 / 7.2, 12.5,
   $5.44) and "48 of ours expose about 11": baselines_01 `ours.json` and `compare.json`, computed from
   `full_02.adjudicated.json` before the 10-minute rebuild. That file, as rebuilt, gives Phase 4's first pass 42 tests
   exposing and 29 facts (28 at detect@3 → 29, 20 → 21 at detect@1), so the column would move a little if recomputed.
@@ -342,7 +345,7 @@ and decisions; its `valid` keeps both cases of each duplicate pair (Linear and S
 - report.md §10.1 "Time": "104 of 1,695 regular trials ran past the 8-minute budget, as did 188 of 1,170
   policy-population trials" → 52 of 1,689 ended by the 10-minute budget (`numbers/exposure.json`, `trials`); the 188
   of 1,170 kept and marked as the withdrawn 8-minute count. **No source in `numbers/`** for 188 of 1,170, or for a
-  policy count under the 10-minute budget; left as the old figure, labelled.
+  policy count under the 10-minute budget; left as the old figure, labelled (superseded by follow-up 4).
 - report.md §10.2, opaque ids "from 65 to 80 tests" → "from 70 to 84" (RQ4's sources).
 - report.md §10.3, "8 near misses and 1 scenario were ruled out by the PI" → 10 near misses, 2 of them after
   blind_review_01's reading. Source: `numbers/generator.json` (`all` → `flawed_near_misses`); this README (the two
@@ -400,3 +403,51 @@ and decisions; its `valid` keeps both cases of each duplicate pair (Linear and S
   "systematic value and disclosure checks" → "value and disclosure checks inside the pipeline (values_01 audited them
   once, on the earlier manifest)"; "provenance for RQ7" → "for RQ7's remaining rows"; "the selected 3,018 executions"
   → 2,994.
+
+### Follow-up: three inconsistencies the report update found (2026-09-30, at the lead's request)
+
+1. **`kit/beyond.py` filters the policy side by the rulings**, as `kit/concise.py` does: `main()` skips the trials of
+   units `policy.population_units` leaves out (it applies `rulings.test_exclusion`); `policy_trials()` stays
+   unfiltered because concise.py counts the left-out trials from it. Rerun: the policy side goes from 732 and 591
+   trials to 726 and 579 (`policy_trials_left_out_by_rulings`: 6 and 12, the units AT-G4-BOX-02-I11-I12,
+   AT-G4-BOX-11-I11-I12, U-G4-BOX-11-Folder_tags, U-G4-BOX-11-Folder_description, U-G4-BOX-02-File_parent_id,
+   U-G4-BOX-02-File_collections); trials writing 466 and 251 → 460 and 245; Box tag writes checked 78 + 33 and
+   51 + 27 + 9 → 75 + 30 and 45 + 25 + 9. The regular side, the judge notes and the examples are unchanged. RQ7 in
+   both texts: "the 1,323 of the policy populations ..., which still include the 18 trials of the 6 units the two
+   rulings ... left out" → "the 1,305 ..., without the 18 trials ..." (report_concise.md: "the final manifest's 1,689
+   regular and 1,305 policy executions"); Table 13's Box tag policy writes 198 → 184; "Trials writing anything"
+   466 of 732 and 251 of 591 → 460 of 726 and 245 of 579. The hand-classified rows are unchanged: none of the six
+   units has an unrequested, no-net-change or changed-to-fit trial in `beyond.json`, and none is in
+   `values_01/eval/labels.jsonl`. Source: `numbers/beyond.json` (`policy`, `policy_trials_left_out_by_rulings`).
+2. **baselines_01's `ours.json` and `compare.json` recomputed** with its own scripts, unchanged, from `full_02` as
+   rebuilt under the 10-minute budget and the rulings (`ours.py`, then `compare.py`). Phase 4's first pass: 41 tests
+   exposing and 28 facts → 42 and 29 (Calendar 12 → 13 tests, 8 → 9 facts at detect@3, 5 → 6 at detect@1); per 48
+   tests 11.0 / 7.2 facts → 11.3 / 7.5, tests failing 12.5 → 12.8; the draws are the same (same tests, same seed),
+   and the rest of `compare.json` reproduces exactly. report.md: the Ours bullet ("the first pass had 41 and 28 as
+   baselines_01 counted it, before the budget changed" → "its first pass has 42 and 29"), Table 14's source note ("as
+   baselines_01 computed it, before the 10-minute budget, and is not recomputed" → "recomputed with baselines_01's
+   scripts ... from `full_02` as rebuilt ...") and its Ours cells 11.0 / 7.2 → 11.3 / 7.5 and 12.5 → 12.8; "48 of
+   ours expose about 11" still holds. Table 15 row 7: `q4/analysis.py` rerun, `q4/numbers.json` unchanged (it reads
+   the judge's verdicts, which the budget and the rulings do not change); the source note says so. Row 5 (covers 2
+   of 77, probes 76 of 279, fact probes 16 of 80; designated 67 of 223, plain 9 of 56): **no script** produces it
+   (baselines_01 `log.md` records it as "existing OpenClaw data"), so it stays, labelled in the source note as the
+   first pass before the 10-minute rebuild. `numbers/concise.json` rerun (`kit/concise.py`) so its copy of
+   `compare.json` (`baseline_comparison`) matches: the same three values change, nothing else. baselines_01's
+   `log.md` records the recompute; its `report.md` keeps the earlier figures. Sources: baselines_01 `ours.json`
+   (`phase4_muse`), `compare.json` (`approaches` → `ours_phase4_per_48`), `q4/numbers.json`.
+3. **openclaw_eval_01's README** brought to the 10-minute budget and the rulings as of 2026-09-30: the Summary, the
+   two Results sections and "For the PI" (6a 104 → 108 of 429 tests, 46 → 47 facts at detect@1; 6b 136 → 134 tests,
+   34 → 31 exposing, 14 → 13 facts at detect@1; together 138 of 565 → 139 of 563; per service, form, set-aside
+   trials, opaque-id comparison and the eight cells as in report_01), with a dated note that the first pass below
+   is a record. No report_01 text changes. Sources: `openclaw_eval_01/runs/full_0{2,3,4}.adjudicated.json`,
+   `final_regular.json`, `final_regular_with_6b.json`, `policy/decisions_population_*.json`. The population runs'
+   over-budget trials are in no file; they were counted with `rulings.over_budget` over each run's final attempts
+   (the same count with the old 480-second rule gives the README's old 43, 78, 43 and 24 exactly): 23 of 408, 58 of
+   411, 29 of 204 and 19 of 147, 129 of 1,170 in all. That total is the 10-minute count for report.md §10.1's
+   labelled "188 of 1,170"; it is not applied there (see 4).
+4. **report.md §10.1 "Time"** (the lead's go-ahead): "Under the withdrawn 8-minute reading, 188 of 1,170
+   policy-population trials had run past 8 minutes (not recounted under the 10-minute budget)" → the 10-minute budget
+   ended 129 of the 1,170 trials of the four policy population runs, counted with `rulings.over_budget` over each
+   run's final attempts; the same count under the withdrawn 8-minute rule gives the earlier 188. Source:
+   `openclaw_eval_01/README.md`, Summary (follow-up 3). baselines_01's `report.md` gets a dated pointer to the
+   recomputed `ours.json` (11.3 / 7.5, 12.8 per 48 tests).
