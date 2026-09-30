@@ -5,7 +5,7 @@ Session "harness", second assignment from the lead session "RoadMap specialist" 
 
 ## Status
 
-- **2026-09-30, 01:45 EDT.** The backend ([backend.py](backend.py)) and runner ([run.py](run.py)) work: a two-test
+- **2026-09-30, 01:31 EDT.** The backend ([backend.py](backend.py)) and runner ([run.py](run.py)) work: a two-test
   smoke (`runs/smoke_01`) ran end to end. The pilot is next.
 
 ## The question
@@ -33,7 +33,7 @@ Parts (the lead's assignment):
 
 ## Log
 
-### Cycle 1 (2026-09-30, 01:25-01:45): the backend
+### Cycle 1 (2026-09-30, 01:21-01:31): the backend
 
 - **Authentication without touching the login.** A fresh `CLAUDE_CONFIG_DIR` per run, authenticated by
   `CLAUDE_CODE_OAUTH_TOKEN`: either a `claude setup-token` token from a file the PI makes once (`token-file`), or,
