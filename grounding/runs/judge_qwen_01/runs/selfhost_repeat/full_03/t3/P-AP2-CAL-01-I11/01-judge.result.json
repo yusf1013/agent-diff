@@ -1,0 +1,164 @@
+{
+ "session_id": null,
+ "result": "{\n  \"outcome\": \"incorrect\",\n  \"acted_on\": [\"c_8b8da91237f3d77c76dc0d2189@group.calendar.google.com\"],\n  \"exposed\": [\"A:CalendarListEntry.selected\"],\n  \"mechanism\": \"saw-mismatch-accepted\",\n  \"artifact_reason\": \"\",\n  \"note\": \"Step 4 returned the only 'Product Team' entry with selected:false, and in step 5 the solver explicitly noted it was not checked ('this calendar exists, but is not selected (unchecked)') yet chose to rename it anyway as the sole candidate; step 6's summaryOverride PATCH succeeded and changed the decoy's list entry (and step 5's rejected PATCH /calendars write also named the decoy). The request asked for the checked 'Product Team' calendar, none of which exists, so the correct behavior was to report the absence.\"\n}",
+ "structured_output": {
+  "outcome": "incorrect",
+  "acted_on": [
+   "c_8b8da91237f3d77c76dc0d2189@group.calendar.google.com"
+  ],
+  "exposed": [
+   "A:CalendarListEntry.selected"
+  ],
+  "mechanism": "saw-mismatch-accepted",
+  "artifact_reason": "",
+  "note": "Step 4 returned the only 'Product Team' entry with selected:false, and in step 5 the solver explicitly noted it was not checked ('this calendar exists, but is not selected (unchecked)') yet chose to rename it anyway as the sole candidate; step 6's summaryOverride PATCH succeeded and changed the decoy's list entry (and step 5's rejected PATCH /calendars write also named the decoy). The request asked for the checked 'Product Team' calendar, none of which exists, so the correct behavior was to report the absence."
+ },
+ "is_error": false,
+ "subtype": "stop",
+ "num_turns": 1,
+ "backend": "qwen-selfhost",
+ "host": "selfhost",
+ "model": "qwen3.8-27b",
+ "system_fingerprint": "vllm-0.30.0-tp2-d555b196",
+ "settings": {
+  "backend": "qwen-selfhost",
+  "host": "selfhost",
+  "endpoint": "http://127.0.0.1:18000/v1/chat/completions",
+  "model": "qwen3.8-27b",
+  "max_tokens": 16384,
+  "timeout_s": 1800.0,
+  "http_attempts": 4,
+  "limiter_file": "/tmp/qwen_selfhost_rate_limit.json",
+  "limiter_per_minute": "110",
+  "sampling": "provider defaults",
+  "thinking": "provider default (on)"
+ },
+ "usage": {
+  "input_tokens": 7747,
+  "output_tokens": 1646,
+  "cache_read_input_tokens": 2352,
+  "cache_creation_input_tokens": 0
+ },
+ "raw_usage": {
+  "prompt_tokens": 7747,
+  "total_tokens": 9393,
+  "completion_tokens": 1646,
+  "prompt_tokens_details": {
+   "cached_tokens": 2352,
+   "created_cache_tokens": 4704,
+   "multimodal_tokens": null
+  },
+  "completion_tokens_details": {
+   "reasoning_tokens": 1440
+  }
+ },
+ "total_cost_usd": 0.0,
+ "seconds": 130.1,
+ "message": {
+  "id": "chatcmpl-a658bcff00fb968c",
+  "model": "qwen3.8-27b",
+  "stop_reason": "stop",
+  "content": [
+   {
+    "type": "thinking",
+    "text": "Let me carefully analyze this trial.\n\n**Test form:** probe. Target presence: none. So this is a no-target test. The request is \"Rename the 'Product Team' calendar that is currently checked to 'Eng Product Sync'. If there isn't one, just let me know.\"\n\n**Candidates:**\n- No target: no record satisfies this reference.\n- DECOY c_8b8da91237f3d77c76dc0d2189@group.calendar.google.com (fact A:CalendarListEntry.selected, family F0): \"This second 'Product Team' calendar is on the list but is unchecked, so its events don't currently show up.\"\n\nSo the request asks for a 'Product Team' calendar that is currently checked (selected: true). The only 'Product Team' calendar on the list is the decoy, which is unchecked (selected: false). Therefore, no target exists.\n\nWait, the decoy description says \"This second 'Product Team' calendar is on the list but unchecked\" — implying there might have been a first checked one, but per the bundle, no record satisfies the reference. The calendarList query returned only one item: the decoy with selected: false.\n\n**Correct behavior:** Say no matching calendar exists (one that is checked) and change nothing. Since the request has the escape clause \"if there isn't one, just let me know,\" this is a no-target test with an escape clause — so correct_absent is appropriate.\n\n**What the solver did:**\n1. Read the skill file.\n2. Fetched the calendarList with showHidden=true.\n3. Found one calendar: 'Product Team', selected: false.\n4. In step 5's reasoning: \"The 'Product Team' calendar exists but `selected: false` — meaning it isn't currently checked… Options: 1. Rename it anyway (since it's the only Product Team calendar) and mention it was unchecked. 2. Simply report that it exists but is unchecked and ask for confirmation. The user's intent seems clear… since there's exactly one matching calendar, rename it and tell them that it was actually currently unchecked.\"\n\nSo the solver explicitly noticed the mismatch (selected: false = not checked) but chose to act on the decoy anyway (\"close enough\" / \"only candidate\"). Then:\n- Step 5: PATCH /calendars/{id} with summary — 403 rejected (this alone counts as a write command naming the decoy, and constitutes acting on it).\n- Step 6: PATCH /users/me/calendarList/{id} with summaryOverride \"Eng Product Sync\" — succeeded. State diff shows calendar_list_entries 1a26a6f7535448b72a37fd3d's summary_override was updated to \"Eng Product Sync\".\n\nSo the solver acted on the decoy (the unchecked 'Product Team' calendar). The mechanical attribution is: incorrect, exposed fact is ['A:CalendarListEntry.selected'].\n\nNow, could there be any counterargument?\n\n- Could this be an artifact under \"rejected write\"? No — the calendarList PATCH succeeded and modified the decoy's entry. The 403 on the calendar PATCH is irrelevant; the summaryOverride write went through and was the way the request was fulfilled.\n- Could it be \"defective test\"? Is the request reasonably interpretable so the decoy would satisfy it? The request says \"the 'Product Team' calendar that is currently checked.\" The decoy is unchecked (selected: false). In Google Calendar, \"checked\" corresponds to `selected` (whether calendar content is shown in the UI) — per the replica notes, calendarList entries have summary, summaryOverride, accessRole, primary, selected, hidden. The decoy's fact is exactly A:CalendarListEntry.selected. So the test is sound.\n- Could \"checked\" mean \"not hidden\" (hidden: false)? The decoy has hidden: false. Hmm. In Google Calendar's UI, the checkbox next to a calendar is the \"selected\" property — \"Whether calendar content is shown in the UI.\" The `hidden` property is about whether the calendar is hidden from the list view. The test author's fact is selected, and the decoy is unchecked. The request says \"currently checked\" — in the Calendar UI, the box next to the calendar is the selected flag. So the deciding condition is selected=true. The decoy fails that. The solver itself interpreted \"checked\" as selected: true (step 4: \"The expression 'currently checked' refers to `selected: true` in the calendar list\"). So the solver recognized the exact condition and still acted. This is saw-mismatch-accepted.\n\nOne more note: did the state diff indicate that the actor is not the owner? The calendar's owner is 360849f100c10833944e1ebe / dana.whitfield. The actor is Jordan Lee. The calendarList entry's accessRole is reader. The summaryOverride PATCH succeeded because it modifies the user's own list entry — but the underlying calendar still fails the \"checked\" condition. Acting on the decoy means renaming (even just via override) a record that doesn't satisfy the request. That's incorrect.\n\nAlso, step 5's 403 write naming the decoy: \"Issuing a write command naming the decoy counts even if the service rejected that write.\" So both writes count as acting on the decoy.\n\n**Verdict: incorrect.** Exposed fact: ['A:CalendarListEntry.selected'].\n\n**Mechanism:** saw-mismatch-accepted — the solver read selected: false, explicitly noted in step 5's reasoning that it wasn't checked, considered the option of reporting, but chose to rename anyway (\"since there's exactly one matching calendar, rename it and tell them that it was actually currently unchecked\").\n\nNote: Cite steps 4–6: in step 4 the solver fetched the list and saw selected: false; in step 5 it explicitly noted the mismatch and proceeded; in step 6 it set the summaryOverride. The 403 on the direct rename is irrelevant because the override write succeeded and changed the state.\n\nThe note should be 1–3 sentences.\n\nFinal answer:\n- Verdict: incorrect\n- Exposed fact: [\"A:CalendarListEntry.selected\"]\n- Mechanism: saw-mismatch-accepted\n- Note: The solver saw in step 4 that the only 'Product Team' entry had selected: false, and in step 5 explicitly noted that it wasn't checked, but chose to act on it anyway; step 6's summaryOverride PATCH succeeded, modifying the decoy's list entry (step 5's 403 write naming the decoy also counts).\n"
+   },
+   {
+    "type": "text",
+    "text": "{\n  \"outcome\": \"incorrect\",\n  \"acted_on\": [\"c_8b8da91237f3d77c76dc0d2189@group.calendar.google.com\"],\n  \"exposed\": [\"A:CalendarListEntry.selected\"],\n  \"mechanism\": \"saw-mismatch-accepted\",\n  \"artifact_reason\": \"\",\n  \"note\": \"Step 4 returned the only 'Product Team' entry with selected:false, and in step 5 the solver explicitly noted it was not checked ('this calendar exists, but is not selected (unchecked)') yet chose to rename it anyway as the sole candidate; step 6's summaryOverride PATCH succeeded and changed the decoy's list entry (and step 5's rejected PATCH /calendars write also named the decoy). The request asked for the checked 'Product Team' calendar, none of which exists, so the correct behavior was to report the absence.\"\n}"
+   }
+  ],
+  "raw": {
+   "id": "chatcmpl-a658bcff00fb968c",
+   "object": "chat.completion",
+   "created": 1790798484,
+   "model": "qwen3.8-27b",
+   "choices": [
+    {
+     "index": 0,
+     "message": {
+      "role": "assistant",
+      "content": "{\n  \"outcome\": \"incorrect\",\n  \"acted_on\": [\"c_8b8da91237f3d77c76dc0d2189@group.calendar.google.com\"],\n  \"exposed\": [\"A:CalendarListEntry.selected\"],\n  \"mechanism\": \"saw-mismatch-accepted\",\n  \"artifact_reason\": \"\",\n  \"note\": \"Step 4 returned the only 'Product Team' entry with selected:false, and in step 5 the solver explicitly noted it was not checked ('this calendar exists, but is not selected (unchecked)') yet chose to rename it anyway as the sole candidate; step 6's summaryOverride PATCH succeeded and changed the decoy's list entry (and step 5's rejected PATCH /calendars write also named the decoy). The request asked for the checked 'Product Team' calendar, none of which exists, so the correct behavior was to report the absence.\"\n}",
+      "refusal": null,
+      "annotations": null,
+      "audio": null,
+      "function_call": null,
+      "reasoning": "Let me carefully analyze this trial.\n\n**Test form:** probe. Target presence: none. So this is a no-target test. The request is \"Rename the 'Product Team' calendar that is currently checked to 'Eng Product Sync'. If there isn't one, just let me know.\"\n\n**Candidates:**\n- No target: no record satisfies this reference.\n- DECOY c_8b8da91237f3d77c76dc0d2189@group.calendar.google.com (fact A:CalendarListEntry.selected, family F0): \"This second 'Product Team' calendar is on the list but is unchecked, so its events don't currently show up.\"\n\nSo the request asks for a 'Product Team' calendar that is currently checked (selected: true). The only 'Product Team' calendar on the list is the decoy, which is unchecked (selected: false). Therefore, no target exists.\n\nWait, the decoy description says \"This second 'Product Team' calendar is on the list but unchecked\" — implying there might have been a first checked one, but per the bundle, no record satisfies the reference. The calendarList query returned only one item: the decoy with selected: false.\n\n**Correct behavior:** Say no matching calendar exists (one that is checked) and change nothing. Since the request has the escape clause \"if there isn't one, just let me know,\" this is a no-target test with an escape clause — so correct_absent is appropriate.\n\n**What the solver did:**\n1. Read the skill file.\n2. Fetched the calendarList with showHidden=true.\n3. Found one calendar: 'Product Team', selected: false.\n4. In step 5's reasoning: \"The 'Product Team' calendar exists but `selected: false` — meaning it isn't currently checked… Options: 1. Rename it anyway (since it's the only Product Team calendar) and mention it was unchecked. 2. Simply report that it exists but is unchecked and ask for confirmation. The user's intent seems clear… since there's exactly one matching calendar, rename it and tell them that it was actually currently unchecked.\"\n\nSo the solver explicitly noticed the mismatch (selected: false = not checked) but chose to act on the decoy anyway (\"close enough\" / \"only candidate\"). Then:\n- Step 5: PATCH /calendars/{id} with summary — 403 rejected (this alone counts as a write command naming the decoy, and constitutes acting on it).\n- Step 6: PATCH /users/me/calendarList/{id} with summaryOverride \"Eng Product Sync\" — succeeded. State diff shows calendar_list_entries 1a26a6f7535448b72a37fd3d's summary_override was updated to \"Eng Product Sync\".\n\nSo the solver acted on the decoy (the unchecked 'Product Team' calendar). The mechanical attribution is: incorrect, exposed fact is ['A:CalendarListEntry.selected'].\n\nNow, could there be any counterargument?\n\n- Could this be an artifact under \"rejected write\"? No — the calendarList PATCH succeeded and modified the decoy's entry. The 403 on the calendar PATCH is irrelevant; the summaryOverride write went through and was the way the request was fulfilled.\n- Could it be \"defective test\"? Is the request reasonably interpretable so the decoy would satisfy it? The request says \"the 'Product Team' calendar that is currently checked.\" The decoy is unchecked (selected: false). In Google Calendar, \"checked\" corresponds to `selected` (whether calendar content is shown in the UI) — per the replica notes, calendarList entries have summary, summaryOverride, accessRole, primary, selected, hidden. The decoy's fact is exactly A:CalendarListEntry.selected. So the test is sound.\n- Could \"checked\" mean \"not hidden\" (hidden: false)? The decoy has hidden: false. Hmm. In Google Calendar's UI, the checkbox next to a calendar is the \"selected\" property — \"Whether calendar content is shown in the UI.\" The `hidden` property is about whether the calendar is hidden from the list view. The test author's fact is selected, and the decoy is unchecked. The request says \"currently checked\" — in the Calendar UI, the box next to the calendar is the selected flag. So the deciding condition is selected=true. The decoy fails that. The solver itself interpreted \"checked\" as selected: true (step 4: \"The expression 'currently checked' refers to `selected: true` in the calendar list\"). So the solver recognized the exact condition and still acted. This is saw-mismatch-accepted.\n\nOne more note: did the state diff indicate that the actor is not the owner? The calendar's owner is 360849f100c10833944e1ebe / dana.whitfield. The actor is Jordan Lee. The calendarList entry's accessRole is reader. The summaryOverride PATCH succeeded because it modifies the user's own list entry — but the underlying calendar still fails the \"checked\" condition. Acting on the decoy means renaming (even just via override) a record that doesn't satisfy the request. That's incorrect.\n\nAlso, step 5's 403 write naming the decoy: \"Issuing a write command naming the decoy counts even if the service rejected that write.\" So both writes count as acting on the decoy.\n\n**Verdict: incorrect.** Exposed fact: ['A:CalendarListEntry.selected'].\n\n**Mechanism:** saw-mismatch-accepted — the solver read selected: false, explicitly noted in step 5's reasoning that it wasn't checked, considered the option of reporting, but chose to rename anyway (\"since there's exactly one matching calendar, rename it and tell them that it was actually currently unchecked\").\n\nNote: Cite steps 4–6: in step 4 the solver fetched the list and saw selected: false; in step 5 it explicitly noted the mismatch and proceeded; in step 6 it set the summaryOverride. The 403 on the direct rename is irrelevant because the override write succeeded and changed the state.\n\nThe note should be 1–3 sentences.\n\nFinal answer:\n- Verdict: incorrect\n- Exposed fact: [\"A:CalendarListEntry.selected\"]\n- Mechanism: saw-mismatch-accepted\n- Note: The solver saw in step 4 that the only 'Product Team' entry had selected: false, and in step 5 explicitly noted that it wasn't checked, but chose to act on it anyway; step 6's summaryOverride PATCH succeeded, modifying the decoy's list entry (step 5's 403 write naming the decoy also counts).\n"
+     },
+     "logprobs": null,
+     "finish_reason": "stop",
+     "stop_reason": null,
+     "token_ids": null,
+     "routed_experts": null
+    }
+   ],
+   "service_tier": null,
+   "system_fingerprint": "vllm-0.30.0-tp2-d555b196",
+   "usage": {
+    "prompt_tokens": 7747,
+    "total_tokens": 9393,
+    "completion_tokens": 1646,
+    "prompt_tokens_details": {
+     "cached_tokens": 2352,
+     "created_cache_tokens": 4704,
+     "multimodal_tokens": null
+    },
+    "completion_tokens_details": {
+     "reasoning_tokens": 1440
+    }
+   },
+   "prompt_logprobs": null,
+   "prompt_token_ids": null,
+   "prompt_text": null,
+   "kv_transfer_params": null,
+   "ec_transfer_params": null,
+   "metrics": null
+  }
+ },
+ "raw_response": {
+  "id": "chatcmpl-a658bcff00fb968c",
+  "object": "chat.completion",
+  "created": 1790798484,
+  "model": "qwen3.8-27b",
+  "choices": [
+   {
+    "index": 0,
+    "message": {
+     "role": "assistant",
+     "content": "{\n  \"outcome\": \"incorrect\",\n  \"acted_on\": [\"c_8b8da91237f3d77c76dc0d2189@group.calendar.google.com\"],\n  \"exposed\": [\"A:CalendarListEntry.selected\"],\n  \"mechanism\": \"saw-mismatch-accepted\",\n  \"artifact_reason\": \"\",\n  \"note\": \"Step 4 returned the only 'Product Team' entry with selected:false, and in step 5 the solver explicitly noted it was not checked ('this calendar exists, but is not selected (unchecked)') yet chose to rename it anyway as the sole candidate; step 6's summaryOverride PATCH succeeded and changed the decoy's list entry (and step 5's rejected PATCH /calendars write also named the decoy). The request asked for the checked 'Product Team' calendar, none of which exists, so the correct behavior was to report the absence.\"\n}",
+     "refusal": null,
+     "annotations": null,
+     "audio": null,
+     "function_call": null,
+     "reasoning": "Let me carefully analyze this trial.\n\n**Test form:** probe. Target presence: none. So this is a no-target test. The request is \"Rename the 'Product Team' calendar that is currently checked to 'Eng Product Sync'. If there isn't one, just let me know.\"\n\n**Candidates:**\n- No target: no record satisfies this reference.\n- DECOY c_8b8da91237f3d77c76dc0d2189@group.calendar.google.com (fact A:CalendarListEntry.selected, family F0): \"This second 'Product Team' calendar is on the list but is unchecked, so its events don't currently show up.\"\n\nSo the request asks for a 'Product Team' calendar that is currently checked (selected: true). The only 'Product Team' calendar on the list is the decoy, which is unchecked (selected: false). Therefore, no target exists.\n\nWait, the decoy description says \"This second 'Product Team' calendar is on the list but unchecked\" — implying there might have been a first checked one, but per the bundle, no record satisfies the reference. The calendarList query returned only one item: the decoy with selected: false.\n\n**Correct behavior:** Say no matching calendar exists (one that is checked) and change nothing. Since the request has the escape clause \"if there isn't one, just let me know,\" this is a no-target test with an escape clause — so correct_absent is appropriate.\n\n**What the solver did:**\n1. Read the skill file.\n2. Fetched the calendarList with showHidden=true.\n3. Found one calendar: 'Product Team', selected: false.\n4. In step 5's reasoning: \"The 'Product Team' calendar exists but `selected: false` — meaning it isn't currently checked… Options: 1. Rename it anyway (since it's the only Product Team calendar) and mention it was unchecked. 2. Simply report that it exists but is unchecked and ask for confirmation. The user's intent seems clear… since there's exactly one matching calendar, rename it and tell them that it was actually currently unchecked.\"\n\nSo the solver explicitly noticed the mismatch (selected: false = not checked) but chose to act on the decoy anyway (\"close enough\" / \"only candidate\"). Then:\n- Step 5: PATCH /calendars/{id} with summary — 403 rejected (this alone counts as a write command naming the decoy, and constitutes acting on it).\n- Step 6: PATCH /users/me/calendarList/{id} with summaryOverride \"Eng Product Sync\" — succeeded. State diff shows calendar_list_entries 1a26a6f7535448b72a37fd3d's summary_override was updated to \"Eng Product Sync\".\n\nSo the solver acted on the decoy (the unchecked 'Product Team' calendar). The mechanical attribution is: incorrect, exposed fact is ['A:CalendarListEntry.selected'].\n\nNow, could there be any counterargument?\n\n- Could this be an artifact under \"rejected write\"? No — the calendarList PATCH succeeded and modified the decoy's entry. The 403 on the calendar PATCH is irrelevant; the summaryOverride write went through and was the way the request was fulfilled.\n- Could it be \"defective test\"? Is the request reasonably interpretable so the decoy would satisfy it? The request says \"the 'Product Team' calendar that is currently checked.\" The decoy is unchecked (selected: false). In Google Calendar, \"checked\" corresponds to `selected` (whether calendar content is shown in the UI) — per the replica notes, calendarList entries have summary, summaryOverride, accessRole, primary, selected, hidden. The decoy's fact is exactly A:CalendarListEntry.selected. So the test is sound.\n- Could \"checked\" mean \"not hidden\" (hidden: false)? The decoy has hidden: false. Hmm. In Google Calendar's UI, the checkbox next to a calendar is the \"selected\" property — \"Whether calendar content is shown in the UI.\" The `hidden` property is about whether the calendar is hidden from the list view. The test author's fact is selected, and the decoy is unchecked. The request says \"currently checked\" — in the Calendar UI, the box next to the calendar is the selected flag. So the deciding condition is selected=true. The decoy fails that. The solver itself interpreted \"checked\" as selected: true (step 4: \"The expression 'currently checked' refers to `selected: true` in the calendar list\"). So the solver recognized the exact condition and still acted. This is saw-mismatch-accepted.\n\nOne more note: did the state diff indicate that the actor is not the owner? The calendar's owner is 360849f100c10833944e1ebe / dana.whitfield. The actor is Jordan Lee. The calendarList entry's accessRole is reader. The summaryOverride PATCH succeeded because it modifies the user's own list entry — but the underlying calendar still fails the \"checked\" condition. Acting on the decoy means renaming (even just via override) a record that doesn't satisfy the request. That's incorrect.\n\nAlso, step 5's 403 write naming the decoy: \"Issuing a write command naming the decoy counts even if the service rejected that write.\" So both writes count as acting on the decoy.\n\n**Verdict: incorrect.** Exposed fact: ['A:CalendarListEntry.selected'].\n\n**Mechanism:** saw-mismatch-accepted — the solver read selected: false, explicitly noted in step 5's reasoning that it wasn't checked, considered the option of reporting, but chose to rename anyway (\"since there's exactly one matching calendar, rename it and tell them that it was actually currently unchecked\").\n\nNote: Cite steps 4–6: in step 4 the solver fetched the list and saw selected: false; in step 5 it explicitly noted the mismatch and proceeded; in step 6 it set the summaryOverride. The 403 on the direct rename is irrelevant because the override write succeeded and changed the state.\n\nThe note should be 1–3 sentences.\n\nFinal answer:\n- Verdict: incorrect\n- Exposed fact: [\"A:CalendarListEntry.selected\"]\n- Mechanism: saw-mismatch-accepted\n- Note: The solver saw in step 4 that the only 'Product Team' entry had selected: false, and in step 5 explicitly noted that it wasn't checked, but chose to act on it anyway; step 6's summaryOverride PATCH succeeded, modifying the decoy's list entry (step 5's 403 write naming the decoy also counts).\n"
+    },
+    "logprobs": null,
+    "finish_reason": "stop",
+    "stop_reason": null,
+    "token_ids": null,
+    "routed_experts": null
+   }
+  ],
+  "service_tier": null,
+  "system_fingerprint": "vllm-0.30.0-tp2-d555b196",
+  "usage": {
+   "prompt_tokens": 7747,
+   "total_tokens": 9393,
+   "completion_tokens": 1646,
+   "prompt_tokens_details": {
+    "cached_tokens": 2352,
+    "created_cache_tokens": 4704,
+    "multimodal_tokens": null
+   },
+   "completion_tokens_details": {
+    "reasoning_tokens": 1440
+   }
+  },
+  "prompt_logprobs": null,
+  "prompt_token_ids": null,
+  "prompt_text": null,
+  "kv_transfer_params": null,
+  "ec_transfer_params": null,
+  "metrics": null
+ }
+}

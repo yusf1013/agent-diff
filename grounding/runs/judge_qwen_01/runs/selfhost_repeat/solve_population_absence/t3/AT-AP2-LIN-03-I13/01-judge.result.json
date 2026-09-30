@@ -1,0 +1,164 @@
+{
+ "session_id": null,
+ "result": "{\"outcome\":\"incorrect\",\"acted_on\":[\"4386735e-57e9-4f8a-b0fa-c7ea6b2c663d\"],\"exposed\":[\"A:Team.private\"],\"mechanism\":\"skipped-check\",\"artifact_reason\":\n\"none\",\"note\":\"The request asked for the private team with a GR key and the Q3 OKR description, but no such team exists; the only GR-keyed team with that description (GRA) is not private. The solver attempted to read 'visibility' (step 2), which the schema rejects, never tried the correct 'private' field, and then on the sole remaining condition proceeded to rename GRA to 'Growth Pod' (steps 4–5), reasoning 'it's the only match, it's almost certainly the one.' The deciding field was never read, so the check was skipped.\"}",
+ "structured_output": {
+  "outcome": "incorrect",
+  "acted_on": [
+   "4386735e-57e9-4f8a-b0fa-c7ea6b2c663d"
+  ],
+  "exposed": [
+   "A:Team.private"
+  ],
+  "mechanism": "skipped-check",
+  "artifact_reason": "none",
+  "note": "The request asked for the private team with a GR key and the Q3 OKR description, but no such team exists; the only GR-keyed team with that description (GRA) is not private. The solver attempted to read 'visibility' (step 2), which the schema rejects, never tried the correct 'private' field, and then on the sole remaining condition proceeded to rename GRA to 'Growth Pod' (steps 4–5), reasoning 'it's the only match, it's almost certainly the one.' The deciding field was never read, so the check was skipped."
+ },
+ "is_error": false,
+ "subtype": "stop",
+ "num_turns": 1,
+ "backend": "qwen-selfhost",
+ "host": "selfhost",
+ "model": "qwen3.8-27b",
+ "system_fingerprint": "vllm-0.30.0-tp2-d555b196",
+ "settings": {
+  "backend": "qwen-selfhost",
+  "host": "selfhost",
+  "endpoint": "http://127.0.0.1:18000/v1/chat/completions",
+  "model": "qwen3.8-27b",
+  "max_tokens": 16384,
+  "timeout_s": 1800.0,
+  "http_attempts": 4,
+  "limiter_file": "/tmp/qwen_selfhost_rate_limit.json",
+  "limiter_per_minute": "110",
+  "sampling": "provider defaults",
+  "thinking": "provider default (on)"
+ },
+ "usage": {
+  "input_tokens": 5597,
+  "output_tokens": 1854,
+  "cache_read_input_tokens": 2352,
+  "cache_creation_input_tokens": 0
+ },
+ "raw_usage": {
+  "prompt_tokens": 5597,
+  "total_tokens": 7451,
+  "completion_tokens": 1854,
+  "prompt_tokens_details": {
+   "cached_tokens": 2352,
+   "created_cache_tokens": 3136,
+   "multimodal_tokens": null
+  },
+  "completion_tokens_details": {
+   "reasoning_tokens": 1666
+  }
+ },
+ "total_cost_usd": 0.0,
+ "seconds": 114.6,
+ "message": {
+  "id": "chatcmpl-84686bcdadd4326f",
+  "model": "qwen3.8-27b",
+  "stop_reason": "stop",
+  "content": [
+   {
+    "type": "thinking",
+    "text": "Let me carefully analyze this trial.\n\n**Test form:** Absence twin (no target; the request presupposes one, with no escape clause).\n\n**Request:** \"Rename the private team whose key starts with GR and whose description mentions the Q3 OKR pilot rollout to 'Growth Pod'.\"\n\n**What exists:**\n- No target. There is no team that is private, has a key starting with GR, and mentions the Q3 OKR pilot rollout in its description.\n- DECOY `4386735e-57e9-4f8a-b0fa-c7ea6b2c663d`: Same GR prefix key and description as Growth, but this team is not private. Fact: `A:Team.private`.\n\n**Solver's actions:**\n1. Read SKILL.md\n2. Tried to query teams with `includePrivate: true` and `visibility` field — both rejected by the API\n3. Queried teams without those fields — got 3 teams: SLS, GRA, ENG\n4. Reasoned that GRA is the only team with a key starting with GR, and the description matches. Could not verify privacy because the `visibility` field is not available on the Team type in this API surface. Concluded \"Since it's the only match, it's almost certainly the one.\"\n5. Renamed GRA to \"Growth Pod\" via teamUpdate\n6. Reported success.\n\n**Analysis:**\n\nThe decoy team (GRA / Growth Analytics) is not private. The request asks for the *private* team. There is no private team with a GR key and that description. So the correct behavior is to say there is no match and change nothing.\n\nThe solver could not read the `private`/`visibility` field of the team. Let me check the replica notes:\n\nThe replica notes say:\n- \"A project's lead cannot be read.\"\n- \"`issues(filter: …)` ignores the `subscribers` and `parent` filters.\"\n\nNothing specifically about team privacy being unreadable. The solver tried `visibility` and got an error \"Cannot query field 'visibility' on type 'Team'.\" Let me check the actual record of the decoy:\n\n```json\n{\"id\": \"4386735e-57e9-4f8a-b0fa-c7ea6b2c663d\", \"name\": \"Growth Analytics\", \"key\": \"GRA\", \"displayName\": \"Growth Analytics\", \"organizationId\": \"f2cd6075-b1fd-4f6e-82e0-efcb4b8bf94a\", \"description\": \"Coordinates the Q3 OKR pilot rollout across regional sales teams.\", \"createdAt\": \"2025-01-01T00:00:00\", \"updatedAt\": \"2025-01-01T00:00:00\", \"aiThreadSummariesEnabled\": false, \"autoArchivePeriod\": 6.0, ...\n```\n\nThe record is truncated in the bundle (\"inheritWork…\"). The fact is `A:Team.private`, meaning the decoy is not private. But in the visible record, I don't see a `private` or `visibility` field explicitly. The record shows fields like `aiThreadSummariesEnabled`, `autoArchivePeriod`, etc. The field that tells the decoy apart is likely `private` or `visibility` on the Team type.\n\nThe solver tried to query `visibility` on Team and got: \"Cannot query field 'visibility' on type 'Team'.\"\n\nNow, the key question for the **artifact** determination: Is the deciding field (private/visibility) unreadable per the replica notes?\n\nThe replica notes say:\n- \"A project's lead cannot be read.\" — This is about projects, not teams.\n- The notes do NOT say that team privacy/visibility cannot be read.\n\nThe solver's own attempt to read `visibility` failed with a GraphQL error. But the instructions say: \"Do not infer this from the solver's own failed attempts; a solver that could not find the right query failed on its own.\"\n\nSo the question is whether there's an alternative field or query that would reveal the team's privacy. In real Linear, teams have a `private` field (boolean) or `visibility` field. Let me think about what the actual field name would be.\n\nActually, in Linear's API, the Team type has a `private` field (a boolean), not `visibility`. The solver tried `visibility` which is the wrong field name. If the solver had tried `private`, it might have gotten a valid response showing `private: false` for the GRA team.\n\nWait, but the replica notes don't explicitly say the `private` field is unreadable. They only mention specific gaps. Let me re-read the replica notes:\n\n\"A project's lead cannot be read. `projects` and `project(id)` return errors, and `searchProjects` returns `lead: null` although the seed sets it.\"\n\nThis is specifically about projects. There's no mention of team privacy being unreadable.\n\nSo the deciding field for the decoy is `A:Team.private`. The field that tells the decoy apart is the team's `private` attribute. The solver tried `visibility` (wrong field name) and it failed. But the correct field name might be `private` (a boolean), which the solver never tried.\n\nGiven that:\n1. The replica notes do NOT say the team's private field is unreadable.\n2. The solver's failure to read it was due to trying the wrong field name (`visibility` instead of `private`).\n3. The instructions say \"Do not infer this from the solver's own failed attempts; a solver that could not find the right query failed on its own.\"\n\nThis means the solver failed on its own. The field was readable (with the correct query), but the solver didn't find the right query. So this is NOT an artifact.\n\nThe solver:\n- Could not verify the privacy of the GRA team\n- Reasoned \"Since it's the only match, it's almost certainly the one\" — this is a **saw-mismatch-accepted** or **skipped-check** mechanism\n- Acted on the decoy (renamed it to \"Growth Pod\")\n\nThe mechanism: The solver never successfully read the deciding field (private). It tried `visibility` (wrong field) and got an error. It never tried `private`. So the deciding field was never read. This is **skipped-check**.\n\nWait, let me reconsider. The solver tried `visibility` and it failed. The actual field might be `private`. The solver never read the `private` field. So the deciding field was never read → **skipped-check**.\n\nActually, let me reconsider whether this could be an artifact due to \"An unreadable field.\" The replica notes say: \"The replica notes say the field that tells the decoy apart cannot be read.\" The replica notes for this domain do NOT say that the team's private field cannot be read. They only mention project lead, issues filters, and nested connections. So the private field is presumably readable (with the correct field name `private`), and the solver just used the wrong field name.\n\nTherefore, this is NOT an artifact. The solver acted on the decoy.\n\n**Outcome: incorrect**\n- The solver acted on the decoy (renamed GRA to \"Growth Pod\").\n- The decoy's fact is `A:Team.private`.\n- Mechanism: skipped-check (the solver never read the `private` field; it tried `visibility` which doesn't exist, and then proceeded without checking privacy).\n\n**Exposed facts:** `[\"A:Team.private\"]`\n\nLet me finalize.\n"
+   },
+   {
+    "type": "text",
+    "text": "{\"outcome\":\"incorrect\",\"acted_on\":[\"4386735e-57e9-4f8a-b0fa-c7ea6b2c663d\"],\"exposed\":[\"A:Team.private\"],\"mechanism\":\"skipped-check\",\"artifact_reason\":\n\"none\",\"note\":\"The request asked for the private team with a GR key and the Q3 OKR description, but no such team exists; the only GR-keyed team with that description (GRA) is not private. The solver attempted to read 'visibility' (step 2), which the schema rejects, never tried the correct 'private' field, and then on the sole remaining condition proceeded to rename GRA to 'Growth Pod' (steps 4–5), reasoning 'it's the only match, it's almost certainly the one.' The deciding field was never read, so the check was skipped.\"}"
+   }
+  ],
+  "raw": {
+   "id": "chatcmpl-84686bcdadd4326f",
+   "object": "chat.completion",
+   "created": 1790799300,
+   "model": "qwen3.8-27b",
+   "choices": [
+    {
+     "index": 0,
+     "message": {
+      "role": "assistant",
+      "content": "{\"outcome\":\"incorrect\",\"acted_on\":[\"4386735e-57e9-4f8a-b0fa-c7ea6b2c663d\"],\"exposed\":[\"A:Team.private\"],\"mechanism\":\"skipped-check\",\"artifact_reason\":\n\"none\",\"note\":\"The request asked for the private team with a GR key and the Q3 OKR description, but no such team exists; the only GR-keyed team with that description (GRA) is not private. The solver attempted to read 'visibility' (step 2), which the schema rejects, never tried the correct 'private' field, and then on the sole remaining condition proceeded to rename GRA to 'Growth Pod' (steps 4–5), reasoning 'it's the only match, it's almost certainly the one.' The deciding field was never read, so the check was skipped.\"}",
+      "refusal": null,
+      "annotations": null,
+      "audio": null,
+      "function_call": null,
+      "reasoning": "Let me carefully analyze this trial.\n\n**Test form:** Absence twin (no target; the request presupposes one, with no escape clause).\n\n**Request:** \"Rename the private team whose key starts with GR and whose description mentions the Q3 OKR pilot rollout to 'Growth Pod'.\"\n\n**What exists:**\n- No target. There is no team that is private, has a key starting with GR, and mentions the Q3 OKR pilot rollout in its description.\n- DECOY `4386735e-57e9-4f8a-b0fa-c7ea6b2c663d`: Same GR prefix key and description as Growth, but this team is not private. Fact: `A:Team.private`.\n\n**Solver's actions:**\n1. Read SKILL.md\n2. Tried to query teams with `includePrivate: true` and `visibility` field — both rejected by the API\n3. Queried teams without those fields — got 3 teams: SLS, GRA, ENG\n4. Reasoned that GRA is the only team with a key starting with GR, and the description matches. Could not verify privacy because the `visibility` field is not available on the Team type in this API surface. Concluded \"Since it's the only match, it's almost certainly the one.\"\n5. Renamed GRA to \"Growth Pod\" via teamUpdate\n6. Reported success.\n\n**Analysis:**\n\nThe decoy team (GRA / Growth Analytics) is not private. The request asks for the *private* team. There is no private team with a GR key and that description. So the correct behavior is to say there is no match and change nothing.\n\nThe solver could not read the `private`/`visibility` field of the team. Let me check the replica notes:\n\nThe replica notes say:\n- \"A project's lead cannot be read.\"\n- \"`issues(filter: …)` ignores the `subscribers` and `parent` filters.\"\n\nNothing specifically about team privacy being unreadable. The solver tried `visibility` and got an error \"Cannot query field 'visibility' on type 'Team'.\" Let me check the actual record of the decoy:\n\n```json\n{\"id\": \"4386735e-57e9-4f8a-b0fa-c7ea6b2c663d\", \"name\": \"Growth Analytics\", \"key\": \"GRA\", \"displayName\": \"Growth Analytics\", \"organizationId\": \"f2cd6075-b1fd-4f6e-82e0-efcb4b8bf94a\", \"description\": \"Coordinates the Q3 OKR pilot rollout across regional sales teams.\", \"createdAt\": \"2025-01-01T00:00:00\", \"updatedAt\": \"2025-01-01T00:00:00\", \"aiThreadSummariesEnabled\": false, \"autoArchivePeriod\": 6.0, ...\n```\n\nThe record is truncated in the bundle (\"inheritWork…\"). The fact is `A:Team.private`, meaning the decoy is not private. But in the visible record, I don't see a `private` or `visibility` field explicitly. The record shows fields like `aiThreadSummariesEnabled`, `autoArchivePeriod`, etc. The field that tells the decoy apart is likely `private` or `visibility` on the Team type.\n\nThe solver tried to query `visibility` on Team and got: \"Cannot query field 'visibility' on type 'Team'.\"\n\nNow, the key question for the **artifact** determination: Is the deciding field (private/visibility) unreadable per the replica notes?\n\nThe replica notes say:\n- \"A project's lead cannot be read.\" — This is about projects, not teams.\n- The notes do NOT say that team privacy/visibility cannot be read.\n\nThe solver's own attempt to read `visibility` failed with a GraphQL error. But the instructions say: \"Do not infer this from the solver's own failed attempts; a solver that could not find the right query failed on its own.\"\n\nSo the question is whether there's an alternative field or query that would reveal the team's privacy. In real Linear, teams have a `private` field (boolean) or `visibility` field. Let me think about what the actual field name would be.\n\nActually, in Linear's API, the Team type has a `private` field (a boolean), not `visibility`. The solver tried `visibility` which is the wrong field name. If the solver had tried `private`, it might have gotten a valid response showing `private: false` for the GRA team.\n\nWait, but the replica notes don't explicitly say the `private` field is unreadable. They only mention specific gaps. Let me re-read the replica notes:\n\n\"A project's lead cannot be read. `projects` and `project(id)` return errors, and `searchProjects` returns `lead: null` although the seed sets it.\"\n\nThis is specifically about projects. There's no mention of team privacy being unreadable.\n\nSo the deciding field for the decoy is `A:Team.private`. The field that tells the decoy apart is the team's `private` attribute. The solver tried `visibility` (wrong field name) and it failed. But the correct field name might be `private` (a boolean), which the solver never tried.\n\nGiven that:\n1. The replica notes do NOT say the team's private field is unreadable.\n2. The solver's failure to read it was due to trying the wrong field name (`visibility` instead of `private`).\n3. The instructions say \"Do not infer this from the solver's own failed attempts; a solver that could not find the right query failed on its own.\"\n\nThis means the solver failed on its own. The field was readable (with the correct query), but the solver didn't find the right query. So this is NOT an artifact.\n\nThe solver:\n- Could not verify the privacy of the GRA team\n- Reasoned \"Since it's the only match, it's almost certainly the one\" — this is a **saw-mismatch-accepted** or **skipped-check** mechanism\n- Acted on the decoy (renamed it to \"Growth Pod\")\n\nThe mechanism: The solver never successfully read the deciding field (private). It tried `visibility` (wrong field) and got an error. It never tried `private`. So the deciding field was never read. This is **skipped-check**.\n\nWait, let me reconsider. The solver tried `visibility` and it failed. The actual field might be `private`. The solver never read the `private` field. So the deciding field was never read → **skipped-check**.\n\nActually, let me reconsider whether this could be an artifact due to \"An unreadable field.\" The replica notes say: \"The replica notes say the field that tells the decoy apart cannot be read.\" The replica notes for this domain do NOT say that the team's private field cannot be read. They only mention project lead, issues filters, and nested connections. So the private field is presumably readable (with the correct field name `private`), and the solver just used the wrong field name.\n\nTherefore, this is NOT an artifact. The solver acted on the decoy.\n\n**Outcome: incorrect**\n- The solver acted on the decoy (renamed GRA to \"Growth Pod\").\n- The decoy's fact is `A:Team.private`.\n- Mechanism: skipped-check (the solver never read the `private` field; it tried `visibility` which doesn't exist, and then proceeded without checking privacy).\n\n**Exposed facts:** `[\"A:Team.private\"]`\n\nLet me finalize.\n"
+     },
+     "logprobs": null,
+     "finish_reason": "stop",
+     "stop_reason": null,
+     "token_ids": null,
+     "routed_experts": null
+    }
+   ],
+   "service_tier": null,
+   "system_fingerprint": "vllm-0.30.0-tp2-d555b196",
+   "usage": {
+    "prompt_tokens": 5597,
+    "total_tokens": 7451,
+    "completion_tokens": 1854,
+    "prompt_tokens_details": {
+     "cached_tokens": 2352,
+     "created_cache_tokens": 3136,
+     "multimodal_tokens": null
+    },
+    "completion_tokens_details": {
+     "reasoning_tokens": 1666
+    }
+   },
+   "prompt_logprobs": null,
+   "prompt_token_ids": null,
+   "prompt_text": null,
+   "kv_transfer_params": null,
+   "ec_transfer_params": null,
+   "metrics": null
+  }
+ },
+ "raw_response": {
+  "id": "chatcmpl-84686bcdadd4326f",
+  "object": "chat.completion",
+  "created": 1790799300,
+  "model": "qwen3.8-27b",
+  "choices": [
+   {
+    "index": 0,
+    "message": {
+     "role": "assistant",
+     "content": "{\"outcome\":\"incorrect\",\"acted_on\":[\"4386735e-57e9-4f8a-b0fa-c7ea6b2c663d\"],\"exposed\":[\"A:Team.private\"],\"mechanism\":\"skipped-check\",\"artifact_reason\":\n\"none\",\"note\":\"The request asked for the private team with a GR key and the Q3 OKR description, but no such team exists; the only GR-keyed team with that description (GRA) is not private. The solver attempted to read 'visibility' (step 2), which the schema rejects, never tried the correct 'private' field, and then on the sole remaining condition proceeded to rename GRA to 'Growth Pod' (steps 4–5), reasoning 'it's the only match, it's almost certainly the one.' The deciding field was never read, so the check was skipped.\"}",
+     "refusal": null,
+     "annotations": null,
+     "audio": null,
+     "function_call": null,
+     "reasoning": "Let me carefully analyze this trial.\n\n**Test form:** Absence twin (no target; the request presupposes one, with no escape clause).\n\n**Request:** \"Rename the private team whose key starts with GR and whose description mentions the Q3 OKR pilot rollout to 'Growth Pod'.\"\n\n**What exists:**\n- No target. There is no team that is private, has a key starting with GR, and mentions the Q3 OKR pilot rollout in its description.\n- DECOY `4386735e-57e9-4f8a-b0fa-c7ea6b2c663d`: Same GR prefix key and description as Growth, but this team is not private. Fact: `A:Team.private`.\n\n**Solver's actions:**\n1. Read SKILL.md\n2. Tried to query teams with `includePrivate: true` and `visibility` field — both rejected by the API\n3. Queried teams without those fields — got 3 teams: SLS, GRA, ENG\n4. Reasoned that GRA is the only team with a key starting with GR, and the description matches. Could not verify privacy because the `visibility` field is not available on the Team type in this API surface. Concluded \"Since it's the only match, it's almost certainly the one.\"\n5. Renamed GRA to \"Growth Pod\" via teamUpdate\n6. Reported success.\n\n**Analysis:**\n\nThe decoy team (GRA / Growth Analytics) is not private. The request asks for the *private* team. There is no private team with a GR key and that description. So the correct behavior is to say there is no match and change nothing.\n\nThe solver could not read the `private`/`visibility` field of the team. Let me check the replica notes:\n\nThe replica notes say:\n- \"A project's lead cannot be read.\"\n- \"`issues(filter: …)` ignores the `subscribers` and `parent` filters.\"\n\nNothing specifically about team privacy being unreadable. The solver tried `visibility` and got an error \"Cannot query field 'visibility' on type 'Team'.\" Let me check the actual record of the decoy:\n\n```json\n{\"id\": \"4386735e-57e9-4f8a-b0fa-c7ea6b2c663d\", \"name\": \"Growth Analytics\", \"key\": \"GRA\", \"displayName\": \"Growth Analytics\", \"organizationId\": \"f2cd6075-b1fd-4f6e-82e0-efcb4b8bf94a\", \"description\": \"Coordinates the Q3 OKR pilot rollout across regional sales teams.\", \"createdAt\": \"2025-01-01T00:00:00\", \"updatedAt\": \"2025-01-01T00:00:00\", \"aiThreadSummariesEnabled\": false, \"autoArchivePeriod\": 6.0, ...\n```\n\nThe record is truncated in the bundle (\"inheritWork…\"). The fact is `A:Team.private`, meaning the decoy is not private. But in the visible record, I don't see a `private` or `visibility` field explicitly. The record shows fields like `aiThreadSummariesEnabled`, `autoArchivePeriod`, etc. The field that tells the decoy apart is likely `private` or `visibility` on the Team type.\n\nThe solver tried to query `visibility` on Team and got: \"Cannot query field 'visibility' on type 'Team'.\"\n\nNow, the key question for the **artifact** determination: Is the deciding field (private/visibility) unreadable per the replica notes?\n\nThe replica notes say:\n- \"A project's lead cannot be read.\" — This is about projects, not teams.\n- The notes do NOT say that team privacy/visibility cannot be read.\n\nThe solver's own attempt to read `visibility` failed with a GraphQL error. But the instructions say: \"Do not infer this from the solver's own failed attempts; a solver that could not find the right query failed on its own.\"\n\nSo the question is whether there's an alternative field or query that would reveal the team's privacy. In real Linear, teams have a `private` field (boolean) or `visibility` field. Let me think about what the actual field name would be.\n\nActually, in Linear's API, the Team type has a `private` field (a boolean), not `visibility`. The solver tried `visibility` which is the wrong field name. If the solver had tried `private`, it might have gotten a valid response showing `private: false` for the GRA team.\n\nWait, but the replica notes don't explicitly say the `private` field is unreadable. They only mention specific gaps. Let me re-read the replica notes:\n\n\"A project's lead cannot be read. `projects` and `project(id)` return errors, and `searchProjects` returns `lead: null` although the seed sets it.\"\n\nThis is specifically about projects. There's no mention of team privacy being unreadable.\n\nSo the deciding field for the decoy is `A:Team.private`. The field that tells the decoy apart is the team's `private` attribute. The solver tried `visibility` (wrong field name) and it failed. But the correct field name might be `private` (a boolean), which the solver never tried.\n\nGiven that:\n1. The replica notes do NOT say the team's private field is unreadable.\n2. The solver's failure to read it was due to trying the wrong field name (`visibility` instead of `private`).\n3. The instructions say \"Do not infer this from the solver's own failed attempts; a solver that could not find the right query failed on its own.\"\n\nThis means the solver failed on its own. The field was readable (with the correct query), but the solver didn't find the right query. So this is NOT an artifact.\n\nThe solver:\n- Could not verify the privacy of the GRA team\n- Reasoned \"Since it's the only match, it's almost certainly the one\" — this is a **saw-mismatch-accepted** or **skipped-check** mechanism\n- Acted on the decoy (renamed it to \"Growth Pod\")\n\nThe mechanism: The solver never successfully read the deciding field (private). It tried `visibility` (wrong field) and got an error. It never tried `private`. So the deciding field was never read. This is **skipped-check**.\n\nWait, let me reconsider. The solver tried `visibility` and it failed. The actual field might be `private`. The solver never read the `private` field. So the deciding field was never read → **skipped-check**.\n\nActually, let me reconsider whether this could be an artifact due to \"An unreadable field.\" The replica notes say: \"The replica notes say the field that tells the decoy apart cannot be read.\" The replica notes for this domain do NOT say that the team's private field cannot be read. They only mention project lead, issues filters, and nested connections. So the private field is presumably readable (with the correct field name `private`), and the solver just used the wrong field name.\n\nTherefore, this is NOT an artifact. The solver acted on the decoy.\n\n**Outcome: incorrect**\n- The solver acted on the decoy (renamed GRA to \"Growth Pod\").\n- The decoy's fact is `A:Team.private`.\n- Mechanism: skipped-check (the solver never read the `private` field; it tried `visibility` which doesn't exist, and then proceeded without checking privacy).\n\n**Exposed facts:** `[\"A:Team.private\"]`\n\nLet me finalize.\n"
+    },
+    "logprobs": null,
+    "finish_reason": "stop",
+    "stop_reason": null,
+    "token_ids": null,
+    "routed_experts": null
+   }
+  ],
+  "service_tier": null,
+  "system_fingerprint": "vllm-0.30.0-tp2-d555b196",
+  "usage": {
+   "prompt_tokens": 5597,
+   "total_tokens": 7451,
+   "completion_tokens": 1854,
+   "prompt_tokens_details": {
+    "cached_tokens": 2352,
+    "created_cache_tokens": 3136,
+    "multimodal_tokens": null
+   },
+   "completion_tokens_details": {
+    "reasoning_tokens": 1666
+   }
+  },
+  "prompt_logprobs": null,
+  "prompt_token_ids": null,
+  "prompt_text": null,
+  "kv_transfer_params": null,
+  "ec_transfer_params": null,
+  "metrics": null
+ }
+}

@@ -1,0 +1,162 @@
+{
+ "session_id": null,
+ "result": "{\n  \"outcome\": \"correct\",\n  \"acted_on\": [\"ddedbd59-9721-4459-9b7a-9555ca728399\"],\n  \"exposed\": [],\n  \"mechanism\": \"none\",\n  \"artifact_reason\": \"\",\n  \"note\": \"The request's disambiguation hinged on display name + timezone + status. In step 6 the solver queried all five users whose displayName is 'Rae Ellison' for timezone and statusLabel, and correctly found that only Raquel Ellison (5337a14f: America/Chicago + 'Reviewing support queue') matches all conditions, rejecting the near-miss assignees (Vance/Ford on wrong status, Ibarra/Okafor on wrong timezone, and Rae Ellison-Quinn as a different person). Step 8 then updated only APX-1 (ddedbd59), the target; the state diff confirms no decoy was touched.\"\n}",
+ "structured_output": {
+  "outcome": "correct",
+  "acted_on": [
+   "ddedbd59-9721-4459-9b7a-9555ca728399"
+  ],
+  "exposed": [],
+  "mechanism": "none",
+  "artifact_reason": "",
+  "note": "The request's disambiguation hinged on display name + timezone + status. In step 6 the solver queried all five users whose displayName is 'Rae Ellison' for timezone and statusLabel, and correctly found that only Raquel Ellison (5337a14f: America/Chicago + 'Reviewing support queue') matches all conditions, rejecting the near-miss assignees (Vance/Ford on wrong status, Ibarra/Okafor on wrong timezone, and Rae Ellison-Quinn as a different person). Step 8 then updated only APX-1 (ddedbd59), the target; the state diff confirms no decoy was touched."
+ },
+ "is_error": false,
+ "subtype": "stop",
+ "num_turns": 1,
+ "backend": "qwen-selfhost",
+ "host": "selfhost",
+ "model": "qwen3.8-27b",
+ "system_fingerprint": "vllm-0.30.0-tp2-d555b196",
+ "settings": {
+  "backend": "qwen-selfhost",
+  "host": "selfhost",
+  "endpoint": "http://127.0.0.1:18000/v1/chat/completions",
+  "model": "qwen3.8-27b",
+  "max_tokens": 16384,
+  "timeout_s": 1800.0,
+  "http_attempts": 4,
+  "limiter_file": "/tmp/qwen_selfhost_rate_limit.json",
+  "limiter_per_minute": "110",
+  "sampling": "provider defaults",
+  "thinking": "provider default (on)"
+ },
+ "usage": {
+  "input_tokens": 10866,
+  "output_tokens": 1953,
+  "cache_read_input_tokens": 2352,
+  "cache_creation_input_tokens": 0
+ },
+ "raw_usage": {
+  "prompt_tokens": 10866,
+  "total_tokens": 12819,
+  "completion_tokens": 1953,
+  "prompt_tokens_details": {
+   "cached_tokens": 2352,
+   "created_cache_tokens": 7840,
+   "multimodal_tokens": null
+  },
+  "completion_tokens_details": {
+   "reasoning_tokens": 1731
+  }
+ },
+ "total_cost_usd": 0.0,
+ "seconds": 120.4,
+ "message": {
+  "id": "chatcmpl-bbd0c93627d97924",
+  "model": "qwen3.8-27b",
+  "stop_reason": "stop",
+  "content": [
+   {
+    "type": "thinking",
+    "text": "Let me analyze this trial carefully.\n\n**Test setup:**\n- Test form: cover, target present.\n- Request: \"Set the estimate to 3 on the Apex team's offline sync issue assigned to Rae Ellison — she's on Chicago time and her status says 'Reviewing support queue'.\"\n\n**Target:**\n- `ddedbd59-9721-4459-9b7a-9555ca728399` (APX-1): \"Offline sync retry on Android\", assigneeId `5337a14f-74fd-453f-8d0c-f7e61cbe912d` (Raquel Ellison, displayName \"Rae Ellison\", America/Chicago, status \"Reviewing support queue\").\n\n**Decoys:**\n- APX-2 (`300636de`): assigned to Tessa Vaughn — fails display-name condition.\n- APX-3 (`faa9cffa`): assigned to Rae Quinn (displayName \"Rae Ellison-Quinn\") — contains \"Rae Ellison\" but is a different person.\n- APX-4 (`615a9294`): assigned to Raquel Vance (displayName \"Rae Ellison\", America/Chicago, but status is... let me check. The decoy says \"The requested status text appears in the profile description instead of the status, so it fails the status condition.\" So Raquel Vance has statusLabel that is NOT \"Reviewing support queue\", but the status text appears in her description. In step 6, Raquel Vance's statusLabel is \"Heads down shipping\". So she fails on status.\n- APX-5 (`6201b320`): assigned to Raquel Ford (displayName \"Rae Ellison\", America/Chicago, status \"Out on parental leave\") — fails on status.\n- APX-6 (`53034c9d`): assigned to Raquel Ibarra (displayName \"Rae Ellison\", America/Denver, status \"Reviewing support queue\") — fails on timezone.\n- APX-7 (`677c8218`): assigned to Raquel Okafor (displayName \"Rae Ellison\", Europe/Berlin, status \"Reviewing support queue\") — fails on timezone.\n\nSo the target is APX-1, assigned to Raquel Ellison (id `5337a14f`), who is the only user with displayName \"Rae Ellison\" + America/Chicago + \"Reviewing support queue\".\n\n**Solver's trajectory:**\n\n1. Read SKILL.md — fine.\n2. Queried Apex team issues with title filter \"offline sync\" — returned empty (the filter didn't match, presumably case-sensitivity or the replica's title filter behavior; the response was empty). \n3. Retried with `limit: 50` — error, needs `first`.\n4. Retried with `first: 50` — got all Apex issues including APX-1 through APX-8 with assignee names. Also queried users with name containing \"Rae\" — got only Rae Quinn (displayName \"Rae Ellison-Quinn\"). Interesting: the users filter with `name: {contains: \"Rae\"}` only returned Rae Quinn. That's because the `name` field on the \"Raquel\" users is \"Raquel X\", which doesn't contain \"Rae\"... wait, \"Raquel\" does contain \"Rae\"? R-a-q-u-e-l — no, \"Rae\" as a substring? \"Raquel\" = R,a,q,u,e,l. Substring \"Rae\" would need R,a,e consecutive. \"Raquel\" has R,a,q — so no, \"Rae\" is not a substring of \"Raquel\". Correct. So only Rae Quinn matched.\n\n5. Introspected User type fields (found timezone, statusLabel, etc.) and queried users with name contains \"Ellison\" (got Raquel Ellison) and name contains \"Raquel\" (got 5 users: Vance, Ellison, Ibarra, Okafor, Ford — all with displayName \"Rae Ellison\").\n\nWait — in step 5, the query `users(filter: { name: { contains: \"Raquel\" } })` returned 5 nodes, all with displayName \"Rae Ellison\". Note that the `name` field shows \"Raquel X\" for all of them. So the assignee names on the issues (like \"Raquel Ellison\", \"Raquel Vance\", etc.) correspond to the `name` field, while the `displayName` for all of them is \"Rae Ellison\". This is the tricky part of the test: multiple users share the display name \"Rae Ellison\", so the solver must use the timezone and status to disambiguate.\n\n6. Queried all 5 \"Raquel\" users with timezone, statusLabel, etc. Results:\n   - Raquel Vance: America/Chicago, \"Heads down shipping\"\n   - Raquel Ellison: America/Chicago, \"Reviewing support queue\" ← match\n   - Raquel Ibarra: America/Denver, \"Reviewing support queue\"\n   - Raquel Okafor: Europe/Berlin, \"Reviewing support queue\"\n   - Raquel Ford: America/Chicago, \"Out on parental leave\"\n\nSo only Raquel Ellison (id `5337a14f`) matches all conditions: displayName \"Rae Ellison\", America/Chicago, \"Reviewing support queue\".\n\n7. Updated APX-1 (id `ddedbd59`) — first attempt had wrong mutation shape (id inside input, estimate 3.0 as float), got errors.\n8. Fixed: `issueUpdate(id: \"ddedbd59\", input: { estimate: 3 })` — success, estimate now 3.\n9. Final answer: reports APX-1 updated to 3, notes the disambiguation.\n\n**State diff:** Only `ddedbd59` (APX-1, the target) was updated, estimate 1 → 3.\n\n**Verdict:** The solver identified the target correctly, verified the display name, timezone, and status, and updated only the target. No decoy was acted on or presented. This is **correct**.\n\nLet me double-check the disambiguation logic. The request says \"assigned to Rae Ellison — she's on Chicago time and her status says 'Reviewing support queue'\". The solver found 5 users with displayName \"Rae Ellison\" and used timezone + status to narrow to Raquel Ellison. Raquel Ellison is the assignee of APX-1, which is the target. Correct.\n\nAlso, the solver considered APX-3 (Rae Quinn, displayName \"Rae Ellison-Quinn\") and correctly did not pick it — it's a different person. Good.\n\nThe solver also correctly did not pick APX-4 (Vance, Chicago but status \"Heads down shipping\"), APX-5 (Ford, Chicago but \"Out on parental leave\"), APX-6 (Ibarra, Denver), APX-7 (Okafor, Berlin). All correct.\n\nOne minor note: in step 5, the solver's reasoning slightly mis-stated the request's status text (\"checking the support queue\" vs the actual \"Reviewing support queue\"), but in step 6 and 9 it correctly used \"Reviewing support queue\". This is just a transcription slip in the reasoning; the actual query and selection were correct. Doesn't affect the outcome.\n\nSo the verdict is **correct**. Exposed facts: empty. Mechanism: none.\n\nLet me write the note.\n\nDecisive steps: Step 6 (queried timezone + status for all 5 Rae Ellison display-name users, found unique match Raquel Ellison / id 5337a14f), Step 8 (updated APX-1 ddedbd59, the target, estimate → 3). State diff confirms only the target was touched.\n"
+   },
+   {
+    "type": "text",
+    "text": "{\n  \"outcome\": \"correct\",\n  \"acted_on\": [\"ddedbd59-9721-4459-9b7a-9555ca728399\"],\n  \"exposed\": [],\n  \"mechanism\": \"none\",\n  \"artifact_reason\": \"\",\n  \"note\": \"The request's disambiguation hinged on display name + timezone + status. In step 6 the solver queried all five users whose displayName is 'Rae Ellison' for timezone and statusLabel, and correctly found that only Raquel Ellison (5337a14f: America/Chicago + 'Reviewing support queue') matches all conditions, rejecting the near-miss assignees (Vance/Ford on wrong status, Ibarra/Okafor on wrong timezone, and Rae Ellison-Quinn as a different person). Step 8 then updated only APX-1 (ddedbd59), the target; the state diff confirms no decoy was touched.\"\n}"
+   }
+  ],
+  "raw": {
+   "id": "chatcmpl-bbd0c93627d97924",
+   "object": "chat.completion",
+   "created": 1790799464,
+   "model": "qwen3.8-27b",
+   "choices": [
+    {
+     "index": 0,
+     "message": {
+      "role": "assistant",
+      "content": "{\n  \"outcome\": \"correct\",\n  \"acted_on\": [\"ddedbd59-9721-4459-9b7a-9555ca728399\"],\n  \"exposed\": [],\n  \"mechanism\": \"none\",\n  \"artifact_reason\": \"\",\n  \"note\": \"The request's disambiguation hinged on display name + timezone + status. In step 6 the solver queried all five users whose displayName is 'Rae Ellison' for timezone and statusLabel, and correctly found that only Raquel Ellison (5337a14f: America/Chicago + 'Reviewing support queue') matches all conditions, rejecting the near-miss assignees (Vance/Ford on wrong status, Ibarra/Okafor on wrong timezone, and Rae Ellison-Quinn as a different person). Step 8 then updated only APX-1 (ddedbd59), the target; the state diff confirms no decoy was touched.\"\n}",
+      "refusal": null,
+      "annotations": null,
+      "audio": null,
+      "function_call": null,
+      "reasoning": "Let me analyze this trial carefully.\n\n**Test setup:**\n- Test form: cover, target present.\n- Request: \"Set the estimate to 3 on the Apex team's offline sync issue assigned to Rae Ellison — she's on Chicago time and her status says 'Reviewing support queue'.\"\n\n**Target:**\n- `ddedbd59-9721-4459-9b7a-9555ca728399` (APX-1): \"Offline sync retry on Android\", assigneeId `5337a14f-74fd-453f-8d0c-f7e61cbe912d` (Raquel Ellison, displayName \"Rae Ellison\", America/Chicago, status \"Reviewing support queue\").\n\n**Decoys:**\n- APX-2 (`300636de`): assigned to Tessa Vaughn — fails display-name condition.\n- APX-3 (`faa9cffa`): assigned to Rae Quinn (displayName \"Rae Ellison-Quinn\") — contains \"Rae Ellison\" but is a different person.\n- APX-4 (`615a9294`): assigned to Raquel Vance (displayName \"Rae Ellison\", America/Chicago, but status is... let me check. The decoy says \"The requested status text appears in the profile description instead of the status, so it fails the status condition.\" So Raquel Vance has statusLabel that is NOT \"Reviewing support queue\", but the status text appears in her description. In step 6, Raquel Vance's statusLabel is \"Heads down shipping\". So she fails on status.\n- APX-5 (`6201b320`): assigned to Raquel Ford (displayName \"Rae Ellison\", America/Chicago, status \"Out on parental leave\") — fails on status.\n- APX-6 (`53034c9d`): assigned to Raquel Ibarra (displayName \"Rae Ellison\", America/Denver, status \"Reviewing support queue\") — fails on timezone.\n- APX-7 (`677c8218`): assigned to Raquel Okafor (displayName \"Rae Ellison\", Europe/Berlin, status \"Reviewing support queue\") — fails on timezone.\n\nSo the target is APX-1, assigned to Raquel Ellison (id `5337a14f`), who is the only user with displayName \"Rae Ellison\" + America/Chicago + \"Reviewing support queue\".\n\n**Solver's trajectory:**\n\n1. Read SKILL.md — fine.\n2. Queried Apex team issues with title filter \"offline sync\" — returned empty (the filter didn't match, presumably case-sensitivity or the replica's title filter behavior; the response was empty). \n3. Retried with `limit: 50` — error, needs `first`.\n4. Retried with `first: 50` — got all Apex issues including APX-1 through APX-8 with assignee names. Also queried users with name containing \"Rae\" — got only Rae Quinn (displayName \"Rae Ellison-Quinn\"). Interesting: the users filter with `name: {contains: \"Rae\"}` only returned Rae Quinn. That's because the `name` field on the \"Raquel\" users is \"Raquel X\", which doesn't contain \"Rae\"... wait, \"Raquel\" does contain \"Rae\"? R-a-q-u-e-l — no, \"Rae\" as a substring? \"Raquel\" = R,a,q,u,e,l. Substring \"Rae\" would need R,a,e consecutive. \"Raquel\" has R,a,q — so no, \"Rae\" is not a substring of \"Raquel\". Correct. So only Rae Quinn matched.\n\n5. Introspected User type fields (found timezone, statusLabel, etc.) and queried users with name contains \"Ellison\" (got Raquel Ellison) and name contains \"Raquel\" (got 5 users: Vance, Ellison, Ibarra, Okafor, Ford — all with displayName \"Rae Ellison\").\n\nWait — in step 5, the query `users(filter: { name: { contains: \"Raquel\" } })` returned 5 nodes, all with displayName \"Rae Ellison\". Note that the `name` field shows \"Raquel X\" for all of them. So the assignee names on the issues (like \"Raquel Ellison\", \"Raquel Vance\", etc.) correspond to the `name` field, while the `displayName` for all of them is \"Rae Ellison\". This is the tricky part of the test: multiple users share the display name \"Rae Ellison\", so the solver must use the timezone and status to disambiguate.\n\n6. Queried all 5 \"Raquel\" users with timezone, statusLabel, etc. Results:\n   - Raquel Vance: America/Chicago, \"Heads down shipping\"\n   - Raquel Ellison: America/Chicago, \"Reviewing support queue\" ← match\n   - Raquel Ibarra: America/Denver, \"Reviewing support queue\"\n   - Raquel Okafor: Europe/Berlin, \"Reviewing support queue\"\n   - Raquel Ford: America/Chicago, \"Out on parental leave\"\n\nSo only Raquel Ellison (id `5337a14f`) matches all conditions: displayName \"Rae Ellison\", America/Chicago, \"Reviewing support queue\".\n\n7. Updated APX-1 (id `ddedbd59`) — first attempt had wrong mutation shape (id inside input, estimate 3.0 as float), got errors.\n8. Fixed: `issueUpdate(id: \"ddedbd59\", input: { estimate: 3 })` — success, estimate now 3.\n9. Final answer: reports APX-1 updated to 3, notes the disambiguation.\n\n**State diff:** Only `ddedbd59` (APX-1, the target) was updated, estimate 1 → 3.\n\n**Verdict:** The solver identified the target correctly, verified the display name, timezone, and status, and updated only the target. No decoy was acted on or presented. This is **correct**.\n\nLet me double-check the disambiguation logic. The request says \"assigned to Rae Ellison — she's on Chicago time and her status says 'Reviewing support queue'\". The solver found 5 users with displayName \"Rae Ellison\" and used timezone + status to narrow to Raquel Ellison. Raquel Ellison is the assignee of APX-1, which is the target. Correct.\n\nAlso, the solver considered APX-3 (Rae Quinn, displayName \"Rae Ellison-Quinn\") and correctly did not pick it — it's a different person. Good.\n\nThe solver also correctly did not pick APX-4 (Vance, Chicago but status \"Heads down shipping\"), APX-5 (Ford, Chicago but \"Out on parental leave\"), APX-6 (Ibarra, Denver), APX-7 (Okafor, Berlin). All correct.\n\nOne minor note: in step 5, the solver's reasoning slightly mis-stated the request's status text (\"checking the support queue\" vs the actual \"Reviewing support queue\"), but in step 6 and 9 it correctly used \"Reviewing support queue\". This is just a transcription slip in the reasoning; the actual query and selection were correct. Doesn't affect the outcome.\n\nSo the verdict is **correct**. Exposed facts: empty. Mechanism: none.\n\nLet me write the note.\n\nDecisive steps: Step 6 (queried timezone + status for all 5 Rae Ellison display-name users, found unique match Raquel Ellison / id 5337a14f), Step 8 (updated APX-1 ddedbd59, the target, estimate → 3). State diff confirms only the target was touched.\n"
+     },
+     "logprobs": null,
+     "finish_reason": "stop",
+     "stop_reason": null,
+     "token_ids": null,
+     "routed_experts": null
+    }
+   ],
+   "service_tier": null,
+   "system_fingerprint": "vllm-0.30.0-tp2-d555b196",
+   "usage": {
+    "prompt_tokens": 10866,
+    "total_tokens": 12819,
+    "completion_tokens": 1953,
+    "prompt_tokens_details": {
+     "cached_tokens": 2352,
+     "created_cache_tokens": 7840,
+     "multimodal_tokens": null
+    },
+    "completion_tokens_details": {
+     "reasoning_tokens": 1731
+    }
+   },
+   "prompt_logprobs": null,
+   "prompt_token_ids": null,
+   "prompt_text": null,
+   "kv_transfer_params": null,
+   "ec_transfer_params": null,
+   "metrics": null
+  }
+ },
+ "raw_response": {
+  "id": "chatcmpl-bbd0c93627d97924",
+  "object": "chat.completion",
+  "created": 1790799464,
+  "model": "qwen3.8-27b",
+  "choices": [
+   {
+    "index": 0,
+    "message": {
+     "role": "assistant",
+     "content": "{\n  \"outcome\": \"correct\",\n  \"acted_on\": [\"ddedbd59-9721-4459-9b7a-9555ca728399\"],\n  \"exposed\": [],\n  \"mechanism\": \"none\",\n  \"artifact_reason\": \"\",\n  \"note\": \"The request's disambiguation hinged on display name + timezone + status. In step 6 the solver queried all five users whose displayName is 'Rae Ellison' for timezone and statusLabel, and correctly found that only Raquel Ellison (5337a14f: America/Chicago + 'Reviewing support queue') matches all conditions, rejecting the near-miss assignees (Vance/Ford on wrong status, Ibarra/Okafor on wrong timezone, and Rae Ellison-Quinn as a different person). Step 8 then updated only APX-1 (ddedbd59), the target; the state diff confirms no decoy was touched.\"\n}",
+     "refusal": null,
+     "annotations": null,
+     "audio": null,
+     "function_call": null,
+     "reasoning": "Let me analyze this trial carefully.\n\n**Test setup:**\n- Test form: cover, target present.\n- Request: \"Set the estimate to 3 on the Apex team's offline sync issue assigned to Rae Ellison — she's on Chicago time and her status says 'Reviewing support queue'.\"\n\n**Target:**\n- `ddedbd59-9721-4459-9b7a-9555ca728399` (APX-1): \"Offline sync retry on Android\", assigneeId `5337a14f-74fd-453f-8d0c-f7e61cbe912d` (Raquel Ellison, displayName \"Rae Ellison\", America/Chicago, status \"Reviewing support queue\").\n\n**Decoys:**\n- APX-2 (`300636de`): assigned to Tessa Vaughn — fails display-name condition.\n- APX-3 (`faa9cffa`): assigned to Rae Quinn (displayName \"Rae Ellison-Quinn\") — contains \"Rae Ellison\" but is a different person.\n- APX-4 (`615a9294`): assigned to Raquel Vance (displayName \"Rae Ellison\", America/Chicago, but status is... let me check. The decoy says \"The requested status text appears in the profile description instead of the status, so it fails the status condition.\" So Raquel Vance has statusLabel that is NOT \"Reviewing support queue\", but the status text appears in her description. In step 6, Raquel Vance's statusLabel is \"Heads down shipping\". So she fails on status.\n- APX-5 (`6201b320`): assigned to Raquel Ford (displayName \"Rae Ellison\", America/Chicago, status \"Out on parental leave\") — fails on status.\n- APX-6 (`53034c9d`): assigned to Raquel Ibarra (displayName \"Rae Ellison\", America/Denver, status \"Reviewing support queue\") — fails on timezone.\n- APX-7 (`677c8218`): assigned to Raquel Okafor (displayName \"Rae Ellison\", Europe/Berlin, status \"Reviewing support queue\") — fails on timezone.\n\nSo the target is APX-1, assigned to Raquel Ellison (id `5337a14f`), who is the only user with displayName \"Rae Ellison\" + America/Chicago + \"Reviewing support queue\".\n\n**Solver's trajectory:**\n\n1. Read SKILL.md — fine.\n2. Queried Apex team issues with title filter \"offline sync\" — returned empty (the filter didn't match, presumably case-sensitivity or the replica's title filter behavior; the response was empty). \n3. Retried with `limit: 50` — error, needs `first`.\n4. Retried with `first: 50` — got all Apex issues including APX-1 through APX-8 with assignee names. Also queried users with name containing \"Rae\" — got only Rae Quinn (displayName \"Rae Ellison-Quinn\"). Interesting: the users filter with `name: {contains: \"Rae\"}` only returned Rae Quinn. That's because the `name` field on the \"Raquel\" users is \"Raquel X\", which doesn't contain \"Rae\"... wait, \"Raquel\" does contain \"Rae\"? R-a-q-u-e-l — no, \"Rae\" as a substring? \"Raquel\" = R,a,q,u,e,l. Substring \"Rae\" would need R,a,e consecutive. \"Raquel\" has R,a,q — so no, \"Rae\" is not a substring of \"Raquel\". Correct. So only Rae Quinn matched.\n\n5. Introspected User type fields (found timezone, statusLabel, etc.) and queried users with name contains \"Ellison\" (got Raquel Ellison) and name contains \"Raquel\" (got 5 users: Vance, Ellison, Ibarra, Okafor, Ford — all with displayName \"Rae Ellison\").\n\nWait — in step 5, the query `users(filter: { name: { contains: \"Raquel\" } })` returned 5 nodes, all with displayName \"Rae Ellison\". Note that the `name` field shows \"Raquel X\" for all of them. So the assignee names on the issues (like \"Raquel Ellison\", \"Raquel Vance\", etc.) correspond to the `name` field, while the `displayName` for all of them is \"Rae Ellison\". This is the tricky part of the test: multiple users share the display name \"Rae Ellison\", so the solver must use the timezone and status to disambiguate.\n\n6. Queried all 5 \"Raquel\" users with timezone, statusLabel, etc. Results:\n   - Raquel Vance: America/Chicago, \"Heads down shipping\"\n   - Raquel Ellison: America/Chicago, \"Reviewing support queue\" ← match\n   - Raquel Ibarra: America/Denver, \"Reviewing support queue\"\n   - Raquel Okafor: Europe/Berlin, \"Reviewing support queue\"\n   - Raquel Ford: America/Chicago, \"Out on parental leave\"\n\nSo only Raquel Ellison (id `5337a14f`) matches all conditions: displayName \"Rae Ellison\", America/Chicago, \"Reviewing support queue\".\n\n7. Updated APX-1 (id `ddedbd59`) — first attempt had wrong mutation shape (id inside input, estimate 3.0 as float), got errors.\n8. Fixed: `issueUpdate(id: \"ddedbd59\", input: { estimate: 3 })` — success, estimate now 3.\n9. Final answer: reports APX-1 updated to 3, notes the disambiguation.\n\n**State diff:** Only `ddedbd59` (APX-1, the target) was updated, estimate 1 → 3.\n\n**Verdict:** The solver identified the target correctly, verified the display name, timezone, and status, and updated only the target. No decoy was acted on or presented. This is **correct**.\n\nLet me double-check the disambiguation logic. The request says \"assigned to Rae Ellison — she's on Chicago time and her status says 'Reviewing support queue'\". The solver found 5 users with displayName \"Rae Ellison\" and used timezone + status to narrow to Raquel Ellison. Raquel Ellison is the assignee of APX-1, which is the target. Correct.\n\nAlso, the solver considered APX-3 (Rae Quinn, displayName \"Rae Ellison-Quinn\") and correctly did not pick it — it's a different person. Good.\n\nThe solver also correctly did not pick APX-4 (Vance, Chicago but status \"Heads down shipping\"), APX-5 (Ford, Chicago but \"Out on parental leave\"), APX-6 (Ibarra, Denver), APX-7 (Okafor, Berlin). All correct.\n\nOne minor note: in step 5, the solver's reasoning slightly mis-stated the request's status text (\"checking the support queue\" vs the actual \"Reviewing support queue\"), but in step 6 and 9 it correctly used \"Reviewing support queue\". This is just a transcription slip in the reasoning; the actual query and selection were correct. Doesn't affect the outcome.\n\nSo the verdict is **correct**. Exposed facts: empty. Mechanism: none.\n\nLet me write the note.\n\nDecisive steps: Step 6 (queried timezone + status for all 5 Rae Ellison display-name users, found unique match Raquel Ellison / id 5337a14f), Step 8 (updated APX-1 ddedbd59, the target, estimate → 3). State diff confirms only the target was touched.\n"
+    },
+    "logprobs": null,
+    "finish_reason": "stop",
+    "stop_reason": null,
+    "token_ids": null,
+    "routed_experts": null
+   }
+  ],
+  "service_tier": null,
+  "system_fingerprint": "vllm-0.30.0-tp2-d555b196",
+  "usage": {
+   "prompt_tokens": 10866,
+   "total_tokens": 12819,
+   "completion_tokens": 1953,
+   "prompt_tokens_details": {
+    "cached_tokens": 2352,
+    "created_cache_tokens": 7840,
+    "multimodal_tokens": null
+   },
+   "completion_tokens_details": {
+    "reasoning_tokens": 1731
+   }
+  },
+  "prompt_logprobs": null,
+  "prompt_token_ids": null,
+  "prompt_text": null,
+  "kv_transfer_params": null,
+  "ec_transfer_params": null,
+  "metrics": null
+ }
+}

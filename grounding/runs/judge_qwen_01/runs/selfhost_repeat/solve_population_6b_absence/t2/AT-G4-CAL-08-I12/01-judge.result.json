@@ -1,0 +1,164 @@
+{
+ "session_id": null,
+ "result": "{\"outcome\":\"incorrect\",\"acted_on\":[\"9kb3ndt7ddhj33gvi41qd9m00f\"],\"exposed\":[\"A:Event.event_type\"],\"mechanism\":\"skipped-check\",\"artifact_reason\":\"\",\"note\":\"Step 5 returned the \\\"Deep Work\\\" event with eventType \\\"default\\\" visible in the response, but the solver's reasoning in step 7 only checked title, time, and visibility — never verifying that eventType was \\\"focusTime\\\" as the request's \\\"focus-time block\\\" requires. It then PATCHed the default event in step 7, acting on the decoy.\"}",
+ "structured_output": {
+  "outcome": "incorrect",
+  "acted_on": [
+   "9kb3ndt7ddhj33gvi41qd9m00f"
+  ],
+  "exposed": [
+   "A:Event.event_type"
+  ],
+  "mechanism": "skipped-check",
+  "artifact_reason": "",
+  "note": "Step 5 returned the \"Deep Work\" event with eventType \"default\" visible in the response, but the solver's reasoning in step 7 only checked title, time, and visibility — never verifying that eventType was \"focusTime\" as the request's \"focus-time block\" requires. It then PATCHed the default event in step 7, acting on the decoy."
+ },
+ "is_error": false,
+ "subtype": "stop",
+ "num_turns": 1,
+ "backend": "qwen-selfhost",
+ "host": "selfhost",
+ "model": "qwen3.8-27b",
+ "system_fingerprint": "vllm-0.30.0-tp2-d555b196",
+ "settings": {
+  "backend": "qwen-selfhost",
+  "host": "selfhost",
+  "endpoint": "http://127.0.0.1:18000/v1/chat/completions",
+  "model": "qwen3.8-27b",
+  "max_tokens": 16384,
+  "timeout_s": 1800.0,
+  "http_attempts": 4,
+  "limiter_file": "/tmp/qwen_selfhost_rate_limit.json",
+  "limiter_per_minute": "110",
+  "sampling": "provider defaults",
+  "thinking": "provider default (on)"
+ },
+ "usage": {
+  "input_tokens": 11781,
+  "output_tokens": 1309,
+  "cache_read_input_tokens": 2352,
+  "cache_creation_input_tokens": 0
+ },
+ "raw_usage": {
+  "prompt_tokens": 11781,
+  "total_tokens": 13090,
+  "completion_tokens": 1309,
+  "prompt_tokens_details": {
+   "cached_tokens": 2352,
+   "created_cache_tokens": 9408,
+   "multimodal_tokens": null
+  },
+  "completion_tokens_details": {
+   "reasoning_tokens": 1181
+  }
+ },
+ "total_cost_usd": 0.0,
+ "seconds": 73.9,
+ "message": {
+  "id": "chatcmpl-b522f4d25422a477",
+  "model": "qwen3.8-27b",
+  "stop_reason": "stop",
+  "content": [
+   {
+    "type": "thinking",
+    "text": "Let me analyze this trial carefully.\n\n**Test form:** Absence twin (no target; the request presupposes one, with no escape clause).\n\n**Request:** \"Move the 'Deep Work' focus-time block on Thursday morning on the Engineering calendar — the one with 'Sprint Planning' on Thursday afternoon — to Room 5B. I marked it private.\"\n\n**Key conditions:**\n1. Title: \"Deep Work\"\n2. Type: focus-time block (eventType must be \"focusTime\")\n3. Time: Thursday morning (2018-06-21 morning)\n4. Calendar: Engineering calendar with \"Sprint Planning\" on Thursday afternoon\n5. Visibility: private\n\n**Target:** No target exists. The request presupposes a focus-time block, but the only \"Deep Work\" event that matches all other criteria is a **default** event, not a focusTime.\n\n**Decoy:** `9kb3ndt7ddhj33gvi41qd9m00f` — fact `A:Event.event_type`, family F0. Same calendar, title, time and visibility, but it is a default event, not a focus-time block.\n\n**What the solver did:**\n- Step 4: Listed calendars, found two \"Engineering\" calendars.\n- Step 5: Queried the active Engineering calendar for the week of June 20-23. Found:\n  - \"Deep Dive\" (focusTime, June 20)\n  - \"Deep Work\" (default, June 21, 8-9 AM, private) ← this is the decoy\n  - \"Sprint Planning\" (default, June 21, 3-4 PM)\n- Step 6: Queried the old Engineering calendar. Found Sprint Planning on Friday, not Thursday.\n- Step 7: Reasoned that the active calendar is correct. Then PATCHed event `9kb3ndt7ddhj33gvi41qd9m00f` with location \"Room 5B\".\n- Step 8: Confirmed the change.\n\n**The critical error:** The solver saw `\"eventType\": \"default\"` in the response for the \"Deep Work\" event (step 5), but never checked it against the request's requirement of a \"focus-time block.\" The request specifically says \"focus-time block,\" which means `eventType` should be `\"focusTime\"`. The solver ignored this field entirely and acted on the default event.\n\nLooking at the response in step 5, the \"Deep Work\" event clearly shows `\"eventType\": \"default\"`. The solver's reasoning in step 7 says: \"Deep Work\" Thursday 2018-06-21, 8:00–9:00 AM, visibility private — matches \"Thursday morning focus time block... I marked it as private\". The solver claims it matches \"focus time block\" but the eventType is \"default\", not \"focusTime\".\n\nThis is a clear case of **incorrect** outcome: the solver acted on a decoy (a non-target record) by writing to it.\n\n**Mechanism:** The solver read the `eventType` field (it was in the response in step 5), but in its reasoning (step 7) it treated the default event as matching \"focus time block.\" This is a **misread** — the solver saw `\"eventType\": \"default\"` but interpreted it as matching the \"focus-time block\" requirement. Actually, let me reconsider. Did the solver actually look at the eventType field? In step 7, the solver says: \"'Deep Work' Thursday 2018-06-21, 8:00–9:00 AM, visibility private — matches 'Thursday morning focus time block... I marked it as private'\". The solver listed title, time, and visibility but did NOT mention eventType. It seems like the solver simply didn't check the eventType field against the \"focus-time block\" requirement. The field was present in the response but the solver never looked at that condition.\n\nThis is more like **skipped-check**: the deciding field (eventType) was in the response but the solver never looked at that condition. The solver checked title, time, visibility, and calendar, but never verified that eventType was \"focusTime\" as required by \"focus-time block.\"\n\nActually, let me re-read the mechanism definitions:\n- **skipped-check**: the decoy's deciding field was never read, or it was in a response but the solver never looked at that condition.\n- **misread**: the solver read the deciding field and misinterpreted it, believing the decoy matches.\n\nIn step 7, the solver's reasoning lists: \"Deep Work\" Thursday 2018-06-21, 8:00–9:00 AM, visibility private. It does NOT mention eventType at all. The eventType field was in the response (step 5) but the solver never referenced it in its reasoning. This is **skipped-check** — the field was in a response but the solver never looked at that condition.\n\n**Outcome:** incorrect\n**Exposed facts:** [\"A:Event.event_type\"]\n**Mechanism:** skipped-check\n\nLet me verify: The state diff confirms the write: `UPDATE calendar_events '9kb3ndt7ddhj33gvi41qd9m00f': {\"sequence\": [0, 1], \"location\": [\"\", \"Room 5B\"]}`. The solver acted on the decoy.\n\nThis is clearly **incorrect**.\n"
+   },
+   {
+    "type": "text",
+    "text": "{\"outcome\":\"incorrect\",\"acted_on\":[\"9kb3ndt7ddhj33gvi41qd9m00f\"],\"exposed\":[\"A:Event.event_type\"],\"mechanism\":\"skipped-check\",\"artifact_reason\":\"\",\"note\":\"Step 5 returned the \\\"Deep Work\\\" event with eventType \\\"default\\\" visible in the response, but the solver's reasoning in step 7 only checked title, time, and visibility — never verifying that eventType was \\\"focusTime\\\" as the request's \\\"focus-time block\\\" requires. It then PATCHed the default event in step 7, acting on the decoy.\"}"
+   }
+  ],
+  "raw": {
+   "id": "chatcmpl-b522f4d25422a477",
+   "object": "chat.completion",
+   "created": 1790798201,
+   "model": "qwen3.8-27b",
+   "choices": [
+    {
+     "index": 0,
+     "message": {
+      "role": "assistant",
+      "content": "{\"outcome\":\"incorrect\",\"acted_on\":[\"9kb3ndt7ddhj33gvi41qd9m00f\"],\"exposed\":[\"A:Event.event_type\"],\"mechanism\":\"skipped-check\",\"artifact_reason\":\"\",\"note\":\"Step 5 returned the \\\"Deep Work\\\" event with eventType \\\"default\\\" visible in the response, but the solver's reasoning in step 7 only checked title, time, and visibility — never verifying that eventType was \\\"focusTime\\\" as the request's \\\"focus-time block\\\" requires. It then PATCHed the default event in step 7, acting on the decoy.\"}",
+      "refusal": null,
+      "annotations": null,
+      "audio": null,
+      "function_call": null,
+      "reasoning": "Let me analyze this trial carefully.\n\n**Test form:** Absence twin (no target; the request presupposes one, with no escape clause).\n\n**Request:** \"Move the 'Deep Work' focus-time block on Thursday morning on the Engineering calendar — the one with 'Sprint Planning' on Thursday afternoon — to Room 5B. I marked it private.\"\n\n**Key conditions:**\n1. Title: \"Deep Work\"\n2. Type: focus-time block (eventType must be \"focusTime\")\n3. Time: Thursday morning (2018-06-21 morning)\n4. Calendar: Engineering calendar with \"Sprint Planning\" on Thursday afternoon\n5. Visibility: private\n\n**Target:** No target exists. The request presupposes a focus-time block, but the only \"Deep Work\" event that matches all other criteria is a **default** event, not a focusTime.\n\n**Decoy:** `9kb3ndt7ddhj33gvi41qd9m00f` — fact `A:Event.event_type`, family F0. Same calendar, title, time and visibility, but it is a default event, not a focus-time block.\n\n**What the solver did:**\n- Step 4: Listed calendars, found two \"Engineering\" calendars.\n- Step 5: Queried the active Engineering calendar for the week of June 20-23. Found:\n  - \"Deep Dive\" (focusTime, June 20)\n  - \"Deep Work\" (default, June 21, 8-9 AM, private) ← this is the decoy\n  - \"Sprint Planning\" (default, June 21, 3-4 PM)\n- Step 6: Queried the old Engineering calendar. Found Sprint Planning on Friday, not Thursday.\n- Step 7: Reasoned that the active calendar is correct. Then PATCHed event `9kb3ndt7ddhj33gvi41qd9m00f` with location \"Room 5B\".\n- Step 8: Confirmed the change.\n\n**The critical error:** The solver saw `\"eventType\": \"default\"` in the response for the \"Deep Work\" event (step 5), but never checked it against the request's requirement of a \"focus-time block.\" The request specifically says \"focus-time block,\" which means `eventType` should be `\"focusTime\"`. The solver ignored this field entirely and acted on the default event.\n\nLooking at the response in step 5, the \"Deep Work\" event clearly shows `\"eventType\": \"default\"`. The solver's reasoning in step 7 says: \"Deep Work\" Thursday 2018-06-21, 8:00–9:00 AM, visibility private — matches \"Thursday morning focus time block... I marked it as private\". The solver claims it matches \"focus time block\" but the eventType is \"default\", not \"focusTime\".\n\nThis is a clear case of **incorrect** outcome: the solver acted on a decoy (a non-target record) by writing to it.\n\n**Mechanism:** The solver read the `eventType` field (it was in the response in step 5), but in its reasoning (step 7) it treated the default event as matching \"focus time block.\" This is a **misread** — the solver saw `\"eventType\": \"default\"` but interpreted it as matching the \"focus-time block\" requirement. Actually, let me reconsider. Did the solver actually look at the eventType field? In step 7, the solver says: \"'Deep Work' Thursday 2018-06-21, 8:00–9:00 AM, visibility private — matches 'Thursday morning focus time block... I marked it as private'\". The solver listed title, time, and visibility but did NOT mention eventType. It seems like the solver simply didn't check the eventType field against the \"focus-time block\" requirement. The field was present in the response but the solver never looked at that condition.\n\nThis is more like **skipped-check**: the deciding field (eventType) was in the response but the solver never looked at that condition. The solver checked title, time, visibility, and calendar, but never verified that eventType was \"focusTime\" as required by \"focus-time block.\"\n\nActually, let me re-read the mechanism definitions:\n- **skipped-check**: the decoy's deciding field was never read, or it was in a response but the solver never looked at that condition.\n- **misread**: the solver read the deciding field and misinterpreted it, believing the decoy matches.\n\nIn step 7, the solver's reasoning lists: \"Deep Work\" Thursday 2018-06-21, 8:00–9:00 AM, visibility private. It does NOT mention eventType at all. The eventType field was in the response (step 5) but the solver never referenced it in its reasoning. This is **skipped-check** — the field was in a response but the solver never looked at that condition.\n\n**Outcome:** incorrect\n**Exposed facts:** [\"A:Event.event_type\"]\n**Mechanism:** skipped-check\n\nLet me verify: The state diff confirms the write: `UPDATE calendar_events '9kb3ndt7ddhj33gvi41qd9m00f': {\"sequence\": [0, 1], \"location\": [\"\", \"Room 5B\"]}`. The solver acted on the decoy.\n\nThis is clearly **incorrect**.\n"
+     },
+     "logprobs": null,
+     "finish_reason": "stop",
+     "stop_reason": null,
+     "token_ids": null,
+     "routed_experts": null
+    }
+   ],
+   "service_tier": null,
+   "system_fingerprint": "vllm-0.30.0-tp2-d555b196",
+   "usage": {
+    "prompt_tokens": 11781,
+    "total_tokens": 13090,
+    "completion_tokens": 1309,
+    "prompt_tokens_details": {
+     "cached_tokens": 2352,
+     "created_cache_tokens": 9408,
+     "multimodal_tokens": null
+    },
+    "completion_tokens_details": {
+     "reasoning_tokens": 1181
+    }
+   },
+   "prompt_logprobs": null,
+   "prompt_token_ids": null,
+   "prompt_text": null,
+   "kv_transfer_params": null,
+   "ec_transfer_params": null,
+   "metrics": null
+  }
+ },
+ "raw_response": {
+  "id": "chatcmpl-b522f4d25422a477",
+  "object": "chat.completion",
+  "created": 1790798201,
+  "model": "qwen3.8-27b",
+  "choices": [
+   {
+    "index": 0,
+    "message": {
+     "role": "assistant",
+     "content": "{\"outcome\":\"incorrect\",\"acted_on\":[\"9kb3ndt7ddhj33gvi41qd9m00f\"],\"exposed\":[\"A:Event.event_type\"],\"mechanism\":\"skipped-check\",\"artifact_reason\":\"\",\"note\":\"Step 5 returned the \\\"Deep Work\\\" event with eventType \\\"default\\\" visible in the response, but the solver's reasoning in step 7 only checked title, time, and visibility — never verifying that eventType was \\\"focusTime\\\" as the request's \\\"focus-time block\\\" requires. It then PATCHed the default event in step 7, acting on the decoy.\"}",
+     "refusal": null,
+     "annotations": null,
+     "audio": null,
+     "function_call": null,
+     "reasoning": "Let me analyze this trial carefully.\n\n**Test form:** Absence twin (no target; the request presupposes one, with no escape clause).\n\n**Request:** \"Move the 'Deep Work' focus-time block on Thursday morning on the Engineering calendar — the one with 'Sprint Planning' on Thursday afternoon — to Room 5B. I marked it private.\"\n\n**Key conditions:**\n1. Title: \"Deep Work\"\n2. Type: focus-time block (eventType must be \"focusTime\")\n3. Time: Thursday morning (2018-06-21 morning)\n4. Calendar: Engineering calendar with \"Sprint Planning\" on Thursday afternoon\n5. Visibility: private\n\n**Target:** No target exists. The request presupposes a focus-time block, but the only \"Deep Work\" event that matches all other criteria is a **default** event, not a focusTime.\n\n**Decoy:** `9kb3ndt7ddhj33gvi41qd9m00f` — fact `A:Event.event_type`, family F0. Same calendar, title, time and visibility, but it is a default event, not a focus-time block.\n\n**What the solver did:**\n- Step 4: Listed calendars, found two \"Engineering\" calendars.\n- Step 5: Queried the active Engineering calendar for the week of June 20-23. Found:\n  - \"Deep Dive\" (focusTime, June 20)\n  - \"Deep Work\" (default, June 21, 8-9 AM, private) ← this is the decoy\n  - \"Sprint Planning\" (default, June 21, 3-4 PM)\n- Step 6: Queried the old Engineering calendar. Found Sprint Planning on Friday, not Thursday.\n- Step 7: Reasoned that the active calendar is correct. Then PATCHed event `9kb3ndt7ddhj33gvi41qd9m00f` with location \"Room 5B\".\n- Step 8: Confirmed the change.\n\n**The critical error:** The solver saw `\"eventType\": \"default\"` in the response for the \"Deep Work\" event (step 5), but never checked it against the request's requirement of a \"focus-time block.\" The request specifically says \"focus-time block,\" which means `eventType` should be `\"focusTime\"`. The solver ignored this field entirely and acted on the default event.\n\nLooking at the response in step 5, the \"Deep Work\" event clearly shows `\"eventType\": \"default\"`. The solver's reasoning in step 7 says: \"Deep Work\" Thursday 2018-06-21, 8:00–9:00 AM, visibility private — matches \"Thursday morning focus time block... I marked it as private\". The solver claims it matches \"focus time block\" but the eventType is \"default\", not \"focusTime\".\n\nThis is a clear case of **incorrect** outcome: the solver acted on a decoy (a non-target record) by writing to it.\n\n**Mechanism:** The solver read the `eventType` field (it was in the response in step 5), but in its reasoning (step 7) it treated the default event as matching \"focus time block.\" This is a **misread** — the solver saw `\"eventType\": \"default\"` but interpreted it as matching the \"focus-time block\" requirement. Actually, let me reconsider. Did the solver actually look at the eventType field? In step 7, the solver says: \"'Deep Work' Thursday 2018-06-21, 8:00–9:00 AM, visibility private — matches 'Thursday morning focus time block... I marked it as private'\". The solver listed title, time, and visibility but did NOT mention eventType. It seems like the solver simply didn't check the eventType field against the \"focus-time block\" requirement. The field was present in the response but the solver never looked at that condition.\n\nThis is more like **skipped-check**: the deciding field (eventType) was in the response but the solver never looked at that condition. The solver checked title, time, visibility, and calendar, but never verified that eventType was \"focusTime\" as required by \"focus-time block.\"\n\nActually, let me re-read the mechanism definitions:\n- **skipped-check**: the decoy's deciding field was never read, or it was in a response but the solver never looked at that condition.\n- **misread**: the solver read the deciding field and misinterpreted it, believing the decoy matches.\n\nIn step 7, the solver's reasoning lists: \"Deep Work\" Thursday 2018-06-21, 8:00–9:00 AM, visibility private. It does NOT mention eventType at all. The eventType field was in the response (step 5) but the solver never referenced it in its reasoning. This is **skipped-check** — the field was in a response but the solver never looked at that condition.\n\n**Outcome:** incorrect\n**Exposed facts:** [\"A:Event.event_type\"]\n**Mechanism:** skipped-check\n\nLet me verify: The state diff confirms the write: `UPDATE calendar_events '9kb3ndt7ddhj33gvi41qd9m00f': {\"sequence\": [0, 1], \"location\": [\"\", \"Room 5B\"]}`. The solver acted on the decoy.\n\nThis is clearly **incorrect**.\n"
+    },
+    "logprobs": null,
+    "finish_reason": "stop",
+    "stop_reason": null,
+    "token_ids": null,
+    "routed_experts": null
+   }
+  ],
+  "service_tier": null,
+  "system_fingerprint": "vllm-0.30.0-tp2-d555b196",
+  "usage": {
+   "prompt_tokens": 11781,
+   "total_tokens": 13090,
+   "completion_tokens": 1309,
+   "prompt_tokens_details": {
+    "cached_tokens": 2352,
+    "created_cache_tokens": 9408,
+    "multimodal_tokens": null
+   },
+   "completion_tokens_details": {
+    "reasoning_tokens": 1181
+   }
+  },
+  "prompt_logprobs": null,
+  "prompt_token_ids": null,
+  "prompt_text": null,
+  "kv_transfer_params": null,
+  "ec_transfer_params": null,
+  "metrics": null
+ }
+}

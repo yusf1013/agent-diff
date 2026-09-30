@@ -220,6 +220,37 @@ executions (including 38 where the triage leaves the outcome open, "presented?" 
 verdict has the label's group on 97 of those 102, and Qwen's on 96. Each judge keeps the triage's exact outcome on
 285 of the 443.
 
+## The second labelled pass: is the bar result stable?
+
+Qwen judged the labelled executions a second time with the same settings (`runs/selfhost_repeat`, 2026-09-30
+19:46-20:48 UTC; [repeat_compare.py](repeat_compare.py) →
+[runs/selfhost_repeat/repeat_labelled.json](runs/selfhost_repeat/repeat_labelled.json); against Muse and the labels
+in [runs/selfhost_repeat/comparison_pass2.json](runs/selfhost_repeat/comparison_pass2.json)).
+- **The labelled set** is the current manifest's: 437 executions, 436 with a resolved label and 189 labelled
+  failures. The manifest of 2026-09-30 dropped 24 executions of G4-BOX-02 and G4-BOX-11, 6 of them labelled.
+- **Pass 1 on the same 437:** [runs/selfhost/comparison_pass1_437.json](runs/selfhost/comparison_pass1_437.json).
+
+| On the 437 labelled | Qwen, pass 1 | Qwen, pass 2 | Muse |
+|---|---:|---:|---:|
+| Missed failures: called a nonfailure / any reason (of 189) | 0 / 1 | 0 / 1 | 0 / 0 |
+| False alarms (label a nonfailure) | 4 | 4 | 3 |
+| Failure precision | 188/192 (97.9%) | 188/192 (97.9%) | 189/192 (98.4%) |
+| Failure calls on labelled voids | 0 | 2 | 0 |
+| Same exposed facts as the label, both failing | 188/188 | 188/188 | 189/189 |
+| Same outcome group as Muse | 434/437 | 433/437 | – |
+
+- **The bar holds on both draws, with the same numbers:** no labelled failure called a nonfailure, one called a
+  void, and precision 0.5 points below Muse's.
+- **Qwen against itself:** the two passes give the same outcome group on 434 of 437, and the same facts on all 193
+  executions both call failures. The 3 that differ were all void in pass 1:
+  - **AR-SLK-23** (t2) and **AT-AR-LIN-26-I11-I12-I13** (t2): labelled artifacts (a near miss the PI ruled flawed;
+    an ignored subscribers filter). Pass 2 called them failures.
+  - **AT-AP2-LIN-01-I12-I13** (t2): the timeout without an answer from the first adjudication. Pass 2 took Muse's
+    reading, correct_absent.
+  - So Qwen's handling of no-answer runs, like its artifact calls, varies from draw to draw.
+- **Reliability and cost:** 437 verdicts, 2 answers cut at the 16,384-token cap and redone, one fingerprint
+  throughout. 62 minutes at 16 in flight (7.1 verdicts a minute): about 4.1 GPU-hours.
+
 ## The full replay, paused: 680 of the other 1,696
 
 Source: [runs/selfhost/comparison_rest.json](runs/selfhost/comparison_rest.json); adjudications in
@@ -385,3 +416,4 @@ budget.*
 | 09-30 02:39 | – | Paused at the lead's request; the queued second labelled pass cancelled | 680 of 1,696 done; resumable. |
 | 09-30 02:50-03:10 | `no_answer.py`, `headline.py --fill-with-muse`, `repeat_compare.py` | Offline, no model calls | Over the whole set, runs without an answer are mostly called not_established by both judges (Muse credits the unsent conclusion in 12 of 94 no-write ones, Qwen in 3). With Qwen's verdicts on the 1,123 judged so far, all eight policy decisions stay as published and the regular suite gains one false fact. Qwen's four artifact calls have three distinct causes (replica-notes gap; the solver's reads taken as the service's data; a contested reading), per Qwen's own notes read after unblinding. |
 | 09-30 13:50 | `headline.py` merges a duplicate pair as `decide_population` does (the PI's rule); both outputs rebuilt (session sol_score, with the lead's leave) | Offline, no model calls | With the budget rule restored in the published decisions, the code, reading attempts through its own manifest, reproduces all eight cells and the regular score exactly. The earlier outputs dated from the 8-minute budget and the rulings before the blind review. With Qwen's 1,123 verdicts, all eight decisions still match. |
+| 09-30 15:46-16:48 | `sets/` from the current manifest; `compare.py --exclude-rounds`; `chain_resume.sh` | The second labelled pass, 437 executions, 16 in flight | The bar holds with identical numbers on the second draw (0 or 1 missed, precision 188/192 against Muse's 189/192); Qwen agrees with itself on 434 of 437 outcome groups, all 3 differences on executions pass 1 called void. |

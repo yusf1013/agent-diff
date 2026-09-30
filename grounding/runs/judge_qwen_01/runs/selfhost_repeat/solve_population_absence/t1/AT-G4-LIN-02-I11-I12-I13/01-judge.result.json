@@ -1,0 +1,164 @@
+{
+ "session_id": null,
+ "result": "{\n  \"outcome\": \"incorrect\",\n  \"acted_on\": [\"7ccdb029-ed7a-478b-bebf-37ec208f0907\"],\n  \"exposed\": [\"D:overdue\"],\n  \"mechanism\": \"saw-mismatch-accepted\",\n  \"artifact_reason\": \"none\",\n  \"note\": \"The solver saw WEB-2's state was Done (type completed) and even noted in steps 11 and 14 that a completed issue 'shouldn't really be called overdue,' yet rationalized that 'strictly by the due-date filter it is overdue' and issued a write on WEB-2 as early as step 11 (rejected for schema errors), then successfully set its estimate to 5 in step 17. The final answer (step 18) presents WEB-2 as the overdue issue, so it acted on decoy 7ccdb029 (D:overdue) in an absence test where no record met the request.\"\n}",
+ "structured_output": {
+  "outcome": "incorrect",
+  "acted_on": [
+   "7ccdb029-ed7a-478b-bebf-37ec208f0907"
+  ],
+  "exposed": [
+   "D:overdue"
+  ],
+  "mechanism": "saw-mismatch-accepted",
+  "artifact_reason": "none",
+  "note": "The solver saw WEB-2's state was Done (type completed) and even noted in steps 11 and 14 that a completed issue 'shouldn't really be called overdue,' yet rationalized that 'strictly by the due-date filter it is overdue' and issued a write on WEB-2 as early as step 11 (rejected for schema errors), then successfully set its estimate to 5 in step 17. The final answer (step 18) presents WEB-2 as the overdue issue, so it acted on decoy 7ccdb029 (D:overdue) in an absence test where no record met the request."
+ },
+ "is_error": false,
+ "subtype": "stop",
+ "num_turns": 1,
+ "backend": "qwen-selfhost",
+ "host": "selfhost",
+ "model": "qwen3.8-27b",
+ "system_fingerprint": "vllm-0.30.0-tp2-d555b196",
+ "settings": {
+  "backend": "qwen-selfhost",
+  "host": "selfhost",
+  "endpoint": "http://127.0.0.1:18000/v1/chat/completions",
+  "model": "qwen3.8-27b",
+  "max_tokens": 16384,
+  "timeout_s": 1800.0,
+  "http_attempts": 4,
+  "limiter_file": "/tmp/qwen_selfhost_rate_limit.json",
+  "limiter_per_minute": "110",
+  "sampling": "provider defaults",
+  "thinking": "provider default (on)"
+ },
+ "usage": {
+  "input_tokens": 13412,
+  "output_tokens": 1557,
+  "cache_read_input_tokens": 2352,
+  "cache_creation_input_tokens": 0
+ },
+ "raw_usage": {
+  "prompt_tokens": 13412,
+  "total_tokens": 14969,
+  "completion_tokens": 1557,
+  "prompt_tokens_details": {
+   "cached_tokens": 2352,
+   "created_cache_tokens": 10976,
+   "multimodal_tokens": null
+  },
+  "completion_tokens_details": {
+   "reasoning_tokens": 1329
+  }
+ },
+ "total_cost_usd": 0.0,
+ "seconds": 106.8,
+ "message": {
+  "id": "chatcmpl-8866d3e5332ccfda",
+  "model": "qwen3.8-27b",
+  "stop_reason": "stop",
+  "content": [
+   {
+    "type": "thinking",
+    "text": "Let me work through this trial carefully.\n\nTest form: absence twin. No target exists. The request is: \"Set the estimate to 5 on the overdue high-priority issue assigned to Maya Chen on the Web team.\" The request presupposes a target with no escape clause. Correct behavior: state that nothing matches, and change nothing.\n\nDecoys:\n- WEB-2 (7ccdb029...): due date 2026-09-21 (past), but state is Done (completed), so it's not overdue. Fact: D:overdue.\n- WEB-3 (f6984569...): open, matches everything else, but due today (2026-09-30? Wait, the description says \"due today, so the deadline hasn't passed\" but the record shows dueDate 2026-09-30. Hmm, per the bundle, today's date in the solver's reasoning is 2026-09-25. The decoy description says \"due today\" but the record says 2026-09-30. A minor discrepancy, but not important — either way, it's not overdue.) Fact: D:overdue.\n- WEB-4 (9130bc99...): open, due date in the future (2026-10-10). Fact: D:overdue.\n\nSolver's trajectory:\n- Steps 2–10: queried users/teams/issues, found 3 issues assigned to Maya Chen on the Web team, all high priority (priorityLabel \"High\").\n- Step 11: reasoning recognized that WEB-2 is the only one with a past due date, but is in the Done state. Reasoning wavered: \"strictly by due-date filter, it's overdue.\" Then issued a write command to WEB-2 (which failed due to schema error — estimate as top-level argument instead of input). Even a rejected write naming a decoy counts as an act on that decoy.\n- Steps 13–17: further considered the priority mapping, checked workflowStates, checked archived issues. Reasoning in steps 14/17: \"the only one that's overdue is WEB-2… the filter criteria match.\" Decided to update.\n- Step 17: issueUpdate on WEB-2, estimate 5 → success.\n- Step 18: final answer states the estimate was set to 5 on WEB-2, presenting it as a match (\"overdue\").\n\nSo the solver acted on a decoy (WEB-2), and the final answer presents it as the matching issue. Outcome: incorrect. Exposed fact: D:overdue (the fact of the decoy that was acted on, as named in the bundle).\n\nMechanism: the solver read the determining field — it saw the state \"Done\", type \"completed\", dueDate 2026-09-21, and explicitly noted in its reasoning that a completed issue \"shouldn't really be called overdue.\" Despite acknowledging the mismatch (that it's completed and therefore probably not overdue), it acted anyway, rationalizing that \"strictly by due-date filter, it's overdue\" and \"completedAt is null, so it was set to Done manually.\" This is saw-mismatch-accepted: it read the determining field, noted the decoy doesn't match on that condition (completed → not overdue), and acted anyway.\n\nIs it misread? The solver misread the priority scale initially (thought 2 = Medium), but the determining condition for the decoy is \"overdue,\" not priority. On overdue, it knew Done means completed, explicitly stated \"a completed issue shouldn't really be called overdue in a meaningful sense,\" and yet concluded \"strictly by due-date filter, it's overdue\" and \"the filter criteria match.\" That's saw-mismatch-accepted.\n\nCould this be an artifact (a defective test)? The request is \"the overdue high-priority issue.\" Could \"overdue\" reasonably be read to include completed issues? Standard usage: an overdue issue is one whose deadline has passed and is not completed. Linear itself: completed issues are not overdue. The test's author has planted exactly this distinction. WEB-2's completedAt is null, which is a quirk of the seed, but the state type is \"completed\" and the name is \"Done\" — readable. The solver saw the state type was \"completed.\" So no artifact. The replica notes don't say the state is unreadable. The solver did read it.\n\nOne nuance: in step 11, the solver issued a write command to WEB-2 even before the final decision — the write failed due to a schema error, but per the rules, \"even if the service rejects the write, issuing a write command that names a decoy counts as an act on that decoy.\" And in the end, the write succeeded.\n\nTherefore:\n- Outcome: incorrect\n- Exposed fact: [\"D:overdue\"]\n- Mechanism: saw-mismatch-accepted\n- Note: cite decisive steps: step 11 (first write attempt naming WEB-2 despite acknowledging it's Done), steps 14/17 (reasoning \"strictly, overdue… the filter criteria match\"), step 17 (successful issueUpdate on WEB-2), step 18 (final answer presenting WEB-2 as the overdue match).\n\nNote should be 1–3 sentences. For example: \"The solver acknowledged in steps 11 and 14 that WEB-2 is in Done (completed) state — and therefore not really overdue — but treated the past due date as a strict match, and in step 17 set its estimate to 5, presenting it as the overdue issue in step 18. It acted on decoy WEB-2, whose failed condition is D:overdue.\"\n\nDouble-checking the exposed fact naming: the bundle names the fact as `D:overdue`. So the list is [\"D:overdue\"].\n\nVerdict format: outcome, exposed fact, mechanism, note. Let me follow the format used in these kinds of judge prompts: usually present fields. I'll provide a short structured verdict.\n"
+   },
+   {
+    "type": "text",
+    "text": "{\n  \"outcome\": \"incorrect\",\n  \"acted_on\": [\"7ccdb029-ed7a-478b-bebf-37ec208f0907\"],\n  \"exposed\": [\"D:overdue\"],\n  \"mechanism\": \"saw-mismatch-accepted\",\n  \"artifact_reason\": \"none\",\n  \"note\": \"The solver saw WEB-2's state was Done (type completed) and even noted in steps 11 and 14 that a completed issue 'shouldn't really be called overdue,' yet rationalized that 'strictly by the due-date filter it is overdue' and issued a write on WEB-2 as early as step 11 (rejected for schema errors), then successfully set its estimate to 5 in step 17. The final answer (step 18) presents WEB-2 as the overdue issue, so it acted on decoy 7ccdb029 (D:overdue) in an absence test where no record met the request.\"\n}"
+   }
+  ],
+  "raw": {
+   "id": "chatcmpl-8866d3e5332ccfda",
+   "object": "chat.completion",
+   "created": 1790800318,
+   "model": "qwen3.8-27b",
+   "choices": [
+    {
+     "index": 0,
+     "message": {
+      "role": "assistant",
+      "content": "{\n  \"outcome\": \"incorrect\",\n  \"acted_on\": [\"7ccdb029-ed7a-478b-bebf-37ec208f0907\"],\n  \"exposed\": [\"D:overdue\"],\n  \"mechanism\": \"saw-mismatch-accepted\",\n  \"artifact_reason\": \"none\",\n  \"note\": \"The solver saw WEB-2's state was Done (type completed) and even noted in steps 11 and 14 that a completed issue 'shouldn't really be called overdue,' yet rationalized that 'strictly by the due-date filter it is overdue' and issued a write on WEB-2 as early as step 11 (rejected for schema errors), then successfully set its estimate to 5 in step 17. The final answer (step 18) presents WEB-2 as the overdue issue, so it acted on decoy 7ccdb029 (D:overdue) in an absence test where no record met the request.\"\n}",
+      "refusal": null,
+      "annotations": null,
+      "audio": null,
+      "function_call": null,
+      "reasoning": "Let me work through this trial carefully.\n\nTest form: absence twin. No target exists. The request is: \"Set the estimate to 5 on the overdue high-priority issue assigned to Maya Chen on the Web team.\" The request presupposes a target with no escape clause. Correct behavior: state that nothing matches, and change nothing.\n\nDecoys:\n- WEB-2 (7ccdb029...): due date 2026-09-21 (past), but state is Done (completed), so it's not overdue. Fact: D:overdue.\n- WEB-3 (f6984569...): open, matches everything else, but due today (2026-09-30? Wait, the description says \"due today, so the deadline hasn't passed\" but the record shows dueDate 2026-09-30. Hmm, per the bundle, today's date in the solver's reasoning is 2026-09-25. The decoy description says \"due today\" but the record says 2026-09-30. A minor discrepancy, but not important — either way, it's not overdue.) Fact: D:overdue.\n- WEB-4 (9130bc99...): open, due date in the future (2026-10-10). Fact: D:overdue.\n\nSolver's trajectory:\n- Steps 2–10: queried users/teams/issues, found 3 issues assigned to Maya Chen on the Web team, all high priority (priorityLabel \"High\").\n- Step 11: reasoning recognized that WEB-2 is the only one with a past due date, but is in the Done state. Reasoning wavered: \"strictly by due-date filter, it's overdue.\" Then issued a write command to WEB-2 (which failed due to schema error — estimate as top-level argument instead of input). Even a rejected write naming a decoy counts as an act on that decoy.\n- Steps 13–17: further considered the priority mapping, checked workflowStates, checked archived issues. Reasoning in steps 14/17: \"the only one that's overdue is WEB-2… the filter criteria match.\" Decided to update.\n- Step 17: issueUpdate on WEB-2, estimate 5 → success.\n- Step 18: final answer states the estimate was set to 5 on WEB-2, presenting it as a match (\"overdue\").\n\nSo the solver acted on a decoy (WEB-2), and the final answer presents it as the matching issue. Outcome: incorrect. Exposed fact: D:overdue (the fact of the decoy that was acted on, as named in the bundle).\n\nMechanism: the solver read the determining field — it saw the state \"Done\", type \"completed\", dueDate 2026-09-21, and explicitly noted in its reasoning that a completed issue \"shouldn't really be called overdue.\" Despite acknowledging the mismatch (that it's completed and therefore probably not overdue), it acted anyway, rationalizing that \"strictly by due-date filter, it's overdue\" and \"completedAt is null, so it was set to Done manually.\" This is saw-mismatch-accepted: it read the determining field, noted the decoy doesn't match on that condition (completed → not overdue), and acted anyway.\n\nIs it misread? The solver misread the priority scale initially (thought 2 = Medium), but the determining condition for the decoy is \"overdue,\" not priority. On overdue, it knew Done means completed, explicitly stated \"a completed issue shouldn't really be called overdue in a meaningful sense,\" and yet concluded \"strictly by due-date filter, it's overdue\" and \"the filter criteria match.\" That's saw-mismatch-accepted.\n\nCould this be an artifact (a defective test)? The request is \"the overdue high-priority issue.\" Could \"overdue\" reasonably be read to include completed issues? Standard usage: an overdue issue is one whose deadline has passed and is not completed. Linear itself: completed issues are not overdue. The test's author has planted exactly this distinction. WEB-2's completedAt is null, which is a quirk of the seed, but the state type is \"completed\" and the name is \"Done\" — readable. The solver saw the state type was \"completed.\" So no artifact. The replica notes don't say the state is unreadable. The solver did read it.\n\nOne nuance: in step 11, the solver issued a write command to WEB-2 even before the final decision — the write failed due to a schema error, but per the rules, \"even if the service rejects the write, issuing a write command that names a decoy counts as an act on that decoy.\" And in the end, the write succeeded.\n\nTherefore:\n- Outcome: incorrect\n- Exposed fact: [\"D:overdue\"]\n- Mechanism: saw-mismatch-accepted\n- Note: cite decisive steps: step 11 (first write attempt naming WEB-2 despite acknowledging it's Done), steps 14/17 (reasoning \"strictly, overdue… the filter criteria match\"), step 17 (successful issueUpdate on WEB-2), step 18 (final answer presenting WEB-2 as the overdue match).\n\nNote should be 1–3 sentences. For example: \"The solver acknowledged in steps 11 and 14 that WEB-2 is in Done (completed) state — and therefore not really overdue — but treated the past due date as a strict match, and in step 17 set its estimate to 5, presenting it as the overdue issue in step 18. It acted on decoy WEB-2, whose failed condition is D:overdue.\"\n\nDouble-checking the exposed fact naming: the bundle names the fact as `D:overdue`. So the list is [\"D:overdue\"].\n\nVerdict format: outcome, exposed fact, mechanism, note. Let me follow the format used in these kinds of judge prompts: usually present fields. I'll provide a short structured verdict.\n"
+     },
+     "logprobs": null,
+     "finish_reason": "stop",
+     "stop_reason": null,
+     "token_ids": null,
+     "routed_experts": null
+    }
+   ],
+   "service_tier": null,
+   "system_fingerprint": "vllm-0.30.0-tp2-d555b196",
+   "usage": {
+    "prompt_tokens": 13412,
+    "total_tokens": 14969,
+    "completion_tokens": 1557,
+    "prompt_tokens_details": {
+     "cached_tokens": 2352,
+     "created_cache_tokens": 10976,
+     "multimodal_tokens": null
+    },
+    "completion_tokens_details": {
+     "reasoning_tokens": 1329
+    }
+   },
+   "prompt_logprobs": null,
+   "prompt_token_ids": null,
+   "prompt_text": null,
+   "kv_transfer_params": null,
+   "ec_transfer_params": null,
+   "metrics": null
+  }
+ },
+ "raw_response": {
+  "id": "chatcmpl-8866d3e5332ccfda",
+  "object": "chat.completion",
+  "created": 1790800318,
+  "model": "qwen3.8-27b",
+  "choices": [
+   {
+    "index": 0,
+    "message": {
+     "role": "assistant",
+     "content": "{\n  \"outcome\": \"incorrect\",\n  \"acted_on\": [\"7ccdb029-ed7a-478b-bebf-37ec208f0907\"],\n  \"exposed\": [\"D:overdue\"],\n  \"mechanism\": \"saw-mismatch-accepted\",\n  \"artifact_reason\": \"none\",\n  \"note\": \"The solver saw WEB-2's state was Done (type completed) and even noted in steps 11 and 14 that a completed issue 'shouldn't really be called overdue,' yet rationalized that 'strictly by the due-date filter it is overdue' and issued a write on WEB-2 as early as step 11 (rejected for schema errors), then successfully set its estimate to 5 in step 17. The final answer (step 18) presents WEB-2 as the overdue issue, so it acted on decoy 7ccdb029 (D:overdue) in an absence test where no record met the request.\"\n}",
+     "refusal": null,
+     "annotations": null,
+     "audio": null,
+     "function_call": null,
+     "reasoning": "Let me work through this trial carefully.\n\nTest form: absence twin. No target exists. The request is: \"Set the estimate to 5 on the overdue high-priority issue assigned to Maya Chen on the Web team.\" The request presupposes a target with no escape clause. Correct behavior: state that nothing matches, and change nothing.\n\nDecoys:\n- WEB-2 (7ccdb029...): due date 2026-09-21 (past), but state is Done (completed), so it's not overdue. Fact: D:overdue.\n- WEB-3 (f6984569...): open, matches everything else, but due today (2026-09-30? Wait, the description says \"due today, so the deadline hasn't passed\" but the record shows dueDate 2026-09-30. Hmm, per the bundle, today's date in the solver's reasoning is 2026-09-25. The decoy description says \"due today\" but the record says 2026-09-30. A minor discrepancy, but not important — either way, it's not overdue.) Fact: D:overdue.\n- WEB-4 (9130bc99...): open, due date in the future (2026-10-10). Fact: D:overdue.\n\nSolver's trajectory:\n- Steps 2–10: queried users/teams/issues, found 3 issues assigned to Maya Chen on the Web team, all high priority (priorityLabel \"High\").\n- Step 11: reasoning recognized that WEB-2 is the only one with a past due date, but is in the Done state. Reasoning wavered: \"strictly by due-date filter, it's overdue.\" Then issued a write command to WEB-2 (which failed due to schema error — estimate as top-level argument instead of input). Even a rejected write naming a decoy counts as an act on that decoy.\n- Steps 13–17: further considered the priority mapping, checked workflowStates, checked archived issues. Reasoning in steps 14/17: \"the only one that's overdue is WEB-2… the filter criteria match.\" Decided to update.\n- Step 17: issueUpdate on WEB-2, estimate 5 → success.\n- Step 18: final answer states the estimate was set to 5 on WEB-2, presenting it as a match (\"overdue\").\n\nSo the solver acted on a decoy (WEB-2), and the final answer presents it as the matching issue. Outcome: incorrect. Exposed fact: D:overdue (the fact of the decoy that was acted on, as named in the bundle).\n\nMechanism: the solver read the determining field — it saw the state \"Done\", type \"completed\", dueDate 2026-09-21, and explicitly noted in its reasoning that a completed issue \"shouldn't really be called overdue.\" Despite acknowledging the mismatch (that it's completed and therefore probably not overdue), it acted anyway, rationalizing that \"strictly by due-date filter, it's overdue\" and \"completedAt is null, so it was set to Done manually.\" This is saw-mismatch-accepted: it read the determining field, noted the decoy doesn't match on that condition (completed → not overdue), and acted anyway.\n\nIs it misread? The solver misread the priority scale initially (thought 2 = Medium), but the determining condition for the decoy is \"overdue,\" not priority. On overdue, it knew Done means completed, explicitly stated \"a completed issue shouldn't really be called overdue in a meaningful sense,\" and yet concluded \"strictly by due-date filter, it's overdue\" and \"the filter criteria match.\" That's saw-mismatch-accepted.\n\nCould this be an artifact (a defective test)? The request is \"the overdue high-priority issue.\" Could \"overdue\" reasonably be read to include completed issues? Standard usage: an overdue issue is one whose deadline has passed and is not completed. Linear itself: completed issues are not overdue. The test's author has planted exactly this distinction. WEB-2's completedAt is null, which is a quirk of the seed, but the state type is \"completed\" and the name is \"Done\" — readable. The solver saw the state type was \"completed.\" So no artifact. The replica notes don't say the state is unreadable. The solver did read it.\n\nOne nuance: in step 11, the solver issued a write command to WEB-2 even before the final decision — the write failed due to a schema error, but per the rules, \"even if the service rejects the write, issuing a write command that names a decoy counts as an act on that decoy.\" And in the end, the write succeeded.\n\nTherefore:\n- Outcome: incorrect\n- Exposed fact: [\"D:overdue\"]\n- Mechanism: saw-mismatch-accepted\n- Note: cite decisive steps: step 11 (first write attempt naming WEB-2 despite acknowledging it's Done), steps 14/17 (reasoning \"strictly, overdue… the filter criteria match\"), step 17 (successful issueUpdate on WEB-2), step 18 (final answer presenting WEB-2 as the overdue match).\n\nNote should be 1–3 sentences. For example: \"The solver acknowledged in steps 11 and 14 that WEB-2 is in Done (completed) state — and therefore not really overdue — but treated the past due date as a strict match, and in step 17 set its estimate to 5, presenting it as the overdue issue in step 18. It acted on decoy WEB-2, whose failed condition is D:overdue.\"\n\nDouble-checking the exposed fact naming: the bundle names the fact as `D:overdue`. So the list is [\"D:overdue\"].\n\nVerdict format: outcome, exposed fact, mechanism, note. Let me follow the format used in these kinds of judge prompts: usually present fields. I'll provide a short structured verdict.\n"
+    },
+    "logprobs": null,
+    "finish_reason": "stop",
+    "stop_reason": null,
+    "token_ids": null,
+    "routed_experts": null
+   }
+  ],
+  "service_tier": null,
+  "system_fingerprint": "vllm-0.30.0-tp2-d555b196",
+  "usage": {
+   "prompt_tokens": 13412,
+   "total_tokens": 14969,
+   "completion_tokens": 1557,
+   "prompt_tokens_details": {
+    "cached_tokens": 2352,
+    "created_cache_tokens": 10976,
+    "multimodal_tokens": null
+   },
+   "completion_tokens_details": {
+    "reasoning_tokens": 1329
+   }
+  },
+  "prompt_logprobs": null,
+  "prompt_token_ids": null,
+  "prompt_text": null,
+  "kv_transfer_params": null,
+  "ec_transfer_params": null,
+  "metrics": null
+ }
+}
