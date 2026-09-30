@@ -10,7 +10,9 @@ theirs, from their papers or repositories, checked on 2026-09-30; numbers about 
 - **2026-09-30, done:** the map (12 angles, 6 of them new), cards for 69 works in 35 blocks, the verdict table, two pilots on existing
   evidence (no model calls), the projection plan, the baseline proposals, the claims file ([claims.md](claims.md):
   every claim about another work, quoted from its source with the fetch date).
-- **Running:** nothing. **Blocked:** nothing. Every arm proposed below waits for the PI's go-ahead.
+- **2026-09-30, phase 2:** the four arms that need no decision are built (§5.6). S1 and B2 are done. B1's 48 selected
+  items and P1's matched 48 variants run on the self-hosted Qwen at the lead's request.
+- **Blocked:** nothing.
 
 ## Summary
 
@@ -699,6 +701,32 @@ ours.
 - **The unit:** fact–mode requirements (ours) or request-level categories (the established suites'); I recommend
   reporting both, since the gap between them is the finding.
 - **Order:** P1, S1, B1 and B2 need no LLM and no decision; they could run first.
+
+### 5.6 Status of the arms (2026-09-30)
+
+| Arm | State | Where | Items |
+|---|---|---|---|
+| **P1**, Agent-Diff's tests mutated | Built and reviewed; the matched 48 running (judge v2 in policy mode, on Muse) | [p1/](p1/README.md) | 350 valid variants; 48 chosen by stated rules ([p1_selection.json](p1/runs/p1_01/p1_selection.json)) |
+| **B2**, the abstention suites projected | Done (reading) | [b2/](b2/README.md) | 2,843 items, nearly all "no operation" of the tool-withheld kind |
+| **S1**, the shortcut check on Agent-Diff's seeds | Done (no model) | [s1/](s1/README.md) | 60 plural obligations accounted for; 3 of 15 practical shortcuts defeated; 152 of 210 targets unnoticed if omitted |
+| **B1**, masking an operation | Built and checked; the 48 selected running (boundary_02's oracle) | [b1/](b1/README.md) | 71 items, 48 selected |
+
+The corrections to §5.3's S1 row: the arm used the obligation cards' plural obligations, not the suite's
+"multi-entity" label, and Calendar is out (no cards). The measures are those of s1/README.md.
+
+**For the PI** (found on the way; none needs a decision beyond the budget):
+1. **A replica gap.** The Box replica's search matches names and descriptions only; Box's search reads file content
+   (on record as B-A10 in the Box model's source ledger). It voided 5 of S1's rows, and any Agent-Diff Box test whose
+   solver relies on content search behaves differently on the replica than on Box. Reported, not fixed.
+2. **A fact to check on real Linear.** Ten of P1's underspecified variants copy a Linear team under the same name.
+   The replica allows it; whether Linear does is not documented.
+3. **A class we lack.** τ-bench's policy-forbidden actions: the service allows the action, the domain's policy
+   forbids it. Should the boundary space include policy documents when a service has them (b2/README.md)?
+4. **What "correct" means on our covers.** Our judge grades the record, not the value. 20 of the 213 "correct" trials
+   behind B1 did not make exactly the requested change. 16 set another priority than the one asked ("Urgent" as 4,
+   Low, in 13), one set a due date a year late, and 3 also changed a file's lock. The judge's prompt says so ("a
+   wrong value written to the target … does not change the outcome"), so this is by design, but any "solved" row in
+   a baseline table should say so.
 
 ## 6. What we do that they cannot
 
