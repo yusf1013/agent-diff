@@ -2,7 +2,7 @@
 
     L="python grounding/runs/fact_coverage_02/launch.py"
     $L grounding.runs.baselines_02.grade trials RUN_DIR REVIEW.json > TRIALS.json
-    AUTOGEN_BACKEND=muse $L grounding.runs.autogen_02.kit.judge2 run --trials TRIALS.json --out JUDGED_DIR
+    AUTOGEN_BACKEND=muse $L grounding.runs.baselines_02.judge run --trials TRIALS.json --out JUDGED_DIR
     $L grounding.runs.baselines_02.grade score RUN_DIR REVIEW.json JUDGED_DIR LABELS.json BLIND.json > SCORE.json
 
 - **Every trial is judged** (the latest attempt of each), not only the mechanically unclear ones: the arms are small

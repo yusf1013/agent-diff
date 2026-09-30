@@ -70,3 +70,18 @@
 - **Interim, labels only:** SN1M-BOX-T03 t1 acted on the file Leo owns instead of the one he uploaded, after one
   search that showed both fields (a misread; R:File.created_by_id, a target-present exposure the Muse arms never
   had); SN1M-BOX-T01 t3 and SN0M-BOX-T12 t3 acted on a near miss when nothing matched (policy). The rest are right.
+
+## 2026-09-30, 11:50–12:10: resumed; a key correction and a replica gap
+
+- **Resumed at 11:50** at the lead's word, 3 per arm, `--retry-infrastructure`: the 6 stopped attempts got fresh ones.
+- **SN0M-CAL-T05's answer key corrected** (the only test keyed to an occurrence id): the replica writes an edited
+  occurrence as `<series>_<local start digits>Z` (`ev_r9x_20180619T093000Z`), not Google's UTC form I had keyed
+  (`...T163000Z`), seen in trials 1 and 3 and confirmed in the replica's code. Fixed in `review_pool_01.py`; the
+  suites are regenerated after the runs (rewriting case files the runner reads could break an attempt), and
+  [judge.py](judge.py) grades every attempt with the suites' final keys. No verdict or assertion had been read.
+- **A known replica gap voids one trial:** SN0M-CAL-T05 t2 got empty lists for three valid queries (a keyword search,
+  a June 17-26 window with `singleEvents=true`, an unbounded listing) because the replica lists a recurring series
+  only when the window covers its first start (autogen_02's replica notes); it reported an empty calendar. Labelled
+  `artifact`. Trials 1 and 3 found the series (a `showDeleted` listing, then `instances`) and edited the right
+  occurrence, so the test stays valid.
+- **Replica finding (report only):** the occurrence ids use local wall-clock digits with a "Z", unlike Google's UTC.
