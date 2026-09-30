@@ -41,3 +41,15 @@ its label notes this. I saw no Muse verdict and no reference label for any execu
   `solve_population_underspecified/t3/U-G4-CAL-03-primary`, `full_03/t3/P-G4-SLK-08-I13`,
   `full_03/t2/P-AP-LIN-02-I13`, `solve_population_6b_absence/t2/AT-G4-CAL-09-I11-I12`,
   `solve_population_underspecified/t3/U-AR-BOX-24-Task_created_at` (`runs/selfhost`, log lines)
+- At the pause (06:39 UTC), the last three log lines showed Qwen's outcome for `full_03/t2/P-AR-SLK-24-I14`,
+  `full_03/t2/P-AR-CAL-21-I14` and `solve_population_underspecified/t1/U-AR-LIN-21-Issue_createdAt`. None was in
+  a queue.
+
+## Rounds
+
+| Round | Executions | Disagreements | Labels locked (UTC) | Unblinded |
+|---|---|---|---|---|
+| `labelled` | the 443 labelled | 3 | 2026-09-30 05:05:53 | `unblinded_labelled.json` |
+| `rest` | the first 680 of the other 1,696 (the replay was paused there) | 15 | 2026-09-30 06:41:13 | `unblinded_rest.json` |
+
+Labels of a later round are written after the earlier rounds were unblinded; each such label says so.

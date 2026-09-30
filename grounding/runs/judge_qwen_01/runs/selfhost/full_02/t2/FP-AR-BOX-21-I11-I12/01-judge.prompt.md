@@ -1,0 +1,92 @@
+# Trial of test `FP-AR-BOX-21-I11-I12` (box)
+
+Test form: fact probe. Target present: no.
+
+## Request given to the solver
+Add the tag archive-ready to the folder that was created on June 3, 2026, that Priya Nair modified last, that's in the Legal Hold collection, and that has exactly 3 items directly in it. If there isn't one, just tell me.
+
+## Candidates
+### Reference r1 (what the request asks to act on); records live in `box_folders`
+- No target: no record meets this reference.
+- DECOY `9501` (fact `A:Folder.created_at`, family F1): It was created on May 20, but Priya last modified it on June 3 -- the modified date lands on June 3, not the created date.
+  record: {"id": "9501", "name": "Vendor Contracts Archive", "parent_id": "0", "owned_by_id": "30000000005", "created_by_id": "30000000002", "modified_by_id": "30000000006", "size": 0, "collections": "[\"9600\"]", "created_at": "2026-05-20T09:00:00+00:00", "modified_at": "2026-06-03T09:00:00+00:00"}
+- DECOY `9502` (fact `A:Folder.created_at`, family F7): Created June 2, the day before the requested date; everything else about it matches.
+  record: {"id": "9502", "name": "Vendor Agreements", "parent_id": "0", "owned_by_id": "30000000005", "created_by_id": "30000000002", "modified_by_id": "30000000006", "size": 0, "collections": "[\"9600\"]", "created_at": "2026-06-02T09:00:00+00:00", "modified_at": "2026-06-20T09:00:00+00:00"}
+
+## Solver steps
+Run status: completed; termination: done; steps: 5.
+
+#### Step 1
+Reasoning: The user is asking about Box — the box skill applies. Let's read SKILL.md first.
+Command: read {"path": "~/.openclaw-state/2f2f8c4b37c54ce5/workspace-assistant/skills/box/SKILL.md"}
+Response: {"status": "success", "stdout": "---\nname: box\ndescription: \"Box cloud storage and file management API. Use it for anything in the user's Box account.\"\nmetadata: {\"openclaw\": {\"requires\": {\"bins\": [\"curl\"]}}}\n---\n\n# Box\n\n## Current Session\n- **Service**: Box\n- **Base URL**: https://api.box.com/2.0\n- **Description**: Box cloud storage and file management API\n\n## Environment\n- You are authenticated as a user in the Box workspace/account.\n- Authentication is handled automatically via proxy. Use placeholder tokens like `<TOKEN>` where credentials would go.\n- You execute bash commands (primarily curl) to interact with the Box API.\n\n## API Documentation\n## GET /users/me\nRetrieves information about the user who is currently authenticated.\n\n**Parameters:**\n  query:\n    - `fields` (string, optional): Comma-separated list of fields to include in the response\n\n## GET /search\nSearches for files, folders, and web links.\n\n**Parameters:**\n  query:\n    - `query` (string, **required**): The search term to look for\n    - `type` (string, optional): Filter by type: file, folder, or web_link\n    - `file_extensions` (string, optional): Comma-separated list of file extensions to filter by\n    - `ancestor_folder_ids` (string, optional): Comma-separated folder IDs to limit search scope\n    - `content_types` (string, optional): Filter by content type: name, description, file_content, comments, tag\n    - `limit` (integer, optional): Maximum number of results to return (default: 30, max: 200)\n    - `offset` (integer, optional): Pagination offset\n\n## POST /folders\nCreates a new empty folder within the specified parent folder.\n\n**Parameters:**\n  body:\n    - `name` (string, **required**): The name for the new folder\n    - `parent` (object, **required**): The parent folder object\n    - `parent.id` (string, **required**): The ID of the parent folder (use '0' for root)\n\n## GET /folders/{folder_id}\nRetrieves details for a folder, including the first 100 entries in the folder.\n\n**Parameters:**\n  path:\n    - `folder_id` (string, **required**): The unique identifier of the folder. Use '0' for root folder.\n  query:\n    - `fields` (string, optional): Comma-separated list of fields to include\n    - `sort` (string, optional): Sort by: id, name, or date\n    - `direction` (string, optional): Sort direction: ASC or DESC\n    - `offset` (integer, optional): Pagination offset\n    - `limit` (integer, optional): Maximum items to return (max: 1000)\n\n## PUT /folders/{folder_id}\nUpdates a folder. Can be used to rename or move a folder, or to add it to a collection.\n\n**Parameters:**\n  path:\n    - `folder_id` (string, **required**): The unique identifier of the folder\n  header:\n    - `If-Match` (string, optional): Conditional update - fails with 412 if etag doesn't match\n  body:\n    - `name` (string, optional): New name for the folder\n    - `description` (string, optional): New description\n    - `parent` (object, option […8962 chars omitted…] lection_id` (string, **required**): The unique identifier of the collection\n\n## GET /collections/{collection_id}/items\nRetrieves the files and/or folders contained within this collection.\n\n**Parameters:**\n  path:\n    - `collection_id` (string, **required**): The unique identifier of the collection\n  query:\n    - `fields` (string, optional): Comma-separated list of fields\n    - `offset` (integer, optional): Pagination offset\n    - `limit` (integer, optional): Maximum items per page\n"}
+
+#### Step 2
+Reasoning: Let me organize what needs to be found:
+1. A folder created on June 3, 2026
+2. Whose most recent modifier was Priya Nair
+3. That's included in the "Legal Hold" collection
+4. Has exactly 3 items directly inside it
+5. Add the tag "archive-ready" to that folder
+
+Plan:
+1. First, list the collections to find the ID of the "Legal Hold" collection.
+2. Fetch the items in that collection and look for folders.
+3. For each folder, verify: created on June 3, 2026, most recent modifier is Priya Nair, and has exactly 3 items.
+4. Add the tag.
+
+Let's start by fetching the collections first.
+Command: curl -s -H "Authorization: Bearer <TOKEN>" "https://api.box.com/2.0/collections"
+Response: {"status": "success", "stdout": "{\"total_count\":1,\"entries\":[{\"id\":\"9600\",\"type\":\"collection\",\"name\":\"Legal Hold\",\"collection_type\":\"favorites\"}],\"offset\":0,\"limit\":100}"}
+
+#### Step 3
+Reasoning: The "Legal Hold" collection's ID is 9600. Next, I'll fetch its items.
+Command: curl -s -H "Authorization: Bearer <TOKEN>" "https://api.box.com/2.0/collections/9600/items?fields=id,name,created_at,modified_at,modified_by,created_by,etag"
+Response: {"status": "success", "stdout": "{\"total_count\":2,\"entries\":[{\"id\":\"9501\",\"type\":\"folder\",\"etag\":\"0\",\"name\":\"Vendor Contracts Archive\"},{\"id\":\"9502\",\"type\":\"folder\",\"etag\":\"0\",\"name\":\"Vendor Agreements\"}],\"offset\":0,\"limit\":100}"}
+
+#### Step 4
+Reasoning: The fields didn't come back—maybe the `fields` parameter is restricting what gets displayed. In reality, entries only show id, type, etag, and name. Let me try fetching the details of each folder to check created_at, modified_at, and modified_by, and also list each folder's items.
+Command: for id in 9501 9502; do curl -s -H "Authorization: Bearer <TOKEN>" "https://api.box.com/2.0/folders/$id" ; echo; done
+Response: {"status": "success", "stdout": "{\"type\":\"folder\",\"id\":\"9501\",\"sequence_id\":\"0\",\"etag\":\"0\",\"name\":\"Vendor Contracts Archive\",\"description\":\"\",\"size\":0,\"item_status\":\"active\",\"tags\":[],\"collections\":[{\"id\":\"9600\",\"type\":\"collection\",\"name\":\"Favorites\",\"collection_type\":\"favorites\"}],\"shared_link\":null,\"folder_upload_email\":null,\"created_at\":\"2026-05-20T09:00:00\",\"modified_at\":\"2026-06-03T09:00:00\",\"trashed_at\":null,\"purged_at\":null,\"content_created_at\":null,\"content_modified_at\":null,\"created_by\":{\"type\":\"user\",\"id\":\"30000000002\",\"name\":\"Maya Chen\",\"login\":\"maya.chen@northwind.example\"},\"modified_by\":{\"type\":\"user\",\"id\":\"30000000006\",\"name\":\"Priya Nair\",\"login\":\"priya.nair@northwind.example\"},\"owned_by\":{\"type\":\"user\",\"id\":\"30000000005\",\"name\":\"Dana Whitfield\",\"login\":\"dana.whitfield@northwind.example\"},\"parent\":{\"type\":\"folder\",\"id\":\"0\",\"sequence_id\":null,\"etag\":null,\"name\":\"All Files\"},\"path_collection\":{\"total_count\":1,\"entries\":[{\"type\":\"folder\",\"id\":\"0\",\"sequence_id\":null,\"etag\":null,\"name\":\"All Files\"}]},\"sync_state\":null,\"has_collaborations\":null,\"permissions\":null,\"can_non_owners_invite\":null,\"is_externally_owned\":null,\"metadata\":null,\"is_collaboration_restricted_to_enterprise\":null,\"allowed_shared_link_access_levels\":null,\"allowed_invitee_roles\":null,\"watermark_info\":null,\"is_accessible_via_shared_link\":null,\"can_non_owners_view_collaborators\":null,\"classification\":null,\"is_associated_with_app_item\":null,\"item_collection\":{\"total_count\":3,\"entries\":[{\"type\":\"file\",\"id\":\"95011\",\"file_version\":{\"type\":\"file_version\",\"id\":\"995011\",\"sha1\":null},\"sequence_id\":\"0\",\"etag\":\"0\",\"sha1\":null,\"name\":\"Contract D.pdf\"},{\"type\":\"file\",\"id\":\"95012\",\"file_version\":{\"type\":\"file_version\",\"id\":\"995012\",\"sha1\":null},\"sequence_id\":\"0\",\"etag\":\"0\",\"sha1\":null,\"name\":\"Contract E.pdf\"},{\"type\":\"file\",\"id\":\"95013\",\"file_version\":{\"type\":\"file_version\",\"id\":\"995013\",\"sha1\":null},\"sequence_id\":\"0\",\"etag\":\"0\",\"sha1\":null,\"name\":\"Contract F.pdf\"}],\"offset\":0,\"limit\":100,\"order\":[{\"by\":\"type\",\"direction\":\"ASC\"},{\"by\":\"name\",\"direction\":\"ASC\"}]}}\n{\"type\":\"folder\",\"id\":\"9502\",\"sequence_id\":\"0\",\"etag\":\"0\",\"name\":\"Vendor Agreements\",\"description\":\"\",\"size\":0,\"item_status\":\"active\",\"tags\":[],\"collections\":[{\"id\":\"9600\",\"type\":\"collection\",\"name\":\"Favorites\",\"collection_type\":\"favorites\"}],\"shared_link\":null,\"folder_upload_email\":null,\"created_at\":\"2026-06-02T09:00:00\",\"modified_at\":\"2026-06-20T09:00:00\",\"trashed_at\":null,\"purged_at\":null,\"content_created_at\":null,\"content_modified_at\":null,\"created_by\":{\"type\":\"user\",\"id\":\"30000000002\",\"name\":\"Maya Chen\",\"login\":\"maya.chen@northwind.example\"},\"modified_by\":{\"type\":\"user\",\"id\":\"30000000006\",\"name\":\"Priya Nair\",\"login\":\"priya.nair@northwind.example\"},\"owned_by\":{\"type\":\"user\",\"id\":\"30000000005\",\"name\":\"Dana Whitfield\",\"login\":\"dana.whitfield@northwind.example\"},\"parent\":{\"type\":\"folder\",\"id\":\"0\",\"sequence_id\":null,\"etag\":null,\"name\":\"All Files\"},\"path_collection\":{\"total_count\":1,\"entries\":[{\"type\":\"folder\",\"id\":\"0\",\"sequence_id\":null,\"etag\":null,\"name\":\"All Files\"}]},\"sync_state\":null,\"has_collaborations\":null,\"permissions\":null,\"can_non_owners_invite\":null,\"is_externally_owned\":null,\"metadata\":null,\"is_collaboration_restricted_to_enterprise\":null,\"allowed_shared_link_access_levels\":null,\"allowed_invitee_roles\":null,\"watermark_info\":null,\"is_accessible_via_shared_link\":null,\"can_non_owners_view_collaborators\":null,\"classification\":null,\"is_associated_with_app_item\":null,\"item_collection\":{\"total_count\":3,\"entries\":[{\"type\":\"file\",\"id\":\"95021\",\"file_version\":{\"type\":\"file_version\",\"id\":\"995021\",\"sha1\":null},\"sequence_id\":\"0\",\"etag\":\"0\",\"sha1\":null,\"name\":\"Agreement A.pdf\"},{\"type\":\"file\",\"id\":\"95022\",\"file_version\":{\"type\":\"file_version\",\"id\":\"995022\",\"sha1\":null},\"sequence_id\":\"0\",\"etag\":\"0\",\"sha1\":null,\"name\":\"Agreement B.pdf\"},{\"type\":\"file\",\"id\":\"95023\",\"file_version\":{\"type\":\"file_version\",\"id\":\"995023\",\"sha1\":null},\"sequence_id\":\"0\",\"etag\":\"0\",\"sha1\":null,\"name\":\"Agreement C.pdf\"}],\"offset\":0,\"limit\":100,\"order\":[{\"by\":\"type\",\"direction\":\"ASC\"},{\"by\":\"name\",\"direction\":\"ASC\"}]}}"}
+
+#### Step 5
+Reasoning: Analyzing the constraints:
+
+- The folder created on June 3, 2026:
+  - 9501 "Vendor Contracts Archive": created_at 2026-05-20 → not June 3
+  - 9502 "Vendor Agreements": created_at 2026-06-02 → not June 3
+
+Wait, "created on June 3, 2026" — neither folder was created on June 3. 9501 was created on May 20, 2026, and 9502 was created on June 2, 2026.
+
+Hmm, but wait — the collection only has 2 items. Neither was created on June 3. Therefore, no matching folder exists.
+
+Double-checking: "The folder that was created on June 3, 2026, and was last modified by Priya Nair, is in the Legal Hold collection, and has exactly 3 items directly in it."
+
+- 9501: created 2026-05-20, modified by Priya Nair, has 3 items. Creation date doesn't match.
+- 9502: created 2026-06-02, modified by Priya Nair, has 3 items. Creation date doesn't match.
+
+Also, 9501's modified_at is 2026-06-03 — interesting. Maybe the user confused the created date with the modified date? 9501 was modified on June 3, 2026, and modified by Priya Nair. But the user said "created on June 3." Strictly speaking, no folder matches.
+
+The user says "if none exist, just tell me that." So I should report that none exist. But should I point out the ambiguity — 9501 was modified on June 3, which could be what they were thinking of? That might be useful. I should tell them no folder matches, but also mention that "Vendor Contracts Archive" was modified by Priya Nair on June 3, in case they meant modified rather than created. And confirm bef
+Command: 
+Response: null
+
+## Final answer
+I checked the Legal Hold collection — it contains exactly two folders, and **neither was created on June 3, 2026**:
+
+| Folder | Created | Last modified | Modified by | Direct items |
+|---|---|---|---|---|
+| Vendor Contracts Archive (9501) | **May 20, 2026** | Jun 3, 2026 | Priya Nair | 3 |
+| Vendor Agreements (9502) | **Jun 2, 2026** | Jun 20, 2026 | Priya Nair | 3 |
+
+So strictly by your criteria (created June 3), **no folder matches** and I didn't tag anything.
+
+One note: **Vendor Contracts Archive** was *modified* by Priya Nair on June 3, 2026 — if you meant "last modified on June 3" rather than "created on," that folder checks every other box. Want me to tag that one `archive-ready`?
+
+## State diff
+(no changes)
+
+## Mechanical attribution (from the diff and write commands; may be wrong)
+Acted-on records per reference: {"r1": []}. Provisional outcome: correct_absent. Provisional exposed facts: [].
+
+Give your verdict for this trial.
