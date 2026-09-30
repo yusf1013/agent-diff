@@ -59,14 +59,19 @@ def main():
         attempts[key] = {"path": a, "kind": "regular", "form": form}
     units = {mode: [u for seq in policy.population_plan(mode)["cells"].values()
                     for u in policy.population_units(seq)[0]] for mode in ("absence", "underspecified")}
+    valid_units = {mode: {u["unit"] for u in us} for mode, us in units.items()}
+    excluded_policy_trials = Counter()
     for a, _, mode in beyond.policy_trials():
         unit = a.parent.name
-        assert unit in {u["unit"] for u in units[mode]}
+        if unit not in valid_units[mode]:  # a unit the rulings exclude (2026-09-30: G4-BOX-11's and G4-BOX-02's)
+            excluded_policy_trials[mode] += 1
+            continue
         key = "/".join(a.relative_to(OC / "policy").parts[:3])
         assert key not in attempts
         attempts[key] = {"path": a, "kind": mode}
-    assert Counter(v["kind"] for v in attempts.values()) == {"regular": 1695, "absence": 732, "underspecified": 591}
-    assert len({(v["kind"], v["path"].parent.name) for v in attempts.values()}) == 1006
+    execution_counts = dict(Counter(v["kind"] for v in attempts.values()))
+    case_count = len({(v["kind"], v["path"].parent.name) for v in attempts.values()})
+    n_executions = sum(execution_counts.values())
 
     scenario_writer = {m["scenario"]: writer(m) for m, c in rows}
     policy_by_writer = {}
@@ -152,12 +157,17 @@ def main():
             c["missing_or_void" if says is None else ("TP" if says else "FN") if item["truth"] else ("FP" if says else "TN")] += 1
 
     usage = load(HERE / "numbers/qwen_usage.json")["opening_table_scope"]
-    estimate = {k: usage[k] * 3018 / 4464 for k in ("input_tokens", "output_tokens", "cached_input_tokens",
+    estimate = {k: usage[k] * n_executions / 4464 for k in ("input_tokens", "output_tokens", "cached_input_tokens",
                                                    "cache_creation_input_tokens", "total_tokens")}
     estimate["uncached_input_tokens"] = estimate["input_tokens"] - estimate["cached_input_tokens"]
-    estimate["method"] = "Historical token averages multiplied by 3018/4464; not an exact final-execution audit."
+    estimate["method"] = f"Historical token averages multiplied by {n_executions}/4464; not an exact final-execution audit."
 
-    out = {"scope": "Final 1006 methodology cases, 3018 executions; final outcomes only.",
+    out = {"scope": f"Final {case_count} methodology cases, {n_executions} executions; final outcomes only "
+                    f"(regular {execution_counts.get('regular')}, absence {execution_counts.get('absence')}, "
+                    f"underspecified {execution_counts.get('underspecified')}; policy executions of units the rulings "
+                    f"exclude: {dict(excluded_policy_trials)}).",
+           "execution_counts": execution_counts, "case_count": case_count,
+           "excluded_policy_trials": dict(excluded_policy_trials),
            "writers": groups, "policy_by_scenario_writer": policy_by_writer,
            "judge_accuracy": {k: dict(v) for k, v in accuracy.items()},
            "judge_verdicts_on_final_executions": len(verdicts),

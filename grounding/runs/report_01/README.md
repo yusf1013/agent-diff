@@ -69,3 +69,9 @@ updated from `numbers/` (RQ4, RQ6, §0.4's execution categories, the limits sect
 of the named folder) are flawed, group B. Found by the sol_score session; they had never reached
 `roadmap_01/known_defects.json`. Two probes leave the suite (563 tests); Box absence has 58 valid units and Box
 underspecified 52; every decision stands.
+
+**numbers/ rebuilt in full at 02:00 (2026-09-30)** after the two rulings: `kit/concise.py` now skips the policy
+executions of units the rulings exclude and records the counts instead of asserting the old ones. The final manifest
+is **998 cases, 2,994 executions** (regular 1,689; absence 726; underspecified 579); 18 policy executions of the 6
+excluded units and 6 regular executions of the 2 excluded probes leave it. Studies that used the earlier 3,018
+manifest (blind_review_01, judge_qwen_01, values_01) keep their own populations.
