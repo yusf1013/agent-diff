@@ -234,10 +234,18 @@ Label groups and Box tasks recur: the writer could not build scenarios on them t
   alone. Their probes were dropped because the near miss lost its trap once the target was removed, while the claim
   still passes the check in the cover. All 101 covers pass the reference check again here.
 - **Near-miss family.** 167 facts have at least one near miss through a designated substitute (F1–F8). 37 are
-  credited only through plain near misses (F0). 30 of those are state attributes, where another value is the
-  designated alternative; the other 7 are 5 text attributes, `A:Cycle.number` and `R:IssueRelation.relatedIssueId`.
-  Plain near misses expose less often than designated ones (RQ4, RQ8), so these 37 are covered by the rule but
-  tested more weakly.
+  credited only through plain near misses (F0). Under the F0 rule (roadmap, 2026-09-29), a plain difference is the
+  designated alternative where the domain model names no other, which covers 36 of the 37:
+  - 30 state attributes, where another value is the alternative;
+  - 4 facts for which the domain model names no lure: Box `A:Hub.description`, Linear `A:Document.content` and
+    `A:Team.description`, Slack `A:User.title`;
+  - 2 whose lure the 2026-09-28 rulings make flawed, so a plain near miss is their only valid form: Linear
+    `A:Cycle.number` (a cycle *named* "Cycle 4" can be what a user means) and Slack `A:Message.message_text` (Slack
+    shows a message's blocks).
+
+  The 37th, Linear `R:IssueRelation.relatedIssueId` (the related issue's direction), has only a plain near miss
+  although the domain model names a lure; it is being regenerated with its lure (regen_01). Plain near misses expose
+  less often than designated ones (RQ4, RQ8).
 - **Facts per family** (a fact counted once per family it has): F1 81, F0 71, F8 41, F7 38, F2 30, F5 22, F6 13,
   F4 5, F3 1.
 

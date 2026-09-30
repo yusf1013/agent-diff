@@ -147,9 +147,13 @@ All **204 facts** receive credit through covers; **202** also through individual
 probes. These sets overlap. Two facts rely on covers alone: Box `R:Comment.file_id` and Linear
 `R:ProjectMilestone.projectId`; their probes lose the intended distinction when the target is removed.
 
-**167 facts** have a designated decoy from F1–F8. **37** receive credit only through F0: 30 are state attributes,
-where another state is the designated alternative; seven have weaker plain-value evidence. Facts credited per
-family, with overlap: F0 71, F1 81, F2 30, F3 1, F4 5, F5 22, F6 13, F7 38, F8 41.
+**167 facts** have a designated decoy from F1–F8. **37** receive credit only through F0. Under the F0 rule
+(roadmap, 2026-09-29), a plain difference is the designated alternative where the domain model names no other: for
+30 state attributes, and for 4 facts whose domain model names no lure (Box hub description, Linear document content
+and team description, Slack user title). For 2 more, the lure is flawed by the 2026-09-28 rulings (Linear cycle
+number, Slack message text), so a plain decoy is their only valid form. The last, the Linear related issue's
+direction, has only a plain decoy although the domain model names a lure; it is being regenerated with its lure
+(regen_01). Facts credited per family, with overlap: F0 71, F1 81, F2 30, F3 1, F4 5, F5 22, F6 13, F7 38, F8 41.
 
 ## RQ3. How well does the generator perform?
 

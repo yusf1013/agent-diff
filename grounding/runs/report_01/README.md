@@ -80,3 +80,14 @@ read from the two decision files, the sources the table already cites. Format: s
   withdrawn. Source: roadmap, "Decisions (2026-09-29)"; `openclaw_eval_01/rulings.py` (`BUDGET_S = 600`,
   `over_budget`); this README, "Recount".
 - Both texts' opening note: states the update of 2026-09-30 and points here.
+
+### RQ2: the F0 rule
+
+- report.md RQ2 "Near-miss family" and report_concise.md RQ2 (the 37 facts credited only through plain near
+  misses): "30 are state attributes ...; the other 7 are 5 text attributes, A:Cycle.number and
+  R:IssueRelation.relatedIssueId" / "seven have weaker plain-value evidence" → the F0 rule's split: 30 states; 4 with
+  no lure in the domain model (Box A:Hub.description, Linear A:Document.content and A:Team.description, Slack
+  A:User.title); 2 whose lure the rulings make flawed (Linear A:Cycle.number, Slack A:Message.message_text); 1 being
+  regenerated (Linear R:IssueRelation.relatedIssueId). Sources: `numbers/coverage.json`
+  (`credited_only_through_plain_near_misses`, the 37 ids); roadmap, "Decisions (2026-09-29)", "The F0 rule".
+  Counts unchanged (37, 167, the per-family figures).
