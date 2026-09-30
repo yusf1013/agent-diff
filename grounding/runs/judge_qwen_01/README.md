@@ -24,6 +24,45 @@ Session "judge_qwen", started by the lead ("RoadMap specialist") on 2026-09-30 f
   verdicts ([headline.py](headline.py), already checked against Muse's published numbers), then the second
   labelled pass for run-to-run stability.
 
+## For the report
+
+*A paragraph and a table for the paper's judge section. Every number is from this study's files:
+`runs/selfhost/comparison_labelled.json`, `comparison_rest.json`, `no_answer.json`, `headline_partial.json` and
+`adjudication/unblinded_*.json`.*
+
+**Does the judge need a strong model?** We reran judge v2 with the self-hosted open model Qwen3.8-27B in place of
+Muse Spark 1.3: the same prompt, the same saved inputs (byte for byte) and the same output schema. We used the 443
+final executions that carry a blind reference label: 442 resolved, 192 of them labelled failures.
+- **The bar** (fixed before the run: at most 2 missed failures, and precision within 3 points of Muse's) is met
+  under both readings of a miss.
+  - Qwen called none of the 192 labelled failures a nonfailure, and one a void.
+  - Its failure precision was 97.4% (191/196), against Muse's 98.0% (192/196).
+- **Agreement.** The two judges gave the same verdict on 440 of the 443 labelled executions, and on 1,107 of the
+  1,123 executions both have judged so far (98.6%). They named the same exposed facts whenever both called a failure
+  (196/196 labelled, 316/317 unlabelled).
+- **They fail in different ways.** We adjudicated every disagreement blind. Of the 16 that differ in outcome group:
+  - 11 are runs that ended without an answer. Muse judged 10 of them by the conclusion in the agent's unsent
+    reasoning (correct absent, or incomplete), where Qwen and our reference labels say the result is not
+    established. The time-budget rule makes these harmless.
+  - 4 are failures Qwen called artifacts, one of them on a near miss our own rulings disagree on. Qwen inferred that
+    the deciding field was unreadable, from gaps in the replica notes or from the agent's own empty reads.
+  - 1 is a correct absence report that Qwen called presenting.
+  - Qwen's errors cost exposures: with its verdicts on the 1,123, the regular suite gains one false fact, and every
+    policy decision is unchanged.
+- **Cost.** Qwen costs nothing per token. It judged the 443 in 53 minutes on four GPUs (about 3.5 GPU-hours), where
+  Muse's verdicts cost $13.00 at list price.
+
+| Judge | Missed failures: called a nonfailure / any reason (of 192) | False alarms | Precision | Same facts as the label, both failing | Right in blind adjudication (of 16 disagreements) | Cost of the 443 verdicts |
+|---|---:|---:|---:|---:|---:|---|
+| Muse Spark 1.3 (Muse Code) | 0 / 0 | 4 | 192/196 (98.0%) | 192/192 | 6 | $13.00 list ($0.90 billed) |
+| Qwen3.8-27B, self-hosted | 0 / 1 | 5 | 191/196 (97.4%) | 191/191 | 10 | $0 per token; about 3.5 GPU-hours |
+
+- **Two further disagreements** differ only within a group: one on facts (Qwen right) and one on the exact outcome
+  (Muse right).
+- **Caveats:** each verdict is one draw at the model's default sampling, and Qwen's second labelled pass is pending.
+  Muse ran inside its own coding harness, while Qwen got a plain chat call. 1,016 of the 2,139 judged executions
+  have no Qwen verdict yet.
+
 ## The question
 
 How can we run judge v2 on an open model, the self-hosted Qwen3.8-27B, instead of Muse Spark 1.3 without losing its
