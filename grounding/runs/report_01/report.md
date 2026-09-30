@@ -794,9 +794,10 @@ mechanisms on every failing trial it reads ([numbers/exposure.json](numbers/expo
 - **Habits beyond grounding** (RQ7): Linear's priority scale read upside down in 70% of priority writes; making a
   presumed record true (posting the comment the request describes, reassigning an issue to the named person);
   occasional harmful side effects.
-- **Time:** 52 of 1,689 regular trials were ended by the 10-minute budget. Under the withdrawn 8-minute reading, 188
-  of 1,170 policy-population trials had run past 8 minutes (not recounted under the 10-minute budget). Some agents
-  debug a replica error until the limit (§10.4).
+- **Time:** the 10-minute budget ended 52 of 1,689 regular trials and 129 of the 1,170 trials of the four policy
+  population runs (counted with `rulings.over_budget` over each run's final attempts; the same count under the
+  withdrawn 8-minute rule gives the earlier 188; [openclaw_eval_01](../openclaw_eval_01/README.md), Summary). Some
+  agents debug a replica error until the limit (§10.4).
 
 ### 10.2 What the harness does to the measurement
 

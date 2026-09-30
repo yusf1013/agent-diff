@@ -345,7 +345,7 @@ and decisions; its `valid` keeps both cases of each duplicate pair (Linear and S
 - report.md §10.1 "Time": "104 of 1,695 regular trials ran past the 8-minute budget, as did 188 of 1,170
   policy-population trials" → 52 of 1,689 ended by the 10-minute budget (`numbers/exposure.json`, `trials`); the 188
   of 1,170 kept and marked as the withdrawn 8-minute count. **No source in `numbers/`** for 188 of 1,170, or for a
-  policy count under the 10-minute budget; left as the old figure, labelled.
+  policy count under the 10-minute budget; left as the old figure, labelled (superseded by follow-up 4).
 - report.md §10.2, opaque ids "from 65 to 80 tests" → "from 70 to 84" (RQ4's sources).
 - report.md §10.3, "8 near misses and 1 scenario were ruled out by the PI" → 10 near misses, 2 of them after
   blind_review_01's reading. Source: `numbers/generator.json` (`all` → `flawed_near_misses`); this README (the two
@@ -444,4 +444,10 @@ and decisions; its `valid` keeps both cases of each duplicate pair (Linear and S
    over-budget trials are in no file; they were counted with `rulings.over_budget` over each run's final attempts
    (the same count with the old 480-second rule gives the README's old 43, 78, 43 and 24 exactly): 23 of 408, 58 of
    411, 29 of 204 and 19 of 147, 129 of 1,170 in all. That total is the 10-minute count for report.md §10.1's
-   labelled "188 of 1,170"; it is not applied there.
+   labelled "188 of 1,170"; it is not applied there (see 4).
+4. **report.md §10.1 "Time"** (the lead's go-ahead): "Under the withdrawn 8-minute reading, 188 of 1,170
+   policy-population trials had run past 8 minutes (not recounted under the 10-minute budget)" → the 10-minute budget
+   ended 129 of the 1,170 trials of the four policy population runs, counted with `rulings.over_budget` over each
+   run's final attempts; the same count under the withdrawn 8-minute rule gives the earlier 188. Source:
+   `openclaw_eval_01/README.md`, Summary (follow-up 3). baselines_01's `report.md` gets a dated pointer to the
+   recomputed `ours.json` (11.3 / 7.5, 12.8 per 48 tests).

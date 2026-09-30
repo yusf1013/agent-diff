@@ -4,6 +4,11 @@ A manual investigation for the PI, 2026-09-28. The questions are in the [README]
 the [log](log.md). Every trial was labelled by hand before any assertion result or judge verdict was read. The numbers
 come from [compare.json](compare.json) ([compare.py](compare.py)) unless another file is named.
 
+*2026-09-30: our side was recomputed with [ours.py](ours.py) and [compare.py](compare.py), unchanged, from `full_02`
+as rebuilt under the 10-minute budget and the PI's rulings ([log](log.md), "Our side recomputed"). Per 48 of our
+tests: 11.3 facts exposed at detect@3 and 7.5 at detect@1, and 12.8 failing tests, against the 11.0, 7.2 and 12.5
+below, which keep the earlier figures.*
+
 **The agent under test:** OpenClaw with the self-hosted Qwen3.8-27B, 3 trials per test.
 **The coding agent** for the baselines: Muse Code, the agent our writer runs on.
 
