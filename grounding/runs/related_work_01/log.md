@@ -184,3 +184,22 @@ is reported, not fixed.
 - Pages and visibility never; plus a guessed team in linear_32.
 - 152 of 210 targets (72%) would go unnoticed if left out. Another 18 are noticed only by a count, which a substitute
   passes.
+
+### Cycle 9: B1, masking an operation ([b1/README.md](b1/README.md))
+
+**Built without a model:**
+- **71 items:** our covers solved in all three trials, each with the write operation all three used (FeasiGen's rule).
+- **Masks for 20 capabilities.** Each takes away the operation and its same-change equivalents: Calendar's PUT,
+  issueBatchUpdate, and attachmentCreate, which updates by URL.
+- **F by hand, per item,** and a 48-item selection (12 per service).
+- **The oracle** (boundary_02's), the documentation mask and a curl wrapper, and a runner that plugs into
+  openclaw_eval_01's runner with no change to shared code.
+
+**Checks:**
+- **The oracle on the 213 unmasked correct trials:** 193 are faithful alternatives, 17 set another value than
+  requested, and 3 changed a file's lock. That led to the note below.
+- **The dry run on live environments:** 19 of 19 calls as specified, after one fix. An introspection query asking for
+  fields without the type's name slipped through the filter.
+
+**Found on the way:** F cannot be read from the trials. Our covers are graded on the record, and 17 correct trials set
+"Urgent" as priority 4 or 0, "High" as 3, or a date a year late. F is now the request's value, written by hand.
