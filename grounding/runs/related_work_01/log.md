@@ -111,3 +111,19 @@ in a correct diff ([pilot/agentdiff_projection_pilot.json](pilot/agentdiff_proje
   (slack_105's parent, slack_67's pizza message, the destination channels), a substitution fails.
 - **Cost:** about 5 minutes an obligation by hand, with the obligation cards already written. Most of it is
   mechanical: the cards already name the columns and relationships an obligation identifies by.
+
+## 2026-09-30, cycle 4: the plan, the proposals, and the claims file
+
+**Wrote:** §4 (the four measures made operational; the feasibility of five suites; the runnable Agent-Diff plan with
+a 31-test calibration step and fixed decision rules; the ClawEnvKit arm sized), §5 (one principle for fair baselines
+of the policy, several-match and boundary forms; three arms per form with measures, predictions and costs), §6, §7,
+and the summary. At the lead's request, [claims.md](claims.md): 120 claims about other works, each quoted verbatim
+from its fetched source ([pilot/build_claims.py](pilot/build_claims.py) extracts the quotes from the fetched texts;
+0 claims without a quote), plus repository facts and the PI's own evidence.
+
+**Checked while writing:** ClawEnvKit's client accepts any OpenAI-compatible base URL (Muse can drive it) and new
+services are entries of `SERVICE_DEFINITIONS` (local clone at the upstream head, e700344203); AppWorld ships an MCP
+server; BFCL's multi-turn categories (its v3 blog); ABC's 38% (38% of τ-bench's airline subset is intentionally
+unsolvable, and a do-nothing agent passes it). Corrected on a full read: a claim about the survey's quality checks
+(restated as what its own summary lists), EnvScaler's wording (its prompts discourage look-alikes, they do not forbid
+them), a verdict inconsistency for the angle-J suites, and two unverified details.

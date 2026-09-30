@@ -8,12 +8,12 @@ report_01, other studies, the replicas or the frozen pipeline.
 ## Status
 
 - **Date:** 2026-09-30.
-- **Done:** orientation (the brief, the PI's notes, the roadmap, the concise report, the criterion, the AgentDiff
-  obligation analysis, baselines_01, the step-5 spaces, the PI's earlier baseline audits in
-  `~/PyProj/baseline_study/`, the PI's MCP-Bench runs in `~/PyProj/mcp-bench/`, the survey arXiv 2606.12191,
-  EnvScaler).
-- **Running:** the literature search and the cards.
-- **Blocked:** nothing.
+- **Done:** the deliverable, [report.md](report.md): the map (12 angles, 6 new), 34 cards, the verdict table, two
+  pilots on existing evidence (no model calls), the projection plan (Agent-Diff first; the ClawEnvKit arm sized), the
+  proposals for the policy, several-match and boundary baselines. [claims.md](claims.md) quotes every claim about
+  another work with its source and fetch date.
+- **Running:** nothing.
+- **Blocked:** nothing. Every proposed arm waits for the PI's decision.
 
 ## The investigation question
 
@@ -48,3 +48,5 @@ Every card ends in exactly one verdict:
 | [report.md](report.md) | The deliverable: the map, the cards, the verdict table, the projection plan, the baseline proposals |
 | [bibliography.md](bibliography.md) | Every work cited, with links |
 | [log.md](log.md) | The cycle log: what was read or checked, what was learned |
+| [claims.md](claims.md) | Every claim about another work, quoted from its source, with the fetch date |
+| [pilot/](pilot/) | The two pilots on existing evidence (scripts and outputs) and the claims builder |

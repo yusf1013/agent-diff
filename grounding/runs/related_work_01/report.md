@@ -7,9 +7,39 @@ theirs, from their papers or repositories, checked on 2026-09-30; numbers about 
 
 ## Status
 
-- **Done:** the map (12 angles, 6 of them new), the cards (34 works), the verdict table, a pilot on existing
-  evidence for the projection ([pilot/](pilot/)).
-- **In progress:** the projection plan (§4) and the proposals for the missing baselines (§5).
+- **2026-09-30, done:** the map (12 angles, 6 of them new), 34 cards, the verdict table, two pilots on existing
+  evidence (no model calls), the projection plan, the baseline proposals, the claims file ([claims.md](claims.md):
+  every claim about another work, quoted from its source with the fetch date).
+- **Running:** nothing. **Blocked:** nothing. Every arm proposed below waits for the PI's go-ahead.
+
+## Summary
+
+1. **The map.** Twelve lines of work touch ours; six are new beyond the brief (validity audits, test adequacy for
+   language-to-query, entity binding, abstention and feasibility, formal-specification-driven synthesis, failure
+   diagnostics). None defines tests against a model of the world the agent acts on or builds distractors for a stated
+   fact and checks them mechanically; only the ARE verifier reports its oracle's accuracy against hand labels (450
+   trajectories), and none reports it on wrong-record actions in particular.
+2. **The closest work must be cited, and is not a baseline.** "Entity Binding Failures" (2026-06-29) names our
+   failure class concurrently. It uses 60 hand-built single-step tasks with the state in the prompt. Its results
+   agree with ours: target-present look-alikes rarely bite, unresolved ambiguity almost always does. AgentAbstain
+   (2026-07) has our paired design (should-act versus should-abstain) at the request level.
+3. **Baseline verdicts** (§3). **Run:** ClawEnvKit, the automated generator for OpenClaw-like agents a reviewer
+   will name first; about $5–7 list and 144 trials (§4.5). **Project:** Agent-Diff first, then AgentDojo, WorkBench,
+   τ²-bench and a sampled AppWorld. **Adopt:** the ARE verifier as the judge-design comparison, and ABC as the frame
+   for the projection. **Explain away:** the rest, each with a reason class. MCP-Bench is explained away by the PI's
+   own audit: judge precision 0.8–10%.
+4. **The semi-automated suites leave to people what we automate.** Agent-Diff's authors add distractors and
+   ambiguity by hand; AppWorld hand-writes them per scenario; the automated generators check solvability, not
+   whether a check rejects a wrong outcome.
+5. **The projection works, and the pilots show why it matters** (§4). On saved Sonnet 5 runs of Agent-Diff's 59
+   Slack tests, its assertions pass **7 of the 13 tests with a hand-labelled wrong-record error**. On 8 obligations
+   checked by hand, its seed holds a designated near miss for 3, and its assertions still pass with that near miss in
+   place for 2 of those 3. The released engine has no closed-world check, so an extra write to a wrong record fails
+   nothing. The full projection (all 224 tests, four measures) costs about 3–4 session-days of mapping, 672 trials on
+   the self-host and about $8.5 list (§4.4).
+6. **The missing baselines** (§5). One principle: the form's concept in plain words, the same inputs, nothing of the
+   method. Three arms per form: the coding agent given the concept, a mechanical mutation of an existing suite, and a
+   projection of the established items. Four of the arms need no LLM and could run first.
 
 ## 1. The angle map
 
@@ -33,7 +63,8 @@ The brief proposed six angles; six more appeared. "New" marks those.
 **What the angles share, and what none of them has.** Across the 34 works carded below, none defines its tests
 against a model of the world the agent acts on, none builds its distractors from a stated alternative of a stated
 fact and checks mechanically that each distractor fails exactly that fact, and none reports how its own checks do
-against hand labels of wrong-record actions. The semi-automated suites leave the distractors and the ambiguity to
+against hand labels of wrong-record actions (the ARE verifier, validated on 450 hand-labelled trajectories of all
+kinds, comes closest). The semi-automated suites leave the distractors and the ambiguity to
 people (Agent-Diff: "adding distractor entities to the seed state" during human curation; AppWorld: hand-written
 setup programs per scenario). The fully automated ones generate for solvability and difficulty, not for
 discrimination (EnvScaler's seed prompt even asks for "differentiated content to avoid repetitive templates").
@@ -53,8 +84,10 @@ status quo on our own services.
 - *Built:* endpoint multisets are sampled uniformly (108 endpoints); Claude Opus 4.5 and Gemini 3 Pro write the
   prompt, seed and assertions; people check executability and raise ambiguity by removing identifiers, adding typos
   or adding distractor entities. Its coverage notion is the API surface (endpoints, operation types, task horizon).
-- *Oracle:* declarative assertions on the state diff plus a closed-world rule: any change no assertion explains
-  fails the task. No evidence is reported on whether the assertions tell a correct run from a wrong-record run.
+- *Oracle:* declarative assertions on the state diff. The paper adds a closed-world rule (any change no assertion
+  explains fails the task), but the released engine does not implement it: it evaluates the assertions only, so an
+  extra write that no assertion matches passes ([claims.md](claims.md), repository facts). No evidence is reported on
+  whether the assertions tell a correct run from a wrong-record run.
 - *Overlap:* the same services, replicas and harness contract. Our obligation analysis of 164 of its tests (Slack,
   Box, Linear; Calendar not yet done) found 440 identifying obligations; 160 of 164 tests have at least one; the
   assertions fully check 243, partly check 53 and leave 144 unchecked
@@ -190,8 +223,9 @@ and boundary items.
   5 true positives against 601 false), **2.42%** (random: 14 against 565) and **10.16%** (representative: 51 against
   451), after the PI removed duplicate allegations and complaints about calls not run in parallel. At the
   representative level its false positives were procedure complaints with no outcome difference (245), prompt
-  overreads (142), its own hallucinated facts (36), missing dependencies (23) and no qualifying target (5). The same Indianapolis-versus-New-York time-zone
-  choice was scored "critical error", "valid parameter" and "acceptable" in three judge calls
+  overreads (142), its own hallucinated facts (36), missing dependencies (23) and no qualifying target (5). The same
+  Indianapolis-versus-New-York time-zone choice was scored "critical error", "valid parameter" and "acceptable" in
+  three judge calls
   (`~/PyProj/mcp-bench/logs/judge_robustness_2026-08-03/README.md`). These are judge errors, not agent failures.
 - **Verdict: Explain away** (no seeded state by design; an oracle that cannot tell a correct outcome from a wrong one,
   measured by the PI at ≤ 10% precision even with representative environments).
@@ -259,11 +293,11 @@ the time. **Verdict: Run, as a mechanical boundary baseline** (§5): masking an 
   only that a field exists. Nothing checks that other records were left alone.
 - *Validity evidence:* stronger models win more often on 50 sampled scenarios; Claude-4.5-Sonnet's quality scores of
   the environments (not of the checks) agree with manual judgments.
-- **Verdict: Explain away** (a training reward, not a test: by construction no near misses, no absent or ambiguous
-  requests, and checks that cannot see a wrong-record write next to the right one). Running its ScenGenerator on our
+- **Verdict: Explain away** (a training reward, not a test: its prompts steer seeds away from look-alikes and
+  exclude absent or ambiguous requests, and its checks cannot see a wrong-record write next to the right one). Running its ScenGenerator on our
   services would reduce to N0 with a difficulty instruction; the prediction is N0's result (0 facts exposed).
 
-**AgentScaler, AutoForge, ScaleEnv, LOGIGEN** (Tongyi 2025; Tongyi 2025; 2026; 2026). Scaled tool environments for
+**AgentScaler, AutoForge, ScaleEnv, LOGIGEN** (2025, 2025, 2026, 2026). Scaled tool environments for
 agent RL. AgentScaler and AutoForge synthesize tasks by walking tool-call sequences and reversing them (as EnvScaler's
 authors describe them); ScaleEnv tests generated tools procedurally and expands tool dependency graphs; LOGIGEN
 compiles policies into SQLite-backed environments and verifies final states deterministically. **Verdict: Explain
@@ -275,8 +309,10 @@ generated game-like worlds. **Verdict: Explain away** (training data or worlds w
 targets solvability and correctness of the gold trajectory).
 
 The survey arXiv 2606.12191 (§5.3) sums up this line's quality control as correctness, diversity, complexity and
-fidelity; diversity is measured by embedding similarity or tool categories. None of the works it lists validates that
-a check rejects a plausible wrong outcome, and none measures coverage against a requirement space.
+fidelity. Its account of correctness lists executability, solvability (gold tool sequences reaching the target state)
+and verifiers' agreement with task completion; diversity is measured by embedding similarity or tool categories. It
+lists no check that builds a plausible wrong outcome and confirms the verifier rejects it, and no coverage measured
+against a requirement space.
 
 ### E. Agent testing from software engineering
 
@@ -368,7 +404,8 @@ parameters and functions**, **Gaia2 Ambiguity**, **UserBench** (goals revealed o
 test cases with underspecified instructions in an LM-emulated sandbox; 68.8% of its flagged failures held up under
 human review), and **AgentAbstain** and **FeasiGen** (above). **Verdict: Project, for §5**: they test request-level
 gaps (a missing argument, a missing tool, an ambiguous action), mostly in single-turn or emulated settings; none
-derives the gap from a fact of a seeded environment, and none has a presupposed-absence condition except by accident.
+derives the gap from a fact of a seeded environment, and none of their category lists names a presupposed-absence
+condition (the requested record does not exist).
 
 ### K. Formal-specification-driven synthesis (new)
 
@@ -413,7 +450,7 @@ training reward, not test adequacy).
 | MCPEval | C | Explain away: **oracle** | Ground truth is a model's own trajectory |
 | LiveMCPBench | C | Explain away: **object** | Tool retrieval at scale |
 | STAGE-Claw | B | Explain away: **object** | LLM authoring loop, already measured by N0M/N1M |
-| EnvScaler | D | Explain away: **training, oracle** | Prompts forbid near misses, absence and ambiguity; checks positive only |
+| EnvScaler | D | Explain away: **training, oracle** | Prompts ask for differentiated records and feasible, unambiguous tasks; checks positive only |
 | AgentScaler, AutoForge, ScaleEnv, LOGIGEN | D | Explain away: **training** | Tasks from tool sequences; no discrimination notion |
 | APIGen(-MT), ToolACE, TaskCraft, AgentSynth, AutoEnv | D | Explain away: **training** | Verified trajectories or worlds, not tests |
 | TheAgentCompany | A | Explain away: **object** | Long-horizon job tasks; identification incidental |
@@ -426,14 +463,256 @@ training reward, not test adequacy).
 | CheckList | E | Explain away: **object** | NLP behaviour, no environment; cited |
 | Text-to-SQL test suites, SQL mutation, XData, MC/DC | H | Explain away: **object** | Test queries, not agents; the credit rule's ancestry |
 | Agent-as-a-Judge, AgentRewardBench, Online-Mind2Web | F | Explain away: **object** | Judges for other domains; J0/J1 stand in |
-| When2Call, ToolBeHonest, NoisyToolBench, ACEBench, UserBench, ToolEmu | J | Explain away: **object** (suites) | Request-level gaps; projected in §5 |
+| When2Call, ToolBeHonest, NoisyToolBench, ACEBench, UserBench, ToolEmu | J | **Project** (categories) | Request-level gaps, not our services; projected onto the policy and boundary spaces in §5 |
 | MANTRA, AutoWebWorld | K | Explain away: **object** | Procedural compliance; cited for the formal presentation |
 | False success, fabrication, ToolFailBench | L | Explain away: **object** | Other failures (point C, RQ7) |
 
 ## 4. Projecting established suites onto our coverage space
 
-*Being written (the pilot on existing evidence is in the log, cycle 1).*
+### 4.1 The four measures
+
+The PI's four questions, made operational for a suite S and our catalog (255 facts, 213 servable):
+
+| Question | Measure | Needs agent runs? |
+|---|---|---|
+| (a) How much of our space do S's tests cover? | Per servable fact: **covered** (some test uses it, its seed holds a near miss through the fact's designated alternative, and the test is fact-sensitive), **covered through F0 only** (the near miss is a plain difference), **occurs only** (used, no near miss), **absent**. Counts per service and kind | No |
+| (b) Of the part they do not cover, how many failures do our tests expose? | Our facts exposed at detect@1 and detect@3 (existing OpenClaw results), restricted to the facts S does not cover | No |
+| (c) Of the part they cover, how many failures do their assertions miss? | Two layers. **Oracle audit:** for each (test, fact, near miss), put the near miss in the target's place in a correct diff and run S's own engine; the oracle is **blind** to that fact if the assertions still pass. **Runs:** S's tests on OpenClaw, k = 3; wrong-record failures (our judge with S's referents as the answer key, checked on a blind sample) whose runs S's assertions pass | Only the second layer |
+| (d) In the same space, does our generation expose more? | For the facts S covers: facts exposed by S's tests against facts exposed by ours, detect@1 and @3, per covered fact and per test | Uses (c)'s runs |
+
+**What "covered" means for a test that carries several facts.** Credit is per (test, fact), as in our own covers:
+a test covers fact f when one of its obligations identifies its referent with a condition that uses f, the test's seed
+holds a record that the obligation's reference query selects once f's condition is replaced by its designated
+alternative (and does not select otherwise), and the obligation is fact-sensitive (its target is present, or the
+request permits "there is none"). A test with four facts can cover four; a fact counts once for the suite, whichever
+test covers it. Underspecified obligations earn no fact credit; they map to the policy space instead (the fact whose
+missing condition leaves the choice open). Near misses must be distinct per fact within an obligation, as fdc.py
+already requires.
+
+### 4.2 The pilot on existing evidence
+
+Two pilots, no model calls ([log](log.md), cycles 1 and 3):
+
+- **Behaviour** ([slack_assertion_misses.py](pilot/slack_assertion_misses.py)): saved Sonnet 5 runs of all 59 Slack
+  tests, one trial each, with finalized hand labels. 13 tests have a wrong-record error; **the suite's own assertions
+  pass 7 of the 13**. Of the 18 wrong obligations, 10 are ones the assertions leave unchecked, 7 partly checked, 1
+  fully checked (and that run failed its assertions). 11 of the 18 are on obligations the annotation calls
+  underspecified.
+- **Coverage and the oracle** ([agentdiff_projection_pilot.py](pilot/agentdiff_projection_pilot.py)): 8 obligations of
+  6 Slack tests, the method of §4.1 by hand.
+
+| Test, obligation | Request | Designated near miss in the seed | Assertions pass with it in place |
+|---|---|---|---|
+| slack_89 O1 | the workspace's admins, by name | members sharing an admin's first name (Morgan Stanley, Robert Chen) | **yes** |
+| slack_104 O2 | who is in #engineering, count and names | people who posted there without being members | **yes** (a count of 15 also passes: it contains "5") |
+| slack_105 O3 | the thread's root message | the thread's two replies | no (the parent is pinned) |
+| slack_87 O1 | everyone who posted about login or password | none: every member of those channels is also an author | no, but an extra invitee passes |
+| slack_67 O1 | all lunch questions in #random | none (plain only) | **yes** when two of the four are left out |
+| slack_67 O2 | the pizza-combo message | none (plain only) | no (the message is pinned) |
+| slack_74 O2, slack_89 O2 | #general, #random | plain only | no (the channel is pinned) |
+
+Designated near misses exist for 3 of the 8; **the assertions are blind to 2 of those 3**. Where an assertion pins an
+id, a substitution fails; where it matches a substring of a reply, it passes. The pilot also showed that the released
+engine has no closed-world check: an extra write that no assertion matches does not fail a test (log, cycle 3).
+
+### 4.3 Feasibility of five suites
+
+| Suite | Tests and checks public | Overlap with our services | Our catalog for it | Can OpenClaw drive it | Its oracle | Rank |
+|---|---|---|---|---|---|---|
+| **Agent-Diff** | yes (repository, Hugging Face) | all four | exists (255 facts) | yes, today | state-diff assertions; no closed world in the engine | **1** |
+| **AgentDojo** (Slack 21 + Workspace 40 user tasks) | yes (Python) | Slack; calendar, drive (≈ Box), email | to build: small Python models, about 40–60 facts, a day | a bridge: serve its tool functions over HTTP and write one skill, like our curl wrapper; a day or two | deterministic Python over pre and post environment | **2** |
+| **WorkBench** (690 tasks from 69 templates) | yes | calendar, project management | to build: five tables, a day | the same kind of bridge | every database compared with the expected one | **3** |
+| **τ²-bench** (retail, airline, telecom) | yes | none | to build: small databases | a bridge plus its LLM user simulator (a second model per run) | final database against the gold actions' | **4** |
+| **AppWorld** (750 tasks, 9 apps) | yes (encrypted bundle, decryptable) | partial (files, messaging) | large (457 APIs): sample 30–50 tasks, catalog only the entities they touch | through its MCP server | state assertions with collateral-damage checks | **5**, optional |
+
+Durations in the table are estimates, not measurements. Considered and not ranked: ClawsBench (not released), Entity Binding Failures (single-step, state in the prompt: its
+taxonomy is projected on paper, below), Gaia2 (annotation interface unreleased; its universes are its own),
+ToolSandbox (phone services).
+
+**Projecting the Entity Binding Failures taxonomy** (paper-level, no runs): its conditions map onto our families as
+name collision → F8 (partial identity); document version and temporal → F7 (neighbouring value) or D (derived: "the
+latest"); account collision and near duplicate → F8 or F0; cross-system → R (a relationship across services, outside
+our single-service catalog); true ambiguity → our underspecified policy. It has nothing for F1 (sibling field or
+role), F2 (indirection), F3 (direction), F4 (hierarchy), F5 (split binding) or F6 (representation), and no absence
+condition. Its strongest failures (temporal, true ambiguity) are the ones our policy tests and F7 already target.
+
+### 4.4 The plan for Agent-Diff (runnable by a session)
+
+**What exists:** obligation cards for 164 of the 224 tests (Slack 59, Box 48, Linear 57: 440 obligations,
+`grounding/domains/<service>/analysis/`), with each card's referent set and the columns and relationships it
+identifies by; hand-labelled Sonnet 5 runs for Slack; the catalog; fdc.py; the backend's assertion engine; OpenClaw
+on the self-host.
+
+**Steps:**
+
+1. **Calendar cards** (manual; a coding-agent session following `protocols/card_extraction.md`): the 60 Calendar
+   tests, the same schema and coverage labels as the other three. About a day (an estimate).
+2. **Translation table** (manual, once per service, an hour each): card vocabulary to catalog fact ids, e.g.
+   `channels.channel_name` → `A:Conversation.channel_name`, the `messages.user_id` path → `R:messages.user_id`, two
+   conditions on one related record → the matching B fact. This gives occurrence (a) for every obligation mechanically.
+3. **Reference queries** (manual, the only creative step): one fdc.py query per resolved or absent obligation, written
+   from the card. **The check that keeps it honest is mechanical:** fdc's `check_reference` must reproduce the card's
+   referent set on the test's seed, or the query is rejected. Conditions that are topical judgments ("questions about
+   lunch") become an `in` filter over the card's referents plus the channel or author conditions that are executable;
+   the text fact then earns F0 at most. About 3 minutes an obligation (the pilot's rate, with the witness search and
+   substitution automated): 30–35 hours for 600–700 obligations, so split by service across sessions.
+4. **Near-miss search** (code): for each (obligation, fact), run the fact's designated mutation from the catalog (SUB,
+   SPLIT, LEVEL, or another state value) and DROP; the witnesses are what the mutant selects and the original does
+   not. The form check (target present, or absence permitted) comes from the card's resolution and the prompt.
+   Output: measure (a).
+5. **Oracle audit** (code): for each witness, the correct diff with the witness in the target's place, run through
+   the suite's own compiler and engine, as the pilot did. A correct diff comes from a passing labelled run where one
+   exists, or is built from the assertions. Output: the model-free half of (c).
+6. **Runs:** all 224 tests on OpenClaw with the self-hosted Qwen, k = 3 (672 trials), unchanged prompts and seeds,
+   with the suite's assertions recorded on every trial.
+7. **Grading:** our triage plus judge v2 with the cards' referent sets as the answer key (as baselines_01 graded the
+   baselines), which never goes to the suite's own oracle; a blind sample of 60 trials labelled by hand before any
+   verdict. Output: the behavioural half of (c), and (d).
+8. **Tables:** (a) to (d) per service and kind, with denominators; the flawed-test count (a test is flawed if its
+   request cannot be satisfied on its seed, as for our own).
+
+**Which tests first (a calibration step before the rest):** the 6 pilot tests; the 10 other Slack tests with a
+labelled Sonnet failure (slack_95, 97, 98, 101, 103, 107, 108, 110, 113, 115; see
+[slack_assertion_misses.json](pilot/slack_assertion_misses.json)); and 5 tests each of Box, Linear and Calendar drawn
+with a fixed seed (42), stratified by the suite's own `prompt_ambiguity` label: 31 tests. Two mappers (the session
+and a second agent, independently) write the reference queries for these; agreement on the facts credited is
+reported before the rest is mapped.
+
+**Cost:** mapping, about 3 to 4 session-days for about 600–700 obligations (manual work by the PI's definition); runs,
+672 trials on the self-host (no charge; about 2 to 3 hours at 12 in flight, scaled from baselines_01's estimate of
+1,700 trials in 5 to 7 hours); judge v2 on about 45% of trials at $0.028 list each, about **$8.5 list (about $0.6
+billed)**; 60 blind labels, a few hours.
+
+**Decision rules fixed before the runs** (so the numbers cannot be steered): a fact is covered only through a witness
+fdc confirms on the seed; the oracle is blind to a fact if any of its witnesses passes; a trial's failure counts for a
+fact only if the agent acted on (or reported) that fact's witness, as in our regular suite.
+
+### 4.5 The ClawEnvKit arm (the Run verdict), sized
+
+**Why it is needed:** it is the released, automated generator of tasks, fixtures and checks for OpenClaw-like
+agents; a reviewer will ask why it is not the baseline. N0 and N1 answer "a coding agent asked plainly"; ClawEnvKit
+answers "an established automated generator".
+
+**Plan:**
+1. Register Box, Calendar, Linear and Slack in its `SERVICE_DEFINITIONS` (description, actions, fixture shape) from
+   the same API documentation N0 received; no change to its prompts or generation code. Half a day.
+2. Generate **48 tasks, 12 per service** (the baselines' size) with **Muse** as its model (its client accepts any
+   OpenAI-compatible base URL), keeping the roadmap's rule that baselines run on Muse.
+3. Convert each task's fixtures into an Agent-Diff seed (a converter from its fixture JSON to seed tables; a day) and
+   run the tasks on OpenClaw with the self-hosted Qwen, k = 3: **144 trials**.
+4. Grade three ways: its own GradingEngine (over an audit log rebuilt from each trial's API calls; half a day for the
+   adapter), our structural review of §1 of baselines_01 (facts exercised properly, flawed tests), and our judge with
+   the review's intended targets as the answer key; 30 blind labels.
+
+**Cost at list prices** (estimated from baselines_01's measured per-test costs: N0 $0.011 and N0M $0.025 per test;
+ClawEnvKit makes about 2 to 3 calls a task, a long generation call and a short feasibility judge): generation
+**$1.5–3**; its LLM rubric grader, about **$1–2**; our judge, about **$2**; in all **about $5–7 list (under $0.5
+billed)**; 144 trials on the self-host; about 2 days of adapter work.
+
+**Prediction, written before any run:** its tasks leave the target present with plain look-alikes at most (its
+fixtures are generated to make the task feasible), so, like N0M, it exposes **0 or 1** facts; its own grader reports
+failures that are not wrong-record failures (calls and parameters, not state), so its precision on wrong-record
+failures is below N0's assertions (0.54).
 
 ## 5. Baselines for the policy, several-match and boundary tests
 
-*Being written.*
+### 5.1 The principle
+
+A fair baseline for a test form gets what the roadmap's concept row gives G0 for regular tests, and nothing of the
+method:
+
+| Given to the baseline | Absence | Underspecified | Several-match | Boundary |
+|---|:-:|:-:|:-:|:-:|
+| The form's concept in plain words, and what passing means | ✓ | ✓ | ✓ | ✓ |
+| The service's API docs, how to seed records, the test format, the scope (identifying records only) | ✓ | ✓ | ✓ | ✓ |
+| The twins' reviewer lines (different properties; challenging but passable; neutral ids) | ✓ | ✓ | ✓ | ✓ |
+| Our catalog, the substitute menus, the route tables, the boundary derivation, the method | – | – | – | – |
+
+The concept lines, one per form: *absence*: "the request names a record that does not exist; the agent should say so
+and change nothing"; *underspecified*: "more than one record fits; the agent should ask which one before changing
+anything"; *several-match*: "the request asks for every record that fits; the agent passes if it acts on all of them
+and nothing else"; *boundary*: "the request asks for a change this user cannot make here; the agent should say so and
+change nothing it was not asked to change".
+
+Everything else is shared with our arm: the same solver, k = 3, the same judge with the baseline's own intended
+outcome as the answer key (never shown to the baseline's own oracle), a blind sample labelled before any verdict,
+flawed tests counted as flawed, and each form's own unit of requirement. Three kinds of arm per form: the coding
+agent given the concept (the analogue of N0M), a mechanical mutation of an existing suite (what a software-engineering
+reviewer would try first), and a projection of the established items that exist (§2, angle J).
+
+### 5.2 Policy tests: absence and underspecified
+
+Our space: two requirements per covered fact, 408 fact–mode requirements; our 441 valid cases reach 370 of them.
+
+| Arm | What it is | Measure | Cost |
+|---|---|---|---|
+| **P0**, the coding agent with the policy concepts | N0M's inputs plus the absence and underspecified lines; 48 tests (6 per service and mode) | Fact–mode requirements exercised properly (the absent request's near misses each fail one fact; the underspecified request leaves one condition open or has a second full match), and failed @1 and @3 | Generation about $1.2 list (N0M's); 144 trials; judging about $2 |
+| **P1**, mutation of the status quo | From Agent-Diff's own tests, mechanically: delete the target from the seed (absence), or clone the target under a new id (underspecified); nothing else changes. No LLM | The same, over the same budget of variants per service | Code only; 144 trials |
+| **P2**, projection of established items | Agent-Diff's own underspecified obligations (20 in Slack; 11 of Sonnet's 18 wrong obligations), AgentAbstain's missing-parameter and ambiguous-action pairs, ToolEmu's underspecified cases, BFCL's missing parameters, Gaia2's Ambiguity split | Which fact–mode requirement each item exercises, if any | Reading only |
+| P3, optional | IntellAgent with our two policies as its "system prompt" and our schemas; events converted to seeds | As P0 | As the ClawEnvKit arm |
+
+**What each isolates.** P0: our derivation against an LLM told the concept. P1: our derivation against the generic
+mutation. Ours differs from P1 in exactly one designed way: our absence variant removes the target but keeps
+designated near misses that each fail one fact, and our underspecified variant opens one condition at a time, so a
+failure names a fact. **Prediction:** P0 and P1 expose many absence failures (the agent acts anyway, as N0's
+presupposing tests showed: all its failing trials were there), attributed to few distinct facts; the established
+items (P2) sit at the request level (a missing argument or tool), not on a fact.
+
+### 5.3 Several-match
+
+Our space: 6 kinds of request with a route table, 33 shortcuts, 19 of them lazy and practical to defeat; our
+automation defeats all 19.
+
+| Arm | What it is | Measure | Cost |
+|---|---|---|---|
+| **S0**, the coding agent with the several-match concept | N0M's inputs plus the several-match line; 48 tests | Shortcuts defeated on the baseline's seeds, by the same shortcut check the automation runs ([several_match_auto_01/checks.py](../several_match_auto_01/checks.py)); a test outside the six kinds earns no shortcut; misses and near misses acted on @1 and @3 | About $1.2 list; 144 trials |
+| **S1**, projection of the status quo | Agent-Diff's multi-entity tests (20 Box, 49 Calendar, 24 Linear, 26 Slack; the suite's own label, a proxy for plural requests): the shortcut check on their seeds, and their assertions' view of an omitted target (the pilot: slack_67 passes with two of four targets left out) | Shortcuts defeated; oracle blind to omissions | Code only |
+| Ablation, not a baseline | Our easy tier alone against easy plus hard | Already in several_match_auto_01's data | None |
+
+**Prediction:** S0's targets sit in plain view (the easy tier), so it defeats "stopping early" and little else;
+pages, hidden visibility and other scopes need a trap no one writes unprompted.
+
+### 5.4 Capability boundaries
+
+Our space: 152 elements derived from the catalog, 93 faithful to the replica, in five classes: permission, read-only
+field, state precondition, value limit, no operation. Our tests are valid for 90 of 93; 49 of 89 fail at least once.
+
+| Arm | What it is | Measure | Cost |
+|---|---|---|---|
+| **B0**, the coding agent with the boundary concept | N0M's inputs plus the boundary line; 48 tests | Faithful boundary elements with a valid test (checked on the replica, as our filter does) and failed @1 and @3, by class; failure kinds (substitute, re-creation, side change, false claim) | About $1.2 list; 144 trials |
+| **B1**, mechanical infeasibility (FeasiGen's idea) | Take tests the agent solves (our covers, or Agent-Diff's) and remove the needed operation: drop it from the skill's documentation and refuse it in the curl wrapper | The same; all land in "no operation" | Code only; 144 trials |
+| **B2**, projection of established items | AgentAbstain's insufficient-tools pairs, ToolBeHonest's three scenarios, BFCL's missing functions, When2Call's "cannot answer" | Which of the five classes each item exercises | Reading only |
+
+**Prediction:** B0 writes mostly "no operation" and permission requests, several of them not boundaries on this
+replica (the twins already wrote a bot deleting others' messages and an actor deleting a calendar it does not own,
+by accident); B1 and B2 cover "no operation" only. Read-only fields, state preconditions and value limits stay
+ours.
+
+### 5.5 What stays the PI's choice
+
+- **Budget:** 48 tests per arm (as now) or matched by tokens (the PI's idea in section G of the notes). Every arm above
+  is cheap enough to run at either.
+- **Stronger baseline agents:** Muse only (the roadmap's rule) or also Sonnet 5 and GPT-6.1 Sol through Codex.
+- **The unit:** fact–mode requirements (ours) or request-level categories (the established suites'); I recommend
+  reporting both, since the gap between them is the finding.
+- **Order:** P1, S1, B1 and B2 need no LLM and no decision; they could run first.
+
+## 6. What we do that they cannot
+
+| Capability | Ours | Closest prior work |
+|---|---|---|
+| A requirement space from a model of the world the agent acts on | 255 facts, 213 servable, each with a designated alternative where one exists | API-surface coverage (Agent-Diff: 108 endpoints); coverage of the agent's own specification (Skill Coverage, workflow structure) |
+| Near misses built for a stated fact and checked mechanically | Every decoy fails exactly its fact on the seed (fdc) | Hand-written distractors (AppWorld, Agent-Diff curation, EBF's conditions); neighbour queries for SQL (Zhong et al.), not agents |
+| The forms that make a fact bite | Probes with absence permitted; policy variants derived per fact | Paired should-act/should-abstain tasks (AgentAbstain), one perturbation per pair, not per fact |
+| An oracle validated on wrong-record actions | Triage plus judge v2: 309 of 310 blind labels | ARE verifier (0.99/0.95 on 450 labels, write matching); most others unvalidated or validated by agreement ratings |
+| Flawed tests found and counted | Checks, cold reader, rulings; 565 of 582 derived candidates valid | ClawEnvKit's structural validator; ABC's audits after the fact |
+
+## 7. Limits of this study
+
+- **Coverage of the literature:** the search ran on one day (2026-09-30) through the survey's bibliography, arXiv and
+  web search; the angles are a map, not a systematic review. Works after July 2026 are thinly covered.
+- **Claims about other works** rest on their papers and repositories as fetched on 2026-09-30 ([claims.md](claims.md)
+  quotes each). Their numbers are theirs; the PI's MCP-Bench audit is unpublished.
+- **The pilots are small:** 59 Slack tests with one Sonnet 5 trial each; 8 obligations for the projection method.
+  They show the method works and what it costs, not the suite-wide numbers.
+- **No new model runs:** every arm in §4 and §5 is a proposal with a cost and a prediction, none run.
