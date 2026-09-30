@@ -5,8 +5,11 @@ Session "values" (second assignment of the day from the lead session "RoadMap sp
 
 ## Status
 
-- **2026-09-30, 03:05 EDT.** Generation done: 96 of 96 tests load, every session on its first round (no repair
-  turn needed). Next: the blind review of the pool (96 tests and 20 of ours), then the lead's go-ahead for the runs.
+- **2026-09-30, 03:15 EDT.** Blind review done ([review_pool_01.py](review_pool_01.py), committed before the pool's
+  manifest was read): 109 of 116 valid, SN0M 44 of 48, SN1M 45 of 48, ours 20 of 20. Answer keys and the keyed suites
+  built (`keys.py`). Next: the runs, then the labels of the blind sample, then the grading.
+- **2026-09-30, 02:33 EDT.** Generation done: 96 of 96 tests load, every session on its first round (no repair turn
+  needed).
 
 ## The question
 
@@ -38,6 +41,52 @@ same 48-test budget, and measure them the same way.
 - **Grading:** the tests' own AgentDiff assertions (`baselines_01/assertions.py --twin`), and our triage plus judge
   v2 with the review's answer key. A blind sample of 30 trials per arm, drawn before the runs and labelled by hand
   before any assertion result or verdict. Muse cap $5 billed.
+
+## The review (before any run)
+
+Under baselines_01's rules ([n0/review_rules.md](../baselines_01/n0/review_rules.md)), by hand, in one shuffled pool
+(`runs/pool_01`: 96 Sonnet tests and 20 of ours, anonymous ids R001–R116). The per-arm records are
+`runs/gen_<arm>_01/review.json`; `compare.py`'s `structure` and `variety.py` read them unchanged.
+
+| 48 tests each | N0 (Muse) | N0M (Muse) | **SN0M (Sonnet)** | N1 (Muse) | N1M (Muse) | **SN1M (Sonnet)** | Ours per 48 |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Valid before the runs | 45 | 42 | **44** | 44 | 41 | **45** | all |
+| Near misses through a designated substitute (F1–F8) | 9 of 48 | 17 of 53 | **57 of 113** | 21 of 58 | 19 of 66 | **75 of 130** | 81 of 99 |
+| ... families used | F7, F8 | F1, F6–F8 | **F1, F3, F4, F6–F8** | F1, F4–F8 | F1, F4–F8 | **F1, F4–F8** | F1, F2, F4–F8 |
+| Facts exercised | 49 | 55 | **61** | 67 | 76 | **92** | 82.1 |
+| Facts exercised properly (valid tests) | 7 | 12 | **22** | 17 | 13 | **37** | 34.0 |
+| Distinct deciding details | 32 | 38 | **49** | 46 | 51 | **68** | – |
+| Right record present (sets included); probe form (no target, absence permitted) | 39; 0 | 44; 0 | **40; 0** | 40; 0 | 44; 0 | **43; 0** | 18%; 82% |
+| Presupposing; underspecified; sets | 9; 0; 3 | 4; 0; 4 | **6; 2; 4** | 8; 0; 0 | 4; 0; 0 | **5; 0; 1** | none in the regular suite |
+| Generation, list-price equivalent (billed) | $0.51 ($0.03) | $1.20 ($0.06) | **$1.39 ($0)** | $0.67 ($0.03) | $1.14 ($0.06) | **$1.81 ($0)** | $5.44 ($0.31) |
+
+Sources: baselines_01 `compare.json` for the Muse arms (valid before the runs: 48 less `invalid_before_runs`;
+report_01's Table 14 counts N1 as 41 valid, after 3 more flaws found in its runs) and `ours.json` for ours (the
+expectation over draws of 12 Phase 4 tests per domain); the Sonnet arms from this review. Sonnet's cost is Claude
+Code's own list-price estimate; the plan bills $0.
+
+- **Sonnet seeds about twice as many look-alikes per test** (2.4 and 2.7 near misses per test against 1.1 to 1.4),
+  and three to four times as many of them offer a designated substitute. SN1M, which has the fact list, exercises 37
+  facts properly, at the level of our 34.0 per 48 tests; SN0M, without it, 22.
+- **The form did not change:** 40 and 43 of 48 tests still leave the right record in the workspace, and no test is
+  a probe (no target, absence permitted). That is the form that did not bite for the Muse arms (baselines_01 §3, §8).
+  The runs will say whether the richer look-alikes bite anyway.
+- **Fewer invalid tests** (4 and 3 against 6 and 7), and the same kinds: the bot deleting others' Slack messages
+  (cause a, SN0M-SLK-T03, T08, T12), Slack's `white_check_mark` missing from the replica's reaction list (b,
+  SN0M-SLK-T05, SN1M-SLK-T08), the replica's 501 on removing a hub item (b, SN1M-BOX-T11), and who added a hub item,
+  which the API does not show (f, SN1M-BOX-T12). One valid test's own oracle cannot fail a wrong outcome
+  (SN0M-CAL-T05: every count allows 0); as in baselines_01, it stays valid and its oracle is scored apart.
+- **Calibration on our 20 tests** (rule 8, compared after the review): the same target in 20 of 20, the same
+  near-miss records in 20 of 20, the same fact on 23 of 26 shared near misses, and the same designated-or-plain call
+  on 23 of 26 (the family itself on 19).
+- **Two readings of the rules I applied** (no precedent in baselines_01's reviews): a near miss gets a family only
+  when the catalog lists that family for its fact, otherwise F0 (baselines_01 never used an unlisted one); and a
+  request for a set gets no proper credit (rule 6 names the target-present and absence-permitted forms). Crediting
+  sets would add one fact to each Sonnet arm (SN0M 23 with R:File.parent_id, SN1M 38 with D:overdue); no Muse set
+  test had a designated near miss.
+- **Reviewer:** this review is mine; baselines_01's Muse arms were reviewed by another session with the same rules.
+  The near-miss counts are counts of seeded records failing exactly one condition and depend little on the reviewer;
+  the family and proper calls depend more on judgment.
 
 ## Layout
 
