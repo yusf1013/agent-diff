@@ -5,13 +5,14 @@ studies before it: [fact_coverage_01](../fact_coverage_01/README.md) (the catalo
 [autogen_01](../autogen_01/README.md) and [autogen_02](../autogen_02/overview.md) (the generator, the judge and the
 toy harness's runs), [openclaw_eval_01](../openclaw_eval_01/README.md) and [completion_01](../completion_01/README.md)
 (roadmap 6a and 6b on OpenClaw), and [judge_baselines_01](../judge_baselines_01/README.md) (6c). Two sections
-report studies on other branches: the generator baselines (`exp/baselines-01`) and step 5's extensions
-(`exp/automation-01`).
+report studies that were on other branches when the report was written and are now on main: the generator
+baselines ([baselines_01](../baselines_01/report.md)) and step 5's extensions
+([several_match_auto_01](../several_match_auto_01/report.md), [boundary_auto_01](../boundary_auto_01/report.md)).
 
 | Path | What |
 |---|---|
 | [report.md](report.md) | The report |
-| [report_concise.md](report_concise.md) | Shorter report: 1,006 methodology cases, final OpenClaw executions, combined writer groups, and estimated solver costs |
+| [report_concise.md](report_concise.md) | Shorter report: the final methodology cases (998 after the rulings of 2026-09-30), final OpenClaw executions, combined writer groups, and estimated solver costs |
 | [kit/](kit/) | One script per table group; each reads committed run records and writes one JSON file. No model calls, no agent runs |
 | [numbers/](numbers/) | The scripts' outputs, which the report's tables cite |
 
@@ -32,18 +33,16 @@ python grounding/runs/fact_coverage_02/launch.py grounding.runs.report_01.kit.co
 ```
 
 `concise.py` selects final executions, combines writers, filters the blind-label and judge-comparison samples,
-and recomputes the equal-budget Muse comparison. It reads baseline summaries from `runs/baselines_01` or, if
-still unmerged, `.claude/worktrees/baselines-01/grounding/runs/baselines_01`, and includes those summaries in its
-output. The concise report's token estimate scales the historical average to 3,018 executions; it is not an
-exact usage audit of that subset. Its price table states the rates, sources and calculation separately.
+and recomputes the equal-budget Muse comparison. It reads baseline summaries from `runs/baselines_01` (the worktree fallback is
+historical) and includes those summaries in its output. The concise report's token estimate scales the historical
+average to the manifest's execution count (2,994 since 2026-09-30); it is not an exact usage audit of that subset. Its price table states the rates, sources and calculation separately.
 
 `numbers/awareness_full_03.json` and `numbers/awareness_full_04.json` come from openclaw_eval_01's
 `test_awareness.py` on those runs.
 
 `qwen_usage.py` uses only the Python standard library and reads the original proxy metadata, including cached
 input and missing usage, without changing run evidence. It separates the main evaluation, RQ8's fresh baseline
-and ablation runs, and stopped/smoke runs. If the baseline branch is still separate, pass
-`--baselines-root .claude/worktrees/baselines-01/grounding/runs/baselines_01` from the repository root.
+and ablation runs, and stopped/smoke runs. The `--baselines-root` option is historical; the baselines are on main.
 
 ## Recount under the 10-minute budget (2026-09-30)
 
@@ -61,8 +60,7 @@ the earlier reading of 8 minutes (runs between 8 and 10 minutes counted as timed
 | Box absence rate | 0.79 [0.74, 0.85] | 0.77 [0.71, 0.83] |
 | Slack underspecified rate | 0.82 [0.75, 0.89] | 0.77 [0.69, 0.84] |
 
-**The report texts (report.md, report_concise.md) still carry the 8-minute numbers**; their tables are to be
-updated from `numbers/` (RQ4, RQ6, §0.4's execution categories, the limits section).
+The report texts were brought to these numbers on 2026-09-30 (see "Text changes (2026-09-30)" below).
 
 **Two of the PI's blind-review rulings applied to the rulings file (2026-09-30, 01:30):** G4-BOX-11's witness 8201
 ("Seaport Archive 2024" matches "the Seaport Archive folder") and G4-BOX-02's witness 8112 (a copy in a subfolder
