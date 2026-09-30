@@ -373,6 +373,7 @@ def decide_population(mode: str, verdict_dirs: list[Path], first_pass_dirs: list
         for u in valid:  # Box units the first pass ran keep its verdicts; nothing else does
             if u["domain"] == "box" and u["unit"] in ran and u["unit"] not in outcomes:
                 outcomes[u["unit"]] = earlier.get(u["unit"], {})
+        valid = rulings.merge_duplicate_units(valid, outcomes)  # the PI, 2026-09-29: a duplicate pair counts once
         missing = [u["unit"] for u in valid if not outcomes.get(u["unit"])]
         per_unit = []
         for u in valid:

@@ -29,6 +29,26 @@ FORMS = (("AT-", "absence twin"), ("UC-", "clone"), ("U-", "underspecified"), ("
 # limit; the earlier 480-second reading (trials between 8 and 10 minutes counted as timed out) is withdrawn.
 BUDGET_S = 600
 
+# Duplicate policy units (the PI, 2026-09-29: count each pair once). The rule of one unit per dropped condition made
+# two units of one request when two conditions gave the same words: the pair's request, actor and seed are
+# identical, so it is one test. The second unit's trials count as further trials of the first.
+DUPLICATE_UNITS = {"U-AP-SLK-03-message_reactions_user": "U-AP-SLK-03-message_reactions",
+                   "U-G4-LIN-14-Issue_assigneeId-B": "U-G4-LIN-14-Issue_assigneeId"}
+
+
+def merge_duplicate_units(valid: list[dict], outcomes: dict[str, dict]) -> list[dict]:
+    """Fold DUPLICATE_UNITS into their primaries: the duplicate leaves `valid`, and its trials join the primary's
+    outcomes under distinct keys. Returns the reduced list."""
+    keep = []
+    for u in valid:
+        primary = DUPLICATE_UNITS.get(u["unit"])
+        if primary is None:
+            keep.append(u)
+            continue
+        for trial, outcome in (outcomes.get(u["unit"]) or {}).items():
+            outcomes.setdefault(primary, {})[f"{trial}:{u['unit']}"] = outcome
+    return keep
+
 
 def over_budget(attempt: Path) -> bool:
     """The trial ran out the solver's budget: OpenClaw's turn limit (600 s) ended it, or its agent time minus

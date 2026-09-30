@@ -19,7 +19,7 @@ are needed; this is reading, searching and analysis. Web search and fetch are yo
 
 ## Materials, in this order
 
-- The PI's own account of the earlier baseline work, in the notes file's Appendix C (the MCP-Bench experience:
+- The PI's own account of the earlier baseline work, in the notes file's Appendix D (the MCP-Bench experience:
   contrived tasks on public data, an over-flagging judge, false positives such as New York versus Indianapolis time;
   the augmentation attempt with LLM-generated environment data) and section D.
 - `~/PyProj/baseline_study/`: earlier coding-agent analyses of candidate baselines, mostly rejected for not being
