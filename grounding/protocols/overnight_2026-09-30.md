@@ -51,9 +51,12 @@ section. Decisions that stand go to the [roadmap](roadmap.md); this is the recor
    a stated change, 90 not on ordinary accounts; a 40-test case study proposed at $0 in plans.
 9. The 10-minute budget applied everywhere; both report texts brought to the current numbers (998 cases, 2,994
    executions after two of your blind-review rulings reached the rulings file); a framing proposal for your point 5.
-   One correction under way (13:xx): the 10-minute rebuild of the policy numbers had silently dropped the budget rule
-   for the Qwen round's 1,743 policy verdicts (their attempt paths pointed into a removed worktree); no decision
-   changes, some Qwen policy rates move up; the sol_score session is rebuilding every affected file.
+   One correction (13:00–13:50): the 10-minute rebuild of the policy numbers had silently dropped the budget rule
+   for the Qwen round's 1,743 policy verdicts (their attempt paths pointed into a removed worktree). Rebuilt by the
+   sol_score session with the rule restored: no pooled decision changes and no Sol number changes; the Qwen policy
+   rates move up (the largest: Linear absence 0.61 → 0.66, Box underspecified 0.48 → 0.55, Linear underspecified
+   0.41 → 0.48; Table 12's facts at detect@3 in the policy space 157/111 → 163/136). Each file's old → new is
+   logged in report_01's README ("Follow-up: the budget rule restored") and in sol_eval_01's.
 
 **Decisions for you**
 1. The Sonnet round: OpenClaw's loop on an API key (about $263 list for the full suite, the only same-harness
@@ -380,3 +383,26 @@ section. Decisions that stand go to the [roadmap](roadmap.md); this is the recor
   studies: the note is the thing to fix); Calendar occurrence ids with local digits plus "Z"; Linear
   teams{projects{nodes}} fails. Rule readings for the PI: a family only when the catalog lists it for the fact; sets
   get no proper credit; a self-corrected write on a decoy counts; a timeout after the right write is a failing test.
+- 13:5x sol_score done (f618a40eba..c3e278e4a1; main fast-forwarded to c3e278e4a1; `score regress` and
+  `policy regress` pass on main): the budget rule restored for the first round's policy verdicts, with every affected
+  file rebuilt and each change logged old → new. 140 pooled decisions checked, none changed; Sol's numbers unchanged
+  (only qwen* fields differ). An independent cross-check: judge_qwen_01's headline.py, which finds attempts through
+  its own manifest, reproduces all eight rebuilt cells and the regular score. Rates that moved (failing/usable):
+  Box absence 126/165 0.764 → 135/173 0.780; Calendar absence 0.815 → 0.817; Linear absence 160/263 0.608 → 193/294
+  0.656; Slack absence 0.600 → 0.612; Box underspecified 65/136 0.478 → 85/155 0.548; Calendar underspecified
+  0.457 → 0.511; Linear underspecified 83/205 0.405 → 114/236 0.483; Slack underspecified 0.768 → 0.802 (still
+  undecided). Secondary reading (any_of_runs): Box and Calendar underspecified "not" → "undecided". regen_01's
+  Muse-only suite: Linear absence 0.586 → 0.621, Box underspecified 0.455 → 0.496, Calendar underspecified
+  0.548 → 0.593, Linear underspecified 0.456 → 0.505, the rest within 0.01; one by-source decision moves (Phase 4's
+  own Calendar absence units 0.875 undecided → 0.877 policy-level, p10 0.807). sol_eval_01's Qwen columns: first
+  half range 0.44–0.90 → 0.51–0.91; the whole suite's facts failing (detect@3/@1) absence 150/128 → 156/136,
+  underspecified 106/79 → 126/96; the regenerated units alone unchanged. report_01, Table 12 (the per-fact space):
+  detect@3 157/111/268 → 163/136/299, detect@1 129/80/209 → 142/107/249; RQ8's Phase 4 underspecified units failing
+  32 (29 designated) → 41 (38). judge_qwen_01's headline (rebuilt under the 10-minute budget, today's rulings and
+  the duplicate merge, none of them the lost rule): all eight decisions match with Qwen's verdicts; 140 of 563
+  regular tests against 139. Two things beyond the letter of the assignment, accepted: headline.py merges duplicate
+  pairs as decide_population does; `population_outcomes` warns on stderr when an attempt cannot be found (silent on
+  all 21 real verdict folders). Not touched, noted: autogen_01/kit/score_run.py:28 compares recorded attempt paths
+  as strings (re-running phase4 score for full_02/03/04 from another checkout would void their judged trials);
+  openclaw's first-pass decisions_{mode}.json never applied the budget rule (a dated record). Roadmap rows 6a, 6b,
+  6e, 6h and 7 brought current. Sol's regen-half run evidence committed at df1dc89750 (14,554 files).
