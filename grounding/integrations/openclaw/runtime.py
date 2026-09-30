@@ -192,7 +192,10 @@ def build_state_dir(state: Path, route: str, domain: str, variant: str | None = 
         # models OpenClaw's fallback is the label "off", which sends no reasoning setting and leaves the model at
         # OpenAI's default effort; the same label as the Qwen rounds, set explicitly, keeps the record comparable.
         agent["thinkingDefault"] = spec.get("thinking", "medium")
-        copy_auth_store(agent_dir)
+        if main_store_layout():
+            copy_auth_store_as_main(state, agent_dir)
+        else:
+            copy_auth_store(agent_dir)
     else:
         provider = copy.deepcopy(real["models"]["providers"]["purdue"])
         if spec["model"]:
@@ -522,6 +525,32 @@ def copy_auth_store(agent_dir: Path) -> None:
     dest_catalog.chmod(0o600)
 
 
+def main_store_layout() -> bool:
+    """AGENTDIFF_OPENAI_STORE=main (since 2026-09-30; off by default, so runs started without it keep the layout
+    above): the login store goes to the attempt state's own main agent instead of the attempt agent."""
+    return os.environ.get("AGENTDIFF_OPENAI_STORE") == "main"
+
+
+def copy_auth_store_as_main(state: Path, agent_dir: Path) -> None:
+    """The login where OpenClaw looks for inherited profiles, and a fresh store for the attempt agent.
+
+    The copied store is owned by agent "main" (its schema_meta row), so the attempt agent cannot open it as its own:
+    memory_search and the auth failover after a stall both failed with "agent database belongs to agent main;
+    requested agent assistant". Here the copy becomes the attempt state's main agent store
+    (<state>/agents/main/agent), which OpenClaw reads through for a secondary agent that has no profile of its own
+    (docs/auth-credential-semantics.md: "Agent auth inheritance is read-through"; the main store is always
+    agents/main/agent under OPENCLAW_STATE_DIR). The attempt agent's directory gets no store: OpenClaw creates one
+    owned by the attempt agent. Model catalogs are agent-local (plugins/<id>/catalog.json in each agent's
+    directory), so the catalog, a plain JSON file, goes to both."""
+    main_dir = state / "agents" / "main" / "agent"
+    copy_auth_store(main_dir)
+    agent_dir.mkdir(parents=True, exist_ok=True)
+    catalog = agent_dir / "plugins" / "openai" / "catalog.json"
+    catalog.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copyfile(main_dir / "plugins" / "openai" / "catalog.json", catalog)
+    catalog.chmod(0o600)
+
+
 def session_usage(rows: list[dict]) -> dict:
     """Token usage from OpenClaw's session transcript (the assistant messages' `usage`), in proxy_usage's shape.
     Used when no proxy sits between OpenClaw and the model (the "openai" backend)."""
@@ -701,7 +730,8 @@ def run_attempt(case: dict, attempt: Path, *, database_url: str, backend_url: st
             "curl_shim_sha256": hashlib.sha256((state / "bin" / "curl" if neutral else SHIM_DIR / "curl")
                                                .read_bytes()).hexdigest(),
             "environment_id": env.environmentId, "run_id": run.runId, "state_dir": str(state),
-            "case_sha256": case.get("case_sha256")})
+            "case_sha256": case.get("case_sha256"),
+            **({"openai_store": "main"} if BACKENDS[backend].get("oauth") and main_store_layout() else {})})
         summary.update(status="solver_running", environment_id=env.environmentId)
         write(attempt / "execution_summary.json", summary)
 

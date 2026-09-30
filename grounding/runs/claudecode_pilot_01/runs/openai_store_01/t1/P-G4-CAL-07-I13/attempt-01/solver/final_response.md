@@ -1,0 +1,1 @@
+There isn’t a “Quarterly planning” meeting this Thursday, June 21, that Dana Whitfield declined. The one I found has Dana as the organizer and Omar Haddad as the attendee who declined. I left it unchanged.

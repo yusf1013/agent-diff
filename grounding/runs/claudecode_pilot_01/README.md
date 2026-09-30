@@ -29,6 +29,18 @@ Session "harness", second assignment from the lead session "RoadMap specialist" 
 - **Against the Sol pilot** (OpenClaw, GPT-6.1 Sol, the same 32 tests): Sonnet on Claude Code is faster (median
   13 s against 37 s per run) with a similar number of calls (median 4 tool calls, 5 model requests), more input
   (54k against 46k, mostly cached) and twice the output (726 against 349 tokens).
+- **The same 32 tests, both judged by judge v2 on Muse** (the Sol pilot judged afterwards at the lead's request,
+  2026-09-30; its verdicts in `runs/judged_sol_pilot_01`, 34 calls with 2 retried errors, $0.058 billed, $0.82 list;
+  no blind labels on the Sol trials):
+
+  | Pilot (one trial per test) | correct | correct_absent | incorrect | not established |
+  |---|---:|---:|---:|---:|
+  | Claude Code × Sonnet 5.5 (plan) | 7 | 23 | 2 | 0 |
+  | OpenClaw × GPT-6.1 Sol (plan) | 8 | 23 | 0 | 1 (FP-G4-LIN-08: the clock problem, an infrastructure error) |
+
+  Sol passed both tests Sonnet failed: on G4-LIN-04 it listed the attachments with their source and creator
+  through the top-level query and acted on the target; on FP-G4-LIN-06 it filtered the Bug label by team and found
+  nothing. One trial per test: an observation, not a comparison of the models.
 - **The G4-LIN-08 tests run here.** The Sol round left them out because OpenClaw's login check fails under their
   2026-10-16 clock; with a token passed to Claude Code nothing checks an expiry, and FP-G4-LIN-08-I13-I14 ran with
   "Today's date is 2026-10-16" in its context.
@@ -100,6 +112,8 @@ Parts (the lead's assignment):
 | [summarize.py](summarize.py), [pilot_summary.json](pilot_summary.json) | The pilot's numbers, with the Sol pilot's |
 | `runs/smoke_01`, `runs/pilot_01`, `runs/pilot_01.log` | The runs, in the judge layout (hidden from ripgrep by `.ignore`) |
 | `runs/judged_pilot_01/` | Judge v2's verdicts, calls log and `comparison.json` against my labels |
+| `runs/judged_sol_pilot_01/` | Judge v2's verdicts on the Sol pilot's 32 trials (the same-test row) |
+| [openai_store/](openai_store/README.md) | The fix of OpenClaw's openai backend login store (`AGENTDIFF_OPENAI_STORE=main`) and its evidence |
 
 ## Log
 
@@ -136,6 +150,15 @@ Parts (the lead's assignment):
   same facts; 32 calls, $0.048 billed, $0.69 at list price, no error.
 - [summarize.py](summarize.py): timings, tokens, list-price cost and the plan's windows, with the Sol pilot's
   numbers (read from the main checkout's `sol_pilot_01/runs/pilot_01`, which is not committed).
+
+### Cycle 4 (01:51-02:04): the Sol pilot judged, and the openai backend's store
+
+- At the lead's request, judge v2 on Muse over the Sol pilot's 32 trials (read only): the same-test table above.
+- A development task from the lead: OpenClaw's openai backend copied the login store, owned by agent `main`, into
+  the attempt agent's directory, so `memory_search` and the auth failover failed. `runtime.py` now has an opt-in
+  layout (`AGENTDIFF_OPENAI_STORE=main`) with the login in the attempt state's main agent and a fresh store for the
+  attempt agent; the default path is byte-for-byte unchanged. Three runs confirmed it
+  ([openai_store/README.md](openai_store/README.md)).
 
 ## Infrastructure rules
 
