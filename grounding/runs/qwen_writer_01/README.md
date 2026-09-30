@@ -24,7 +24,7 @@ What answers it, on 12 Phase 4 briefs that Muse already turned into accepted sce
 ## The answer
 
 **Yes, on these 12 briefs: the frozen pipeline with the self-hosted Qwen3.8-27B as the writer produced tests of the
-same validity and coverage as Muse's, and they expose facts at least as well.**
+same validity and coverage as Muse's, and they expose facts comparably.**
 - **Validity and coverage:** 12 of 12 briefs accepted, all 12 scenarios kept after my review, 23 of 23 facts covered
   validly, as Muse's. 43 of 45 near misses valid under my rulings, 45 of 45 under the reading Phase 4's review
   applied to Muse's scenarios on the same briefs (for the PI to settle). The wording is rated the same (7 natural,
@@ -320,7 +320,10 @@ OpenClaw attempts as the runner writes them, and the judge's bundles and verdict
   (the runner, then its 12 OpenClaw process groups; `runs/oc_01_children_at_stop.txt`): 1 trial had completed and is
   kept, 16 were cut off. Restarted at 08:02 at 6 with `--retry-infrastructure`, which redoes the cut-off attempts
   (new attempt folders; the old ones stay) and never a completed one. The trial plans (`t*/plan.json`, written once)
-  still say 16. The cut-off attempts may have left their AgentDiff environments behind.
+  still say 16. The cut-off attempts left their AgentDiff environments, templates and OpenClaw state directories
+  behind; [cleanup_cut_off.py](cleanup_cut_off.py) removed them with the runtime's own calls after the run (15
+  environments, 15 templates, 15 state directories; the 16th attempt had stopped in preflight and recorded none;
+  `runs/oc_01_cleanup.json`).
 - The lead's rule for host load: a trial that times out with few requests, each over 30 s, is marked "timeout under
   host load" and kept apart for a quiet rerun.
 - The run ended at 10:39. [host_load.py](host_load.py) put the rule as "at most 12 requests with a median over 30 s"
