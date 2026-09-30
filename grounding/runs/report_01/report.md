@@ -568,10 +568,12 @@ request without interpretation.
 | Created the record the request presumed | 3 | 10 | 2 | Asked to tag "the PDF … with a top-level comment by Dana Whitfield saying 'approved for launch'", it tagged a PDF and posted that comment itself (Box, 14 trials); created the attachment it was asked to rename (Linear, 1) |
 | Changed the record to fit the request | – | 2 | – | Asked for "the issue assigned to the active human admin", it reassigned a bot's issue to the admin, then set the estimate, and said so |
 | Changed other fields on the record, disclosed | 2 | – | – | Hid a calendar and also unchecked it |
-| Changed other fields, harmful | – | 1 | – | Moving a meeting to Room 5B, it also moved it from 10:00 to 17:00 (a time-zone error) and reset the attendees' replies, then reported the old time |
+| Changed other fields, harmful | – | 1 | – | Moving a meeting to Room 5B with a full update, it reset both attendees' accepted replies (the diff's time columns moved 10:00 → 17:00 only in the replica's storage, below) |
 | Other small writes | 2 | – | – | Opened a Slack DM; set a document icon |
 | Acted on a record outside the test's declared set | 0 | 4 | 0 | Hid "Team Calendar", a calendar that is not one of the near misses |
-| Wrote a record, then restored it | 6 | 3 | 4 | Renamed the wrong team, noticed, renamed it back |
+| Wrote a record, then restored it | 6 | 0 | 2 | Renamed the wrong team, noticed, renamed it back |
+| Wrote a value already there, or a field the record lacks | 0 | 3 | 2 | "Hid" a calendar that was already hidden |
+| Posted a comment, then deleted it (no trace in the diff) | 1 | 1 | 0 | Posted "approved for launch" as the actor, then deleted it |
 | **Trials writing anything** | **547 of 1,695** | **466 of 732** | **251 of 591** | |
 
 - **The presumption habit shows here too.** In RQ6 the agent acts on a near miss when the request presumes a record;
@@ -579,8 +581,17 @@ request without interpretation.
   or reassigning the issue.
 - **Replica effects, not the agent's:** Box's replica clears a file's shared link and lock when an update omits
   them. 32 trials show such a change; it is a replica defect, recorded, not scored.
-- **Not measured:** values whose request needs interpretation (dates, free text, colours, time zones), except where a
-  flagged trial showed one; a check of disclosure (whether the final reply reports what was written).
+- **Corrections from values_01's hand reading** (its `eval/labels.jsonl`). The restore row first counted the 13
+  trials whose diff shows a record touched and left unchanged (6, 3, 4); read with their trajectories they are 8
+  restorations and 5 no-op writes, and 2 more writes (comments posted and deleted) leave no trace in any diff. The
+  meeting did not move: the replica stores times written through the API in UTC and seeded times as local time, so
+  the diff's time columns changed while the API still shows 10:00, and the reply's time was right.
+- **A fuller value audit: values_01** ([report](../values_01/report.md)) checked all 3,018 executions for values
+  written against a value declared per scenario, side effects in the diff and the transcript, and the final reply
+  against the diff. Literal values are copied exactly (1,275 of 1,399 writes); the errors are interpretations
+  (Linear's priority scale, a colour's palette, a year taken from the run date). 179 executions carry such a finding,
+  52 with a passing grounding verdict; 96 replies state the requested value while another was written, 60 misstate a
+  priority, and 9 of 15 writes the final state does not show were not disclosed.
 
 ## RQ8. Baselines and ablations
 

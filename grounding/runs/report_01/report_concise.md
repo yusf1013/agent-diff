@@ -366,7 +366,9 @@ literal values and flag additional writes. Those measurements are independent of
 analysis searches the judge's notes. The original author also states that every flagged execution was manually
 reviewed. **Open point:** an itemized independent manual-review record establishing exactly which trajectories
 were inspected, versus which interpretations came from judge notes, has not been located. The qualitative
-side-effect classifications below retain the original author's review and should be confirmed with that author.
+side-effect classifications below retain the original author's review, except two rows corrected by
+[values_01](../values_01/report.md), which re-read these categories from the raw evidence with an itemized record
+(`values_01/eval/labels.jsonl`): every write-then-restore candidate and a sample of each side-effect kind.
 
 **Table 13. Values written compared with literal values in requests.** Source:
 [beyond.json](numbers/beyond.json), using the final 1,695 regular and 1,323 policy executions.
@@ -395,16 +397,28 @@ notes, not an exhaustive error count. Source: [concise.json](numbers/concise.jso
 | Created the presumed record | 3 | 10 | 2 | Posted the comment that the request used to identify a PDF. |
 | Changed a record to fit the request | 0 | 2 | 0 | Reassigned an issue to the person the request presumed was its assignee. |
 | Changed other fields, disclosed | 2 | 0 | 0 | Hid a calendar and also unchecked it. |
-| Harmful additional change | 0 | 1 | 0 | Changed meeting time and attendees' replies while changing the room. |
+| Harmful additional change | 0 | 1 | 0 | Reset both attendees' replies with a full update while changing the room. |
 | Other small writes | 2 | 0 | 0 | Opened a DM or set an icon. |
 | Acted outside the declared candidate set | 0 | 4 | 0 | Hid a different calendar. |
-| Wrote, then restored a record | 6 | 3 | 4 | Renamed the wrong team, then renamed it back. |
+| Wrote, then restored a record | 6 | 0 | 2 | Renamed the wrong team, then renamed it back. |
+| Wrote a value already there, or a field the record lacks | 0 | 3 | 2 | "Hid" a calendar that was already hidden. |
+| Posted a comment, then deleted it (no trace in the diff) | 1 | 1 | 0 | Posted "approved for launch" as the actor, then deleted it. |
 | **Executions with any write** | **547/1,695** | **466/732** | **251/591** | |
 
-The restore row particularly needs trajectory review: a final diff alone cannot distinguish restoration from
-a write of an unchanged value. Box also shows 32 changes caused by its replica clearing omitted lock or shared-link
-fields; these are recorded as replica effects. Interpreted dates, free text, time zones and the truthfulness of
-the final reply have not received a systematic value audit.
+A final diff alone cannot distinguish restoration from a write of an unchanged value. Read with their
+trajectories (values_01), the 13 executions the original row counted (6, 3, 4) are 8 restorations and 5 no-op
+writes; two more writes, comments posted and deleted, leave no trace in any diff. The meeting's time did not move:
+the diff's time columns changed from 10:00 to 17:00 only because the replica stores times written through the API
+in UTC and seeded times as local time; the API still shows 10:00, and the reply's time was right. Box also shows
+32 changes caused by its replica clearing omitted lock or shared-link fields; these are recorded as replica effects.
+
+**A fuller value audit: values_01.** A separate study checked all 3,018 executions for what the grounding verdict
+does not grade: values written against a value declared per scenario, side effects in the diff and the transcript,
+and the final reply against the diff ([report](../values_01/report.md)). Literal values are copied exactly: 1,275 of
+1,399 writes to a requested field hold the requested value. The errors are interpretations: Linear's priority scale
+(105 of 149), a colour's palette, and a year taken from the run date. 179 executions carry such a finding, 52 of them
+with a passing grounding verdict. Replies repeat the priority belief: 96 state the requested value while another was
+written, and 60 misstate a priority. Of 15 writes the final state does not show, 9 were not disclosed.
 
 ## RQ8. Baselines and ablations
 
