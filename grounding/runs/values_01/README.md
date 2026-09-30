@@ -152,6 +152,6 @@ the run date for these runs (AP-LIN-04's and AP2-LIN-04's "October 20" would aft
   High)"), in tables, and on lines that also hold a question. Now: question sentences are dropped, not lines; tables
   with a Priority column are read; "currently <name>" counts. R4 52 -> 60 (9 new, all true; 1 false positive gone).
 - R5, a bounded probe for the brief's "times": stated time ranges for the Calendar event written, against its stored
-  times in its own and the user's zone. 158 of 159 comparable replies match; the one mismatch is an hour off. The
+  times in its own and the user's zone. 158 of 159 comparable event mentions match; the one mismatch is an hour off. The
   parser needed two fixes ("AM/PM" and "11:00-12:00 AM" read literally).
 - Stopped here: the remaining misses are statements that name no issue or state other facts, which need a reader.

@@ -122,6 +122,9 @@ The 201 replies not checked are 192 timeouts and 9 "couldn't generate a response
 | Absence | 0 | 31 | 1 |
 | Underspecified | 0 | 25 | 0 |
 
+By service: Linear 95, Calendar 3, Slack 1, Box 0 (Box's 9 run-date writes are apart). The full cross-tabulation by
+service, form and outcome is in [data/counts.json](data/counts.json).
+
 All 23 passes wrote to the target: 22 are priority covers (of the 23 covers with a wrong priority on the target, as
 RQ7 found) and one is the colour cover. **Per test:** 59 of the 1,006 tests have a value error in some trial (30 in
 the first); **per scenario:** 14.
@@ -136,14 +139,14 @@ the first); **per scenario:** 14.
 | R2c: undone or no-op write not disclosed | 8 | 6 of 8 (all read) | 5 | 0 |
 | R2: absence claimed, a match exists | 3 | 2 of 3 (all read) | 3 | 1 |
 | R2b: no change claimed after a change | 1 | 0 of 1 | 1 | 1 |
-| R5: time stated differs | 1 of 159 comparable | 1 of 1 | 1 | 0 |
+| R5: time stated differs | 1 of 159 comparable event mentions | 1 of 1 | 1 | 0 |
 
 - **R3 and R4 are one belief spoken aloud.** The agent writes 4 for Urgent and then says "Urgent (priority 4)"; it
   reads 3 as High and tells the user "currently High". R4's 60 executions include 42 with statements about what
   the agent read (other issues' priorities, or a written issue's prior value). Grounding passes in 31 of the 60, and 27 of
   those 31 have no value error: the user gets the right outcome and a wrong description.
 - **Claims are otherwise accurate.** Claim patterns find a claim in 1,231 of the 1,240 checked replies that wrote, and
-  only 5 claim a change that does not stand. Stated times match the written event in 158 of 159 comparable replies.
+  only 5 claim a change that does not stand. Stated times match the written event in 158 of 159 comparable event mentions.
 - **Absence claims** are almost always well founded; the two false ones come from the priority belief and from a
   replica gap (5).
 
@@ -155,7 +158,8 @@ the first); **per scenario:** 14.
 | **Agent: acted outside the candidate set** | 4 | Hid a calendar with the wrong access (3), moved another event and notified its attendee (1) |
 | **Agent: changed a record to fit the request** | 2 | Reassigned an issue to "the active human admin" the request named |
 | **Agent: created the presumed record, or did another action** | 2 | A new attachment instead of a rename; a reply instead of reopening a thread |
-| **Agent: other fields** | 3 | Two calendars unchecked while hiding them; one full PUT that reset both attendees' accepted replies |
+| **Agent: other fields** | 2 | Two calendars unchecked while hiding them |
+| **Agent: a full PUT** | 1 | The attendee list replaced: both attendees' accepted replies reset to "needsAction" (the same execution's time column is the replica's, below) |
 | **Agent: a lookup that creates** | 1 | `conversations.open` opened a new DM |
 | **Replica: omitted fields cleared** | 17 | Box cleared `shared_link` or `lock` on a tags-only PUT, and it stayed cleared |
 | **Replica, repaired by the agent** | 15 | The agent restored the cleared field imperfectly: locks without their id or creator, a shared link with a new URL |
@@ -197,10 +201,11 @@ All 15 read with their trajectories, with the PI's three questions (the detail p
 
 ## 3. The hand reading
 
-Labels were written from the raw evidence (request, construction references, transcript, reply, diff) in an
-evidence-only viewer ([kit/view.py](kit/view.py)) that shows no grounding outcome, verdict or note. The draw was seeded
-and committed before any reading ([eval/sample.json](eval/sample.json)). 123 labels on 99 executions, plus 30 recall
-reads: [eval/labels.jsonl](eval/labels.jsonl).
+The annotator is this session, an Opus agent: manual work under the PI's rule of 2026-09-29. Labels were written from
+the raw evidence (request, construction references, transcript, reply, diff) in an evidence-only viewer
+([kit/view.py](kit/view.py)) that shows no grounding outcome, verdict or note. The draw was seeded and committed before
+any reading ([eval/sample.json](eval/sample.json)). 123 labels on 99 executions, plus 30 recall reads:
+[eval/labels.jsonl](eval/labels.jsonl).
 
 ### 3.1 Three cycles
 
@@ -340,7 +345,7 @@ these, and it should not: they are a different property of the same executions.
 ## 7. Limits
 
 - One model on one harness; the belief behind most value errors is Qwen's. Another model may err elsewhere.
-- One annotator (me). Labels are mine and the specifications are mine; the precision of the sampled checks rests on
+- One annotator (this session, an Opus agent; manual under the PI's rule). The labels and the specifications are its; the precision of the sampled checks rests on
   3 to 33 reads each.
 - The specifications cover the fields the construction declares; a value written to an undeclared field is seen only
   as a side effect.
