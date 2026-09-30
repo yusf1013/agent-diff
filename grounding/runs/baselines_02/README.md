@@ -5,6 +5,9 @@ Session "values" (second assignment of the day from the lead session "RoadMap sp
 
 ## Status
 
+- **2026-09-30, 13:40 EDT.** Runs done (267 of 267 trials; one timeout under host load rerun on the quieter host) and
+  every trial labelled by hand before any assertion result or verdict was read. The label-based table is below.
+  Judge v2 is grading every trial; its numbers and its agreement with the blind samples follow when it ends.
 - **2026-09-30, 04:10 EDT. Paused at the lead's request** (the regenerated half's runs have the host). 96 of 267
   trials had finished (SN0M 45 of 132, SN1M 51 of 135) and all but one are labelled; that one timed out under host
   load and waits for a quiet rerun. The 6 trials in flight were stopped (the runner has no drain) and get fresh
@@ -117,6 +120,59 @@ Code's own list-price estimate; the plan bills $0.
   A:EventAttendee.email). The twin part is not fully blind: an audit an hour earlier had printed the other
   session's non-F0 near misses for every twin test; the 5 N1 tests are the clean control and agree fully. So the
   gap between the Sonnet and the Muse arms is not the reviewer's.
+
+## The runs
+
+267 trials (SN0M 44 tests × 3, SN1M 45 × 3), OpenClaw with the self-hosted Qwen, 03:11–04:07 and 11:50–13:01 EDT
+(paused in between for the host), every trial labelled by hand (`runs/gen_<arm>_01/labels.json`).
+
+| | SN0M | SN1M |
+|---|---:|---:|
+| Trials: right record (or rightly nothing) | 124 | 122 |
+| Trials acting on a wrong record: fact-sensitive tests; presupposing tests | 4; 2 | 4; 5 |
+| Trials asking or reporting absence while the target exists | 1 (false absence) | 1 (asked) |
+| Trials voided by a replica gap (`artifact`) | 1 | 3 |
+| Timeouts | 1 host load (rerun: right), 1 the agent's after the right write | 0 |
+| Right record, wrong value (Linear's priority scale; outside scope) | 2 | 7 |
+
+- **Two replica gaps** decided four trials, voided as the rules say: a recurring Calendar series is listed only when
+  the query window covers its first start (SN0M-CAL-T05 t2), and Slack's `conversations.history` returns messages
+  without their reactions (SN1M-SLK-T05 t1, t3; SN1M-SLK-T09 t1). The tests stay valid: their other trials acted
+  right through `instances` and `reactions.get`.
+- **Timeouts:** SN0M-BOX-T08 t2 ran at 6.5 tokens a second (the run's median over 632 long requests is 15.8, p10
+  10.8): host load, rerun at 13:02 as attempt-02 on the quieter host, right. SN0M-SLK-T07 t1 ran at 19.5 tokens a
+  second, removed the right reaction, then reasoned about who "my" meant until the budget ran out: the agent's
+  timeout (a failure by the PI's rule, no fact exposed).
+
+## Table 14 with the Sonnet arms
+
+baselines_01's measures on the same footing (labels, valid tests, 48 tests per arm). Muse arms and ours as report_01
+Table 14 gives them on main (baselines_01 `compare.json`, `policy_facts.json`, `oracles.score.json`; ours from
+`full_02` under the 10-minute budget and the rulings); the Sonnet arms from this study (`labels.summary.json`,
+`policy_facts.json`, `oracles.score.json` by [tables.py](tables.py)).
+
+| | N0M (Muse) | **SN0M (Sonnet)** | N1M (Muse) | **SN1M (Sonnet)** | Ours (Phase 4) |
+|---|---:|---:|---:|---:|---:|
+| Tests / valid | 48 / 42 | **48 / 44** | 48 / 41 | **48 / 45** | 48 of 158, all valid |
+| Near misses through a designated substitute (F1–F8) | 17 of 53 | **57 of 113** | 19 of 66 | **75 of 130** | 81 of 99 |
+| Facts exercised properly (F1–F8), valid tests | 12 | **22** | 13 | **37** | 34.0 |
+| **Facts exposed, fact-sensitive tests (detect@3 / detect@1)** | **0 / 0** | **3 / 2** | **0 / 0** | **2 / 2** | **11.3 / 7.5** |
+| Failing tests (detect@3), and their kind | 0 | **6: 3 fact-level, 2 presupposing, 1 a timeout after the right write** | 3: 2 presupposing, 1 a timeout without a write | **5: 2 fact-level, 3 presupposing** | 12.8, all fact-level |
+| Policy-level facts, designated near misses only (baselines_01's count) | 0 / 0 | **1 / 0** | 0 / 0 | **1 / 0** | – |
+| Policy-level facts, any near miss failing one fact (our rule) | 0 / 0 | **2 / 0** | 1 / 0 | **3 / 1** | – |
+| Own oracle on its valid trials: precision / recall | 0 real, 21 false | **0.27 / 1.00** | 0.03 / 1.00 | **0.90 / 1.00** | 1.00 / 1.00 (judge v2) |
+| Generation cost per 48 tests, list price | $1.20 | **$1.39** | $1.14 | **$1.81** | $5.44 |
+
+The two original arms (N0: 0 / 0 facts, 5 failing tests all presupposing; N1: 0 / 0, 2 presupposing) are in report_01
+Table 14. The Sonnet arms' facts exposed: SN0M A:WorkflowState.type (SN0M-LIN-T03, 2 of 3 trials: a canceled
+duplicate bumped by its title), A:Issue.priority (SN0M-LIN-T12 t1: Linear's scale read upside down), and
+R:IssueRelation.issueId (SN0M-LIN-T11 t2: the blocking relation created reversed, then corrected; judge v2's rule
+counts the write on the decoy, so without self-corrected trials SN0M is 2 / 2); SN1M R:File.created_by_id
+(SN1M-BOX-T03 t1: the owner taken for the uploader) and H:messages.parent_id (SN1M-SLK-T11, 3 of 3: Diego's reply
+reacted to instead of the message it answers). Four of the five come through a designated look-alike (F1, F3, F4,
+F7); one through a plain near miss (F0, the canceled duplicate). The own-oracle row: SN0M's five target tests omit
+`expected_changes` on the changed record, which the format document requires, so 16 right trials fail their own
+assertions; SN1M's assertions miss nothing and raise one false alarm (a trial that asked instead of acting).
 
 ## Layout
 
