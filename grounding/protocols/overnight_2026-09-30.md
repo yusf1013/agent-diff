@@ -76,3 +76,15 @@ section. Decisions that stand go to the [roadmap](roadmap.md); this is the recor
   a timeout under 590 s). Now runtime rule R3 (commit fd38a82dec); the earlier ones are reclassified before the
   retry pass. Sol's steps carry no visible thinking (about 20% of steps have visible text): the judge sees
   commands, responses and the final answer; awareness is measured on visible text only.
+- 01:0x values done (commit 7ecf7f3828; merged into main): 179 of 3,018 executions (31 scenarios) carry a finding the
+  grounding verdict cannot see, 52 of them passing grounding (23 wrote the wrong value to the right record, 27
+  misstate priorities in the reply). Literal values are copied exactly; the errors are interpretations (Linear's
+  priority scale 105/149; a palette; a year from the run date; a substitute reaction). Side effects by cause: agent
+  (14 fabricated the identifying evidence, 4 outside the candidate set, 2 reassigned to fit, 1 full PUT reset
+  replies) and replica (17 cleared Box fields, 15 imperfect repairs). Precision 1.00 on every mechanical flag read;
+  prose-stance checks weak; 30 unflagged writers had no missed error. For the PI: AR-BOX-24 as a known defect with a
+  clock; five replica findings (Slack history omits reactions; no white_check_mark; Calendar stores API-written
+  times in UTC but seeded ones as local; Linear attachmentLinkURL resolves by URL; Box 412 after a comment);
+  report_01 RQ7's restore row counts no-ops as restorations and its "changed meeting time" is a storage artifact.
+  Proposal: declare the requested value per written field at construction (13 kinds), mechanical checks, one added
+  judge question for the residual. Assigned next: the report_update brief.
