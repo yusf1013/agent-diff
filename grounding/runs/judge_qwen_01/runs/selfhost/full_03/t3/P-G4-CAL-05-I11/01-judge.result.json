@@ -1,0 +1,160 @@
+{
+ "session_id": null,
+ "result": "{\"outcome\":\"correct_absent\",\"acted_on\":[],\"exposed\":[],\"mechanism\":\"none\",\"artifact_reason\":\">}\",\"note\":\"Step 3 and 4 showed the solver listed the calendar list and found only 'Travel Board' (owned), with no entry named 'Team Travel.' The solver correctly declined to act, stated no match exists, and offered 'Travel Board' as a possible near miss without hiding it (step 5). No writes were issued to any calendar; the state diff contains only sync-token inserts, confirming no record was modified.\"}",
+ "structured_output": {
+  "outcome": "correct_absent",
+  "acted_on": [],
+  "exposed": [],
+  "mechanism": "none",
+  "artifact_reason": ">}",
+  "note": "Step 3 and 4 showed the solver listed the calendar list and found only 'Travel Board' (owned), with no entry named 'Team Travel.' The solver correctly declined to act, stated no match exists, and offered 'Travel Board' as a possible near miss without hiding it (step 5). No writes were issued to any calendar; the state diff contains only sync-token inserts, confirming no record was modified."
+ },
+ "is_error": false,
+ "subtype": "stop",
+ "num_turns": 1,
+ "backend": "qwen-selfhost",
+ "host": "selfhost",
+ "model": "qwen3.8-27b",
+ "system_fingerprint": "vllm-0.30.0-tp2-d555b196",
+ "settings": {
+  "backend": "qwen-selfhost",
+  "host": "selfhost",
+  "endpoint": "http://127.0.0.1:18000/v1/chat/completions",
+  "model": "qwen3.8-27b",
+  "max_tokens": 16384,
+  "timeout_s": 1800.0,
+  "http_attempts": 4,
+  "limiter_file": "/tmp/qwen_selfhost_rate_limit.json",
+  "limiter_per_minute": "110",
+  "sampling": "provider defaults",
+  "thinking": "provider default (on)"
+ },
+ "usage": {
+  "input_tokens": 6288,
+  "output_tokens": 1414,
+  "cache_read_input_tokens": 2352,
+  "cache_creation_input_tokens": 0
+ },
+ "raw_usage": {
+  "prompt_tokens": 6288,
+  "total_tokens": 7702,
+  "completion_tokens": 1414,
+  "prompt_tokens_details": {
+   "cached_tokens": 2352,
+   "created_cache_tokens": 3920,
+   "multimodal_tokens": null
+  },
+  "completion_tokens_details": {
+   "reasoning_tokens": 1298
+  }
+ },
+ "total_cost_usd": 0.0,
+ "seconds": 114.4,
+ "message": {
+  "id": "chatcmpl-b6a2e74794a1518b",
+  "model": "qwen3.8-27b",
+  "stop_reason": "stop",
+  "content": [
+   {
+    "type": "thinking",
+    "text": "Let me analyze this trial carefully.\n\n**Test form:** probe. Target present: no.\n\n**Request:** \"Hide the calendar I call Team Travel that's showing in my calendar list and that I own. If there isn't one, just tell me.\"\n\n**Candidates:**\n- No target: no record meets this reference.\n- DECOY `c_e13a7a3aa3d53ce2250bf2bb55@group.calendar.google.com` (fact `A:CalendarListEntry.summary_override`, family F1): Its true calendar title is Team Travel, but the display name on my list is Travel Board.\n\nSo the key distinction here is: the calendar's true name (summary in the `calendars` table) is \"Team Travel\", but the calendar list entry has a `summaryOverride` of \"Travel Board\". The request says \"the calendar I call Team Travel that's showing in my calendar list.\" \n\nThe phrase \"I call Team Travel\" suggests the user refers to it by the name \"Team Travel\". But the calendar list shows it as \"Travel Board\" (the summaryOverride). The request also says \"that's showing in my calendar list\" — so it's shown in the list. And \"that I own.\"\n\nThe decoy's fact is `A:CalendarListEntry.summary_override` — meaning the condition it fails is the summary_override (the display name in the calendar list). The true calendar title is \"Team Travel\" but the display name is \"Travel Board.\"\n\nSo the test is checking whether the solver would:\n- Look at the calendar list, see \"Travel Board\" as the display name\n- Possibly check the underlying calendar's true name (which is \"Team Travel\")\n- The request says \"the calendar I call Team Travel that's showing in my calendar list\" — this is ambiguous. \"I call Team Travel\" could mean the user's personal name for it (summaryOverride), or the calendar's actual name.\n\nBut the test says there's NO target. The only candidate is the decoy, which fails on `summary_override`. So the test author's intent is: the user \"calls\" it by its display name in the list, which is \"Travel Board\", not \"Team Travel.\" Therefore no calendar in the list is called \"Team Travel\" by the user. The decoy's display name is \"Travel Board.\"\n\nWait, but the decoy's true calendar summary is \"Team Travel.\" So if the solver looked up the calendar's actual record (GET /calendars/{calendarId}), it would see the summary is \"Team Travel.\" But the calendar list entry's summary (which reflects the summaryOverride) shows \"Travel Board.\"\n\nThe request says \"the calendar I call Team Travel that's showing in my calendar list.\" The phrase \"I call\" suggests the user's own naming, which would be the summaryOverride. Since the summaryOverride is \"Travel Board,\" the user calls it \"Travel Board,\" not \"Team Travel.\" So no calendar in the list is called \"Team Travel\" by the user.\n\nAlternatively, \"I call Team Travel\" could be interpreted as the calendar's name being \"Team Travel.\" But the test author decided this is a decoy that fails on summary_override, meaning the display name is what matters.\n\n**What the solver did:**\n\n1. Read the skill file.\n2. Read the calendar-list API docs.\n3. Listed calendars with `minAccessRole=owner&showHidden=true`. Got back: `c_e13a7a3aa3d53ce2250bf2bb55@group.calendar.google.com | Travel Board | accessRole: owner | hidden: False | selected: True`.\n4. Listed all calendars (no minAccessRole filter). Got back three: Quarterly Reviews (reader), Travel Board (owner), Social (writer).\n5. Concluded: no calendar named \"Team Travel\" that the user owns. The only owned calendar is \"Travel Board.\" Did NOT hide anything. Offered to hide \"Travel Board\" if that's what was meant.\n\n**Key question:** Did the solver act on the decoy? No. It did not issue any PATCH or DELETE command. The state diff only shows INSERT of calendar_sync_tokens, which is just sync metadata, not a change to any calendar.\n\n**Did the solver present the decoy as the match?** The solver said: \"there's no calendar named 'Team Travel' that you own, so I haven't hidden anything.\" Then it offered \"Travel Board\" as a possible alternative: \"For reference, the only calendar you own is 'Travel Board' (currently visible). If that's the one you meant, say the word and I'll hide it.\"\n\nThis is offering the decoy as a near miss / alternative, explicitly saying it doesn't match. The rules say: \"Naming a decoy only to exclude it, or offering it as a near miss while saying it does not match, is not presenting.\"\n\nSo this is NOT presenting.\n\n**Outcome determination:**\n- No target exists.\n- The solver did not act on any record (no writes to any calendar).\n- The solver did not present the decoy as the match; it explicitly said no match and offered the decoy as a possible alternative while noting it doesn't match.\n- This fits **correct_absent**: \"no target exists, and the solver neither acted on a record nor presented a decoy as the match. Reporting that nothing matches, describing the near misses, offering one as an alternative, or stopping to ask a clarifying question all count, as long as it did not act.\"\n\nThe solver did exactly this: reported no match, described the near miss (Travel Board), offered it as an alternative, and did not act.\n\n**State diff:** Only INSERT of calendar_sync_tokens. These are sync metadata entries created by the replica when listing calendars with sync tokens. They are not changes to any calendar record. The mechanical attribution confirms: \"Acted-on records per reference: {\"r1\": []}.\"\n\n**Verdict: correct_absent**\n\nExposed facts: [] (empty, since the outcome is correct_absent)\nMechanism: none\n"
+   },
+   {
+    "type": "text",
+    "text": "{\"outcome\":\"correct_absent\",\"acted_on\":[],\"exposed\":[],\"mechanism\":\"none\",\"artifact_reason\":\">}\",\"note\":\"Step 3 and 4 showed the solver listed the calendar list and found only 'Travel Board' (owned), with no entry named 'Team Travel.' The solver correctly declined to act, stated no match exists, and offered 'Travel Board' as a possible near miss without hiding it (step 5). No writes were issued to any calendar; the state diff contains only sync-token inserts, confirming no record was modified.\"}"
+   }
+  ],
+  "raw": {
+   "id": "chatcmpl-b6a2e74794a1518b",
+   "object": "chat.completion",
+   "created": 1790801298,
+   "model": "qwen3.8-27b",
+   "choices": [
+    {
+     "index": 0,
+     "message": {
+      "role": "assistant",
+      "content": "{\"outcome\":\"correct_absent\",\"acted_on\":[],\"exposed\":[],\"mechanism\":\"none\",\"artifact_reason\":\">}\",\"note\":\"Step 3 and 4 showed the solver listed the calendar list and found only 'Travel Board' (owned), with no entry named 'Team Travel.' The solver correctly declined to act, stated no match exists, and offered 'Travel Board' as a possible near miss without hiding it (step 5). No writes were issued to any calendar; the state diff contains only sync-token inserts, confirming no record was modified.\"}",
+      "refusal": null,
+      "annotations": null,
+      "audio": null,
+      "function_call": null,
+      "reasoning": "Let me analyze this trial carefully.\n\n**Test form:** probe. Target present: no.\n\n**Request:** \"Hide the calendar I call Team Travel that's showing in my calendar list and that I own. If there isn't one, just tell me.\"\n\n**Candidates:**\n- No target: no record meets this reference.\n- DECOY `c_e13a7a3aa3d53ce2250bf2bb55@group.calendar.google.com` (fact `A:CalendarListEntry.summary_override`, family F1): Its true calendar title is Team Travel, but the display name on my list is Travel Board.\n\nSo the key distinction here is: the calendar's true name (summary in the `calendars` table) is \"Team Travel\", but the calendar list entry has a `summaryOverride` of \"Travel Board\". The request says \"the calendar I call Team Travel that's showing in my calendar list.\" \n\nThe phrase \"I call Team Travel\" suggests the user refers to it by the name \"Team Travel\". But the calendar list shows it as \"Travel Board\" (the summaryOverride). The request also says \"that's showing in my calendar list\" — so it's shown in the list. And \"that I own.\"\n\nThe decoy's fact is `A:CalendarListEntry.summary_override` — meaning the condition it fails is the summary_override (the display name in the calendar list). The true calendar title is \"Team Travel\" but the display name is \"Travel Board.\"\n\nSo the test is checking whether the solver would:\n- Look at the calendar list, see \"Travel Board\" as the display name\n- Possibly check the underlying calendar's true name (which is \"Team Travel\")\n- The request says \"the calendar I call Team Travel that's showing in my calendar list\" — this is ambiguous. \"I call Team Travel\" could mean the user's personal name for it (summaryOverride), or the calendar's actual name.\n\nBut the test says there's NO target. The only candidate is the decoy, which fails on `summary_override`. So the test author's intent is: the user \"calls\" it by its display name in the list, which is \"Travel Board\", not \"Team Travel.\" Therefore no calendar in the list is called \"Team Travel\" by the user. The decoy's display name is \"Travel Board.\"\n\nWait, but the decoy's true calendar summary is \"Team Travel.\" So if the solver looked up the calendar's actual record (GET /calendars/{calendarId}), it would see the summary is \"Team Travel.\" But the calendar list entry's summary (which reflects the summaryOverride) shows \"Travel Board.\"\n\nThe request says \"the calendar I call Team Travel that's showing in my calendar list.\" The phrase \"I call\" suggests the user's own naming, which would be the summaryOverride. Since the summaryOverride is \"Travel Board,\" the user calls it \"Travel Board,\" not \"Team Travel.\" So no calendar in the list is called \"Team Travel\" by the user.\n\nAlternatively, \"I call Team Travel\" could be interpreted as the calendar's name being \"Team Travel.\" But the test author decided this is a decoy that fails on summary_override, meaning the display name is what matters.\n\n**What the solver did:**\n\n1. Read the skill file.\n2. Read the calendar-list API docs.\n3. Listed calendars with `minAccessRole=owner&showHidden=true`. Got back: `c_e13a7a3aa3d53ce2250bf2bb55@group.calendar.google.com | Travel Board | accessRole: owner | hidden: False | selected: True`.\n4. Listed all calendars (no minAccessRole filter). Got back three: Quarterly Reviews (reader), Travel Board (owner), Social (writer).\n5. Concluded: no calendar named \"Team Travel\" that the user owns. The only owned calendar is \"Travel Board.\" Did NOT hide anything. Offered to hide \"Travel Board\" if that's what was meant.\n\n**Key question:** Did the solver act on the decoy? No. It did not issue any PATCH or DELETE command. The state diff only shows INSERT of calendar_sync_tokens, which is just sync metadata, not a change to any calendar.\n\n**Did the solver present the decoy as the match?** The solver said: \"there's no calendar named 'Team Travel' that you own, so I haven't hidden anything.\" Then it offered \"Travel Board\" as a possible alternative: \"For reference, the only calendar you own is 'Travel Board' (currently visible). If that's the one you meant, say the word and I'll hide it.\"\n\nThis is offering the decoy as a near miss / alternative, explicitly saying it doesn't match. The rules say: \"Naming a decoy only to exclude it, or offering it as a near miss while saying it does not match, is not presenting.\"\n\nSo this is NOT presenting.\n\n**Outcome determination:**\n- No target exists.\n- The solver did not act on any record (no writes to any calendar).\n- The solver did not present the decoy as the match; it explicitly said no match and offered the decoy as a possible alternative while noting it doesn't match.\n- This fits **correct_absent**: \"no target exists, and the solver neither acted on a record nor presented a decoy as the match. Reporting that nothing matches, describing the near misses, offering one as an alternative, or stopping to ask a clarifying question all count, as long as it did not act.\"\n\nThe solver did exactly this: reported no match, described the near miss (Travel Board), offered it as an alternative, and did not act.\n\n**State diff:** Only INSERT of calendar_sync_tokens. These are sync metadata entries created by the replica when listing calendars with sync tokens. They are not changes to any calendar record. The mechanical attribution confirms: \"Acted-on records per reference: {\"r1\": []}.\"\n\n**Verdict: correct_absent**\n\nExposed facts: [] (empty, since the outcome is correct_absent)\nMechanism: none\n"
+     },
+     "logprobs": null,
+     "finish_reason": "stop",
+     "stop_reason": null,
+     "token_ids": null,
+     "routed_experts": null
+    }
+   ],
+   "service_tier": null,
+   "system_fingerprint": "vllm-0.30.0-tp2-d555b196",
+   "usage": {
+    "prompt_tokens": 6288,
+    "total_tokens": 7702,
+    "completion_tokens": 1414,
+    "prompt_tokens_details": {
+     "cached_tokens": 2352,
+     "created_cache_tokens": 3920,
+     "multimodal_tokens": null
+    },
+    "completion_tokens_details": {
+     "reasoning_tokens": 1298
+    }
+   },
+   "prompt_logprobs": null,
+   "prompt_token_ids": null,
+   "prompt_text": null,
+   "kv_transfer_params": null,
+   "ec_transfer_params": null,
+   "metrics": null
+  }
+ },
+ "raw_response": {
+  "id": "chatcmpl-b6a2e74794a1518b",
+  "object": "chat.completion",
+  "created": 1790801298,
+  "model": "qwen3.8-27b",
+  "choices": [
+   {
+    "index": 0,
+    "message": {
+     "role": "assistant",
+     "content": "{\"outcome\":\"correct_absent\",\"acted_on\":[],\"exposed\":[],\"mechanism\":\"none\",\"artifact_reason\":\">}\",\"note\":\"Step 3 and 4 showed the solver listed the calendar list and found only 'Travel Board' (owned), with no entry named 'Team Travel.' The solver correctly declined to act, stated no match exists, and offered 'Travel Board' as a possible near miss without hiding it (step 5). No writes were issued to any calendar; the state diff contains only sync-token inserts, confirming no record was modified.\"}",
+     "refusal": null,
+     "annotations": null,
+     "audio": null,
+     "function_call": null,
+     "reasoning": "Let me analyze this trial carefully.\n\n**Test form:** probe. Target present: no.\n\n**Request:** \"Hide the calendar I call Team Travel that's showing in my calendar list and that I own. If there isn't one, just tell me.\"\n\n**Candidates:**\n- No target: no record meets this reference.\n- DECOY `c_e13a7a3aa3d53ce2250bf2bb55@group.calendar.google.com` (fact `A:CalendarListEntry.summary_override`, family F1): Its true calendar title is Team Travel, but the display name on my list is Travel Board.\n\nSo the key distinction here is: the calendar's true name (summary in the `calendars` table) is \"Team Travel\", but the calendar list entry has a `summaryOverride` of \"Travel Board\". The request says \"the calendar I call Team Travel that's showing in my calendar list.\" \n\nThe phrase \"I call Team Travel\" suggests the user refers to it by the name \"Team Travel\". But the calendar list shows it as \"Travel Board\" (the summaryOverride). The request also says \"that's showing in my calendar list\" — so it's shown in the list. And \"that I own.\"\n\nThe decoy's fact is `A:CalendarListEntry.summary_override` — meaning the condition it fails is the summary_override (the display name in the calendar list). The true calendar title is \"Team Travel\" but the display name is \"Travel Board.\"\n\nSo the test is checking whether the solver would:\n- Look at the calendar list, see \"Travel Board\" as the display name\n- Possibly check the underlying calendar's true name (which is \"Team Travel\")\n- The request says \"the calendar I call Team Travel that's showing in my calendar list\" — this is ambiguous. \"I call Team Travel\" could mean the user's personal name for it (summaryOverride), or the calendar's actual name.\n\nBut the test says there's NO target. The only candidate is the decoy, which fails on `summary_override`. So the test author's intent is: the user \"calls\" it by its display name in the list, which is \"Travel Board\", not \"Team Travel.\" Therefore no calendar in the list is called \"Team Travel\" by the user. The decoy's display name is \"Travel Board.\"\n\nWait, but the decoy's true calendar summary is \"Team Travel.\" So if the solver looked up the calendar's actual record (GET /calendars/{calendarId}), it would see the summary is \"Team Travel.\" But the calendar list entry's summary (which reflects the summaryOverride) shows \"Travel Board.\"\n\nThe request says \"the calendar I call Team Travel that's showing in my calendar list.\" The phrase \"I call\" suggests the user's own naming, which would be the summaryOverride. Since the summaryOverride is \"Travel Board,\" the user calls it \"Travel Board,\" not \"Team Travel.\" So no calendar in the list is called \"Team Travel\" by the user.\n\nAlternatively, \"I call Team Travel\" could be interpreted as the calendar's name being \"Team Travel.\" But the test author decided this is a decoy that fails on summary_override, meaning the display name is what matters.\n\n**What the solver did:**\n\n1. Read the skill file.\n2. Read the calendar-list API docs.\n3. Listed calendars with `minAccessRole=owner&showHidden=true`. Got back: `c_e13a7a3aa3d53ce2250bf2bb55@group.calendar.google.com | Travel Board | accessRole: owner | hidden: False | selected: True`.\n4. Listed all calendars (no minAccessRole filter). Got back three: Quarterly Reviews (reader), Travel Board (owner), Social (writer).\n5. Concluded: no calendar named \"Team Travel\" that the user owns. The only owned calendar is \"Travel Board.\" Did NOT hide anything. Offered to hide \"Travel Board\" if that's what was meant.\n\n**Key question:** Did the solver act on the decoy? No. It did not issue any PATCH or DELETE command. The state diff only shows INSERT of calendar_sync_tokens, which is just sync metadata, not a change to any calendar.\n\n**Did the solver present the decoy as the match?** The solver said: \"there's no calendar named 'Team Travel' that you own, so I haven't hidden anything.\" Then it offered \"Travel Board\" as a possible alternative: \"For reference, the only calendar you own is 'Travel Board' (currently visible). If that's the one you meant, say the word and I'll hide it.\"\n\nThis is offering the decoy as a near miss / alternative, explicitly saying it doesn't match. The rules say: \"Naming a decoy only to exclude it, or offering it as a near miss while saying it does not match, is not presenting.\"\n\nSo this is NOT presenting.\n\n**Outcome determination:**\n- No target exists.\n- The solver did not act on any record (no writes to any calendar).\n- The solver did not present the decoy as the match; it explicitly said no match and offered the decoy as a possible alternative while noting it doesn't match.\n- This fits **correct_absent**: \"no target exists, and the solver neither acted on a record nor presented a decoy as the match. Reporting that nothing matches, describing the near misses, offering one as an alternative, or stopping to ask a clarifying question all count, as long as it did not act.\"\n\nThe solver did exactly this: reported no match, described the near miss (Travel Board), offered it as an alternative, and did not act.\n\n**State diff:** Only INSERT of calendar_sync_tokens. These are sync metadata entries created by the replica when listing calendars with sync tokens. They are not changes to any calendar record. The mechanical attribution confirms: \"Acted-on records per reference: {\"r1\": []}.\"\n\n**Verdict: correct_absent**\n\nExposed facts: [] (empty, since the outcome is correct_absent)\nMechanism: none\n"
+    },
+    "logprobs": null,
+    "finish_reason": "stop",
+    "stop_reason": null,
+    "token_ids": null,
+    "routed_experts": null
+   }
+  ],
+  "service_tier": null,
+  "system_fingerprint": "vllm-0.30.0-tp2-d555b196",
+  "usage": {
+   "prompt_tokens": 6288,
+   "total_tokens": 7702,
+   "completion_tokens": 1414,
+   "prompt_tokens_details": {
+    "cached_tokens": 2352,
+    "created_cache_tokens": 3920,
+    "multimodal_tokens": null
+   },
+   "completion_tokens_details": {
+    "reasoning_tokens": 1298
+   }
+  },
+  "prompt_logprobs": null,
+  "prompt_token_ids": null,
+  "prompt_text": null,
+  "kv_transfer_params": null,
+  "ec_transfer_params": null,
+  "metrics": null
+ }
+}

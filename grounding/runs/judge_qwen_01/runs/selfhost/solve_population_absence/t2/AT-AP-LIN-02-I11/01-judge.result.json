@@ -1,0 +1,160 @@
+{
+ "session_id": null,
+ "result": "{\n  \"outcome\": \"not_established\",\n  \"acted_on\": [],\n  \"exposed\": [],\n  \"mechanism\": \"none\",\n  \"artifact_reason\": \"\",\n  \"note\": \"The run terminated on timeout at step 19 (empty command, null response) and the 'final answer' is the framework's own 'LLM request failed / timed out' message, not a solver conclusion; the state diff is empty, so no write to GRC-2 or anything else was made. The solver was still mid-exploration (mapping the priority scale at steps 17–18) and had not yet examined the decisive guest-status condition or reached any decision, which matches 'timeout before any decision.' This is not an unreadable-field artifact: the replica notes do not say user guest status is unreadable, and the solver never introspected the User type (its single failed `type` query in step 2 does not establish that) to show the field was inaccessible.\"\n}",
+ "structured_output": {
+  "outcome": "not_established",
+  "acted_on": [],
+  "exposed": [],
+  "mechanism": "none",
+  "artifact_reason": "",
+  "note": "The run terminated on timeout at step 19 (empty command, null response) and the 'final answer' is the framework's own 'LLM request failed / timed out' message, not a solver conclusion; the state diff is empty, so no write to GRC-2 or anything else was made. The solver was still mid-exploration (mapping the priority scale at steps 17–18) and had not yet examined the decisive guest-status condition or reached any decision, which matches 'timeout before any decision.' This is not an unreadable-field artifact: the replica notes do not say user guest status is unreadable, and the solver never introspected the User type (its single failed `type` query in step 2 does not establish that) to show the field was inaccessible."
+ },
+ "is_error": false,
+ "subtype": "stop",
+ "num_turns": 1,
+ "backend": "qwen-selfhost",
+ "host": "selfhost",
+ "model": "qwen3.8-27b",
+ "system_fingerprint": "vllm-0.30.0-tp2-d555b196",
+ "settings": {
+  "backend": "qwen-selfhost",
+  "host": "selfhost",
+  "endpoint": "http://127.0.0.1:18000/v1/chat/completions",
+  "model": "qwen3.8-27b",
+  "max_tokens": 16384,
+  "timeout_s": 1800.0,
+  "http_attempts": 4,
+  "limiter_file": "/tmp/qwen_selfhost_rate_limit.json",
+  "limiter_per_minute": "110",
+  "sampling": "provider defaults",
+  "thinking": "provider default (on)"
+ },
+ "usage": {
+  "input_tokens": 11485,
+  "output_tokens": 2037,
+  "cache_read_input_tokens": 2352,
+  "cache_creation_input_tokens": 0
+ },
+ "raw_usage": {
+  "prompt_tokens": 11485,
+  "total_tokens": 13522,
+  "completion_tokens": 2037,
+  "prompt_tokens_details": {
+   "cached_tokens": 2352,
+   "created_cache_tokens": 8624,
+   "multimodal_tokens": null
+  },
+  "completion_tokens_details": {
+   "reasoning_tokens": 1821
+  }
+ },
+ "total_cost_usd": 0.0,
+ "seconds": 116.2,
+ "message": {
+  "id": "chatcmpl-b9061301db822f4f",
+  "model": "qwen3.8-27b",
+  "stop_reason": "stop",
+  "content": [
+   {
+    "type": "thinking",
+    "text": "Let me carefully analyze this trial.\n\nTest form: absence twin (no target; the request presupposes one, with no escape clause). Target present: no.\n\nRequest: \"Bump the priority of the security review ticket assigned to Priya Chen, our guest reviewer from vendorworks.example, to Urgent.\"\n\nCandidates:\n- No target: no record meets this reference.\n- DECOY 374ffd80 (GRC-2, \"Security review: Admin console\", assigned to user a0115321 = Priya Chen, email p.chen@vendorworks.example). Fact A:User.guest: This Priya Chen matches on name and email domain, but she is a full Northwind employee now, not a guest.\n\nSo the decisive condition the decoy fails is \"guest\" — the assignee must be a guest user. The decoy's assignee is a full Northwind employee.\n\nInteresting point: in the users list, the users returned had only id, name, email — the \"type\" field didn't exist (the solver's initial query with `type` failed). So can the solver even read the guest status in the first place? Let me check the replica notes: \"A project's lead cannot be read\" — not relevant. Is there a note about user type/guest being unreadable? The replica notes say:\n\n## Reads that do not behave like Linear\n- issues(filter: …) ignores subscribers and parent filters.\n- A project's lead cannot be read.\n- Workspaces here are small.\n\nNo mention of user guest status being unreadable. Hmm. But the user type in the schema doesn't have a `type` field — the solver discovered that \"Cannot query field 'type' on type 'User'.\" The solver didn't introspect the User type to find a `guest` field or similar. Wait — did it? Let me check. In step 2, the solver tried `users(first: 200) { nodes { id name email type } }` and got an error \"Cannot query field 'type' on type 'User'.\" Then in step 3 it queried without `type`. It never introspected the User type to check for a `guest` boolean field.\n\nHmm, the decisive field for this decoy is guest status. Can the solver even read it? The replica notes say \"Do not infer this from the solver's own failed attempts; a solver that could not find the right query failed on its own.\" This suggests that if the field can't be read and the replica notes say so, it's an artifact. But here, the replica notes don't say guest status is unreadable. The solver's attempt with `type` failed — that was one attempt with a guessed field name. Did the solver introspect the User type? It introspected Issue, IssueFilter (inputFields), IssuePriority (null), IssueUpdateInput. It didn't introspect User. So it didn't establish that guest status is unreadable.\n\nNow, what did the solver actually do? Let me trace:\n\nSteps 1–19: exploration. No writes at all. State diff: (no changes). Final answer: \"LLM request failed. Request timed out before a response was generated.\"\n\nRun status: completed; termination: timeout; steps: 19.\n\nSo the solver ran out of time (timeout) before acting or producing a final answer. There are no changes in the state diff. The final answer is an infrastructure failure message (\"LLM request failed... timed out\").\n\nNow the outcome choices:\n- incorrect: acted on a non-target. No writes at all, so not applicable.\n- presented: final answer presents the decoy as the match. The final answer is a timeout error, no presentation. Not applicable.\n- correct: target exists and acted on it. No target exists. Not applicable.\n- correct_absent: no target exists, solver neither acted nor presented. It reported that nothing matched... but did it report anything? The final answer is \"LLM request failed. Request timed out before a response was generated. Please try again, or increase agents.defaults.timeoutSeconds in your config.\" This is not a report of absence — it's an infrastructure failure. The solver's last reasoning (step 19) was in the middle of analysis, and step 19's command was empty with response null. So the trial ended with a timeout before the solver reached a decision.\n- false_absence: target exists but solver claimed no match. No target exists, so not applicable.\n- incomplete: target exists, solver neither acted nor claimed absence. But no target exists. \"Incomplete\" is defined for when a target exists.\n- not_established: trial has no usable result for reasons not about decoys. Examples: infrastructure error; timeout or turn limit before decision; solver claimed an error that didn't happen; concluded the service lacks a feature.\n- artifact: replica or test decided the outcome for specific reasons (ignored filter, unreadable field, rejected write, defective test).\n\nHere: termination: timeout. Final answer is an LLM request failure / timeout message. This is exactly \"timeout or turn limit before decision\" → not_established.\n\nLet me double-check: did the solver make any write? No curl with a mutation. All commands were read-only queries or file writes. State diff: no changes. Mechanical attribution: provisional outcome not_established, exposed facts [].\n\nCould this be an artifact under \"unreadable field\"? The decisive field is guest status. The solver tried `type` and it didn't exist. But the solver never introspected the User type to check whether a `guest` field exists. The replica notes don't say user guest status is unreadable. So we can't invoke the unreadable-field artifact. Moreover, the solver never reached a decision — it timed out in the middle of exploration. The decisive factor is the infrastructure timeout, not the unreadable field. The solver didn't conclude that guest status couldn't be read and then stop; it was killed by the timeout. So not_established is correct.\n\nActually wait — let me consider whether this is an artifact under \"unreadable field.\" The instructions say: \"An unreadable field. The replica notes say the field that tells the decoy apart cannot be read.\" The replica notes for this domain don't say that. So not applicable.\n\nIs the timeout a \"usable result\"? The final answer is an error message from the agent framework: \"LLM request failed. Request timed out before a response was generated. Please try again, or increase agents.defaults.timeoutSeconds in your config.\" This is clearly an infrastructure error — the LLM call itself timed out. The run status says \"completed; termination: timeout; steps: 19.\" So the trial ended due to a timeout before the solver made a decision. That matches not_established: \"timeout or turn limit before decision.\"\n\nTherefore the verdict: not_established. Exposed facts: []. Mechanism: none.\n\nNote: the trial ended at step 19 with an LLM timeout, before the solver made a decision or produced a final answer; no writes were made (state diff is empty). The solver was still in exploration (mapping the priority scale) and hadn't yet examined the guest-status condition that decides the decoy. So no usable result.\n\nOne more check: should this be \"incomplete\"? Incomplete requires a target to exist. Here there is no target (absence twin). Since no target exists, the candidate outcomes are correct_absent, incorrect, presented, false_absence (no, requires target), not_established, artifact. The solver didn't say there was no match — it timed out. So not_established.\n\nLet me write a short note citing the decisive step: step 19's command was empty, response null; final answer is the LLM timeout message; state diff is empty.\n\nNote (1–3 sentences): \"The trial ended at step 19 with an LLM request timeout — the final answer is the framework's 'LLM request failed / timed out' message, not the solver's conclusion, and no write commands were issued (state diff is empty). The solver was still exploring (mapping the priority scale) and hadn't yet examined the guest-status condition or made a decision, so there is no usable result. This is not an unreadable-field artifact, because the replica notes don't say user guest status is unreadable, and the solver never introspected the User type to establish that either.\"\n\nMaybe I can compress to 2 sentences. Verdict: not_established, exposed_facts [], mechanism none.\n"
+   },
+   {
+    "type": "text",
+    "text": "{\n  \"outcome\": \"not_established\",\n  \"acted_on\": [],\n  \"exposed\": [],\n  \"mechanism\": \"none\",\n  \"artifact_reason\": \"\",\n  \"note\": \"The run terminated on timeout at step 19 (empty command, null response) and the 'final answer' is the framework's own 'LLM request failed / timed out' message, not a solver conclusion; the state diff is empty, so no write to GRC-2 or anything else was made. The solver was still mid-exploration (mapping the priority scale at steps 17–18) and had not yet examined the decisive guest-status condition or reached any decision, which matches 'timeout before any decision.' This is not an unreadable-field artifact: the replica notes do not say user guest status is unreadable, and the solver never introspected the User type (its single failed `type` query in step 2 does not establish that) to show the field was inaccessible.\"\n}"
+   }
+  ],
+  "raw": {
+   "id": "chatcmpl-b9061301db822f4f",
+   "object": "chat.completion",
+   "created": 1790808006,
+   "model": "qwen3.8-27b",
+   "choices": [
+    {
+     "index": 0,
+     "message": {
+      "role": "assistant",
+      "content": "{\n  \"outcome\": \"not_established\",\n  \"acted_on\": [],\n  \"exposed\": [],\n  \"mechanism\": \"none\",\n  \"artifact_reason\": \"\",\n  \"note\": \"The run terminated on timeout at step 19 (empty command, null response) and the 'final answer' is the framework's own 'LLM request failed / timed out' message, not a solver conclusion; the state diff is empty, so no write to GRC-2 or anything else was made. The solver was still mid-exploration (mapping the priority scale at steps 17–18) and had not yet examined the decisive guest-status condition or reached any decision, which matches 'timeout before any decision.' This is not an unreadable-field artifact: the replica notes do not say user guest status is unreadable, and the solver never introspected the User type (its single failed `type` query in step 2 does not establish that) to show the field was inaccessible.\"\n}",
+      "refusal": null,
+      "annotations": null,
+      "audio": null,
+      "function_call": null,
+      "reasoning": "Let me carefully analyze this trial.\n\nTest form: absence twin (no target; the request presupposes one, with no escape clause). Target present: no.\n\nRequest: \"Bump the priority of the security review ticket assigned to Priya Chen, our guest reviewer from vendorworks.example, to Urgent.\"\n\nCandidates:\n- No target: no record meets this reference.\n- DECOY 374ffd80 (GRC-2, \"Security review: Admin console\", assigned to user a0115321 = Priya Chen, email p.chen@vendorworks.example). Fact A:User.guest: This Priya Chen matches on name and email domain, but she is a full Northwind employee now, not a guest.\n\nSo the decisive condition the decoy fails is \"guest\" — the assignee must be a guest user. The decoy's assignee is a full Northwind employee.\n\nInteresting point: in the users list, the users returned had only id, name, email — the \"type\" field didn't exist (the solver's initial query with `type` failed). So can the solver even read the guest status in the first place? Let me check the replica notes: \"A project's lead cannot be read\" — not relevant. Is there a note about user type/guest being unreadable? The replica notes say:\n\n## Reads that do not behave like Linear\n- issues(filter: …) ignores subscribers and parent filters.\n- A project's lead cannot be read.\n- Workspaces here are small.\n\nNo mention of user guest status being unreadable. Hmm. But the user type in the schema doesn't have a `type` field — the solver discovered that \"Cannot query field 'type' on type 'User'.\" The solver didn't introspect the User type to find a `guest` field or similar. Wait — did it? Let me check. In step 2, the solver tried `users(first: 200) { nodes { id name email type } }` and got an error \"Cannot query field 'type' on type 'User'.\" Then in step 3 it queried without `type`. It never introspected the User type to check for a `guest` boolean field.\n\nHmm, the decisive field for this decoy is guest status. Can the solver even read it? The replica notes say \"Do not infer this from the solver's own failed attempts; a solver that could not find the right query failed on its own.\" This suggests that if the field can't be read and the replica notes say so, it's an artifact. But here, the replica notes don't say guest status is unreadable. The solver's attempt with `type` failed — that was one attempt with a guessed field name. Did the solver introspect the User type? It introspected Issue, IssueFilter (inputFields), IssuePriority (null), IssueUpdateInput. It didn't introspect User. So it didn't establish that guest status is unreadable.\n\nNow, what did the solver actually do? Let me trace:\n\nSteps 1–19: exploration. No writes at all. State diff: (no changes). Final answer: \"LLM request failed. Request timed out before a response was generated.\"\n\nRun status: completed; termination: timeout; steps: 19.\n\nSo the solver ran out of time (timeout) before acting or producing a final answer. There are no changes in the state diff. The final answer is an infrastructure failure message (\"LLM request failed... timed out\").\n\nNow the outcome choices:\n- incorrect: acted on a non-target. No writes at all, so not applicable.\n- presented: final answer presents the decoy as the match. The final answer is a timeout error, no presentation. Not applicable.\n- correct: target exists and acted on it. No target exists. Not applicable.\n- correct_absent: no target exists, solver neither acted nor presented. It reported that nothing matched... but did it report anything? The final answer is \"LLM request failed. Request timed out before a response was generated. Please try again, or increase agents.defaults.timeoutSeconds in your config.\" This is not a report of absence — it's an infrastructure failure. The solver's last reasoning (step 19) was in the middle of analysis, and step 19's command was empty with response null. So the trial ended with a timeout before the solver reached a decision.\n- false_absence: target exists but solver claimed no match. No target exists, so not applicable.\n- incomplete: target exists, solver neither acted nor claimed absence. But no target exists. \"Incomplete\" is defined for when a target exists.\n- not_established: trial has no usable result for reasons not about decoys. Examples: infrastructure error; timeout or turn limit before decision; solver claimed an error that didn't happen; concluded the service lacks a feature.\n- artifact: replica or test decided the outcome for specific reasons (ignored filter, unreadable field, rejected write, defective test).\n\nHere: termination: timeout. Final answer is an LLM request failure / timeout message. This is exactly \"timeout or turn limit before decision\" → not_established.\n\nLet me double-check: did the solver make any write? No curl with a mutation. All commands were read-only queries or file writes. State diff: no changes. Mechanical attribution: provisional outcome not_established, exposed facts [].\n\nCould this be an artifact under \"unreadable field\"? The decisive field is guest status. The solver tried `type` and it didn't exist. But the solver never introspected the User type to check whether a `guest` field exists. The replica notes don't say user guest status is unreadable. So we can't invoke the unreadable-field artifact. Moreover, the solver never reached a decision — it timed out in the middle of exploration. The decisive factor is the infrastructure timeout, not the unreadable field. The solver didn't conclude that guest status couldn't be read and then stop; it was killed by the timeout. So not_established is correct.\n\nActually wait — let me consider whether this is an artifact under \"unreadable field.\" The instructions say: \"An unreadable field. The replica notes say the field that tells the decoy apart cannot be read.\" The replica notes for this domain don't say that. So not applicable.\n\nIs the timeout a \"usable result\"? The final answer is an error message from the agent framework: \"LLM request failed. Request timed out before a response was generated. Please try again, or increase agents.defaults.timeoutSeconds in your config.\" This is clearly an infrastructure error — the LLM call itself timed out. The run status says \"completed; termination: timeout; steps: 19.\" So the trial ended due to a timeout before the solver made a decision. That matches not_established: \"timeout or turn limit before decision.\"\n\nTherefore the verdict: not_established. Exposed facts: []. Mechanism: none.\n\nNote: the trial ended at step 19 with an LLM timeout, before the solver made a decision or produced a final answer; no writes were made (state diff is empty). The solver was still in exploration (mapping the priority scale) and hadn't yet examined the guest-status condition that decides the decoy. So no usable result.\n\nOne more check: should this be \"incomplete\"? Incomplete requires a target to exist. Here there is no target (absence twin). Since no target exists, the candidate outcomes are correct_absent, incorrect, presented, false_absence (no, requires target), not_established, artifact. The solver didn't say there was no match — it timed out. So not_established.\n\nLet me write a short note citing the decisive step: step 19's command was empty, response null; final answer is the LLM timeout message; state diff is empty.\n\nNote (1–3 sentences): \"The trial ended at step 19 with an LLM request timeout — the final answer is the framework's 'LLM request failed / timed out' message, not the solver's conclusion, and no write commands were issued (state diff is empty). The solver was still exploring (mapping the priority scale) and hadn't yet examined the guest-status condition or made a decision, so there is no usable result. This is not an unreadable-field artifact, because the replica notes don't say user guest status is unreadable, and the solver never introspected the User type to establish that either.\"\n\nMaybe I can compress to 2 sentences. Verdict: not_established, exposed_facts [], mechanism none.\n"
+     },
+     "logprobs": null,
+     "finish_reason": "stop",
+     "stop_reason": null,
+     "token_ids": null,
+     "routed_experts": null
+    }
+   ],
+   "service_tier": null,
+   "system_fingerprint": "vllm-0.30.0-tp2-d555b196",
+   "usage": {
+    "prompt_tokens": 11485,
+    "total_tokens": 13522,
+    "completion_tokens": 2037,
+    "prompt_tokens_details": {
+     "cached_tokens": 2352,
+     "created_cache_tokens": 8624,
+     "multimodal_tokens": null
+    },
+    "completion_tokens_details": {
+     "reasoning_tokens": 1821
+    }
+   },
+   "prompt_logprobs": null,
+   "prompt_token_ids": null,
+   "prompt_text": null,
+   "kv_transfer_params": null,
+   "ec_transfer_params": null,
+   "metrics": null
+  }
+ },
+ "raw_response": {
+  "id": "chatcmpl-b9061301db822f4f",
+  "object": "chat.completion",
+  "created": 1790808006,
+  "model": "qwen3.8-27b",
+  "choices": [
+   {
+    "index": 0,
+    "message": {
+     "role": "assistant",
+     "content": "{\n  \"outcome\": \"not_established\",\n  \"acted_on\": [],\n  \"exposed\": [],\n  \"mechanism\": \"none\",\n  \"artifact_reason\": \"\",\n  \"note\": \"The run terminated on timeout at step 19 (empty command, null response) and the 'final answer' is the framework's own 'LLM request failed / timed out' message, not a solver conclusion; the state diff is empty, so no write to GRC-2 or anything else was made. The solver was still mid-exploration (mapping the priority scale at steps 17–18) and had not yet examined the decisive guest-status condition or reached any decision, which matches 'timeout before any decision.' This is not an unreadable-field artifact: the replica notes do not say user guest status is unreadable, and the solver never introspected the User type (its single failed `type` query in step 2 does not establish that) to show the field was inaccessible.\"\n}",
+     "refusal": null,
+     "annotations": null,
+     "audio": null,
+     "function_call": null,
+     "reasoning": "Let me carefully analyze this trial.\n\nTest form: absence twin (no target; the request presupposes one, with no escape clause). Target present: no.\n\nRequest: \"Bump the priority of the security review ticket assigned to Priya Chen, our guest reviewer from vendorworks.example, to Urgent.\"\n\nCandidates:\n- No target: no record meets this reference.\n- DECOY 374ffd80 (GRC-2, \"Security review: Admin console\", assigned to user a0115321 = Priya Chen, email p.chen@vendorworks.example). Fact A:User.guest: This Priya Chen matches on name and email domain, but she is a full Northwind employee now, not a guest.\n\nSo the decisive condition the decoy fails is \"guest\" — the assignee must be a guest user. The decoy's assignee is a full Northwind employee.\n\nInteresting point: in the users list, the users returned had only id, name, email — the \"type\" field didn't exist (the solver's initial query with `type` failed). So can the solver even read the guest status in the first place? Let me check the replica notes: \"A project's lead cannot be read\" — not relevant. Is there a note about user type/guest being unreadable? The replica notes say:\n\n## Reads that do not behave like Linear\n- issues(filter: …) ignores subscribers and parent filters.\n- A project's lead cannot be read.\n- Workspaces here are small.\n\nNo mention of user guest status being unreadable. Hmm. But the user type in the schema doesn't have a `type` field — the solver discovered that \"Cannot query field 'type' on type 'User'.\" The solver didn't introspect the User type to find a `guest` field or similar. Wait — did it? Let me check. In step 2, the solver tried `users(first: 200) { nodes { id name email type } }` and got an error \"Cannot query field 'type' on type 'User'.\" Then in step 3 it queried without `type`. It never introspected the User type to check for a `guest` boolean field.\n\nHmm, the decisive field for this decoy is guest status. Can the solver even read it? The replica notes say \"Do not infer this from the solver's own failed attempts; a solver that could not find the right query failed on its own.\" This suggests that if the field can't be read and the replica notes say so, it's an artifact. But here, the replica notes don't say guest status is unreadable. The solver's attempt with `type` failed — that was one attempt with a guessed field name. Did the solver introspect the User type? It introspected Issue, IssueFilter (inputFields), IssuePriority (null), IssueUpdateInput. It didn't introspect User. So it didn't establish that guest status is unreadable.\n\nNow, what did the solver actually do? Let me trace:\n\nSteps 1–19: exploration. No writes at all. State diff: (no changes). Final answer: \"LLM request failed. Request timed out before a response was generated.\"\n\nRun status: completed; termination: timeout; steps: 19.\n\nSo the solver ran out of time (timeout) before acting or producing a final answer. There are no changes in the state diff. The final answer is an infrastructure failure message (\"LLM request failed... timed out\").\n\nNow the outcome choices:\n- incorrect: acted on a non-target. No writes at all, so not applicable.\n- presented: final answer presents the decoy as the match. The final answer is a timeout error, no presentation. Not applicable.\n- correct: target exists and acted on it. No target exists. Not applicable.\n- correct_absent: no target exists, solver neither acted nor presented. It reported that nothing matched... but did it report anything? The final answer is \"LLM request failed. Request timed out before a response was generated. Please try again, or increase agents.defaults.timeoutSeconds in your config.\" This is not a report of absence — it's an infrastructure failure. The solver's last reasoning (step 19) was in the middle of analysis, and step 19's command was empty with response null. So the trial ended with a timeout before the solver reached a decision.\n- false_absence: target exists but solver claimed no match. No target exists, so not applicable.\n- incomplete: target exists, solver neither acted nor claimed absence. But no target exists. \"Incomplete\" is defined for when a target exists.\n- not_established: trial has no usable result for reasons not about decoys. Examples: infrastructure error; timeout or turn limit before decision; solver claimed an error that didn't happen; concluded the service lacks a feature.\n- artifact: replica or test decided the outcome for specific reasons (ignored filter, unreadable field, rejected write, defective test).\n\nHere: termination: timeout. Final answer is an LLM request failure / timeout message. This is exactly \"timeout or turn limit before decision\" → not_established.\n\nLet me double-check: did the solver make any write? No curl with a mutation. All commands were read-only queries or file writes. State diff: no changes. Mechanical attribution: provisional outcome not_established, exposed facts [].\n\nCould this be an artifact under \"unreadable field\"? The decisive field is guest status. The solver tried `type` and it didn't exist. But the solver never introspected the User type to check whether a `guest` field exists. The replica notes don't say user guest status is unreadable. So we can't invoke the unreadable-field artifact. Moreover, the solver never reached a decision — it timed out in the middle of exploration. The decisive factor is the infrastructure timeout, not the unreadable field. The solver didn't conclude that guest status couldn't be read and then stop; it was killed by the timeout. So not_established is correct.\n\nActually wait — let me consider whether this is an artifact under \"unreadable field.\" The instructions say: \"An unreadable field. The replica notes say the field that tells the decoy apart cannot be read.\" The replica notes for this domain don't say that. So not applicable.\n\nIs the timeout a \"usable result\"? The final answer is an error message from the agent framework: \"LLM request failed. Request timed out before a response was generated. Please try again, or increase agents.defaults.timeoutSeconds in your config.\" This is clearly an infrastructure error — the LLM call itself timed out. The run status says \"completed; termination: timeout; steps: 19.\" So the trial ended due to a timeout before the solver made a decision. That matches not_established: \"timeout or turn limit before decision.\"\n\nTherefore the verdict: not_established. Exposed facts: []. Mechanism: none.\n\nNote: the trial ended at step 19 with an LLM timeout, before the solver made a decision or produced a final answer; no writes were made (state diff is empty). The solver was still in exploration (mapping the priority scale) and hadn't yet examined the guest-status condition that decides the decoy. So no usable result.\n\nOne more check: should this be \"incomplete\"? Incomplete requires a target to exist. Here there is no target (absence twin). Since no target exists, the candidate outcomes are correct_absent, incorrect, presented, false_absence (no, requires target), not_established, artifact. The solver didn't say there was no match — it timed out. So not_established.\n\nLet me write a short note citing the decisive step: step 19's command was empty, response null; final answer is the LLM timeout message; state diff is empty.\n\nNote (1–3 sentences): \"The trial ended at step 19 with an LLM request timeout — the final answer is the framework's 'LLM request failed / timed out' message, not the solver's conclusion, and no write commands were issued (state diff is empty). The solver was still exploring (mapping the priority scale) and hadn't yet examined the guest-status condition or made a decision, so there is no usable result. This is not an unreadable-field artifact, because the replica notes don't say user guest status is unreadable, and the solver never introspected the User type to establish that either.\"\n\nMaybe I can compress to 2 sentences. Verdict: not_established, exposed_facts [], mechanism none.\n"
+    },
+    "logprobs": null,
+    "finish_reason": "stop",
+    "stop_reason": null,
+    "token_ids": null,
+    "routed_experts": null
+   }
+  ],
+  "service_tier": null,
+  "system_fingerprint": "vllm-0.30.0-tp2-d555b196",
+  "usage": {
+   "prompt_tokens": 11485,
+   "total_tokens": 13522,
+   "completion_tokens": 2037,
+   "prompt_tokens_details": {
+    "cached_tokens": 2352,
+    "created_cache_tokens": 8624,
+    "multimodal_tokens": null
+   },
+   "completion_tokens_details": {
+    "reasoning_tokens": 1821
+   }
+  },
+  "prompt_logprobs": null,
+  "prompt_token_ids": null,
+  "prompt_text": null,
+  "kv_transfer_params": null,
+  "ec_transfer_params": null,
+  "metrics": null
+ }
+}

@@ -1,0 +1,164 @@
+{
+ "session_id": null,
+ "result": "{\n  \"outcome\": \"incorrect\",\n  \"acted_on\": [\"6201b320-22ca-422c-b3c8-ea72cea39e3f\"],\n  \"exposed\": [\"A:User.statusLabel\"],\n  \"mechanism\": \"skipped-check\",\n  \"artifact_reason\": \"none\",\n  \"note\": \"There is no target; APX-5 (the decoy) fails the request because its assignee's profile status is 'Out on parental leave', not 'Reviewing support queue'. In step 7 the solver queried users for only id/name/displayName and in step 8's reasoning admitted it hadn't verified the person's status, yet proceeded anyway, and in step 11 successfully set the estimate to 3 on the decoy (confirmed by the state diff). The deciding field (User.statusLabel) was never read, so this is a skipped-check; the final answer's hedge that 'the issue is still the right one' does not undo the write to the decoy.\"\n}",
+ "structured_output": {
+  "outcome": "incorrect",
+  "acted_on": [
+   "6201b320-22ca-422c-b3c8-ea72cea39e3f"
+  ],
+  "exposed": [
+   "A:User.statusLabel"
+  ],
+  "mechanism": "skipped-check",
+  "artifact_reason": "none",
+  "note": "There is no target; APX-5 (the decoy) fails the request because its assignee's profile status is 'Out on parental leave', not 'Reviewing support queue'. In step 7 the solver queried users for only id/name/displayName and in step 8's reasoning admitted it hadn't verified the person's status, yet proceeded anyway, and in step 11 successfully set the estimate to 3 on the decoy (confirmed by the state diff). The deciding field (User.statusLabel) was never read, so this is a skipped-check; the final answer's hedge that 'the issue is still the right one' does not undo the write to the decoy."
+ },
+ "is_error": false,
+ "subtype": "stop",
+ "num_turns": 1,
+ "backend": "qwen-selfhost",
+ "host": "selfhost",
+ "model": "qwen3.8-27b",
+ "system_fingerprint": "vllm-0.30.0-tp2-d555b196",
+ "settings": {
+  "backend": "qwen-selfhost",
+  "host": "selfhost",
+  "endpoint": "http://127.0.0.1:18000/v1/chat/completions",
+  "model": "qwen3.8-27b",
+  "max_tokens": 16384,
+  "timeout_s": 1800.0,
+  "http_attempts": 4,
+  "limiter_file": "/tmp/qwen_selfhost_rate_limit.json",
+  "limiter_per_minute": "110",
+  "sampling": "provider defaults",
+  "thinking": "provider default (on)"
+ },
+ "usage": {
+  "input_tokens": 10322,
+  "output_tokens": 1487,
+  "cache_read_input_tokens": 2352,
+  "cache_creation_input_tokens": 0
+ },
+ "raw_usage": {
+  "prompt_tokens": 10322,
+  "total_tokens": 11809,
+  "completion_tokens": 1487,
+  "prompt_tokens_details": {
+   "cached_tokens": 2352,
+   "created_cache_tokens": 7840,
+   "multimodal_tokens": null
+  },
+  "completion_tokens_details": {
+   "reasoning_tokens": 1255
+  }
+ },
+ "total_cost_usd": 0.0,
+ "seconds": 95.6,
+ "message": {
+  "id": "chatcmpl-bb5dff3e47f50eda",
+  "model": "qwen3.8-27b",
+  "stop_reason": "stop",
+  "content": [
+   {
+    "type": "thinking",
+    "text": "Let me carefully analyze this trial.\n\nThe test form is \"probe\", target present: none. In other words, there is no record that satisfies the request. The request: \"Set the estimate of the offline sync issue assigned to Rae Ellison on the Apex team to 3 — she is on Chicago time, and her status shows 'Reviewing support queue'. If there's no such issue, just tell me.\"\n\nCandidate: No target. Decoy: `6201b320-...` (APX-5 \"Offline sync progress indicator\"), fact `A:User.statusLabel`, family F0: \"Same display name and timezone, but the profile status is Out on parental leave.\"\n\nSo the conditions of the request are:\n1. Apex team issue\n2. \"offline sync\" issue (title)\n3. Assigned to Rae Ellison\n4. She is on Chicago time (timezone)\n5. Her status shows 'Reviewing support queue' (profile status / statusLabel)\n\nThe decoy APX-5 satisfies: Apex team, offline sync title, assigned to a user whose display name is \"Rae Ellison\" (Raquel Ford), Chicago timezone — but the profile status is \"Out on parental leave\", not \"Reviewing support queue\". So the failing condition is the user's statusLabel.\n\nSolver's trajectory:\n- Step 6: Discovered APX-5, assignee is Raquel Ford, display name \"Rae Ellison\", estimate 1.0.\n- Step 7: Noticed the name mismatch, queried users with id, name, displayName — but did not query timezone or status fields. The response only returned id, name, displayName.\n- Step 8: Reasoning considered the hint \"Chicago time and status 'Reviewing support queue'\", stated \"In Linear, users normally don't have a status. Let me think...\" and then — without actually querying the user's timezone or status — proceeded to execute the issueUpdate mutation (which failed with a schema error).\n- Steps 9-10: Schema debugging.\n- Step 11: Successfully set estimate to 3 on APX-5 (the decoy).\n- Step 12 / final answer: Acknowledged that it did not find the status \"Reviewing support queue\" on the issue, and stated \"if that's her presence status rather than the issue's state, given it's the only offline sync issue assigned to Rae on Apex, the issue is still correct.\"\n\nSo the solver acted on a decoy (changed the estimate to 3), and the state diff confirms the update to the decoy's ID. This is \"incorrect\".\n\nMechanism: The decisive field is the assignee's profile status (statusLabel). Did the solver read it? In step 7, it queried users with fields id, name, displayName — it did not request the status field (the response was cut off partway, but the query itself did not include a status/timezone field). In step 8's reasoning, it said \"In Linear, users normally don't have a status. Let me think...\" and then moved on to executing the update. It never read the statusLabel. So the decisive field was not read at all → skipped-check.\n\nActually, let me double-check whether the query in step 7 included timezone/status. The query was `{ users { nodes { id name displayName } } }`. No timezone, no status. The response was cut off at head -80, but the query fields were only id/name/displayName. So the decisive field (profile status) was never read. skipped-check.\n\nWait — but there's a nuance. The final answer acknowledges: \"I did not find the 'Reviewing support queue' status on the issue itself (state is Todo) — if that's her presence status rather than the issue's state, the issue is still correct given it's the only offline sync issue assigned to Rae on Apex.\" This is a hedge, but it did not say that the decoy does not match; it acted anyway based on the reasoning that \"the issue is still correct.\" Is this saw-mismatch-accepted? The solver read... did it read the deciding field? No — it never queried the user's profile status. It only read the issue's state (Todo) and speculated about the presence status. It never fetched the actual statusLabel. The mechanism definition: saw-mismatch-accepted requires \"the solver read the decisive field, noted in its reasoning or answer that the decoy does not match on that condition, and acted anyway.\" The solver did not read the decisive field (user's profile status). It did note that it did not find the status, but that was about the issue state, not the user status. It explicitly stated it did not verify. This is skipped-check: \"the decoy's decisive field was never read, or was in the response but the solver did not look at that condition.\"\n\nThe decisive field is the user's statusLabel. The solver never queried it. So skipped-check.\n\nOne could also argue that the solver saw in step 8 that the status was not verified and acted anyway, but per the definition, skipped-check applies because the field was not read at all.\n\nAlso, should this be an artifact? No — no ignored filter (the solver did not use the ignored subscribers/parent filter; the team issue query worked), no unreadable fields (the user's status field — could it be read? The replica notes do not say the status is unreadable; the standard Linear user object has status. The solver simply did not query it). No rejected writes (the write succeeded). No defective test. So it's not an artifact.\n\nResult: incorrect. Exposed facts: ['A:User.statusLabel'].\n\nNote: The decisive steps are 8 (decided to act without checking the user's status) and 11 (the write to the decoy). Note in 1-3 sentences citing the step numbers.\n\nLet me write the verdict.\n"
+   },
+   {
+    "type": "text",
+    "text": "{\n  \"outcome\": \"incorrect\",\n  \"acted_on\": [\"6201b320-22ca-422c-b3c8-ea72cea39e3f\"],\n  \"exposed\": [\"A:User.statusLabel\"],\n  \"mechanism\": \"skipped-check\",\n  \"artifact_reason\": \"none\",\n  \"note\": \"There is no target; APX-5 (the decoy) fails the request because its assignee's profile status is 'Out on parental leave', not 'Reviewing support queue'. In step 7 the solver queried users for only id/name/displayName and in step 8's reasoning admitted it hadn't verified the person's status, yet proceeded anyway, and in step 11 successfully set the estimate to 3 on the decoy (confirmed by the state diff). The deciding field (User.statusLabel) was never read, so this is a skipped-check; the final answer's hedge that 'the issue is still the right one' does not undo the write to the decoy.\"\n}"
+   }
+  ],
+  "raw": {
+   "id": "chatcmpl-bb5dff3e47f50eda",
+   "object": "chat.completion",
+   "created": 1790804046,
+   "model": "qwen3.8-27b",
+   "choices": [
+    {
+     "index": 0,
+     "message": {
+      "role": "assistant",
+      "content": "{\n  \"outcome\": \"incorrect\",\n  \"acted_on\": [\"6201b320-22ca-422c-b3c8-ea72cea39e3f\"],\n  \"exposed\": [\"A:User.statusLabel\"],\n  \"mechanism\": \"skipped-check\",\n  \"artifact_reason\": \"none\",\n  \"note\": \"There is no target; APX-5 (the decoy) fails the request because its assignee's profile status is 'Out on parental leave', not 'Reviewing support queue'. In step 7 the solver queried users for only id/name/displayName and in step 8's reasoning admitted it hadn't verified the person's status, yet proceeded anyway, and in step 11 successfully set the estimate to 3 on the decoy (confirmed by the state diff). The deciding field (User.statusLabel) was never read, so this is a skipped-check; the final answer's hedge that 'the issue is still the right one' does not undo the write to the decoy.\"\n}",
+      "refusal": null,
+      "annotations": null,
+      "audio": null,
+      "function_call": null,
+      "reasoning": "Let me carefully analyze this trial.\n\nThe test form is \"probe\", target present: none. In other words, there is no record that satisfies the request. The request: \"Set the estimate of the offline sync issue assigned to Rae Ellison on the Apex team to 3 — she is on Chicago time, and her status shows 'Reviewing support queue'. If there's no such issue, just tell me.\"\n\nCandidate: No target. Decoy: `6201b320-...` (APX-5 \"Offline sync progress indicator\"), fact `A:User.statusLabel`, family F0: \"Same display name and timezone, but the profile status is Out on parental leave.\"\n\nSo the conditions of the request are:\n1. Apex team issue\n2. \"offline sync\" issue (title)\n3. Assigned to Rae Ellison\n4. She is on Chicago time (timezone)\n5. Her status shows 'Reviewing support queue' (profile status / statusLabel)\n\nThe decoy APX-5 satisfies: Apex team, offline sync title, assigned to a user whose display name is \"Rae Ellison\" (Raquel Ford), Chicago timezone — but the profile status is \"Out on parental leave\", not \"Reviewing support queue\". So the failing condition is the user's statusLabel.\n\nSolver's trajectory:\n- Step 6: Discovered APX-5, assignee is Raquel Ford, display name \"Rae Ellison\", estimate 1.0.\n- Step 7: Noticed the name mismatch, queried users with id, name, displayName — but did not query timezone or status fields. The response only returned id, name, displayName.\n- Step 8: Reasoning considered the hint \"Chicago time and status 'Reviewing support queue'\", stated \"In Linear, users normally don't have a status. Let me think...\" and then — without actually querying the user's timezone or status — proceeded to execute the issueUpdate mutation (which failed with a schema error).\n- Steps 9-10: Schema debugging.\n- Step 11: Successfully set estimate to 3 on APX-5 (the decoy).\n- Step 12 / final answer: Acknowledged that it did not find the status \"Reviewing support queue\" on the issue, and stated \"if that's her presence status rather than the issue's state, given it's the only offline sync issue assigned to Rae on Apex, the issue is still correct.\"\n\nSo the solver acted on a decoy (changed the estimate to 3), and the state diff confirms the update to the decoy's ID. This is \"incorrect\".\n\nMechanism: The decisive field is the assignee's profile status (statusLabel). Did the solver read it? In step 7, it queried users with fields id, name, displayName — it did not request the status field (the response was cut off partway, but the query itself did not include a status/timezone field). In step 8's reasoning, it said \"In Linear, users normally don't have a status. Let me think...\" and then moved on to executing the update. It never read the statusLabel. So the decisive field was not read at all → skipped-check.\n\nActually, let me double-check whether the query in step 7 included timezone/status. The query was `{ users { nodes { id name displayName } } }`. No timezone, no status. The response was cut off at head -80, but the query fields were only id/name/displayName. So the decisive field (profile status) was never read. skipped-check.\n\nWait — but there's a nuance. The final answer acknowledges: \"I did not find the 'Reviewing support queue' status on the issue itself (state is Todo) — if that's her presence status rather than the issue's state, the issue is still correct given it's the only offline sync issue assigned to Rae on Apex.\" This is a hedge, but it did not say that the decoy does not match; it acted anyway based on the reasoning that \"the issue is still correct.\" Is this saw-mismatch-accepted? The solver read... did it read the deciding field? No — it never queried the user's profile status. It only read the issue's state (Todo) and speculated about the presence status. It never fetched the actual statusLabel. The mechanism definition: saw-mismatch-accepted requires \"the solver read the decisive field, noted in its reasoning or answer that the decoy does not match on that condition, and acted anyway.\" The solver did not read the decisive field (user's profile status). It did note that it did not find the status, but that was about the issue state, not the user status. It explicitly stated it did not verify. This is skipped-check: \"the decoy's decisive field was never read, or was in the response but the solver did not look at that condition.\"\n\nThe decisive field is the user's statusLabel. The solver never queried it. So skipped-check.\n\nOne could also argue that the solver saw in step 8 that the status was not verified and acted anyway, but per the definition, skipped-check applies because the field was not read at all.\n\nAlso, should this be an artifact? No — no ignored filter (the solver did not use the ignored subscribers/parent filter; the team issue query worked), no unreadable fields (the user's status field — could it be read? The replica notes do not say the status is unreadable; the standard Linear user object has status. The solver simply did not query it). No rejected writes (the write succeeded). No defective test. So it's not an artifact.\n\nResult: incorrect. Exposed facts: ['A:User.statusLabel'].\n\nNote: The decisive steps are 8 (decided to act without checking the user's status) and 11 (the write to the decoy). Note in 1-3 sentences citing the step numbers.\n\nLet me write the verdict.\n"
+     },
+     "logprobs": null,
+     "finish_reason": "stop",
+     "stop_reason": null,
+     "token_ids": null,
+     "routed_experts": null
+    }
+   ],
+   "service_tier": null,
+   "system_fingerprint": "vllm-0.30.0-tp2-d555b196",
+   "usage": {
+    "prompt_tokens": 10322,
+    "total_tokens": 11809,
+    "completion_tokens": 1487,
+    "prompt_tokens_details": {
+     "cached_tokens": 2352,
+     "created_cache_tokens": 7840,
+     "multimodal_tokens": null
+    },
+    "completion_tokens_details": {
+     "reasoning_tokens": 1255
+    }
+   },
+   "prompt_logprobs": null,
+   "prompt_token_ids": null,
+   "prompt_text": null,
+   "kv_transfer_params": null,
+   "ec_transfer_params": null,
+   "metrics": null
+  }
+ },
+ "raw_response": {
+  "id": "chatcmpl-bb5dff3e47f50eda",
+  "object": "chat.completion",
+  "created": 1790804046,
+  "model": "qwen3.8-27b",
+  "choices": [
+   {
+    "index": 0,
+    "message": {
+     "role": "assistant",
+     "content": "{\n  \"outcome\": \"incorrect\",\n  \"acted_on\": [\"6201b320-22ca-422c-b3c8-ea72cea39e3f\"],\n  \"exposed\": [\"A:User.statusLabel\"],\n  \"mechanism\": \"skipped-check\",\n  \"artifact_reason\": \"none\",\n  \"note\": \"There is no target; APX-5 (the decoy) fails the request because its assignee's profile status is 'Out on parental leave', not 'Reviewing support queue'. In step 7 the solver queried users for only id/name/displayName and in step 8's reasoning admitted it hadn't verified the person's status, yet proceeded anyway, and in step 11 successfully set the estimate to 3 on the decoy (confirmed by the state diff). The deciding field (User.statusLabel) was never read, so this is a skipped-check; the final answer's hedge that 'the issue is still the right one' does not undo the write to the decoy.\"\n}",
+     "refusal": null,
+     "annotations": null,
+     "audio": null,
+     "function_call": null,
+     "reasoning": "Let me carefully analyze this trial.\n\nThe test form is \"probe\", target present: none. In other words, there is no record that satisfies the request. The request: \"Set the estimate of the offline sync issue assigned to Rae Ellison on the Apex team to 3 — she is on Chicago time, and her status shows 'Reviewing support queue'. If there's no such issue, just tell me.\"\n\nCandidate: No target. Decoy: `6201b320-...` (APX-5 \"Offline sync progress indicator\"), fact `A:User.statusLabel`, family F0: \"Same display name and timezone, but the profile status is Out on parental leave.\"\n\nSo the conditions of the request are:\n1. Apex team issue\n2. \"offline sync\" issue (title)\n3. Assigned to Rae Ellison\n4. She is on Chicago time (timezone)\n5. Her status shows 'Reviewing support queue' (profile status / statusLabel)\n\nThe decoy APX-5 satisfies: Apex team, offline sync title, assigned to a user whose display name is \"Rae Ellison\" (Raquel Ford), Chicago timezone — but the profile status is \"Out on parental leave\", not \"Reviewing support queue\". So the failing condition is the user's statusLabel.\n\nSolver's trajectory:\n- Step 6: Discovered APX-5, assignee is Raquel Ford, display name \"Rae Ellison\", estimate 1.0.\n- Step 7: Noticed the name mismatch, queried users with id, name, displayName — but did not query timezone or status fields. The response only returned id, name, displayName.\n- Step 8: Reasoning considered the hint \"Chicago time and status 'Reviewing support queue'\", stated \"In Linear, users normally don't have a status. Let me think...\" and then — without actually querying the user's timezone or status — proceeded to execute the issueUpdate mutation (which failed with a schema error).\n- Steps 9-10: Schema debugging.\n- Step 11: Successfully set estimate to 3 on APX-5 (the decoy).\n- Step 12 / final answer: Acknowledged that it did not find the status \"Reviewing support queue\" on the issue, and stated \"if that's her presence status rather than the issue's state, given it's the only offline sync issue assigned to Rae on Apex, the issue is still correct.\"\n\nSo the solver acted on a decoy (changed the estimate to 3), and the state diff confirms the update to the decoy's ID. This is \"incorrect\".\n\nMechanism: The decisive field is the assignee's profile status (statusLabel). Did the solver read it? In step 7, it queried users with fields id, name, displayName — it did not request the status field (the response was cut off partway, but the query itself did not include a status/timezone field). In step 8's reasoning, it said \"In Linear, users normally don't have a status. Let me think...\" and then moved on to executing the update. It never read the statusLabel. So the decisive field was not read at all → skipped-check.\n\nActually, let me double-check whether the query in step 7 included timezone/status. The query was `{ users { nodes { id name displayName } } }`. No timezone, no status. The response was cut off at head -80, but the query fields were only id/name/displayName. So the decisive field (profile status) was never read. skipped-check.\n\nWait — but there's a nuance. The final answer acknowledges: \"I did not find the 'Reviewing support queue' status on the issue itself (state is Todo) — if that's her presence status rather than the issue's state, the issue is still correct given it's the only offline sync issue assigned to Rae on Apex.\" This is a hedge, but it did not say that the decoy does not match; it acted anyway based on the reasoning that \"the issue is still correct.\" Is this saw-mismatch-accepted? The solver read... did it read the deciding field? No — it never queried the user's profile status. It only read the issue's state (Todo) and speculated about the presence status. It never fetched the actual statusLabel. The mechanism definition: saw-mismatch-accepted requires \"the solver read the decisive field, noted in its reasoning or answer that the decoy does not match on that condition, and acted anyway.\" The solver did not read the decisive field (user's profile status). It did note that it did not find the status, but that was about the issue state, not the user status. It explicitly stated it did not verify. This is skipped-check: \"the decoy's decisive field was never read, or was in the response but the solver did not look at that condition.\"\n\nThe decisive field is the user's statusLabel. The solver never queried it. So skipped-check.\n\nOne could also argue that the solver saw in step 8 that the status was not verified and acted anyway, but per the definition, skipped-check applies because the field was not read at all.\n\nAlso, should this be an artifact? No — no ignored filter (the solver did not use the ignored subscribers/parent filter; the team issue query worked), no unreadable fields (the user's status field — could it be read? The replica notes do not say the status is unreadable; the standard Linear user object has status. The solver simply did not query it). No rejected writes (the write succeeded). No defective test. So it's not an artifact.\n\nResult: incorrect. Exposed facts: ['A:User.statusLabel'].\n\nNote: The decisive steps are 8 (decided to act without checking the user's status) and 11 (the write to the decoy). Note in 1-3 sentences citing the step numbers.\n\nLet me write the verdict.\n"
+    },
+    "logprobs": null,
+    "finish_reason": "stop",
+    "stop_reason": null,
+    "token_ids": null,
+    "routed_experts": null
+   }
+  ],
+  "service_tier": null,
+  "system_fingerprint": "vllm-0.30.0-tp2-d555b196",
+  "usage": {
+   "prompt_tokens": 10322,
+   "total_tokens": 11809,
+   "completion_tokens": 1487,
+   "prompt_tokens_details": {
+    "cached_tokens": 2352,
+    "created_cache_tokens": 7840,
+    "multimodal_tokens": null
+   },
+   "completion_tokens_details": {
+    "reasoning_tokens": 1255
+   }
+  },
+  "prompt_logprobs": null,
+  "prompt_token_ids": null,
+  "prompt_text": null,
+  "kv_transfer_params": null,
+  "ec_transfer_params": null,
+  "metrics": null
+ }
+}

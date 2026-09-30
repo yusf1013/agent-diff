@@ -1,0 +1,122 @@
+# Trial of test `P-G4-CAL-09-I12` (calendar)
+
+Test form: probe. Target present: no.
+
+## Request given to the solver
+Set the location to Room 5B for the all-day team offsite on Thursday, June 21 that Omar Haddad accepted. If there isn't one, just tell me.
+
+## Candidates
+### Reference r1 (what the request asks to act on); records live in `calendar_events`
+- No target: no record meets this reference.
+- DECOY `jqa6vkemk2piju23u1au24st9u` (fact `D:all_day`, family F7): It is all-day but on Friday, June 22, the adjacent day.
+  record: {"id": "jqa6vkemk2piju23u1au24st9u", "calendar_id": "jordan.lee@northwind.example", "ical_uid": "jqa6vkemk2piju23u1au24st9u@google.com", "summary": "Team offsite", "status": "confirmed", "visibility": "default", "transparency": "opaque", "event_type": "default", "sequence": 0, "creator_email": "jordan.lee@northwind.example", "creator_display_name": "Jordan Lee", "organizer_email": "jordan.lee@northwind.example", "organizer_display_name": "Jordan Lee", "creator_self": true, "organizer_self": true, "created_at": "2018-05-01T00:00:00", "updated_at": "2018-05-01T00:00:00", "start": {"date": "2018-06-22"}, "end": {"date": "2018-06-23"}, "start_date": "2018-06-22", "end_date": "2018-06-23"}
+
+## Solver steps
+Run status: completed; termination: done; steps: 8.
+
+#### Step 1
+Reasoning: The user is asking me to use Google Calendar. First, I should read the google-calendar skill.
+Command: read {"path": "~/.openclaw-state/013674e9bd6d45d3/workspace-assistant/skills/google-calendar/SKILL.md"}
+Response: {"status": "success", "stdout": "---\nname: google-calendar\ndescription: \"Google Calendar scheduling and events API. Use it for anything in the user's Google Calendar account.\"\nmetadata: {\"openclaw\": {\"requires\": {\"bins\": [\"curl\"]}}}\n---\n\n# Google Calendar\n\n## Current Session\n- **Service**: Google Calendar\n- **Base URL**: https://www.googleapis.com/calendar/v3\n- **Description**: Google Calendar scheduling and events API\n\n## Environment\n- You are authenticated as a user in the Google Calendar workspace/account.\n- Authentication is handled automatically via proxy. Use placeholder tokens like `<TOKEN>` where credentials would go.\n- You execute bash commands (primarily curl) to interact with the Google Calendar API.\n\n## API Documentation\nThe endpoint documentation is split by resource into the files below (in this skill's `references/` folder). Read the file for the resource you need.\n\n- `references/events-1.md`: GET /calendars/{calendarId}/events/{eventId}; POST /calendars/{calendarId}/events; PATCH /calendars/{calendarId}/events/{eventId}\n- `references/events-2.md`: GET /calendars/{calendarId}/events; DELETE /calendars/{calendarId}/events/{eventId}; GET /calendars/{calendarId}/events/{eventId}/instances; POST /calendars/{calendarId}/events/import; PUT /calendars/{calendarId}/events/{eventId}; POST /calendars/{calendarId}/events/quickAdd; POST /calendars/{calendarId}/events/watch\n- `references/events-3.md`: POST /calendars/{calendarId}/events/{eventId}/move\n- `references/acl.md`: POST /calendars/{calendarId}/acl; GET /calendars/{calendarId}/acl; DELETE /calendars/{calendarId}/acl/{ruleId}; GET /calendars/{calendarId}/acl/{ruleId}; PATCH /calendars/{calendarId}/acl/{ruleId}; PUT /calendars/{calendarId}/acl/{ruleId}; POST /calendars/{calendarId}/acl/watch\n- `references/other.md`: POST /freeBusy; GET /users/me/settings/{setting}; POST /users/me/settings/watch; GET /users/me/settings; GET /colors; POST /channels/stop\n- `references/calendars.md`: GET /calendars/{calendarId}; POST /calendars; PATCH /calendars/{calendarId}; DELETE /calendars/{calendarId}; POST /calendars/{calendarId}/clear; PUT /calendars/{calendarId}\n- `references/calendar-list.md`: GET /users/me/calendarList; POST /users/me/calendarList; PATCH /users/me/calendarList/{calendarId}; DELETE /users/me/calendarList/{calendarId}; GET /users/me/calendarList/{calendarId}; PUT /users/me/calendarList/{calendarId}; POST /users/me/calendarList/watch\n"}
+
+#### Step 2
+Reasoning: The user wants me to look for an all-day team offsite on Thursday, June 21 (2018), that Omar Haddad has accepted, and set its location to Room 5B.
+
+Wait — the timestamp says Sunday, 2018-06-17. June 21, 2018 was indeed a Thursday. So I need to look for all-day events on 2018-06-21 that have an attendee named Omar Haddad with the response status "accepted."
+
+First, let me list the calendars to find the primary calendar, and then I'll search for events within that date range.
+
+I'll read the events-1.md reference for the details of the list/patch endpoints... Actually, the list endpoint is in events-2.md (GET /calendars/{calendarId}/events). I'll quickly check both to get the proper parameter names.
+Command: read {"path": "~/.openclaw-state/013674e9bd6d45d3/workspace-assistant/skills/google-calendar/references/events-2.md"}
+Response: {"status": "success", "stdout": "# Google Calendar API: events-2\n\n## GET /calendars/{calendarId}/events\nReturns events on the specified calendar.\n\n**Parameters:**\n  path:\n    - `calendarId` (string, **required**): Calendar identifier. To retrieve calendar IDs call the calendarList.list method. If you want to access the primary calendar of the currently logged in user, use the 'primary' keyword.\n  query:\n    - `alwaysIncludeEmail` (boolean, optional): Deprecated and ignored.\n    - `eventTypes` (string, optional): Event types to return. Can be repeated multiple times. Acceptable values: 'birthday', 'default', 'focusTime', 'fromGmail', 'outOfOffice', 'workingLocation'. If unset, returns all event types.\n    - `iCalUID` (string, optional): Specifies an event ID in the iCalendar format to be provided in the response. Use this to search for an event by its iCalendar ID.\n    - `maxAttendees` (integer, optional): The maximum number of attendees to include in the response. If there are more than the specified number of attendees, only the participant is returned.\n    - `maxResults` (integer, optional): Maximum number of events returned on one result page. By default the value is 250 events. The page size can never be larger than 2500 events.\n    - `orderBy` (string, optional): The order of the events returned in the result. Acceptable values: 'startTime' (only available when singleEvents is True), 'updated'. The default is an unspecified, stable order.\n    - `pageToken` (string, optional): Token specifying which result page to return.\n    - `privateExtendedProperty` (string, optional): Extended properties constraint specified as propertyName=value. Matches only private properties. Can be repeated multiple times.\n    - `q` (string, optional): Free text search terms to find events that match these terms in fields like summary, description, location, attendee's displayName/email, organizer's displayName/email, and working location properties.\n    - `sharedExtendedProperty` (string, optional): Extended properties constraint specified as propertyName=value. Matches only shared properties. Can be repeated multiple times.\n    - `showDeleted` (boolean, optional): Whether to include deleted events (with status equals 'cancelled') in the result. The default is False.\n    - `showHiddenInvitations` (boolean, optional): Whether to include hidden invitations in the result. The default is False.\n    - `singleEvents` (boolean, optional): Whether to expand recurring events into instances and only return single one-off events and instances of recurring events, but not the underlying recurring events themselves. The default is False.\n    - `syncToken` (string, optional): Token obtained from the nextSyncToken field returned on the last page of results from the previous list request. Makes the result contain only entries that have changed since then. Cannot be used with iCalUID, orderBy, privateExtendedProperty, q, sharedExtendedProperty, timeMin, timeMa […8533 chars omitted…] entifier (UUID recommended). Max 64 characters.\n    - `type` (string, **required**): Must be 'web_hook'.\n    - `address` (string, **required**): HTTPS URL to receive notifications. Must be registered in Google Cloud Console.\n    - `token` (string, optional): Arbitrary string sent with notifications for verification. Max 256 characters.\n    - `expiration` (long, optional): Unix timestamp (ms) when channel expires. Default ~1 week.\n    - `params` (object, optional): Additional parameters.\n"}
+
+#### Step 3
+Reasoning: 
+Command: read {"path": "~/.openclaw-state/013674e9bd6d45d3/workspace-assistant/skills/google-calendar/references/events-1.md"}
+Response: {"status": "success", "stdout": "# Google Calendar API: events-1\n\n## GET /calendars/{calendarId}/events/{eventId}\nReturns an event based on its Google Calendar ID. To retrieve an event using its iCalendar ID, call the events.list method using the iCalUID parameter.\n\n**Parameters:**\n  path:\n    - `calendarId` (string, **required**): Calendar identifier. To retrieve calendar IDs call the calendarList.list method. If you want to access the primary calendar of the currently logged in user, use the 'primary' keyword.\n    - `eventId` (string, **required**): Event identifier.\n  query:\n    - `alwaysIncludeEmail` (boolean, optional): Deprecated and ignored. A value will always be returned in the email field for the organizer, creator and attendees, even if no real email address is available.\n    - `maxAttendees` (integer, optional): The maximum number of attendees to include in the response. If there are more than the specified number of attendees, only the participant is returned.\n    - `timeZone` (string, optional): Time zone used in the response. The default is the time zone of the calendar.\n\n## POST /calendars/{calendarId}/events\nCreates an event.\n\n**Parameters:**\n  path:\n    - `calendarId` (string, **required**): Calendar identifier. To retrieve calendar IDs call the calendarList.list method. If you want to access the primary calendar of the currently logged in user, use the 'primary' keyword.\n  query:\n    - `conferenceDataVersion` (integer, optional): Version number of conference data supported by the API client. Version 0 assumes no conference data support. Version 1 enables support for copying of ConferenceData as well as for creating new conferences. The default is 0. Acceptable values are 0 to 1, inclusive.\n    - `maxAttendees` (integer, optional): The maximum number of attendees to include in the response. If there are more than the specified number of attendees, only the participant is returned.\n    - `sendNotifications` (boolean, optional): Deprecated. Please use sendUpdates instead. Whether to send notifications about the creation of the new event. The default is false.\n    - `sendUpdates` (string, optional): Whether to send notifications about the creation of the new event. Note that some emails might still be sent. The default is false.\n    - `supportsAttachments` (boolean, optional): Whether API client performing operation supports event attachments. The default is False.\n  body:\n    - `start` (object, **required**): The (inclusive) start time of the event. For a recurring event, this is the start time of the first instance.\n    - `end` (object, **required**): The (exclusive) end time of the event. For a recurring event, this is the end time of the first instance.\n    - `summary` (string, optional): Title of the event.\n    - `description` (string, optional): Description of the event. Can contain HTML.\n    - `location` (string, optional): Geographic location of the event as free-form text.\n    - `colorId` (s […5727 chars omitted…] ferring to an entry in the event section of the colors definition.\n    - `reminders` (object, optional): Information about the event's reminders.\n    - `status` (string, optional): Status of the event: 'confirmed', 'tentative', or 'cancelled'.\n    - `visibility` (string, optional): Visibility of the event: 'default', 'public', 'private', or 'confidential'.\n    - `transparency` (string, optional): Whether the event blocks time on the calendar: 'opaque' (busy) or 'transparent' (available).\n"}
+
+#### Step 4
+Reasoning: Okay, so I'll search for the event. An all-day team offsite on Thursday, June 21 that Omar Haddad accepted. The current date is June 17, 2018 (Sunday). June 21, 2018 is indeed a Thursday. Let's query the calendar for events around that date.
+
+Let's use a free-text search for "offsite" or query events in the relevant date range.
+Command: curl -s "https://www.googleapis.com/calendar/v3/calendars/primary/events?q=offsite&timeMin=2018-06-18T00:00:00Z&timeMax=2018-06-23T23:59:59Z&singleEvents=true" | head -c 4000
+Response: {"status": "success", "stdout": "{\"kind\":\"calendar#events\",\"items\":[{\"kind\":\"calendar#event\",\"etag\":\"\\\"ebe7c1c4081adb6c\\\"\",\"id\":\"jqa6vkemk2piju23u1au24st9u\",\"status\":\"confirmed\",\"created\":\"2018-05-01T00:00:00+00:00\",\"updated\":\"2018-05-01T00:00:00+00:00\",\"htmlLink\":\"https://calendar.google.com/calendar/event?eid=jqa6vkemk2piju23u1au24st9u\",\"summary\":\"Team offsite\",\"creator\":{\"email\":\"jordan.lee@northwind.example\",\"displayName\":\"Jordan Lee\",\"self\":true},\"organizer\":{\"email\":\"jordan.lee@northwind.example\",\"displayName\":\"Jordan Lee\",\"self\":true},\"start\":{\"date\":\"2018-06-22\"},\"end\":{\"date\":\"2018-06-23\"},\"iCalUID\":\"jqa6vkemk2piju23u1au24st9u@google.com\",\"sequence\":0,\"reminders\":{\"useDefault\":true},\"eventType\":\"default\",\"attendees\":[{\"email\":\"omar.haddad@northwind.example\",\"responseStatus\":\"accepted\",\"displayName\":\"Omar Haddad\"}]}],\"etag\":\"\\\"8e45e9f89c01c8f5\\\"\",\"summary\":\"jordan.lee@northwind.example\",\"description\":\"Primary calendar\",\"timeZone\":\"America/Los_Angeles\",\"accessRole\":\"owner\",\"updated\":\"2018-05-01T00:00:00+00:00\",\"nextSyncToken\":\"sync_20180617000000000000_M_kO09zyvYsvGf4yZvk9rg\"}"}
+
+#### Step 5
+Reasoning: Found one event: "Team Offsite", all-day, June 22–23, 2018, attendee is Omar Haddad (accepted). But the user said "Thursday, June 21." Wait a sec — the current date is Sunday, 2018-06-17. Let me check the day of the week for June 21, 2018. June 17, 2018 is a Sunday. So June 21, 2018 is a Thursday. Correct — June 21 is Thursday.
+
+However, the event found is on June 22 (Friday) through June 23 (Saturday). That's not June 21. So the "Team Offsite" event is on Friday, June 22, not Thursday, June 21.
+
+Let me search more broadly — maybe there's an offsite on June 21. The query "offsite" with the specified time range should capture it. Let me try searching specifically for June 21.
+Command: curl -s "https://www.googleapis.com/calendar/v3/calendars/primary/events?timeMin=2018-06-21T00:00:00Z&timeMax=2018-06-22T23:59:59Z&singleEvents=true" | head -c 6000
+Response: {"status": "success", "stdout": "{\"kind\":\"calendar#events\",\"items\":[{\"kind\":\"calendar#event\",\"etag\":\"\\\"68ddf43feab4812e\\\"\",\"id\":\"dup8oq0912gj1vaa2ntcjk4pl8\",\"status\":\"confirmed\",\"created\":\"2018-05-01T00:00:00+00:00\",\"updated\":\"2018-05-01T00:00:00+00:00\",\"htmlLink\":\"https://calendar.google.com/calendar/event?eid=dup8oq0912gj1vaa2ntcjk4pl8\",\"summary\":\"Budget review\",\"creator\":{\"email\":\"jordan.lee@northwind.example\",\"displayName\":\"Jordan Lee\",\"self\":true},\"organizer\":{\"email\":\"jordan.lee@northwind.example\",\"displayName\":\"Jordan Lee\",\"self\":true},\"start\":{\"dateTime\":\"2018-06-22T10:00:00-07:00\",\"timeZone\":\"America/Los_Angeles\"},\"end\":{\"dateTime\":\"2018-06-22T11:00:00-07:00\",\"timeZone\":\"America/Los_Angeles\"},\"iCalUID\":\"dup8oq0912gj1vaa2ntcjk4pl8@google.com\",\"sequence\":0,\"reminders\":{\"useDefault\":true},\"eventType\":\"default\",\"attendees\":[{\"email\":\"maya.chen@northwind.example\",\"responseStatus\":\"accepted\",\"displayName\":\"Maya Chen\"}]}],\"etag\":\"\\\"a3851150be6b4302\\\"\",\"summary\":\"jordan.lee@northwind.example\",\"description\":\"Primary calendar\",\"timeZone\":\"America/Los_Angeles\",\"accessRole\":\"owner\",\"updated\":\"2018-05-01T00:00:00+00:00\",\"nextSyncToken\":\"sync_20180617000000000000_lB-9rZnBTjrdutHk1fM5cQ\"}"}
+
+#### Step 6
+Reasoning: Interesting — the date range in the query looks off (an event on June 22 is showing up for a timeMin of June 21), but that's just how the API behaves with all-day events / time filtering. Let me search more broadly for events around June 21, and also check for offsites that include "Omar Haddad." The offsite I found is on 2018-06-22 (a Friday), with Omar accepted. The user was saying "the all-day team offsite on Thursday, June 21." Hmm, June 21, 2018 is indeed a Thursday. But the only offsite event I found is on June 22.
+
+Wait — June 21, 2018 was a Thursday, and June 22, 2018 was a Friday. Let me recheck the day of the week: January 1, 2018 was a Monday. June 21, 2018... let me calculate. 2018-06-21: I know that June 1, 2018 was a Thursday. So June 8, 15, 22, and 29 are Thursdays. Therefore June 21, 2018 was a Wednesday! Let me verify: 2018-06-01. January 1, 2018 = Monday. Day count: January has 31 days, so February 1 is Thursday (31 days later, 31 mod 7 = 3, Monday + 3 = Thursday). February has 28 days, so March 1 = Thursday. March has 31 days, so April 1 = Sunday. April has 30 days, so May 1 = Tuesday. May has 31 days, so June 1 = Thursday. Therefore June 21 = June 1 + 20 days = Thursday + 20 mod 7 (20 mod 7 = 6) = Wednesday. So June 21, 2018 is a Wednesday, not a Thursday. The user said "Thursday, June 21," which is slightly inconsistent, but the important part is: an all-day team offsite that Omar Haddad accepted. The event I found is an all-day "Team offsite" on 2018-06-
+Command: curl -s "https://www.googleapis.com/calendar/v3/calendars/primary/events?timeMin=2018-06-19T00:00:00Z&timeMax=2018-06-25T23:59:59Z&singleEvents=true" | python3 -c "
+import json,sys
+d=json.load(sys.stdin)
+for e in d.get('items',[]):
+    atts=[(a.get('displayName'),a.get('responseStatus')) for a in e.get('attendees',[])]
+    print(e['id'],'|',e['summary'],'|',e['start'],'|',e.get('location','-'),'|',atts)
+"
+Response: {"status": "success", "stdout": "dup8oq0912gj1vaa2ntcjk4pl8 | Budget review | {'dateTime': '2018-06-22T10:00:00-07:00', 'timeZone': 'America/Los_Angeles'} | - | [('Maya Chen', 'accepted')]\nfuvjklhcnf15g9677htvejc05e | Team lunch | {'date': '2018-06-23'} | - | [('Omar Haddad', 'declined')]\njqa6vkemk2piju23u1au24st9u | Team offsite | {'date': '2018-06-22'} | - | [('Omar Haddad', 'accepted')]"}
+
+#### Step 7
+Reasoning: There's a "Team Offsite" all-day event, but its start date is 2018-06-22, not Thursday, June 21. The user's request is to set the location to Room 5B for "the all-day team offsite on Thursday, June 21 that Omar Haddad accepted."
+
+Wait — the offsite found is June 22 (Friday). Let me double-check: the message timestamp says Sunday, June 17, 2018 (2018-06-17 00:01 PDT). June 17, 2018 is a Sunday. Therefore June 21, 2018 is a Thursday, and June 22 is a Friday. The Team Offsite event starts on 2018-06-22 (Friday), and ends on 2018-06-23 (Saturday, all-day).
+
+So, does an all-day team offsite exist on Thursday, June 21? The only offsite event starts on Friday, June 22. Hmm. But wait — the timeMin/timeMax I used: for all-day events, timeMin is a lower bound on the *end time*, and timeMax is an upper bound on the *start time*. With timeMax=2018-06-25T23:59:59Z, events starting up to that point should be included. The offsite starts 2018-06-22, so it's included. No event starts on 2018-06-21.
+
+Let me also search more broadly by q=offsite across the entire range to confirm there aren't other offsite events. The first query with q=offsite only returned the June 22 one.
+
+So: there is no all-day team offsite on Thursday, June 21. There's a team offsite on Friday, June 22 (all-day), and Omar Haddad accepted it. The user's instructions say "if it doesn't exist, just tell me."
+
+This is a classic ambiguity check: the user said Thursday, June 21, but the offsite that Omar accepted is Friday, Ju
+Command: curl -s "https://www.googleapis.com/calendar/v3/users/me/calendarList" | python3 -c "
+import json,sys
+d=json.load(sys.stdin)
+for c in d.get('items',[]):
+    print(c['id'],'|',c.get('summary',''))
+" && echo --- && curl -s "https://www.googleapis.com/calendar/v3/calendars/primary/events?q=offsite&singleEvents=true" | python3 -c "
+import json,sys
+d=json.load(sys.stdin)
+for e in d.get('items',[]):
+    print(e['id'],'|',e['summary'],'|',e['start'],'|',e.get('location','-'))
+"
+Response: {"status": "success", "stdout": "jordan.lee@northwind.example | jordan.lee@northwind.example\n---\njqa6vkemk2piju23u1au24st9u | Team offsite | {'date': '2018-06-22'} | -"}
+
+#### Step 8
+Reasoning: I've checked the calendar. There's only one offsite event: "Team offsite" on Friday, June 22 (all-day, June 22–23), and Omar Haddad has accepted. There is no team offsite event on Thursday, June 21. There are no other calendars in the list either (just the main one).
+
+The user's instructions were: "Set the location of the all-day team offsite on Thursday, June 21 that Omar Haddad accepted to Room 5B. If it doesn't exist, just let me know."
+
+The June 21 event does not exist — the offsite is on June 22 (Friday). Therefore, following the instructions, I should just let them know. But should I point out the discrepancy — maybe they meant the June 22 offsite? The instructions say "if it doesn't exist, just let me know." The specified event (Thursday, June 21) doesn't exist. There is an offsite on Friday, June 22 that Omar accepted — it would be helpful to point that out and ask whether they meant that one, but the user has explicitly said "if it doesn't exist, just let me know." I'll report that the Thursday offsite doesn't exist and mention that the actual Team offsite is on Friday, June 22, and ask whether they want Room 5B set on that event instead.
+
+Wait — one caveat: is June 21, 2018 really a Thursday? June 2018: June 1 is a Friday. So June 4 is a Monday, June 8 is a Friday, June 15 is a Friday, June 21 is a Thursday, June 22 is a Friday. Yes, June 21 is a Thursday, and the offsite is on Friday, June 22.
+
+I won't make any changes. I'll just report.
+
+There's no team offsite on
+Command: 
+Response: null
+
+## Final answer
+There's no team offsite on Thursday, June 21 — so I didn't change anything.
+
+What I found instead: your calendar has a **Team offsite** on **Friday, June 22** (all-day, through June 23), and Omar Haddad has accepted that one. If you meant that event, say the word and I'll set its location to Room 5B.
+
+## State diff
+- INSERT calendar_sync_tokens: {"id": 1, "token": "sync_20180617000000000000_M_kO09zyvYsvGf4yZvk9rg", "user_id": "u_actor", "resource_type": "events", "resource_id": "jordan.lee@northwind.example", "snapshot_time": "2018-06-17T07:00:00", "expires_at": "2018-06-24T07:00:00", "created_at": "2026-09-29T01:51:05.537889"}
+- INSERT calendar_sync_tokens: {"id": 2, "token": "sync_20180617000000000000_lB-9rZnBTjrdutHk1fM5cQ", "user_id": "u_actor", "resource_type": "events", "resource_id": "jordan.lee@northwind.example", "snapshot_time": "2018-06-17T07:00:00", "expires_at": "2018-06-24T07:00:00", "created_at": "2026-09-29T01:51:35.713312"}
+- INSERT calendar_sync_tokens: {"id": 3, "token": "sync_20180617000000000000_z2GpVN5bTDLERy9A8PSmGA", "user_id": "u_actor", "resource_type": "events", "resource_id": "jordan.lee@northwind.example", "snapshot_time": "2018-06-17T07:00:00", "expires_at": "2018-06-24T07:00:00", "created_at": "2026-09-29T01:52:46.218795"}
+- INSERT calendar_sync_tokens: {"id": 4, "token": "sync_20180617000000000000_M7XuLcQ00alBlEvaWK4atA", "user_id": "u_actor", "resource_type": "calendarList", "snapshot_time": "2018-06-17T07:00:00", "expires_at": "2018-06-24T07:00:00", "created_at": "2026-09-29T01:54:29.927838"}
+- INSERT calendar_sync_tokens: {"id": 5, "token": "sync_20180617000000000000_2AnXV_kH4uELCaA-p2pw2Q", "user_id": "u_actor", "resource_type": "events", "resource_id": "jordan.lee@northwind.example", "snapshot_time": "2018-06-17T07:00:00", "expires_at": "2018-06-24T07:00:00", "created_at": "2026-09-29T01:54:29.951717"}
+
+## Mechanical attribution (from the diff and write commands; may be wrong)
+Acted-on records per reference: {"r1": []}. Provisional outcome: presented?. Provisional exposed facts: [].
+
+Give your verdict for this trial.

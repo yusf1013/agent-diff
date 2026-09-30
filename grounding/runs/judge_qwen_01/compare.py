@@ -116,6 +116,17 @@ def reliability(out: Path, keys: list[str]) -> dict:
             "cost_usd": 0.0}
 
 
+def dumps(result: dict) -> str:
+    """The summary indented, the disagreements and rows one per line: the full set's file stays under 1 MB."""
+    long = ("disagreements", "rows")
+    text = json.dumps({k: v for k, v in result.items() if k not in long}, indent=1)[:-2]
+    for field in long:
+        items = ",\n  ".join(json.dumps(x) for x in result[field])
+        text += f',\n "{field}": [\n  {items}\n ]'
+    assert json.loads(text + "\n}") == result
+    return text + "\n}\n"
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--out", type=Path, required=True)
@@ -191,7 +202,7 @@ def main():
         done |= {k for k in load(HERE / "adjudication" / f"labels_{rnd}.json") if not k.startswith("_")}
     result["queue_excludes"] = {"rounds": args.exclude_rounds, "keys_already_labelled": len(done & {
         d["key"] for d in disagreements})}
-    (out / f"comparison_{name}.json").write_text(json.dumps(result, indent=1) + "\n")
+    (out / f"comparison_{name}.json").write_text(dumps(result))
     queue = sorted(d["key"] for d in disagreements if d["key"] not in done)
     random.Random(f"queue-{name}").shuffle(queue)
     (HERE / "adjudication").mkdir(exist_ok=True)
