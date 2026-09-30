@@ -119,3 +119,14 @@
   tests apart too.
 - **Judge runs:** the sequential loop and a parallel SN1M run could have judged the same trials twice; I stopped the
   loop's shell (its SN0M judge ran on) so SN1M is judged by one process.
+
+## 2026-09-30, 13:20–13:50: judge v2 and the report
+
+- **Judge v2** finished at 13:15 (SN0M, 132 calls) and 13:21 (SN1M, 136 calls: SN1M-CAL-T10 t2's first Muse call
+  failed after 553 s at no cost and was retried). The two-trial smoke is kept in `runs/judged_smoke_01/` (its
+  trials in `eval/trials_smoke.json`); it agreed with the labels. 270 calls in all, $7.88 at list ($0.57 billed).
+- **Against the labels:** 29 of 30 on each blind sample; 130 of 132 and 132 of 135 over all trials; failing
+  trials 5 of 5 and 9 of 9 precise, recall 5 of 6 and 9 of 9. The five disagreements are four replica-gap voids
+  (the judge's notes document the Calendar gap and misdescribe Slack's reactions) and the self-corrected relation.
+- **Report** written in the README: the answer, Table 14 with the Sonnet arms, the sensitivities, the judge, costs,
+  open points.

@@ -41,7 +41,12 @@ tests expose a fact (SN0M 3 of 34, SN1M 2 of 39), against 2 of 77 of our covers 
 test is a probe (no target, absence permitted), the form that makes ours bite. So the form is still the main gate;
 Sonnet's three to four times more designated look-alikes turn that small rate into a few facts. At the same budget,
 48 Sonnet tests expose 2 to 3 facts where 48 of ours expose 11.3 (Phase 4) and 12.2 at detect@3, 7.7 at detect@1, with
-14.0 tests exposing (all 292 Muse tests, `report_01/numbers/concise.json`, `equal_budget_muse_final`).
+14.0 tests exposing (all 292 Muse tests, `report_01/numbers/concise.json`, `equal_budget_muse_final`; the Qwen
+round, the solver these arms ran on).
+
+**What the stronger writer does differently** is in [the review](#the-review-before-any-run): about twice as many
+look-alikes per test and three to four times as many designated ones, more facts exercised properly (SN1M at our
+level), fewer invalid tests, and the same forms (no probe).
 
 ## Setup
 
