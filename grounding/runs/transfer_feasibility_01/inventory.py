@@ -57,7 +57,7 @@ EXISTING = {
     "linear": {"issues": ["assigneeId"], "team_memberships": ["userId"], "issue_subscriber_user_association": ["user_id"],
                "initiatives": ["ownerId"]},
     "box": {"box_task_assignments": ["assigned_to_id"]},
-    "calendar": {"calendar_acl_rules": ["scope_value"], "calendar_event_attendees": ["email"]},
+    "calendar": {"calendar_acl_rules": ["scope_value"]},  # attendees can be any address; responders are counted apart
 }
 ACTORS = {"slack": {"U01AGENBOT9"}, "linear": {"u-actor"}, "box": {"30000000001"},
           "calendar": {"u_actor", "jordan.lee@northwind.example"}}
