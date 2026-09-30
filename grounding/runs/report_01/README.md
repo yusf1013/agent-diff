@@ -101,3 +101,30 @@ read from the two decision files, the sources the table already cites. Format: s
   `openclaw_eval_01/runs/policy/decisions_population_underspecified.json` (`valid_units` 56 + 30 + 78 + 31 = 195).
 - report.md RQ3, "`machinery.json` on branch `exp/baselines-01`" → `grounding/runs/baselines_01/machinery.json`
   (merged into main; file checked).
+
+### RQ4: exposure under the 10-minute budget
+
+Sources: `numbers/exposure.json` (`final`, `by_domain`, `by_form`, `by_writer`, `by_kind`, `probes_by_family`,
+`probes_designated_vs_plain`, `trials`); `numbers/concise.json` (`writers` → `exposure`). Percentages recomputed from
+those counts.
+
+- Both texts, the budget sentence: "the 8-minute budget" / "over the eight-minute agent-time budget" → the 10-minute
+  budget (OpenClaw's own turn limit).
+- Table 7: Calendar 32 → 34 tests exposing, 12 → 13 facts at detect@1; Linear 45 → 47 tests, 30 → 31 facts at
+  detect@3, share 38% → 39%; Slack 22 → 23 tests; all 138 (24.4%) → 143 (25.3%) tests, 87 → 88 and 60 → 61 facts,
+  share 42.6% → 43.1% (report.md: 24% → 25%, 43% unchanged). Box unchanged.
+- Table 8, forms: probes 101 (28%) → 105 (29%), facts 79 (55) → 80 (56); fact probes 25 → 26 tests, 25 → 26 facts.
+  Covers unchanged.
+- Table 8, writers (report.md): Sonnet P 17 (22%) → 18 (23%), 12 → 13 facts; Sonnet P v2 18 (20%) → 19 (21%); Muse
+  Phase 4 45 (28%) → 47 (30%), detect@1 19 → 20; Muse 6b 34 (25%) → 35 (26%), 22 → 23 facts. Sonnet R unchanged.
+  (report_concise.md): Sonnet 59 (22%) → 61 (23%); Muse 79 (27%) → 82 (28%), 47 → 48 facts, 33 → 34 at detect@1.
+- Table 8, kinds: attributes 41 → 42 at detect@1; relationships 19 (40%) → 20 (42%) at detect@3.
+- Families: designated 84/282 (30%) → 88/282 (31%); F1 31/98 (32%) → 34/98 (35%); F6 4 → 5 of 16 (report.md);
+  "28% of probes" → 29% (report.md).
+- Trials: 254 failing (15%) → 267 (16%); 1,310 → 1,348 passing; 104 over the 8-minute budget → 52 ended by the
+  10-minute budget; void 13 → 14 (12 artifacts + 2 not established). 14 flawed-only unchanged.
+- report.md, opaque ids (same 333 tests): 80 against 65 tests and 48 against 42 facts (Calendar 23 → 25, Linear
+  23 → 33, Slack 19 → 22) → 84 against 70 and 48 against 44 (Calendar 23 → 27, Linear 26 → 34, Slack 21 → 23).
+  Sources: `openclaw_eval_01/runs/full_02.adjudicated.json` (original ids; Calendar, Linear and Slack rows of `by`)
+  and `full_03.adjudicated.json` (`by`, `adjudicated`), both rebuilt with the 10-minute budget; the old source,
+  openclaw_eval_01's README, still carries the 8-minute numbers.

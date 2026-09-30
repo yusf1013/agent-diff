@@ -326,7 +326,7 @@ accepted scenario at list price in Phase 4 and $0.82 in 6b ($0.035 and $0.046 bi
 
 The 565 valid regular tests ran on OpenClaw with the self-hosted Qwen3.8-27B, 3 trials each: Box's tests from
 `full_02`, the other services' from the opaque-id re-run `full_03`, and 6b's from `full_04`. Every verdict is judge
-v2's (RQ5 measures it), under the PI's rulings and the 8-minute budget.
+v2's (RQ5 measures it), under the PI's rulings and the 10-minute budget.
 
 **Table 7. Exposure by service.** Source: [final_regular_with_6b.json](../openclaw_eval_01/runs/final_regular_with_6b.json);
 [kit/exposure.py](kit/exposure.py) → [numbers/exposure.json](numbers/exposure.json).
@@ -334,46 +334,47 @@ v2's (RQ5 measures it), under the PI's rulings and the 8-minute budget.
 | Service | Tests | Tests exposing a fact | Facts exposed, detect@3 | detect@1 | Facts covered | Share of covered facts exposed (detect@3) |
 |---|---:|---:|---:|---:|---:|---:|
 | Box | 139 | 39 | 27 | 21 | 56 | 48% |
-| Calendar | 103 | 32 | 17 | 12 | 34 | 50% |
-| Linear | 213 | 45 | 30 | 19 | 80 | 38% |
-| Slack | 110 | 22 | 13 | 8 | 34 | 38% |
-| **All** | **565** | **138 (24%)** | **87** | **60** | **204** | **43%** |
+| Calendar | 103 | 34 | 17 | 13 | 34 | 50% |
+| Linear | 213 | 47 | 31 | 19 | 80 | 39% |
+| Slack | 110 | 23 | 13 | 8 | 34 | 38% |
+| **All** | **565** | **143 (25%)** | **88** | **61** | **204** | **43%** |
 
 **Table 8. Exposure by test form, writer and kind of fact.** Same source.
 
 | | Tests | Exposing | Facts, detect@3 (detect@1) |
 |---|---:|---:|---:|
 | Cover (target present) | 100 | 12 (12%) | 12 (6) |
-| Probe (one near miss, absence permitted) | 363 | 101 (28%) | 79 (55) |
-| Fact probe (all near misses of a fact) | 102 | 25 (25%) | 25 (14) |
+| Probe (one near miss, absence permitted) | 363 | 105 (29%) | 80 (56) |
+| Fact probe (all near misses of a fact) | 102 | 26 (25%) | 26 (14) |
 | Sonnet R | 104 | 24 (23%) | 19 of 37 covered (13) |
-| Sonnet P | 78 | 17 (22%) | 12 of 40 (7) |
-| Sonnet P v2 | 89 | 18 (20%) | 15 of 44 (10) |
-| Muse Phase 4 | 158 | 45 (28%) | 26 of 58 (19) |
-| Muse 6b | 136 | 34 (25%) | 22 of 69 (14) |
+| Sonnet P | 78 | 18 (23%) | 13 of 40 (7) |
+| Sonnet P v2 | 89 | 19 (21%) | 15 of 44 (10) |
+| Muse Phase 4 | 158 | 47 (30%) | 26 of 58 (20) |
+| Muse 6b | 136 | 35 (26%) | 23 of 69 (14) |
 
 | Kind of fact | Covered | Exposed, detect@3 | detect@1 |
 |---|---:|---:|---:|
-| A attribute | 117 | 59 (50%) | 41 |
-| R relationship | 48 | 19 (40%) | 13 |
+| A attribute | 117 | 59 (50%) | 42 |
+| R relationship | 48 | 20 (42%) | 13 |
 | H hierarchy | 5 | 1 | 1 |
 | B binding | 22 | 4 (18%) | 2 |
 | D derived | 12 | 4 (33%) | 3 |
 
 - **Probes carry the exposure.** With the target present, the agent picks the right record far more often: 12% of
-  covers expose a fact against 28% of probes. Covers are still needed for credit on 2 facts (RQ2) and test the
+  covers expose a fact against 29% of probes. Covers are still needed for credit on 2 facts (RQ2) and test the
   write itself.
-- **By near-miss family** (probes): designated substitutes 84 of 282 (30%) against plain F0 near misses 17 of 81
+- **By near-miss family** (probes): designated substitutes 88 of 282 (31%) against plain F0 near misses 17 of 81
   (21%). F8 partial identity (a similar name, a shared prefix) exposes most: 25 of 52 probes (48%); then F1 sibling
-  role or attribute 31 of 98 (32%), F7 neighbouring value 13 of 50 (26%), F6 representation 4 of 16, F2 indirection
+  role or attribute 34 of 98 (35%), F7 neighbouring value 13 of 50 (26%), F6 representation 5 of 16, F2 indirection
   6 of 32 (19%), F5 split binding 4 of 28 (14%).
-- **Trials:** of 1,695, 254 fail and count (15%), 1,310 pass, 104 ran over the 8-minute budget (no exposure), 14
-  failed only on flawed near misses (not counted) and 13 are void.
+- **Trials:** of 1,695, 267 fail and count (16%), 1,348 pass, 52 were ended by the 10-minute budget (no exposure),
+  14 failed only on flawed near misses (not counted) and 14 are void.
 
 **Opaque ids matter.** Before the final runs, the Calendar, Linear and Slack tests had seed ids that could name a
-record's role. On the same 333 tests, with the same rules and judge, the opaque-id re-run exposes more: 80 tests
-against 65 and 48 facts against 42 (Calendar 23 → 25 tests, Linear 23 → 33, Slack 19 → 22). The two runs are a day
-apart, not interleaved. Source: [openclaw_eval_01](../openclaw_eval_01/README.md), "Results: the regular suite".
+record's role. On the same 333 tests, with the same rules and judge, the opaque-id re-run exposes more: 84 tests
+against 70 and 48 facts against 44 (Calendar 23 → 27 tests, Linear 26 → 34, Slack 21 → 23). The two runs are a day
+apart, not interleaved. Source: [full_02.adjudicated.json](../openclaw_eval_01/runs/full_02.adjudicated.json) (the
+original ids) and [full_03.adjudicated.json](../openclaw_eval_01/runs/full_03.adjudicated.json), `by`.
 
 **Reference: the same model in the toy harness.** Qwen on Purdue ran 332 of these tests earlier, with the original
 ids, before the rulings; autogen_01's arms were judged by judge v1 (Sonnet), Phase 4 by judge v2. Not comparable

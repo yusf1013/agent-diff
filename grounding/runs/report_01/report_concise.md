@@ -211,18 +211,18 @@ regular cases: **$0.71 per accepted scenario**, or **$0.125 per valid regular ca
 
 The 565 regular cases use the final OpenClaw/Qwen executions and the automated judge, checked in RQ5.
 **Detect@3** means a fact is exposed in at least one of three executions; **detect@1** uses only the first.
-Exposure means acting on a decoy or presenting it as the answer. An execution over the eight-minute agent-time
-budget is an agent failure but earns no regular fact exposure. Replica artifacts are void.
+Exposure means acting on a decoy or presenting it as the answer. An execution ended by the ten-minute budget
+(OpenClaw's own turn limit) is an agent failure but earns no regular fact exposure. Replica artifacts are void.
 
 **Table 7. Exposure by service.** Source: [exposure.json](numbers/exposure.json).
 
 | Service | Cases | Cases exposing a fact | Facts exposed @3 | Facts exposed @1 | Facts covered | Covered facts exposed @3 |
 |---|---:|---:|---:|---:|---:|---:|
 | Box | 139 | 39 | 27 | 21 | 56 | 48% |
-| Calendar | 103 | 32 | 17 | 12 | 34 | 50% |
-| Linear | 213 | 45 | 30 | 19 | 80 | 38% |
-| Slack | 110 | 22 | 13 | 8 | 34 | 38% |
-| **All** | **565** | **138 (24.4%)** | **87** | **60** | **204** | **42.6%** |
+| Calendar | 103 | 34 | 17 | 13 | 34 | 50% |
+| Linear | 213 | 47 | 31 | 19 | 80 | 39% |
+| Slack | 110 | 23 | 13 | 8 | 34 | 38% |
+| **All** | **565** | **143 (25.3%)** | **88** | **61** | **204** | **43.1%** |
 
 **Table 8. Exposure by form, writer and fact kind.** Sources: [exposure.json](numbers/exposure.json),
 [writer unions](numbers/concise.json). Facts can appear in several forms; their exposure counts must not be added.
@@ -230,25 +230,25 @@ budget is an agent failure but earns no regular fact exposure. Replica artifacts
 | Form or writer | Cases | Cases exposing | Facts exposed @3 | Facts exposed @1 |
 |---|---:|---:|---:|---:|
 | Cover | 100 | 12 (12%) | 12 | 6 |
-| Individual probe | 363 | 101 (28%) | 79 | 55 |
-| Fact probe | 102 | 25 (25%) | 25 | 14 |
-| Sonnet | 271 | 59 (22%) | 40 of 81 covered | 27 |
-| Muse | 294 | 79 (27%) | 47 of 124 covered | 33 |
+| Individual probe | 363 | 105 (29%) | 80 | 56 |
+| Fact probe | 102 | 26 (25%) | 26 | 14 |
+| Sonnet | 271 | 61 (23%) | 40 of 81 covered | 27 |
+| Muse | 294 | 82 (28%) | 48 of 124 covered | 34 |
 
 | Fact kind | Covered | Exposed @3 | Exposed @1 |
 |---|---:|---:|---:|
-| Attribute | 117 | 59 | 41 |
-| Relationship | 48 | 19 | 13 |
+| Attribute | 117 | 59 | 42 |
+| Relationship | 48 | 20 | 13 |
 | Hierarchy | 5 | 1 | 1 |
 | Binding | 22 | 4 | 2 |
 | Derived | 12 | 4 | 3 |
 
-Individual probes expose more often than covers. Designated decoys expose in **84/282 individual probes (30%)**,
+Individual probes expose more often than covers. Designated decoys expose in **88/282 individual probes (31%)**,
 against **17/81 F0 probes (21%)**. F8 partial identity is strongest here: 25/52 (48%), followed by F1 sibling
-fields or roles at 31/98 (32%) and F7 neighbouring values at 13/50 (26%).
+fields or roles at 34/98 (35%) and F7 neighbouring values at 13/50 (26%).
 
-Of 1,695 executions, 254 have counted grounding failures, 1,310 pass, 104 exceed the budget, 14 fail only on
-flawed decoys and earn no exposure, and 13 are void. These categories exhaust the regular executions.
+Of 1,695 executions, 267 have counted grounding failures, 1,348 pass, 52 were ended by the budget, 14 fail only on
+flawed decoys and earn no exposure, and 14 are void. These categories exhaust the regular executions.
 
 ## RQ5. How accurate is the automated judge?
 
