@@ -68,9 +68,10 @@ def muse_verdict(key: str) -> dict:
 
 
 def attempt_path(key: str) -> Path:
-    """The attempt folder Muse judged, in this checkout."""
+    """The execution's latest attempt folder in this checkout: the one the final manifest takes (report_01's
+    beyond.py) and, where there is a verdict, the one Muse judged (inputs_check.py checks this for all 2,139)."""
     run, trial, case_id = key.split("/")
-    return run_dir(key) / trial / case_id / Path(muse_verdict(key)["attempt"]).name
+    return sorted((run_dir(key) / trial / case_id).glob("attempt-*"))[-1]
 
 
 def muse_prompt(key: str) -> tuple[str, str]:

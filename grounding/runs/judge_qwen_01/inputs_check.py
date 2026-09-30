@@ -1,6 +1,7 @@
 """Check, before any Qwen call, that the replay sends Qwen exactly what Muse received (no model calls).
 
 For every final execution with a Muse verdict:
+- the attempt Muse judged is the execution's latest attempt, the one the final manifest takes;
 - the saved prompt is judge.system.md, the separator, and the user text (common.muse_prompt);
 - judge.system.md equals today's judge_v2.md plus the domain's replica notes (the prompt is unchanged);
 - the user text ends with the kit's closing line;
@@ -17,6 +18,7 @@ from __future__ import annotations
 import json
 import re
 from collections import Counter
+from pathlib import Path
 
 from grounding.runs.autogen_01.kit import bundle
 from grounding.runs.autogen_02.kit import judge2
@@ -50,11 +52,12 @@ def main():
         expected_system = prompt + "\n\n# Replica notes for this domain\n\n" + \
             (judge2.INPUTS / case["domain"] / "replica.md").read_text()
         rebuilt = bundle.build(case, attempt, v["form"], tri, summary) + ASK
-        checks = {"system_is_current_prompt": system == expected_system, "ends_with_ask": user.endswith(ASK),
+        checks = {"judged_attempt_is_latest": Path(v["attempt"]).name == attempt.name,
+                  "system_is_current_prompt": system == expected_system, "ends_with_ask": user.endswith(ASK),
                   "user_exact": rebuilt == user, "user_same_up_to_key_order": normal(rebuilt) == normal(user)}
         for name, ok in checks.items():
             counts[name] += ok
-        if not (checks["system_is_current_prompt"] and checks["ends_with_ask"] and checks["user_same_up_to_key_order"]):
+        if not all(ok for name, ok in checks.items() if name != "user_exact"):
             problems.append({"key": key, **checks})
     out = {"executions": len(judged_keys()), "passed": dict(counts), "problems": problems}
     (HERE / "inputs_check.json").write_text(json.dumps(out, indent=1) + "\n")
