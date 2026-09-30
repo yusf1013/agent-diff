@@ -6,15 +6,16 @@ section. Decisions that stand go to the [roadmap](roadmap.md); this is the recor
 ## For the PI in the morning (written 05:40; the session log below has every detail)
 
 **Results**
-1. **GPT-6.1 Sol on OpenClaw, the Muse-written half** (`sol_eval_01`, final): Sol exposes a fact in 13 of 282 regular
-   tests against Qwen's 78 on the same tests; 7 facts at detect@3 and detect@1 against 47 and 33; every fact Sol
-   exposes, Qwen exposes too. Trials: 800 passing against 655; 32 counted failures against 145; 0 over budget
-   against 32. **All eight policy cells are not policy-level for Sol** (rates 0.00–0.23; on the same units Qwen is
-   0.44–0.90, Calendar absence policy-level). Per fact: absence 19 of 115 failing at detect@3 (Qwen 87),
-   underspecified 5 of 100 (Qwen 61). Judge v2 agrees with 174 of 176 blind labels and finds all 7 labelled failures
-   with the same facts; the two differences are the tests your blind-review rulings make flawed. Sol's median trial
-   37–53 s against Qwen's 171–248 s; awareness remarks in 11 of 1,491 trials against Qwen's 483. Judging cost $32.60
-   list, $2.33 billed. 16 G4-LIN-08 tests and units could not run (clocked past the login's expiry).
+1. **GPT-6.1 Sol on OpenClaw, the whole Muse-only suite** (`sol_eval_01`, complete): on the 487 regular tests of the
+   Muse-written half and the regenerated half together, **Sol exposes a fact in 20 tests and 13 facts; Qwen on the
+   same tests 139 and 88.** On the first half: 13 of 282 tests and 7 facts against 78 and 47, every one of Sol's
+   also exposed by Qwen; on the regenerated half: 7 of 205 and 6 against 61 and 41 (one fact Sol's alone, the
+   related-issue direction, in one trial). **No policy cell is policy-level for Sol** (rates 0.00–0.20 across all
+   sixteen cells of the two halves; Qwen 0.44–0.90, Calendar absence policy-level for the Muse-only suite). No run
+   over budget, no stalls on the second half; a median 42–61 s per trial against Qwen's 171–248 s. Judge v2 agrees
+   with 174 of 176 blind labels on the first half (the two are ruled-flawed tests) and all 135 on the second. Three
+   of Sol's six regen-half facts rest on borderline near misses. Judging cost $52 list in all. 16 G4-LIN-08 tests and
+   units could not run (clocked past the login's expiry).
 2. **The judge on the self-hosted Qwen meets the bar** (`judge_qwen_01`): 0 missed of 192 labelled failures (1 under the
    any-reason reading), precision 97.4% against Muse's 98.0%, the same verdict on 440 of 443 and the same facts on
    every joint failure, at $0 per token (3.5 GPU-hours) against $13 list for Muse. The judges fail differently: Muse
@@ -347,3 +348,6 @@ section. Decisions that stand go to the [roadmap](roadmap.md); this is the recor
   descendants; the Cycle-number tension; "5-person" and the bot; the two facts whose designated substitutes are
   ruled-flawed constructions; the team facts the reader rejected twice; 6 of the 41 facts rest on the 8 borderline
   near misses.
+- 12:4x sol_score done on the regenerated half (commits to c3b1615e63; merged as 8f7237f73c): the numbers are in
+  the brief; 10 of 1,011 trials needed one retry, no quota or rate-limit error; a last task assigned to make the
+  budget rule's attempt paths repository-relative (regen's verdicts record worktree paths).
