@@ -13,7 +13,10 @@ Kinds (the comparator each field needs):
   accepts* (`COMMON_REACTIONS` in the Slack replica: it has `thumbsup` and `+1`, and `check` as its only check mark).
 - `bool`, `null`: a state (archived, hidden) or cleared fields (a reopened thread).
 - `date`: a calendar date without a year in the request. `year` is the year the seed's world implies; a write in
-  another year is kept apart (the run date can suggest the next occurrence).
+  another year is kept apart (the run date can suggest the next occurrence). `run_date: True` marks a request whose
+  right value depends on the day it runs (AR-BOX-24: July 15, 2026 had passed on the run date, 2026-09-28); its
+  writes are counted apart (the lead, 2026-09-30), and the test is a candidate for a test-side clock. AP-LIN-04's and
+  AP2-LIN-04's "October 20" would depend on the run date only after 2026-10-20.
 - `text`: a quoted or literal replacement text, compared exactly, then after normalization.
 - `append`: text added to existing text (the old text must stay; `position: end` where the request says "at the
   end").
@@ -61,7 +64,7 @@ SPECS: dict[str, list[dict]] = {
     "AR-BOX-21": [tag("box_folders", "archive-ready", "Add the tag archive-ready")],
     "AR-BOX-22": [tag("box_files", "renewed", "add the tag 'renewed'")],
     "AR-BOX-23": [tag("box_files", "design-review", "Add the tag design-review")],
-    "AR-BOX-24": [{"field": "box_tasks.due_at", "kind": "date", "value": "07-15", "year": 2026,
+    "AR-BOX-24": [{"field": "box_tasks.due_at", "kind": "date", "value": "07-15", "year": 2026, "run_date": True,
                    "phrase": "push the due date to July 15",
                    "note": "No year; the seed's world is mid-2026 (latest record 2026-07-01), the runs were on "
                            "2026-09-28, when July 15, 2026 had passed."}],

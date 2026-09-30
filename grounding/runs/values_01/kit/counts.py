@@ -12,6 +12,7 @@ import json
 from collections import Counter, defaultdict
 
 from grounding.runs.values_01.kit.common import DATA, executions, read
+from grounding.runs.values_01.kit.specs import SPECS
 
 FAMILY = {"issues.priority": "Linear priority", "issues.estimate": "Linear estimate",
           "box_files.tags": "Box tag", "box_folders.tags": "Box tag",
@@ -24,7 +25,10 @@ FAMILY = {"issues.priority": "Linear priority", "issues.estimate": "Linear estim
 OK = {"ok", "normalized"}
 
 
-def family(field: str) -> str:
+def family(field: str, scenario: str | None = None) -> str:
+    """The field's family; a request whose right value depends on the run date is its own family (the lead)."""
+    if scenario and any(s.get("run_date") and s["field"] == field for s in SPECS.get(scenario, [])):
+        return "run-date dependent date"
     return FAMILY.get(field, "free text")
 
 
@@ -50,7 +54,7 @@ def main():
     vrows = [(x, row) for row in rows for x in row["v"].get("values", [])]
     fam = defaultdict(Counter)
     for x, row in vrows:
-        f = family(x["field"])
+        f = family(x["field"], row["scenario"])
         c = fam[f]
         c["writes"] += 1
         c[f"writes on {x['where']}"] += 1
@@ -59,7 +63,10 @@ def main():
             c[f"not ok on {x['where']}"] += 1
     out["values_by_family"] = {f: dict(c) for f, c in sorted(fam.items())}
     # Executions with a value error, by grounding outcome (does a passing verdict hide it?).
-    err_ex = [row for row in rows if any(x["verdict"] not in OK | {"keywords present"} for x in row["v"].get("values", []))]
+    def is_error(x, row):
+        return x["verdict"] not in OK | {"keywords present"} and family(x["field"], row["scenario"]) != \
+            "run-date dependent date"
+    err_ex = [row for row in rows if any(is_error(x, row) for x in row["v"].get("values", []))]
     out["value_error_executions"] = {
         "executions": len(err_ex),
         "wrote_specified_field": sum(1 for row in rows if row["v"].get("values")),
@@ -69,9 +76,11 @@ def main():
         "by_domain": dict(Counter(row["domain"] for row in err_ex)),
         "on_target_with_passing_grounding": sum(
             1 for row in err_ex if row["grounding"] == "pass" and any(
-                x["where"] == "target" and x["verdict"] not in OK for x in row["v"]["values"])),
+                x["where"] == "target" and is_error(x, row) for x in row["v"]["values"])),
+        "run_date_dependent_other_year": sum(1 for x, row in vrows if family(x["field"], row["scenario"]) ==
+                                             "run-date dependent date" and x["verdict"] == "other year"),
         "scenarios": len({row["scenario"] for row in err_ex}),
-        "by_family_scenarios": {f: len({row["scenario"] for x, row in vrows if family(x["field"]) == f
+        "by_family_scenarios": {f: len({row["scenario"] for x, row in vrows if family(x["field"], row["scenario"]) == f
                                         and x["verdict"] not in OK | {"keywords present"}})
                                 for f in fam},
         "needs_reader": sum(1 for x, row in vrows if x["verdict"] == "keywords present"),
@@ -129,8 +138,11 @@ def main():
     # Any finding, per execution, and whether the grounding verdict passed it.
     def findings(row):
         f = set()
-        if any(x["verdict"] not in OK | {"keywords present"} for x in row["v"].get("values", [])):
+        if any(is_error(x, row) for x in row["v"].get("values", [])):
             f.add("value")
+        if any(family(x["field"], row["scenario"]) == "run-date dependent date" and x["verdict"] == "other year"
+               for x in row["v"].get("values", [])):
+            f.add("value, run-date dependent")
         if any(row["v"].get(k) for k in ("other_fields", "other_records", "other_tables")):
             f.add("side effect")
         if row["v"].get("no_net_change") or row["w"].get("not_in_diff"):
