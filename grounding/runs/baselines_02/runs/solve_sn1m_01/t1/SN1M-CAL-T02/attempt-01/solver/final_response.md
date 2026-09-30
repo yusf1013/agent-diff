@@ -1,0 +1,1 @@
+Done — renamed the Tuesday Team sync in Cedar room that's set to free (11:00–11:30 AM) to **Team sync (open door)**. Attendees have been notified. There were four "Team sync" events that day (two in Cedar, two in Orchid); this was the only Cedar one showing you as available, so I didn't touch the others.

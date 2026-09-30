@@ -1,0 +1,1 @@
+Done. Tagged "Vendor Proposal.docx" (Maya Lopez's copy, in **Proposals - Review**) with **needs-legal** — verified in the API response. Note there were three files with that name; I matched on Maya Lopez specifically (the others were Maya Chen's and Leo Park's).

@@ -1,0 +1,1 @@
+Done ✅ The Wednesday June 20, 9:00–10:00 AM "Kickoff call" (created by Maya Chen, organized by Priya Nair) is now **"Kickoff call - confirmed"**. I left the other three kickoff events untouched — just flagging that there are three more on the same day (11 AM, 1 PM, 3 PM) in case you meant a different one.

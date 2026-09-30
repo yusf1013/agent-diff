@@ -1,0 +1,1 @@
+Done — the **Q3** folder inside **Planning** is now named **"Q3 - Closed"** (folder 4915, still under Planning 4910). The Q3 folder at the root was left untouched since you asked for the one directly inside Planning.

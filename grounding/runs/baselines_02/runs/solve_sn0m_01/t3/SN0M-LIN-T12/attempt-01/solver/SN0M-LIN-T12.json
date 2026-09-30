@@ -1,0 +1,609 @@
+{
+  "test_id": "SN0M-LIN-T12",
+  "question": "In Linear: Assign the oldest urgent issue that's still open in Web to Leo.",
+  "harness": "openclaw",
+  "termination": "done",
+  "final": "Done. **WEB-18 \"Checkout 500s under load\"** (created 2026-03-02, the oldest still-open urgent issue in Web) is now assigned to **Leo Park**.\n\nNote: WEB-4 and WEB-9 are also urgent but excluded — one is Done, the other Canceled. The other open urgent one (WEB-12, from May) was left unassigned.",
+  "turns": [
+    {
+      "label": "turn1",
+      "message": "In Linear: Assign the oldest urgent issue that's still open in Web to Leo.",
+      "text": "Done. **WEB-18 \"Checkout 500s under load\"** (created 2026-03-02, the oldest still-open urgent issue in Web) is now assigned to **Leo Park**.\n\nNote: WEB-4 and WEB-9 are also urgent but excluded — one is Done, the other Canceled. The other open urgent one (WEB-12, from May) was left unassigned.",
+      "termination": "done",
+      "returncode": 0,
+      "killed": null,
+      "duration_s": 217.4,
+      "meta_error": null,
+      "stop_reason": "stop"
+    }
+  ],
+  "steps": [
+    {
+      "turn": 1,
+      "tool": "read",
+      "arguments": {
+        "path": "~/.openclaw-state/47cb67d4401440f1/workspace-assistant/skills/linear/SKILL.md"
+      },
+      "action": "read {\"path\": \"~/.openclaw-state/47cb67d4401440f1/workspace-assistant/skills/linear/SKILL.md\"}",
+      "text": "",
+      "thinking": "The user wants to assign the oldest open urgent issue in the \"Web\" project to Leo in Linear. First, I should read the Linear skill's SKILL.md to learn how to use the Linear API.",
+      "usage": {
+        "input": 4724,
+        "output": 101,
+        "cacheRead": 3920,
+        "cacheWrite": 0,
+        "reasoningTokens": 43,
+        "totalTokens": 8745,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "status": "success",
+        "stdout": "---\nname: linear\ndescription: \"Linear project management and issue tracking API. Use it for anything in the user's Linear account.\"\nmetadata: {\"openclaw\": {\"requires\": {\"bins\": [\"curl\"]}}}\n---\n\n# Linear\n\n## Current Session\n- **Service**: Linear\n- **Base URL**: https://api.linear.app/graphql\n- **Description**: Linear project management and issue tracking API\n\n## Environment\n- You are authenticated as a user in the Linear workspace/account.\n- Authentication is handled automatically via proxy. Use placeholder tokens like `<TOKEN>` where credentials would go.\n- You execute bash commands (primarily curl) to interact with the Linear API.\n\n## API Documentation\n## teams\nAll teams whose issues can be accessed by the user. This might be different from `administrableTeams`, which also includes teams whose settings can be changed by the user.\n\n## issues\nAll issues.\n\n## issue\nGet a single issue by ID.\n\n## workflowStates\nAll issue workflow states.\n\n## users\nAll users for the organization.\n\n## issueCreate\nCreates a new issue.\n\n## issueUpdate\nUpdates an issue.\n\n## commentCreate\nCreates a new comment.\n\n## teamCreate\nCreates a new team. The user who creates the team will automatically be added as a member to the newly created team.\n\n## issueLabelCreate\nCreates a new label.\n\n## issueLabels\nAll issue labels.\n\n## comments\nAll comments.\n\n## commentUpdate\nUpdates a comment.\n\n## commentDelete\nDeletes a comment.\n\n## issueLabelUpdate\nUpdates a label.\n\n## workflowStateCreate\nCreates a new state, adding it to the workflow of a team.\n\n## workflowStateArchive\nArchives a state. Only states with issues that have all been archived can be archived.\n\n## teamMembershipCreate\nCreates a new team membership.\n\n## issueRelationCreate\nCreates a new issue relation.\n"
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nThe user wants to assign the oldest open urgent issue in the \"Web\" project to Leo in Linear. First, I should read the Linear skill's SKILL.md to learn how to use the Linear API.\n</thinking>\n"
+          }
+        ]
+      }
+    },
+    {
+      "turn": 2,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -s -X POST https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Linear-API-Key: <TOKEN>' -d '{\"query\":\"{ teams { nodes { id name key identifier } } }\"}'"
+      },
+      "action": "curl -s -X POST https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Linear-API-Key: <TOKEN>' -d '{\"query\":\"{ teams { nodes { id name key identifier } } }\"}'",
+      "text": "",
+      "thinking": "The skill file contains descriptions of the API documentation, but there's no detailed GraphQL schema. I need to figure out how to query Linear's GraphQL API. Linear's API is well known: it's a GraphQL API at https://api.linear.app/graphql, using the Linear_API_KEY header.\n\nLet's query: find the oldest urgent open issue in the \"Web\" team and assign it to \"Leo\".\n\nSteps:\n1. Get the Web team: query teams { nodes { id name key identifier } }\n2. Get urgent priority issues that are open and not completed/cancelled: Linear has priorities: none(0), urgent(4), high(3), medium(2), low(1).\n3. \"Still open\" — need a workflow state that is not completed/cancelled. Use `state: {workflowStateGroup: {type: {eq: \"started\"}}}`, or simply filter by states that are not completed.\n4. Oldest = earliest createdAt, or first occurrence order. \"Oldest\" usually means the one created earliest.\n5. Find the user \"Leo\": query users { nodes { id name displayName email } } and find the one whose name is Leo.\n6. Update the issue's assigneeId with issueUpdate.\n\nThe skill says authentication is handled automatically via the proxy — use a placeholder token like `<TOKEN>`. Hmm, \"authentication is automatically handled via the proxy. Use a placeholder token like `<TOKEN>` where credentials would go.\" This suggests that when you curl the API with the header Linear-API-Key: <TOKEN>, the proxy handles the authentication. Let's try that.\n\nFirst, let's find the Web team and the user Leo, and get the workflow states. I can run independent queries in parallel.",
+      "usage": {
+        "input": 495,
+        "output": 524,
+        "cacheRead": 8624,
+        "cacheWrite": 0,
+        "reasoningTokens": 365,
+        "totalTokens": 9643,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "status": "success",
+        "stdout": "{\"errors\":[{\"message\":\"Cannot query field 'identifier' on type 'Team'.\",\"locations\":[{\"line\":1,\"column\":31}]}]}"
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nThe skill file contains descriptions of the API documentation, but there's no detailed GraphQL schema. I need to figure out how to query Linear's GraphQL API. Linear's API is well known: it's a GraphQL API at https://api.linear.app/graphql, using the Linear_API_KEY header.\n\nLet's query: find the oldest urgent open issue in the \"Web\" team and assign it to \"Leo\".\n\nSteps:\n1. Get the Web team: query teams { nodes { id name key identifier } }\n2. Get urgent priority issues that are open and not completed/cancelled: Linear has priorities: none(0), urgent(4), high(3), medium(2), low(1).\n3. \"Still open\" — need a workflow state that is not completed/cancelled. Use `state: {workflowStateGroup: {type: {eq: \"started\"}}}`, or simply filter by states that are not completed.\n4. Oldest = earliest createdAt, or first occurrence order. \"Oldest\" usually means the one created earliest.\n5. Find the user \"Leo\": query users { nodes { id name displayName email } } and find the one whose name is Leo.\n6. Update the issue's assigneeId with issueUpdate.\n\nThe skill says authentication is handled automatically via the proxy — use a placeholder token like `<TOKEN>`. Hmm, \"authentication is automatically handled via the proxy. Use a placeholder token like `<TOKEN>` where credentials would go.\" This suggests that when you curl the API with the header Linear-API-Key: <TOKEN>, the proxy handles the authentication. Let's try that.\n\nFirst, let's find the Web team and the user Leo, and get the workflow states. I can run independent queries in parallel.\n</thinking>\n"
+          }
+        ]
+      }
+    },
+    {
+      "turn": 3,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -s -X POST https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Linear-API-Key: <TOKEN>' -d '{\"query\":\"{ users(first: 100) { nodes { id name displayName email } } }\"}'"
+      },
+      "action": "curl -s -X POST https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Linear-API-Key: <TOKEN>' -d '{\"query\":\"{ users(first: 100) { nodes { id name displayName email } } }\"}'",
+      "text": "",
+      "thinking": "",
+      "usage": null,
+      "observation": {
+        "status": "success",
+        "stdout": "{\"data\":{\"users\":{\"nodes\":[{\"id\":\"u-actor\",\"name\":\"Jordan Lee\",\"displayName\":\"jordan\",\"email\":\"jordan.lee@northwind.example\"},{\"id\":\"u-dana\",\"name\":\"Dana Whitfield\",\"displayName\":\"dana\",\"email\":\"dana.whitfield@northwind.example\"},{\"id\":\"u-leo\",\"name\":\"Leo Park\",\"displayName\":\"leo\",\"email\":\"leo.park@northwind.example\"},{\"id\":\"u-maya\",\"name\":\"Maya Chen\",\"displayName\":\"maya\",\"email\":\"maya.chen@northwind.example\"},{\"id\":\"u-omar\",\"name\":\"Omar Haddad\",\"displayName\":\"omar\",\"email\":\"omar.haddad@northwind.example\"},{\"id\":\"u-priya\",\"name\":\"Priya Nair\",\"displayName\":\"priya\",\"email\":\"priya.nair@northwind.example\"},{\"id\":\"u-sam\",\"name\":\"Sam Rivera\",\"displayName\":\"sam\",\"email\":\"sam.rivera@northwind.example\"}]}}}"
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": ""
+          }
+        ]
+      }
+    },
+    {
+      "turn": 4,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -s -X POST https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Linear-API-Key: <TOKEN>' -d '{\"query\":\"{ teams { nodes { id name key } } }\"}'"
+      },
+      "action": "curl -s -X POST https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Linear-API-Key: <TOKEN>' -d '{\"query\":\"{ teams { nodes { id name key } } }\"}'",
+      "text": "",
+      "thinking": "Found Leo: u-leo, Leo Park. Next, I'll fetch the team and find the one named \"Web\".",
+      "usage": {
+        "input": 904,
+        "output": 102,
+        "cacheRead": 8624,
+        "cacheWrite": 0,
+        "reasoningTokens": 26,
+        "totalTokens": 9630,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "status": "success",
+        "stdout": "{\"data\":{\"teams\":{\"nodes\":[{\"id\":\"t-d1\",\"name\":\"Web\",\"key\":\"WEB\"},{\"id\":\"t-d2\",\"name\":\"Ops\",\"key\":\"OPS\"}]}}}"
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nFound Leo: u-leo, Leo Park. Next, I'll fetch the team and find the one named \"Web\".\n</thinking>\n"
+          }
+        ]
+      }
+    },
+    {
+      "turn": 5,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -s -X POST https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Linear-API-Key: <TOKEN>' -d '{\"query\":\"{ issues(filter: { team: { id: { eq: \\\"t-d1\\\" } }, priority: { eq: 1 }, state: { type: { in: [\\\"started\\\", \\\"backlog\\\"] } } }, sortBy: \\\"createdAt\\\", direction: ASC, first: 20) { nodes { id identifier title createdAt state { name type } assignee { id name } } } }\"}'"
+      },
+      "action": "curl -s -X POST https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Linear-API-Key: <TOKEN>' -d '{\"query\":\"{ issues(filter: { team: { id: { eq: \\\"t-d1\\\" } }, priority: { eq: 1 }, state: { type: { in: [\\\"started\\\", \\\"backlog\\\"] } } }, sortBy: \\\"createdAt\\\", direction: ASC, first: 20) { nodes { id identifier title createdAt state { name type } assignee { id name } } } }\"}'",
+      "text": "",
+      "thinking": "Web team: t-d1. Next, I'll query the open urgent issues on Web, sorted by creation date (oldest first). \"Oldest\" — probably by creation date (createdAt). \"Still open\" — workflow state that is not done/canceled/archived. Let me query the workflow states and the issues.\n\nQuery: team id t-d1, priority 1 (urgent). Linear priorities: 0 is no priority, 1 is urgent, 2 is high, 3 is medium, 4 is low. I'll filter with priority: 1 and stateType: \"started\" (open means not completed/canceled). I'll use sort: \"created_at\" in ascending order.",
+      "usage": {
+        "input": 248,
+        "output": 295,
+        "cacheRead": 9408,
+        "cacheWrite": 0,
+        "reasoningTokens": 147,
+        "totalTokens": 9951,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "status": "success",
+        "stdout": "{\"errors\":[{\"message\":\"Unknown argument 'sortBy' on field 'Query.issues'. Did you mean 'sort'?\",\"locations\":[{\"line\":1,\"column\":122}]},{\"message\":\"Unknown argument 'direction' on field 'Query.issues'.\",\"locations\":[{\"line\":1,\"column\":143}]}]}"
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nWeb team: t-d1. Next, I'll query the open urgent issues on Web, sorted by creation date (oldest first). \"Oldest\" — probably by creation date (createdAt). \"Still open\" — workflow state that is not done/canceled/archived. Let me query the workflow states and the issues.\n\nQuery: team id t-d1, priority 1 (urgent). Linear priorities: 0 is no priority, 1 is urgent, 2 is high, 3 is medium, 4 is low. I'll filter with priority: 1 and stateType: \"started\" (open means not completed/canceled). I'll use sort: \"created_at\" in ascending order.\n</thinking>\n"
+          }
+        ]
+      }
+    },
+    {
+      "turn": 6,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -s -X POST https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Linear-API-Key: <TOKEN>' -d '{\"query\":\"{ issues(filter: { team: { id: { eq: \\\"t-d1\\\" } }, priority: { eq: 1 }, state: { type: { in: [\\\"started\\\", \\\"backlog\\\"] } } }, sort: \\\"createdAt ASC\\\", first: 20) { nodes { id identifier title createdAt state { name type } assignee { id name } } } }\"}'"
+      },
+      "action": "curl -s -X POST https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Linear-API-Key: <TOKEN>' -d '{\"query\":\"{ issues(filter: { team: { id: { eq: \\\"t-d1\\\" } }, priority: { eq: 1 }, state: { type: { in: [\\\"started\\\", \\\"backlog\\\"] } } }, sort: \\\"createdAt ASC\\\", first: 20) { nodes { id identifier title createdAt state { name type } assignee { id name } } } }\"}'",
+      "text": "",
+      "thinking": "The sort parameter takes a string, probably in a format like \"createdAt ASC\" or \"priority\". Let's check the Linear API schema: issues(sort: IssueSort, first: ...). In Linear, sort is a string in a format like \"createdAt-ASC\". Let's try \"createdAt-ASC\" or \"createdAt ASC\". Actually, according to Linear's GraphQL, the sort parameter is of type IssueSort, which is a string enum like \"created_at\" or \"created_at-asc\"? For now, let's try \"createdAt ASC\" — Linear uses a string enum in a format like \"title-asc\"? Actually, Linear's sort values are in a format like \"createdAt ASC\", where direction is included as part of the string enum: e.g., \"title ASC\", \"priority DESC\". Let's try it.",
+      "usage": {
+        "input": 477,
+        "output": 314,
+        "cacheRead": 9408,
+        "cacheWrite": 0,
+        "reasoningTokens": 169,
+        "totalTokens": 10199,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "status": "success",
+        "stdout": "{\"errors\":[{\"message\":\"Expected value of type '[IssueSortInput!]', found \\\"createdAt ASC\\\".\",\"locations\":[{\"line\":1,\"column\":128}]}]}"
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nThe sort parameter takes a string, probably in a format like \"createdAt ASC\" or \"priority\". Let's check the Linear API schema: issues(sort: IssueSort, first: ...). In Linear, sort is a string in a format like \"createdAt-ASC\". Let's try \"createdAt-ASC\" or \"createdAt ASC\". Actually, according to Linear's GraphQL, the sort parameter is of type IssueSort, which is a string enum like \"created_at\" or \"created_at-asc\"? For now, let's try \"createdAt ASC\" — Linear uses a string enum in a format like \"title-asc\"? Actually, Linear's sort values are in a format like \"createdAt ASC\", where direction is included as part of the string enum: e.g., \"title ASC\", \"priority DESC\". Let's try it.\n</thinking>\n"
+          }
+        ]
+      }
+    },
+    {
+      "turn": 7,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -s -X POST https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Linear-API-Key: <TOKEN>' -d '{\"query\":\"{ issues(filter: { team: { id: { eq: \\\"t-d1\\\" } }, priority: { eq: 1 }, state: { type: { in: [\\\"backlog\\\", \\\"started\\\"] } } }, sort: [{ field: \\\"createdAt\\\", direction: \\\"ASC\\\" }], first: 20) { nodes { id identifier title createdAt state { name type } assignee { id name } } } }\"}'"
+      },
+      "action": "curl -s -X POST https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Linear-API-Key: <TOKEN>' -d '{\"query\":\"{ issues(filter: { team: { id: { eq: \\\"t-d1\\\" } }, priority: { eq: 1 }, state: { type: { in: [\\\"backlog\\\", \\\"started\\\"] } } }, sort: [{ field: \\\"createdAt\\\", direction: \\\"ASC\\\" }], first: 20) { nodes { id identifier title createdAt state { name type } assignee { id name } } } }\"}'",
+      "text": "",
+      "thinking": "Sort input is an array. Let me try `sort: [{field: \"createdAt\", direction: \"ASC\"}]`. In the actual Linear API, is it `sort: [ { field: \"createdAt\", direction: \"asc\" } ]`? In the Linear API, is the direction value uppercase \"ASC\"/\"DESC\"? Let me check: Linear's IssueSortInput is `field: Field!`, `direction: SortDirection!`. SortDirection is \"ASC\" | \"DESC\". Let me try this.\n\nAlso, \"still open\" means a state whose type is not \"completed\" and not \"canceled\". Let me use state: { type: { in: [\"backlog\", \"started\"] } }.",
+      "usage": {
+        "input": 672,
+        "output": 304,
+        "cacheRead": 9408,
+        "cacheWrite": 0,
+        "reasoningTokens": 150,
+        "totalTokens": 10384,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "status": "success",
+        "stdout": "{\"errors\":[{\"message\":\"Field 'field' is not defined by type 'IssueSortInput'. Did you mean 'title'?\",\"locations\":[{\"line\":1,\"column\":131}]},{\"message\":\"Field 'direction' is not defined by type 'IssueSortInput'.\",\"locations\":[{\"line\":1,\"column\":151}]}]}"
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nSort input is an array. Let me try `sort: [{field: \"createdAt\", direction: \"ASC\"}]`. In the actual Linear API, is it `sort: [ { field: \"createdAt\", direction: \"asc\" } ]`? In the Linear API, is the direction value uppercase \"ASC\"/\"DESC\"? Let me check: Linear's IssueSortInput is `field: Field!`, `direction: SortDirection!`. SortDirection is \"ASC\" | \"DESC\". Let me try this.\n\nAlso, \"still open\" means a state whose type is not \"completed\" and not \"canceled\". Let me use state: { type: { in: [\"backlog\", \"started\"] } }.\n</thinking>\n"
+          }
+        ]
+      }
+    },
+    {
+      "turn": 8,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -s -X POST https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Linear-API-Key: <TOKEN>' -d '{\"query\":\"{ __type(name: \\\"IssueSortInput\\\") { inputFields { name type { name kind ofType { name } } } } }\"}'"
+      },
+      "action": "curl -s -X POST https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Linear-API-Key: <TOKEN>' -d '{\"query\":\"{ __type(name: \\\"IssueSortInput\\\") { inputFields { name type { name kind ofType { name } } } } }\"}'",
+      "text": "",
+      "thinking": "Linear's GraphQL IssueSortInput uses `field` and `direction` in the actual Linear API. But this mock says it's not defined. Maybe this mock uses a different shape. Should I introspect? Let me try introspection on IssueSortInput.",
+      "usage": {
+        "input": 911,
+        "output": 145,
+        "cacheRead": 9408,
+        "cacheWrite": 0,
+        "reasoningTokens": 53,
+        "totalTokens": 10464,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "status": "success",
+        "stdout": "{\"data\":{\"__type\":{\"inputFields\":[{\"name\":\"assignee\",\"type\":{\"name\":\"AssigneeSort\",\"kind\":\"INPUT_OBJECT\",\"ofType\":null}},{\"name\":\"completedAt\",\"type\":{\"name\":\"CompletedAtSort\",\"kind\":\"INPUT_OBJECT\",\"ofType\":null}},{\"name\":\"createdAt\",\"type\":{\"name\":\"CreatedAtSort\",\"kind\":\"INPUT_OBJECT\",\"ofType\":null}},{\"name\":\"customer\",\"type\":{\"name\":\"CustomerSort\",\"kind\":\"INPUT_OBJECT\",\"ofType\":null}},{\"name\":\"customerCount\",\"type\":{\"name\":\"CustomerCountSort\",\"kind\":\"INPUT_OBJECT\",\"ofType\":null}},{\"name\":\"customerImportantCount\",\"type\":{\"name\":\"CustomerImportantCountSort\",\"kind\":\"INPUT_OBJECT\",\"ofType\":null}},{\"name\":\"customerRevenue\",\"type\":{\"name\":\"CustomerRevenueSort\",\"kind\":\"INPUT_OBJECT\",\"ofType\":null}},{\"name\":\"cycle\",\"type\":{\"name\":\"CycleSort\",\"kind\":\"INPUT_OBJECT\",\"ofType\":null}},{\"name\":\"delegate\",\"type\":{\"name\":\"DelegateSort\",\"kind\":\"INPUT_OBJECT\",\"ofType\":null}},{\"name\":\"dueDate\",\"type\":{\"name\":\"DueDateSort\",\"kind\":\"INPUT_OBJECT\",\"ofType\":null}},{\"name\":\"estimate\",\"type\":{\"name\":\"EstimateSort\",\"kind\":\"INPUT_OBJECT\",\"ofType\":null}},{\"name\":\"label\",\"type\":{\"name\":\"LabelSort\",\"kind\":\"INPUT_OBJECT\",\"ofType\":null}},{\"name\":\"labelGroup\",\"type\":{\"name\":\"LabelGroupSort\",\"kind\":\"INPUT_OBJECT\",\"ofType\":null}},{\"name\":\"linkCount\",\"type\":{\"name\":\"LinkCountSort\",\"kind\":\"INPUT_OBJECT\",\"ofType\":null}},{\"name\":\"manual\",\"type\":{\"name\":\"ManualSort\",\"kind\":\"INPUT_OBJECT\",\"ofType\":null}},{\"name\":\"milestone\",\"type\":{\"name\":\"MilestoneSort\",\"kind\":\"INPUT_OBJECT\",\"ofType\":null}},{\"name\":\"priority\",\"type\":{\"name\":\"PrioritySort\",\"kind\":\"INPUT_OBJECT\",\"ofType\":null}},{\"name\":\"project\",\"type\":{\"name\":\"ProjectSort\",\"kind\":\"INPUT_OBJECT\",\"ofType\":null}},{\"name\":\"rootIssue\",\"type\":{\"name\":\"RootIssueSort\",\"kind\":\"INPUT_OBJECT\",\"ofType\":null}},{\"name\":\"slaStatus\",\"type\":{\"name\":\"SlaStatusSort\",\"kind\":\"INPUT_OBJECT\",\"ofType\":null}},{\"name\":\"team\",\"type\":{\"name\":\"TeamSort\",\"kind\":\"INPUT_OBJECT\",\"ofType\":null}},{\"name\":\"title\",\"type\":{\"name\":\"TitleSort\",\"kind\":\"INPUT_OBJECT\",\"ofType\":null}},{\"name\":\"updatedAt\",\"type\":{\"name\":\"UpdatedAtSort\",\"kind\":\"INPUT_OBJECT\",\"ofType\":null}},{\"name\":\"workflowState\",\"type\":{\"name\":\"WorkflowStateSort\",\"kind\":\"INPUT_OBJECT\",\"ofType\":null}}]}}}"
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nLinear's GraphQL IssueSortInput uses `field` and `direction` in the actual Linear API. But this mock says it's not defined. Maybe this mock uses a different shape. Should I introspect? Let me try introspection on IssueSortInput.\n</thinking>\n"
+          }
+        ]
+      }
+    },
+    {
+      "turn": 9,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -s -X POST https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Linear-API-Key: <TOKEN>' -d '{\"query\":\"{ __type(name: \\\"CreatedAtSort\\\") { inputFields { name type { name kind ofType { name } } } } }\"}'"
+      },
+      "action": "curl -s -X POST https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Linear-API-Key: <TOKEN>' -d '{\"query\":\"{ __type(name: \\\"CreatedAtSort\\\") { inputFields { name type { name kind ofType { name } } } } }\"}'",
+      "text": "",
+      "thinking": "Let's check the shape of the CreateAtSort input.",
+      "usage": {
+        "input": 800,
+        "output": 104,
+        "cacheRead": 10192,
+        "cacheWrite": 0,
+        "reasoningTokens": 13,
+        "totalTokens": 11096,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "status": "success",
+        "stdout": "{\"data\":{\"__type\":{\"inputFields\":[{\"name\":\"nulls\",\"type\":{\"name\":\"PaginationNulls\",\"kind\":\"ENUM\",\"ofType\":null}},{\"name\":\"order\",\"type\":{\"name\":\"PaginationSortOrder\",\"kind\":\"ENUM\",\"ofType\":null}}]}}}"
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nLet's check the shape of the CreateAtSort input.\n</thinking>\n"
+          }
+        ]
+      }
+    },
+    {
+      "turn": 10,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -s -X POST https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Linear-API-Key: <TOKEN>' -d '{\"query\":\"{ issues(filter: { team: { id: { eq: \\\"t-d1\\\" } }, priority: { eq: 1 }, state: { type: { in: [\\\"backlog\\\", \\\"started\\\"] } } }, sort: [{ createdAt: { order: \\\"ASC\\\" } }], first: 20) { nodes { id identifier title createdAt priority state { name type } assignee { id name } } } }\"}'"
+      },
+      "action": "curl -s -X POST https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Linear-API-Key: <TOKEN>' -d '{\"query\":\"{ issues(filter: { team: { id: { eq: \\\"t-d1\\\" } }, priority: { eq: 1 }, state: { type: { in: [\\\"backlog\\\", \\\"started\\\"] } } }, sort: [{ createdAt: { order: \\\"ASC\\\" } }], first: 20) { nodes { id identifier title createdAt priority state { name type } assignee { id name } } } }\"}'",
+      "text": "",
+      "thinking": "In other words, sort takes the form of `[{ createdAt: { order: \"ASC\" } }]`. Let's try querying with this. Also, \"urgent\" — Linear's priority 1 is usually \"Urgent\" (priorities: 0=No priority, 1=Urgent, 2=High, 3=Medium, 4=Low). \"Still open\" — the state's type is backlog or started (not completed/canceled). My filter is using that. To be safe, let's verify by checking the state.",
+      "usage": {
+        "input": 177,
+        "output": 271,
+        "cacheRead": 10976,
+        "cacheWrite": 0,
+        "reasoningTokens": 117,
+        "totalTokens": 11424,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "status": "success",
+        "stdout": "{\"errors\":[{\"message\":\"Enum 'PaginationSortOrder' cannot represent non-enum value: \\\"ASC\\\".\",\"locations\":[{\"line\":1,\"column\":151}]}]}"
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nIn other words, sort takes the form of `[{ createdAt: { order: \"ASC\" } }]`. Let's try querying with this. Also, \"urgent\" — Linear's priority 1 is usually \"Urgent\" (priorities: 0=No priority, 1=Urgent, 2=High, 3=Medium, 4=Low). \"Still open\" — the state's type is backlog or started (not completed/canceled). My filter is using that. To be safe, let's verify by checking the state.\n</thinking>\n"
+          }
+        ]
+      }
+    },
+    {
+      "turn": 11,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -s -X POST https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Linear-API-Key: <TOKEN>' -d '{\"query\":\"{ __type(name: \\\"PaginationSortOrder\\\") { enumValues { name } } }\"}'"
+      },
+      "action": "curl -s -X POST https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Linear-API-Key: <TOKEN>' -d '{\"query\":\"{ __type(name: \\\"PaginationSortOrder\\\") { enumValues { name } } }\"}'",
+      "text": "",
+      "thinking": "The enum values are probably \"asc\"/\"desc\" (lowercase), or maybe \"asc\"/\"desc\"? Let me check the enum values.",
+      "usage": {
+        "input": 382,
+        "output": 114,
+        "cacheRead": 10976,
+        "cacheWrite": 0,
+        "reasoningTokens": 31,
+        "totalTokens": 11472,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "status": "success",
+        "stdout": "{\"data\":{\"__type\":{\"enumValues\":[{\"name\":\"Ascending\"},{\"name\":\"Descending\"}]}}}"
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nThe enum values are probably \"asc\"/\"desc\" (lowercase), or maybe \"asc\"/\"desc\"? Let me check the enum values.\n</thinking>\n"
+          }
+        ]
+      }
+    },
+    {
+      "turn": 12,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -s -X POST https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Linear-API-Key: <TOKEN>' -d '{\"query\":\"{ issues(filter: { team: { id: { eq: \\\"t-d1\\\" } }, priority: { eq: 1 }, state: { type: { in: [\\\"backlog\\\", \\\"started\\\"] } } }, sort: [{ createdAt: { order: \\\"Ascending\\\" } }], first: 20) { nodes { id identifier title createdAt priority state { name type } assignee { id name } } } }\"}'"
+      },
+      "action": "curl -s -X POST https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Linear-API-Key: <TOKEN>' -d '{\"query\":\"{ issues(filter: { team: { id: { eq: \\\"t-d1\\\" } }, priority: { eq: 1 }, state: { type: { in: [\\\"backlog\\\", \\\"started\\\"] } } }, sort: [{ createdAt: { order: \\\"Ascending\\\" } }], first: 20) { nodes { id identifier title createdAt priority state { name type } assignee { id name } } } }\"}'",
+      "text": "",
+      "thinking": "The user is repeating the request (the timestamp is the same as before). I was in the middle of a task. I'll continue: I'll query the Web team's urgent issues that are still open, sorted by createdAt in ascending order.",
+      "usage": {
+        "input": 499,
+        "output": 204,
+        "cacheRead": 10976,
+        "cacheWrite": 0,
+        "reasoningTokens": 50,
+        "totalTokens": 11679,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "status": "success",
+        "stdout": "{\"errors\":[{\"message\":\"Enum 'PaginationSortOrder' cannot represent non-enum value: \\\"Ascending\\\". Did you mean the enum value 'Ascending' or 'Descending'?\",\"locations\":[{\"line\":1,\"column\":151}]}]}"
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nThe user is repeating the request (the timestamp is the same as before). I was in the middle of a task. I'll continue: I'll query the Web team's urgent issues that are still open, sorted by createdAt in ascending order.\n</thinking>\n"
+          }
+        ]
+      }
+    },
+    {
+      "turn": 13,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -s -X POST https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Linear-API-Key: <TOKEN>' -d '{\"query\":\"{ issues(filter: { team: { id: { eq: \\\"t-d1\\\" } }, priority: { eq: 1 }, state: { type: { in: [\\\"backlog\\\", \\\"started\\\"] } } }, sort: [{ createdAt: { order: Ascending } }], first: 20) { nodes { id identifier title createdAt priority state { name type } assignee { id name } } } }\"}'"
+      },
+      "action": "curl -s -X POST https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Linear-API-Key: <TOKEN>' -d '{\"query\":\"{ issues(filter: { team: { id: { eq: \\\"t-d1\\\" } }, priority: { eq: 1 }, state: { type: { in: [\\\"backlog\\\", \\\"started\\\"] } } }, sort: [{ createdAt: { order: Ascending } }], first: 20) { nodes { id identifier title createdAt priority state { name type } assignee { id name } } } }\"}'",
+      "text": "",
+      "thinking": "The GraphQL server wants an enum value, but when passed as a string it says it can't represent it... This is a quirk of the proxy. In actual GraphQL, you can pass enum values as unquoted literals. The proxy is probably JSON-serializing, so the value gets passed as a string. But real Linear GraphQL should accept unquoted enum literals — since we're using JSON, the enum should just work as a string too... Actually, in GraphQL over HTTP with a JSON body, the JSON value \"Ascending\" gets parsed as a String, not as an EnumValue. Real GraphQL clients serialize enums as JSON strings and it works. But this proxy might be validating it in some other way.\n\nMaybe the proxy requires the sort to be passed as an unquoted GraphQL literal inside the query text? But in a JSON body, the query is a string, so the enum should appear as an unquoted token within the query text. For example, like `sort: [{ createdAt: { order: Ascending } }]`. Wait — I was quoting \"Ascending\" inside the query string. In GraphQL, enum values within the query text must be unquoted! Let me remove the quotes.",
+      "usage": {
+        "input": 718,
+        "output": 396,
+        "cacheRead": 10976,
+        "cacheWrite": 0,
+        "reasoningTokens": 243,
+        "totalTokens": 12090,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "status": "success",
+        "stdout": "{\"data\":{\"issues\":{\"nodes\":[]}}}"
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nThe GraphQL server wants an enum value, but when passed as a string it says it can't represent it... This is a quirk of the proxy. In actual GraphQL, you can pass enum values as unquoted literals. The proxy is probably JSON-serializing, so the value gets passed as a string. But real Linear GraphQL should accept unquoted enum literals — since we're using JSON, the enum should just work as a string too... Actually, in GraphQL over HTTP with a JSON body, the JSON value \"Ascending\" gets parsed as a String, not as an EnumValue. Real GraphQL clients serialize enums as JSON strings and it works. But this proxy might be validating it in some other way.\n\nMaybe the proxy requires the sort to be passed as an unquoted GraphQL literal inside the query text? But in a JSON body, the query is a string, so the enum should appear as an unquoted token within the query text. For example, like `sort: [{ createdAt: { order: Ascending } }]`. Wait — I was quoting \"Ascending\" inside the query string. In GraphQL, enum values within the query text must be unquoted! Let me remove the quotes.\n</thinking>\n"
+          }
+        ]
+      }
+    },
+    {
+      "turn": 14,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -s -X POST https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Linear-API-Key: <TOKEN>' -d '{\"query\":\"{ issues(filter: { team: { id: { eq: \\\"t-d1\\\" } } }, first: 100) { nodes { id identifier title createdAt priority state { name type } assignee { id name } } } }\"}'"
+      },
+      "action": "curl -s -X POST https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Linear-API-Key: <TOKEN>' -d '{\"query\":\"{ issues(filter: { team: { id: { eq: \\\"t-d1\\\" } } }, first: 100) { nodes { id identifier title createdAt priority state { name type } assignee { id name } } } }\"}'",
+      "text": "",
+      "thinking": "The result is empty. Maybe the value of \"priority\" is different, or perhaps the filter is wrong. Let me check what urgent priority is. In Linear's API, urgent is usually priority 1... let me introspect.",
+      "usage": {
+        "input": 895,
+        "output": 163,
+        "cacheRead": 10976,
+        "cacheWrite": 0,
+        "reasoningTokens": 48,
+        "totalTokens": 12034,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "status": "success",
+        "stdout": "{\"data\":{\"issues\":{\"nodes\":[{\"id\":\"i-d03\",\"identifier\":\"WEB-4\",\"title\":\"Login outage postmortem follow-up\",\"createdAt\":\"2026-01-05T09:00:00\",\"priority\":1.0,\"state\":{\"name\":\"Done\",\"type\":\"completed\"},\"assignee\":null},{\"id\":\"i-d04\",\"identifier\":\"WEB-6\",\"title\":\"Refactor session store\",\"createdAt\":\"2026-02-01T09:00:00\",\"priority\":2.0,\"state\":{\"name\":\"Todo\",\"type\":\"unstarted\"},\"assignee\":null},{\"id\":\"i-d06\",\"identifier\":\"WEB-9\",\"title\":\"Old cert task\",\"createdAt\":\"2026-02-10T09:00:00\",\"priority\":1.0,\"state\":{\"name\":\"Canceled\",\"type\":\"canceled\"},\"assignee\":null},{\"id\":\"i-d01\",\"identifier\":\"WEB-18\",\"title\":\"Checkout 500s under load\",\"createdAt\":\"2026-03-02T09:00:00\",\"priority\":1.0,\"state\":{\"name\":\"Todo\",\"type\":\"unstarted\"},\"assignee\":null},{\"id\":\"i-d02\",\"identifier\":\"WEB-12\",\"title\":\"Search index out of date\",\"createdAt\":\"2026-05-10T09:00:00\",\"priority\":1.0,\"state\":{\"name\":\"Todo\",\"type\":\"unstarted\"},\"assignee\":null}]}}}"
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nThe result is empty. Maybe the value of \"priority\" is different, or perhaps the filter is wrong. Let me check what urgent priority is. In Linear's API, urgent is usually priority 1... let me introspect.\n</thinking>\n"
+          }
+        ]
+      }
+    },
+    {
+      "turn": 15,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -s -X POST https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Linear-API-Key: <TOKEN>' -d '{\"query\":\"mutation { issueUpdate(id: \\\"i-d01\\\", input: { assigneeId: \\\"u-leo\\\" }) { success issue { identifier title assignee { name } } } }\"}'"
+      },
+      "action": "curl -s -X POST https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Linear-API-Key: <TOKEN>' -d '{\"query\":\"mutation { issueUpdate(id: \\\"i-d01\\\", input: { assigneeId: \\\"u-leo\\\" }) { success issue { identifier title assignee { name } } } }\"}'",
+      "text": "I found that WEB-18 is the oldest open urgent Web issue (the earlier urgent ones are completed or canceled), so I'm assigning it to Leo Park.",
+      "thinking": "Web team issues:\n- WEB-4: priority 1 (urgent), Done (completed) — not open\n- WEB-6: priority 2 (high), Todo — not urgent\n- WEB-9: priority 1, Canceled (cancelled) — not open\n- WEB-18: priority 1, Todo — open and urgent, created 2026-03-02\n- WEB-12: priority 1, Todo — open and urgent, created 2026-05-10\n\nOldest open urgent: WEB-18 \"Checkout 500s under load\" (created 2026-03-02), unassigned. Assign to Leo Park (u-leo).",
+      "usage": {
+        "input": 577,
+        "output": 300,
+        "cacheRead": 11760,
+        "cacheWrite": 0,
+        "reasoningTokens": 162,
+        "totalTokens": 12637,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "status": "success",
+        "stdout": "{\"data\":{\"issueUpdate\":{\"success\":true,\"issue\":{\"identifier\":\"WEB-18\",\"title\":\"Checkout 500s under load\",\"assignee\":{\"name\":\"Leo Park\"}}}}}"
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nWeb team issues:\n- WEB-4: priority 1 (urgent), Done (completed) — not open\n- WEB-6: priority 2 (high), Todo — not urgent\n- WEB-9: priority 1, Canceled (cancelled) — not open\n- WEB-18: priority 1, Todo — open and urgent, created 2026-03-02\n- WEB-12: priority 1, Todo — open and urgent, created 2026-05-10\n\nOldest open urgent: WEB-18 \"Checkout 500s under load\" (created 2026-03-02), unassigned. Assign to Leo Park (u-leo).\n</thinking>\nI found that WEB-18 is the oldest open urgent Web issue (the earlier urgent ones are completed or canceled), so I'm assigning it to Leo Park."
+          }
+        ]
+      }
+    },
+    {
+      "turn": 16,
+      "tool": null,
+      "text": "Done. **WEB-18 \"Checkout 500s under load\"** (created 2026-03-02, the oldest still-open urgent issue in Web) is now assigned to **Leo Park**.\n\nNote: WEB-4 and WEB-9 are also urgent but excluded — one is Done, the other Canceled. The other open urgent one (WEB-12, from May) was left unassigned.",
+      "thinking": "Complete. Reporting concisely.",
+      "usage": {
+        "input": 769,
+        "output": 103,
+        "cacheRead": 11760,
+        "cacheWrite": 0,
+        "reasoningTokens": 8,
+        "totalTokens": 12632,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nComplete. Reporting concisely.\n</thinking>\nDone. **WEB-18 \"Checkout 500s under load\"** (created 2026-03-02, the oldest still-open urgent issue in Web) is now assigned to **Leo Park**.\n\nNote: WEB-4 and WEB-9 are also urgent but excluded — one is Done, the other Canceled. The other open urgent one (WEB-12, from May) was left unassigned."
+          }
+        ]
+      }
+    }
+  ],
+  "followup_steps": []
+}

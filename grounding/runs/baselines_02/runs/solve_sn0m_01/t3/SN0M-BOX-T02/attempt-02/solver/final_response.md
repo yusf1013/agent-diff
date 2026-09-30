@@ -1,0 +1,1 @@
+Done. There were three "Vendor Proposal.docx" files in Box (one each in Drafts, Review, and Sent), so I picked the one Maya Lopez actually wrote — in **Proposals - Review** (there's also a Maya *Chen* with a copy in Drafts, worth knowing). It's now tagged **needs-legal**.

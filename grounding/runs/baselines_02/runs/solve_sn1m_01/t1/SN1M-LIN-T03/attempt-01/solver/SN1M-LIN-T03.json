@@ -1,0 +1,381 @@
+{
+  "test_id": "SN1M-LIN-T03",
+  "question": "In Linear: Make every overdue issue in the Web team urgent.",
+  "harness": "openclaw",
+  "termination": "done",
+  "final": "Done. 3 open Web issues were overdue and are now urgent:\n\n- **WEB-1** — Fix broken sitemap links (was due 2025-03-14, Todo)\n- **WEB-2** — Cache headers for static assets (was due 2025-11-02, In Progress)\n- **WEB-3** — Remove legacy banner (was due 2024-12-01, Backlog)\n\nI skipped WEB-4 and WEB-5 — they're also past due but already Done/Canceled, so no point bumping their priority.",
+  "turns": [
+    {
+      "label": "turn1",
+      "message": "In Linear: Make every overdue issue in the Web team urgent.",
+      "text": "Done. 3 open Web issues were overdue and are now urgent:\n\n- **WEB-1** — Fix broken sitemap links (was due 2025-03-14, Todo)\n- **WEB-2** — Cache headers for static assets (was due 2025-11-02, In Progress)\n- **WEB-3** — Remove legacy banner (was due 2024-12-01, Backlog)\n\nI skipped WEB-4 and WEB-5 — they're also past due but already Done/Canceled, so no point bumping their priority.",
+      "termination": "done",
+      "returncode": 0,
+      "killed": null,
+      "duration_s": 147.3,
+      "meta_error": null,
+      "stop_reason": "stop"
+    }
+  ],
+  "steps": [
+    {
+      "turn": 1,
+      "tool": "read",
+      "arguments": {
+        "path": "~/.openclaw-state/b1bbf3ac348d4649/workspace-assistant/skills/linear/SKILL.md"
+      },
+      "action": "read {\"path\": \"~/.openclaw-state/b1bbf3ac348d4649/workspace-assistant/skills/linear/SKILL.md\"}",
+      "text": "",
+      "thinking": "The user wants to make all overdue issues in the Web team on Linear urgent. Let's first read Linear's SKILL.md.",
+      "usage": {
+        "input": 4699,
+        "output": 83,
+        "cacheRead": 3920,
+        "cacheWrite": 0,
+        "reasoningTokens": 27,
+        "totalTokens": 8702,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "status": "success",
+        "stdout": "---\nname: linear\ndescription: \"Linear project management and issue tracking API. Use it for anything in the user's Linear account.\"\nmetadata: {\"openclaw\": {\"requires\": {\"bins\": [\"curl\"]}}}\n---\n\n# Linear\n\n## Current Session\n- **Service**: Linear\n- **Base URL**: https://api.linear.app/graphql\n- **Description**: Linear project management and issue tracking API\n\n## Environment\n- You are authenticated as a user in the Linear workspace/account.\n- Authentication is handled automatically via proxy. Use placeholder tokens like `<TOKEN>` where credentials would go.\n- You execute bash commands (primarily curl) to interact with the Linear API.\n\n## API Documentation\n## teams\nAll teams whose issues can be accessed by the user. This might be different from `administrableTeams`, which also includes teams whose settings can be changed by the user.\n\n## issues\nAll issues.\n\n## issue\nGet a single issue by ID.\n\n## workflowStates\nAll issue workflow states.\n\n## users\nAll users for the organization.\n\n## issueCreate\nCreates a new issue.\n\n## issueUpdate\nUpdates an issue.\n\n## commentCreate\nCreates a new comment.\n\n## teamCreate\nCreates a new team. The user who creates the team will automatically be added as a member to the newly created team.\n\n## issueLabelCreate\nCreates a new label.\n\n## issueLabels\nAll issue labels.\n\n## comments\nAll comments.\n\n## commentUpdate\nUpdates a comment.\n\n## commentDelete\nDeletes a comment.\n\n## issueLabelUpdate\nUpdates a label.\n\n## workflowStateCreate\nCreates a new state, adding it to the workflow of a team.\n\n## workflowStateArchive\nArchives a state. Only states with issues that have all been archived can be archived.\n\n## teamMembershipCreate\nCreates a new team membership.\n\n## issueRelationCreate\nCreates a new issue relation.\n"
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nThe user wants to make all overdue issues in the Web team on Linear urgent. Let's first read Linear's SKILL.md.\n</thinking>\n"
+          }
+        ]
+      }
+    },
+    {
+      "turn": 2,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -sS https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: Bearer <TOKEN>' -d '{\"query\":\"{ teams { nodes { id name identifier } } }\"}'"
+      },
+      "action": "curl -sS https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: Bearer <TOKEN>' -d '{\"query\":\"{ teams { nodes { id name identifier } } }\"}'",
+      "text": "",
+      "thinking": "The skill description says to use the GraphQL API at https://api.linear.app/graphql, with curl, and a placeholder token `<TOKEN>` (authentication is automatically handled by the proxy).\n\nThings to do:\n1. Find the \"Web\" team.\n2. Find all overdue issues in that team.\n3. Make each of them urgent (priority 2 = \"Urgent\" in Linear: 0 none, 1 low, 2 urgent, 3 high... actually, the order of Linear priorities is 0=No priority, 1=Low, 2=Urgent, 3=High, 4=Critical).\n\nOverdue = targetDate < today (2026-09-30) and the issue is not completed. In Linear's GraphQL, `targetDate` is a date string. We can filter with `targetDate: { lte: \"2026-09-30\" }` — though \"overdue\" typically means past the target date and not done. Let's fetch issues where team is Web, stateType is not DONE, and targetDate < today.\n\nFirst, query teams to get the Web team's ID.\n\nQuery:\n```graphql\nquery {\n  teams { nodes { id name identifier } }\n}\n```\n\nThen:\n```graphql\nquery {\n  issues(filter: { team: { id: { eq: \"...\" } }, state: { type: { neq: DONE } }, targetDate: { lt: \"2026-09-30\" } }, first: 100) {\n    nodes { id identifier priority state { name type } targetDate }\n  }\n}\n```\n\nOverdue: targetDate before today (i.e., strictly before 2026-09-30? If the target date is today and it's not done, you could say it's not yet overdue — it becomes overdue when the deadline has passed). I'll use `lt: \"2026-09-30\"` to mean targetDate is strictly before today. Hmm, but some people might consider today as overdue too. The safer option is: use lte? \"Overdue\" strictly means past the deadline. Use `lt` (before today). Actually, wait — it's 12:05 EDT, so today's deadline hasn't passed yet. Use lt \"2026-09-30\".\n\nAfter that, for each issue, run issueUpdate with priority: 2.\n\nLet's get started. Use a curl with the Authorization header as a placeholder token? The skill says \"authentication is automatically handled by the proxy. Use a placeholder token like <TOKEN> where credentials are needed.\" So I should use a placeholder token in the Authorization header. The proxy will presumably replace it. Let's just use \"Authorization: Bearer <TOKEN>\".\n\nFirst, let's query the teams.",
+      "usage": {
+        "input": 1252,
+        "output": 699,
+        "cacheRead": 7840,
+        "cacheWrite": 0,
+        "reasoningTokens": 625,
+        "totalTokens": 9791,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "status": "success",
+        "stdout": "{\"errors\":[{\"message\":\"Cannot query field 'identifier' on type 'Team'.\",\"locations\":[{\"line\":1,\"column\":27}]}]}"
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nThe skill description says to use the GraphQL API at https://api.linear.app/graphql, with curl, and a placeholder token `<TOKEN>` (authentication is automatically handled by the proxy).\n\nThings to do:\n1. Find the \"Web\" team.\n2. Find all overdue issues in that team.\n3. Make each of them urgent (priority 2 = \"Urgent\" in Linear: 0 none, 1 low, 2 urgent, 3 high... actually, the order of Linear priorities is 0=No priority, 1=Low, 2=Urgent, 3=High, 4=Critical).\n\nOverdue = targetDate < today (2026-09-30) and the issue is not completed. In Linear's GraphQL, `targetDate` is a date string. We can filter with `targetDate: { lte: \"2026-09-30\" }` — though \"overdue\" typically means past the target date and not done. Let's fetch issues where team is Web, stateType is not DONE, and targetDate < today.\n\nFirst, query teams to get the Web team's ID.\n\nQuery:\n```graphql\nquery {\n  teams { nodes { id name identifier } }\n}\n```\n\nThen:\n```graphql\nquery {\n  issues(filter: { team: { id: { eq: \"...\" } }, state: { type: { neq: DONE } }, targetDate: { lt: \"2026-09-30\" } }, first: 100) {\n    nodes { id identifier priority state { name type } targetDate }\n  }\n}\n```\n\nOverdue: targetDate before today (i.e., strictly before 2026-09-30? If the target date is today and it's not done, you could say it's not yet overdue — it becomes overdue when the deadline has passed). I'll use `lt: \"2026-09-30\"` to mean targetDate is strictly before today. Hmm, but some people might consider today as overdue too. The safer option is: use lte? \"Overdue\" strictly means past the deadline. Use `lt` (before today). Actually, wait — it's 12:05 EDT, so today's deadline hasn't passed yet. Use lt \"2026-09-30\".\n\nAfter that, for each issue, run issueUpdate with priority: 2.\n\nLet's get started. Use a curl with the Authorization header as a placeholder token? The skill says \"authentication is automatically handled by the proxy. Use a placeholder token like <TOKEN> where credentials are needed.\" So I should use a placeholder token in the Authorization header. The proxy will presumably replace it. Let's just use \"Authorization: Bearer <TOKEN>\".\n\nFirst, let's query the teams.\n</thinking>\n"
+          }
+        ]
+      }
+    },
+    {
+      "turn": 3,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -sS https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: Bearer <TOKEN>' -d '{\"query\":\"{ teams { nodes { id name key slug } } }\"}'"
+      },
+      "action": "curl -sS https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: Bearer <TOKEN>' -d '{\"query\":\"{ teams { nodes { id name key slug } } }\"}'",
+      "text": "",
+      "thinking": "(Thinking: The identifier field is not available on Team. Use the key or name field instead.)",
+      "usage": {
+        "input": 587,
+        "output": 96,
+        "cacheRead": 8624,
+        "cacheWrite": 0,
+        "reasoningTokens": 21,
+        "totalTokens": 9307,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "status": "success",
+        "stdout": "{\"errors\":[{\"message\":\"Cannot query field 'slug' on type 'Team'.\",\"locations\":[{\"line\":1,\"column\":31}]}]}"
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\n(Thinking: The identifier field is not available on Team. Use the key or name field instead.)\n</thinking>\n"
+          }
+        ]
+      }
+    },
+    {
+      "turn": 4,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -sS https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: Bearer <TOKEN>' -d '{\"query\":\"{ teams { nodes { id name key url } } }\"}'"
+      },
+      "action": "curl -sS https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: Bearer <TOKEN>' -d '{\"query\":\"{ teams { nodes { id name key url } } }\"}'",
+      "text": "",
+      "thinking": "I need to look up the Linear API documentation to understand what fields are available on the Team object, since my initial approach didn't work out.",
+      "usage": {
+        "input": 707,
+        "output": 105,
+        "cacheRead": 8624,
+        "cacheWrite": 0,
+        "reasoningTokens": 30,
+        "totalTokens": 9436,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "status": "success",
+        "stdout": "{\"errors\":[{\"message\":\"Cannot query field 'url' on type 'Team'.\",\"locations\":[{\"line\":1,\"column\":31}]}]}"
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nI need to look up the Linear API documentation to understand what fields are available on the Team object, since my initial approach didn't work out.\n</thinking>\n"
+          }
+        ]
+      }
+    },
+    {
+      "turn": 5,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -sS https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: Bearer <TOKEN>' -d '{\"query\":\"{ teams { nodes { id name key } } }\"}'"
+      },
+      "action": "curl -sS https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: Bearer <TOKEN>' -d '{\"query\":\"{ teams { nodes { id name key } } }\"}'",
+      "text": "",
+      "thinking": "Let's query all the teams with the fields we know exist: id, name, key.",
+      "usage": {
+        "input": 827,
+        "output": 94,
+        "cacheRead": 8624,
+        "cacheWrite": 0,
+        "reasoningTokens": 20,
+        "totalTokens": 9545,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "status": "success",
+        "stdout": "{\"data\":{\"teams\":{\"nodes\":[{\"id\":\"tm-4a\",\"name\":\"Web\",\"key\":\"WEB\"},{\"id\":\"tm-7c\",\"name\":\"Ops\",\"key\":\"OPS\"}]}}}"
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nLet's query all the teams with the fields we know exist: id, name, key.\n</thinking>\n"
+          }
+        ]
+      }
+    },
+    {
+      "turn": 6,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -sS https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: Bearer <TOKEN>' -d '{\"query\":\"{ workflowStates(includeArchived: false) { nodes { id name type teamId } } }\"}'"
+      },
+      "action": "curl -sS https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: Bearer <TOKEN>' -d '{\"query\":\"{ workflowStates(includeArchived: false) { nodes { id name type teamId } } }\"}'",
+      "text": "Found the Web team (`WEB`). Now checking its workflow states and overdue issues:",
+      "thinking": "Found the Web team: id tm-4a. Next, I'll find all the overdue issues within the Web team. Overdue means the dueDate is before the current date (today is 2026-09-30). I'll query issues where teamId is tm-4a and dueDate is before 2026-09-30 (or end of today? \"Overdue\" typically means dueDate < today). I'll exclude completed ones — I need to check the state. Overdue issues that have already been completed shouldn't be marked as urgent. First, let me query the workflowStates to figure out which states are completed/canceled, then I'll query the issues.",
+      "usage": {
+        "input": 171,
+        "output": 383,
+        "cacheRead": 9408,
+        "cacheWrite": 0,
+        "reasoningTokens": 150,
+        "totalTokens": 9962,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "status": "success",
+        "stdout": "{\"errors\":[{\"message\":\"Cannot query field 'teamId' on type 'WorkflowState'. Did you mean 'team'?\",\"locations\":[{\"line\":1,\"column\":65}]}]}"
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nFound the Web team: id tm-4a. Next, I'll find all the overdue issues within the Web team. Overdue means the dueDate is before the current date (today is 2026-09-30). I'll query issues where teamId is tm-4a and dueDate is before 2026-09-30 (or end of today? \"Overdue\" typically means dueDate < today). I'll exclude completed ones — I need to check the state. Overdue issues that have already been completed shouldn't be marked as urgent. First, let me query the workflowStates to figure out which states are completed/canceled, then I'll query the issues.\n</thinking>\nFound the Web team (`WEB`). Now checking its workflow states and overdue issues:"
+          }
+        ]
+      }
+    },
+    {
+      "turn": 7,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -sS https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: Bearer <TOKEN>' -d '{\"query\":\"{ issues(filter: { team: { id: { eq: \\\"tm-4a\\\" } }, dueDate: { lt: \\\"2026-09-30\\\" } }, first: 100) { nodes { id identifier title priority dueDate state { name type } } pageInfo { hasNextPage endCursor } } }\"}'"
+      },
+      "action": "curl -sS https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: Bearer <TOKEN>' -d '{\"query\":\"{ issues(filter: { team: { id: { eq: \\\"tm-4a\\\" } }, dueDate: { lt: \\\"2026-09-30\\\" } }, first: 100) { nodes { id identifier title priority dueDate state { name type } } pageInfo { hasNextPage endCursor } } }\"}'",
+      "text": "",
+      "thinking": "",
+      "usage": null,
+      "observation": {
+        "status": "success",
+        "stdout": "{\"data\":{\"issues\":{\"nodes\":[{\"id\":\"i-c21\",\"identifier\":\"WEB-1\",\"title\":\"Fix broken sitemap links\",\"priority\":3.0,\"dueDate\":\"2025-03-14\",\"state\":{\"name\":\"Todo\",\"type\":\"unstarted\"}},{\"id\":\"i-c22\",\"identifier\":\"WEB-2\",\"title\":\"Cache headers for static assets\",\"priority\":3.0,\"dueDate\":\"2025-11-02\",\"state\":{\"name\":\"In Progress\",\"type\":\"started\"}},{\"id\":\"i-c23\",\"identifier\":\"WEB-3\",\"title\":\"Remove legacy banner\",\"priority\":3.0,\"dueDate\":\"2024-12-01\",\"state\":{\"name\":\"Backlog\",\"type\":\"backlog\"}},{\"id\":\"i-c24\",\"identifier\":\"WEB-4\",\"title\":\"Update footer copyright\",\"priority\":3.0,\"dueDate\":\"2025-02-01\",\"state\":{\"name\":\"Done\",\"type\":\"completed\"}},{\"id\":\"i-c25\",\"identifier\":\"WEB-5\",\"title\":\"Drop IE11 polyfills\",\"priority\":3.0,\"dueDate\":\"2025-02-10\",\"state\":{\"name\":\"Canceled\",\"type\":\"canceled\"}}],\"pageInfo\":{\"hasNextPage\":false,\"endCursor\":\"eyJmaWVsZCI6ICIyMDI2LTA2LTAxVDA5OjAwOjAwIiwgImlkIjogImktYzI1In0=\"}}}}"
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": ""
+          }
+        ]
+      }
+    },
+    {
+      "turn": 8,
+      "tool": "exec",
+      "arguments": {
+        "command": "for id in i-c21 i-c22 i-c23; do curl -sS https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: Bearer <TOKEN>' -d \"{\\\"query\\\":\\\"mutation { issueUpdate(input: { id: \\\\\\\"$id\\\\\\\", priority: 4 }) { success issue { identifier priority state { name } } } }\\\"}\"; echo; done"
+      },
+      "action": "for id in i-c21 i-c22 i-c23; do curl -sS https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: Bearer <TOKEN>' -d \"{\\\"query\\\":\\\"mutation { issueUpdate(input: { id: \\\\\\\"$id\\\\\\\", priority: 4 }) { success issue { identifier priority state { name } } } }\\\"}\"; echo; done",
+      "text": "I found 5 Web issues past their due date, but 3 of them are completed or canceled, so only WEB-1, WEB-2, and WEB-3 are actually overdue. I'll upgrade those three to urgent priority now.",
+      "thinking": "There are 5 Web team issues whose due dates are before today (2026-09-30). However, \"overdue\" should mean incomplete AND past the due date. WEB-4 is \"Done\" (completed) and WEB-5 is \"Canceled\" — these shouldn't be made urgent (since they're not overdue; overdue implies still open).\n\nSo the overdue issues are: WEB-1 (Todo), WEB-2 (In Progress), WEB-3 (Backlog). All have priority 3.0 (in Linear, 3 = high; 4 = urgent).\n\nSet priority to 4 (urgent) for the 3 open issues. Let's update these.",
+      "usage": {
+        "input": 789,
+        "output": 314,
+        "cacheRead": 9408,
+        "cacheWrite": 0,
+        "reasoningTokens": 147,
+        "totalTokens": 10511,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "status": "success",
+        "stdout": "{\"errors\":[{\"message\":\"Field 'id' is not defined by type 'IssueUpdateInput'.\",\"locations\":[{\"line\":1,\"column\":33}]},{\"message\":\"Field 'issueUpdate' argument 'id' of type 'String!' is required, but it was not provided.\",\"locations\":[{\"line\":1,\"column\":12}]}]}\n{\"errors\":[{\"message\":\"Field 'id' is not defined by type 'IssueUpdateInput'.\",\"locations\":[{\"line\":1,\"column\":33}]},{\"message\":\"Field 'issueUpdate' argument 'id' of type 'String!' is required, but it was not provided.\",\"locations\":[{\"line\":1,\"column\":12}]}]}\n{\"errors\":[{\"message\":\"Field 'id' is not defined by type 'IssueUpdateInput'.\",\"locations\":[{\"line\":1,\"column\":33}]},{\"message\":\"Field 'issueUpdate' argument 'id' of type 'String!' is required, but it was not provided.\",\"locations\":[{\"line\":1,\"column\":12}]}]}"
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nThere are 5 Web team issues whose due dates are before today (2026-09-30). However, \"overdue\" should mean incomplete AND past the due date. WEB-4 is \"Done\" (completed) and WEB-5 is \"Canceled\" — these shouldn't be made urgent (since they're not overdue; overdue implies still open).\n\nSo the overdue issues are: WEB-1 (Todo), WEB-2 (In Progress), WEB-3 (Backlog). All have priority 3.0 (in Linear, 3 = high; 4 = urgent).\n\nSet priority to 4 (urgent) for the 3 open issues. Let's update these.\n</thinking>\nI found 5 Web issues past their due date, but 3 of them are completed or canceled, so only WEB-1, WEB-2, and WEB-3 are actually overdue. I'll upgrade those three to urgent priority now."
+          }
+        ]
+      }
+    },
+    {
+      "turn": 9,
+      "tool": "exec",
+      "arguments": {
+        "command": "for id in i-c21 i-c22 i-c23; do curl -sS https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: Bearer <TOKEN>' -d \"{\\\"query\\\":\\\"mutation { issueUpdate(id: \\\\\\\"$id\\\\\\\", input: { priority: 4 }) { success issue { identifier priority state { name } } } }\\\"}\"; echo; done"
+      },
+      "action": "for id in i-c21 i-c22 i-c23; do curl -sS https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: Bearer <TOKEN>' -d \"{\\\"query\\\":\\\"mutation { issueUpdate(id: \\\\\\\"$id\\\\\\\", input: { priority: 4 }) { success issue { identifier priority state { name } } } }\\\"}\"; echo; done",
+      "text": "",
+      "thinking": "The id is a top-level argument, not inside the input. Fix: issueUpdate(id: \"...\", input: { priority: 4 }).",
+      "usage": {
+        "input": 399,
+        "output": 147,
+        "cacheRead": 10192,
+        "cacheWrite": 0,
+        "reasoningTokens": 30,
+        "totalTokens": 10738,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "status": "success",
+        "stdout": "{\"data\":{\"issueUpdate\":{\"success\":true,\"issue\":{\"identifier\":\"WEB-1\",\"priority\":4.0,\"state\":{\"name\":\"Todo\"}}}}}\n{\"data\":{\"issueUpdate\":{\"success\":true,\"issue\":{\"identifier\":\"WEB-2\",\"priority\":4.0,\"state\":{\"name\":\"In Progress\"}}}}}\n{\"data\":{\"issueUpdate\":{\"success\":true,\"issue\":{\"identifier\":\"WEB-3\",\"priority\":4.0,\"state\":{\"name\":\"Backlog\"}}}}}"
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nThe id is a top-level argument, not inside the input. Fix: issueUpdate(id: \"...\", input: { priority: 4 }).\n</thinking>\n"
+          }
+        ]
+      }
+    },
+    {
+      "turn": 10,
+      "tool": null,
+      "text": "Done. 3 open Web issues were overdue and are now urgent:\n\n- **WEB-1** — Fix broken sitemap links (was due 2025-03-14, Todo)\n- **WEB-2** — Cache headers for static assets (was due 2025-11-02, In Progress)\n- **WEB-3** — Remove legacy banner (was due 2024-12-01, Backlog)\n\nI skipped WEB-4 and WEB-5 — they're also past due but already Done/Canceled, so no point bumping their priority.",
+      "thinking": "Done. All 3 open issues that are past their due date have been marked as urgent (priority 4). WEB-4 (completed) and WEB-5 (cancelled) were excluded.",
+      "usage": {
+        "input": 628,
+        "output": 176,
+        "cacheRead": 10192,
+        "cacheWrite": 0,
+        "reasoningTokens": 40,
+        "totalTokens": 10996,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nDone. All 3 open issues that are past their due date have been marked as urgent (priority 4). WEB-4 (completed) and WEB-5 (cancelled) were excluded.\n</thinking>\nDone. 3 open Web issues were overdue and are now urgent:\n\n- **WEB-1** — Fix broken sitemap links (was due 2025-03-14, Todo)\n- **WEB-2** — Cache headers for static assets (was due 2025-11-02, In Progress)\n- **WEB-3** — Remove legacy banner (was due 2024-12-01, Backlog)\n\nI skipped WEB-4 and WEB-5 — they're also past due but already Done/Canceled, so no point bumping their priority."
+          }
+        ]
+      }
+    }
+  ],
+  "followup_steps": []
+}

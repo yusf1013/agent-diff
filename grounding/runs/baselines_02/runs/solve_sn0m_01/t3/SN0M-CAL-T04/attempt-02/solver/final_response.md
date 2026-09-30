@@ -1,0 +1,1 @@
+Done ✅ I set the description on your Weekly 1:1 with Priya (Mon, Jun 19, 9:00 AM) to "Talk through the promotion packet." Since it's a recurring event, the description now applies to all future instances.
