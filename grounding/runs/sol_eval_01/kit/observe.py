@@ -2,6 +2,11 @@
 infrastructure errors, attempts, timings, tool calls, tokens (input, cached, output, reasoning), compactions, visible
 text, and awareness remarks. Reads the run records only, never a verdict or a mechanical triage. No model calls.
 
+Also: the attempts Sol's retry pass replaced, by kind (a provider stall, when the error names a stall or the attempt
+was reclassified as one; otherwise the R3 provider error); and memory_search for both agents on the same trials
+(calls, trials calling it, trials where a call failed with "belongs to agent main", and final answers that mention
+memory as unavailable).
+
 Awareness copies openclaw_eval_01/test_awareness.py's pattern and scan (`AWARE`, `texts`). Sol's steps carry no
 thinking: its visible words are its final answer and occasional reasoning summaries. So Qwen's rate is given twice
 on the same tests, over all its words (as the Qwen round counted it) and over its final answers only, the one
@@ -86,6 +91,32 @@ def aware(attempt: Path) -> dict:
             "steps": len(record.get("steps", []))}
 
 
+def memory_search(attempt: Path) -> dict:
+    """Whether the attempt called memory_search, whether a call failed on the agent store's identity, and whether the
+    final answer mentions memory as unavailable."""
+    record = bundle.solver_record(attempt)
+    steps = [st for st in record.get("steps", []) if st.get("tool") == "memory_search"]
+    final_path = attempt / "solver" / "final_response.md"
+    final = final_path.read_text() if final_path.exists() else ""
+    return {"calls": len(steps), "called": bool(steps),
+            "failed": any("belongs to agent main" in str(st.get("observation")) for st in steps),
+            "final_mentions": "emory" in final and ("unavailable" in final or "lookup" in final.lower())}
+
+
+def memory_totals(rows: list[dict]) -> dict:
+    return {"calls": sum(r["calls"] for r in rows), "trials_calling": sum(r["called"] for r in rows),
+            "trials_failing": sum(r["failed"] for r in rows),
+            "final_answers_mentioning_memory": sum(r["final_mentions"] for r in rows)}
+
+
+def replaced_kind(attempt: Path) -> str:
+    s = json.loads((attempt / "execution_summary.json").read_text())
+    error = s.get("error") or ""
+    if "stall" in error or s.get("reclassified_from"):
+        return "provider stall"
+    return "provider error (R3)" if "R3" in error else error[:40]
+
+
 def dist(values: list) -> dict:
     v = sorted(x for x in values if x is not None)
     if not v:
@@ -117,10 +148,13 @@ def main():
         if not (RUNS / name).exists():
             continue
         sol_rows, qwen_rows, aw = [], [], {"sol": [], "qwen_all": [], "qwen_final": [], "pairs": 0}
-        sol_visible, sol_steps = 0, 0
+        sol_visible, sol_steps, replaced, memory = 0, 0, [], {"sol": [], "qwen_same_tests": []}
         for trial, case_id, attempt, attempts in sol_attempts(name):
             row = {**usage_row(attempt), "attempts": len(attempts), "trial": f"{trial}/{case_id}"}
             sol_rows.append(row)
+            replaced += [{"trial": f"{trial}/{case_id}", "attempt": a.name, "kind": replaced_kind(a)}
+                         for a in attempts[:-1]]
+            memory["sol"].append(memory_search(attempt))
             case = json.loads((attempt / "case.json").read_text())
             sixb = case_id in suites["regular_6b"] if not mode else \
                 (STUDY.parent / "completion_01" / "suite" / "units" / case["domain"] / f"{case_id}.json").exists()
@@ -135,6 +169,7 @@ def main():
             if a["all"]:
                 aw["sol"].append({"trial": f"{trial}/{case_id}", "hits": a["all"]})
             if q is not None and json.loads((q / "execution_summary.json").read_text()).get("status") == "completed":
+                memory["qwen_same_tests"].append(memory_search(q))
                 aw["pairs"] += 1
                 qa = aware(q)
                 if qa["all"]:
@@ -147,6 +182,8 @@ def main():
             "infrastructure_errors": [{"trial": r["trial"], "error": r["error"], "attempts": r["attempts"]}
                                       for r in sol_rows if r["status"] != "completed"],
             "sol_steps_with_visible_text": f"{sol_visible}/{sol_steps}",
+            "replaced_attempts": {"by_kind": dict(Counter(r["kind"] for r in replaced)), "attempts": replaced},
+            "memory_search": {who: memory_totals(rows) for who, rows in memory.items()},
             "awareness": {"sol_trials_remarking": f"{len(aw['sol'])}/{done}",
                           "sol_words": dict(Counter(h["match"].lower() for r in aw["sol"] for h in r["hits"])),
                           "qwen_trials_remarking_any_text": f"{len(aw['qwen_all'])}/{aw['pairs']}",

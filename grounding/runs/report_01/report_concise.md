@@ -212,7 +212,7 @@ Absence variants remove the probe's permission to report no match. Underspecifie
 condition or introduce an additional full match. The correct response is to report absence, or seek clarification
 before changing a record. Policy units are separate cases, even when derived from the same parent scenario.
 
-Muse's writer and reader cost **$36.74 at list prices ($2.08 billed)** for 52 accepted scenarios and 292 valid
+Muse's writer and reader cost **$36.74 at list prices** for 52 accepted scenarios and 292 valid
 regular cases: **$0.71 per accepted scenario**, or **$0.126 per valid regular case**. These are generation costs;
 §12 estimates the agent-under-test inference separately. Source: [costs.json](numbers/costs.json).
 
@@ -372,7 +372,8 @@ GPT-6.1 Sol ran the Muse-written half of the suite on OpenClaw, with the same ju
 ten-minute budget, three executions per case. It ran **496 of the 513 Muse cases** (282 regular, 123 absence and 91
 underspecified): **1,488 executions**, plus 3 of a probe that the rulings of 2026-09-30 left out after it ran. The Qwen
 columns below are its final executions of the same cases, so they differ from Tables 7–12, which cover all 998 cases.
-Source: [sol_eval_01](../sol_eval_01/README.md), Results, and the `eval/` files named under each table.
+Source: [kit/sol.py](kit/sol.py) → [numbers/sol.json](numbers/sol.json), which copies every number here from
+the `eval/` files of [sol_eval_01](../sol_eval_01/README.md); the setup facts come from its README.
 
 **What differs from the Qwen round:**
 
@@ -390,8 +391,8 @@ Source: [sol_eval_01](../sol_eval_01/README.md), Results, and the `eval/` files 
 - **Infrastructure.** 17 failed attempts in 16 executions were re-run and never scored: 8 provider stalls and 9
   other provider errors.
 
-**Table 12a. Regular cases: Sol and Qwen on the same 282.** Source: `sol_eval_01/eval/side_by_side_regular.json`
-(`groups`, `trials`).
+**Table 12a. Regular cases: Sol and Qwen on the same 282.** Source: [numbers/sol.json](numbers/sol.json),
+`regular` (`groups`, `trials`).
 
 | Group | Cases | Exposing: Sol | Exposing: Qwen | Facts @3: Sol | Facts @3: Qwen | Facts @1: Sol | Facts @1: Qwen |
 |---|---:|---:|---:|---:|---:|---:|---:|
@@ -424,8 +425,8 @@ only.
   failures (misread 8, saw the mismatch and acted 1). Qwen mostly saw the mismatch and acted anyway (79 of 145).
 - **Voids.** Sol's 3 void executions come from a Linear replica defect.
 
-**Table 12b. The eight policy cells on the same cases.** Source: `sol_eval_01/eval/policy_decisions.json` (`cells`
-→ `sol`, `qwen_same_units`): RQ6's fixed rule on the Muse-parent policy cases, without G4-LIN-08's. Linear
+**Table 12b. The eight policy cells on the same cases.** Source: [numbers/sol.json](numbers/sol.json), `policy`
+(`cells`, `totals`, `facts`): RQ6's fixed rule on the Muse-parent policy cases, without G4-LIN-08's. Linear
 underspecified counts its duplicate pair once, as in Table 11.
 
 | Service and mode | Cases | Sol: failing / usable | Sol: rate [p10, p90] | Sol: decision | Qwen: failing / usable | Qwen: rate [p10, p90] | Qwen: decision |
@@ -458,7 +459,8 @@ Per fact, on the same cases:
 
 12 of Sol's 19 absence facts and all 5 of its underspecified facts have no regular exposure.
 
-**Table 12c. Judge v2 against blind labels on Sol's executions.** Source: `sol_eval_01/eval/judge_accuracy.json`.
+**Table 12c. Judge v2 against blind labels on Sol's executions.** Source: [numbers/sol.json](numbers/sol.json),
+`judge`.
 180 executions were drawn before the runs, 45 per set, and labelled from the evidence before any verdict was read.
 4 never ran, because their cases hold decoys that the rulings of 2026-09-30 made flawed.
 
@@ -476,7 +478,8 @@ Per fact, on the same cases:
   a verdict.
 - **Few failures.** Only 7 labelled executions are failures, so these figures rest on few cases.
 
-**Speed and cost.** Sources: `sol_eval_01/eval/observations.json`, `judge_cost.json`.
+**Speed and cost.** Source: [numbers/sol.json](numbers/sol.json), `speed_and_tokens`, `judge_cost` and
+`awareness`.
 
 | | Sol | Qwen, same cases |
 |---|---:|---:|
@@ -594,7 +597,7 @@ of 12 valid cases per service from **all 292 Muse regular cases**, using final o
 | Policy facts failing @1, all decoy families | 3 | 0 | 2 | 0 | — |
 | Own oracle precision, corrected for harness errors | 0.54 | 0 (21 false positives) | 0.27 | 0.03 | See RQ5 |
 | Own oracle recall, same correction | 0.70 | Undefined: no true failures | 1.00 | 1.00 | See RQ5 |
-| Generation cost for 48 tests: list (billed) | $0.51 ($0.03) | $1.20 ($0.06) | $0.67 ($0.03) | $1.14 ($0.06) | $6.04 ($0.34) |
+| Generation cost for 48 tests, list price | $0.51 | $1.20 | $0.67 | $1.14 | $6.04 |
 
 The coverage row applies one rule to both sides: a fact counts when a valid test has an F1–F8 decoy for it
 (baselines_01's rule; in this table, "designated" means F1–F8). The F0 rule (RQ2) would also credit plain decoys
@@ -739,6 +742,9 @@ may tokenize differently, make different numbers of calls and achieve different 
 not free. A dollar total requires the allocated GPU time and hardware or rental cost. The hosted-Qwen row is only
 an API-equivalent estimate. Generation and judge totals across all historical development runs cannot be treated
 as exact costs of the final 998 cases.
+
+**Every price in this report is a list price.** The actual Muse spend ran under Muse's contributor pricing, at about
+6.6% of list, and is recorded in [numbers/costs.json](numbers/costs.json) and the studies' READMEs.
 
 ## 13. Remaining measurements
 
