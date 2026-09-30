@@ -12,8 +12,12 @@ report_01, other studies, the replicas or the frozen pipeline.
   pilots on existing evidence (no model calls), the projection plan (Agent-Diff first; the ClawEnvKit arm sized), the
   proposals for the policy, several-match and boundary baselines. [claims.md](claims.md) quotes every claim about
   another work with its source and fetch date.
+- **Phase 2 (the lead's assignment, no model calls): the four arms that need no decision.**
+  - Done: [P1](p1/README.md), 350 runnable mutated variants; [B2](b2/README.md), the abstention suites projected;
+    [S1](s1/README.md), the shortcut check and the omission review on Agent-Diff's seeds.
+  - In progress: B1 (mask an operation).
 - **Running:** nothing.
-- **Blocked:** nothing. Every proposed arm waits for the PI's decision.
+- **Blocked:** nothing. Running any arm waits for the PI's decision on budget.
 
 ## The investigation question
 
