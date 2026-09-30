@@ -153,3 +153,9 @@ $L grounding.runs.sol_eval_01.kit.compare_qwen; $L grounding.runs.sol_eval_01.ki
   runner reads roadmap_01/known_defects.json per attempt, and the file briefly held merge-conflict markers. Those
   jobs left no attempt folders; the 145 completed attempts are sound. The lead re-ran the missing jobs
   (`runs/run_regular_6b_rest.sh`, concurrency 6, beside the policy pass). `regular_6b` is judged only when complete.
+- **02:10, a slip in blinding, recorded.** My first run of kit/judge_accuracy.py compared the absence labels
+  written so far with the verdicts the early judge had just produced.
+  - It printed only an aggregate: 2 of my 8 absence labels had verdicts, and both agreed.
+  - Those 8 labels were already written. The initial-label file cannot be overwritten, so they stayed as they were.
+  - No verdict on an unlabelled trial was shown.
+  - The script now compares a set only after all its blind labels are written and locked (sha256).
