@@ -330,7 +330,7 @@ accepted scenario at list price in Phase 4 and $0.82 in 6b ($0.035 and $0.046 bi
 
 ## RQ4. What failures do the tests expose in a real agent harness?
 
-The 565 valid regular tests ran on OpenClaw with the self-hosted Qwen3.8-27B, 3 trials each: Box's tests from
+The 563 valid regular tests ran on OpenClaw with the self-hosted Qwen3.8-27B, 3 trials each: Box's tests from
 `full_02`, the other services' from the opaque-id re-run `full_03`, and 6b's from `full_04`. Every verdict is judge
 v2's (RQ5 measures it), under the PI's rulings and the 10-minute budget.
 
@@ -339,29 +339,29 @@ v2's (RQ5 measures it), under the PI's rulings and the 10-minute budget.
 
 | Service | Tests | Tests exposing a fact | Facts exposed, detect@3 | detect@1 | Facts covered | Share of covered facts exposed (detect@3) |
 |---|---:|---:|---:|---:|---:|---:|
-| Box | 139 | 39 | 27 | 21 | 56 | 48% |
+| Box | 137 | 35 | 26 | 20 | 56 | 46% |
 | Calendar | 103 | 34 | 17 | 13 | 34 | 50% |
 | Linear | 213 | 47 | 31 | 19 | 80 | 39% |
 | Slack | 110 | 23 | 13 | 8 | 34 | 38% |
-| **All** | **565** | **143 (25%)** | **88** | **61** | **204** | **43%** |
+| **All** | **563** | **139 (25%)** | **87** | **60** | **204** | **43%** |
 
 **Table 8. Exposure by test form, writer and kind of fact.** Same source.
 
 | | Tests | Exposing | Facts, detect@3 (detect@1) |
 |---|---:|---:|---:|
 | Cover (target present) | 100 | 12 (12%) | 12 (6) |
-| Probe (one near miss, absence permitted) | 363 | 105 (29%) | 80 (56) |
-| Fact probe (all near misses of a fact) | 102 | 26 (25%) | 26 (14) |
+| Probe (one near miss, absence permitted) | 361 | 103 (29%) | 79 (55) |
+| Fact probe (all near misses of a fact) | 102 | 24 (24%) | 24 (12) |
 | Sonnet R | 104 | 24 (23%) | 19 of 37 covered (13) |
 | Sonnet P | 78 | 18 (23%) | 13 of 40 (7) |
 | Sonnet P v2 | 89 | 19 (21%) | 15 of 44 (10) |
 | Muse Phase 4 | 158 | 47 (30%) | 26 of 58 (20) |
-| Muse 6b | 136 | 35 (26%) | 23 of 69 (14) |
+| Muse 6b | 134 | 31 (23%) | 22 of 69 (13) |
 
 | Kind of fact | Covered | Exposed, detect@3 | detect@1 |
 |---|---:|---:|---:|
 | A attribute | 117 | 59 (50%) | 42 |
-| R relationship | 48 | 20 (42%) | 13 |
+| R relationship | 48 | 19 (40%) | 12 |
 | H hierarchy | 5 | 1 | 1 |
 | B binding | 22 | 4 (18%) | 2 |
 | D derived | 12 | 4 (33%) | 3 |
@@ -369,12 +369,12 @@ v2's (RQ5 measures it), under the PI's rulings and the 10-minute budget.
 - **Probes carry the exposure.** With the target present, the agent picks the right record far more often: 12% of
   covers expose a fact against 29% of probes. Covers are still needed for credit on 2 facts (RQ2) and test the
   write itself.
-- **By near-miss family** (probes): designated substitutes 88 of 282 (31%) against plain F0 near misses 17 of 81
-  (21%). F8 partial identity (a similar name, a shared prefix) exposes most: 25 of 52 probes (48%); then F1 sibling
+- **By near-miss family** (probes): designated substitutes 86 of 280 (31%) against plain F0 near misses 17 of 81
+  (21%). F8 partial identity (a similar name, a shared prefix) exposes most: 24 of 51 probes (47%); then F1 sibling
   role or attribute 34 of 98 (35%), F7 neighbouring value 13 of 50 (26%), F6 representation 5 of 16, F2 indirection
-  6 of 32 (19%), F5 split binding 4 of 28 (14%).
-- **Trials:** of 1,695, 267 fail and count (16%), 1,348 pass, 52 were ended by the 10-minute budget (no exposure),
-  14 failed only on flawed near misses (not counted) and 14 are void.
+  5 of 31 (16%), F5 split binding 4 of 28 (14%).
+- **Trials:** of 1,689, 255 fail and count (15%), 1,348 pass, 52 were ended by the 10-minute budget (no exposure),
+  20 failed only on flawed near misses (not counted) and 14 are void.
 
 **Opaque ids matter.** Before the final runs, the Calendar, Linear and Slack tests had seed ids that could name a
 record's role. On the same 333 tests, with the same rules and judge, the opaque-id re-run exposes more: 84 tests
