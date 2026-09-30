@@ -2,6 +2,7 @@
 sample is labelled by hand while the judge runs).
 
     python grounding/runs/fact_coverage_02/launch.py grounding.runs.sol_eval_01.kit.judge_trials SET [--add-retried]
+    python ... judge_trials policy_absence|policy_underspecified --partial   # the trials ended so far, judged early
 
 - **Regular sets** use autogen_02's `phase4 select` unchanged (`judge.select_run` with judge2's triage: every trial
   that is not mechanically clean, 20% of the clean ones, seed 7) plus every trial of the blind sample, as the Qwen
@@ -13,6 +14,10 @@ sample is labelled by hand while the judge runs).
 
 Writes eval/judge_<SET>.trials.json (the list judge2 `run` reads) and eval/judge_<SET>.selection.json (counts and the
 trials left out, no outcomes).
+
+`--partial` (policy sets only, where every trial is judged anyway) writes eval/judge_<SET>.partial-<HHMM>.trials.json:
+the trials whose latest attempt has ended well so far, to judge while the run goes on. judge2 caches a verdict per
+attempt, so the final run over the full list judges only what is new.
 """
 from __future__ import annotations
 
@@ -56,6 +61,19 @@ def select(name: str) -> list[dict]:
 def main():
     name = sys.argv[1]
     run_dir = (STUDY / "runs" / name).resolve()
+    if "--partial" in sys.argv:
+        if not name.startswith("policy"):
+            raise SystemExit("--partial is for the policy sets, whose every trial is judged")
+        from datetime import datetime
+        items = []
+        for item in judge2.select([run_dir]):
+            attempt = v1.latest(run_dir, item["trial"], item["case_id"])
+            if not ended_badly(attempt):
+                items.append({**item, "attempt_at_selection": attempt.name})
+        out = EVAL / f"judge_{name}.partial-{datetime.now():%H%M}.trials.json"
+        out.write_text(json.dumps(items, indent=1) + "\n")
+        print(f"{len(items)} ended trials -> {out.name}")
+        return
     trials_path, record_path = EVAL / f"judge_{name}.trials.json", EVAL / f"judge_{name}.selection.json"
     if "--add-retried" in sys.argv:
         items = json.loads(trials_path.read_text())
