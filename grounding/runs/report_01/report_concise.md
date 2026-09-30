@@ -278,8 +278,8 @@ The final suite has **2,139 saved LLM verdicts**, of which 310 have retained bli
 handles the other 879 executions; the LLM also audits a sample of mechanically clean executions.
 
 **A second reference review: blind_review_01.** Codex labelled 200 of the 2,705 final executions that had no earlier
-label (seeded, stratified by service and form; 185 distinct cases), with the PI deciding 12 interpretation
-questions, and locked the labels before seeing any verdict or mechanical score. **These are AI reference labels, not
+label (seeded, stratified by service and form; 185 distinct cases), with PI decisions affecting 12 of them,
+and locked the labels before seeing any verdict or mechanical score. **These are AI reference labels, not
 a second human annotator.** The pipeline (judge v2 where it read the execution, mechanical triage otherwise) agrees
 with them on **186 of 190** executions both call non-void: 68 TP, 4 FP, 0 FN, 118 TN. Judge v2 alone agrees on 119
 of 123 and triage alone on 67 of 67 (all passes). Exposed facts agree on all 68 joint failures. The 4 false
