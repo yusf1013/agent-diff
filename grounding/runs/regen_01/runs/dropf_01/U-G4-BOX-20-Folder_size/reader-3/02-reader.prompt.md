@@ -1,0 +1,31 @@
+Step 2. These are all the records in the service:
+
+### box_folders (9)
+{"id": "0", "type": "folder", "name": "All Files", "owned_by_id": "30000000001", "item_status": "active", "size": 0}
+{"id": "8100", "type": "folder", "name": "Design Archive", "parent_id": "0", "owned_by_id": "30000000001", "created_by_id": "30000000001", "modified_by_id": "30000000001", "item_status": "active", "size": 0, "tags": "[]", "collections": "[]", "created_at": "2026-06-01T09:00:00+00:00", "modified_at": "2026-06-01T09:00:00+00:00"}
+{"id": "8201", "type": "folder", "name": "Launch pack – final", "parent_id": "8100", "owned_by_id": "30000000001", "created_by_id": "30000000001", "modified_by_id": "30000000001", "item_status": "active", "size": 4718592, "tags": "[]", "collections": "[]", "created_at": "2026-03-02T10:00:00+00:00", "modified_at": "2026-05-14T15:30:00+00:00", "shared_link": "{\"url\": \"https://app.box.com/s/8201\", \"access\": \"company\", \"effective_access\": \"company\"}"}
+{"id": "8202", "type": "folder", "name": "Launch pack – press", "parent_id": "8100", "owned_by_id": "30000000001", "created_by_id": "30000000001", "modified_by_id": "30000000001", "item_status": "active", "size": 4613734, "tags": "[]", "collections": "[]", "created_at": "2026-03-03T10:00:00+00:00", "modified_at": "2026-05-14T11:00:00+00:00", "shared_link": "{\"url\": \"https://app.box.com/s/8202\", \"access\": \"company\", \"effective_access\": \"company\"}"}
+{"id": "8203", "type": "folder", "name": "Launch pack – internal", "parent_id": "8100", "owned_by_id": "30000000001", "created_by_id": "30000000001", "modified_by_id": "30000000001", "item_status": "active", "size": 4718592, "tags": "[]", "collections": "[]", "created_at": "2026-03-04T10:00:00+00:00", "modified_at": "2026-05-14T12:00:00+00:00"}
+{"id": "8204", "type": "folder", "name": "Launch pack – teaser", "parent_id": "8100", "owned_by_id": "30000000001", "created_by_id": "30000000001", "modified_by_id": "30000000001", "item_status": "active", "size": 4718592, "tags": "[]", "collections": "[]", "created_at": "2026-05-14T09:00:00+00:00", "modified_at": "2026-05-20T10:00:00+00:00", "shared_link": "{\"url\": \"https://app.box.com/s/8204\", \"access\": \"company\", \"effective_access\": \"company\"}"}
+{"id": "8205", "type": "folder", "name": "Launch pack – recap", "parent_id": "8100", "owned_by_id": "30000000001", "created_by_id": "30000000001", "modified_by_id": "30000000001", "item_status": "active", "size": 4718592, "tags": "[]", "collections": "[]", "created_at": "2026-03-05T10:00:00+00:00", "modified_at": "2026-05-13T10:00:00+00:00", "shared_link": "{\"url\": \"https://app.box.com/s/8205\", \"access\": \"company\", \"effective_access\": \"company\"}"}
+{"id": "8206", "type": "folder", "name": "Old launch drafts", "parent_id": "8100", "owned_by_id": "30000000001", "created_by_id": "30000000001", "modified_by_id": "30000000001", "item_status": "active", "size": 1234567, "tags": "[]", "collections": "[]", "created_at": "2026-02-01T10:00:00+00:00", "modified_at": "2026-04-01T10:00:00+00:00"}
+{"id": "8300", "type": "folder", "name": "Marketing", "parent_id": "0", "owned_by_id": "30000000001", "created_by_id": "30000000001", "modified_by_id": "30000000001", "item_status": "active", "size": 0, "tags": "[]", "collections": "[]", "created_at": "2026-06-01T09:00:00+00:00", "modified_at": "2026-06-01T09:00:00+00:00"}
+### box_users (8)
+{"id": "30000000001", "type": "user", "name": "Jordan Lee", "login": "jordan.lee@northwind.example", "status": "active", "role": "admin", "created_at": "2025-01-10T00:00:00Z", "modified_at": "2025-01-10T00:00:00Z"}
+{"id": "30000000002", "type": "user", "name": "Maya Chen", "login": "maya.chen@northwind.example", "status": "active", "role": "user", "created_at": "2025-01-10T00:00:00Z", "modified_at": "2025-01-10T00:00:00Z"}
+{"id": "30000000003", "type": "user", "name": "Maya Lopez", "login": "maya.lopez@northwind.example", "status": "active", "role": "user", "created_at": "2025-01-10T00:00:00Z", "modified_at": "2025-01-10T00:00:00Z"}
+{"id": "30000000004", "type": "user", "name": "Leo Park", "login": "leo.park@northwind.example", "status": "active", "role": "user", "created_at": "2025-01-10T00:00:00Z", "modified_at": "2025-01-10T00:00:00Z"}
+{"id": "30000000005", "type": "user", "name": "Dana Whitfield", "login": "dana.whitfield@northwind.example", "status": "active", "role": "user", "created_at": "2025-01-10T00:00:00Z", "modified_at": "2025-01-10T00:00:00Z"}
+{"id": "30000000006", "type": "user", "name": "Priya Nair", "login": "priya.nair@northwind.example", "status": "active", "role": "user", "created_at": "2025-01-10T00:00:00Z", "modified_at": "2025-01-10T00:00:00Z"}
+{"id": "30000000007", "type": "user", "name": "Omar Haddad", "login": "omar.haddad@northwind.example", "status": "active", "role": "user", "created_at": "2025-01-10T00:00:00Z", "modified_at": "2025-01-10T00:00:00Z"}
+{"id": "30000000008", "type": "user", "name": "Sam Rivera", "login": "sam.rivera@northwind.example", "status": "active", "role": "user", "created_at": "2025-01-10T00:00:00Z", "modified_at": "2025-01-10T00:00:00Z"}
+
+Use your own conditions from step 1 as the author's conditions, with these ids:
+- r1: record is a folder, not a file
+- r2: folder is named Launch pack
+- r3: folder is shared, not private
+- r4: folder is located in Design Archive
+- r5: folder was last modified on May 14
+
+The candidate records are the rows of `box_folders`: 0, 8100, 8201, 8202, 8203, 8204, 8205, 8206, 8300.
+For every candidate, give the ids of the conditions it fails under the careful reading (an empty list if it meets all of them), whether a careful colleague could still argue that it meets the request (contestable), and a short note. Then say whether the conditions faithfully capture the request as you read it in step 1 (and what differs). For each ambiguity you listed, say whether a careful reader would genuinely be unsure which reading was meant, and whether the readings select different candidates. Say whether the request reads like something a real user would write, without hints that only a test would contain. Finally, say whether the request refers to one specific record, as "the ..." does (asks_for_one: true), as opposed to allowing any record of a kind ("a ...") or asking for several (asks_for_one: false), and why.

@@ -6,8 +6,12 @@ report_01 credits to the Sonnet half. No model calls; plain python3 is enough.
 A fact is covered when an accepted scenario (cases.py's choice) declares a near miss on it that my review
 (eval/review.json) does not rule flawed. Every near miss is held by its scenario's cover, which the derivation always
 keeps (report_01 credits two facts through covers alone), so a probe the witness check drops does not remove the
-fact. "Designated" means a family F1 to F8; F0 is a plain different value (report_01's F0 counting rule is open
-with the PI).
+fact. "Designated" means a family F1 to F8; F0 is a plain different value.
+
+**Credit follows the F0 rule** (roadmap, decisions of 2026-09-29): a fact is credited through its designated near miss
+(F1 to F8); a plain near miss (F0) earns credit only where the domain model names no alternative (an empty
+`designated_substitutes` in autogen_01's facts.json), and for A:Cycle.number and A:Message.message_text, whose lures
+the 2026-09-28 rulings make flawed.
 """
 from __future__ import annotations
 
@@ -19,6 +23,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 from grounding.runs.regen_01.cases import accepted  # noqa: E402  (one rule for which attempt a brief uses)
 
 HERE = Path(__file__).resolve().parent
+FACTS = HERE.parent / "autogen_01" / "inputs"
+F0_VALID = {("linear", "A:Cycle.number"), ("slack", "A:Message.message_text")}  # their lures are ruled flawed
 REPORT = HERE.parent / "report_01" / "numbers" / "concise.json"
 
 
@@ -44,11 +50,17 @@ def main():
     for key in covered:
         flawed_only.pop(key, None)
     designated = {k for k, fam in covered.items() if any(f != "F0" for f in fam)}
+    no_alternative = {(d, x["id"]) for d in ("box", "calendar", "linear", "slack")
+                      for x in json.loads((FACTS / d / "facts.json").read_text())["facts"]
+                      if not x.get("designated_substitutes")}
+    credited = designated | {k for k in covered if k in no_alternative or k in F0_VALID}
     result = {
         "briefs": len(briefs), "accepted": sorted(s for s, v in status.items() if v == "accepted"),
         "not_accepted": sorted(s for s, v in status.items() if v != "accepted"),
-        "covered": len(covered), "covered_designated": len(designated),
+        "covered": len(covered), "covered_designated": len(designated), "credited_f0_rule": len(credited),
         "covered_f0_only": sorted(f"{d} {f}" for d, f in covered if (d, f) not in designated),
+        "f0_only_not_credited": sorted(f"{d} {f}" for d, f in set(covered) - credited),
+        "brief_facts_credited": len(brief_facts & credited),
         "brief_facts": len(brief_facts), "brief_facts_covered": len(brief_facts & set(covered)),
         "brief_facts_uncovered": sorted(f"{d} {f}" for d, f in brief_facts - set(covered)),
         "sonnet_credited": len(sonnet), "sonnet_credited_covered": len(sonnet & set(covered)),

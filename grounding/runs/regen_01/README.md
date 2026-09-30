@@ -9,9 +9,9 @@ Session "regen", started by the lead session ("RoadMap specialist") from the bri
   G4-SLK-18); $25.45 at list price, $1.50 billed. **All 33 reviewed** before any run: 24 valid, 5 weak but valid, 4
   flawed but usable; 5 of 130 near misses flawed (now in `roadmap_01/known_defects.json` on this branch), 7 valid but
   borderline (flagged). Coverage: 74 of the briefs' 82 facts, 72 of Sonnet's 81 credited facts (below).
-- **Running:** the drop-F derivation (`runs/dropf_01`, 33 scenarios, one job per fact).
+- **Running:** the drop-F derivation (`runs/dropf_01`, 33 scenarios, 77 jobs) and, with the lead's yes, a second
+  draw of the two rejected briefs (`runs/gen_04`).
 - **Next:** my read of every accepted variant; then the suite, the units and the cases folders; the blind sample.
-- **Asked of the lead:** a second draw for the two rejected briefs (below, "Coverage").
 - **Blocked:** nothing. The runs on OpenClaw wait for the lead's word that the self-hosted Qwen is up.
 
 ## The question
@@ -137,6 +137,18 @@ to prefer them. My review applies the PI's rulings to whatever comes back.
 
 ## Settled with the lead (2026-09-30)
 
+- **Second draws** for the two rejected briefs (G4-LIN-30, G4-SLK-18): one each, run `gen_04`, counted as attempts.
+  No draw for the two facts whose only near miss is the ruled-flawed designated one; they go to the PI as a finding.
+- **Main merged in** (the lead merged this branch into main, 7dfd8ab40e, then main came back here): `rulings.py` now
+  has the 10-minute budget and the duplicate-unit rule itself, so `rules.py` only adds this study's id folder (and
+  any duplicate units the derivation makes). `known_defects.json` holds my 5 rulings and 2 the lead added from the
+  PI's blind-review rulings (G4-BOX-11, G4-BOX-02).
+- **Coverage credit follows the F0 rule** (roadmap, decisions of 2026-09-29): the designated near miss; a plain miss
+  only where the domain model names no alternative, and for A:Cycle.number and A:Message.message_text.
+- **Exposure is counted only for facts with a valid near miss in the scenario.** A cover trial that acts on the
+  target and on a flawed near miss is otherwise counted (`trial_not_counted` fires only when every acted-on record is
+  flawed), and would credit the flawed near miss's fact. The lead agreed.
+
 - **35 briefs,** one per distinct fact set; arm P v2 is not replicated. Coverage is reported against both fact lists
   (the briefs' 81 and Sonnet's credited 81).
 - **My rulings on new near misses** go into `roadmap_01/known_defects.json` on this branch, in a separate block keyed
@@ -215,7 +227,7 @@ does not rule flawed.
 
 | | Covered | Of |
 |---|---:|---:|
-| The briefs' facts | 74 | 82 |
+| The briefs' facts (all 74 also credited under the F0 rule) | 74 | 82 |
 | Sonnet's credited facts (report_01) | 72 | 81 |
 | Through a designated near miss (F1 to F8) | 66 | 74 covered |
 
@@ -237,7 +249,7 @@ does not rule flawed.
 - **Not in any brief:** `B:EventAttendee.event_id` (Sonnet's AR-CAL-23 split attendee); Muse's G4-CAL-07 covers it.
 - **Covered only through plain near misses (8):** A:Folder.shared_link, A:EventAttendee.optional,
   A:Comment.resolvedAt, A:User.guest, A:Conversation.channel_name, A:Conversation.is_archived,
-  A:Conversation.is_private, A:Reaction.reaction_type (report_01's F0 counting rule is open with the PI).
+  A:Conversation.is_private, A:Reaction.reaction_type (none of them has a designated substitute in the catalog, so under the F0 rule their plain miss is the alternative and earns credit).
 
 ## For the PI (from this study)
 
