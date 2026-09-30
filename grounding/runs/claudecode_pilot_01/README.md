@@ -151,7 +151,7 @@ Parts (the lead's assignment):
 - [summarize.py](summarize.py): timings, tokens, list-price cost and the plan's windows, with the Sol pilot's
   numbers (read from the main checkout's `sol_pilot_01/runs/pilot_01`, which is not committed).
 
-### Cycle 4 (02:00-02:25): the Sol pilot judged, and the openai backend's store
+### Cycle 4 (01:51-02:04): the Sol pilot judged, and the openai backend's store
 
 - At the lead's request, judge v2 on Muse over the Sol pilot's 32 trials (read only): the same-test table above.
 - A development task from the lead: OpenClaw's openai backend copied the login store, owned by agent `main`, into

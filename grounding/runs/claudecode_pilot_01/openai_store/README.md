@@ -49,7 +49,17 @@ Without the variable nothing changes: `copy_auth_store(agent_dir)` runs as befor
   read; `test_known_defects_have_a_frozen_suite_action` expects G4-LIN-02's old "keep until 2026-09-30", which the
   test-clock decision of 2026-09-28 replaced with "keep".
 
-## Unchanged risk
+## Unchanged risk, checked
 
 As before, a token refresh inside an attempt would write to the attempt's copy, not to `~/.openclaw`. The login
-lasts until 2026-10-10 and nothing in a run refreshes it.
+lasts until 2026-10-10 and nothing in a run refreshes it. Checked after the three runs (01:59-02:02 EDT): the real
+store `~/.openclaw/agents/main/agent/openclaw-agent.sqlite` was last written 2026-09-29 20:40 and its WAL 22:59;
+only the `-shm` index moved (02:06), which every read of the database touches.
+
+## For whoever switches it on
+
+- **Treatment:** with the layout on, `memory_search` returns results instead of an error, and each call makes an
+  embeddings request (`text-embedding-3-small`) on the plan. Switch it on at the start of a round, not between the
+  trials of one.
+- **Records:** a run folder created after this change records a new `runtime.py` hash in its `plan.json`
+  (`code_sha256`); existing folders keep theirs, since `write_plan` does not rewrite a plan.
