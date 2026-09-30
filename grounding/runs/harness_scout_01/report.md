@@ -4,7 +4,7 @@ Brief: [grounding/protocols/briefs/harness.md](../../protocols/briefs/harness.md
 
 ## Status
 
-- **2026-09-30, 01:45 EDT.** Done: the desk survey (sections 1-3), 15 smoke attempts on both vendor harnesses with all
+- **2026-09-30, 01:20 EDT.** Done: the desk survey (sections 1-3), 15 smoke attempts on both vendor harnesses with all
   three models (section 4), integration estimates (section 5) and the recommendation (section 6). After review: the
   Anthropic quotes checked on the raw pages, and the current Codex release's catalog checked for `gpt-6.1-sol`.
 
@@ -193,7 +193,8 @@ alpha refused `gpt-6.1-sol` on the ChatGPT login) and `claude_qwen_01` attempt 0
    model is not supported when using Codex with a ChatGPT account." (HTTP 400), so the Codex runs used `gpt-6-sol`.
    Afterwards the current release, 0.159.2 (installed in a scratch folder), listed `gpt-6.1-sol` in the same account's
    catalog (`codex debug models`, no inference; the login copy unchanged). The refusal was most likely a client-version
-   gate. One `codex exec` run on 0.159.2 would confirm it; none was spent, since the 4 runs were used.
+   gate, but that is **unconfirmed**: one `codex exec` run on 0.159.2 would confirm it, and the lead chose not to spend
+   one (2026-09-30), since the plan's weekly window carries the Sol round.
 3. **The tests keep discriminating on every new pairing.** Descriptively, not as a measurement: Sol and Qwen took
    the same decoys as OpenClaw's Qwen; Sonnet asked on both covers and acted on the absence probe with a disclosure,
    the "acts, then discloses" pattern the OpenClaw study found.
