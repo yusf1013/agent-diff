@@ -7,6 +7,29 @@
   Judging, the blind sample and the scores come after the runs.
 - The pilot (32 regular tests, one trial each) is in `../sol_pilot_01/runs/pilot_01`: 31 completed, 1 failed on
   the clock problem below; median 37 s per run, about 45k input tokens (mostly cached) and 350 output tokens.
+- **Judging and scoring (session `sol_score`, branch `exp/sol_score-01`), 2026-09-30 01:05:**
+  - **Done:** the question below; one finding reported to the lead and fixed by the lead (provider stalls, in the
+    log).
+  - **Running:** nothing of mine. The runs are the lead's: `regular_p4` is about 80% done.
+  - **Next:** the kit copies with regression tests on Qwen's records (no model calls); then `regular_p4` gets its
+    blind labels, judge and score.
+  - **Blocked:** nothing.
+
+## The questions (session sol_score)
+
+How can we measure, under the Qwen round's judge (v2 on Muse), rulings and 10-minute budget, what GPT-6.1 Sol shows
+on the Muse-written half of the suite, and set it beside Qwen's results on the same tests?
+
+1. **Exposure:** which tests expose a fact, and how many facts at detect@3 and detect@1, per service and form? How
+   do the failures happen?
+2. **Judge accuracy:** how accurate is judge v2 on Sol's runs, against 180 blind trials labelled by hand before any
+   verdict?
+3. **Policy:** what does the fixed rule (`policy.pooled_decision`) decide in the eight policy cells over the
+   Muse-parent units, and what does the per-fact view show?
+4. **Everything else:** awareness remarks, timings, tokens (input, cached, output, reasoning), infrastructure errors
+   and surprises.
+
+Test validity, test difficulty, solver failures and judge errors are kept apart; every rate has its denominator.
 
 ## What runs
 
@@ -68,3 +91,27 @@ $L grounding.runs.openclaw_eval_01.run --backend openai --trials 3 --concurrency
 
 Judging and scoring follow openclaw_eval_01's commands (judge v2 on Muse, the blind sample drawn before any
 verdict and labelled by a coding agent, `adjudicate`, the policy decision per cell).
+
+## Results
+
+*To be written by the sol_score session once the sets are judged and scored.*
+
+## Log (session sol_score)
+
+- **2026-09-30 00:40-01:05, orientation.** I read the brief, the PI's notes, the roadmap, the concise report and the
+  Qwen round's README, and the machinery: phase4, judge2, adjudicate, rulings, policy and combine.
+  - **Found: provider stalls were charged to Sol's budget.** Three `regular_p4` trials ended with termination
+    "timeout" after 132-179 s. OpenClaw's stderr says "LLM idle timeout (120s): no response from model": a model
+    request had been silent for 120 s.
+    - The runner had recorded them as completed, and `rulings.over_budget` would have counted them as the solver's
+      10-minute budget failures.
+    - None of Qwen's 195 timeouts in the final runs is shorter than 590 s, so the Qwen round never hit this.
+    - I reported it. The lead made it infrastructure rule R3 (commit fd38a82dec). `kit/reclassify_stalls.py`
+      reclassifies the earlier stalls before the retry pass, which re-runs them.
+    - Scoring treats a stall as an infrastructure void to be re-run, never as a budget failure, and reports the
+      count per set.
+  - **Sol's reasoning is not visible.** Its tool steps carry no thinking, and about a fifth have visible text.
+    - The judge therefore sees Sol's commands, the responses, the final answer and the diff, but not its reasoning
+      as it saw Qwen's.
+    - Awareness remarks can only be measured on visible text.
+    - Mechanisms that rest on reasoning (saw-mismatch-accepted against skipped-check) get less evidence.
