@@ -73,7 +73,8 @@ section. Decisions that stand go to the [roadmap](roadmap.md); this is the recor
 **Open**
 - The 16 G4-LIN-08 tests (shift the scenario's dates, or an API key).
 - trojai3's GPUs are still taken; Qwen serves from trojai4's two PCIe copies, which cannot carry three solver arms.
-- Five replica findings from values_01 and two from the baseline arms (on the replica list, not fixed).
+- Five replica findings from values_01, two from the baseline arms and one platform defect from P1 (the Linear replica
+  can freeze the whole backend under two concurrent requests on one team; 14:20–14:38 today), on the replica list, not fixed.
 
 ## What ran
 
@@ -422,3 +423,13 @@ section. Decisions that stand go to the [roadmap](roadmap.md); this is the recor
   have called Muse for all of them); after it, 951 of 951, no verdict file touched (sha256 identical), a stale
   verdict still caught. Checked from the main checkout: full_04's 205 verdicts (recorded in the removed worktree)
   count as cached; score regress passes. sol_score's assignment is closed.
+- 14:4x related_work: the shared replica backend (127.0.0.1:18001) was frozen 14:20–14:38 by a lock in one P1
+  environment's schema (a session "idle in transaction" for 15 minutes on workflow_states; a second session of the
+  same trial waiting on teams; the backend answered nothing, health check included). The session ran only its own
+  stale session's `pg_terminate_backend`; nothing else touched. No other study ran against the backend in that
+  window (the Sol round, regen and the baselines are done; the judge does not use it), so only P1 lost trials (two
+  attempts of one variant, rerun anyway). Likely mechanism (not verified, for the replica list): the Linear replica
+  locks the team row while creating an issue and its handlers make synchronous database calls, so two concurrent
+  requests on one team (an agent running curls in parallel) can hold the lock while blocking the loop that would
+  release it. Also P1's own seed builder: a deep copy of a Linear issue did not advance the team's issue counter
+  (issueCreate collided, 500); fixed in its kit (cdabfd6669), the four affected variants rerun after the main run.
