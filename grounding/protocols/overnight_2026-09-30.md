@@ -160,3 +160,9 @@ section. Decisions that stand go to the [roadmap](roadmap.md); this is the recor
   full round waits for a `claude setup-token` token (~/.config/claude-solver/oauth_token) made from the plan that
   is really Max; confirm effort medium, tools Bash/Read/Skill, no follow-up. Assigned next: the same-test Sol
   comparison on the pilot's 32, then the openai backend's store layout behind a flag.
+- 02:1x values, the three consistency follow-ups (commits 5496406e9c, 3787ff5159, 5a464f392a, cc8aa801fd): beyond.py's
+  policy side filtered by the rulings (1,305 trials; RQ7 updated); baselines_01's ours.json and compare.json
+  recomputed from the rebuilt full_02 (per 48 tests: 11.3 / 7.5 facts, 12.8 failing tests; only Phase 4's Calendar
+  moved); openclaw_eval_01's README brought to the 10-minute, rulings-updated numbers (6a 108 of 429; with 6b 139
+  of 563, 87 / 60; over-budget policy trials 129 of 1,170 under 10 minutes against 188 under 8). Assigned next: the
+  Sonnet baselines brief.
