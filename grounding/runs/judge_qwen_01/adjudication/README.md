@@ -51,5 +51,19 @@ its label notes this. I saw no Muse verdict and no reference label for any execu
 |---|---|---|---|---|
 | `labelled` | the 443 labelled | 3 | 2026-09-30 05:05:53 | `unblinded_labelled.json` |
 | `rest` | the first 680 of the other 1,696 (the replay was paused there) | 15 | 2026-09-30 06:41:13 | `unblinded_rest.json` |
+| `rest2` | the other 1,005 of the current manifest's 2,115 (resumed 20:48 UTC), less the keys labelled in the earlier rounds | 16 | 2026-09-30 22:57:45 | `unblinded_rest2.json` |
 
 Labels of a later round are written after the earlier rounds were unblinded; each such label says so.
+
+During the resumed replay I read only progress counts and the log's header line, never its verdict lines, until
+the lock.
+
+## Notes after unblinding
+
+The locked files stay as they were. No label is corrected.
+
+- **`solve_population_6b_underspecified/t3/U-G4-BOX-13-Comment_created_by_id` (round `rest2`): the label's reason
+  misstates one step.** It says the solver "never read the files' comments". In fact its step 4 (`/steps/3`) listed
+  the comments of all five PDFs, and its reasoning then noted that several carry the release phrase. It chose 8102
+  from its description anyway. That makes the label's outcome (incorrect, `A:Comment.message`) firmer, not weaker, so
+  the label stands. Both judges' notes describe the step correctly.
