@@ -88,3 +88,11 @@ section. Decisions that stand go to the [roadmap](roadmap.md); this is the recor
   report_01 RQ7's restore row counts no-ops as restorations and its "changed meeting time" is a storage artifact.
   Proposal: declare the requested value per written field at construction (13 kinds), mechanical checks, one added
   judge question for the residual. Assigned next: the report_update brief.
+- 01:1x judge_qwen (commit f85f957415): **Qwen meets the bar as the judge.** On 443 labelled executions (192 labelled
+  failures): 0 missed failures (strict reading; 1 void under the any-reason reading; the bar allowed 2); precision
+  191/196 (97.4%) against Muse's 192/196 (98.0%); the same verdict on 440 of 443; the same exposed facts on all 196
+  joint failures. Of the 3 disagreements (adjudicated blind, hash-locked), Muse was right on 2 and Qwen on 1. All
+  443 verdicts on the first attempt, one fingerprint, 53 minutes at 16 in flight (about 3.5 GPU-hours, $0), against
+  $13.00 at list for Muse. Candidate prompt change for the PI: the Calendar replica notes don't say where a
+  calendar's data owner shows (calendarList, GET /calendars). Now replaying the other 1,696 (about 3 hours), then the
+  headline numbers under Qwen's verdicts.
