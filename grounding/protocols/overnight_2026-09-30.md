@@ -217,3 +217,13 @@ section. Decisions that stand go to the [roadmap](roadmap.md); this is the recor
   the control), validity, flaw cause, form, near-miss records, family and proper credit agree with the other
   session's calls (15/15, 16/16, 14/14); the fact named differs on 2 plain near misses. The Sonnet-versus-Muse
   structure gap is not a reviewer effect. Runs going at 3+3 in flight.
+- 03:2x judge_qwen, transfer_feasibility_01 (commit ce990f2a84; merged as 871d6db399), a desk study with cited API
+  pages: of the 1,006 tests, 37 are realizable on the real services as is, 403 with test accounts, 476 with a
+  stated change (204 date shifts where the services set times themselves, 179 renamed ids and handles, 123 paid
+  tiers, mostly Linear Basic for more than two teams; 118 Box consistency constraints, inferred), and 90 not with
+  ordinary accounts (47 Box Hubs, Enterprise only; 17 Box near misses created after their last modification; 14
+  ownership differing within a folder, inferred; 12 focus-time events on secondary calendars). Linear's import
+  fields backdate issues and comments; Calendar takes any past date. Proposed case study: 40 tests, 10 per service,
+  half of them failed on OpenClaw, free tiers, at most 4 people besides the actor, $0 in plans, about 2 agent-days
+  of scripts and 6 hours of runs. Pilot items: Slack search needs a user token (42% of Slack executions searched);
+  Box As-User on the free plan; the two inferred Box rules; Linear's 250-issue cap.
