@@ -113,13 +113,24 @@ def main():
                              "error_but_applied": dict(Counter(o for row in hit for x in row["w"]["rejected"]
                                                                if x.get("applied") for o in x["ops"]))}
     se["unresolved_write_ids"] = sum(1 for row in rows if row["w"].get("unresolved"))
+    # Cycle 2: Calendar writes that ask the service to email attendees, by the record written.
+    notify = [row for row in rows if row["w"].get("notify")]
+    where = Counter()
+    for row in notify:
+        recs = {x["record"]: x["where"] for x in row["v"].get("values", [])}
+        for n in row["w"]["notify"]:
+            ws = {recs.get(i) or recs.get(i + "@group.calendar.google.com") for i in n["ids"]} - {None}
+            where[next(iter(ws)) if len(ws) == 1 else ("several" if ws else "unmatched")] += 1
+    se["calendar_notifications"] = {"executions": len(notify), "writes_by_record": dict(where),
+                                    "calendar_executions_writing": sum(1 for row in rows if row["domain"] == "calendar"
+                                                                       and row["v"].get("wrote"))}
     out["side_effects"] = se
 
     # Replies.
     checked = [row for row in rows if row["r"].get("checked")]
     rp = {"replies_checked": len(checked), "no_reply": dict(Counter(row["r"].get("no_reply") for row in rows
                                                                     if not row["r"].get("checked")))}
-    for chk in ("R1", "R2", "R2b", "R3", "R4"):
+    for chk in ("R1", "R2", "R2b", "R2c", "R3", "R4"):
         hit = [row for row in checked if any(f["check"] == chk for f in row["r"].get("flags", []))]
         rp[chk] = {"executions": len(hit), "by_kind": dict(Counter(row["kind"] for row in hit)),
                    "by_domain": dict(Counter(row["domain"] for row in hit)),

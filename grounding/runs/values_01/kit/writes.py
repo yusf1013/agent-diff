@@ -37,8 +37,9 @@ SLACK_WRITES = {"chat.postMessage", "chat.update", "chat.delete", "chat.postEphe
                 "stars.remove", "users.profile.set", "files.upload", "files.delete", "bookmarks.add"}
 INVERSE = {"reactions.remove", "conversations.unarchive", "attachmentDelete", "commentDelete", "issueDelete",
            "documentDelete", "DELETE"}
-LINEAR_MUT = re.compile(r"\b([a-z][A-Za-z]+(?:Create|Update|Delete|Archive|Unarchive|Add|Remove|Resolve|Unresolve|Set))"
-                        r"\s*\(")
+# Cycle 2: also the mutations whose names end otherwise (attachmentLinkURL, issueAddLabel, ...), which cycle 1 missed.
+LINEAR_MUT = re.compile(r"\b([a-z][A-Za-z]+(?:Create|Update|Delete|Archive|Unarchive|Add|Remove|Resolve|Unresolve|Set|"
+                        r"Link[A-Za-z]*|Upsert|Merge|Move|Subscribe|Unsubscribe|AddLabel|RemoveLabel|Import))\s*\(")
 HTTP_WRITE = re.compile(r"(?:-X|--request)\s*['\"]?(PUT|POST|DELETE|PATCH)\b")
 UUID = re.compile(r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")
 
@@ -102,8 +103,12 @@ def write_ops(domain: str, text: str) -> list[str]:
     ops = HTTP_WRITE.findall(text)
     if domain == "calendar" and re.search(r"freeBusy|/watch|channels/stop", text):
         ops = [o for o in ops if o != "POST"]
-    if not ops and re.search(r"(?:\s-d\s|--data(?:-raw|-binary)?\s|\s-F\s)", text) and domain == "box" \
-            and re.search(r"api\.box\.com", text):
+    # A curl with a body and no method is a POST; cycle 2: only within the curl invocation itself (an `unzip -d` in the
+    # same command is not a body), and not with -G, which sends the data as query parameters (a GET).
+    if not ops and domain == "box" and any(
+            re.search(r"\bcurl\b", seg) and re.search(r"api\.box\.com", seg) and not re.search(r"\s(?:-G|--get)\b", seg)
+            and re.search(r"(?:\s-d\s|\s-d'|\s-d\"|--data(?:-raw|-binary|-urlencode)?[\s=]|\s-F\s)", seg)
+            for seg in re.split(r"\||;|&&|\n", text)):
         ops = ["POST"]
     return ops
 
@@ -135,9 +140,13 @@ def writes_of(ex: dict) -> list[dict]:
         if not ops:
             continue
         looped = bool(re.search(r"\bfor\b.+\bin\b|\$\{?\w+\}?|python3?\s+-c|<<", text))
+        # Cycle 2: a Calendar write that asks the service to email the attendees (no diff shows it).
+        notify = ex["domain"] == "calendar" and bool(
+            re.search(r"sendUpdates=(?:all|externalOnly)|sendNotifications=true|\"sendUpdates\"\s*:\s*\"(?:all|externalOnly)",
+                      text))
         out.append({"step": i, "ops": ops, "ids": sorted(ids_named(ex["domain"], text)),
                     "error": error_in(ex["domain"], ops[0], obs_text(s)), "looped": looped,
-                    "inverse": any(o in INVERSE for o in ops)})
+                    "inverse": any(o in INVERSE for o in ops), "notify": notify})
     return out
 
 
@@ -199,6 +208,7 @@ def analyse(ex: dict) -> dict:
             "unresolved": [w["step"] for w in ws if not w["ids"]],
             "not_in_diff": missing,
             "inverse_ops": [{"step": w["step"], "ops": w["ops"], "ids": w["ids"]} for w in accepted if w["inverse"]],
+            "notify": [{"step": w["step"], "ids": w["ids"]} for w in accepted if w.get("notify")],
             "ops": Counter(o for w in ws for o in w["ops"])}
 
 
@@ -220,6 +230,7 @@ def main():
     print("  of which an inverse op", sum(1 for r in nd if any(m["inverse"] for m in r["not_in_diff"])))
     print("  rows:", Counter(m["row"] for r in nd for m in r["not_in_diff"]))
     print("inverse ops", sum(1 for r in out if r["inverse_ops"]))
+    print("calendar writes that notify attendees", sum(1 for r in out if r["notify"]))
 
 
 if __name__ == "__main__":
