@@ -26,6 +26,9 @@ What answers it, on 12 Phase 4 briefs that Muse already turned into accepted sce
 - **The draw** ([plan.json](plan.json), fixed before any generation or reading): the pool is the 29 Phase 4 briefs
   Muse's generation accepted (7 Box, 7 Calendar, 7 Linear, 8 Slack; the rulings leave none out at the scenario
   level); seed 20260930, three per service: Box 03, 05, 08; Calendar 03, 05, 06; Linear 05, 07, 08; Slack 01, 05, 08.
+  So Muse's acceptance on these 12 is 12 of 12 by construction. For context, Phase 4 attempted 32 briefs: 29
+  accepted, 2 rejected after their reader rounds (G4-BOX-02, G4-LIN-03), 1 ended by a failed writer call
+  (G4-CAL-08).
 - **What stays the same:** the frozen generation pipeline as Phase 4 ran it (`autogen_02/kit/generate.py`: autogen_01's
   orchestrator with autogen_02's replica notes): the writer's prompt (`prompts/writer.md`), its first message and
   feedback texts, its workspace (method, format, the two examples, the domain files, `brief.json`), the mechanical
@@ -43,7 +46,8 @@ What answers it, on 12 Phase 4 briefs that Muse already turned into accepted sce
   judge_qwen_01 reported for the judge.
 - **Settings:** Qwen's reasoning at the served default, `xhigh` (`--effort xhigh`: Claude Code's own default,
   "high", is refused by the server, which accepts xhigh, medium or low; judge_qwen_01's judge ran at the served
-  default too; Muse's writers ran at Muse's "high"); Claude Code's compaction at the served window
+  default too; Muse's writers ran at Muse's "high": all 72 writer calls of Phase 4 record `reasoning_effort: high`);
+  Claude Code's compaction at the served window
   (`--autocompact 131k`); the writer reaches the endpoint directly, outside the shared limiter, so at most 4 briefs
   run at once; cost 0 (self-hosted), Claude Code's own estimate kept only as `claude_code_estimate_usd`.
 - **A second harness difference** comes with Claude Code: the kit's Claude path puts the writer prompt
@@ -54,7 +58,10 @@ What answers it, on 12 Phase 4 briefs that Muse already turned into accepted sce
   the same footing. Box ids are numbers and stay.
 - **Rulings:** Muse's scenario-specific rulings (known defects, near-miss rulings, clocks) belong to Muse's
   scenarios and are not applied to Qwen's, which share only the brief ids. Qwen's scenarios get my review under the
-  PI's criteria, and a clock by the rule of 2026-09-28 where a request depends on the date.
+  PI's criteria ([rulings.json](rulings.json), read by [rules.py](rules.py) in place of known_defects.json), and the
+  clock rule for new scenarios (roadmap, 2026-09-28; as regen_01 and completion_01 apply it): every non-Calendar
+  test starts at the moment its scenario's accepted version was written, or a day after its data's latest event if
+  that is later. Muse's tests on these briefs ran on the real clock (2026-09-28), except G4-LIN-08's (2026-10-16).
 
 ## Log
 
