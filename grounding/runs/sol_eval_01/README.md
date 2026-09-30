@@ -11,7 +11,9 @@
   - All four sets are judged, labelled and scored. Every one of the round's 1,491 trials has a final attempt and a
     verdict; none is pending.
   - The Results below are final. One Calendar underspecified unit never ran; it cannot change its cell's decision.
-  - Waiting for the lead.
+- **The regenerated half (session `sol_score`), 2026-09-30 06:34: running.** Sol on regen_01's suite (337 tests),
+  launched 06:33 through kit/run_regen.py: trial 1 of all three sets first, then trials 2 and 3, then a retry pass.
+  The design is under "The regenerated half" below. Blind labels, judging and scoring follow as sets finish.
 
 ## The questions (session sol_score)
 
@@ -108,6 +110,43 @@ $L grounding.runs.sol_eval_01.kit.compare_qwen; $L grounding.runs.sol_eval_01.ki
 $L grounding.runs.sol_eval_01.kit.judge_accuracy                               # eval/judge_accuracy.json (locked sets only)
 $L grounding.runs.sol_eval_01.kit.whatif G4-BOX-15 9102 --json                 # one more ruling's effect (eval/whatif_*.json)
 ```
+
+## The regenerated half (session sol_score)
+
+The lead's assignment of 2026-09-30 (06:20): the Sol round on regen_01's suite, the Sonnet-written half regenerated
+with Muse ([regen_01](../regen_01/README.md), its "The suite"). Together with the Muse-written half above, it makes
+Sol's run of the whole suite, as regen_01 makes it for Qwen.
+
+| Set | Cases folder (regen_01/runs/) | Tests or units | Trials at 3 | Blind sample (seed) |
+|---|---|---:|---:|---|
+| `runs/regen_full_01` | `full_01_cases` | 206 regular (34 covers, 127 probes, 45 fact probes) | 618 | 45 (20260934) |
+| `runs/regen_absence_01` | `absence_01_cases` | 72 absence units | 216 | 45 (20260935) |
+| `runs/regen_underspecified_01` | `underspecified_01_cases` | 59 underspecified units | 177 | 45 (20260936) |
+| **All** | | **337** | **1,011** | **135** |
+
+- **Runner:** regen_01's (`grounding.runs.regen_01.run`): openclaw_eval_01's runner with regen_01's rulings
+  wrapper, which teaches the rulings the regenerated scenarios' opaque ids. It passes `--backend openai` through
+  unchanged. A dry run of its selection runs all 337 tests and leaves none out. Every test clock is 2026-09-30 or
+  unset, before the login's expiry.
+- **Harness:** the first half's, unchanged: OpenClaw's own loop, the ChatGPT login copied per attempt, thinking
+  "medium", 10 in flight, the 10-minute limit.
+- **Login-store layout: the default.** memory_search fails, as in the first half. The lead's decision
+  (2026-09-30 06:32): this is the second half of the same Sol round, and one harness state across Sol's whole suite
+  outweighs removing a difference from Qwen that changed no grounding outcome. The fix
+  (`AGENTDIFF_OPENAI_STORE=main`) goes on at the start of the next round.
+- **Order and stop rule** (kit/run_regen.py):
+  - trial 1 of all 337 tests first, so that detect@1 is complete early if the plan's weekly window runs out; then
+    trials 2 and 3; then one `--retry-infrastructure` pass;
+  - the runs stop if 3 of the last 20 attempts end on a provider limit, or 10 of the last 20 do not complete.
+    Turns cut by a stop are not retried without the lead's word.
+- **Run records:** the run folders live in the main checkout's runs directory and are linked here, with the
+  supervisor's log and markers beside them (regen_progress.txt, regen_done.txt or regen_stopped.txt).
+- **Blind samples:** 45 per set, drawn with autogen_02's drawer from the cases folders alone at 06:29, before any
+  run (commit 6e76fcf3c9).
+- **Judging:** as for the first half: judge v2 on Muse; for the regular set, phase4's selection plus the blind
+  sample; for the policy sets, every trial. The judge cap for this half is $25 at list price (the lead's).
+- **Qwen beside it:** the regen session's own Qwen runs of the same tests, once its README has them. This session
+  never uses the self-host.
 
 ## Results
 
