@@ -30,6 +30,13 @@ def build(variant: str) -> tuple[dict, str]:
         seed[table] = [r for r in seed[table] if json.dumps([r.get(c) for c in pk]) not in drop]
     for table, rows in (patch.get("add") or {}).items():
         seed.setdefault(table, []).extend(rows)
+    if service == "linear":  # a copied issue takes the team's next number, as creating it through Linear would
+        teams = {t["id"]: t for t in seed.get("teams", [])}
+        for row in (patch.get("add") or {}).get("issues", []):
+            team = teams[row["teamId"]]
+            n = int(team.get("issueCount") or 0) + 1
+            row["number"], team["issueCount"] = float(n), n
+            row["identifier"] = f"{team['key']}-{n}"
     return seed, service
 
 

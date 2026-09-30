@@ -1,0 +1,1 @@
+Done — archived `#product-growth` (C_GROWTH). Note: there's no channel named exactly `#growth`; `product-growth` was the only match, so I assumed that's what you meant. If it's reversible or a different channel was intended, just say the word.

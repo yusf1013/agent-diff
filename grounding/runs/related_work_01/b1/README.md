@@ -127,12 +127,42 @@ open. On our boundary tests, Qwen passed 22 of 56 trials where the boundary show
 re-creation or look-alike was possible, it passed 30 of 125; where nothing was possible, 38 of 45 (boundary_02). We
 expect B1 in that range, with the same kinds of failure, on the one class it reaches.
 
+## The run (b1_01, 2026-09-30; complete)
+
+All 144 trials ran: 81 before a pause the lead asked for, the rest after. The results are in
+[summary.json](summary.json) and [report.md](../report.md) §5.7.
+- **47 of 144 trials pass**, all by reporting. Reading B replaces the first 12 host-load trials with their
+  quiet-host reruns (runs/b1_01_host): **50 of 144**.
+- **40 of the 48 items fail at least once** in both readings.
+- **Slack's refusals are reported** (29 of 36 trials pass). Box, Calendar and Linear mostly run out the budget:
+  77 trials over it, 44 with no change and 33 after a change no one asked for.
+- **The oracle agrees with all 30 blind labels.**
+
+Record keeping:
+- **The first 12 trials ran on an overloaded host** ([runs/b1_01/host_load.json](runs/b1_01/host_load.json)). The
+  lead ruled that they stay in the record and are rerun on a quiet host (runs/b1_01_host); both readings go to the
+  PI.
+- **The pause** left placeholders (status "deferred") for the 63 unstarted trials. They were removed on resume, and
+  the runner ran exactly those.
+
+**Found in the run:**
+- **Containment.** The agent can read the host. 18 trials probed it; five read the repository or the replica's
+  source; three sent the refused write straight to the backend (`127.0.0.1:18001/api/env/…`), which goes around the
+  curl wrapper and the mask. Four read their own curl wrapper. analyze.py flags each and reports readings without
+  them.
+- **A replica gap (reported, not fixed).** After `DELETE /users/me/calendarList/{id}` the Calendar replica cannot
+  re-insert that calendar: the entry is soft-deleted and kept, and the owner's access came only from it, so the
+  insert answers 403 (or "already in list"). Google allows re-adding. Seven calendar-list trials took the
+  delete-and-re-add route and are flagged replica-dependent.
+
 ## Limits
 
 - **The agent can read its own curl.** The wrapper sits on PATH, as the usual shim does. An agent that opens it sees
   a list of refused operations. The runtime's transcript check can flag attempts that read the bin directory.
 - **Our covers only.** Agent-Diff's tests have no OpenClaw trials yet. After the projection runs (report §4.4),
   traces.py reads them the same way, and B1 can be built on them without new code.
+- **Introspection shows a tell.** The filter drops the masked mutations but not their input types. One agent
+  noticed `AttachmentUpdateInput` with no mutation using it.
 - **Introspection hides a little more than the mask.** The filter drops a masked name from every field list, so
   for G4-LIN-19 the query field `projectUpdate` (a status post, not the mutation) is hidden too. It can still be
   called.
@@ -149,4 +179,7 @@ expect B1 in that range, with the same kinds of failure, on the one class it rea
 | [run.py](run.py) | The runner for a later session |
 | [oracle.py](oracle.py), [check.json](check.json) | The grading, and its check on the unmasked trials |
 | [dryrun.py](dryrun.py), [dryrun.json](dryrun.json) | The check of the installed mask against live environments |
+| [analyze.py](analyze.py), [summary.json](summary.json) | The run's numbers in their readings, the flags, and ours beside them |
+| [blind_sample.py](blind_sample.py), [eval/](eval/) | The blind sample (drawn before the run) and my labels |
+| `runs/b1_01/` | The run: attempts, the oracle's verdicts (`b1_verdicts.json`), the host-load record |
 | [doccheck.json](doccheck.json) | The documentation mask of every capability, checked on copies of the skills |

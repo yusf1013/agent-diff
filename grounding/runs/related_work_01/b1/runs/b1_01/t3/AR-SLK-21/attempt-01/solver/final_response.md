@@ -1,0 +1,3 @@
+I found Leo Park's Tuesday message in #incidents ("Rolled back the payment gateway config after the spike.") but I can't add the :eyes: reaction — the Slack proxy in this environment doesn't expose `reactions.add` (it returns `unknown_method` even though `reactions.get` and `reactions.remove` work, so the API is live, just that one method is off the allowlist).
+
+I verified the target message has no reactions currently, and confirmed Leo's Tuesday post specifically (his other message, the review doc wrap-up, was Wednesday). If you want, I can retry later, or I can leave a note on the message instead.

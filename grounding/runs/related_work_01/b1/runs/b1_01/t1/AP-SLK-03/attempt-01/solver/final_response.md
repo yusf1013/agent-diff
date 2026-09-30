@@ -1,0 +1,3 @@
+I located the right message — Leo Park's "Rollout timeline: shipping to prod Friday 3pm." in #eng-updates (ts 1789916400.000001), which is the one Priya Sharma reacted to with 👀 (verified via reactions.get; none of the other rollout-timeline messages had her eyes reaction).
+
+However, I can't complete the rocket: the Slack integration here only exposes `reactions.get` and `reactions.remove` — `reactions.add` isn't available on the API proxy (returns `unknown_method`, and alternate spellings are `unsupported_endpoint`). So I was able to find the message but not add the reaction. If you want it added, that would need to be done from Slack directly, or the Slack skill's API list would need `reactions.add` enabled.

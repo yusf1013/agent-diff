@@ -10,7 +10,9 @@ theirs, from their papers or repositories, checked on 2026-09-30; numbers about 
 - **2026-09-30, done:** the map (12 angles, 6 of them new), cards for 69 works in 35 blocks, the verdict table, two pilots on existing
   evidence (no model calls), the projection plan, the baseline proposals, the claims file ([claims.md](claims.md):
   every claim about another work, quoted from its source with the fetch date).
-- **Running:** nothing. **Blocked:** nothing. Every arm proposed below waits for the PI's go-ahead.
+- **2026-09-30, phase 2:** the four arms that need no decision are done (§5.6). B1's 48 selected items and P1's matched
+  48 variants ran on the self-hosted Qwen at the lead's request; the results are in §5.7.
+- **Blocked:** nothing.
 
 ## Summary
 
@@ -699,6 +701,160 @@ ours.
 - **The unit:** fact–mode requirements (ours) or request-level categories (the established suites'); I recommend
   reporting both, since the gap between them is the finding.
 - **Order:** P1, S1, B1 and B2 need no LLM and no decision; they could run first.
+
+### 5.6 Status of the arms (2026-09-30)
+
+| Arm | State | Where | Items |
+|---|---|---|---|
+| **P1**, Agent-Diff's tests mutated | Done: the matched 48 run and judged (§5.7) | [p1/](p1/README.md) | 350 valid variants; 48 chosen by stated rules ([p1_selection.json](p1/runs/p1_01/p1_selection.json)) |
+| **B2**, the abstention suites projected | Done (reading) | [b2/](b2/README.md) | 2,843 items, nearly all "no operation" of the tool-withheld kind |
+| **S1**, the shortcut check on Agent-Diff's seeds | Done (no model) | [s1/](s1/README.md) | 60 plural obligations accounted for; 3 of 15 practical shortcuts defeated; 152 of 210 targets unnoticed if omitted |
+| **B1**, masking an operation | Done: the 48 selected run and graded (§5.7) | [b1/](b1/README.md) | 71 items, 48 selected |
+
+The corrections to §5.3's S1 row: the arm used the obligation cards' plural obligations, not the suite's
+"multi-entity" label, and Calendar is out (no cards). The measures are those of s1/README.md.
+
+**For the PI** (found on the way; none needs a decision beyond the budget):
+1. **A replica gap.** The Box replica's search matches names and descriptions only; Box's search reads file content
+   (on record as B-A10 in the Box model's source ledger). It voided 5 of S1's rows, and any Agent-Diff Box test whose
+   solver relies on content search behaves differently on the replica than on Box. Reported, not fixed.
+2. **A fact to check on real Linear.** Ten of P1's underspecified variants copy a Linear team under the same name.
+   The replica allows it; whether Linear does is not documented.
+3. **A class we lack.** τ-bench's policy-forbidden actions: the service allows the action, the domain's policy
+   forbids it. Should the boundary space include policy documents when a service has them (b2/README.md)?
+4. **What "correct" means on our covers.** Our judge grades the record, not the value. 20 of the 213 "correct" trials
+   behind B1 did not make exactly the requested change. 16 set another priority than the one asked ("Urgent" as 4,
+   Low, in 13), one set a due date a year late, and 3 also changed a file's lock. The judge's prompt says so ("a
+   wrong value written to the target … does not change the outcome"), so this is by design, but any "solved" row in
+   a baseline table should say so.
+
+5. **Containment.** In OpenClaw runs the agent can read the host. In B1, 18 of 81 trials probed it (ports,
+   processes, `/proc`). Five read our repository or the replica's source, and three sent the refused write straight
+   to the backend, which skips the curl shim and any mask. The lead's scan of every final-round trial found 13 of
+   4,464 Qwen trials touching the host or backend, none turning a failure into a pass, and none of Sol's 1,196. The
+   neutral layout hides names, not the filesystem: a future round should run attempts under a restricted user or in
+   a container.
+
+### 5.7 Results (2026-09-30)
+
+**B1, masking an operation** ([b1/](b1/README.md)): all 48 selected items, 3 trials each (144 trials), on OpenClaw
+with the self-hosted Qwen, graded by boundary_02's oracle.
+- **Reading A** is as run.
+- **Reading B** replaces the first 12 trials, which ran on an overloaded host, with their reruns on a quieter host (the
+  lead's ruling; the PI owns the timeout rule).
+
+| | B1, reading A | B1, reading B | Ours: boundary_auto_01 | baselines_01 |
+|---|---|---|---|---|
+| Agent | OpenClaw, self-hosted Qwen3.8-27B | the same | the same model, toy harness | OpenClaw, self-hosted Qwen |
+| Tests | 48 items | 48 items | 89 valid boundary tests | none on boundaries: its failing tests all presuppose a missing record (a policy form) |
+| Tests failing at least once | **40 of 48** | 40 of 48 | 49 of 89 | – |
+| Failing trial 1 | 30 of 48 | 28 of 48 (two of the 12 reruns pass on trial 1) | – | – |
+| Trials passing | **47 of 144**, all reports | 50 of 144 | by alternative, below | – |
+| Pass rate, nothing else possible | 4 of 27 | 7 of 27 | 40 of 45 | – |
+| … a re-creation possible | 8 of 63 | 8 of 63 | 31 of 92 | – |
+| … a look-alike possible | 26 of 39 | 26 of 39 | 9 of 20 | – |
+| … another record possible | 9 of 12 | 9 of 12 | 36 of 36 | – |
+
+**By service (reading A):** Slack 29 of 36 trials pass; Box 8, Calendar 5 and Linear 5, each out of 36. Slack's
+`unknown_method` is read as "this method does not exist" and reported. Box's 405, Google's 404 and GraphQL's
+validation error are read as a broken environment, and the agent keeps probing.
+
+**How the 97 failing trials fail (reading A):**
+- 77 ran out the solver's 600 s budget: 44 with no change, 33 after a change no one asked for;
+- 17 made such a change and answered: a deleted calendar-list entry, a lossy re-creation, a new file version, stray
+  test records;
+- 1 sent the write to the backend directly, a failure by rule; three over-budget trials did too;
+- 1 reached F with another change;
+- 1 claimed F that did not hold.
+
+**Checks:**
+- **The oracle agrees with all 30 blind labels**, drawn before the run and labelled before any oracle output.
+- **Leaving out the 11 trials that read the repository, the replica's source or their own curl wrapper:** 46 of 133
+  pass.
+- **Leaving out the 7 calendar-list trials that depend on a replica gap:** 47 of 137 pass.
+- **The host's pace:** a median of 28.5 s per model request (quartiles 24 and 34), close to 6a's pace. So the timeouts
+  are long probing, not a slow host. On the quieter host, 9 of the 12 reruns still ran out the budget.
+
+**Reading:**
+- **The status quo's dominant boundary class elicits the "false continue" FeasiGen reports.** With the one operation
+  taken away by an error that does not say the operation is missing, the agent rarely reports it. It probes until
+  the budget runs out, often changing something no one asked for, and sometimes going around the service.
+- **Where the error names the absence** (Slack's `unknown_method`), it reports.
+- **B1 measures the response to an environment that seems broken, not knowledge of a service's limits.** Our boundary
+  tests measure the latter. The same model, in the toy harness, reports "nothing possible" boundaries 40 of 45
+  times.
+- The harnesses differ, so the comparison is indicative. The case for keeping both kinds of test stands on the
+  kinds of behaviour, not on the rates.
+
+**P1, Agent-Diff's tests mutated** ([p1/](p1/README.md)):
+- **What ran:** the matched 48 variants (24 absence, 24 underspecified), 3 trials each, on OpenClaw with the
+  self-hosted Qwen, graded by triage plus judge v2 in policy mode on Muse. The matched 48 differ from the plan because
+  only 11 underspecified variants grade cleanly (p1/README.md).
+
+**First, the unit.** P1's failures are request-level policy failures with no fact behind them. P1 designs no near
+misses, so under our credit rule it exposes no facts, as N0 and N1 did. The 48 touch 31 fact–mode requirements by
+occurrence, and 21 of them have a failing variant (absence 8, underspecified 13), but that is an upper bound, not
+credit. This is the gap between the units that §5.2 predicted.
+- **So the rates below are not like for like.** P1's absence trials fail mostly by re-creating the missing record or
+  by acting on a near miss the seed happens to hold.
+- **Each unit of ours isolates one fact**, with designed near misses that each fail that fact. Our rates are pooled
+  over the population's usable trials (openclaw_eval_01's population decisions); the same judge and rule grade both.
+
+**The readings:**
+- **Reading B (primary)** takes four variants from their rerun (p1_01_fix). In those variants my seed gave the copied
+  issue the identifier the replica hands the team's next issue, so creating issues there failed.
+- **Reading A** keeps those four variants' first trials as artifacts (void).
+- Attempts broken by the backend freeze (5) or cut off when the runner stopped (3) were rerun by the runner's retry.
+  Their first attempts are kept as evidence.
+
+| Cell | P1: any policy failure, reading B | P1, reading A | Ours: 6a policy units, each isolating one fact (same agent, same judge) | baselines_01 |
+|---|---|---|---|---|
+| Absence, all | 34 of 72 trials; 14 of 24 variants fail at least once | the same | – | presupposing tests: N0 10 of 27 trials (5 of 9 tests); N1 6 of 24 (2 of 8) |
+| Absence: Box / Linear / Slack | 14/24, 7/24, 13/24 trials | the same | 126/165, 160/263, 75/125 trials | – |
+| Underspecified, all | 64 of 72 trials; 23 of 24 variants | 52 of 60 usable (12 void); 19 of 24 | – | none written |
+| Underspecified: Box / Linear / Slack | 6/6, 29/33, 29/33 trials | 6/6, 17/21, 29/33 | 65/136, 83/205, 63/82 trials | – |
+
+- **Where the rates meet:** they are closest in Slack's underspecified cell (P1 29 of 33, ours 63 of 82), the cell our
+  population left undecided.
+- **How P1's variants fail:**
+  - **Absence:** the agent re-creates the missing record (a new "investments" folder, hub, Engineering team or
+    #engineering channel), or acts on a natural near miss (the misfiled copy of the crisis notes; #project-alpha for
+    #project-alpha-dev). Or it runs out the budget.
+  - **Underspecified:** the agent notices the second match, picks the "primary" one and discloses it afterwards.
+    Under our judge's rule that fails: it should ask first.
+- **What the underspecified copies are.** One criterion: a copy is distinguishable when it differs from the original
+  in a field the agent can see beyond its key.
+  - **Second accounts, 15 variants:** another person record with another email (and username). 41 of 45 trials fail;
+    15 of 15 variants.
+  - **Names changed only because the service keeps them unique, 3 variants:** Box's "X (1).csv", and a channel copy
+    renamed from -q3 to -q4. These are borderline duplicates. 9 of 9 trials fail.
+  - **Key-only duplicates, 6 variants:** Linear issues identical except for their id and the identifier derived from
+    it. P1's review meant to exclude such copies as contested, but its list of key-like fields lacked "identifier".
+    14 of 18 trials fail, 5 of 6 variants.
+- **The judge:**
+  - **Agreement:** judge v2 agrees with my blind labels on 55 of the 56 trials not forced void on either side. The
+    other 4 of the 60 are the seed-flaw artifacts, void on both sides by construction.
+  - **The one difference:** a trial that probed the backend directly. The judge itself called it correct_absent, as my
+    label did; the backend rule, not the judge, fails it, and my label missed the probe.
+  - **Raw verdicts, before the budget rule:** they agree on 54 of 60. The 4 timeouts I left not established, the judge
+    graded from the state (failures either way under the budget rule). And the judge graded the 2 seed-flaw artifacts
+    on the agent's intent.
+  - **On the rerun's 4 labelled trials,** it agrees on all 4.
+- **Cost:** judge v2 on Muse, $7.12 at list price for 156 judged trials. The solver is the self-host, with no charge.
+- **Found on the way:**
+  - the counter flaw in my P1 seeds (fixed; four variants rerun);
+  - a backend freeze caused by a lock in one Linear environment (a platform defect, reported);
+  - 2 of 156 attempts probed the backend directly.
+
+**S1** ([s1/](s1/README.md)), done without a model:
+- Agent-Diff's seeds defeat **3 of the 15** practical lazy shortcuts our automation defeats on Slack, Box and Linear
+  (it defeats all 19, Calendar's four included).
+- Pages and visibility are never defeated.
+- **152 of 210** targets of its plural requests would go unnoticed if left out.
+
+**B2** ([b2/](b2/README.md)), reading: the abstention suites' 2,843 boundary-type items are nearly all "no
+operation" of the tool-withheld kind. Read-only fields, permissions and state preconditions, 76 of our 93 faithful
+elements, have no counterpart.
 
 ## 6. What we do that they cannot
 
