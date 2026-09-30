@@ -895,9 +895,9 @@ mechanisms on every failing trial it reads ([numbers/exposure.json](numbers/expo
 | Baselines for the policy tests (neither baseline wrote an underspecified test) | – |
 | The several-match and boundary extensions on OpenClaw | – |
 | Baselines for the extensions | – |
-| A second annotator on the blind samples | – |
-| Value checks for dates, free text and time zones (RQ7) | – |
-| Disclosure: does the final reply report what was written? | – |
+| A second human annotator on the blind samples | – (blind_review_01's reference labels are an AI's, RQ5) |
+| Value checks for dates, free text and time zones (RQ7) | Audited once by values_01, on the earlier manifest (RQ7); not part of the pipeline |
+| Disclosure: does the final reply report what was written? | Audited once by values_01 (RQ7); not part of the pipeline |
 | The 9 servable facts left uncovered (label groups, Box tasks) | – |
 | Phase 4's 2 drop-F variants lost to the naming bug | – |
 | The full baseline comparison proposed in baselines_01 | – |

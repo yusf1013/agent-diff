@@ -530,63 +530,63 @@ error, and omitted Box fields can be cleared unexpectedly.
 - Policy cases can share a fact or scenario. The bootstrap samples cases; dependence can limit generalization.
 - Baseline arms are small. The cost comparison fixes token counts and caching, not model behavior or quality.
 
-## 12. Cost estimates for the 1,006 methodology cases
+## 12. Cost estimates for the 998 methodology cases
 
 These estimates replace the solver model while holding its total input, output and observed cache hit constant.
-They cover **3,018 solver executions only**. They are hypothetical API charges, not payments made for the
+They cover **2,994 solver executions only**. They are hypothetical API charges, not payments made for the
 self-hosted Qwen runs, and exclude test generation, judges, comparison studies and development.
 
 | Estimated token category | Millions |
 |---|---:|
-| Input, total | **371.73** |
-| Cached input reads | 329.41 |
-| Input not served from cache | 42.32 |
-| Of uncached input: cache creation | 30.95 |
-| Output, including reasoning | **9.66** |
-| **Input + output** | **381.39** |
+| Input, total | **368.77** |
+| Cached input reads | 326.79 |
+| Input not served from cache | 41.98 |
+| Of uncached input: cache creation | 30.70 |
+| Output, including reasoning | **9.58** |
+| **Input + output** | **378.36** |
 
 The assumed input-cache hit is **88.62%**. Cache creation is part of input, not extra tokens. With prices per
 million tokens, the calculation is:
 
-`42.31731 × input price + 329.41325 × cache-read price + 9.65798 × output price`
+`41.98079 × input price + 326.79366 × cache-read price + 9.58118 × output price`
 
-Where cache writes have a premium, add `30.95080 × (cache-write price − input price)`. This assumes the same
+Where cache writes have a premium, add `30.70467 × (cache-write price − input price)`. This assumes the same
 cache creation volume and uses five-minute writes where that choice is offered. All rates below are USD per
 million tokens, standard service and the applicable short-context tier, checked 2026-09-29.
 
-**Table 18. Estimated API cost for the complete 1,006-case suite.** Provider links identify pricing sources.
+**Table 18. Estimated API cost for the complete 998-case suite.** Provider links identify pricing sources.
 
 | Provider and model | Input | Cache read | Output | Cache write rate if premium | Estimated total |
 |---|---:|---:|---:|---:|---:|
-| [Anthropic](https://platform.claude.com/docs/en/about-claude/pricing): Haiku 4.5 | $1 | $0.10 | $5 | $1.25 | **$131.29** |
-| Anthropic: Sonnet 5 / 5.5 | $2 | $0.20 | $10 | $2.50 | **$262.57** |
-| Anthropic: Opus 5.5 | $4 | $0.20 | $20 | $5 | **$459.26** |
-| [OpenAI: GPT-5.4 Mini](https://developers.openai.com/api/docs/models/gpt-5.4-mini) | $0.75 | $0.075 | $4.50 | — | **$99.90** |
-| [OpenAI: GPT-5.4](https://developers.openai.com/api/docs/models/gpt-5.4) | $2.50 | $0.25 | $15 | — | **$333.02** |
-| [OpenAI: GPT-5.5](https://developers.openai.com/api/docs/models/gpt-5.5) | $5 | $0.50 | $30 | — | **$666.03** |
-| [OpenAI](https://developers.openai.com/api/docs/pricing): GPT-6 Luna | $0.10 | $0.01 | $0.50 | $0.125 | **$13.13** |
-| [OpenAI: GPT-6 Sol](https://developers.openai.com/api/docs/models/gpt-6-sol) | $2 | $0.20 | $10 | $2.50 | **$262.57** |
-| OpenAI: GPT-6.1 Sol | $2 | $0.10 | $10 | $2.50 | **$229.63** |
-| OpenAI: GPT-6 Astra | $10 | $1 | $50 | $12.50 | **$1,312.86** |
-| [Google](https://ai.google.dev/gemini-api/docs/pricing): Gemini 3.5 Flash-Lite | $0.30 | $0.03 | $2.50 | — | **$46.72** |
-| Google: Gemini 3.5 Flash | $1.50 | $0.15 | $9 | — | **$199.81** |
-| Google: Gemini 3.6 / 3.7 / 3.8 Flash, promotional | $0.75 | $0.075 | $3.75 | — | **$92.66** |
-| Google: Gemini 3.1 Pro Preview | $2 | $0.20 | $12 | — | **$266.41** |
-| [xAI: Grok 4.7](https://docs.x.ai/developers/models/grok-4.7) | $2 | $0.50 | $6 | — | **$307.29** |
-| [DeepSeek](https://api-docs.deepseek.com/quick_start/pricing/): V4.1 Flash, off-peak | $0.15 | $0.003 | $0.60 | — | **$13.13** |
-| DeepSeek: V4.1 Flash, peak | $0.30 | $0.006 | $1.20 | — | **$26.26** |
-| DeepSeek: V4 Pro, off-peak | $0.66 | $0.022 | $1.98 | — | **$54.30** |
-| DeepSeek: V4 Pro, peak | $1.32 | $0.044 | $3.96 | — | **$108.60** |
-| [Moonshot](https://platform.kimi.ai/): Kimi K2.6 | $0.95 | $0.16 | $4 | — | **$131.54** |
-| Moonshot: Kimi K2.7 Code | $0.95 | $0.19 | $4 | — | **$141.42** |
-| Moonshot: Kimi K3 | $3 | $0.30 | $15 | — | **$370.65** |
-| [Z.ai](https://docs.z.ai/guides/overview/pricing): GLM-5 | $1 | $0.20 | $3.20 | — | **$139.11** |
-| Z.ai: GLM-5.1 / 5.2 / 5.3 | $1.40 | $0.26 | $4.40 | — | **$187.39** |
-| Z.ai: GLM-5.3 Flash | $0.15 | $0.03 | $0.50 | — | **$21.06** |
-| [MiniMax](https://platform.minimax.io/docs/guides/pricing-paygo): M2.5 | $0.30 | $0.03 | $1.20 | $0.375 | **$36.49** |
-| MiniMax: M2.7 | $0.30 | $0.06 | $1.20 | $0.375 | **$46.37** |
-| MiniMax: M3 | $0.30 | $0.06 | $1.20 | — | **$44.05** |
-| [Alibaba](https://www.alibabacloud.com/help/en/model-studio/model-pricing): hosted Qwen3.8-27B, International | $0.50 | $0.10 | $3 | — | **$83.07** |
+| [Anthropic](https://platform.claude.com/docs/en/about-claude/pricing): Haiku 4.5 | $1 | $0.10 | $5 | $1.25 | **$130.24** |
+| Anthropic: Sonnet 5 / 5.5 | $2 | $0.20 | $10 | $2.50 | **$260.48** |
+| Anthropic: Opus 5.5 | $4 | $0.20 | $20 | $5 | **$455.61** |
+| [OpenAI: GPT-5.4 Mini](https://developers.openai.com/api/docs/models/gpt-5.4-mini) | $0.75 | $0.075 | $4.50 | — | **$99.11** |
+| [OpenAI: GPT-5.4](https://developers.openai.com/api/docs/models/gpt-5.4) | $2.50 | $0.25 | $15 | — | **$330.37** |
+| [OpenAI: GPT-5.5](https://developers.openai.com/api/docs/models/gpt-5.5) | $5 | $0.50 | $30 | — | **$660.74** |
+| [OpenAI](https://developers.openai.com/api/docs/pricing): GPT-6 Luna | $0.10 | $0.01 | $0.50 | $0.125 | **$13.02** |
+| [OpenAI: GPT-6 Sol](https://developers.openai.com/api/docs/models/gpt-6-sol) | $2 | $0.20 | $10 | $2.50 | **$260.48** |
+| OpenAI: GPT-6.1 Sol | $2 | $0.10 | $10 | $2.50 | **$227.81** |
+| OpenAI: GPT-6 Astra | $10 | $1 | $50 | $12.50 | **$1,302.42** |
+| [Google](https://ai.google.dev/gemini-api/docs/pricing): Gemini 3.5 Flash-Lite | $0.30 | $0.03 | $2.50 | — | **$46.35** |
+| Google: Gemini 3.5 Flash | $1.50 | $0.15 | $9 | — | **$198.22** |
+| Google: Gemini 3.6 / 3.7 / 3.8 Flash, promotional | $0.75 | $0.075 | $3.75 | — | **$91.92** |
+| Google: Gemini 3.1 Pro Preview | $2 | $0.20 | $12 | — | **$264.29** |
+| [xAI: Grok 4.7](https://docs.x.ai/developers/models/grok-4.7) | $2 | $0.50 | $6 | — | **$304.85** |
+| [DeepSeek](https://api-docs.deepseek.com/quick_start/pricing/): V4.1 Flash, off-peak | $0.15 | $0.003 | $0.60 | — | **$13.03** |
+| DeepSeek: V4.1 Flash, peak | $0.30 | $0.006 | $1.20 | — | **$26.05** |
+| DeepSeek: V4 Pro, off-peak | $0.66 | $0.022 | $1.98 | — | **$53.87** |
+| DeepSeek: V4 Pro, peak | $1.32 | $0.044 | $3.96 | — | **$107.74** |
+| [Moonshot](https://platform.kimi.ai/): Kimi K2.6 | $0.95 | $0.16 | $4 | — | **$130.49** |
+| Moonshot: Kimi K2.7 Code | $0.95 | $0.19 | $4 | — | **$140.30** |
+| Moonshot: Kimi K3 | $3 | $0.30 | $15 | — | **$367.70** |
+| [Z.ai](https://docs.z.ai/guides/overview/pricing): GLM-5 | $1 | $0.20 | $3.20 | — | **$138.00** |
+| Z.ai: GLM-5.1 / 5.2 / 5.3 | $1.40 | $0.26 | $4.40 | — | **$185.90** |
+| Z.ai: GLM-5.3 Flash | $0.15 | $0.03 | $0.50 | — | **$20.89** |
+| [MiniMax](https://platform.minimax.io/docs/guides/pricing-paygo): M2.5 | $0.30 | $0.03 | $1.20 | $0.375 | **$36.20** |
+| MiniMax: M2.7 | $0.30 | $0.06 | $1.20 | $0.375 | **$46.00** |
+| MiniMax: M3 | $0.30 | $0.06 | $1.20 | — | **$43.70** |
+| [Alibaba](https://www.alibabacloud.com/help/en/model-studio/model-pricing): hosted Qwen3.8-27B, International | $0.50 | $0.10 | $3 | — | **$82.41** |
 
 Google's Flash promotion runs through 2026-12-31; its estimates assume implicit caching, with no explicit-cache
 storage charge. The Qwen cache rate assumes [implicit caching at 20% of input price](https://www.alibabacloud.com/help/en/model-studio/context-cache).
@@ -597,12 +597,13 @@ may tokenize differently, make different numbers of calls and achieve different 
 **Actual self-hosted Qwen dollar cost remains unmeasured:** there is no per-token API bill, but GPU operation is
 not free. A dollar total requires the allocated GPU time and hardware or rental cost. The hosted-Qwen row is only
 an API-equivalent estimate. Generation and judge totals across all historical development runs cannot be treated
-as exact costs of the final 1,006 cases.
+as exact costs of the final 998 cases.
 
 ## 13. Remaining measurements
 
-The main gaps are a second solver model, a second blind annotator, valid coverage of the nine remaining facts,
-the 38 missing fact–mode policy requirements, underspecified-policy baselines, both extensions on OpenClaw,
-systematic value and disclosure checks, confirmed manual-review provenance for RQ7, and exact usage and GPU cost
-for the selected 3,018 executions. No smaller suite has yet been demonstrated to preserve all reported coverage
+The main gaps are a second solver model, a second human blind annotator (blind_review_01's labels are an AI's),
+valid coverage of the nine remaining facts, the 43 missing fact–mode policy requirements, underspecified-policy
+baselines, both extensions on OpenClaw, value and disclosure checks inside the pipeline (values_01 audited them once,
+on the earlier manifest), confirmed manual-review provenance for RQ7's remaining rows, and exact usage and GPU cost
+for the selected 2,994 executions. No smaller suite has yet been demonstrated to preserve all reported coverage
 and exposure findings.

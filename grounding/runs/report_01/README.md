@@ -369,3 +369,36 @@ and decisions; its `valid` keeps both cases of each duplicate pair (Linear and S
 - The weak-credit line (both): the 37 plain-only facts under the F0 rule (36 designated, 1 being regenerated) and
   the 2 cover-only facts. Sources: RQ2's (`numbers/coverage.json`, `credited_only_through_plain_near_misses`,
   `credited_through_a_cover_only`); roadmap, "The F0 rule".
+
+### §12 Cost estimates (report_concise.md)
+
+- "1,006 methodology cases" / "1,006-case suite" / "the final 1,006 cases" → 998; "3,018 solver executions" → 2,994.
+  The token table 371.73 / 329.41 / 42.32 / 30.95 / 9.66 / 381.39 → 368.77 / 326.79 / 41.98 / 30.70 / 9.58 / 378.36
+  (88.62% cached unchanged); the formula's coefficients 42.31731, 329.41325, 9.65798 and 30.95080 → 41.98079,
+  326.79366, 9.58118 and 30.70467. Source: `numbers/concise.json` (`token_estimate`, historical averages × 2,994 /
+  4,464).
+- Table 18's 29 estimated totals recomputed with the section's own formula and rates from the new estimate (each
+  about 0.8% lower: 2,994 / 3,018), after checking that the formula reproduces all 29 old totals exactly from the old
+  estimate. Old → new: Haiku 4.5 $131.29 → $130.24; Sonnet 5 / 5.5 $262.57 → $260.48; Opus 5.5 $459.26 → $455.61;
+  GPT-5.4 Mini $99.90 → $99.11; GPT-5.4 $333.02 → $330.37; GPT-5.5 $666.03 → $660.74; GPT-6 Luna $13.13 → $13.02;
+  GPT-6 Sol $262.57 → $260.48; GPT-6.1 Sol $229.63 → $227.81; GPT-6 Astra $1,312.86 → $1,302.42; Gemini 3.5
+  Flash-Lite $46.72 → $46.35; Gemini 3.5 Flash $199.81 → $198.22; Gemini 3.6 / 3.7 / 3.8 Flash $92.66 → $91.92;
+  Gemini 3.1 Pro Preview $266.41 → $264.29; Grok 4.7 $307.29 → $304.85; DeepSeek V4.1 Flash off-peak $13.13 → $13.03,
+  peak $26.26 → $26.05; V4 Pro off-peak $54.30 → $53.87, peak $108.60 → $107.74; Kimi K2.6 $131.54 → $130.49; Kimi
+  K2.7 Code $141.42 → $140.30; Kimi K3 $370.65 → $367.70; GLM-5 $139.11 → $138.00; GLM-5.1 / 5.2 / 5.3 $187.39 →
+  $185.90; GLM-5.3 Flash $21.06 → $20.89; MiniMax M2.5 $36.49 → $36.20; M2.7 $46.37 → $46.00; M3 $44.05 → $43.70;
+  hosted Qwen3.8-27B $83.07 → $82.41. Rates and their check date unchanged.
+- report.md §0.4 and §12 unchanged: `numbers/scale.json`, `qwen_usage.json` and `costs.json` count every run, which
+  the rulings do not change.
+
+### §13 Remaining measurements
+
+- report.md's table: "A second annotator on the blind samples" → "A second human annotator ..." with a note that
+  blind_review_01's reference labels are an AI's; the value-check and disclosure rows "–" → "audited once by
+  values_01 (on the earlier manifest); not part of the pipeline". Source: `values_01/report.md` (the checks V, S,
+  R1 to R5; free text 334 writes, states, time zone and dates 160).
+- report_concise.md: "a second blind annotator" → "a second human blind annotator (blind_review_01's labels are an
+  AI's)"; "the 38 missing fact–mode policy requirements" → 43 (`numbers/policy.json`, `per_fact_space`: 408 − 365);
+  "systematic value and disclosure checks" → "value and disclosure checks inside the pipeline (values_01 audited them
+  once, on the earlier manifest)"; "provenance for RQ7" → "for RQ7's remaining rows"; "the selected 3,018 executions"
+  → 2,994.
