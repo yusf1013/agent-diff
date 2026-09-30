@@ -102,3 +102,14 @@ section. Decisions that stand go to the [roadmap](roadmap.md); this is the recor
   detect@1; decisions unchanged. Sol is scored under the updated file, with the old reading as a second column.
   Also from sol_score: regular_p4 judged and its 45 blind labels locked (1 failure among them); 6 of 444 trials
   pending the retry pass.
+- 01:3x harness done (commit 56ef84c742; merged into main as ee61eabe70). Recommendation: **Claude Code as the second
+  harness** (Sonnet 5.5 on the plan and the self-hosted Qwen, both run end to end through the curl shim and skills;
+  the clock solved with an LD_PRELOAD shift; the init event shows no MCP servers or synced skills); Codex for Sol
+  only if one run confirms gpt-6.1-sol on the plan (the bundled 0.155 refused it: "not supported when using Codex
+  with a ChatGPT account"; 0.159.2 lists it) and with Calendar and the clocked tests left out (Codex's date cannot
+  be shifted). If one third-party harness must carry all three, OpenCode with Sonnet on an API key. For the PI:
+  the Pro-not-Max login; the Sonnet round's choice (OpenClaw's loop on an API key, about $263 list for the full
+  suite, the only same-harness comparison; or Claude Code's loop at $0); the Codex weekly window at 71%, reset
+  2026-10-03 15:17 EDT, shared with the Sol round. Assigned next: Claude Code as a backend of our runner and a
+  32-test Sonnet pilot (claudecode_pilot_01).
+- 01:35 the Sol policy units now run once each first, then trials 2 and 3, because of the plan's window.
