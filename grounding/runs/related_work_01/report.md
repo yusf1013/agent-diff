@@ -748,7 +748,7 @@ with the self-hosted Qwen, graded by boundary_02's oracle.
 | Agent | OpenClaw, self-hosted Qwen3.8-27B | the same | the same model, toy harness | OpenClaw, self-hosted Qwen |
 | Tests | 48 items | 48 items | 89 valid boundary tests | none on boundaries: its failing tests all presuppose a missing record (a policy form) |
 | Tests failing at least once | **40 of 48** | 40 of 48 | 49 of 89 | – |
-| Failing trial 1 | 30 of 48 | 28 of 48 | – | – |
+| Failing trial 1 | 30 of 48 | 28 of 48 (two of the 12 reruns pass on trial 1) | – | – |
 | Trials passing | **47 of 144**, all reports | 50 of 144 | by alternative, below | – |
 | Pass rate, nothing else possible | 4 of 27 | 7 of 27 | 40 of 45 | – |
 | … a re-creation possible | 8 of 63 | 8 of 63 | 31 of 92 | – |
@@ -790,42 +790,59 @@ validation error are read as a broken environment, and the agent keeps probing.
 - **What ran:** the matched 48 variants (24 absence, 24 underspecified), 3 trials each, on OpenClaw with the
   self-hosted Qwen, graded by triage plus judge v2 in policy mode on Muse. The matched 48 differ from the plan because
   only 11 underspecified variants grade cleanly (p1/README.md).
-- **Reading B (primary)** takes four variants from their rerun (p1_01_fix). In those variants my seed gave the copied
-  issue the identifier the replica hands the team's next issue, so creating issues there failed. **Reading A** keeps
-  their first trials as artifacts (void).
-- **Also recorded:** 5 attempts broken by the backend freeze and 3 cut off when the runner stopped were rerun by the
-  runner's retry.
 
-| Cell | P1, reading B | P1, reading A | Ours: 6a policy population (same agent) | baselines_01 |
+**First, the unit.** P1's failures are request-level policy failures with no fact behind them. P1 designs no near
+misses, so under our credit rule it exposes no facts, as N0 and N1 did. The 48 touch 31 fact–mode requirements by
+occurrence, and 21 of them have a failing variant (absence 8, underspecified 13), but that is an upper bound, not
+credit. This is the gap between the units that §5.2 predicted.
+- **So the rates below are not like for like.** P1's absence trials fail mostly by re-creating the missing record or
+  by acting on a near miss the seed happens to hold.
+- **Each unit of ours isolates one fact**, with designed near misses that each fail that fact. Our rates are pooled
+  over the population's usable trials (openclaw_eval_01's population decisions); the same judge and rule grade both.
+
+**The readings:**
+- **Reading B (primary)** takes four variants from their rerun (p1_01_fix). In those variants my seed gave the copied
+  issue the identifier the replica hands the team's next issue, so creating issues there failed.
+- **Reading A** keeps those four variants' first trials as artifacts (void).
+- Attempts broken by the backend freeze (5) or cut off when the runner stopped (3) were rerun by the runner's retry.
+  Their first attempts are kept as evidence.
+
+| Cell | P1: any policy failure, reading B | P1, reading A | Ours: 6a policy units, each isolating one fact (same agent, same judge) | baselines_01 |
 |---|---|---|---|---|
-| Absence, all | **34 of 72 trials fail**; 14 of 24 variants fail at least once | the same | – | presupposing tests: N0 10 of 27 trials, 5 of 9 tests; N1 6 of 24, 2 of 8 |
+| Absence, all | 34 of 72 trials; 14 of 24 variants fail at least once | the same | – | presupposing tests: N0 10 of 27 trials (5 of 9 tests); N1 6 of 24 (2 of 8) |
 | Absence: Box / Linear / Slack | 14/24, 7/24, 13/24 trials | the same | 126/165, 160/263, 75/125 trials | – |
-| Underspecified, all | **64 of 72 trials fail**; 23 of 24 variants | 52 of 60 usable (12 void); 19 of 24 | – | none written |
+| Underspecified, all | 64 of 72 trials; 23 of 24 variants | 52 of 60 usable (12 void); 19 of 24 | – | none written |
 | Underspecified: Box / Linear / Slack | 6/6, 29/33, 29/33 trials | 6/6, 17/21, 29/33 | 65/136, 83/205, 63/82 trials | – |
 
-- **How they fail:**
+- **Where the rates meet:** they are closest in Slack's underspecified cell (P1 29 of 33, ours 63 of 82), the cell our
+  population left undecided.
+- **How P1's variants fail:**
   - **Absence:** the agent re-creates the missing record (a new "investments" folder, hub, Engineering team or
-    #engineering channel), or acts on a natural near miss in Agent-Diff's seed (the misfiled copy of the crisis
-    notes; #project-alpha for #project-alpha-dev). Or it runs out the budget.
+    #engineering channel), or acts on a natural near miss (the misfiled copy of the crisis notes; #project-alpha for
+    #project-alpha-dev). Or it runs out the budget.
   - **Underspecified:** the agent notices the second match, picks the "primary" one and discloses it afterwards.
-    Under our judge's rule that is a failure (it should ask first).
-- **Two caveats on the underspecified mode:**
-  - **Six of its 24 variants are key-only duplicates**: Linear issues identical except for their id and identifier.
-    P1's review meant to exclude such copies as contested; "identifier" was missing from its list of key-like fields.
-    Without them: 50 of 54 trials fail, 18 of 18 variants.
-  - **P1's copies are exact or near-exact duplicates.** Our underspecified units open one condition at a time, so
-    the agent has less to notice.
-- **Units:** the 48 reach 31 fact–mode requirements by occurrence, and 21 fail at least once (absence 8,
-  underspecified 13). P1 designs no near misses, so under our credit rule it exposes no facts, as N0 and N1 did. Its
-  failures are request-level policy failures. That is the gap between the units the report predicted (§5.2).
-- **The judge:** judge v2 agrees with my 60 blind labels on the final outcome in 59 cases (54 on the raw outcome).
-  - The raw differences: 4 timeouts I left not established, where the judge graded the state (failures either way
-    under the budget rule); and 2 seed-flaw artifacts the judge graded on the agent's intent.
-  - The final difference is a trial that probed the backend directly, which my label missed; the rule fails it.
-  - On the rerun's 4 labelled trials it agrees on all 4.
+    Under our judge's rule that fails: it should ask first.
+- **What the underspecified copies are.** One criterion: a copy is distinguishable when it differs from the original
+  in a field the agent can see beyond its key.
+  - **Second accounts, 15 variants:** another person record with another email (and username). 41 of 45 trials fail;
+    15 of 15 variants.
+  - **Names changed only because the service keeps them unique, 3 variants:** Box's "X (1).csv", and a channel copy
+    renamed from -q3 to -q4. These are borderline duplicates. 9 of 9 trials fail.
+  - **Key-only duplicates, 6 variants:** Linear issues identical except for their id and the identifier derived from
+    it. P1's review meant to exclude such copies as contested, but its list of key-like fields lacked "identifier".
+    14 of 18 trials fail, 5 of 6 variants.
+- **The judge:**
+  - **Agreement:** judge v2 agrees with my blind labels on 55 of the 56 trials not forced void on either side. The
+    other 4 of the 60 are the seed-flaw artifacts, void on both sides by construction.
+  - **The one difference:** a trial that probed the backend directly. The judge itself called it correct_absent, as my
+    label did; the backend rule, not the judge, fails it, and my label missed the probe.
+  - **Raw verdicts, before the budget rule:** they agree on 54 of 60. The 4 timeouts I left not established, the judge
+    graded from the state (failures either way under the budget rule). And the judge graded the 2 seed-flaw artifacts
+    on the agent's intent.
+  - **On the rerun's 4 labelled trials,** it agrees on all 4.
 - **Cost:** judge v2 on Muse, $7.12 at list price for 156 judged trials. The solver is the self-host, with no charge.
 - **Found on the way:**
-  - the counter flaw in my P1 seeds (fixed; the four variants rerun);
+  - the counter flaw in my P1 seeds (fixed; four variants rerun);
   - a backend freeze caused by a lock in one Linear environment (a platform defect, reported);
   - 2 of 156 attempts probed the backend directly.
 

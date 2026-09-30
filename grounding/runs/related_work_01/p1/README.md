@@ -129,10 +129,11 @@ blind sample (60 of 144 trials, [eval/blind_p1_01.json](eval/blind_p1_01.json)) 
 before the run. It checks judge v2 on the shared tier in particular.
 
 **Results** ([report.md](../report.md) §5.7; summary_A.json and summary_B.json):
-- **Absence:** 34 of 72 trials fail; 14 of 24 variants fail at least once.
+- **Absence** (the same in both readings): 34 of 72 trials fail; 14 of 24 variants fail at least once.
 - **Underspecified (reading B):** 64 of 72 trials fail; 23 of 24 variants. Without the six key-only Linear
   duplicates: 50 of 54.
-- **Judge v2 against the 60 blind labels:** 59 of 60 on the final outcome.
+- **Judge v2 against the 60 blind labels:** 55 of 56 on the final outcome; the other 4 are seed-flaw artifacts, void
+  on both sides by construction.
 - **Cost:** $7.12 list on Muse.
 
 **Record of the run:**
@@ -153,4 +154,6 @@ before the run. It checks judge v2 on the shared tier in particular.
 | [facts.py](facts.py), [facts.json](facts.json) | Catalog facts per valid variant |
 | [materialize.py](materialize.py) | A variant's seed; `--check-all` builds every valid one |
 | [run_prep.py](run_prep.py), [blind_sample.py](blind_sample.py) | The matched selection as cases our runner and judge v2 read; the blind sample's drawer |
+| [analyze.py](analyze.py), [summary_A.json](summary_A.json), [summary_B.json](summary_B.json) | The run's numbers in both readings, beside ours and baselines_01 |
+| `runs/p1_01/`, `runs/p1_01_fix/`, [eval/](eval/) | The runs (retried attempts keep their first attempt), judge v2's verdicts, the blind samples and my labels |
 | [schema_dump.py](schema_dump.py), [schemas.json](schemas.json) | Keys, unique constraints and foreign keys of the three replicas (dumped with the backend's interpreter) |
