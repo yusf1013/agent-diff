@@ -44,6 +44,8 @@ import argparse
 import copy
 import json
 import re
+import sys
+from collections import Counter
 from datetime import date
 from pathlib import Path
 
@@ -192,17 +194,37 @@ def local_attempt(recorded: str) -> Path:
     return HERE.parent / recorded.split("/grounding/runs/", 1)[1]
 
 
+def warn_unresolved(verdicts: list[Path]) -> None:
+    """Loudly, on stderr: verdicts whose attempt cannot be found, where recorded or re-rooted here, so the budget rule
+    could not be applied to them. (It was skipped without a word for 1,743 verdicts after a worktree was removed,
+    from 49ce3672dc until 2026-09-30.)"""
+    per_folder = Counter(str(v.parents[3]) for v in verdicts)  # <verdict folder>/<run>/<trial>/<unit>/verdict.json
+    print(f"\n*** WARNING (openclaw_eval_01/policy.py population_outcomes): {len(verdicts)} verdicts name an attempt "
+          f"that cannot be found, where recorded or re-rooted under {HERE.parent}. The budget rule is NOT applied to "
+          f"them: a trial over the budget keeps its verdict's outcome. ***", file=sys.stderr)
+    for folder, n in per_folder.most_common():
+        print(f"***   {n} in {folder}", file=sys.stderr)
+    print(f"***   for example {verdicts[0]}\n", file=sys.stderr)
+
+
 def population_outcomes(verdict_dirs: list[Path]) -> dict:
     """unit -> {trial: outcome} from judge v2's verdicts, with every trial over the solver's budget
     (`rulings.over_budget`) counted as a failure ("incorrect"): judge v2 calls a timeout not_established, which
-    would void it. The attempt is read where its verdict records it, or re-rooted here (`local_attempt`)."""
+    would void it. The attempt is read where its verdict records it, or re-rooted here (`local_attempt`); a verdict
+    whose attempt is found neither way is reported on stderr (`warn_unresolved`)."""
     out = sampler.verdict_outcomes(verdict_dirs)
+    unresolved = []
     for d in verdict_dirs:
         for path in d.glob("*/*/*/verdict.json"):
             v = json.loads(path.read_text())
-            attempt = local_attempt(v.get("attempt", ""))
-            if attempt.exists() and rulings.over_budget(attempt):
+            attempt = local_attempt(v.get("attempt") or "")
+            if not v.get("attempt") or not attempt.exists():
+                unresolved.append(path)
+                continue
+            if rulings.over_budget(attempt):
                 out[path.parent.name][path.parent.parent.name] = "incorrect"
+    if unresolved:
+        warn_unresolved(unresolved)
     return out
 
 
