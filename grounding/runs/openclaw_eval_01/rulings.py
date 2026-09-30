@@ -24,15 +24,21 @@ HERE = Path(__file__).resolve().parent
 KNOWN_DEFECTS = HERE.parent / "roadmap_01" / "known_defects.json"
 ID_DIRS = (HERE / "suite_opaque" / "ids", HERE.parent / "completion_01" / "suite" / "ids")  # 6a's scenarios, 6b's
 FORMS = (("AT-", "absence twin"), ("UC-", "clone"), ("U-", "underspecified"), ("FP-", "fact probe"), ("P-", "probe"))
-BUDGET_S = 480  # the PI, 2026-09-28: a solver that runs out 8 minutes (limiter waits excluded) fails the trial
+# The solver's time budget. The PI, 2026-09-28: a solver that runs out its budget (limiter waits excluded) fails the
+# trial. On 2026-09-29 the PI set the budget to 10 minutes, since every OpenClaw run used OpenClaw's 600-second
+# limit; the earlier 480-second reading (trials between 8 and 10 minutes counted as timed out) is withdrawn.
+BUDGET_S = 600
 
 
 def over_budget(attempt: Path) -> bool:
-    """The trial ran out the solver's 8-minute budget: its turn's time minus rate-limiter waits passed 480 s. OpenClaw's
-    own limit is 600 s, so a trial can pass the budget and still finish; it counts as timed out all the same."""
+    """The trial ran out the solver's budget: OpenClaw's turn limit (600 s) ended it, or its agent time minus
+    rate-limiter waits passed BUDGET_S. Trials that spent over a quarter of the turn waiting for the shared limiter
+    were re-run as infrastructure errors (runtime rule R2), so the waits never make a trial time out."""
     summary = json.loads((attempt / "execution_summary.json").read_text())
     if summary.get("status") != "completed":
         return False
+    if summary.get("termination") == "timeout":
+        return True
     turn = (summary.get("turn_durations_s") or [0])[0]
     return turn - ((summary.get("usage") or {}).get("limiter_wait_s") or 0) > BUDGET_S
 

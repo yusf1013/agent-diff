@@ -1,4 +1,4 @@
-"""RQ4: the failures the regular suite exposes on OpenClaw (6a and 6b), under the PI's rulings and the 8-minute
+"""RQ4: the failures the regular suite exposes on OpenClaw (6a and 6b), under the PI's rulings and the 10-minute
 budget, by writer, fact kind, near-miss family and form; trial-level counts; judge v2's failure mechanisms.
 
 A test **exposes** a fact when a counted trial acts on (or presents) a near miss of that fact; detect@3 uses all
@@ -80,7 +80,7 @@ def main():
                 key = f"{k}/{t['case_id']}"
                 trials["run"] += 1
                 if key in over:
-                    trials["over the 8-minute budget (no exposure)"] += 1
+                    trials["over the solver's budget, 10 minutes (no exposure)"] += 1
                     continue
                 if tr["outcome"] in sampler.FAIL:
                     if key in not_counted:

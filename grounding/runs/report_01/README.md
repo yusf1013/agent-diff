@@ -44,3 +44,22 @@ exact usage audit of that subset. Its price table states the rates, sources and 
 input and missing usage, without changing run evidence. It separates the main evaluation, RQ8's fresh baseline
 and ablation runs, and stopped/smoke runs. If the baseline branch is still separate, pass
 `--baselines-root .claude/worktrees/baselines-01/grounding/runs/baselines_01` from the repository root.
+
+## Recount under the 10-minute budget (2026-09-30)
+
+On 2026-09-29 the PI set the solver's budget to 10 minutes, OpenClaw's own turn limit, which every final run used;
+the earlier reading of 8 minutes (runs between 8 and 10 minutes counted as timed out) is withdrawn.
+`openclaw_eval_01/rulings.py` now counts a run as over budget only when OpenClaw's limit ended it. The scores
+(`*.adjudicated.json`, `final_regular*.json`, `policy/decisions_population_*.json`) and the numbers here were rebuilt.
+
+| Number | 8 minutes (report text) | 10 minutes (numbers/) |
+|---|---:|---:|
+| Regular runs over budget | 104 | 52 |
+| Regular tests exposing a fact | 138 of 565 | 143 of 565 |
+| Facts exposed, detect@3 / detect@1 | 87 / 60 | 88 / 61 |
+| Policy decisions | 5 not policy-level, 3 undecided | the same 5 and 3, at lower failure rates |
+| Box absence rate | 0.79 [0.74, 0.85] | 0.77 [0.71, 0.83] |
+| Slack underspecified rate | 0.82 [0.75, 0.89] | 0.77 [0.69, 0.84] |
+
+**The report texts (report.md, report_concise.md) still carry the 8-minute numbers**; their tables are to be
+updated from `numbers/` (RQ4, RQ6, §0.4's execution categories, the limits section).
