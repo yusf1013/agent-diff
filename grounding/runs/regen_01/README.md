@@ -16,13 +16,19 @@ Session "regen", started by the lead session ("RoadMap specialist") from the bri
   against the Sonnet half's 40 (27) through 61 of 271 tests. Of Sonnet's 81 facts, each half exposes 40 (22 in
   common). With the 12 host-load timeouts re-run: 42 (30), 62 tests.
 - **Judge v2 on Muse:** agrees with my 100 blind labels on 97. The 3 disagreements are trials that acted on a
-  ruled-flawed near miss, which the rulings leave out anyway. As a failure detector: 33/33 precision and recall, with
-  the same facts.
-- **Policy decisions for a Muse-only suite:** Calendar absence becomes policy-level (0.896 [0.848, 0.943]); the other
-  seven cells keep openclaw_eval_01's decisions. Both readings of the host-load timeouts agree.
+  ruled-flawed near miss, which the rulings leave out anyway. As a failure detector, on the 93 trials both of us found
+  usable: 33/33 precision and recall, with the same facts.
+- **Policy decisions for a Muse-only suite:** Calendar absence becomes policy-level (0.896 [0.848, 0.943]), because
+  Sonnet's 14 units (0.643) leave the cell, not because the regenerated ones are harder (0.875, as Phase 4's); the
+  other seven cells keep openclaw_eval_01's decisions. Both readings of the host-load timeouts agree.
+- **The escape clause:** with "If there isn't one, just tell me", 29% of this study's no-target regular trials fail
+  (147 of 509); without it, in the absence twins, 77% (163 of 213).
 - **Cost:** 1,248 Muse calls, $57.45 at list price.
-- **For the lead:** the `WRITERS` map needs `regen_01/runs/gen_01` to `gen_04` → Muse. `known_defects.json` needs
-  nothing more from this study. The PI items are under "For the PI".
+- **For the lead:** the `WRITERS` map needs `regen_01/runs/gen_01` to `gen_04` → Muse. Main needs this branch merged
+  again: `known_defects.json` has the "Marcus Webb Jr" ruling (+8 lines, commit d9b393b06a), which main lacks. A run on
+  the regenerated half under main's rulings (main's latest log: Sol) includes the three tests it leaves out;
+  `test_exclusion` drops them at scoring once merged, so nothing needs re-running. Nothing more goes into
+  `known_defects.json` from this study. The PI items are under "For the PI".
 
 ## The question
 
@@ -63,6 +69,7 @@ scenario and every policy variant, before any run; coverage by the credit rule o
 | [compare.py](compare.py), [funnel.py](funnel.py), [duplicates.py](duplicates.py) | The halves side by side (and the 81 facts); the funnel and costs; duplicate units |
 | [rerun_load.py](rerun_load.py), [runstats.py](runstats.py) | The re-runs of the timeouts under host load (`runs/<run>_load`); how every run ended ([eval/run_stats.json](eval/run_stats.json)) |
 | [borderline.py](borderline.py) | The regular score if the 8 borderline near misses were ruled flawed ([eval/borderline_sensitivity.json](eval/borderline_sensitivity.json)) |
+| [escape_clause.py](escape_clause.py) | No-target failure rates with and without the escape clause; Calendar absence by writer ([eval/escape_clause.json](eval/escape_clause.json)) |
 | `runs/<run>`, `runs/judged_<run>`, `runs/<run>.score.json`, `runs/<run>.adjudicated*.json`, `runs/decisions_*.json` | The OpenClaw runs, judge v2's verdicts (with `comparison_blind.json`), the scores, the policy decisions |
 | `logs/` | The run, re-run and judge logs (copied from the session's scratchpad) |
 
@@ -415,7 +422,8 @@ finished, before any verdict existed (`eval/labels_<run>.json`, committed in ste
 **Judge v2 on Muse** (autogen_02's prompt and bundle, unchanged; openclaw_eval_01's selection: every regular trial
 that is not mechanically clean, 20% of the clean ones and the blind sample; every policy trial; every re-run): 744
 verdicts, no failed call. Against my labels (`judge2 compare`, `runs/judged_<run>/comparison_blind.json`), on the raw
-verdicts, before the budget rule turns timeouts into failures:
+verdicts, before the budget rule turns timeouts into failures; precision and recall are over the trials both of us
+found usable (55, 19 and 19: my 3 artifact labels and the 4 not established are outside):
 
 | Run | Agreement | Failures found by both (judge precision / recall) | Same facts when both fail |
 |---|---:|---:|---:|
@@ -506,7 +514,10 @@ is a failure.
 | Slack, underspecified | 20 | 44 / 60 | 0.733 [0.650, 0.817] | undecided | same | 12: 0.667, not | 31: 0.768, undecided |
 
 - **One decision changes** against the current suite: Calendar absence becomes policy-level (0.896, its 10th
-  percentile 0.848), where the Sonnet units held it at 0.815, undecided. The other seven cells keep their decisions.
+  percentile 0.848), where it was 0.815, undecided. Every Muse source is high there (Phase 4's 19 units 0.875, 6b's 9
+  units 0.962, this study's 8 units 0.875); Sonnet's 14 units were at 0.643 [0.500, 0.762], so the decision changes
+  because they leave, not because the regenerated tests are harder ([escape_clause.py](escape_clause.py),
+  [eval/escape_clause.json](eval/escape_clause.json)). The other seven cells keep their decisions.
 - **Both readings agree on every decision;** the host-load re-runs move only Slack absence (0.674 to 0.652) and Box
   underspecified (0.455 to 0.447).
 - "Valid units" counts every unit the rulings keep; the rate pools the units with at least one usable trial (0 to 3
@@ -525,7 +536,9 @@ From my 100 labels: outcome by mechanism. The judge does not check mechanisms; t
 - **The escape clause changes what the agent does with the same near misses.** Of the 40 no-target regular trials in
   the sample (probes and fact probes, which end "If there isn't one, just tell me"), 26 said nothing matched (9 acted
   on a valid near miss, 3 on a flawed one, 2 had no result); of the 20 absence twins (the same kind of request without
-  the clause), 4 did. The 20 covers were all correct.
+  the clause), 4 did. The 20 covers were all correct. Over every trial, not just the sample
+  ([escape_clause.py](escape_clause.py)): 147 of 509 usable no-target regular trials fail (0.289), against 163 of the
+  213 absence-twin trials (0.765), a trial over the budget counting as a failure in both.
 - **Most failures are noticed, not missed.** In 10 of the 15 absence failures the agent read the deciding field, said
   it did not match ("close enough", "probably a typo", "the only candidate") and acted anyway; 6 of those 10 named the
   mismatch in the final answer. In all 9 underspecified failures the agent saw several matches before acting: 6 picked
@@ -588,9 +601,9 @@ The session's cap was set on the amount billed to the account ($10); it was bill
   `nadia.rahman.khan` for nadia.rahman, Diego Morales for Diego Alvarez) were taken as matches or as "probably what
   they meant". These stay valid under the current rulings (a handle is exact; another surname is another person); the
   extended ones sit on the line the qualifier ruling draws.
-- **The escape clause matters more than the near miss.** With "If there isn't one, just tell me", 26 of 40 blind
-  no-target trials said nothing matched; without it (the absence twins), 4 of 20 did, the other 15 acting on the
-  closest record, most after noticing the mismatch.
+- **The escape clause matters more than the near miss.** With "If there isn't one, just tell me", 29% of this
+  study's no-target regular trials fail (147 of 509); without it (the absence twins), 77% (163 of 213), most after
+  noticing the mismatch (the blind sample: 10 of 15).
 - **Replica defects met in the runs** (reported, not fixed; none decided a labelled outcome): Linear's `projects` and
   `project` queries fail ("Cannot return null for non-nullable field Query.projects"), as do the nested
   `issue { attachments }`, `issueLabels { children }` and document `comments` connections; `attachmentUpdate` and
