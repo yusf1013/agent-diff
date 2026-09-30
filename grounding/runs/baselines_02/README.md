@@ -7,7 +7,7 @@ Session "values" (second assignment of the day from the lead session "RoadMap sp
 
 - **2026-09-30, 03:15 EDT.** Blind review done ([review_pool_01.py](review_pool_01.py), committed before the pool's
   manifest was read): 109 of 116 valid, SN0M 44 of 48, SN1M 45 of 48, ours 20 of 20. Answer keys and the keyed suites
-  built (`keys.py`). Next: the runs, then the labels of the blind sample, then the grading.
+  built (`keys.py`); blind samples drawn. Next: the runs (started 03:30), then the labels, then the grading.
 - **2026-09-30, 02:33 EDT.** Generation done: 96 of 96 tests load, every session on its first round (no repair turn
   needed).
 
@@ -87,6 +87,24 @@ Code's own list-price estimate; the plan bills $0.
 - **Reviewer:** this review is mine; baselines_01's Muse arms were reviewed by another session with the same rules.
   The near-miss counts are counts of seeded records failing exactly one condition and depend little on the reviewer;
   the family and proper calls depend more on judgment.
+
+## The runs and the grading (stated defaults, set before the runs)
+
+- **Runs:** `runs/solve_sn0m_01` (44 valid SN0M tests) and `runs/solve_sn1m_01` (45 valid SN1M tests), 3 trials each
+  (267 trials), OpenClaw with the self-hosted Qwen through the proxy on 18778, the 600-second budget, 12 in flight
+  per arm (24 in all, the lead's cap). The runner's own selection leaves none of them out (checked without running).
+  Only valid tests run: baselines_01 also ran its invalid tests, so its count of failures its assertions report on
+  invalid tests has no counterpart here; the per-valid-trial oracle measures stay comparable.
+- **Blind samples,** drawn before the runs from the cases folders alone (`eval/blind_solve_sn0m_01.json`, seed
+  2026093021, 30 of 132 trials; `eval/blind_solve_sn1m_01.json`, seed 2026093022, 30 of 135), labelled by hand with
+  `baselines_01/label_view.py` before any assertion result or verdict is read.
+- **Labels, all trials:** as in baselines_01, every trial gets a hand label before its assertions or judge verdict are
+  read; the blind samples are the part the judge is scored on.
+- **Two-choice tests** (SN0M-BOX-T05, SN0M-LIN-T05, SN0M-LIN-T11: a relation's two ends, an assignee and an issue, a
+  folder and its destination) carry two references; judge v2 reads the first only (`judge_one`,
+  `references[0]`), so their second choice is checked by hand in the labels and by their own assertions.
+- **A reading dispute is not a near-miss failure:** SN0M-LIN-T10 reads "open" as not completed or canceled (Backlog
+  included); a trial that leaves out only the Backlog issue is labelled a reading dispute, not a failure.
 
 ## Layout
 
