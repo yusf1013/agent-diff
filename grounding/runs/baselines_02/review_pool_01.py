@@ -63,15 +63,18 @@ REACTION_ROW = {"table": "message_reactions", "key": ["message_id", "reaction_ty
                 "changes": ["delete", "insert"]}
 
 
-# An edited occurrence of a recurring Calendar event is stored as an exception row `<series id>_<UTC start>`
+# An edited occurrence of a recurring Calendar event is stored as an exception row `<series id>_<start>Z`
 # (backend calendar `database/operations.py`, the exception's `id=instance_id`); editing the series updates its row.
+# The replica writes the start's LOCAL wall-clock digits before the "Z" (`inst_start.strftime("%Y%m%dT%H%M%SZ")`),
+# not UTC as Google does: this Tuesday's 09:30 PT standup is `ev_r9x_20180619T093000Z`. Corrected on 2026-09-30 at
+# 12:05 from the runs' own evidence (the key had the UTC form, a row the replica never writes), before any verdict.
 OCCURRENCE = {"table": "calendar_events", "key": ["id"], "changes": ["insert", "update"],
               "columns": ["location", "status", "start_datetime", "end_datetime", "recurrence", "summary"]}
 
 
 REVIEW = [
     r("R001", "present", ["A:Event.summary", "A:Event.start", "D:occurrence"],
-      target=["ev_r9x_20180619T163000Z"], table="calendar_events", effect=OCCURRENCE,
+      target=["ev_r9x_20180619T093000Z"], table="calendar_events", effect=OCCURRENCE,
       near=[("ev_r9x", "D:occurrence", "F6", "the series itself: changing it moves every week, not this Tuesday's")],
       proper=["D:occurrence"],
       oracle_ok=False, oracle_note="every count allows 0 and no assertion names the date: a trial that changes nothing, "
