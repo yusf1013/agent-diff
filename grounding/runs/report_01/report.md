@@ -2,7 +2,9 @@
 
 *A stub for the evaluation and results sections of a paper, written 2026-09-29 from the committed runs and brought
 to the rebuilt numbers on 2026-09-30 (the 10-minute budget, duplicate policy units, blind_review_01; every change is
-logged in [README.md](README.md), "Text changes"). It covers the experiments, what they show and what they do not.
+logged in [README.md](README.md), "Text changes"). The numbers are those in [numbers/](numbers/) at commit
+663af2ce1c; two later PI rulings (commit 3405221d90) are not yet applied. It covers the experiments, what they show
+and what they do not.
 There is no introduction, background or related work. Every table names its source: a script in [kit/](kit/) and the
 JSON it writes into [numbers/](numbers/), or a run record. Rows marked "–" or "not measured" are measurements not yet
 made.*

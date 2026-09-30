@@ -73,6 +73,13 @@ none is recomputed from memory. `numbers/` and `kit/` are unchanged. One excepti
 which re-made `openclaw_eval_01/runs/policy/decisions_population_underspecified.json`), so Table 11's figures are
 read from the two decision files, the sources the table already cites. Format: section, old → new, source.
 
+**Which numbers:** every source below is read as of commit 663af2ce1c (after the 10-minute rebuild 49ce3672dc and
+the duplicate merge 4fec9ec540). The later commit 3405221d90 (two PI rulings from blind_review_01: 563 regular
+tests, Box absence 58 and Box underspecified 52 valid units) rebuilt `numbers/exposure.json`, `numbers/policy.json`
+and the decision files, but not `numbers/concise.json` or `numbers/coverage.json`; its numbers are not applied here.
+A reader of a later `numbers/` file will find other values than the ones logged below. Once these texts are updated,
+the Recount section's note that they "still carry the 8-minute numbers" no longer holds.
+
 ### Setup (§0)
 
 - report.md §0.3, "The 8-minute budget" → "The 10-minute budget": a trial ended by OpenClaw's 600-second turn limit
