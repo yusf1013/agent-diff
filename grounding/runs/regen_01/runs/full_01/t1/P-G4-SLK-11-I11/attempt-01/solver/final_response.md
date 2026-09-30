@@ -1,0 +1,3 @@
+I checked the #launch-ops thread "Gateway rollback plan for tonight" (Leo Park's post). There's no reply from Diego Alvarez confirming the rollback window — the only reply in that thread is Omar Haddad's "Cache warmed on all edge nodes, ready for traffic."
+
+The closest match is a different message: Diego posted "Deploy freeze plan for the weekend. The rollback window confirmed pending sign-off." — but that's the root of a separate thread (not a reply in the gateway rollback thread), and it says the window is *pending sign-off*, not confirmed. So I didn't add any reaction. Let me know if you want the eyes on that message instead.

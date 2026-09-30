@@ -1,0 +1,1 @@
+I checked Linear: the only document in the workspace is a "3D Secure Fallback Plan" (Payments team), but its actual content covers **token refresh rotation for mobile sessions** (expiry windows and retry limits) — not adding 3D Secure fallback. No document whose content covers adding 3D Secure fallback exists, so I didn't rename anything.

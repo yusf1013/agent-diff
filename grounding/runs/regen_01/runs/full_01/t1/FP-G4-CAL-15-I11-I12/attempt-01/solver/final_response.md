@@ -1,0 +1,1 @@
+Done — there was one. Your **Kickoff Review** on the Editorial Calendar (Thursday, June 21, 10–11 AM) now has its location set to **Room 5B**. (I checked all three of your "Editorial Calendar" calendars; only this one had the event.)

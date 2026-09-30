@@ -1,0 +1,1 @@
+Done. The issue was **PLA-2 — "Stale cache after deploy"**: Priya's comment ("The rollback plan is approved, proceed with the weekend cutover.") was posted Sep 11 and resolved Sep 12, 2026. Estimate is now set to **5**.

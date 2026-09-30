@@ -1,0 +1,1 @@
+Done. Found the post — "Update: lattice outage in eu-west, failover started" by Sofia Reyes (@sofia.reyes), which drew two replies ("Seeing the same from my side" and "Joining the call now") — and invited her to #followups. She's a member now (channel has 3 members).

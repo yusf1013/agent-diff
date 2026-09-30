@@ -1,0 +1,1 @@
+Done. There's exactly one Harbor folder in your Box: **Harbor Launch Media** — created March 14, last modified by Priya Nair, 3 items (Booth backdrop.png, Interview audio.mp3, Launch day video.mp4). Its launch day video is in your Favorites, and it matched every other clue, so I tagged it `launch-ready`.

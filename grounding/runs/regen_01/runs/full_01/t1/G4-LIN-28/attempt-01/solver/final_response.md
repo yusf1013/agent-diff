@@ -1,0 +1,1 @@
+Done — set the estimate to **3** on **WEB-1** ("This fixes the checkout totals and covers the offline cache rollback procedure for storefront clients."), which is in the Web team's Done state and was completed September 18.

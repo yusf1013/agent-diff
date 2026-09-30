@@ -1,0 +1,357 @@
+{
+  "test_id": "G4-LIN-28",
+  "question": "In Linear: Set the estimate to 3 on the issue in the Web team's Done state that was completed on September 18 and whose description mentions the offline cache rollback.",
+  "harness": "openclaw",
+  "termination": "done",
+  "final": "Done — set the estimate to **3** on **WEB-1** (\"This fixes the checkout totals and covers the offline cache rollback procedure for storefront clients.\"), which is in the Web team's Done state and was completed September 18.",
+  "turns": [
+    {
+      "label": "turn1",
+      "message": "In Linear: Set the estimate to 3 on the issue in the Web team's Done state that was completed on September 18 and whose description mentions the offline cache rollback.",
+      "text": "Done — set the estimate to **3** on **WEB-1** (\"This fixes the checkout totals and covers the offline cache rollback procedure for storefront clients.\"), which is in the Web team's Done state and was completed September 18.",
+      "termination": "done",
+      "returncode": 0,
+      "killed": null,
+      "duration_s": 164.3,
+      "meta_error": null,
+      "stop_reason": "stop"
+    }
+  ],
+  "steps": [
+    {
+      "turn": 1,
+      "tool": "read",
+      "arguments": {
+        "path": "~/.openclaw-state/1cee4b019fd3490e/workspace-assistant/skills/linear/SKILL.md"
+      },
+      "action": "read {\"path\": \"~/.openclaw-state/1cee4b019fd3490e/workspace-assistant/skills/linear/SKILL.md\"}",
+      "text": "",
+      "thinking": "The user wants me to set the estimate to 3 on a Linear issue. First, let me read the Linear skill.",
+      "usage": {
+        "input": 4723,
+        "output": 82,
+        "cacheRead": 3920,
+        "cacheWrite": 0,
+        "reasoningTokens": 26,
+        "totalTokens": 8725,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "status": "success",
+        "stdout": "---\nname: linear\ndescription: \"Linear project management and issue tracking API. Use it for anything in the user's Linear account.\"\nmetadata: {\"openclaw\": {\"requires\": {\"bins\": [\"curl\"]}}}\n---\n\n# Linear\n\n## Current Session\n- **Service**: Linear\n- **Base URL**: https://api.linear.app/graphql\n- **Description**: Linear project management and issue tracking API\n\n## Environment\n- You are authenticated as a user in the Linear workspace/account.\n- Authentication is handled automatically via proxy. Use placeholder tokens like `<TOKEN>` where credentials would go.\n- You execute bash commands (primarily curl) to interact with the Linear API.\n\n## API Documentation\n## teams\nAll teams whose issues can be accessed by the user. This might be different from `administrableTeams`, which also includes teams whose settings can be changed by the user.\n\n## issues\nAll issues.\n\n## issue\nGet a single issue by ID.\n\n## workflowStates\nAll issue workflow states.\n\n## users\nAll users for the organization.\n\n## issueCreate\nCreates a new issue.\n\n## issueUpdate\nUpdates an issue.\n\n## commentCreate\nCreates a new comment.\n\n## teamCreate\nCreates a new team. The user who creates the team will automatically be added as a member to the newly created team.\n\n## issueLabelCreate\nCreates a new label.\n\n## issueLabels\nAll issue labels.\n\n## comments\nAll comments.\n\n## commentUpdate\nUpdates a comment.\n\n## commentDelete\nDeletes a comment.\n\n## issueLabelUpdate\nUpdates a label.\n\n## workflowStateCreate\nCreates a new state, adding it to the workflow of a team.\n\n## workflowStateArchive\nArchives a state. Only states with issues that have all been archived can be archived.\n\n## teamMembershipCreate\nCreates a new team membership.\n\n## issueRelationCreate\nCreates a new issue relation.\n"
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nThe user wants me to set the estimate to 3 on a Linear issue. First, let me read the Linear skill.\n</thinking>\n"
+          }
+        ]
+      }
+    },
+    {
+      "turn": 2,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -d '{\"query\":\"{ teams { nodes { id name workflowStates(first:50) { nodes { id name type } } } } }\"}' | head -c 4000"
+      },
+      "action": "curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -d '{\"query\":\"{ teams { nodes { id name workflowStates(first:50) { nodes { id name type } } } } }\"}' | head -c 4000",
+      "text": "",
+      "thinking": "The SKILL.md is somewhat thin on information — it enumerates GraphQL query names, but there's no detailed schema. Let me query the Linear API. What needs to be done:\n\n1. Find the Web team\n2. Find its \"Done\" workflow state\n3. Find issues in that Done state that were completed (completedAt) on September 18 (probably 2026-09-18. Today is 2026-09-30)\n4. Among those, ones whose description mentions \"offline cache rollback\"\n5. Set estimate = 3 on that issue\n\nLet me write a GraphQL query. Linear API GraphQL:\n\n```graphql\n{\n  teams {\n    nodes {\n      id name\n      workflowStates {\n        nodes {\n          id name type\n        }\n      }\n    }\n  }\n}\n```\n\nNext, an issue query filtered by state and completedAt:\n\n```graphql\n{\n  issues(filter: { state: { id: { eq: \"...\" } }, completedAt: { gte: \"2026-09-18T00:00:00.000Z\", lt: \"2026-09-19T00:00:00.000Z\" } }, first: 50) {\n    nodes {\n      id identifier description estimate completedAt\n    }\n  }\n}\n```\n\nThe timezone is America/Indianapolis. \"Completed on September 18\" — ambiguous: probably means the date as displayed in Linear (UTC or user's local timezone). Linear's completedAt is a timestamp. The simplest is to filter for a range covering September 18 in UTC, but the user's timezone is EDT (UTC-4). Hmm. September 18 00:00 EDT = 04:00 UTC; September 18 23:59 EDT = 03:59 UTC September 19.\n\nI can query issues with completedAt on September 18 in EDT: gte 2026-09-18T04:00:00Z, lt 2026-09-19T04:00:00Z. Or it might be simpler to first fetch without a date filter — fetch all Done issues and filter locally, or fetch with a broader window (September 17–20 UTC) and check locally. Let me start with the team query first.\n\nFirst, let me run curl to the API. I'll do it in stages. First: find the Web team and its Done state.",
+      "usage": {
+        "input": 492,
+        "output": 663,
+        "cacheRead": 8624,
+        "cacheWrite": 0,
+        "reasoningTokens": 577,
+        "totalTokens": 9779,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "status": "success",
+        "stdout": "{\"errors\":[{\"message\":\"Cannot query field 'workflowStates' on type 'Team'. Did you mean 'draftWorkflowState', 'mergeWorkflowState', or 'startWorkflowState'?\",\"locations\":[{\"line\":1,\"column\":27}]}]}"
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nThe SKILL.md is somewhat thin on information — it enumerates GraphQL query names, but there's no detailed schema. Let me query the Linear API. What needs to be done:\n\n1. Find the Web team\n2. Find its \"Done\" workflow state\n3. Find issues in that Done state that were completed (completedAt) on September 18 (probably 2026-09-18. Today is 2026-09-30)\n4. Among those, ones whose description mentions \"offline cache rollback\"\n5. Set estimate = 3 on that issue\n\nLet me write a GraphQL query. Linear API GraphQL:\n\n```graphql\n{\n  teams {\n    nodes {\n      id name\n      workflowStates {\n        nodes {\n          id name type\n        }\n      }\n    }\n  }\n}\n```\n\nNext, an issue query filtered by state and completedAt:\n\n```graphql\n{\n  issues(filter: { state: { id: { eq: \"...\" } }, completedAt: { gte: \"2026-09-18T00:00:00.000Z\", lt: \"2026-09-19T00:00:00.000Z\" } }, first: 50) {\n    nodes {\n      id identifier description estimate completedAt\n    }\n  }\n}\n```\n\nThe timezone is America/Indianapolis. \"Completed on September 18\" — ambiguous: probably means the date as displayed in Linear (UTC or user's local timezone). Linear's completedAt is a timestamp. The simplest is to filter for a range covering September 18 in UTC, but the user's timezone is EDT (UTC-4). Hmm. September 18 00:00 EDT = 04:00 UTC; September 18 23:59 EDT = 03:59 UTC September 19.\n\nI can query issues with completedAt on September 18 in EDT: gte 2026-09-18T04:00:00Z, lt 2026-09-19T04:00:00Z. Or it might be simpler to first fetch without a date filter — fetch all Done issues and filter locally, or fetch with a broader window (September 17–20 UTC) and check locally. Let me start with the team query first.\n\nFirst, let me run curl to the API. I'll do it in stages. First: find the Web team and its Done state.\n</thinking>\n"
+          }
+        ]
+      }
+    },
+    {
+      "turn": 3,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -d '{\"query\":\"{ teams { nodes { id name } } }\"}'; echo; curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -d '{\"query\":\"{ workflowStates(first:200) { nodes { id name type teamId } } }\"}' | head -c 6000"
+      },
+      "action": "curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -d '{\"query\":\"{ teams { nodes { id name } } }\"}'; echo; curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -d '{\"query\":\"{ workflowStates(first:200) { nodes { id name type teamId } } }\"}' | head -c 6000",
+      "text": "",
+      "thinking": "Let me try querying teams and workflowStates separately.",
+      "usage": {
+        "input": 643,
+        "output": 129,
+        "cacheRead": 8624,
+        "cacheWrite": 0,
+        "reasoningTokens": 11,
+        "totalTokens": 9396,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "status": "success",
+        "stdout": "{\"data\":{\"teams\":{\"nodes\":[{\"id\":\"6b427556-b29e-460f-a177-995587b19d54\",\"name\":\"Web\"},{\"id\":\"ad2e455d-c823-447b-b5f6-8231c7d37722\",\"name\":\"Mobile\"}]}}}\n{\"errors\":[{\"message\":\"Cannot query field 'teamId' on type 'WorkflowState'. Did you mean 'team'?\",\"locations\":[{\"line\":1,\"column\":52}]}]}"
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nLet me try querying teams and workflowStates separately.\n</thinking>\n"
+          }
+        ]
+      }
+    },
+    {
+      "turn": 4,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -d '{\"query\":\"{ workflowStates(first:200, teamId:\\\"6b427556-b29e-460f-a177-995587b19d54\\\") { nodes { id name type } } }\"}'"
+      },
+      "action": "curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -d '{\"query\":\"{ workflowStates(first:200, teamId:\\\"6b427556-b29e-460f-a177-995587b19d54\\\") { nodes { id name type } } }\"}'",
+      "text": "",
+      "thinking": "Get the Web team's workflow states, then search for issues in the Done state whose completedAt (completedAt / closedAt / completedAt field) is on September 18, 2026, and whose description mentions an offline cache rollback.",
+      "usage": {
+        "input": 905,
+        "output": 161,
+        "cacheRead": 8624,
+        "cacheWrite": 0,
+        "reasoningTokens": 53,
+        "totalTokens": 9690,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "status": "success",
+        "stdout": "{\"errors\":[{\"message\":\"Unknown argument 'teamId' on field 'Query.workflowStates'.\",\"locations\":[{\"line\":1,\"column\":29}]}]}"
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nGet the Web team's workflow states, then search for issues in the Done state whose completedAt (completedAt / closedAt / completedAt field) is on September 18, 2026, and whose description mentions an offline cache rollback.\n</thinking>\n"
+          }
+        ]
+      }
+    },
+    {
+      "turn": 5,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -d '{\"query\":\"{ issues(first:100, filter:{ team:{ id:{ eq:\\\"6b427556-b29e-460f-a177-995587b19d54\\\" }, state:{ name:{ eq:\\\"Done\\\" } } }, completedAt:{ gte:\\\"2026-09-18\\\", lte:\\\"2026-09-19\\\" } }) { nodes { id identifier description state { name } completedAt estimate } } }\"}'"
+      },
+      "action": "curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -d '{\"query\":\"{ issues(first:100, filter:{ team:{ id:{ eq:\\\"6b427556-b29e-460f-a177-995587b19d54\\\" }, state:{ name:{ eq:\\\"Done\\\" } } }, completedAt:{ gte:\\\"2026-09-18\\\", lte:\\\"2026-09-19\\\" } }) { nodes { id identifier description state { name } completedAt estimate } } }\"}'",
+      "text": "",
+      "thinking": "Workflow state probably has a `team` relation. Let's query workflowStates with a team filter using a connection argument. The argument might be `teamId` on the WorkflowState relation, or there might be a filter on `issues`. Instead, let's just query the Web team's issues and look for ones in the Done state whose completion date is September 18, with \"offline cache rollback\" in the description.\n\nLinear's Issue type has a `completedAt` field, a `description` field, and a `state` relation with a name. Let's query issues on team Web.",
+      "usage": {
+        "input": 276,
+        "output": 288,
+        "cacheRead": 9408,
+        "cacheWrite": 0,
+        "reasoningTokens": 124,
+        "totalTokens": 9972,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "status": "success",
+        "stdout": "{\"errors\":[{\"message\":\"Field 'state' is not defined by type 'TeamFilter'. Did you mean 'name'?\",\"locations\":[{\"line\":1,\"column\":87}]}]}"
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nWorkflow state probably has a `team` relation. Let's query workflowStates with a team filter using a connection argument. The argument might be `teamId` on the WorkflowState relation, or there might be a filter on `issues`. Instead, let's just query the Web team's issues and look for ones in the Done state whose completion date is September 18, with \"offline cache rollback\" in the description.\n\nLinear's Issue type has a `completedAt` field, a `description` field, and a `state` relation with a name. Let's query issues on team Web.\n</thinking>\n"
+          }
+        ]
+      }
+    },
+    {
+      "turn": 6,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -d '{\"query\":\"{ issues(first:100, filter:{ team:{ id:{ eq:\\\"6b427556-b29e-460f-a177-995587b19d54\\\" } }, state:{ name:{ eq:\\\"Done\\\" } }, completedAt:{ gte:\\\"2026-09-18\\\", lt:\\\"2026-09-19\\\" } }) { nodes { id identifier description completedAt estimate } } }\"}'"
+      },
+      "action": "curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -d '{\"query\":\"{ issues(first:100, filter:{ team:{ id:{ eq:\\\"6b427556-b29e-460f-a177-995587b19d54\\\" } }, state:{ name:{ eq:\\\"Done\\\" } }, completedAt:{ gte:\\\"2026-09-18\\\", lt:\\\"2026-09-19\\\" } }) { nodes { id identifier description completedAt estimate } } }\"}'",
+      "text": "",
+      "thinking": "TeamFilter doesn't have a state field. Instead, I should use a separate state filter at the issue level.",
+      "usage": {
+        "input": 493,
+        "output": 183,
+        "cacheRead": 9408,
+        "cacheWrite": 0,
+        "reasoningTokens": 24,
+        "totalTokens": 10084,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "status": "success",
+        "stdout": "{\"data\":{\"issues\":{\"nodes\":[{\"id\":\"56dcfe98-5040-4222-83b7-aca46be57709\",\"identifier\":\"WEB-5\",\"description\":\"Dedupe logic for receipt emails after retry.\",\"completedAt\":\"2026-09-18T16:00:00\",\"estimate\":null},{\"id\":\"6eb5c02e-da80-42b0-adbf-4bd7002e5fa5\",\"identifier\":\"WEB-1\",\"description\":\"This fixes the checkout totals and covers the offline cache rollback procedure for storefront clients.\",\"completedAt\":\"2026-09-18T15:00:00\",\"estimate\":null},{\"id\":\"9a3181b9-b92c-4e82-8797-a7d742139006\",\"identifier\":\"WEB-4\",\"description\":\"Kiosk layout refresh for the home screen; no backend changes.\",\"completedAt\":\"2026-09-18T14:00:00\",\"estimate\":null}]}}}"
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nTeamFilter doesn't have a state field. Instead, I should use a separate state filter at the issue level.\n</thinking>\n"
+          }
+        ]
+      }
+    },
+    {
+      "turn": 7,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -d '{\"query\":\"mutation { issueUpdate(input:{ id:\\\"6eb5c02e-da80-42b0-adbf-4bd7002e5fa5\\\", estimate:3 }) { success issue { id identifier estimate } } }\"}'"
+      },
+      "action": "curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -d '{\"query\":\"mutation { issueUpdate(input:{ id:\\\"6eb5c02e-da80-42b0-adbf-4bd7002e5fa5\\\", estimate:3 }) { success issue { id identifier estimate } } }\"}'",
+      "text": "",
+      "thinking": "Found: WEB-1, id 6eb5c02e-da80-42b0-adbf-4bd7002e5fa5, description says \"rollback procedure for offline cache\". Set estimate to 3.",
+      "usage": {
+        "input": 921,
+        "output": 156,
+        "cacheRead": 9408,
+        "cacheWrite": 0,
+        "reasoningTokens": 53,
+        "totalTokens": 10485,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "status": "success",
+        "stdout": "{\"errors\":[{\"message\":\"Field 'id' is not defined by type 'IssueUpdateInput'.\",\"locations\":[{\"line\":1,\"column\":32}]},{\"message\":\"Field 'issueUpdate' argument 'id' of type 'String!' is required, but it was not provided.\",\"locations\":[{\"line\":1,\"column\":12}]}]}"
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nFound: WEB-1, id 6eb5c02e-da80-42b0-adbf-4bd7002e5fa5, description says \"rollback procedure for offline cache\". Set estimate to 3.\n</thinking>\n"
+          }
+        ]
+      }
+    },
+    {
+      "turn": 8,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -d '{\"query\":\"mutation { issueUpdate(id:\\\"6eb5c02e-da80-42b0-adbf-4bd7002e5fa5\\\", input:{ estimate:3 }) { success issue { id identifier estimate } } }\"}'"
+      },
+      "action": "curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -d '{\"query\":\"mutation { issueUpdate(id:\\\"6eb5c02e-da80-42b0-adbf-4bd7002e5fa5\\\", input:{ estimate:3 }) { success issue { id identifier estimate } } }\"}'",
+      "text": "",
+      "thinking": "The issueUpdate mutation takes `id` as a top-level argument, not inside input.",
+      "usage": {
+        "input": 325,
+        "output": 122,
+        "cacheRead": 10192,
+        "cacheWrite": 0,
+        "reasoningTokens": 19,
+        "totalTokens": 10639,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "status": "success",
+        "stdout": "{\"data\":{\"issueUpdate\":{\"success\":true,\"issue\":{\"id\":\"6eb5c02e-da80-42b0-adbf-4bd7002e5fa5\",\"identifier\":\"WEB-1\",\"estimate\":3.0}}}}"
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nThe issueUpdate mutation takes `id` as a top-level argument, not inside input.\n</thinking>\n"
+          }
+        ]
+      }
+    },
+    {
+      "turn": 9,
+      "tool": null,
+      "text": "Done — set the estimate to **3** on **WEB-1** (\"This fixes the checkout totals and covers the offline cache rollback procedure for storefront clients.\"), which is in the Web team's Done state and was completed September 18.",
+      "thinking": "Done. I'll report back to the user.",
+      "usage": {
+        "input": 499,
+        "output": 63,
+        "cacheRead": 10192,
+        "cacheWrite": 0,
+        "reasoningTokens": 11,
+        "totalTokens": 10754,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nDone. I'll report back to the user.\n</thinking>\nDone — set the estimate to **3** on **WEB-1** (\"This fixes the checkout totals and covers the offline cache rollback procedure for storefront clients.\"), which is in the Web team's Done state and was completed September 18."
+          }
+        ]
+      }
+    }
+  ],
+  "followup_steps": []
+}

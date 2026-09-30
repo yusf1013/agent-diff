@@ -1,0 +1,1 @@
+Done. There were two "Atlas Launch" hubs — I used the one Omar Haddad last updated (id 8201), located **Harbor Point survey - Whitfield.pdf** (file 8101), and added the `launch-ready` tag. Confirmed in the response: `tags: ["launch-ready"]`.

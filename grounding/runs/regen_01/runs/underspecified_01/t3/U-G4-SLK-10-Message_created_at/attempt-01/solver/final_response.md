@@ -1,0 +1,1 @@
+Done — added 👀 to Priya's message in #launch-plan ("Demo video is ready, posting it here for the launch thread."). Note there was an older one from her in the same channel ("Demo video is ready, sharing the link here for final review.") — let me know if you wanted the eyes on that one too.

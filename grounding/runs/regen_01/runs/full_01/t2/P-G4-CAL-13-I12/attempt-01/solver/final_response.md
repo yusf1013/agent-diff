@@ -1,0 +1,1 @@
+Done. I found the event — **Sprint planning: Mobile** on Thursday, June 21 at 4:00–4:30 PM — with Kenji Satou listed as an optional attendee (one small note: his last name is spelled "Satou," not "Sato," but it's clearly the same person). I set its location to **Room 5B** and confirmed the change took effect.

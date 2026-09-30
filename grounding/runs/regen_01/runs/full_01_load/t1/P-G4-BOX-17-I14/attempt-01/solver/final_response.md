@@ -1,0 +1,1 @@
+Done. There were two hubs titled "Atlas Launch" — the one Omar Haddad last updated (hub 8201) was the right match. I found the file "Harbor Point survey - Whitfield.pdf" (in the Atlas Launch folder) and added the **launch-ready** tag to it. It had no tags before, so that's the only one now.

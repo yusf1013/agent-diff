@@ -1,0 +1,1 @@
+Done — archived **#launch-open** (`launch checklist for the spring release`), which is private and has Leo Park as a member. The other private channels (hiring, team-social) didn't match the purpose, so this was unambiguous.

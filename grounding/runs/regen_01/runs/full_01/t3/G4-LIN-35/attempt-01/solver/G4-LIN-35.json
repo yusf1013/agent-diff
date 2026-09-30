@@ -1,0 +1,395 @@
+{
+  "test_id": "G4-LIN-35",
+  "question": "In Linear: Set the estimate to 5 for the Todo issue assigned to Maya Chen with the Bug label that is blocked by the Checkout rollout issue.",
+  "harness": "openclaw",
+  "termination": "done",
+  "final": "Done. Set the estimate to **5** on **WEB-5 \"Fix promo code error on checkout\"** — the Todo issue assigned to Maya Chen with the Bug label that's blocked by Checkout rollout (WEB-1). ✅",
+  "turns": [
+    {
+      "label": "turn1",
+      "message": "In Linear: Set the estimate to 5 for the Todo issue assigned to Maya Chen with the Bug label that is blocked by the Checkout rollout issue.",
+      "text": "Done. Set the estimate to **5** on **WEB-5 \"Fix promo code error on checkout\"** — the Todo issue assigned to Maya Chen with the Bug label that's blocked by Checkout rollout (WEB-1). ✅",
+      "termination": "done",
+      "returncode": 0,
+      "killed": null,
+      "duration_s": 260.6,
+      "meta_error": null,
+      "stop_reason": "stop"
+    }
+  ],
+  "steps": [
+    {
+      "turn": 1,
+      "tool": "read",
+      "arguments": {
+        "path": "~/.openclaw-state/9e98187c3b6e44fd/workspace-assistant/skills/linear/SKILL.md"
+      },
+      "action": "read {\"path\": \"~/.openclaw-state/9e98187c3b6e44fd/workspace-assistant/skills/linear/SKILL.md\"}",
+      "text": "",
+      "thinking": "The user is asking me to perform an action on Linear. First, let me read the Linear skill's SKILL.md.",
+      "usage": {
+        "input": 4737,
+        "output": 84,
+        "cacheRead": 3920,
+        "cacheWrite": 0,
+        "reasoningTokens": 26,
+        "totalTokens": 8741,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "status": "success",
+        "stdout": "---\nname: linear\ndescription: \"Linear project management and issue tracking API. Use it for anything in the user's Linear account.\"\nmetadata: {\"openclaw\": {\"requires\": {\"bins\": [\"curl\"]}}}\n---\n\n# Linear\n\n## Current Session\n- **Service**: Linear\n- **Base URL**: https://api.linear.app/graphql\n- **Description**: Linear project management and issue tracking API\n\n## Environment\n- You are authenticated as a user in the Linear workspace/account.\n- Authentication is handled automatically via proxy. Use placeholder tokens like `<TOKEN>` where credentials would go.\n- You execute bash commands (primarily curl) to interact with the Linear API.\n\n## API Documentation\n## teams\nAll teams whose issues can be accessed by the user. This might be different from `administrableTeams`, which also includes teams whose settings can be changed by the user.\n\n## issues\nAll issues.\n\n## issue\nGet a single issue by ID.\n\n## workflowStates\nAll issue workflow states.\n\n## users\nAll users for the organization.\n\n## issueCreate\nCreates a new issue.\n\n## issueUpdate\nUpdates an issue.\n\n## commentCreate\nCreates a new comment.\n\n## teamCreate\nCreates a new team. The user who creates the team will automatically be added as a member to the newly created team.\n\n## issueLabelCreate\nCreates a new label.\n\n## issueLabels\nAll issue labels.\n\n## comments\nAll comments.\n\n## commentUpdate\nUpdates a comment.\n\n## commentDelete\nDeletes a comment.\n\n## issueLabelUpdate\nUpdates a label.\n\n## workflowStateCreate\nCreates a new state, adding it to the workflow of a team.\n\n## workflowStateArchive\nArchives a state. Only states with issues that have all been archived can be archived.\n\n## teamMembershipCreate\nCreates a new team membership.\n\n## issueRelationCreate\nCreates a new issue relation.\n"
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nThe user is asking me to perform an action on Linear. First, let me read the Linear skill's SKILL.md.\n</thinking>\n"
+          }
+        ]
+      }
+    },
+    {
+      "turn": 2,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -s https://api.linear.app/graphql -H \"Authorization: <TOKEN>\" -H \"Content-Type: application/json\" -d '{\"query\":\"query { users(where: {name: {contains: \\\"Maya\\\"}}) { nodes { id name displayName } } issues(limit: 50, where: {title: {contains: \\\"Checkout rollout\\\"}}) { nodes { id identifier title url state { name } } } }\"}'"
+      },
+      "action": "curl -s https://api.linear.app/graphql -H \"Authorization: <TOKEN>\" -H \"Content-Type: application/json\" -d '{\"query\":\"query { users(where: {name: {contains: \\\"Maya\\\"}}) { nodes { id name displayName } } issues(limit: 50, where: {title: {contains: \\\"Checkout rollout\\\"}}) { nodes { id identifier title url state { name } } } }\"}'",
+      "text": "",
+      "thinking": "The skill document is sparse. To find the target issue, I need to query Linear's GraphQL API. Let me put together a query:\n\nFind an issue that satisfies the following conditions:\n- State: Todo\n- Assignee: Maya Chen\n- Label: Bug\n- Blocked by the \"Checkout rollout\" issue (i.e., has a \"blocks\" relationship where this issue blocks the Checkout rollout issue — \"blocked by the Checkout rollout issue\" means the Checkout rollout issue is blocking this issue, so this issue has a \"blocks\" relationship pointing to the Checkout rollout issue… let me think about it.\n\n\"Blocked by the Checkout rollout issue\" — the Checkout rollout issue is blocking the target issue. In Linear's terminology, an issue A \"blocks\" issue B means B cannot proceed until A is completed. So if the target issue is \"blocked by\" the Checkout rollout, then target blocks… no wait: Checkout rollout blocks the target. In other words, the target has a \"blocks\" relationship where target.blocks = Checkout rollout? Let me sort out Linear's relationship semantics: `issueRelationCreate` has a `relationType: blocks` — \"this issue blocks that issue.\"\n\nThe GraphQL Issue type has a `blockingIssues` (issues that this issue blocks) and `blockedBy` field. So:\n- `issue.blockingIssues` = issues that this issue blocks\n- `issue.blockedBy` = issues that block this issue\n\nTarget issue is blocked by the Checkout rollout → Checkout rollout ∈ target.blockedBy → Checkout rollout is in target.blockingIssues.\n\nSo the query: search for an issue in Todo state, assigned to Maya Chen, has the Bug label, and its blockingIssues contains an issue titled \"Checkout rollout.\"\n\nAuthentication: \"Authentication is automatically handled via proxy. Use a placeholder token like `<TOKEN>` for places where credentials would go.\" So I just need to use a placeholder in the curl command — the proxy will handle the auth.\n\nLet me write the GraphQL query. First, get Maya Chen's user ID. Or I can do everything in a single query using filters.\n\nLinear's GraphQL query:\n\n```graphql\nquery {\n  users(where: {name: {_eq: \"Maya Chen\"}}) {\n    nodes { id name }\n  }\n  issues(\n    where: {\n      state: {type: {_eq: \"start\"}},  # Todo is usually \"start\" type? Actually Todo is \"backlog\"?\n      assignee: {id: {_eq: \"<MAYA_ID>\"}},\n      labels: {some: {name: {_eq: \"Bug\"}}},\n    }\n  ) {\n    nodes {\n      id identifier title\n      blockingIssues { nodes { id identifier title } }\n      blockedBy { nodes { id identifier title } }\n    }\n  }\n}\n```\n\nThe state type for \"Todo\" — in Linear, the default workflow states are Backlog, Todo, In Progress, Done, Canceled. The state `type` enum: backlog, started, completed, canceled. Todo is of \"started\" type. Hmm, in Linear's API, the workflow state `type` for Todo is… I think the default is: Backlog → type \"backlog\", Todo → type \"started\", In Progress → \"started\", Done → \"completed\", Canceled → \"canceled\".\n\nTo be safe, I can instead filter by the state's name: `state: {name: {_eq: \"Todo\"}}`. That's more direct.\n\nFirst, let me query the users to find Maya Chen, and also query the issue \"Checkout rollout\" to confirm its ID. Actually, I can do everything in a single query, but the issue's `where` filter doesn't easily allow a nested \"blockingIssues contains X\" filter. Linear's IssueWhereInput has `blockedBy` filter: `blockedBy: {some: {id: {_eq: \"...\"}}}`. I think IssueWhereInput includes relations: `blockedBy` and `blocking` (or `blockingIssues`?). Let me check my memory of Linear's schema: IssueWhereInput fields include `blockedBy: IssueRelationWhereInput` and `blocking: IssueRelationWhereInput`. Hmm, I recall that `blockedBy` and `blocking` fields exist.\n\nTo be safe, a simpler approach: fetch candidate issues (Todo + assignee Maya Chen + label Bug), and check their relationships in the response.\n\nPlan:\n1. Query users where name contains Maya → get ID. Also query issue by identifier/title \"Checkout rollout\" → get ID and title.\n2. Query issues with filters (state name Todo, assignee ID, labels some name Bug), including nodes' title, state, assignee, labels, blockedBy, and blockingIssues.\n3. Match the one whose blockedBy contains the Checkout rollout issue.\n4. Update the estimate to 5.\n\nLet me run the first query. Using curl with a placeholder token.\n\nActually, I can combine it: query users, issues (search), and also query the issue by title. Let me write it:\n\n```bash\ncurl -s https://api.linear.app/graphql \\\n  -H \"Authorization: <TOKEN>\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\"query\":\"query { users(where: {name: {contains: \\\"Maya\\\"}}) { nodes { id name } } issues(limit: 50, where: {title: {contains: \\\"Checkout rollout\\\"}}) { nodes { id identifier title state { name } } } }\"}'\n```\n\nThen the second query with the filters.\n\nLet's get started.",
+      "usage": {
+        "input": 508,
+        "output": 1313,
+        "cacheRead": 8624,
+        "cacheWrite": 0,
+        "reasoningTokens": 1193,
+        "totalTokens": 10445,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "status": "success",
+        "stdout": "{\"errors\":[{\"message\":\"Unknown argument 'where' on field 'Query.users'.\",\"locations\":[{\"line\":1,\"column\":15}]},{\"message\":\"Unknown argument 'limit' on field 'Query.issues'. Did you mean 'first' or 'last'?\",\"locations\":[{\"line\":1,\"column\":91}]},{\"message\":\"Unknown argument 'where' on field 'Query.issues'.\",\"locations\":[{\"line\":1,\"column\":102}]}]}"
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nThe skill document is sparse. To find the target issue, I need to query Linear's GraphQL API. Let me put together a query:\n\nFind an issue that satisfies the following conditions:\n- State: Todo\n- Assignee: Maya Chen\n- Label: Bug\n- Blocked by the \"Checkout rollout\" issue (i.e., has a \"blocks\" relationship where this issue blocks the Checkout rollout issue — \"blocked by the Checkout rollout issue\" means the Checkout rollout issue is blocking this issue, so this issue has a \"blocks\" relationship pointing to the Checkout rollout issue… let me think about it.\n\n\"Blocked by the Checkout rollout issue\" — the Checkout rollout issue is blocking the target issue. In Linear's terminology, an issue A \"blocks\" issue B means B cannot proceed until A is completed. So if the target issue is \"blocked by\" the Checkout rollout, then target blocks… no wait: Checkout rollout blocks the target. In other words, the target has a \"blocks\" relationship where target.blocks = Checkout rollout? Let me sort out Linear's relationship semantics: `issueRelationCreate` has a `relationType: blocks` — \"this issue blocks that issue.\"\n\nThe GraphQL Issue type has a `blockingIssues` (issues that this issue blocks) and `blockedBy` field. So:\n- `issue.blockingIssues` = issues that this issue blocks\n- `issue.blockedBy` = issues that block this issue\n\nTarget issue is blocked by the Checkout rollout → Checkout rollout ∈ target.blockedBy → Checkout rollout is in target.blockingIssues.\n\nSo the query: search for an issue in Todo state, assigned to Maya Chen, has the Bug label, and its blockingIssues contains an issue titled \"Checkout rollout.\"\n\nAuthentication: \"Authentication is automatically handled via proxy. Use a placeholder token like `<TOKEN>` for places where credentials would go.\" So I just need to use a placeholder in the curl command — the proxy will handle the auth.\n\nLet me write the GraphQL query. First, get Maya Chen's user ID. Or I can do everything in a single query using filters.\n\nLinear's GraphQL query:\n\n```graphql\nquery {\n  users(where: {name: {_eq: \"Maya Chen\"}}) {\n    nodes { id name }\n  }\n  issues(\n    where: {\n      state: {type: {_eq: \"start\"}},  # Todo is usually \"start\" type? Actually Todo is \"backlog\"?\n      assignee: {id: {_eq: \"<MAYA_ID>\"}},\n      labels: {some: {name: {_eq: \"Bug\"}}},\n    }\n  ) {\n    nodes {\n      id identifier title\n      blockingIssues { nodes { id identifier title } }\n      blockedBy { nodes { id identifier title } }\n    }\n  }\n}\n```\n\nThe state type for \"Todo\" — in Linear, the default workflow states are Backlog, Todo, In Progress, Done, Canceled. The state `type` enum: backlog, started, completed, canceled. Todo is of \"started\" type. Hmm, in Linear's API, the workflow state `type` for Todo is… I think the default is: Backlog → type \"backlog\", Todo → type \"started\", In Progress → \"started\", Done → \"completed\", Canceled → \"canceled\".\n\nTo be safe, I can instead filter by the state's name: `state: {name: {_eq: \"Todo\"}}`. That's more direct.\n\nFirst, let me query the users to find Maya Chen, and also query the issue \"Checkout rollout\" to confirm its ID. Actually, I can do everything in a single query, but the issue's `where` filter doesn't easily allow a nested \"blockingIssues contains X\" filter. Linear's IssueWhereInput has `blockedBy` filter: `blockedBy: {some: {id: {_eq: \"...\"}}}`. I think IssueWhereInput includes relations: `blockedBy` and `blocking` (or `blockingIssues`?). Let me check my memory of Linear's schema: IssueWhereInput fields include `blockedBy: IssueRelationWhereInput` and `blocking: IssueRelationWhereInput`. Hmm, I recall that `blockedBy` and `blocking` fields exist.\n\nTo be safe, a simpler approach: fetch candidate issues (Todo + assignee Maya Chen + label Bug), and check their relationships in the response.\n\nPlan:\n1. Query users where name contains Maya → get ID. Also query issue by identifier/title \"Checkout rollout\" → get ID and title.\n2. Query issues with filters (state name Todo, assignee ID, labels some name Bug), including nodes' title, state, assignee, labels, blockedBy, and blockingIssues.\n3. Match the one whose blockedBy contains the Checkout rollout issue.\n4. Update the estimate to 5.\n\nLet me run the first query. Using curl with a placeholder token.\n\nActually, I can combine it: query users, issues (search), and also query the issue by title. Let me write it:\n\n```bash\ncurl -s https://api.linear.app/graphql \\\n  -H \"Authorization: <TOKEN>\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\"query\":\"query { users(where: {name: {contains: \\\"Maya\\\"}}) { nodes { id name } } issues(limit: 50, where: {title: {contains: \\\"Checkout rollout\\\"}}) { nodes { id identifier title state { name } } } }\"}'\n```\n\nThen the second query with the filters.\n\nLet's get started.\n</thinking>\n"
+          }
+        ]
+      }
+    },
+    {
+      "turn": 3,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -s https://api.linear.app/graphql -H \"Authorization: <TOKEN>\" -H \"Content-Type: application/json\" -d '{\"query\":\"query { issues(first: 50) { nodes { id identifier title url state { name } } } }\"}'"
+      },
+      "action": "curl -s https://api.linear.app/graphql -H \"Authorization: <TOKEN>\" -H \"Content-Type: application/json\" -d '{\"query\":\"query { issues(first: 50) { nodes { id identifier title url state { name } } } }\"}'",
+      "text": "",
+      "thinking": "The Linear GraphQL API uses `first`/`last` for pagination, and the `where` argument has a specific type. Let's try the correct API. In Linear, the `where` argument of the `issues` query takes an `IssueFilter` type. Let's construct it properly.\n\nLinear's GraphQL:\n- `issues(first: Int, where: IssueFilter) { nodes { ... } }`\n\nHowever, in the error, it says `where` is an unknown argument on `Query.issues`. Hmm, that's weird. Let me check. Actually, in Linear, the where argument of the issues query is `where: IssueFilter`. But maybe in the newer API it's different. Let me try with `first`.\n\nWait, the error is saying \"Unknown argument 'where' on field 'Query.issues'\". This is strange. Maybe the proxy is changing something. Let's just try `first` for now.",
+      "usage": {
+        "input": 738,
+        "output": 280,
+        "cacheRead": 8624,
+        "cacheWrite": 0,
+        "reasoningTokens": 197,
+        "totalTokens": 9642,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "status": "success",
+        "stdout": "{\"data\":{\"issues\":{\"nodes\":[{\"id\":\"0e669634-dec6-477a-9b7e-218def9be948\",\"identifier\":\"WEB-1\",\"title\":\"Checkout rollout\",\"url\":\"https://linear.app/northwind/issue/WEB-1\",\"state\":{\"name\":\"Todo\"}},{\"id\":\"0f78cc44-cf9c-441b-bc84-79f6fea64321\",\"identifier\":\"WEB-3\",\"title\":\"Search migration\",\"url\":\"https://linear.app/northwind/issue/WEB-3\",\"state\":{\"name\":\"Todo\"}},{\"id\":\"1e7002a8-70c2-4bdc-bda9-f231447817cf\",\"identifier\":\"WEB-8\",\"title\":\"Add haptic feedback on purchase\",\"url\":\"https://linear.app/northwind/issue/WEB-8\",\"state\":{\"name\":\"Todo\"}},{\"id\":\"2bd8b34e-bdb6-49e0-b170-539a9a3b97c7\",\"identifier\":\"WEB-5\",\"title\":\"Fix promo code error on checkout\",\"url\":\"https://linear.app/northwind/issue/WEB-5\",\"state\":{\"name\":\"Todo\"}},{\"id\":\"5385c53f-2bbd-4773-9d64-52d99b2fc388\",\"identifier\":\"WEB-2\",\"title\":\"Checkout rollout follow-up\",\"url\":\"https://linear.app/northwind/issue/WEB-2\",\"state\":{\"name\":\"Todo\"}},{\"id\":\"74c7035d-0833-4ec5-b507-e9e67ae103e3\",\"identifier\":\"WEB-9\",\"title\":\"Refresh help center docs\",\"url\":\"https://linear.app/northwind/issue/WEB-9\",\"state\":{\"name\":\"In Progress\"}},{\"id\":\"984904bf-b8d8-44eb-8820-090297dbafdf\",\"identifier\":\"WEB-6\",\"title\":\"Update empty-cart illustration\",\"url\":\"https://linear.app/northwind/issue/WEB-6\",\"state\":{\"name\":\"Todo\"}},{\"id\":\"9f0c312a-4e3c-4754-8c6c-e2a97cbb1570\",\"identifier\":\"WEB-7\",\"title\":\"Fix gift-wrap copy on checkout\",\"url\":\"https://linear.app/northwind/issue/WEB-7\",\"state\":{\"name\":\"Todo\"}},{\"id\":\"aede4b70-114d-48c4-aa74-cbb5a2398354\",\"identifier\":\"WEB-4\",\"title\":\"Mobile purchase flow\",\"url\":\"https://linear.app/northwind/issue/WEB-4\",\"state\":{\"name\":\"Todo\"}},{\"id\":\"b1b81486-db5b-4b25-8fb2-1684a73be090\",\"identifier\":\"WEB-10\",\"title\":\"Tidy up storybook stories\",\"url\":\"https://linear.app/northwind/issue/WEB-10\",\"state\":{\"name\":\"Todo\"}}]}}}"
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nThe Linear GraphQL API uses `first`/`last` for pagination, and the `where` argument has a specific type. Let's try the correct API. In Linear, the `where` argument of the `issues` query takes an `IssueFilter` type. Let's construct it properly.\n\nLinear's GraphQL:\n- `issues(first: Int, where: IssueFilter) { nodes { ... } }`\n\nHowever, in the error, it says `where` is an unknown argument on `Query.issues`. Hmm, that's weird. Let me check. Actually, in Linear, the where argument of the issues query is `where: IssueFilter`. But maybe in the newer API it's different. Let me try with `first`.\n\nWait, the error is saying \"Unknown argument 'where' on field 'Query.issues'\". This is strange. Maybe the proxy is changing something. Let's just try `first` for now.\n</thinking>\n"
+          }
+        ]
+      }
+    },
+    {
+      "turn": 4,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -s https://api.linear.app/graphql -H \"Authorization: <TOKEN>\" -H \"Content-Type: application/json\" -d '{\"query\":\"query { users { nodes { id name displayName } } issueLabels { nodes { id name } } issues(first: 50) { nodes { id identifier title state { name } assignee { id name displayName } labels { nodes { id name } } blockedBy { nodes { id identifier title } } } } }\"}'"
+      },
+      "action": "curl -s https://api.linear.app/graphql -H \"Authorization: <TOKEN>\" -H \"Content-Type: application/json\" -d '{\"query\":\"query { users { nodes { id name displayName } } issueLabels { nodes { id name } } issues(first: 50) { nodes { id identifier title state { name } assignee { id name displayName } labels { nodes { id name } } blockedBy { nodes { id identifier title } } } } }\"}'",
+      "text": "",
+      "thinking": "\"Checkout rollout\" issue = WEB-1 (id 0e669634-dec6-477a-9b7e-218def9be948). Next, what I need is a \"Todo\" issue assigned to Maya Chen, has the \"Bug\" label, and is blocked by WEB-1. Let me fetch the issues with assignee, labels, and blocker relations.",
+      "usage": {
+        "input": 1558,
+        "output": 216,
+        "cacheRead": 8624,
+        "cacheWrite": 0,
+        "reasoningTokens": 91,
+        "totalTokens": 10398,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "status": "success",
+        "stdout": "{\"errors\":[{\"message\":\"Cannot query field 'blockedBy' on type 'Issue'. Did you mean 'snoozedBy'?\",\"locations\":[{\"line\":1,\"column\":208}]}]}"
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\n\"Checkout rollout\" issue = WEB-1 (id 0e669634-dec6-477a-9b7e-218def9be948). Next, what I need is a \"Todo\" issue assigned to Maya Chen, has the \"Bug\" label, and is blocked by WEB-1. Let me fetch the issues with assignee, labels, and blocker relations.\n</thinking>\n"
+          }
+        ]
+      }
+    },
+    {
+      "turn": 5,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -s https://api.linear.app/graphql -H \"Authorization: <TOKEN>\" -H \"Content-Type: application/json\" -d '{\"query\":\"query { users { nodes { id name displayName } } issueLabels { nodes { id name } } issues(first: 50) { nodes { id identifier title state { name } assignee { id name displayName } labels { nodes { id name } } relations { nodes { relationType relatedIssue { id identifier title } } } } } }\"}'"
+      },
+      "action": "curl -s https://api.linear.app/graphql -H \"Authorization: <TOKEN>\" -H \"Content-Type: application/json\" -d '{\"query\":\"query { users { nodes { id name displayName } } issueLabels { nodes { id name } } issues(first: 50) { nodes { id identifier title state { name } assignee { id name displayName } labels { nodes { id name } } relations { nodes { relationType relatedIssue { id identifier title } } } } } }\"}'",
+      "text": "",
+      "thinking": "blockedBy is not a field. Relations might be under `relations` or `blocks`/`blockedBy` within `issueRelations`. Let me try `relations`.",
+      "usage": {
+        "input": 955,
+        "output": 165,
+        "cacheRead": 9408,
+        "cacheWrite": 0,
+        "reasoningTokens": 35,
+        "totalTokens": 10528,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "status": "success",
+        "stdout": "{\"errors\":[{\"message\":\"Cannot query field 'relationType' on type 'IssueRelation'.\",\"locations\":[{\"line\":1,\"column\":228}]}]}"
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nblockedBy is not a field. Relations might be under `relations` or `blocks`/`blockedBy` within `issueRelations`. Let me try `relations`.\n</thinking>\n"
+          }
+        ]
+      }
+    },
+    {
+      "turn": 6,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -s https://api.linear.app/graphql -H \"Authorization: <TOKEN>\" -H \"Content-Type: application/json\" -d '{\"query\":\"query { __type(name: \\\"IssueRelation\\\") { fields { name type { name kind ofType { name } } } } }\"}'"
+      },
+      "action": "curl -s https://api.linear.app/graphql -H \"Authorization: <TOKEN>\" -H \"Content-Type: application/json\" -d '{\"query\":\"query { __type(name: \\\"IssueRelation\\\") { fields { name type { name kind ofType { name } } } } }\"}'",
+      "text": "",
+      "thinking": "(Thinking) Let me check the fields of the IssueRelation type. I'll do an introspection.",
+      "usage": {
+        "input": 349,
+        "output": 108,
+        "cacheRead": 10192,
+        "cacheWrite": 0,
+        "reasoningTokens": 22,
+        "totalTokens": 10649,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "status": "success",
+        "stdout": "{\"data\":{\"__type\":{\"fields\":[{\"name\":\"archivedAt\",\"type\":{\"name\":\"DateTime\",\"kind\":\"SCALAR\",\"ofType\":null}},{\"name\":\"createdAt\",\"type\":{\"name\":null,\"kind\":\"NON_NULL\",\"ofType\":{\"name\":\"DateTime\"}}},{\"name\":\"id\",\"type\":{\"name\":null,\"kind\":\"NON_NULL\",\"ofType\":{\"name\":\"ID\"}}},{\"name\":\"issue\",\"type\":{\"name\":null,\"kind\":\"NON_NULL\",\"ofType\":{\"name\":\"Issue\"}}},{\"name\":\"relatedIssue\",\"type\":{\"name\":null,\"kind\":\"NON_NULL\",\"ofType\":{\"name\":\"Issue\"}}},{\"name\":\"type\",\"type\":{\"name\":null,\"kind\":\"NON_NULL\",\"ofType\":{\"name\":\"String\"}}},{\"name\":\"updatedAt\",\"type\":{\"name\":null,\"kind\":\"NON_NULL\",\"ofType\":{\"name\":\"DateTime\"}}}]}}}"
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\n(Thinking) Let me check the fields of the IssueRelation type. I'll do an introspection.\n</thinking>\n"
+          }
+        ]
+      }
+    },
+    {
+      "turn": 7,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -s https://api.linear.app/graphql -H \"Authorization: <TOKEN>\" -H \"Content-Type: application/json\" -d '{\"query\":\"query { users { nodes { id name displayName } } issueLabels { nodes { id name } } issues(first: 50) { nodes { id identifier title state { name } assignee { id name displayName } labels { nodes { id name } } relations { nodes { type relatedIssue { id identifier title } } } } } }\"}'"
+      },
+      "action": "curl -s https://api.linear.app/graphql -H \"Authorization: <TOKEN>\" -H \"Content-Type: application/json\" -d '{\"query\":\"query { users { nodes { id name displayName } } issueLabels { nodes { id name } } issues(first: 50) { nodes { id identifier title state { name } assignee { id name displayName } labels { nodes { id name } } relations { nodes { type relatedIssue { id identifier title } } } } } }\"}'",
+      "text": "",
+      "thinking": "\"Relation type\" is \"type\". Let's try querying the relations using \"type\".",
+      "usage": {
+        "input": 621,
+        "output": 148,
+        "cacheRead": 10192,
+        "cacheWrite": 0,
+        "reasoningTokens": 19,
+        "totalTokens": 10961,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "status": "success",
+        "stdout": "{\"data\":{\"users\":{\"nodes\":[{\"id\":\"06810c55-1ca5-4aca-a865-57f1410cd49e\",\"name\":\"Maya Chen\",\"displayName\":\"maya\"},{\"id\":\"55495c37-5344-44b8-9107-df01bdf731c2\",\"name\":\"Dana Whitfield\",\"displayName\":\"dana\"},{\"id\":\"a6a90ca8-45fd-43e2-a474-3ae999414ec7\",\"name\":\"Sam Rivera\",\"displayName\":\"sam\"},{\"id\":\"b80e74a4-15fa-404c-8a0e-65bac294d7ee\",\"name\":\"Omar Haddad\",\"displayName\":\"omar\"},{\"id\":\"ccc5c6ff-8a28-456b-883d-e7427d35f39a\",\"name\":\"Priya Nair\",\"displayName\":\"priya\"},{\"id\":\"fb7fe026-faea-4c07-84ab-29f987580e65\",\"name\":\"Leo Park\",\"displayName\":\"leo\"},{\"id\":\"u-actor\",\"name\":\"Jordan Lee\",\"displayName\":\"jordan\"}]},\"issueLabels\":{\"nodes\":[{\"id\":\"ba3f38da-7da5-40f4-88d8-163aa92e3985\",\"name\":\"Bug\"}]},\"issues\":{\"nodes\":[{\"id\":\"0e669634-dec6-477a-9b7e-218def9be948\",\"identifier\":\"WEB-1\",\"title\":\"Checkout rollout\",\"state\":{\"name\":\"Todo\"},\"assignee\":{\"id\":\"fb7fe026-faea-4c07-84ab-29f987580e65\",\"name\":\"Leo Park\",\"displayName\":\"leo\"},\"labels\":{\"nodes\":[]},\"relations\":{\"nodes\":[{\"type\":\"blocks\",\"relatedIssue\":{\"id\":\"2bd8b34e-bdb6-49e0-b170-539a9a3b97c7\",\"identifier\":\"WEB-5\",\"title\":\"Fix promo code error on checkout\"}},{\"type\":\"blocks\",\"relatedIssue\":{\"id\":\"aede4b70-114d-48c4-aa74-cbb5a2398354\",\"identifier\":\"WEB-4\",\"title\":\"Mobile purchase flow\"}}]}},{\"id\":\"0f78cc44-cf9c-441b-bc84-79f6fea64321\",\"identifier\":\"WEB-3\",\"title\":\"Search migration\",\"state\":{\"name\":\"Todo\"},\"assignee\":{\"id\":\"fb7fe026-faea-4c07-84ab-29f987580e65\",\"name\":\"Leo Park\",\"displayName\":\"leo\"},\"labels\":{\"nodes\":[]},\"relations\":{\"nodes\":[{\"type\":\"blocks\",\"relatedIssue\":{\"id\":\"b1b81486-db5b-4b25-8fb2-1684a73be090\",\"identifier\":\"WEB-10\",\"title\":\"Tidy up storybook stories\"}}]}},{\"id\":\"1e7002a8-70c2-4bdc-bda9-f231447817cf\",\"identifier\":\"WEB-8\",\"title\":\"Add haptic feedback on purchase\",\"state\":{\"name\":\"Todo\"},\"assignee\":{\"id\":\"06810c55-1ca5-4aca-a865-57f1410cd49e\",\"name\":\"Maya Chen\",\"displayName\":\"maya\"},\"labels\":{\"nodes\":[{\"id\":\"ba3f38da-7da5-40f4-88d8-163aa92e3985\",\"name\":\"Bug\"}]},\"relations\":{\"nodes\":[]}},{\"id\":\"2bd8b34e-bdb6-49e0-b170-539a9a3b97c7\",\"identifier\":\"WEB-5\",\"title\":\"Fix promo code error on checkout\",\"state\":{\"name\":\"Todo\"},\"assignee\":{\"id\":\"06810c55-1ca5-4aca-a865-57f1410cd49e\",\"name\":\"Maya Chen\",\"displayName\":\"maya\"},\"labels\":{\"nodes\":[{\"id\":\"ba3f38da-7da5-40f4-88d8-163aa92e3985\",\"name\":\"Bug\"}]},\"relations\":{\"nodes\":[]}},{\"id\":\"5385c53f-2bbd-4773-9d64-52d99b2fc388\",\"identifier\":\"WEB-2\",\"title\":\"Checkout rollout follow-up\",\"state\":{\"name\":\"Todo\"},\"assignee\":{\"id\":\"b80e74a4-15fa-404c-8a0e-65bac294d7ee\",\"name\":\"Omar Haddad\",\"displayName\":\"omar\"},\"labels\":{\"nodes\":[]},\"relations\":{\"nodes\":[{\"type\":\"blocks\",\"relatedIssue\":{\"id\":\"9f0c312a-4e3c-4754-8c6c-e2a97cbb1570\",\"identifier\":\"WEB-7\",\"title\":\"Fix gift-wrap copy on checkout\"}}]}},{\"id\":\"74c7035d-0833-4ec5-b507-e9e67ae103e3\",\"identifier\":\"WEB-9\",\"title\":\"Refresh help center docs\",\"state\":{\"name\":\"In Progress\"},\"assignee\":{\"id\":\"fb7fe026-faea-4c07-84ab-29f987580e65\",\"name\":\"Leo Park\",\"displayName\":\"leo\"},\"labels\":{\"nodes\":[]},\"relations\":{\"nodes\":[]}},{\"id\":\"984904bf-b8d8-44eb-8820-090297dbafdf\",\"identifier\":\"WEB-6\",\"title\":\"Update empty-cart illustration\",\"state\":{\"name\":\"Todo\"},\"assignee\":{\"id\":\"06810c55-1ca5-4aca-a865-57f1410cd49e\",\"name\":\"Maya Chen\",\"displayName\":\"maya\"},\"labels\":{\"nodes\":[{\"id\":\"ba3f38da-7da5-40f4-88d8-163aa92e3985\",\"name\":\"Bug\"}]},\"relations\":{\"nodes\":[{\"type\":\"blocks\",\"relatedIssue\":{\"id\":\"0e669634-dec6-477a-9b7e-218def9be948\",\"identifier\":\"WEB-1\",\"title\":\"Checkout rollout\"}}]}},{\"id\":\"9f0c312a-4e3c-4754-8c6c-e2a97cbb1570\",\"identifier\":\"WEB-7\",\"title\":\"Fix gift-wrap copy on checkout\",\"state\":{\"name\":\"Todo\"},\"assignee\":{\"id\":\"06810c55-1ca5-4aca-a865-57f1410cd49e\",\"name\":\"Maya Chen\",\"displayName\":\"maya\"},\"labels\":{\"nodes\":[{\"id\":\"ba3f38da-7da5-40f4-88d8-163aa92e3985\",\"name\":\"Bug\"}]},\"relations\":{\"nodes\":[]}},{\"id\":\"aede4b70-114d-48c4-aa74-cbb5a2398354\",\"identifier\":\"WEB-4\",\"title\":\"Mobile purchase flow\",\"state\":{\"name\":\"Todo\"},\"assignee\":{\"id\":\"fb7fe026-faea-4c07-84ab-29f987580e65\",\"name\":\"Leo Park\",\"displayName\":\"leo\"},\"labels\":{\"nodes\":[]},\"relations\":{\"nodes\":[]}},{\"id\":\"b1b81486-db5b-4b25-8fb2-1684a73be090\",\"identifier\":\"WEB-10\",\"title\":\"Tidy up storybook stories\",\"state\":{\"name\":\"Todo\"},\"assignee\":{\"id\":\"06810c55-1ca5-4aca-a865-57f1410cd49e\",\"name\":\"Maya Chen\",\"displayName\":\"maya\"},\"labels\":{\"nodes\":[]},\"relations\":{\"nodes\":[]}}]}}}"
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\n\"Relation type\" is \"type\". Let's try querying the relations using \"type\".\n</thinking>\n"
+          }
+        ]
+      }
+    },
+    {
+      "turn": 8,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -s https://api.linear.app/graphql -H \"Authorization: <TOKEN>\" -H \"Content-Type: application/json\" -d '{\"query\":\"mutation { issueUpdate(input: { id: \\\"2bd8b34e-bdb6-49e0-b170-539a9a3b97c7\\\", estimate: 5 }) { success issue { id identifier title estimate } } }\"}'"
+      },
+      "action": "curl -s https://api.linear.app/graphql -H \"Authorization: <TOKEN>\" -H \"Content-Type: application/json\" -d '{\"query\":\"mutation { issueUpdate(input: { id: \\\"2bd8b34e-bdb6-49e0-b170-539a9a3b97c7\\\", estimate: 5 }) { success issue { id identifier title estimate } } }\"}'",
+      "text": "Found it: **WEB-5 \"Fix promo code error on checkout\"** — Todo, assigned to Maya Chen, Bug label, and blocked by WEB-1 (Checkout rollout). Setting its estimate to 5.",
+      "thinking": "Let me analyze this. I need to find a Todo issue that is assigned to Maya Chen, has the Bug label, and is blocked by the \"Checkout rollout\" issue.\n\nThe \"Checkout rollout\" issue is WEB-1 (id 0e669634-dec6-477a-9b7e-218def9be948).\n\nWEB-1 blocks: WEB-5 and WEB-4.\n\nNow, which of these is a Todo, assigned to Maya Chen, and has the Bug label?\n\n- WEB-5 \"Fix promo code error on checkout\": state Todo, assignee Maya Chen, labels [Bug]. ✓\n- WEB-4 \"Mobile purchase flow\": state Todo, assignee Leo Park, no labels. ✗\n\nSo the target issue is WEB-5 (id 2bd8b34e-bdb6-49e0-b170-539a9a3b97c7).\n\nNote: In Linear's relation model, \"blockedBy\" is expressed from the blocked side's perspective as a \"blockedBy\" relation type. Here the relations are stored from WEB-1's perspective as \"blocks\" → relatedIssue WEB-5. So WEB-5 is blocked by WEB-1. This matches.\n\nWait, let me double-check. Relation types in Linear include \"blocks\" and \"blockedBy\". When I query the relations of issue WEB-1, I get type \"blocks\" → relatedIssue WEB-5. This means WEB-1 blocks WEB-5, i.e., WEB-5 is blockedBy WEB-1. Correct.\n\nSo the target is WEB-5, id 2bd8b34e-bdb6-49e0-b170-539a9a3b97c7.\n\nNow let me set its estimate to 5.\n\nLet me check the field name for estimate. In Linear's GraphQL, issue has an \"estimate\" field (int). issueUpdate takes an estimate parameter.\n\nLet me perform the update.",
+      "usage": {
+        "input": 2677,
+        "output": 604,
+        "cacheRead": 10192,
+        "cacheWrite": 0,
+        "reasoningTokens": 440,
+        "totalTokens": 13473,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "status": "success",
+        "stdout": "{\"errors\":[{\"message\":\"Field 'id' is not defined by type 'IssueUpdateInput'.\",\"locations\":[{\"line\":1,\"column\":33}]},{\"message\":\"Field 'issueUpdate' argument 'id' of type 'String!' is required, but it was not provided.\",\"locations\":[{\"line\":1,\"column\":12}]}]}"
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nLet me analyze this. I need to find a Todo issue that is assigned to Maya Chen, has the Bug label, and is blocked by the \"Checkout rollout\" issue.\n\nThe \"Checkout rollout\" issue is WEB-1 (id 0e669634-dec6-477a-9b7e-218def9be948).\n\nWEB-1 blocks: WEB-5 and WEB-4.\n\nNow, which of these is a Todo, assigned to Maya Chen, and has the Bug label?\n\n- WEB-5 \"Fix promo code error on checkout\": state Todo, assignee Maya Chen, labels [Bug]. ✓\n- WEB-4 \"Mobile purchase flow\": state Todo, assignee Leo Park, no labels. ✗\n\nSo the target issue is WEB-5 (id 2bd8b34e-bdb6-49e0-b170-539a9a3b97c7).\n\nNote: In Linear's relation model, \"blockedBy\" is expressed from the blocked side's perspective as a \"blockedBy\" relation type. Here the relations are stored from WEB-1's perspective as \"blocks\" → relatedIssue WEB-5. So WEB-5 is blocked by WEB-1. This matches.\n\nWait, let me double-check. Relation types in Linear include \"blocks\" and \"blockedBy\". When I query the relations of issue WEB-1, I get type \"blocks\" → relatedIssue WEB-5. This means WEB-1 blocks WEB-5, i.e., WEB-5 is blockedBy WEB-1. Correct.\n\nSo the target is WEB-5, id 2bd8b34e-bdb6-49e0-b170-539a9a3b97c7.\n\nNow let me set its estimate to 5.\n\nLet me check the field name for estimate. In Linear's GraphQL, issue has an \"estimate\" field (int). issueUpdate takes an estimate parameter.\n\nLet me perform the update.\n</thinking>\nFound it: **WEB-5 \"Fix promo code error on checkout\"** — Todo, assigned to Maya Chen, Bug label, and blocked by WEB-1 (Checkout rollout). Setting its estimate to 5."
+          }
+        ]
+      }
+    },
+    {
+      "turn": 9,
+      "tool": "exec",
+      "arguments": {
+        "command": "curl -s https://api.linear.app/graphql -H \"Authorization: <TOKEN>\" -H \"Content-Type: application/json\" -d '{\"query\":\"mutation { issueUpdate(id: \\\"2bd8b34e-bdb6-49e0-b170-539a9a3b97c7\\\", input: { estimate: 5 }) { success issue { id identifier title estimate } } }\"}'"
+      },
+      "action": "curl -s https://api.linear.app/graphql -H \"Authorization: <TOKEN>\" -H \"Content-Type: application/json\" -d '{\"query\":\"mutation { issueUpdate(id: \\\"2bd8b34e-bdb6-49e0-b170-539a9a3b97c7\\\", input: { estimate: 5 }) { success issue { id identifier title estimate } } }\"}'",
+      "text": "",
+      "thinking": "In the mutation, id is a top-level argument, not inside the input.",
+      "usage": {
+        "input": 573,
+        "output": 136,
+        "cacheRead": 12544,
+        "cacheWrite": 0,
+        "reasoningTokens": 17,
+        "totalTokens": 13253,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "observation": {
+        "status": "success",
+        "stdout": "{\"data\":{\"issueUpdate\":{\"success\":true,\"issue\":{\"id\":\"2bd8b34e-bdb6-49e0-b170-539a9a3b97c7\",\"identifier\":\"WEB-5\",\"title\":\"Fix promo code error on checkout\",\"estimate\":5.0}}}}"
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nIn the mutation, id is a top-level argument, not inside the input.\n</thinking>\n"
+          }
+        ]
+      }
+    },
+    {
+      "turn": 10,
+      "tool": null,
+      "text": "Done. Set the estimate to **5** on **WEB-5 \"Fix promo code error on checkout\"** — the Todo issue assigned to Maya Chen with the Bug label that's blocked by Checkout rollout (WEB-1). ✅",
+      "thinking": "Completed. The estimate for WEB-5 is currently 5.",
+      "usage": {
+        "input": 776,
+        "output": 63,
+        "cacheRead": 12544,
+        "cacheWrite": 0,
+        "reasoningTokens": 14,
+        "totalTokens": 13383,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "user_turn": 1,
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "<thinking>\nCompleted. The estimate for WEB-5 is currently 5.\n</thinking>\nDone. Set the estimate to **5** on **WEB-5 \"Fix promo code error on checkout\"** — the Todo issue assigned to Maya Chen with the Bug label that's blocked by Checkout rollout (WEB-1). ✅"
+          }
+        ]
+      }
+    }
+  ],
+  "followup_steps": []
+}

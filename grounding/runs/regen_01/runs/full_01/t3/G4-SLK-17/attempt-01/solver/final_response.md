@@ -1,0 +1,1 @@
+Done. The post that drew exactly two replies was Nadia Rahman's ("Heads up: lattice outage in eu-west, failover started, tracking here.") — the other lattice-outage posts had three and one replies respectively. I've invited her to #followups.

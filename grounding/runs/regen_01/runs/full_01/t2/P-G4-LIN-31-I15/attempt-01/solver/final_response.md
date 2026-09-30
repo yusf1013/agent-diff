@@ -1,0 +1,1 @@
+Nope — in Sprint 22 (Sep 7–21) the rate-limit issue (PLT-1, "Rate limit errors lack retry guidance") is assigned to **Leo Park**, not Maya. Maya's only issue in that sprint is PLT-2 (search index backfill), which isn't about rate limiting. No update was made — let me know if you still want the description changed on one of those.

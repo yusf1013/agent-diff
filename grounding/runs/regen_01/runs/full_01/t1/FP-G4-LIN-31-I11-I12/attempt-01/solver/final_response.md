@@ -1,0 +1,1 @@
+Done. The matching cycle is **Sprint 22 Overflow** (API team, starts Sep 7, ends Sep 21) — it contains API-1 "Tune rate limit thresholds for search" assigned to Maya Chen. I've set its description to "Retro moved to Friday, September 25."

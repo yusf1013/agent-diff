@@ -1,0 +1,1 @@
+Done. I found the **Engineering hiring** calendar whose description references Harbor View Terrace, Building 3 (timezone: America/Los_Angeles — Pacific), and updated its description to "Summer interview schedule for the 2018 cohort". Verified it stuck.
