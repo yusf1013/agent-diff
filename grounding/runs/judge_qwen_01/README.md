@@ -10,9 +10,12 @@ Session "judge_qwen", started by the lead ("RoadMap specialist") on 2026-09-30 f
   is 191/196 (97.4%), against Muse's 192/196 (98.0%): 0.5 points apart, inside the 3 allowed. Qwen and Muse agree
   on 440 of the 443 verdicts and on the exposed facts of all 196 executions both call failures. I adjudicated the 3
   disagreements blind: Muse is right on 2, Qwen on 1. The decision is the lead's.
-- **Running:** the replay of the other 1,696 judged executions (started 01:02 EDT, about 3 hours at 16 in flight).
-  Next: its comparison with Muse, the blind adjudication of its disagreements, and the headline numbers
-  (Table 7 and the eight policy decisions) recomputed with Qwen's verdicts.
+- **Running:** the replay of the other 1,696 judged executions (started 01:02 EDT, about 3.5 hours at 16 in flight).
+  Its disagreements are labelled blind as they appear (11 so far), and unblinded together at the end. Then: the
+  headline numbers (Table 7 and the eight policy decisions) recomputed with Qwen's verdicts.
+- **Queued after it:** a second Qwen pass over the 443 labelled executions, same settings
+  (`runs/selfhost/chain_repeat.sh`): how much Qwen's verdicts vary from run to run at its default sampling, and
+  whether the bar holds on a second draw.
 - **Host:** the lead cleared the self-hosted Qwen for the whole replay (message of 2026-09-30, about 00:00 EDT), at
   about 16 judge calls in flight. Purdue's Qwen is not used; the brief's "use Purdue first" step was superseded by
   that message.
