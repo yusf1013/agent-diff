@@ -2,7 +2,7 @@
 before the population runs: all runs of every valid unit, units as the independent draws, a cluster bootstrap), on
 the cells of a Muse-only suite. No model calls.
 
-    python grounding/runs/fact_coverage_02/launch.py grounding.runs.regen_01.policy_decide absence|underspecified
+    python grounding/runs/fact_coverage_02/launch.py grounding.runs.regen_01.policy_decide absence|underspecified [--quiet-host]
 
 Per cell (service and mode), the valid units by the rulings (`rules.py`: openclaw_eval_01's rulings with this
 study's opaque ids and duplicates), with their verdicts:
@@ -11,6 +11,9 @@ study's opaque ids and duplicates), with their verdicts:
 - **this study's** (`source` regen_01), from runs/<absence_01|underspecified_01> and runs/judged_<run>/.
 Reports the decision for the Muse-only suite (the three together), for this study's units alone, and for each
 source apart, and writes runs/decisions_<mode>.json. A trial over the solver's budget is a failure (rulings.py).
+--quiet-host gives the other reading (the lead: "report both readings"): this study's timeouts under host load are
+replaced by their re-runs (rerun_load.py), and it writes runs/decisions_<mode>_quiet_host.json. Phase 4's and 6b's
+trials are as the population runs left them.
 """
 from __future__ import annotations
 
@@ -53,11 +56,16 @@ def per_unit(units: list[dict], outcomes: dict) -> list[tuple[int, int]]:
     return out
 
 
-def decide(mode: str) -> dict:
+def decide(mode: str, quiet: bool = False) -> dict:
+    """quiet: the quiet-host reading, each of this study's timeouts under host load replaced by its re-run
+    (runs/<run>_load, judged into runs/judged_<run>_load; a re-run over the budget is again a failure)."""
     lead_dirs = [OE / f"judged_population_{mode}", OE / f"judged_population_6b_{mode}"]
     first_dirs = sorted(OE.glob(f"judged_{mode}_look*"))
     mine = [RUNS / f"judged_{RUN[mode]}"]
     outcomes = P.population_outcomes([d for d in lead_dirs + mine if d.exists()])
+    if quiet:
+        for unit, trials in P.population_outcomes([RUNS / f"judged_{RUN[mode]}_load"]).items():
+            outcomes.setdefault(unit, {}).update(trials)
     earlier = P.population_outcomes(first_dirs)
     ran = P.first_pass_units(mode)
     regen = regen_cells(mode)
@@ -83,8 +91,10 @@ def decide(mode: str) -> dict:
 
 def main():
     mode = sys.argv[1]
-    result = decide(mode)
-    (RUNS / f"decisions_{mode}.json").write_text(json.dumps(result, indent=1) + "\n")
+    quiet = "--quiet-host" in sys.argv
+    result = decide(mode, quiet)
+    name = f"decisions_{mode}_quiet_host.json" if quiet else f"decisions_{mode}.json"
+    (RUNS / name).write_text(json.dumps(result, indent=1) + "\n")
     for cell, r in result.items():
         print(cell, {k: r.get(k) for k in ("valid_units", "rate", "p10", "p90", "decision")},
               {n: (p.get("units"), p.get("rate"), p.get("decision")) for n, p in r["by_source"].items()})

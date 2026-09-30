@@ -1,7 +1,7 @@
 """This study's regular score, as openclaw_eval_01/adjudicate.py computes a run's (the rulings, the solver's budget,
 trials acting only on flawed near misses not counted), with two additions. No model calls.
 
-    python grounding/runs/fact_coverage_02/launch.py grounding.runs.regen_01.score RUN [--runs-dir DIR]
+    python grounding/runs/fact_coverage_02/launch.py grounding.runs.regen_01.score RUN [--runs-dir DIR] [--quiet-host]
 
 - **The exposure filter** (the lead agreed, 2026-09-30): a failing trial exposes a fact only through a near miss the
   rulings keep valid. When the verdict names acted-on records, a fact counts if one of them is a valid near miss on
@@ -18,7 +18,9 @@ trials acting only on flawed near misses not counted), with two additions. No mo
 
 Reads RUNS_DIR/<RUN>.score.json (autogen_02's `phase4 score`) and RUNS_DIR/judged_<RUN>/<RUN>/ (judge v2); writes
 RUNS_DIR/<RUN>.adjudicated.json. RUNS_DIR is this study's runs/ unless --runs-dir names another (for checking this
-script against openclaw_eval_01's own adjudicated runs).
+script against openclaw_eval_01's own adjudicated runs). --quiet-host gives the other reading (the lead: "report both
+readings"): each timeout under host load is replaced by its re-run on the quiet host (runs/<RUN>_load, rerun_load.py,
+judged into runs/judged_<RUN>_load), and writes RUNS_DIR/<RUN>.adjudicated_quiet_host.json.
 """
 from __future__ import annotations
 
@@ -86,10 +88,26 @@ def valid_facts(case: dict, verdict: dict) -> set[str]:
     return {f for f in exposed if valid.get(f)}
 
 
-def adjudicate(run: str, runs_dir: Path) -> dict:
+def reruns(run: str, runs_dir: Path) -> dict:
+    """(trial, case id) -> (the re-run's latest attempt, judge v2's verdict on it), from runs/<RUN>_load (rerun_load.py)
+    and runs/judged_<RUN>_load, for the quiet-host reading."""
+    out = {}
+    for verdict_path in sorted((runs_dir / f"judged_{run}_load" / f"{run}_load").glob("t*/*/verdict.json")):
+        trial, case_id = verdict_path.parent.parent.name, verdict_path.parent.name
+        attempts = sorted((runs_dir / f"{run}_load" / trial / case_id).glob("attempt-*"))
+        verdict = json.loads(verdict_path.read_text())
+        if attempts and verdict.get("attempt") == str(attempts[-1]):
+            out[(trial, case_id)] = (attempts[-1], verdict)
+    return out
+
+
+def adjudicate(run: str, runs_dir: Path, quiet: bool = False) -> dict:
+    """quiet: the quiet-host reading, each timeout under host load replaced by its re-run (judged by judge v2); a
+    re-run over the budget again is a failure exposing no fact, as any trial over the budget."""
     score = json.loads((runs_dir / f"{run}.score.json").read_text())
     judged = runs_dir / f"judged_{run}" / run
-    left_out, not_counted, over_budget, filtered, load, rows = [], [], [], [], [], []
+    rerun = reruns(run, runs_dir) if quiet else {}
+    left_out, not_counted, over_budget, filtered, load, rows, replaced = [], [], [], [], [], [], []
     for t in score["tests"]:
         attempts0 = sorted((runs_dir / run).glob(f"t*/{t['case_id']}/attempt-*/case.json"))
         case = json.loads(attempts0[0].read_text())
@@ -100,6 +118,16 @@ def adjudicate(run: str, runs_dir: Path) -> dict:
         exposed, exposed_t1, exposed_nl, exposed_t1_nl = set(), set(), set(), set()
         for trial, r in t["trials"].items():
             attempts = sorted((runs_dir / run / trial / t["case_id"]).glob("attempt-*"))
+            verdict = None
+            if quiet and attempts and under_load(attempts[-1]):
+                if (trial, t["case_id"]) not in rerun:
+                    raise SystemExit(f"no judged re-run for {trial}/{t['case_id']}")
+                attempt, verdict = rerun[(trial, t["case_id"])]
+                attempts = [attempt]
+                r = {"outcome": verdict.get("outcome"), "exposed": sorted(verdict.get("exposed") or [])}
+                replaced.append({"trial": f"{trial}/{t['case_id']}", "rerun": str(attempt.relative_to(runs_dir)),
+                                 "outcome": r["outcome"], "exposed": r["exposed"],
+                                 "over_budget": rulings.over_budget(attempt)})
             if attempts and rulings.over_budget(attempts[-1]):
                 heavy = under_load(attempts[-1])
                 over_budget.append({"trial": f"{trial}/{t['case_id']}", "judged": r["outcome"],
@@ -110,7 +138,7 @@ def adjudicate(run: str, runs_dir: Path) -> dict:
                 continue
             if r["outcome"] not in FAIL:
                 continue
-            verdict = json.loads((judged / trial / t["case_id"] / "verdict.json").read_text())
+            verdict = verdict or json.loads((judged / trial / t["case_id"] / "verdict.json").read_text())
             reason = rulings.trial_not_counted(t["scenario"], verdict.get("acted_on"))
             if reason:
                 not_counted.append({"trial": f"{trial}/{t['case_id']}", "acted_on": verdict.get("acted_on"),
@@ -132,25 +160,30 @@ def adjudicate(run: str, runs_dir: Path) -> dict:
     for r in rows:
         groups[f"domain:{r['domain']}"].append(r)
         groups[f"form:{r['form']}"].append(r)
-    return {"run": run, "rulings": str(rulings.KNOWN_DEFECTS), "budget_s": rulings.BUDGET_S,
+    return {"run": run, "reading": "quiet host" if quiet else "as run", "rulings": str(rulings.KNOWN_DEFECTS),
+            "budget_s": rulings.BUDGET_S,
             "raw": totals(everything, "exposed", "exposed_t1"), "adjudicated": totals(rows, "exposed", "exposed_t1"),
             "by": {g: totals(rs, "exposed", "exposed_t1") for g, rs in sorted(groups.items())},
             "facts": sorted({f for r in rows for f in r["exposed"]}),
             "facts_t1": sorted({f for r in rows for f in r["exposed_t1"]}),
             "left_out_tests": left_out, "trials_not_counted": not_counted, "trials_over_budget": over_budget,
-            "timeouts_under_host_load": load, "exposures_filtered": filtered, "tests": rows}
+            "timeouts_under_host_load": load, "replaced_by_reruns": replaced, "exposures_filtered": filtered,
+            "tests": rows}
 
 
 def main():
     args = sys.argv[1:]
     run = args[0]
     runs_dir = Path(args[args.index("--runs-dir") + 1]).resolve() if "--runs-dir" in args else HERE / "runs"
-    out = adjudicate(run, runs_dir)
+    quiet = "--quiet-host" in args
+    out = adjudicate(run, runs_dir, quiet)
     if "--runs-dir" not in args:
-        (runs_dir / f"{run}.adjudicated.json").write_text(json.dumps(out, indent=1, ensure_ascii=False) + "\n")
-    print(json.dumps({k: out[k] for k in ("raw", "adjudicated")}, indent=1))
+        name = f"{run}.adjudicated_quiet_host.json" if quiet else f"{run}.adjudicated.json"
+        (runs_dir / name).write_text(json.dumps(out, indent=1, ensure_ascii=False) + "\n")
+    print(json.dumps({k: out[k] for k in ("reading", "raw", "adjudicated")}, indent=1))
     print(f"left out {len(out['left_out_tests'])} tests; not counted {len(out['trials_not_counted'])} trials; over "
           f"budget {len(out['trials_over_budget'])} ({len(out['timeouts_under_host_load'])} under host load); "
+          f"replaced by re-runs {len(out['replaced_by_reruns'])}; "
           f"exposures filtered in {len(out['exposures_filtered'])} trials")
 
 
