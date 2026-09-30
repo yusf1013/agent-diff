@@ -53,3 +53,14 @@ section. Decisions that stand go to the [roadmap](roadmap.md); this is the recor
   executions, 14 of them fabricating the evidence the request used to identify the record. Next: the precision
   sample and the restore cases.
 - 00:2x judge_qwen: the labelled replay running on the self-host (97 of 443 at 00:21).
+- 00:3x related_work (commit 279aed6736 on exp/related_work-01): the map (12 angles, 6 new), 34 cards, the verdict
+  table (report.md §1–3). Early findings: concurrent work names our failure class, "Entity Binding Failures in
+  Tool-Augmented Agents" (arXiv 2606.30531, 2026-06-29; 60 hand-built single-step tasks; look-alikes rarely bite,
+  true ambiguity almost always does; no requirement space, no absence, no live exploration, no validated oracle);
+  AgentAbstain (2607.10059) has 263 should-act/should-abstain pairs (missing parameter ≈ our underspecified;
+  insufficient tools ≈ our "no operation" boundary; no presupposed absence); semi-automated suites leave to people
+  what we automate (Agent-Diff's paper, AppWorld's hand-written distractors); ClawEnvKit (2604.18543) supports
+  OpenClaw natively and is the generator baseline to run; saved Sonnet 5 runs on 59 Agent-Diff Slack tests: the
+  suite's assertions pass 7 of 13 tests with a hand-labelled wrong-record error; the credit rule's ancestor is
+  Zhong, Yu and Klein (EMNLP 2020). Next: the projection plan (Agent-Diff first, AgentDojo second) and the three
+  baseline proposals.
