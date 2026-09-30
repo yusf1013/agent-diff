@@ -359,3 +359,11 @@ section. Decisions that stand go to the [roadmap](roadmap.md); this is the recor
   re-roots attempt paths against the repository and warns when one cannot be resolved; sol_score is rebuilding
   every affected file (decisions, report numbers and texts, regen's and sol_eval_01's Qwen columns) with a logged
   old → new for each. Every Sol number is unchanged.
+- 13:2x related_work, B1 done (commit 6b8f16fd35; 48 masked-operation items, 144 trials on Qwen, boundary_02's
+  oracle): 47 of 144 trials pass as run (50 with the 12 host-load reruns); 40 of 48 items fail at least once. By
+  service, Slack 29 of 36 pass (its "unknown_method" reads as "no such method"); Box, Calendar and Linear 5–8 of 36
+  (a 405, a 404 or a GraphQL error reads as a broken environment and the agent probes until the budget ends: 77 of
+  the 97 failures ran out the budget, 33 of them after an unrequested change); 17 made such a change and answered;
+  4 wrote straight to the backend. The oracle agrees with all 30 blind labels. Reading: masking measures the
+  response to an environment that seems broken (FeasiGen's "false continue"), not knowledge of a service's limits,
+  which our boundary tests measure; keep both. P1 started at 13:23.
