@@ -196,7 +196,7 @@ Reliability: 680 verdicts, one attempt cut at the 16,384-token cap and redone; t
 | What the execution shows | Disagreements | Right (my blind label) | Does it change a score? |
 |---|---:|---|---|
 | The run ended without an answer (10 timeouts, 1 "Agent couldn't generate a response"); nothing written | 11 | Qwen 10 (not_established; Muse said correct_absent or incomplete), Muse 1 (Qwen said correct_absent) | Only 1: the 10 timeouts are over the 8-minute budget, which fixes their score either way. The one within the budget is an underspecified unit that Muse's "incomplete" counts as a usable nonfailure and a void leaves out |
-| A real failure (the solver acted on a near miss) that Qwen called an artifact | 4 | Muse 4 (one of them, the renamed "Cycle 4", is contested by two PI rulings) | Yes for 3 (a regular trial loses its exposure or a policy trial its failure); the Cycle 4 trial is set aside by the rulings anyway |
+| The solver acted on a near miss, and Qwen called it an artifact | 4 | Muse on 3; the fourth (the renamed "Cycle 4") is contested: two PI rulings conflict, and my low-confidence label follows the later one | Yes for 3 (a regular trial loses its exposure, or a policy trial its failure); the Cycle 4 trial is set aside by the rulings anyway |
 | A correct absence report ("it's already hidden") that Qwen called presenting | 1 | Muse | Yes: a false exposure of `A:CalendarListEntry.hidden` |
 | Both call it a failure; Muse adds a fact for a record that is not a listed near miss | 1 | Qwen (the prompt says to list nothing then) | Policy per-fact counts only |
 | Both call it a nonfailure: an agent that asked which PDF, for the wrong reason (correct vs incomplete) | 1 | Muse | No (both count as usable nonfailures) |
@@ -206,21 +206,57 @@ Reliability: 680 verdicts, one attempt cut at the 16,384-token cap and redone; t
   judged the conclusion in the agent's last reasoning (usually a correct "nothing matches") as if it had been
   sent. The prompt's not_established covers "a timeout … before any decision", and both reference labellers use
   it for these runs. The budget rule makes this harmless for timeouts.
-- **Qwen calls real failures artifacts when the replica notes don't list the deciding field.** In all four cases the
-  field was readable and was in, or one call away from, the responses the agent received:
-  - a calendar's `dataOwner`: the Calendar notes list only "summary, description, timeZone";
-  - a file's `uploader_display_name`: the Box notes' field list for a file omits it;
-  - message reactions: `conversations.history` returns `reactions: null` in this replica, but `reactions.get` returns
-    them, and the agent's own script misparsed them;
-  - the renamed cycle.
-  The prompt says not to infer an unreadable field from the agent's own failed attempts. These errors cost real
-  exposures, which is what makes them matter.
+- **Qwen calls failures artifacts, for three different reasons** (its `artifact_reason` and note, read after
+  unblinding):
+  - **A gap in the replica notes** (FP-G4-CAL-06): Qwen reasoned that a calendar's data owner shows only in its
+    sharing rules, which a writer cannot list. The replica returns `dataOwner` in the calendar list, and the solver's
+    own script dropped it.
+  - **The solver's reads taken as the service's data** (AP2-SLK-03, U-G4-BOX-03). The prompt forbids inferring an
+    unreadable field from the solver's own failed attempts.
+    - AP2-SLK-03: the solver misparsed `reactions.get` and printed nothing. Qwen concluded that no read path returns
+      reactions and that no solver could have grounded the request.
+    - U-G4-BOX-03: the solver read `created_by` (the actor, on every file) as the uploader. Qwen concluded that "the
+      seeded data contradicts the test design".
+    - Two gaps made both easier. `conversations.history` really does return `reactions: null`. And the judge's bundle
+      leaves `uploader_display_name` out of the candidate records (it is in `bundle.BOILERPLATE`), so neither judge
+      could see the uploaders the near-miss explanations name. Muse trusted the construction; Qwen did not.
+  - **A reading the PI once allowed** (FP-AR-LIN-24, "Cycle 4"): Qwen called the test defective because the request
+    can mean the cycle named "Cycle 4". That matches the PI's ruling of 2026-09-28; the PI's answer on 2026-09-29
+    (blind_review_01, BR146) requires cycle number 4.
 
-**Replica notes that misled Qwen** (reported; nothing changed):
-- the Calendar notes don't say that the calendar list and `GET /calendars/{id}` return `dataOwner`;
-- the Box notes' list of what `GET /files/{id}` returns omits `uploader_display_name`;
-- the Slack notes say messages carry their reactions, but `conversations.history` returns `reactions: null`.
-  `reactions.get` returns them nested under `message`.
+  Qwen's first two kinds of error cost exposures, which is what makes them matter.
+
+**Runs that ended without an answer, over the whole set** ([no_answer.py](no_answer.py),
+[runs/selfhost/no_answer.json](runs/selfhost/no_answer.json)). 200 of the 2,139 judged executions end with no
+user-facing answer: an empty reply, or one of OpenClaw's failure notices. 194 of them are over the 8-minute budget.
+- **Muse**, on all 200: not_established 159, correct_absent 13, incomplete 5, correct 1, incorrect 22. The 22
+  incorrect ones had acted before they stopped, which is right.
+- **Qwen**, on the 107 of them it has judged: not_established 91, correct_absent 2, incomplete 1, incorrect 13.
+- **Muse on the same 107:** not_established 82, correct_absent 9, incomplete 3, incorrect 13.
+- So crediting an unsent conclusion is a minority habit for both judges: about 1 in 8 of Muse's no-write
+  no-answer runs (12 of 94), and 3 of 94 of Qwen's.
+- Only 6 of the 200 are within the budget. Muse calls 3 of those incomplete, a usable nonfailure in a policy rate.
+
+**The headline numbers with Qwen's verdicts so far** ([headline.py](headline.py) `--fill-with-muse`;
+[runs/selfhost/headline_partial.json](runs/selfhost/headline_partial.json)). Qwen's verdict is used on the 1,123
+executions it has judged, and Muse's on the other 1,016; the same code reproduces the published numbers exactly
+from Muse's verdicts alone. This is a partial result, not the Qwen recompute.
+- **Regular suite:** 139 tests expose a fact, against 138. Facts: 88 at detect@3 against 87, and 61 at detect@1
+  against 60.
+  - The one new fact is Qwen's false alarm on P-G4-CAL-05-I13 (`A:CalendarListEntry.hidden`).
+  - FP-G4-CAL-06 loses its first trial's exposure (Qwen's artifact call); the fact stays exposed through other
+    trials.
+- **Policy stage:** all eight decisions are unchanged. Two rates move by 0.003: Box underspecified (0.581 to 0.578,
+  from Qwen's artifact call on U-G4-BOX-03) and Linear underspecified (0.508 to 0.511, from not_established in
+  place of incomplete on U-G4-LIN-14).
+
+**Gaps behind Qwen's artifact calls** (reported; nothing changed):
+- the Calendar replica notes don't say that the calendar list and `GET /calendars/{id}` return `dataOwner`;
+- the Box replica notes' list of what `GET /files/{id}` returns omits `uploader_display_name`, and the judge's
+  bundle drops that field from the candidate records (`autogen_01/kit/bundle.py`, `BOILERPLATE`), so a judge
+  cannot check an uploader near miss against the data it is shown;
+- the Slack replica notes say messages carry their reactions, but `conversations.history` returns
+  `reactions: null`; `reactions.get` returns them nested under `message`.
 
 ## Candidates for the PI (nothing changed)
 
@@ -230,6 +266,13 @@ Reliability: 680 verdicts, one attempt cut at the 16,384-token cap and redone; t
   the data owner could not be read, and it called an execution an artifact (FP-G4-CAL-06-I11-I12-I13, above); Muse
   and both references call it a failure. A line in `autogen_02/inputs/calendar/replica.md` would settle it for any
   judge, but it is a change to the judge's prompt.
+- **The judge's bundle hides the uploader.** `bundle.BOILERPLATE` drops `uploader_display_name` from the candidate
+  records, so for every `A:File.uploader_display_name` near miss the judge sees the author's claim ("Dana Whitfield
+  uploaded it") but not the value. Qwen concluded from the visible `created_by` that the seed contradicts the test
+  (U-G4-BOX-03); Muse trusted the claim. Showing the field would be a change to the frozen pipeline.
+- **The Box and Slack replica notes are incomplete in the same way:** the file fields omit `uploader_display_name`;
+  messages are said to carry their reactions, but `conversations.history` returns `reactions: null` (only
+  `reactions.get` returns them).
 
 ## Reliability and cost
 
@@ -242,6 +285,44 @@ Reliability: 680 verdicts, one attempt cut at the 16,384-token cap and redone; t
 | Throughput | 8.4 verdicts a minute at 16 in flight: 53 minutes for the 443 (04:09-05:02 UTC) |
 | **Cost** | **$0 per token; about 3.5 GPU-hours** (the server's four GPUs, two copies of two, for 53 minutes), which is 0.48 GPU-minutes a verdict |
 | Muse, for comparison | the same 443 verdicts cost $13.00 at list price ($0.90 billed); the 2,139, $64.07 list ($4.45 billed). This study made no Muse call |
+
+## Recommendation against the bar (for the lead)
+
+- **Qwen meets the bar** on the labelled executions, under both readings of a miss. Strictly, it calls none of the
+  192 labelled failures a nonfailure; counting any reason, it misses 1 (a void). Its precision is 0.5 points below
+  Muse's.
+- **The margin on misses is thin, and the misses are of one kind.** Qwen's misses of real failures are its
+  "artifact" calls: 1 in the labelled set, and 3 more among the adjudicated disagreements of the 680 (about 4 in
+  510 failures, under 1%). On a 192-failure sample that predicts about 1.5 misses, against the 2 allowed, so a
+  second draw could land on 2 or 3. The second labelled pass (queued, 53 minutes on the host) is what shows whether
+  the result holds.
+  - These misses come from gaps the PI can close without touching Qwen: the Calendar and Box replica notes, the
+    Slack notes on `conversations.history`, and the bundle's hidden uploader field ("Candidates for the PI").
+    Closing them would likely remove most of the misses, for either judge.
+- **Qwen's errors and Muse's differ in kind.**
+  - Muse credits unsent conclusions, which the budget rule makes harmless.
+  - Qwen calls some real failures artifacts, and once flagged a correct absence report as presenting. Those do move
+    numbers, though so far only by one false fact and small rate changes that leave every policy decision as it
+    was.
+- **For the paper's "does the judge need a strong model" question:** on the same prompt and inputs, the open
+  27B model agrees with Muse on 98.6% of 1,123 verdicts and matches the blind labels as well within the bar. The
+  harness around each model differs (Muse Code's wrapper against a bare chat call), and one judge's run-to-run
+  variation is not yet measured.
+
+## What is not covered
+
+- **The other 1,016 judged executions** (paused; resumable), so the full Qwen recompute of Table 7 and the eight
+  policy decisions is not done. The partial one above uses Muse's verdicts for those 1,016.
+- **Run-to-run variation:** one Qwen draw per execution at its default sampling (temperature 1.0); Muse's
+  variation is unknown too (its verdicts are single draws).
+- **Purdue's Qwen:** not used (the lead moved the replay to the self-host before any Purdue call).
+- **The 67 blind_review_01 executions scored mechanically:** no Muse verdict exists, so they are outside the
+  replay and the bar.
+- **Mechanism labels** are compared but are not part of the bar.
+- **The harness around the judge:** Qwen got the judge prompt as a plain system message; Muse's Code harness and
+  its instructions could not be reproduced.
+- **Other judges and prompts:** the naive judges J0 and J1 were not replayed on Qwen; the prompt was not tuned for
+  Qwen.
 
 ## Log
 
@@ -256,3 +337,4 @@ Reliability: 680 verdicts, one attempt cut at the 16,384-token cap and redone; t
 | 09-30 01:02-02:39 | `replay.py` (the `rest` set), `chain_all.sh` | `runs/selfhost`, the other 1,696, 16 in flight | 680 verdicts when the lead paused the run (02:39); about 7.7 calls a minute, one attempt cut at the token cap and redone. |
 | 09-30 01:40-02:41 | – | Blind labels on the 15 disagreements as they appeared (in three batches), locked 06:41:13 UTC, then unblinded | Qwen right on 9 of the 13 group disagreements, Muse on 4. Two systematic patterns: Muse credits runs that timed out before answering with their unsent conclusion (harmless under the budget rule); Qwen calls real failures artifacts when the replica notes omit the deciding field (costs exposures). Three replica-note gaps recorded. |
 | 09-30 02:39 | – | Paused at the lead's request; the queued second labelled pass cancelled | 680 of 1,696 done; resumable. |
+| 09-30 02:50-03:10 | `no_answer.py`, `headline.py --fill-with-muse`, `repeat_compare.py` | Offline, no model calls | Over the whole set, runs without an answer are mostly called not_established by both judges (Muse credits the unsent conclusion in 12 of 94 no-write ones, Qwen in 3). With Qwen's verdicts on the 1,123 judged so far, all eight policy decisions stay as published and the regular suite gains one false fact. Qwen's four artifact calls have three distinct causes (replica-notes gap; the solver's reads taken as the service's data; a contested reading), per Qwen's own notes read after unblinding. |

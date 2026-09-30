@@ -36,7 +36,9 @@ def muse_of(key: str) -> dict | None:
     return load(p) if p.exists() else None
 
 
-def qwen_reader(out: Path):
+def qwen_reader(out: Path, fill_with_muse: bool = False):
+    """Qwen's verdict where it has one. Without one (a judge call that never gave a verdict), the triage's outcome
+    stands, as in the pipeline; with fill_with_muse (a partial replay), Muse's verdict stands instead."""
     fallbacks = []
 
     def read(key: str) -> dict | None:
@@ -46,7 +48,9 @@ def qwen_reader(out: Path):
         m = muse_of(key)
         if m is None:
             return None
-        fallbacks.append(key)  # judged in the study, but no Qwen verdict: the triage's outcome stands
+        fallbacks.append(key)
+        if fill_with_muse:
+            return m
         return {"outcome": m["provisional"], "exposed": m["provisional_exposed"] if m["provisional"] in FAIL else [],
                 "acted_on": []}
     return read, fallbacks
@@ -124,6 +128,8 @@ def policy_decisions(mode: str, verdict_of) -> dict:
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--out", type=Path, help="Qwen's verdict folder; without it, only the check against Muse runs")
+    ap.add_argument("--fill-with-muse", action="store_true",
+                    help="a partial replay: Muse's verdict where Qwen has none yet (writes headline_partial.json)")
     args = ap.parse_args()
     report = {"unjudged_final_regular_trials_by_triage": unjudged_are_clean()}
     published = load(OC / "final_regular_with_6b.json")
@@ -144,7 +150,7 @@ def main():
         report["policy"][mode] = {"muse": muse_policy, "muse_reproduces_published": same}
     if args.out:
         out = args.out if args.out.is_absolute() else HERE / args.out
-        read, fallbacks = qwen_reader(out)
+        read, fallbacks = qwen_reader(out, args.fill_with_muse)
         qwen_regular = regular(read)
         report["regular"]["qwen"] = {k: qwen_regular[k] for k in ("final", "by")}
         mt = {t["case_id"]: t for t in muse_regular["tests"]}
@@ -159,8 +165,10 @@ def main():
                                                               set(muse_regular["facts_detect3"]))
         for mode in ("absence", "underspecified"):
             report["policy"][mode]["qwen"] = policy_decisions(mode, read)
-        report["qwen_fallbacks_to_triage"] = sorted(set(fallbacks))
-    dest = (HERE / "headline.json") if not args.out else out / "headline.json"
+        report["qwen_verdicts_missing" + ("_filled_with_muse" if args.fill_with_muse else "_triage_stands")] = \
+            len(set(fallbacks)) if args.fill_with_muse else sorted(set(fallbacks))
+    dest = (HERE / "headline.json") if not args.out else \
+        out / ("headline_partial.json" if args.fill_with_muse else "headline.json")
     dest.write_text(json.dumps(report, indent=1) + "\n")
     summary = {"unjudged": report["unjudged_final_regular_trials_by_triage"],
                "regular": {k: v for k, v in report["regular"].items() if k in ("muse_reproduces_published",)},
