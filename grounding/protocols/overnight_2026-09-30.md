@@ -296,3 +296,8 @@ section. Decisions that stand go to the [roadmap](roadmap.md); this is the recor
 - 05:5x sol_score done (commits f00d9c9940, fca57dd6de; merged as d32f0787b9): the Sol round judged and scored in
   full; the numbers are in the morning brief. For the PI: AT-G4-BOX-15's "Atlas Onboarding Archive" with a what-if
   (no decision changes either way). Assigned next: the Sol section in the report texts.
+- 06:1x sol_score: the Sol round added to both report texts as "A second agent: GPT-6.1 Sol on the same harness"
+  (Tables 12a–12c in the concise text; §0.4's scope and the limits updated; merged as bd9fd54d8a). Follow-ups
+  assigned: a report kit for the Sol numbers (numbers/sol.json); list prices only in the texts, per the PI's rule,
+  with one sentence on the actual spend under contributor pricing. Noted for the policy kit: cell_stats stops at
+  the first unit without verdicts (only matters when a unit is unrun).
