@@ -100,6 +100,11 @@ def main():
     groups.update({f"domain:{d}": (lambda d: lambda r: r["domain"] == d)(d) for d in DOMAINS})
     groups.update({f"form:{f}": (lambda f: lambda r: r["form"] == f)(f) for f in FORMS})
     groups.update({f"set:{s}": (lambda s: lambda r: r["case_id"] in set_ids[s])(s) for s in SETS})
+    # Probes by near-miss family (exposure.py's probes_by_family): a probe holds one near miss.
+    family = {m["case_id"]: m.get("family") for s in SETS for m in load(STUDY / "cases" / s / "suite.json")
+              if m.get("form") == "probe"}
+    for fam in sorted({f for f in family.values() if f}):
+        groups[f"probe family:{fam}"] = (lambda fam: lambda r: r["form"] == "probe" and family.get(r["case_id"]) == fam)(fam)
     out = {"_about": __doc__.split("\n\n")[0], "sol_tests": len(sol), "qwen_matched": len(qwen),
            "missing_in_qwen": missing, "groups": {}}
     by_id_q = {r["case_id"]: r for r in qwen}
