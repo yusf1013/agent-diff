@@ -183,3 +183,12 @@ section. Decisions that stand go to the [roadmap](roadmap.md); this is the recor
   P1's Linear team-name copies need a fact check; whether the boundary space should hold policy documents; 20 of
   213 "correct" cover trials did not make exactly the requested change. Assigned: run B1's selection and P1's
   matched 48 on the self-host tonight, with blind labels.
+- 02:3x regen ready to run (commit 85ce248553; merged as 4f88565da5, in a separate worktree this time): 337 tests,
+  1,011 executions at 3 trials: 206 regular (34 covers, 127 probes, 45 fact probes), 72 absence and 59 drop-F
+  units; 100 blind trials drawn first. Funnel: 35 briefs, 37 attempts, 34 accepted (G4-LIN-30 rejected twice by the
+  reader; the fact set Sonnet also failed); 135 near misses declared, 6 flawed; 216 regular candidates, 206 valid.
+  Coverage: 77 of the briefs' 82 facts, 75 of Sonnet's 81. Muse so far $38.87 list, $2.38 billed. For the PI:
+  A:Team.key/description/private uncovered (the reader rejects naming a team by privacy, key fragment and
+  description); message_text and CalendarListEntry.selected uncovered because their designated near miss is the
+  ruled-flawed construction; three "word in a sibling field" borderline cases for one ruling on the pattern. Runs
+  started on the self-host at 16 in flight.
