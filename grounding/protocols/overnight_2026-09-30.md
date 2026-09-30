@@ -351,3 +351,11 @@ section. Decisions that stand go to the [roadmap](roadmap.md); this is the recor
 - 12:4x sol_score done on the regenerated half (commits to c3b1615e63; merged as 8f7237f73c): the numbers are in
   the brief; 10 of 1,011 trials needed one retry, no quota or rate-limit error; a last task assigned to make the
   budget rule's attempt paths repository-relative (regen's verdicts record worktree paths).
+- 13:0x **a second error of mine, found by sol_score:** the 10-minute rebuild at 49ce3672dc lost the budget rule for
+  the first round's 1,743 policy verdicts, because their recorded attempt paths point into the removed roadmap-02
+  worktree and `population_outcomes` skips the rule when the path is missing, so over-budget trials the judge
+  called not_established counted as void instead of failures. No pooled decision changes, but the committed rates
+  are low (Linear absence 0.608 against 0.656 with the rule; Slack underspecified 0.768 against 0.802). The fix
+  re-roots attempt paths against the repository and warns when one cannot be resolved; sol_score is rebuilding
+  every affected file (decisions, report numbers and texts, regen's and sol_eval_01's Qwen columns) with a logged
+  old → new for each. Every Sol number is unchanged.
