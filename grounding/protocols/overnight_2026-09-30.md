@@ -316,3 +316,11 @@ section. Decisions that stand go to the [roadmap](roadmap.md); this is the recor
   its near misses ruled flawed on person-naming wording, with Phase 4's opposite reading beside them; its 72 tests
   run on the self-host at 6 in flight for the exposure comparison (Muse's 74 tests on the same briefs: 19 exposing,
   9 of 23 facts at detect@3).
+- 12:0x qwen_writer_01 done (commit d38d3a0219; merged as 3702de065a): **Qwen's writer matches Muse** on 12 Phase 4
+  briefs (12 of 12 accepted, 23 of 23 facts covered validly, 43 of 45 near misses valid under the session's
+  rulings, the same wording quality) at $0 and 25–112 minutes of writer time per brief (Muse 2–15); its tests
+  expose comparably on Qwen (24 of 70 tests exposing, 12 of 23 facts at detect@3, against Muse's 19 of 74 and 9;
+  a 5-to-2 split within 3-trial noise); judge v2 agrees with 29 of 30 blind labels (the one is the ruling
+  question). For the PI: two person-naming readings ("Maya Chen's" as owner or creator; "uploaded" as first or
+  current version) on which Phase 4 read Muse's briefs the other way, and an "open link" reading solvers took.
+  Confounds recorded: Claude Code's writer path and effort medium; the reply cap and window relay.
