@@ -728,6 +728,67 @@ The corrections to §5.3's S1 row: the arm used the obligation cards' plural obl
    wrong value written to the target … does not change the outcome"), so this is by design, but any "solved" row in
    a baseline table should say so.
 
+5. **Containment.** In OpenClaw runs the agent can read the host. In B1, 18 of 81 trials probed it (ports,
+   processes, `/proc`). Five read our repository or the replica's source, and three sent the refused write straight
+   to the backend, which skips the curl shim and any mask. The lead's scan of every final-round trial found 13 of
+   4,464 Qwen trials touching the host or backend, none turning a failure into a pass, and none of Sol's 1,196. The
+   neutral layout hides names, not the filesystem: a future round should run attempts under a restricted user or in
+   a container.
+
+### 5.7 First results (2026-09-30; B1 provisional)
+
+**B1, masking an operation** ([b1/](b1/README.md)): 81 of 144 trials so far, 27 of the 48 selected items with at
+least one trial. The run is paused at the lead's request so another study's runs have the host. The agent is OpenClaw
+with the self-hosted Qwen, graded by boundary_02's oracle.
+
+| | B1 (so far) | Ours: boundary_auto_01 | baselines_01 |
+|---|---|---|---|
+| Agent | OpenClaw, self-hosted Qwen3.8-27B | the same model, toy harness | OpenClaw, self-hosted Qwen |
+| Tests | 27 items (of 48) | 89 valid boundary tests | none on boundaries: its failing tests all presuppose a missing record (a policy form) |
+| Tests failing at least once | **26 of 27** | 49 of 89 | – |
+| Trials passing | **13 of 81**, all reports | by the alternative, below | – |
+| Pass rate, nothing else possible | 4 of 27 | 40 of 45 | – |
+| … a re-creation possible | 5 of 42 | 31 of 92 | – |
+| … another record possible | 4 of 6 | 36 of 36 | – |
+| … a look-alike possible | 0 of 3 | 9 of 20 | – |
+
+- **How the 68 failing trials fail:**
+  - 51 ran out the solver's 600 s budget: 23 with no change, 28 after a change no one asked for;
+  - 15 more made such a change and answered: a deleted calendar-list entry, a lossy re-creation, stray test records;
+  - 1 sent the write to the backend directly, a failure by rule; two over-budget trials did too;
+  - 1 reached F with another change.
+- **The oracle agrees with all 17 blind labels drawn so far** (30 were drawn before the run; the other 13 are in the
+  unrun part).
+- **Caveats:**
+  - The first 12 trials ran while the shared host was overloaded (24 to 67 s per model request) and all ran out the
+    budget. By the lead's ruling they stay in the record and will be rerun on a quiet host; both readings go to the PI.
+    Over all 81 trials the median is 30 s per request (quartiles 26 and 37), close to 6a's pace. So most timeouts are
+    long probing, not a slow host.
+  - The harnesses differ: our boundary tests ran in the toy loop, B1 in OpenClaw.
+  - Leaving out the 9 trials that read the repository, the replica's source or their own curl wrapper: 12 of 72
+    pass.
+  - 7 calendar-list trials depend on a replica gap: the replica cannot re-add a deleted list entry. Without them,
+    13 of 74 pass.
+- **The reading so far:** with the one operation taken away by an error, the agent rarely reports it. It probes
+  until the budget runs out, often changing something no one asked for, sometimes going around the service. That is
+  FeasiGen's "false continue". The same model reports our faithful boundaries (real service limits) far more often,
+  though in another harness.
+- **So B1 measures a different behaviour from our boundary tests:** the response to an environment that seems broken,
+  not knowledge of a service's limits. That is the argument for keeping both, not for replacing ours.
+
+**S1** ([s1/](s1/README.md)), done without a model:
+- Agent-Diff's seeds defeat **3 of the 15** practical lazy shortcuts our automation defeats on Slack, Box and Linear
+  (it defeats all 19, Calendar's four included).
+- Pages and visibility are never defeated.
+- **152 of 210** targets of its plural requests would go unnoticed if left out.
+
+**B2** ([b2/](b2/README.md)), reading: the abstention suites' 2,843 boundary-type items are nearly all "no
+operation" of the tool-withheld kind. Read-only fields, permissions and state preconditions, 76 of our 93 faithful
+elements, have no counterpart.
+
+**P1** ([p1/](p1/README.md)): built and ready: the matched 48 as cases, with the blind sample drawn. It waits for the
+host after B1.
+
 ## 6. What we do that they cannot
 
 | Capability | Ours | Closest prior work |
