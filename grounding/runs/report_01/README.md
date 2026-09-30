@@ -84,7 +84,7 @@ none is recomputed from memory. `numbers/` and `kit/` are unchanged by this work
 "old" is the text before these changes.
 
 **Which numbers:** every source is read as of commit a8c046c891 (`numbers/` rebuilt in full after the two PI
-rulings above). A first pass (commits 787c4f576b to 1908825239) used the files at 663af2ce1c, before the rulings;
+rulings above). A first pass (commits 787c4f576b to 2b8b166f67) used the files at 663af2ce1c, before the rulings;
 the commits after the merge 3ba8bafe21 re-synced it, and the entries below give the final values. Table 11's
 figures are read from the two decision files (`openclaw_eval_01/runs/policy/decisions_population_*.json`), the
 sources the table already cites. `numbers/policy.json` has the same rates and intervals, but its `valid` and
@@ -273,9 +273,8 @@ and decisions; its `valid` keeps both cases of each duplicate pair (Linear and S
   passing grounding; 96 replies (R3), 60 (R4); 9 of 15 undone or no-op writes undisclosed. Source:
   `values_01/report.md`, "The answer in brief", §2.2, §2.3, §2.5. It replaces the "not measured" line (report.md) and
   "have not received a systematic value audit" (report_concise.md).
-- Unchanged: Table 13 and the other rows (values_01 agrees with them: 4 outside the candidate set, 2 changed to fit,
-  2 other fields disclosed, 32 Box replica effects).
-
+- Not changed by values_01: Table 13 and the other rows (values_01 agrees with them: 4 outside the candidate set, 2
+  changed to fit, 2 other fields disclosed, 32 Box replica effects).
 - Both texts, after the two rulings: the regular trials 1,695 → 1,689; the 1,323 policy-population trials stay, now
   said to include the 18 trials of the 6 units the rulings left out (`kit/beyond.py` reads every population trial);
   Table 13's Box tag writes (regular) 105 → 99; "Trials writing anything" 547 of 1,695 → 541 of 1,689.
