@@ -164,6 +164,21 @@ locked by hash and unblinded ([adjudication/](adjudication/README.md): `labels_l
   writer, without saying where the data owner shows. A line in those notes would remove the ambiguity; changing
   them is a prompt change, for the lead and the PI.
 
+**Qwen does the judging itself; it does not copy the triage.** The bundle shows both judges the mechanical
+triage's provisional outcome. On the 443, the triage's outcome group differs from the reference label's on 102
+executions (including 38 where the triage leaves the outcome open, "presented?" or "absent_unclear"). Muse's
+verdict has the label's group on 97 of those 102, and Qwen's on 96. Each judge keeps the triage's exact outcome on
+285 of the 443.
+
+## Candidates for the PI (nothing changed)
+
+- **The Calendar replica notes do not say where a calendar's data owner shows.** They list a calendar's fields as
+  "summary, description, timeZone", and they say an ACL-only fact is unreadable for a writer. The replica also
+  returns `dataOwner` in `GET /users/me/calendarList` and `GET /calendars/{id}`. From these notes Qwen inferred that
+  the data owner could not be read, and it called an execution an artifact (FP-G4-CAL-06-I11-I12-I13, above); Muse
+  and both references call it a failure. A line in `autogen_02/inputs/calendar/replica.md` would settle it for any
+  judge, but it is a change to the judge's prompt.
+
 ## Reliability and cost
 
 | | Labelled replay (443) |
@@ -172,8 +187,8 @@ locked by hash and unblinded ([adjudication/](adjudication/README.md): `labels_l
 | Instrument | `qwen3.8-27b`, fingerprint `vllm-0.30.0-tp2-d555b196` on every call |
 | Tokens | 4.27M input (1.03M served from the prefix cache), 0.76M output, of which 0.68M reasoning |
 | Per call | median 1,322 output tokens (p90 2,936, max 11,084, under the 16,384 cap); median 89 s (p90 194 s, max 681 s) |
-| Wall time | 53 minutes at 16 in flight (04:09-05:02 UTC) |
-| Cost | $0 per token. GPU time: two copies of two GPUs each, so about 3.5 GPU-hours of the four GPUs |
+| Throughput | 8.4 verdicts a minute at 16 in flight: 53 minutes for the 443 (04:09-05:02 UTC) |
+| **Cost** | **$0 per token; about 3.5 GPU-hours** (the server's four GPUs, two copies of two, for 53 minutes), which is 0.48 GPU-minutes a verdict |
 | Muse, for comparison | the same 443 verdicts cost $13.00 at list price ($0.90 billed); the 2,139, $64.07 list ($4.45 billed). This study made no Muse call |
 
 ## Log

@@ -1,7 +1,7 @@
 """Compare Qwen's verdicts with Muse's and with the reference labels (no model calls).
 
     python grounding/runs/fact_coverage_02/launch.py grounding.runs.judge_qwen_01.compare --out runs/selfhost \
-        --set labelled|all [--name NAME]
+        --set labelled|all|rest [--name NAME]
 
 Writes `<out>/comparison_<name>.json` and the adjudication queue `adjudication/queue_<name>.json` (keys only, shuffled,
 so the manual reading starts blind), and prints only aggregate numbers.
@@ -119,7 +119,7 @@ def reliability(out: Path, keys: list[str]) -> dict:
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--out", type=Path, required=True)
-    ap.add_argument("--set", choices=["labelled", "all"], required=True)
+    ap.add_argument("--set", choices=["labelled", "all", "rest"], required=True)
     ap.add_argument("--name")
     args = ap.parse_args()
     out = args.out if args.out.is_absolute() else HERE / args.out

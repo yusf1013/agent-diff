@@ -6,7 +6,8 @@
         [--concurrency 16] [--keys KEY ...] [--limit N]
 
 `select` writes the key lists: `all` is every final execution with a Muse verdict (2,139); `labelled` is those of
-them with a reference label (the lead's 310 retained blind labels and blind_review_01's 133 with a Muse verdict).
+them with a reference label (the lead's 310 retained blind labels and blind_review_01's 133 with a Muse verdict);
+`rest` is the other 1,696.
 Selection reads only which keys have a label, never a label's content, and `run` reads only the key lists.
 
 `run` sends each execution's saved text (common.muse_prompt) through backend.run, and writes
@@ -36,7 +37,8 @@ def select():
     everything = judged_keys()
     ref = labels()
     labelled = [k for k in everything if k in ref and (ref[k]["source"] == "lead" or ref[k]["has_llm"])]
-    for name, keys in (("all", everything), ("labelled", labelled)):
+    rest = [k for k in everything if k not in set(labelled)]
+    for name, keys in (("all", everything), ("labelled", labelled), ("rest", rest)):
         (SETS / f"{name}.json").write_text(json.dumps(keys, indent=1) + "\n")
         print(name, len(keys))
 
@@ -87,7 +89,7 @@ def main():
     sub = parser.add_subparsers(dest="cmd", required=True)
     sub.add_parser("select")
     r = sub.add_parser("run")
-    r.add_argument("--set", choices=["labelled", "all"])
+    r.add_argument("--set", choices=["labelled", "all", "rest"])
     r.add_argument("--keys", nargs="+")
     r.add_argument("--out", type=Path, required=True)
     r.add_argument("--concurrency", type=int, default=16)
