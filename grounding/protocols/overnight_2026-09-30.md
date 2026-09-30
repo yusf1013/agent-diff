@@ -123,3 +123,6 @@ section. Decisions that stand go to the [roadmap](roadmap.md); this is the recor
   round: in the openai backend `memory_search` fails ("agent database belongs to agent main; requested agent
   assistant") because the login store copied into the attempt's agent directory carries the main agent's identity;
   Sol called it in 110 of 444 trials; no grounding outcome changes.
+- 02:00 report_01/numbers rebuilt in full after the two rulings (the values session, now on the report update,
+  found it half-rebuilt): the final manifest is 998 cases and 2,994 executions (563 regular tests; 242 absence and
+  193 underspecified units). The report texts are being re-synced to it.
