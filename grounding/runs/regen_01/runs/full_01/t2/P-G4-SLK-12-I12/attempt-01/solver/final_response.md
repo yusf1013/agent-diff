@@ -1,0 +1,1 @@
+I checked all private channels in the workspace (including archived ones). There's only one — `#hiring`, whose purpose is "Q3 hiring plan and interview loop". No private channel with a spring release launch checklist purpose exists, so nothing was archived.

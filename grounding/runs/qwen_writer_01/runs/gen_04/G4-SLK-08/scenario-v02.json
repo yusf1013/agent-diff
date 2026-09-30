@@ -1,0 +1,130 @@
+{
+ "scenario_id": "G4-SLK-08",
+ "domain": "slack",
+ "request": "Add a thumbsup reaction to the message Priya Sharma sent in your DM with her that says the billing migration is live.",
+ "answer": "one",
+ "seed": [
+  ["dm", {"id": "D_PRIYA", "person": "priya", "ref": "d_priya"}],
+  ["row", {"table": "channels", "ref": "gdm", "values": {"channel_id": "G_PO", "is_dm": false, "is_gc": true, "is_private": true}}],
+  ["row", {"table": "channel_members", "values": {"channel_id": "G_PO", "user_id": "U01AGENBOT9"}}],
+  ["row", {"table": "channel_members", "values": {"channel_id": "G_PO", "user_id": "U_PRIYA"}}],
+  ["row", {"table": "channel_members", "values": {"channel_id": "G_PO", "user_id": "U_OMAR"}}],
+  ["channel", {"id": "C_BILL", "name": "billing", "members": ["priya", "diego", "leo"]}],
+  ["dm", {"id": "D_OMAR", "person": "omar"}],
+  ["channel", {"id": "C_GEN", "name": "general", "members": ["diego", "omar"]}],
+  ["message", {"channel": "D_PRIYA", "author": "priya", "text": "The billing migration is live in prod. All charges now route to the new service.", "at": "2026-09-29T12:05:00Z", "ref": "target"}],
+  ["message", {"channel": "G_PO", "author": "priya", "text": "The billing migration is live now. Omar, can you verify the EU region too?", "at": "2026-09-29T11:40:00Z", "ref": "w_gdm"}],
+  ["message", {"channel": "G_PO", "author": "omar", "text": "On it. Checking the EU region now.", "at": "2026-09-29T11:45:00Z", "ref": "m4"}],
+  ["message", {"channel": "C_BILL", "author": "priya", "text": "Billing migration is live across all tiers. Please report any regressions here.", "at": "2026-09-29T11:20:00Z", "ref": "w_chan"}],
+  ["message", {"channel": "C_BILL", "author": "diego", "text": "Confirming, all green on our side.", "at": "2026-09-29T11:30:00Z", "ref": "m6"}],
+  ["message", {"channel": "D_OMAR", "author": "omar", "text": "Hey, did the standup notes go out this morning?", "at": "2026-09-29T09:10:00Z", "ref": "m7"}],
+  ["message", {"channel": "C_GEN", "author": "diego", "text": "Lunch on Friday at the usual place?", "at": "2026-09-29T10:00:00Z", "ref": "m8"}]
+ ],
+ "conditions": [
+  {"id": "c1", "text": "in your DM with her", "facts": ["D:dm_with", "A:Conversation.is_dm", "R:channel_members", "R:messages.channel_id", "A:User.real_name"]},
+  {"id": "c2", "text": "the message Priya Sharma sent", "facts": ["R:messages.user_id", "A:User.real_name"]},
+  {"id": "c3", "text": "that says the billing migration is live", "facts": ["A:Message.message_text"]}
+ ],
+ "reference": {
+  "name": "Priya Sharma's confirmation message in the DM about the billing migration",
+  "target": ["@target"],
+  "query": {
+   "table": "messages",
+   "key": ["message_id"],
+   "filters": [
+    {"key": "f_text", "field": "message_text", "op": "contains_ci", "value": "billing migration is live", "fact": "A:Message.message_text"}
+   ],
+   "edges": [
+    {"key": "e_author", "join": {"parent": "user_id", "child": "user_id", "op": "eq"}, "fact": "R:messages.user_id",
+     "node": {"table": "users", "filters": [{"key": "f_author", "field": "real_name", "op": "eq", "value": "Priya Sharma", "fact": "A:User.real_name"}], "edges": []}},
+    {"key": "e_chan", "join": {"parent": "channel_id", "child": "channel_id", "op": "eq"}, "fact": "R:messages.channel_id",
+     "node": {
+      "table": "channels",
+      "filters": [{"key": "f_isdm", "field": "is_dm", "op": "eq", "value": true, "fact": "A:Conversation.is_dm"}],
+      "edges": [
+       {"key": "e_memb_p", "join": {"parent": "channel_id", "child": "channel_id", "op": "eq"}, "fact": "R:channel_members",
+        "node": {"table": "channel_members", "filters": [{"key": "f_memb_p", "field": "user_id", "op": "eq", "value": "U_PRIYA"}], "edges": []}},
+       {"key": "e_memb_a", "join": {"parent": "channel_id", "child": "channel_id", "op": "eq"}, "fact": "R:channel_members",
+        "node": {"table": "channel_members", "filters": [{"key": "f_memb_a", "field": "user_id", "op": "eq", "value": "U01AGENBOT9"}], "edges": []}},
+       {"key": "e_memb_n", "join": {"parent": "channel_id", "child": "channel_id", "op": "eq"}, "count": {"op": "eq", "value": 2}, "fact": "D:dm_with",
+        "node": {"table": "channel_members", "filters": [], "edges": []}}
+      ]
+     }
+    }
+   ]
+  },
+  "decoys": [
+   {
+    "witness": "@w_gdm",
+    "fact": "D:dm_with",
+    "family": "F7",
+    "substitute": "a group DM (actor, Priya, Omar) containing the same person plus a third participant",
+    "mutation": {
+     "type": "REPLACE",
+     "note": "the exact participant-set condition (a 1:1 DM with exactly the actor and Priya) relaxed to any conversation both the actor and Priya belong to, which the three-person group DM satisfies",
+     "query": {
+      "table": "messages",
+      "key": ["message_id"],
+      "filters": [
+       {"key": "f_text", "field": "message_text", "op": "contains_ci", "value": "billing migration is live"}
+      ],
+      "edges": [
+       {"key": "e_author", "join": {"parent": "user_id", "child": "user_id", "op": "eq"},
+        "node": {"table": "users", "filters": [{"key": "f_author", "field": "real_name", "op": "eq", "value": "Priya Sharma"}], "edges": []}},
+       {"key": "e_chan", "join": {"parent": "channel_id", "child": "channel_id", "op": "eq"},
+        "node": {
+         "table": "channels",
+         "filters": [],
+         "edges": [
+          {"key": "e_memb_p", "join": {"parent": "channel_id", "child": "channel_id", "op": "eq"},
+           "node": {"table": "channel_members", "filters": [{"key": "f_memb_p", "field": "user_id", "op": "eq", "value": "U_PRIYA"}], "edges": []}},
+          {"key": "e_memb_a", "join": {"parent": "channel_id", "child": "channel_id", "op": "eq"},
+           "node": {"table": "channel_members", "filters": [{"key": "f_memb_a", "field": "user_id", "op": "eq", "value": "U01AGENBOT9"}], "edges": []}}
+         ]
+        }
+      }
+     ]
+     }
+    },
+    "explanation": "A three-person group DM (you, Priya and Omar) that carries the same confirmation — a DM with Priya in the loose sense, but its participant set is not the 1:1 pair, so it fails 'in your DM with her'."
+   },
+   {
+    "witness": "@w_chan",
+    "fact": "D:dm_with",
+    "family": "F0",
+    "substitute": "the public channel #billing, which contains Priya among other members",
+    "mutation": {
+     "type": "REPLACE",
+     "note": "the DM condition relaxed to any conversation Priya is a member of, which the public channel satisfies",
+     "query": {
+      "table": "messages",
+      "key": ["message_id"],
+      "filters": [
+       {"key": "f_text", "field": "message_text", "op": "contains_ci", "value": "billing migration is live"}
+      ],
+      "edges": [
+       {"key": "e_author", "join": {"parent": "user_id", "child": "user_id", "op": "eq"},
+        "node": {"table": "users", "filters": [{"key": "f_author", "field": "real_name", "op": "eq", "value": "Priya Sharma"}], "edges": []}},
+       {"key": "e_chan", "join": {"parent": "channel_id", "child": "channel_id", "op": "eq"},
+        "node": {
+         "table": "channels",
+         "filters": [],
+         "edges": [
+          {"key": "e_memb_p", "join": {"parent": "channel_id", "child": "channel_id", "op": "eq"},
+           "node": {"table": "channel_members", "filters": [{"key": "f_memb_p", "field": "user_id", "op": "eq", "value": "U_PRIYA"}], "edges": []}}
+         ]
+        }
+      }
+     ]
+     }
+    },
+    "explanation": "A public channel with four members that includes Priya — not a DM with only the two of you, so it fails 'in your DM with her'."
+   }
+  ],
+  "effect": {"table": "message_reactions", "changes": ["insert"], "key": ["message_id", "user_id", "reaction_type"], "field": "message_id"},
+  "written": ["message_reactions.reaction_type"]
+ },
+ "other_references": [],
+ "write": {"slack": "reactions.add", "params": {"channel": "D_PRIYA", "timestamp": "@target", "name": "thumbsup"}},
+ "probes": []
+}

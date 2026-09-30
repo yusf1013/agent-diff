@@ -1,0 +1,1 @@
+Done — the **"Berlin trip team"** calendar (it was the only one you own) is now on **Europe/Berlin** time. Events on it will display in Berlin local time, and new events you add there will default to that time zone.

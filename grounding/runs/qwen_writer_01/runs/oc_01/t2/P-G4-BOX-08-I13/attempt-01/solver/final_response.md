@@ -1,0 +1,1 @@
+Done. There was an "analyst call script" — `Analyst call script.docx` (created by Maya Chen, in the Earnings Materials folder) — and I added it to the **Q3 Earnings Communications** hub (the one containing `Earnings deck.pdf`). Confirmed the hub now has both files.

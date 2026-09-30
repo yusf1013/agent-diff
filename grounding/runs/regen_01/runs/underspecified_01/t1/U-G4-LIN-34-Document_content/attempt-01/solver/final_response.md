@@ -1,0 +1,3 @@
+Done. Renamed the Payments team's "3D Secure Fallback Plan" to **"3D Secure Fallback Plan — Final"** ✅
+
+One thing worth flagging: Payments actually had **two** docs with that exact title. I renamed the one that's genuinely about 3D Secure fallback for failed checkouts (with retry sequence and exemption flags). The other — "3D Secure Fallback Plan" (id `60e896bc`) — has the same title but its content is about token refresh rotation for mobile sessions, so I left it untouched. There's also a "— Archived Copy" variant in Payments and a copy in the Payouts team; let me know if you want any of those renamed too.

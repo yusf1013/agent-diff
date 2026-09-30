@@ -1,0 +1,1 @@
+Done. Added the note to the Web team's Cycle 41 (Sep 16 – Sep 30, 2026) — its description was empty, so it's now set to **Scope locked**. (There's also a short Cycle 42 starting Sep 30, but I left that one untouched.)

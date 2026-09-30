@@ -1,0 +1,3 @@
+I checked #releases and there's a wrinkle: the 2.4 rollout message exists (omar.haddad, "Rollout 2.4.0: the last 10% of the fleet are on now."), and it does have a 👀 reaction — but it's **not** from lena.hart@northwind.example. The 👀 came from a different account with the same name: **`lh`** (Lena Hart, **l.hart@northwind.example**). That's the only message in the channel with any 👀 reaction, and lena.hart@northwind.example hasn't reacted to anything there.
+
+So per your condition ("the one that lena.hart@northwind.example reacted with 👀"), there isn't a match — I didn't add the check. If you meant the 2.4.0 message anyway (despite the different Lena account), say the word and I'll drop the ✅ on it.

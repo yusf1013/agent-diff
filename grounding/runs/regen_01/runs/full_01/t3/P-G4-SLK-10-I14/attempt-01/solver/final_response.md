@@ -1,0 +1,1 @@
+Done — 👀 added. One small note: the message from Priya Sharma in #launch-plan ("Demo video is ready, posting it here for the launch thread.") was actually posted **September 16 at 8:05 AM EDT**, not September 15 — it's the only match, so I reacted to that one. Confirmed the eyes reaction is live on the message.

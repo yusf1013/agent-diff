@@ -1,0 +1,1 @@
+I found two sprint planning events on Thursday, June 21, both in Room 2A, but neither ends at 11am as expected — one runs 10:00–11:30 and the other 11:00–12:00. Could you clarify which meeting you're referring to so I can move it to Room 5B?

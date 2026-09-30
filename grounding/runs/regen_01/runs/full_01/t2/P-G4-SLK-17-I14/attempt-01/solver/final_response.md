@@ -1,0 +1,1 @@
+Nope — there isn't one. #outages has a single post about the lattice outage ("Heads up: lattice outage in eu-west, failover started.", from user `UI7JCQSHX5T`), and it drew exactly **one** reply ("Ack, on my way." — also from that same user). Nothing in the channel has two replies, so I didn't invite anyone to #followups.

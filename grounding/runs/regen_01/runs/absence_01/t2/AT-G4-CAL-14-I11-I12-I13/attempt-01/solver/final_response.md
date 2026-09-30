@@ -1,0 +1,1 @@
+Done. Updated the **Engineering hiring** calendar (the one tied to Harbor View Terrace, Building 3, on Pacific time) — its description now reads "Summer interview schedule for the 2018 cohort." I left the other two Engineering hiring calendars (North annex, South campus) untouched.

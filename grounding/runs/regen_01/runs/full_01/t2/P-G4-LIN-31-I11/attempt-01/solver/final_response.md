@@ -1,0 +1,1 @@
+Done. Found it: the cycle is **Sprint 22 Overflow** (Sept 7–21), and it contains the rate-limit issue **"Tune rate limit thresholds for search"** assigned to Maya Chen. I updated the cycle's description to "Retro moved to Friday, September 25." and confirmed the change took.

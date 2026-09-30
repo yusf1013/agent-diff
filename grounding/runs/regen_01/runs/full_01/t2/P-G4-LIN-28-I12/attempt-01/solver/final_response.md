@@ -1,0 +1,1 @@
+No match. The only issue in the Web team's Done state is **WEB-3** ("Promo banner overlap on tablet"), whose description does mention the offline cache rollback — but it was completed on **September 10**, not September 18. No Web Done issue was completed on September 18, so I didn't change any estimate.

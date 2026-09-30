@@ -1,0 +1,1 @@
+Done. There was a match: **"Sprint planning: Mobile"** — Thursday June 21, 4:00–4:30 PM PT, with Kenji Satou as an optional attendee. I set the location to **Room 5B** and confirmed the update went through.

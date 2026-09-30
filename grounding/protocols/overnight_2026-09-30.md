@@ -31,8 +31,13 @@ section. Decisions that stand go to the [roadmap](roadmap.md); this is the recor
 5. **The second harness** (`harness_scout_01`, `claudecode_pilot_01`): Claude Code, with Sonnet 5.5 on your plan and the
    self-hosted Qwen, both run end to end; a 32-test Sonnet pilot: 2 failures, judge 32 of 32, 13 s per run, $0. On
    the same 32, Sol had none.
-6. **The regenerated half** (`regen_01`): 34 of 35 briefs accepted, 337 tests, covering 76 of the briefs' 82 facts and
-   74 of Sonnet's 81; runs on Qwen in progress (about half of the regular set at 05:36).
+6. **The regenerated half** (`regen_01`, complete): 34 of 35 briefs, 337 tests, covering 76 of the briefs' 82 facts and
+   74 of Sonnet's 81. Run on Qwen and scored: **41 facts at detect@3 (29 at @1) through 61 of 205 tests, against the
+   Sonnet-written half's 40 (27) through 61 of 271**; of Sonnet's 81 facts each half exposes 40, 22 shared. Judge v2
+   agrees with 97 of 100 blind labels. For a Muse-only suite, Calendar absence becomes policy-level (0.90; the Sonnet
+   units at 0.64 leave the cell); the other seven cells keep their decisions. The escape clause matters: 29% of
+   no-target regular trials fail with "if there isn't one, just tell me", 77% of absence twins without it. Muse
+   cost $57.45 list. Sol has run this half too (1,011 runs); scoring under way.
 7. **Naive baselines with Sonnet 5.5** (`baselines_02`): generated and reviewed (109 of 116 valid; more designated near
    misses than Muse's twins, still no probes); runs paused at 96 of 267 for host capacity; the first target-present
    exposure by a naive baseline seen.
@@ -304,3 +309,41 @@ section. Decisions that stand go to the [roadmap](roadmap.md); this is the recor
 - 06:3x sol_score (f9b977e4e4; merged): report_01/kit/sol.py → numbers/sol.json behind the Sol section; every billed
   figure removed from both texts (list prices only, one sentence in §12 on the actual spend at about 6.6% of list);
   Table 18 gains the Sol judging row ($32.60 list) and the Sol agent row (8,172 requests, 19.6 agent-hours).
+- 06:4x sol_score launches Sol on the regenerated half (337 tests, trial 1 first, then 2 and 3, stop rule on the
+  plan's window; default store layout kept for one harness state across the Sol round, the fix reserved for the
+  next round; judge cap $25 list). No merges in the main checkout while it writes there.
+- 11:3x regen's Qwen runs complete: 1,002 executions (615 regular, 213 absence, 174 underspecified; three G4-SLK-14
+  tests left out at run time by the "Marcus Webb Jr" ruling), 100 blind labels written before any verdict; 18
+  host-load timeouts being rerun quiet, both readings to be reported; judge v2 on Muse running. The baseline arms
+  resume when the host frees (about 11:55).
+- 08:0x qwen_writer_01 (harness session, commit d48b099c16): Qwen's writer matches Muse on 12 Phase 4 briefs (12
+  of 12 accepted, 23 of 23 facts covered validly, same wording quality) at about 9x the writer time and $0; two of
+  its near misses ruled flawed on person-naming wording, with Phase 4's opposite reading beside them; its 72 tests
+  run on the self-host at 6 in flight for the exposure comparison (Muse's 74 tests on the same briefs: 19 exposing,
+  9 of 23 facts at detect@3).
+- 12:0x qwen_writer_01 done (commit d38d3a0219; merged as 3702de065a): **Qwen's writer matches Muse** on 12 Phase 4
+  briefs (12 of 12 accepted, 23 of 23 facts covered validly, 43 of 45 near misses valid under the session's
+  rulings, the same wording quality) at $0 and 25–112 minutes of writer time per brief (Muse 2–15); its tests
+  expose comparably on Qwen (24 of 70 tests exposing, 12 of 23 facts at detect@3, against Muse's 19 of 74 and 9;
+  a 5-to-2 split within 3-trial noise); judge v2 agrees with 29 of 30 blind labels (the one is the ruling
+  question). For the PI: two person-naming readings ("Maya Chen's" as owner or creator; "uploaded" as first or
+  current version) on which Phase 4 read Muse's briefs the other way, and an "open link" reading solvers took.
+  Confounds recorded: Claude Code's writer path and effort medium; the reply cap and window relay.
+- 12:3x harness, hardening.md (d6b40284aa; merged): recommendation for the next round: each attempt in bubblewrap
+  with a minimal filesystem and an empty network namespace bridged to two host-side proxies (the model proxy and a
+  new per-attempt replica proxy that forwards only that environment's service paths, applies masks and logs
+  refusals); about a day and a half to build, negligible per run (OpenClaw starts in 25 ms sandboxed). Not a
+  separate user (needs sudo, leaves loopback open); not a container (same guarantee, more machinery). A token in
+  the shim would not help (the agent can read the shim); the per-attempt socket is the capability. For the PI: the
+  replica on 18001 answers any local process without a key, and this machine has other accounts; the Claude Code
+  backend's token is in the process environment (whether its Bash tool sees it is the first check of the next
+  pilot); a cheap step now is to make the model proxy refuse unrouted requests during rounds; the openai backend
+  reaches OpenAI directly and gets only the filesystem sandbox for now.
+- 11:43 Sol on the regenerated half complete: 618 regular, 216 absence and 177 underspecified attempts with the
+  retry passes done; the OpenAI plan's window held. Judging and scoring with the sol_score session.
+- 12:2x regen done (head ff030e5764; merged as d3cc99720c): the numbers are in the brief. For the PI (regen_01's
+  README, "For the PI"): the sibling-field pattern (3 cases, one ruling); qualifier versus new meaning ("Marcus Webb
+  Jr" flawed; "Sprint 22 Overflow", "Editorial Calendar Archive"); nested labels as the analogue of folder
+  descendants; the Cycle-number tension; "5-person" and the bot; the two facts whose designated substitutes are
+  ruled-flawed constructions; the team facts the reader rejected twice; 6 of the 41 facts rest on the 8 borderline
+  near misses.

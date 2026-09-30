@@ -1,0 +1,1 @@
+Done ✅ Found the "Berlin trip family" calendar (it was the one still on America/Los_Angeles) and switched its time zone to Europe/Berlin. Existing events keep their stored times — they'll just display in Berlin time from now on. Note: the other calendar, "Denver office," was left untouched.

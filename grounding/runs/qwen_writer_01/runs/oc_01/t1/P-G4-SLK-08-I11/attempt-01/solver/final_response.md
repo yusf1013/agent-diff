@@ -1,0 +1,1 @@
+I checked — there's no such message. Your DM with Priya Sharma is empty (no messages in the conversation), and a workspace-wide search for "billing migration" / "migration is live" from her also turned up nothing. So there's nothing to react to; let me know if you'd like me to nudge her instead.

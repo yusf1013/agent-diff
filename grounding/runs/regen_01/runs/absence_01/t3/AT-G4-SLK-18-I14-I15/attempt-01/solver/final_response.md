@@ -1,0 +1,1 @@
+I couldn't find the message in the channels created in March 2024, but I found "deploy checklist is green" in two other 5-person channels, both posted by Kira Novak on 2024-03-22 — so the message itself is from March, but the channels don't match your setup date. Which one do you mean, `#release-january` or `#release-april`?

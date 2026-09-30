@@ -1,0 +1,1 @@
+I checked #outages — there's only one lattice-outage post ("Heads up: lattice outage in eu-west, failover started." by UI7JCQSHX5T), and it drew just **one** reply ("Ack, on my way." — also from UI7JCQSHX5T). No post in that channel drew two replies, so there's nobody to invite to #followups. Let me know if you'd like me to invite the poster anyway.

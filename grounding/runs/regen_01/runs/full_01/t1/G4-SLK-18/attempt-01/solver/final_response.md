@@ -1,0 +1,1 @@
+Done 👀 — added the eyes reaction to Kira Novak's "deploy checklist is green" message in **#release-gateway** (the 5-person channel opened 2024-03-12). There was a duplicate message in that same channel from a non-admin (Tomas), and similar decoy channels like `#release-hub`, `#release-posters`, etc. — I matched on the admin author + exact channel size to be sure.

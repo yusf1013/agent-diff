@@ -1,0 +1,95 @@
+{
+  "scenario_id": "G4-SLK-05",
+  "domain": "slack",
+  "request": "Add a thumbs-up reaction to the message Maya Chen sent in my DM with her about the Q3 invoice.",
+  "answer": "one",
+  "seed": [
+    ["dm", {"id": "D_MAYA", "person": "maya"}],
+    ["message", {"channel": "D_MAYA", "author": "maya",
+                 "text": "The Q3 invoice is ready — could you review it before Friday?",
+                 "at": "2026-09-28T12:15:00Z", "ref": "target"}],
+    ["row", {"table": "channels",
+             "values": {"id": "G_MAYA", "name": null, "is_dm": false, "is_gc": true, "is_private": true}}],
+    ["row", {"table": "channel_members", "values": {"user_id": "U_MAYA", "channel_id": "G_MAYA"}}],
+    ["row", {"table": "channel_members", "values": {"user_id": "U_LEO", "channel_id": "G_MAYA"}}],
+    ["message", {"channel": "G_MAYA", "author": "maya",
+                 "text": "Team heads-up: the Q3 invoice PDF is in the shared folder now.",
+                 "at": "2026-09-28T12:20:00Z", "ref": "w_mpim"}],
+    ["channel", {"id": "C_FIN", "name": "finance", "members": ["maya", "diego", "aisha"], "private": true}],
+    ["message", {"channel": "C_FIN", "author": "maya",
+                 "text": "I uploaded the Q3 invoice to the finance drive.",
+                 "at": "2026-09-28T12:30:00Z", "ref": "w_priv"}],
+    ["channel", {"id": "C_BILL", "name": "billing", "members": ["maya", "omar", "priya"]}],
+    ["message", {"channel": "C_BILL", "author": "maya",
+                 "text": "Q3 invoice sent to the client this morning.",
+                 "at": "2026-09-28T12:40:00Z", "ref": "w_pub"}],
+    ["channel", {"id": "C_GEN", "name": "general", "members": ["diego", "omar", "aisha", "leo"]}],
+    ["message", {"channel": "C_GEN", "author": "diego",
+                 "text": "Lunch at noon tomorrow — who's in?",
+                 "at": "2026-09-28T11:00:00Z", "ref": "bg1"}],
+    ["dm", {"id": "D_LEO", "person": "leo"}],
+    ["message", {"channel": "D_LEO", "author": "leo",
+                 "text": "Ping me once the deploy is done.",
+                 "at": "2026-09-28T11:30:00Z", "ref": "bg2"}]
+  ],
+  "conditions": [
+    {"id": "c1", "text": "my DM", "facts": ["A:Conversation.is_dm"]},
+    {"id": "c2", "text": "with her (Maya Chen is the other participant)", "facts": ["R:channel_members", "A:User.real_name"]},
+    {"id": "c3", "text": "the message Maya Chen sent", "facts": ["R:messages.user_id", "A:User.real_name"]},
+    {"id": "c4", "text": "about the Q3 invoice", "facts": ["A:Message.message_text"]}
+  ],
+  "reference": {
+    "name": "the Q3 invoice message in the Maya Chen DM",
+    "target": ["@target"],
+    "query": {
+      "table": "messages",
+      "key": ["message_id"],
+      "filters": [
+        {"key": "f_text", "field": "message_text", "op": "contains_ci", "value": "Q3 invoice",
+         "fact": "A:Message.message_text"}
+      ],
+      "edges": [
+        {"key": "e_author",
+         "join": {"parent": "user_id", "child": "user_id", "op": "eq"},
+         "fact": "R:messages.user_id",
+         "node": {"table": "users",
+                  "filters": [{"key": "f_author", "field": "real_name", "op": "eq", "value": "Maya Chen",
+                               "fact": "A:User.real_name"}],
+                  "edges": []}},
+        {"key": "e_chan",
+         "join": {"parent": "channel_id", "child": "channel_id", "op": "eq"},
+         "fact": "R:messages.channel_id",
+         "node": {"table": "channels",
+                  "filters": [{"key": "f_dm", "field": "is_dm", "op": "eq", "value": true,
+                               "fact": "A:Conversation.is_dm"}],
+                  "edges": [
+                    {"key": "e_member",
+                     "join": {"parent": "channel_id", "child": "channel_id", "op": "eq"},
+                     "fact": "R:channel_members",
+                     "node": {"table": "channel_members",
+                              "filters": [{"key": "f_member", "field": "user_id", "op": "eq", "value": "U_MAYA"}],
+                              "edges": []}}
+                  ]}}
+      ]
+    },
+    "decoys": [
+      {"witness": "@w_mpim", "fact": "A:Conversation.is_dm", "family": "F7",
+       "substitute": "a group DM containing the same person — the closest DM-like conversation kind",
+       "mutation": {"type": "DROP", "target": "f_dm"},
+       "explanation": "Maya sent the same Q3 invoice note in the group DM with Leo, but it is a multi-person direct message (is_im is false), not the 1:1 DM."},
+      {"witness": "@w_priv", "fact": "A:Conversation.is_dm", "family": "F1",
+       "substitute": "the sibling is_private flag: a private channel Maya is in",
+       "mutation": {"type": "DROP", "target": "f_dm"},
+       "explanation": "Maya sent the Q3 invoice note in the private finance channel, which is private but a channel, not a direct message."},
+      {"witness": "@w_pub", "fact": "A:Conversation.is_dm", "family": "F0",
+       "mutation": {"type": "DROP", "target": "f_dm"},
+       "explanation": "Maya sent the Q3 invoice note in the public billing channel — an ordinary channel, not a direct message."}
+    ],
+    "effect": {"table": "message_reactions", "changes": ["insert"],
+               "key": ["message_id", "user_id", "reaction_type"], "field": "message_id"},
+    "written": ["message_reactions.reaction_type"]
+  },
+  "other_references": [],
+  "write": {"slack": "reactions.add", "params": {"channel": "D_MAYA", "timestamp": "@target", "name": "thumbsup"}},
+  "probes": []
+}

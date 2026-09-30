@@ -1,0 +1,1 @@
+Done ✅ — **WEB-1 "Checkout totals mismatch on storefront"** now has an estimate of 3. It was the Web team's Done issue completed Sept 18 whose description mentions the offline cache rollback procedure. (Note: WEB-4 has that phrase in its *title*, but its description doesn't mention it, so WEB-1 was the match.)

@@ -1,0 +1,1 @@
+There isn't one. Maya Chen has only created a single issue in the Web team — **WEB-3 "Stale search index after reimport"**, created June 3, not June 10. Nothing in the Web team was created by her on June 10, so I haven't changed any estimates.

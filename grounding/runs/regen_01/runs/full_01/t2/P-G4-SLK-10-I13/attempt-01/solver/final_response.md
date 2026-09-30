@@ -1,0 +1,1 @@
+Done — I added 👀 to Priya's message "Demo video is ready, final cut linked here." from Sep 15. One heads-up: it was posted in **#launch-plans** (plural), not #launch-plan — the singular channel had no such message, so I found it in the other one.

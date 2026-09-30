@@ -1,0 +1,1 @@
+Done. I found the Atlas Launch hub that Omar Haddad last updated (id 8201), located 'Harbor Point survey - Whitfield.pdf' (file id 8101), and added the **launch-ready** tag. The updated file now shows `tags: ["launch-ready"]`.

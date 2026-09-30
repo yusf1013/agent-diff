@@ -1,0 +1,57 @@
+{
+ "scenario_id": "G4-CAL-06",
+ "domain": "calendar",
+ "request": "My trip to Berlin starts next month. Please change the time zone of the Berlin trip calendar I own — the one still on Los Angeles time — to Europe/Berlin.",
+ "answer": "one",
+ "seed": [
+  ["person", {"key": "jordanlees", "name": "Jordan Lees"}],
+  ["calendar", {"id": "berlin-trip@northwind.example", "summary": "Berlin trip", "owner": "actor", "data_owner": "jordan.lee@northwind.example", "tz": "America/Los_Angeles", "access": "owner", "description": "Flights, hotel and things to do for the trip."}],
+  ["calendar", {"id": "berlin-trip-2017@northwind.example", "summary": "Berlin trip 2017", "owner": "actor", "data_owner": "jordan.lee@northwind.example", "tz": "America/Denver", "access": "owner", "description": "Planner from last summer's trip."}],
+  ["calendar", {"id": "berlin-trip-flights@northwind.example", "summary": "Berlin trip flights", "owner": "actor", "data_owner": "jordan.lee@northwind.example", "tz": "Europe/Berlin", "access": "owner", "description": "Flight and airport transfer notes for the Berlin trip."}],
+  ["calendar", {"id": "berlin-trip-team@northwind.example", "summary": "Berlin trip team", "owner": "actor", "data_owner": "priya.nair@northwind.example", "tz": "America/Los_Angeles", "access": "owner", "description": "Team planning for the Berlin trip."}],
+  ["calendar", {"id": "berlin-trip-family@northwind.example", "summary": "Berlin trip family", "owner": "actor", "data_owner": "jordan.lees@northwind.example", "tz": "America/Los_Angeles", "access": "owner", "description": "The family's Berlin trip plans."}],
+  ["calendar", {"id": "denver-office@northwind.example", "summary": "Denver office", "owner": "omar", "data_owner": "omar.haddad@northwind.example", "tz": "America/Denver", "access": "writer", "description": "Shared calendar for the Denver office."}],
+  ["acl", {"id": "user:jordan.lee@northwind.example", "calendar": "berlin-trip-team@northwind.example", "role": "owner", "scope_type": "user", "scope_value": "jordan.lee@northwind.example"}],
+  ["acl", {"id": "user:jordan.lee@northwind.example", "calendar": "berlin-trip-family@northwind.example", "role": "owner", "scope_type": "user", "scope_value": "jordan.lee@northwind.example"}]
+ ],
+ "conditions": [
+  {"id": "c1", "text": "the Berlin trip calendar", "facts": ["A:Calendar.summary"]},
+  {"id": "c2", "text": "still on Los Angeles time", "facts": ["A:Calendar.time_zone"]},
+  {"id": "c3", "text": "I own", "facts": ["A:Calendar.data_owner"]}
+ ],
+ "reference": {
+  "name": "the Berlin trip calendar to switch to Europe/Berlin",
+  "target": ["berlin-trip@northwind.example"],
+  "query": {
+   "table": "calendars",
+   "filters": [
+    {"key": "f_name", "field": "summary", "op": "contains_ci", "value": "Berlin trip", "fact": "A:Calendar.summary"},
+    {"key": "f_tz", "field": "time_zone", "op": "eq", "value": "America/Los_Angeles", "fact": "A:Calendar.time_zone"},
+    {"key": "f_downer", "field": "data_owner", "op": "eq", "value": "jordan.lee@northwind.example", "fact": "A:Calendar.data_owner"}
+   ],
+   "edges": []
+  },
+  "decoys": [
+   {"witness": "berlin-trip-2017@northwind.example", "fact": "A:Calendar.time_zone", "family": "F7",
+    "substitute": "the adjacent time zone America/Denver, one hour ahead of Los Angeles",
+    "mutation": {"type": "DROP", "target": "f_tz"},
+    "explanation": "It is Jordan's own Berlin trip calendar, but it sits on Denver time, not Los Angeles time."},
+   {"witness": "berlin-trip-flights@northwind.example", "fact": "A:Calendar.time_zone", "family": "F0",
+    "substitute": "Europe/Berlin, the very zone the request asks to set",
+    "mutation": {"type": "DROP", "target": "f_tz"},
+    "explanation": "It is Jordan's own Berlin trip calendar, but it is already in Europe/Berlin, not on Los Angeles time."},
+   {"witness": "berlin-trip-team@northwind.example", "fact": "A:Calendar.data_owner", "family": "F1",
+    "substitute": "CalendarListEntry.access_role=owner backed by an owner ACL grant",
+    "mutation": {"type": "DROP", "target": "f_downer"},
+    "explanation": "It is a Berlin trip calendar on Los Angeles time that Jordan sees as his own (owner access in his list and in the sharing rules), but its dataOwner is Priya Nair."},
+   {"witness": "berlin-trip-family@northwind.example", "fact": "A:Calendar.data_owner", "family": "F8",
+    "substitute": "data owner jordan.lees@northwind.example, whose email contains the actor's jordan.lee prefix",
+    "mutation": {"type": "DROP", "target": "f_downer"},
+    "explanation": "It is a Berlin trip calendar on Los Angeles time, but its data owner is Jordan Lees, a different person whose email starts like the actor's."}
+  ],
+  "effect": {"table": "calendars", "changes": ["update"]},
+  "written": ["calendars.time_zone"]
+ },
+ "write": {"method": "PATCH", "path": "/calendars/berlin-trip@northwind.example", "body": {"timeZone": "Europe/Berlin"}},
+ "probes": []
+}

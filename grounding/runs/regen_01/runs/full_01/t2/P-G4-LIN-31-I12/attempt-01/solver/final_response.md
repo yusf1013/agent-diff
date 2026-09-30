@@ -1,0 +1,1 @@
+Done. Updated **Cycle 22** (Mobile team, Sep 7–21) — the only cycle starting September 7, and it's the one containing the rate-limit issue (MOB-1, "Rate limit exceeded emails are too noisy," assigned to Maya Chen). Its description is now set to: *"Retro moved to Friday, September 25."*

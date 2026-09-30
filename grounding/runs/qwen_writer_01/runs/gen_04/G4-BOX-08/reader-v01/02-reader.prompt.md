@@ -1,0 +1,42 @@
+Step 2. These are all the records in the service:
+
+### box_file_versions (3)
+{"id": "98410", "type": "file_version", "file_id": "8410", "name": "Earnings deck.pdf", "size": 4821300, "version_number": "1", "created_at": "2026-06-01T09:00:00+00:00", "modified_at": "2026-06-01T09:00:00+00:00", "modified_by_id": "30000000002"}
+{"id": "98411", "type": "file_version", "file_id": "8411", "name": "Analyst call script.docx", "size": 38214, "version_number": "1", "created_at": "2026-06-01T09:00:00+00:00", "modified_at": "2026-06-01T09:00:00+00:00", "modified_by_id": "30000000002"}
+{"id": "98412", "type": "file_version", "file_id": "8412", "name": "Earnings model.xlsx", "size": 120455, "version_number": "1", "created_at": "2026-06-01T09:00:00+00:00", "modified_at": "2026-06-01T09:00:00+00:00", "modified_by_id": "30000000005"}
+### box_files (3)
+{"id": "8410", "type": "file", "name": "Earnings deck.pdf", "parent_id": "8400", "owned_by_id": "30000000004", "created_by_id": "30000000004", "modified_by_id": "30000000002", "size": 4821300, "extension": "pdf", "item_status": "active", "version_number": "1", "comment_count": 0, "tags": "[]", "collections": "[]", "created_at": "2026-06-01T09:00:00+00:00", "modified_at": "2026-06-01T09:00:00+00:00", "uploader_display_name": "Maya Chen"}
+{"id": "8411", "type": "file", "name": "Analyst call script.docx", "parent_id": "8400", "owned_by_id": "30000000002", "created_by_id": "30000000002", "modified_by_id": "30000000002", "size": 38214, "extension": "docx", "item_status": "active", "version_number": "1", "comment_count": 0, "tags": "[]", "collections": "[]", "created_at": "2026-06-01T09:00:00+00:00", "modified_at": "2026-06-01T09:00:00+00:00", "uploader_display_name": "Maya Chen"}
+{"id": "8412", "type": "file", "name": "Earnings model.xlsx", "parent_id": "8400", "owned_by_id": "30000000005", "created_by_id": "30000000005", "modified_by_id": "30000000005", "size": 120455, "extension": "xlsx", "item_status": "active", "version_number": "1", "comment_count": 0, "tags": "[]", "collections": "[]", "created_at": "2026-06-01T09:00:00+00:00", "modified_at": "2026-06-01T09:00:00+00:00", "uploader_display_name": "Dana Whitfield"}
+### box_folders (2)
+{"id": "0", "type": "folder", "name": "All Files", "owned_by_id": "30000000001", "item_status": "active", "size": 0}
+{"id": "8400", "type": "folder", "name": "Earnings Materials", "parent_id": "0", "owned_by_id": "30000000001", "created_by_id": "30000000001", "modified_by_id": "30000000001", "item_status": "active", "size": 0, "tags": "[]", "collections": "[]", "created_at": "2026-06-01T09:00:00+00:00", "modified_at": "2026-06-01T09:00:00+00:00"}
+### box_hub_items (5)
+{"id": "84101", "type": "hub_item", "added_at": "2026-06-01T09:00:00+00:00", "added_by_id": "30000000002", "hub_id": "8401", "item_id": "8410", "item_type": "file", "item_name": "Earnings deck.pdf", "position": 1}
+{"id": "84102", "type": "hub_item", "added_at": "2026-06-01T09:00:00+00:00", "added_by_id": "30000000002", "hub_id": "8401", "item_id": "8400", "item_type": "folder", "item_name": "Earnings Materials", "position": 2}
+{"id": "84103", "type": "hub_item", "added_at": "2026-06-01T09:00:00+00:00", "added_by_id": "30000000005", "hub_id": "8402", "item_id": "8410", "item_type": "file", "item_name": "Earnings deck.pdf", "position": 1}
+{"id": "84104", "type": "hub_item", "added_at": "2026-06-01T09:00:00+00:00", "added_by_id": "30000000003", "hub_id": "8403", "item_id": "8410", "item_type": "file", "item_name": "Earnings deck.pdf", "position": 1}
+{"id": "84105", "type": "hub_item", "added_at": "2026-06-01T09:00:00+00:00", "added_by_id": "30000000007", "hub_id": "8404", "item_id": "8410", "item_type": "file", "item_name": "Earnings deck.pdf", "position": 1}
+### box_hubs (5)
+{"id": "8401", "type": "hubs", "title": "Q3 Earnings Review", "description": "Working space for the Q3 earnings release", "created_by_id": "30000000002", "updated_by_id": "30000000004", "created_at": "2026-06-15T10:00:00+00:00", "updated_at": "2026-07-02T14:30:00+00:00", "is_ai_enabled": false, "is_collaboration_restricted_to_enterprise": false, "can_non_owners_invite": true, "can_shared_link_be_created": true, "view_count": 0}
+{"id": "8402", "type": "hubs", "title": "Q3 Earnings - Board Materials", "description": "Board-facing materials for the Q3 earnings call", "created_by_id": "30000000005", "updated_by_id": "30000000002", "created_at": "2026-06-10T09:00:00+00:00", "updated_at": "2026-07-05T11:00:00+00:00", "is_ai_enabled": false, "is_collaboration_restricted_to_enterprise": false, "can_non_owners_invite": true, "can_shared_link_be_created": true, "view_count": 0}
+{"id": "8403", "type": "hubs", "title": "Q3 Earnings Prep", "description": "Run-up to the Q3 earnings release", "created_by_id": "30000000003", "updated_by_id": "30000000004", "created_at": "2026-06-12T08:30:00+00:00", "updated_at": "2026-06-28T16:00:00+00:00", "is_ai_enabled": false, "is_collaboration_restricted_to_enterprise": false, "can_non_owners_invite": true, "can_shared_link_be_created": true, "view_count": 0}
+{"id": "8404", "type": "hubs", "title": "Q3 Earnings Communications", "description": "External comms for the Q3 earnings", "created_by_id": "30000000007", "updated_by_id": "30000000008", "created_at": "2026-06-18T13:00:00+00:00", "updated_at": "2026-06-30T09:15:00+00:00", "is_ai_enabled": false, "is_collaboration_restricted_to_enterprise": false, "can_non_owners_invite": true, "can_shared_link_be_created": true, "view_count": 0}
+{"id": "8405", "type": "hubs", "title": "Website Refresh", "description": "Marketing site refresh", "created_by_id": "30000000002", "updated_by_id": "30000000002", "created_at": "2026-05-20T10:00:00+00:00", "updated_at": "2026-06-01T10:00:00+00:00", "is_ai_enabled": false, "is_collaboration_restricted_to_enterprise": false, "can_non_owners_invite": true, "can_shared_link_be_created": true, "view_count": 0}
+### box_users (8)
+{"id": "30000000001", "type": "user", "name": "Jordan Lee", "login": "jordan.lee@northwind.example", "status": "active", "role": "admin", "created_at": "2025-01-10T00:00:00Z", "modified_at": "2025-01-10T00:00:00Z"}
+{"id": "30000000002", "type": "user", "name": "Maya Chen", "login": "maya.chen@northwind.example", "status": "active", "role": "user", "created_at": "2025-01-10T00:00:00Z", "modified_at": "2025-01-10T00:00:00Z"}
+{"id": "30000000003", "type": "user", "name": "Maya Lopez", "login": "maya.lopez@northwind.example", "status": "active", "role": "user", "created_at": "2025-01-10T00:00:00Z", "modified_at": "2025-01-10T00:00:00Z"}
+{"id": "30000000004", "type": "user", "name": "Leo Park", "login": "leo.park@northwind.example", "status": "active", "role": "user", "created_at": "2025-01-10T00:00:00Z", "modified_at": "2025-01-10T00:00:00Z"}
+{"id": "30000000005", "type": "user", "name": "Dana Whitfield", "login": "dana.whitfield@northwind.example", "status": "active", "role": "user", "created_at": "2025-01-10T00:00:00Z", "modified_at": "2025-01-10T00:00:00Z"}
+{"id": "30000000006", "type": "user", "name": "Priya Nair", "login": "priya.nair@northwind.example", "status": "active", "role": "user", "created_at": "2025-01-10T00:00:00Z", "modified_at": "2025-01-10T00:00:00Z"}
+{"id": "30000000007", "type": "user", "name": "Omar Haddad", "login": "omar.haddad@northwind.example", "status": "active", "role": "user", "created_at": "2025-01-10T00:00:00Z", "modified_at": "2025-01-10T00:00:00Z"}
+{"id": "30000000008", "type": "user", "name": "Sam Rivera", "login": "sam.rivera@northwind.example", "status": "active", "role": "user", "created_at": "2025-01-10T00:00:00Z", "modified_at": "2025-01-10T00:00:00Z"}
+
+The author lists these conditions of the request:
+- c1: the Q3 earnings hub
+- c2: that Maya Chen created
+- c3: that has the earnings deck in it
+
+The candidate records are the rows of `box_hubs`: 8401, 8402, 8403, 8404, 8405.
+For every candidate, give the ids of the author's conditions it fails under the careful reading (an empty list if it meets all of them), whether a careful colleague could still argue that it meets the request (contestable), and a short note. Then say whether the author's conditions faithfully capture the request as you read it in step 1 (and what differs). For each ambiguity you listed, say whether a careful reader would genuinely be unsure which reading was meant, and whether the readings select different candidates. Finally, say whether the request reads like something a real user would write, without hints that only a test would contain.

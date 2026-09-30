@@ -5,14 +5,30 @@ Session "regen", started by the lead session ("RoadMap specialist") from the bri
 
 ## Status
 
-- **2026-09-30 02:30 EDT. The suite is ready to run** (steps 1 to 4 done), waiting for the lead's word that the
-  self-hosted Qwen is up. 337 tests: 206 regular, 72 absence units, 59 underspecified units (1,011 executions at 3
-  trials), in `runs/full_01_cases`, `runs/absence_01_cases`, `runs/underspecified_01_cases`; the stratified blind
-  sample (100 trials) is drawn ([eval/blind_strata.json](eval/blind_strata.json)).
-- **Funnel:** 35 briefs, 37 attempts, 34 accepted; my review: 24 valid, 5 weak but valid, 5 flawed but usable; 6 of
-  135 near misses flawed (in `known_defects.json`). Coverage: 77 of the briefs' 82 facts, 75 of Sonnet's 81 credited.
-  Muse: $38.87 at list price, $2.38 billed ([eval/funnel.json](eval/funnel.json)).
-- **Running:** nothing. **Blocked:** the runs, on the lead's word.
+- **2026-09-30 12:40 EDT. Done:** generation, review, suite, runs, blind labels, judge and scores. Steps 1 to 6 of
+  the brief are complete; the PI's rulings on the borderline near misses would change the numbers (below).
+- **Funnel:** 35 briefs, 37 attempts, 34 accepted (the team-facts brief, G4-LIN-30, rejected twice by the cold
+  reader). My review: 22 valid, 6 weak but valid, 6 flawed but usable; 7 of 135 near misses flawed (in
+  `known_defects.json`), 8 borderline flagged. Coverage: 76 of the briefs' 82 facts, 74 of Sonnet's 81.
+- **Suite:** 205 regular tests, 71 absence and 58 underspecified units; 1,002 executions on OpenClaw with the
+  self-hosted Qwen, 3 trials.
+- **Regular score:** the regenerated half exposes 41 facts at detect@3 (29 at detect@1), through 61 of its 205 tests,
+  against the Sonnet half's 40 (27) through 61 of 271 tests. Of Sonnet's 81 facts, each half exposes 40 (22 in
+  common). With the 12 host-load timeouts re-run: 42 (30), 62 tests.
+- **Judge v2 on Muse:** agrees with my 100 blind labels on 97. The 3 disagreements are trials that acted on a
+  ruled-flawed near miss, which the rulings leave out anyway. As a failure detector, on the 93 trials both of us found
+  usable: 33/33 precision and recall, with the same facts.
+- **Policy decisions for a Muse-only suite:** Calendar absence becomes policy-level (0.896 [0.848, 0.943]), because
+  Sonnet's 14 units (0.643) leave the cell, not because the regenerated ones are harder (0.875, as Phase 4's); the
+  other seven cells keep openclaw_eval_01's decisions. Both readings of the host-load timeouts agree.
+- **The escape clause:** with "If there isn't one, just tell me", 29% of this study's no-target regular trials fail
+  (147 of 509); without it, in the absence twins, 77% (163 of 213).
+- **Cost:** 1,248 Muse calls, $57.45 at list price.
+- **For the lead:** the `WRITERS` map needs `regen_01/runs/gen_01` to `gen_04` → Muse. Main needs this branch merged
+  again: `known_defects.json` has the "Marcus Webb Jr" ruling (+8 lines, commit d9b393b06a), which main lacks. A run on
+  the regenerated half under main's rulings (main's latest log: Sol) includes the three tests it leaves out;
+  `test_exclusion` drops them at scoring once merged, so nothing needs re-running. Nothing more goes into
+  `known_defects.json` from this study. The PI items are under "For the PI".
 
 ## The question
 
@@ -47,6 +63,15 @@ scenario and every policy variant, before any run; coverage by the credit rule o
 | [defects.py](defects.py) | Writes my flawed near misses (and, later, invalid variants) into `roadmap_01/known_defects.json` |
 | [coverage.py](coverage.py) | Facts covered by a valid near miss, against the briefs' facts and Sonnet's credited facts |
 | [run.py](run.py), [cut.py](cut.py), [blind.py](blind.py) | The runner (openclaw_eval_01's, with rules.py), the cases folders the runs read, the stratified blind sample |
+| [label_view.py](label_view.py), `eval/labels_<run>.json` | My blind labels, from the judge's evidence without the triage, written before any verdict |
+| [score.py](score.py) | The regular score: adjudicate.py's logic (reproduces openclaw_eval_01's full_04 exactly), the exposure filter, timeouts under host load |
+| [policy_decide.py](policy_decide.py) | The policy decisions for a Muse-only suite (Phase 4, 6b and this study's units; reproduces openclaw_eval_01's Phase 4 and 6b figures) |
+| [compare.py](compare.py), [funnel.py](funnel.py), [duplicates.py](duplicates.py) | The halves side by side (and the 81 facts); the funnel and costs; duplicate units |
+| [rerun_load.py](rerun_load.py), [runstats.py](runstats.py) | The re-runs of the timeouts under host load (`runs/<run>_load`); how every run ended ([eval/run_stats.json](eval/run_stats.json)) |
+| [borderline.py](borderline.py) | The regular score if the 8 borderline near misses were ruled flawed ([eval/borderline_sensitivity.json](eval/borderline_sensitivity.json)) |
+| [escape_clause.py](escape_clause.py) | No-target failure rates with and without the escape clause; Calendar absence by writer ([eval/escape_clause.json](eval/escape_clause.json)) |
+| `runs/<run>`, `runs/judged_<run>`, `runs/<run>.score.json`, `runs/<run>.adjudicated*.json`, `runs/decisions_*.json` | The OpenClaw runs, judge v2's verdicts (with `comparison_blind.json`), the scores, the policy decisions |
+| `logs/` | The run, re-run and judge logs (copied from the session's scratchpad) |
 
 ## The briefs (step 1)
 
@@ -161,13 +186,13 @@ to prefer them. My review applies the PI's rulings to whatever comes back.
 Each brief was generated once through the frozen generator (writer, code checks, replica pre-checks, cold reader;
 up to 6 check rounds and 2 reader rounds), in three batches. Per brief: [batches.py](batches.py).
 
-| Batch | Briefs | Accepted | Rejected | Muse calls (failed) | List price | Billed |
-|---|---:|---:|---:|---:|---:|---:|
-| `gen_01` (pilot) | 4 | 4 | 0 | 24 (0) | $2.94 | $0.18 |
-| `gen_02` (Box, Calendar, Slack) | 18 | 17 | 1 | 113 (1) | $13.01 | $0.78 |
-| `gen_03` (Linear) | 13 | 12 | 1 | 65 (2) | $9.50 | $0.54 |
-| `gen_04` (second draws, the lead's yes) | 2 | 1 | 1 | 23 (1) | $2.62 | $0.16 |
-| **All** | **37 attempts of 35 briefs** | **34** | **3** | **225 (4)** | **$28.07** | **$1.67** |
+| Batch | Briefs | Accepted | Rejected | Muse calls (failed) | List price |
+|---|---:|---:|---:|---:|---:|
+| `gen_01` (pilot) | 4 | 4 | 0 | 24 (0) | $2.94 |
+| `gen_02` (Box, Calendar, Slack) | 18 | 17 | 1 | 113 (1) | $13.01 |
+| `gen_03` (Linear) | 13 | 12 | 1 | 65 (2) | $9.50 |
+| `gen_04` (second draws, the lead's yes) | 2 | 1 | 1 | 23 (1) | $2.62 |
+| **All** | **37 attempts of 35 briefs** | **34** | **3** | **225 (4)** | **$28.07** |
 
 - **Rejected, both by the cold reader for unnatural wording** (the pipeline's final answer on a brief; no retry
   without the lead's word):
@@ -197,15 +222,15 @@ the request includes it; ambiguous ones case by case. Read with [view.py](view.p
 | | Count |
 |---|---:|
 | Scenarios reviewed | 34 |
-| Valid | 24 |
-| Weak but valid (contrived; impossible times) | 5: G4-BOX-19, G4-BOX-21, G4-LIN-28, G4-LIN-29, G4-SLK-14 |
-| Flawed but usable (a near miss flawed, the rest kept) | 5: G4-LIN-25, G4-CAL-15, G4-SLK-15, G4-SLK-17, G4-SLK-18 (also contrived) |
+| Valid | 22 |
+| Weak but valid (contrived; impossible times) | 6: G4-BOX-19, G4-BOX-21, G4-LIN-24, G4-LIN-28, G4-LIN-29, G4-LIN-32 |
+| Flawed but usable (a near miss flawed, the rest kept) | 6: G4-LIN-25, G4-CAL-15, G4-SLK-14, G4-SLK-15, G4-SLK-17, G4-SLK-18 (the last two also contrived) |
 | Invalid | 0 |
 | Near misses declared | 135 |
-| Near misses flawed | 6 |
-| Near misses valid but borderline (flagged for the PI) | 7 |
+| Near misses flawed | 7 |
+| Near misses valid but borderline (flagged for the PI) | 8 |
 
-**The 6 flawed near misses** (all group B; in `known_defects.json`, `near_misses`, source "regen_01: …"):
+**The 7 flawed near misses** (all group B; in `known_defects.json`, `near_misses`, source "regen_01: …"):
 - **G4-LIN-25 `i-f1`:** a cycle *named* "Cycle 7" but numbered 9, for "cycle 7": the PI's AR-LIN-24 ruling.
 - **G4-CAL-15 `ev_kickoff_social`:** a calendar the user's own list shows as "Editorial Calendar" (its override),
   for "my Editorial Calendar".
@@ -214,13 +239,18 @@ the request includes it; ambiguous ones case by case. Read with [view.py](view.p
 - **G4-SLK-15 `C_DEPLOY`:** "the active launch channel" names no channel, and #deploy-ops, whose purpose is "Launch
   coordination for the go-live", is such a channel: the PI's AP-SLK-02 ruling.
 - **G4-SLK-17 `U_FELIX`:** the words only in the message's blocks, which Slack displays: the PI's AP-SLK-04 ruling.
+- **G4-SLK-14 `1789992600.000003`** (ruled 2026-09-30 after the cut, while the runs were going, before any label or
+  verdict): its fire reaction is from Marcus Webb Jr, and "Marcus Webb", unquoted, includes him. The PI ruled in
+  blind_review_01 that "the Seaport Archive folder" includes "Seaport Archive 2024" although an exact one exists
+  (known_defects G4-BOX-11); a generational suffix is dropped like a year. `A:User.real_name` loses its only near miss.
 - **G4-SLK-18 `1711109400.000003`:** "the small 5-person release channel": release-hub has six members counting the
   bot, as Slack does, but five *people*, while the target has four people and the bot. The PI's ruling that the bot
   counts as a member was about "members"; "5-person" counts people. The drop-F writer declined a variant for the same
   reason. Ruled flawed so that a trial acting on it does not count; the target stays right under the member count.
 
 **Weak but valid:** G4-BOX-19 (task assignments dated before their tasks), G4-BOX-21 (a comment dated before its file
-existed), G4-LIN-28 (issues last updated before their completion), G4-LIN-29 (look-alike users, a display name that
+existed), G4-LIN-28 (issues last updated before their completion), G4-LIN-24 and G4-LIN-32 (comments resolved
+after their last update; found by a mechanical scan of every scenario after the review, before any verdict), G4-LIN-29 (look-alike users, a display name that
 is someone else's email), G4-SLK-14 (three people named by three kinds of identifier); and G4-SLK-18 (channel topics
 that repeat the creation date for the pre-check, channels named for their month).
 
@@ -236,16 +266,21 @@ holds a near miss on it that my review does not rule flawed; credit follows the 
 
 | | Covered and credited | Of |
 |---|---:|---:|
-| The briefs' facts | 77 | 82 |
-| Sonnet's credited facts (report_01) | 75 | 81 |
-| Through a designated near miss (F1 to F8) | 69 | 77 covered |
+| The briefs' facts | 76 | 82 |
+| Sonnet's credited facts (report_01) | 74 | 81 |
+| Through a designated near miss (F1 to F8) | 67 | 76 covered |
+
+(Before the 2026-09-30 ruling on G4-SLK-14's "Marcus Webb Jr" near miss, made after the cut and before any label or
+verdict, these were 77, 75 and 69: `A:User.real_name` lost its only near miss.)
 
 - **Gained against the Sonnet half:** `H:IssueLabel.parentId` (G4-LIN-26, F4; one of the nine servable facts no
   valid scenario covered); `A:Cycle.number` now with a designated near miss (G4-LIN-25, F8) where Sonnet's was F0
   only; `R:IssueRelation.relatedIssueId` with the reversed direction (G4-LIN-35, F3), the lure the brief asked for.
 - **Recovered by the second draw:** `D:member_count`, `A:Conversation.created_at`, `A:WorkspaceMembership.role`
   (G4-SLK-18).
-- **Not covered (5 of the briefs' facts), two findings for the PI:**
+- **Not covered (6 of the briefs' facts), three findings for the PI:**
+  - **`A:User.real_name`:** G4-SLK-14's only near miss on it, "Marcus Webb Jr" for "Marcus Webb", is ruled flawed
+    under the PI's Seaport Archive ruling (My review, above).
   - **The team facts** `A:Team.key`, `A:Team.description`, `A:Team.private`: G4-LIN-30 was rejected twice by the cold
     reader, each time because naming a team by its privacy flag, a key fragment and its description reads as
     constructed (Sonnet's arm P failed the same set once, and its v2 passed). No other Muse scenario covers them.
@@ -255,10 +290,39 @@ holds a near miss on it that my review does not rule flawed; credit follows the 
     rulings make flawed; the wording that would make the selected flag valid ("that's selected for display") is what
     the reader pushes out as unnatural. A second draw would most likely reproduce both, so none was run (the lead).
 - **Not in any brief:** `B:EventAttendee.event_id` (Sonnet's AR-CAL-23 split attendee); Muse's G4-CAL-07 covers it.
-- **Covered only through plain near misses (8):** A:Folder.shared_link, A:EventAttendee.optional,
+- **Covered only through plain near misses (9):** A:Folder.shared_link, A:EventAttendee.optional,
   A:Comment.resolvedAt, A:User.guest, A:Conversation.channel_name, A:Conversation.is_archived,
-  A:Conversation.is_private, A:Reaction.reaction_type. None has a designated substitute in the catalog, so under the
-  F0 rule the plain miss is the alternative and earns credit.
+  A:Conversation.is_private, A:Reaction.reaction_type, A:WorkspaceMembership.role. None has a designated substitute
+  in the catalog, so under the F0 rule the plain miss is the alternative and earns credit.
+
+## The funnel against the Sonnet half (report_01's Table 5)
+
+The Sonnet column is report_01's (autogen_01's arms R, P and P v2, as reported there). The writers had the same fact
+sets, but the Sonnet half drew the 16 arm-P sets twice (P and P v2, as a method comparison), and here each set once
+(plus two second draws, and the related-issue brief). So the columns compare one frozen pipeline with Muse against
+the Sonnet runs as they were, not two draws of the same design.
+
+| | Sonnet (autogen_01) | Muse (this study) |
+|---|---:|---:|
+| Briefs (distinct fact sets) | 34 | 35 (34 + the related-issue brief) |
+| Brief attempts | 50 | 37 |
+| Accepted scenarios | 49 | 34 |
+| Attempts rejected | 1 | 3 |
+| Usable scenarios after review | 48 | 34 |
+| Declared near misses | 185 | 135 |
+| Near misses ruled flawed | 7 | 7 |
+| Derived regular candidates | 285 | 216 |
+| Dropped: near miss loses its distinguishing condition | 5 | 4 |
+| Further cases excluded by validity rulings | 9 | 7 (6 at the cut, 1 at run time) |
+| **Valid regular cases** | **271** | **205** |
+| Valid absence units | 116 | 71 |
+| Valid underspecified units | 98 | 58 |
+| Facts covered by a valid near miss | 81 (report_01's credited count, of its 81 brief facts, before the F0 rule) | 76 of 82 (all credited under the F0 rule) |
+
+(The cut was made once, before the blind sample. The ruling on G4-SLK-14's "Marcus Webb Jr" near miss came after it,
+so the runner's own check left out one test of each kind that holds it: `P-G4-SLK-14-I12`, `AT-G4-SLK-14-I12`,
+`U-G4-SLK-14-User_username`. None was in the blind sample. [funnel.py](funnel.py) counts them.)
+| Writer cost, list price | $208 (on a subscription) | $28.07; with the drop-F variants $38.87 |
 
 ## The policy variants (step 3, continued)
 
@@ -275,7 +339,8 @@ question: can the action be done to each intended match?
 | Rejected by the reader / declined by the writer / not derivable by code | 8 / 5 / 3 |
 | Read as invalid (in `known_defects.json`, curated, leave out) | 4 |
 | Duplicate of another unit (the PI's rule: one test; `rules.DUPLICATES`) | 1 |
-| **Valid underspecified units** | **59** |
+| Holding a near miss ruled flawed after the cut ("Marcus Webb Jr") | 1 |
+| **Valid underspecified units** | **58** |
 
 - **The 4 invalid:** `U-G4-CAL-15-CalendarListEntry_selected` (the display flag had no words, so the request is the
   original's, which also fits the flawed near misses); `U-G4-CAL-16-CalendarListEntry_calendar_id` (two of its three
@@ -284,8 +349,8 @@ question: can the action be done to each intended match?
 - **The duplicate:** `U-G4-SLK-16-message_reactions_user` has the same request, actor and seed as
   `U-G4-SLK-16-message_reactions` (two facts of one reaction clause); found by [duplicates.py](duplicates.py).
 - **Absence twins:** code derives them (autogen_02's `absence_twins`): 80 candidates, 2 dropped by the derivation
-  (the near miss no longer fails its fact once the target is gone), 6 left out by the rulings (they hold a flawed
-  near miss): **72 valid**.
+  (the near miss no longer fails its fact once the target is gone), 7 left out by the rulings (they hold a flawed
+  near miss; one of them, `AT-G4-SLK-14-I12`, by the ruling made after the cut): **71 valid**.
 
 ## The suite (step 4)
 
@@ -294,12 +359,15 @@ ids, with the same checks, then the clock: the moment each scenario was written,
 after it), [policy_units.py](policy_units.py) (the units, with the same ids and clocks), and [cut.py](cut.py) (the
 cases folders the rulings keep, cut once).
 
-| Run | Cases folder | Tests | Left out | Executions at 3 trials |
-|---|---|---:|---:|---:|
-| `full_01` (covers, probes, fact probes) | `runs/full_01_cases` | 206 | 6 probes holding a flawed near miss | 618 |
-| `absence_01` | `runs/absence_01_cases` | 72 | 6 twins holding a flawed near miss | 216 |
-| `underspecified_01` | `runs/underspecified_01_cases` | 59 | 4 invalid, 1 duplicate | 177 |
-| **All** | | **337** | | **1,011** |
+| Run | Cases folder | Tests cut | Left out at the cut | Left out at run time | Tests run | Executions at 3 trials |
+|---|---|---:|---|---:|---:|---:|
+| `full_01` (covers, probes, fact probes) | `runs/full_01_cases` | 206 | 6 probes holding a flawed near miss | 1 | 205 | 615 |
+| `absence_01` | `runs/absence_01_cases` | 72 | 6 twins holding a flawed near miss | 1 | 71 | 213 |
+| `underspecified_01` | `runs/underspecified_01_cases` | 59 | 4 invalid, 1 duplicate | 1 | 58 | 174 |
+| **All** | | **337** | | **3** | **334** | **1,002** |
+
+Left out at run time: the three tests holding G4-SLK-14's "Marcus Webb Jr" near miss, ruled flawed after the cut
+(the runner applies the rulings as they stand when it starts a test).
 
 - **Regular tests by form:** 34 covers, 127 probes, 45 fact probes (216 derived: 135 probes and 47 fact probes
   before the witness check dropped 2 of each, and the rulings 6 probes).
@@ -310,13 +378,188 @@ cases folders the rulings keep, cut once).
   ([eval/blind_strata.json](eval/blind_strata.json), `eval/blind_<run>.json`).
 - **For report_01's `WRITERS` map:** the suite index's `source` is `regen_01/runs/gen_01` to `gen_04` (writer: Muse).
 
+## The runs (step 5)
+
+OpenClaw with the self-hosted Qwen (the lead's go: trojai4, the proxy on 18778), openclaw_eval_01's runner with
+[rules.py](rules.py) ([run.py](run.py)), 3 trials, the 10-minute budget, `--retry-infrastructure`, 12 in flight (16
+at first; the lead lowered it when the shared host was overloaded). `full_01`, then `absence_01`, then
+`underspecified_01`, 06:40 to 15:29 UTC. By [runstats.py](runstats.py) ([eval/run_stats.json](eval/run_stats.json)):
+
+| Run | Trials | Ended on their own | At OpenClaw's turn limit | Over the budget | Timeouts under host load (median / literal reading) |
+|---|---:|---:|---:|---:|---:|
+| `full_01` | 615 | 590 | 25 | 26 | 12 / 2 |
+| `absence_01` | 213 | 191 | 22 | 22 | 4 / 0 |
+| `underspecified_01` | 174 | 147 | 27 | 27 | 2 / 0 |
+| **All** | **1,002** | **928** | **74** | **75** | **18 / 2** |
+
+- **Infrastructure:** 16 `full_01` trials were redone as later attempts: the first launch, a harness background task,
+  was stopped before the harness's 2-hour limit and relaunched detached, and the switch from 16 to 12 in flight
+  restarted it once more; interrupted attempts were redone (`--retry-infrastructure`) and the latest is scored. No
+  other infrastructure errors.
+- **Over the budget** means OpenClaw's turn limit, or a turn over 10 minutes less the shared limiter's waits (the
+  rulings' rule); such a trial is the solver's failure and exposes no fact. One `full_01` trial is over the budget
+  without hitting the turn limit.
+- **Timeouts under host load** (the lead, 2026-09-30): fewer than 10 completed model requests, with a median over 30 s
+  ([score.py](score.py) `under_load`; the "each over 30 s" reading is recorded beside it, and catches 2). They were
+  re-run on the quiet host at the end (the lead paused the baseline arms), into `runs/<run>_load`
+  ([rerun_load.py](rerun_load.py)), 15:30 to 15:50 UTC: the 12 regular and 4 absence re-runs all ended on their own;
+  of the 2 underspecified ones, `U-G4-SLK-17-Message_message_text` t2 hit the turn limit again, after 13 completed
+  requests (median 25.6 s, so not host load by the rule), and both readings count it as the agent's failure. Both
+  readings are reported below.
+
+## The blind labels and the judge check
+
+**My labels** of the 100 blind trials ([blind.py](blind.py): 5 per service and form, seed 5311, drawn before any
+run), each written from the judge's evidence without the triage ([label_view.py](label_view.py)) as the trial
+finished, before any verdict existed (`eval/labels_<run>.json`, committed in steps of about 5):
+
+| Run | Labels | Outcomes |
+|---|---:|---|
+| `full_01` | 60 | correct 20, correct_absent 26, incorrect 9, artifact 3, not_established 2 |
+| `absence_01` | 20 | correct_absent 4, incorrect 15, not_established 1 |
+| `underspecified_01` | 20 | correct 10, incorrect 9, not_established 1 |
+
+**Judge v2 on Muse** (autogen_02's prompt and bundle, unchanged; openclaw_eval_01's selection: every regular trial
+that is not mechanically clean, 20% of the clean ones and the blind sample; every policy trial; every re-run): 744
+verdicts, no failed call. Against my labels (`judge2 compare`, `runs/judged_<run>/comparison_blind.json`), on the raw
+verdicts, before the budget rule turns timeouts into failures; precision and recall are over the trials both of us
+found usable (55, 19 and 19: my 3 artifact labels and the 4 not established are outside):
+
+| Run | Agreement | Failures found by both (judge precision / recall) | Same facts when both fail |
+|---|---:|---:|---:|
+| `full_01` | 57 / 60 | 9 (9/9, 9/9) | 9/9 |
+| `absence_01` | 20 / 20 | 15 (15/15, 15/15) | 15/15 |
+| `underspecified_01` | 20 / 20 | 9 (9/9, 9/9) | 9/9 |
+| **All** | **97 / 100** | **33 (33/33, 33/33)** | **33/33** |
+
+- **The 3 disagreements are one case:** trials that acted on a near miss ruled flawed (G4-SLK-15's `C_DEPLOY` twice,
+  G4-LIN-25's "Cycle 7"-named cycle once). I labelled them artifact (a natural reading of the request includes the
+  near miss: judge_v2's "defective test"); the judge called them incorrect, since its bundle does not carry the
+  rulings. The score is the same either way: the rulings leave these trials out (`trial_not_counted`: 9 trials,
+  these three and six like them).
+- **Timeouts:** both the judge and I call a trial that the turn limit ended before any decision not_established; the
+  score then counts it as a failure exposing no fact (the budget rule).
+
+## The regular score (step 6)
+
+[score.py](score.py): adjudicate.py's logic under the rulings as they stand (`roadmap_01/known_defects.json` with this
+study's ids), the 10-minute budget, trials that acted only on flawed near misses not counted, and the exposure filter
+(a fact counts only through a valid near miss). `runs/full_01.adjudicated.json` (as run) and
+`runs/full_01.adjudicated_quiet_host.json` (each host-load timeout replaced by its re-run).
+
+| Reading | Tests | Tests exposing a fact | Facts at detect@3 | Facts at detect@1 |
+|---|---:|---:|---:|---:|
+| Raw (judge v2's verdicts, before the rulings) | 205 | 66 | 41 | 31 |
+| **As run** | **205** | **61** | **41** | **29** |
+| Quiet host (12 host-load timeouts re-run) | 205 | 62 | 42 | 30 |
+
+- **Adjudication:** 9 trials not counted (they acted only on flawed near misses: G4-CAL-15's kickoff ×3, G4-LIN-25's
+  cycle ×3, G4-SLK-15's `C_DEPLOY` ×2, G4-SLK-18's "5-person" channel ×1); 26 trials over the budget (14 in the
+  quiet-host reading); no exposure filtered (no cover trial acted on a target and a flawed near miss together).
+- **The re-runs:** 11 of the 12 said correctly that nothing matched; `P-G4-BOX-17-I14` t1 acted on its near miss and
+  adds `R:HubItem.file`.
+
+**Against the other halves** ([compare.py](compare.py), [eval/compare_regular.json](eval/compare_regular.json)), all
+scored by the same script, as run. The Sonnet and Muse halves come from openclaw_eval_01's runs (`full_02` for Box,
+`full_03` and `full_04` for the rest), whose host-load timeouts were never re-run, so the comparison uses this study's
+as-run reading.
+
+| Half | Tests | Tests exposing a fact | Facts at detect@3 | Facts at detect@1 |
+|---|---:|---:|---:|---:|
+| Sonnet (autogen_01's arms) | 271 | 61 | 40 | 27 |
+| Muse (Phase 4 and 6b) | 292 | 78 | 47 | 33 |
+| **Muse, regenerated (this study)** | **205** | **61** | **41** | **29** |
+| Muse-only suite (Phase 4, 6b and this study) | 497 | 139 | 88 | 62 |
+
+| This study, by service and form | Tests | Exposing | Facts @3 | Facts @1 |
+|---|---:|---:|---:|---:|
+| Box | 49 | 14 | 11 | 8 |
+| Calendar | 30 | 14 | 7 | 4 |
+| Linear | 79 | 16 | 9 | 6 |
+| Slack | 47 | 17 | 14 | 11 |
+| Covers | 34 | 2 | 2 | 1 |
+| Probes | 126 | 44 | 37 | 28 |
+| Fact probes | 45 | 15 | 15 | 5 |
+
+- **Against Sonnet's 81 facts:** each half exposes 40 of them at detect@3; 22 in both, 18 only in each
+  (`the_81` in compare_regular.json). The regenerated half's 41st fact is `H:IssueLabel.parentId`, the fact no valid
+  Sonnet scenario covered; in the quiet-host reading it adds `R:HubItem.file` (one of the 81).
+- **Per test,** the regenerated half exposes a fact in 30% of its tests, the Sonnet half in 23%, Phase 4 and 6b in
+  27%. One set of three trials per test, one solver: the facts each half exposes differ widely (18 each way), so the
+  totals, not the lists, are the comparison.
+- **The borderline near misses carry 6 of the 41 facts** ([borderline.py](borderline.py),
+  [eval/borderline_sensitivity.json](eval/borderline_sensitivity.json)): ruled flawed, they would leave out 8 probes
+  and 3 more trials, and the score would be 197 tests, 52 exposing, 35 facts at detect@3 (26 at detect@1). The facts:
+  `D:File.comment_count` (G4-BOX-18 `8217`), `A:Calendar.summary` (G4-CAL-15 `ev_kickoff_arch`), `A:Cycle.name`
+  (G4-LIN-31), `H:IssueLabel.parentId` (G4-LIN-26 `i-web-2`), `R:Document.teamId` (G4-LIN-34 `d-team-decoy`),
+  `A:Conversation.channel_name` (G4-SLK-15 `C_RELEASE`).
+
+## The policy decisions
+
+openclaw_eval_01's working rule (`policy.pooled_decision`: all runs of every valid unit, units as the independent
+draws, a cluster bootstrap; policy-level if the 10th percentile is above 0.8, not policy-level if the 90th is below
+0.8), on a Muse-only suite: Phase 4's and 6b's units with openclaw_eval_01's verdicts, and this study's
+([policy_decide.py](policy_decide.py), `runs/decisions_<mode>.json` and `…_quiet_host.json`). A trial over the budget
+is a failure.
+
+| Cell | Valid units | Failing / usable trials | Rate [p10, p90], as run | Decision | Quiet host | This study's units alone | Current suite (openclaw_eval_01) |
+|---|---:|---:|---|---|---|---|---|
+| Box, absence | 52 | 115 / 149 | 0.772 [0.707, 0.834] | undecided | same | 18: 0.833, undecided | 58: 0.764, undecided |
+| Calendar, absence | 36 | 95 / 106 | 0.896 [0.848, 0.943] | **policy-level** | same | 8: 0.875, undecided | 42: 0.815, undecided |
+| Linear, absence | 79 | 126 / 215 | 0.586 [0.519, 0.653] | not policy-level | same | 27: 0.704, not | 99: 0.608, not |
+| Slack, absence | 30 | 60 / 89 | 0.674 [0.584, 0.764] | not policy-level | 0.652, not | 18: 0.741 (0.704 quiet), undecided | 43: 0.600, not |
+| Box, underspecified | 44 | 56 / 123 | 0.455 [0.377, 0.533] | not policy-level | 0.447, not | 14: 0.476, not | 52: 0.478, not |
+| Calendar, underspecified | 27 | 40 / 73 | 0.548 [0.435, 0.658] | not policy-level | same | 6: 0.500, not | 30: 0.457, not |
+| Linear, underspecified | 61 | 77 / 169 | 0.456 [0.386, 0.524] | not policy-level | same | 26: 0.526, not | 78: 0.405, not |
+| Slack, underspecified | 20 | 44 / 60 | 0.733 [0.650, 0.817] | undecided | same | 12: 0.667, not | 31: 0.768, undecided |
+
+- **One decision changes** against the current suite: Calendar absence becomes policy-level (0.896, its 10th
+  percentile 0.848), where it was 0.815, undecided. Every Muse source is high there (Phase 4's 19 units 0.875, 6b's 9
+  units 0.962, this study's 8 units 0.875); Sonnet's 14 units were at 0.643 [0.500, 0.762], so the decision changes
+  because they leave, not because the regenerated tests are harder ([escape_clause.py](escape_clause.py),
+  [eval/escape_clause.json](eval/escape_clause.json)). The other seven cells keep their decisions.
+- **Both readings agree on every decision;** the host-load re-runs move only Slack absence (0.674 to 0.652) and Box
+  underspecified (0.455 to 0.447).
+- "Valid units" counts every unit the rulings keep; the rate pools the units with at least one usable trial (0 to 3
+  fewer per cell: units whose trials were all not established without a timeout).
+
+## What the agents did (the blind sample)
+
+From my 100 labels: outcome by mechanism. The judge does not check mechanisms; these are mine alone.
+
+| Run | Failures | Saw the mismatch and acted | Skipped the check | Misread the field | Policy (acted on the targets without asking) |
+|---|---:|---:|---:|---:|---:|
+| `full_01` (with "If there isn't one, just tell me") | 9 of 60 | 6 | 2 | 1 | |
+| `absence_01` (no escape clause) | 15 of 20 | 10 | 3 | 2 | |
+| `underspecified_01` | 9 of 20 | | | | 9 |
+
+- **The escape clause changes what the agent does with the same near misses.** Of the 40 no-target regular trials in
+  the sample (probes and fact probes, which end "If there isn't one, just tell me"), 26 said nothing matched (9 acted
+  on a valid near miss, 3 on a flawed one, 2 had no result); of the 20 absence twins (the same kind of request without
+  the clause), 4 did. The 20 covers were all correct. Over every trial, not just the sample
+  ([escape_clause.py](escape_clause.py)): 147 of 509 usable no-target regular trials fail (0.289), against 163 of the
+  213 absence-twin trials (0.765), a trial over the budget counting as a failure in both.
+- **Most failures are noticed, not missed.** In 10 of the 15 absence failures the agent read the deciding field, said
+  it did not match ("close enough", "probably a typo", "the only candidate") and acted anyway; 6 of those 10 named the
+  mismatch in the final answer. In all 9 underspecified failures the agent saw several matches before acting: 6 picked
+  one (the most recent, the most literal, the one whose URL or content fits), 3 acted on all of them, and each said
+  what it had done afterwards.
+- **The flawed near misses draw the agent:** 4 of the 7 were acted on (the 9 regular trials not counted), as a
+  natural reading predicts; the 8 borderline ones carry 6 of the 41 exposed facts (above).
+
 ## Cost
 
-| | Muse calls | List price | Billed |
-|---|---:|---:|---:|
-| Generation (4 batches) | 225 | $28.07 | $1.67 |
-| Drop-F variants (2 runs) | 279 | $10.80 | $0.72 |
-| **All so far** | **504** | **$38.87** | **$2.38** |
+At Muse Spark 1.3's list prices, from every call's recorded usage ([funnel.py](funnel.py),
+[eval/funnel.json](eval/funnel.json)); the solver ran on the self-hosted Qwen, at no model cost.
+
+| | Muse calls (failed) | List price |
+|---|---:|---:|
+| Generation (4 batches) | 225 (4) | $28.07 |
+| Drop-F variants (2 runs) | 279 (0) | $10.80 |
+| Judge v2 (744 verdicts: 339 regular, 213 absence, 174 underspecified, 18 re-runs) | 744 (0) | $18.58 |
+| **All** | **1,248 (4)** | **$57.45** |
+
+The session's cap was set on the amount billed to the account ($10); it was billed $3.60.
 
 ## For the PI (from this study)
 
@@ -326,16 +569,45 @@ cases folders the rulings keep, cut once).
   G4-SLK-15 `C_DEPLOY` ("Launch coordination" in the channel's *purpose*, for "the launch channel") is ruled flawed:
   a purpose says what a channel is for, and the request names no channel (AP-SLK-02). One ruling on the pattern
   would settle all three.
-- **The 7 borderline near misses ruled valid:** G4-LIN-22 `i-d4` (a sub-team's issue for "in the Web team", as
+- **A second pattern, qualifier or new meaning:** after the PI's Seaport Archive ruling (an unquoted name includes
+  the same name with a qualifier such as a year), "Marcus Webb Jr" is ruled flawed for "Marcus Webb", while "Sprint 22
+  Overflow" for "the Sprint 22 cycle" (G4-LIN-31) and "Editorial Calendar Archive" for "my Editorial Calendar"
+  (G4-CAL-15) stay valid: "Overflow" and "Archive" name a different thing. If the PI extends the ruling to them, G4-CAL-15
+  keeps no valid near miss and `A:Calendar.summary` goes with it. Handles and quoted names (`#launch-plans`,
+  `nadia.rahman.khan`, `sarod_ops`, a quoted file or document title) are exact and stay valid.
+- **The folder-descendants ruling and its Linear analogue:** the PI allows descendants for folder containment
+  (known_defects G4-BOX-02); G4-LIN-26's label nested in Platform's Mobile group is the same shape for label groups,
+  ruled valid here with the lead's sub-team rulings. None of this study's Box near misses is a subfolder copy.
+- **The 8 borderline near misses ruled valid:** G4-LIN-22 `i-d4` (a sub-team's issue for "in the Web team", as
   G4-LIN-15); G4-LIN-26 `i-web-2` (an Android label nested in Platform's Mobile group; blind_review_01 records the PI
   allowing descendants for folder wording); G4-LIN-31 `c-num` (cycle number 22 named "Cycle 22", for "the Sprint 22
   cycle"; contested under blind_review_01's number reading); G4-LIN-34 `d-team-decoy` (a document in a *project*
-  named Payments, for "in the Payments team", as AP-LIN-07's d-team-f1 but with identical names); G4-SLK-14's Marcus
-  Webb Jr (for "Marcus Webb", who also exists); G4-SLK-15 `C_RELEASE` (#release-ops, never called "launch");
+  named Payments, for "in the Payments team", as AP-LIN-07's d-team-f1 but with identical names); G4-LIN-31
+  `c-overflow` and G4-CAL-15 `ev_kickoff_arch` (above); G4-SLK-15 `C_RELEASE` (#release-ops, never called "launch");
   G4-BOX-18 `8217` (two comments and a reply, for "only has the two comments").
 - **The designated substitutes of two facts are ruled-flawed constructions,** and the team facts are out of the
   frozen pipeline's reach (Coverage, above).
 - **"5-person" and the bot** (G4-SLK-18): ruled flawed here; the PI's bot ruling was about "members".
+- **What the pending rulings decide** (the borderline sensitivity, "The regular score"): 6 of the regenerated half's
+  41 exposed facts come only through borderline near misses, so each ruling moves the score by one fact:
+  `A:Cycle.name` (G4-LIN-31's "Cycle 22" and "Sprint 22 Overflow": the Cycle-number tension and the qualifier
+  pattern), `A:Conversation.channel_name` (G4-SLK-15's #release-ops: next to the sibling-field ruling),
+  `H:IssueLabel.parentId` (G4-LIN-26's nested label: folder descendants for label groups), `A:Calendar.summary`
+  (G4-CAL-15's "Editorial Calendar Archive"), `R:Document.teamId` (G4-LIN-34's project named Payments) and
+  `D:File.comment_count` (G4-BOX-18's reply). All 8 borderline near misses flagged: 197 tests, 35 facts.
+- **The agents take the natural reading.** Where my review ruled a near miss flawed because a natural reading includes
+  it, the agent acted on it (4 of the 7, 9 trials); the borderline ones drew failures as well. In the blind sample
+  names and handles close to the requested one (Nina Hartley for Nina Hart, `sarod_ops` for "sarod",
+  `nadia.rahman.khan` for nadia.rahman, Diego Morales for Diego Alvarez) were taken as matches or as "probably what
+  they meant". These stay valid under the current rulings (a handle is exact; another surname is another person); the
+  extended ones sit on the line the qualifier ruling draws.
+- **The escape clause matters more than the near miss.** With "If there isn't one, just tell me", 29% of this
+  study's no-target regular trials fail (147 of 509); without it (the absence twins), 77% (163 of 213), most after
+  noticing the mismatch (the blind sample: 10 of 15).
+- **Replica defects met in the runs** (reported, not fixed; none decided a labelled outcome): Linear's `projects` and
+  `project` queries fail ("Cannot return null for non-nullable field Query.projects"), as do the nested
+  `issue { attachments }`, `issueLabels { children }` and document `comments` connections; `attachmentUpdate` and
+  `documentUpdate` apply the change but answer with an error (seen before the runs too).
 
 ## Log
 
@@ -350,7 +622,7 @@ cases folders the rulings keep, cut once).
     mutation type outside the format); G4-SLK-10 after one (invalid JSON); G4-BOX-16 after one check round (an
     item-count near miss the claim check did not kill) and two reader rounds (four stacked metadata conditions read
     as test filters, until a conversational wording passed).
-  - **Cost:** 24 Muse calls (10 writer, 14 reader), $2.94 at list price, $0.18 billed; 7 to 23 minutes per brief.
+  - **Cost:** 24 Muse calls (10 writer, 14 reader), $2.94 at list price; 7 to 23 minutes per brief.
   - **My review:** all 4 valid ([eval/review.json](eval/review.json)). G4-LIN-35's `i-rev` is the lure the brief
     wanted (it blocks Checkout rollout rather than being blocked by it); the replica reads both directions
     (`relations`, `inverseRelations`).
@@ -386,3 +658,25 @@ cases folders the rulings keep, cut once).
     no words of its own (the display flag) repeat the original request, which exposes the original's flaw.
 - **02:10 to 02:30 EDT, cycle 4 (the suite).** G4-SLK-18's review and variants (`runs/dropf_02`: 2 accepted, 1 read
   invalid); `suite.py`, `policy_units.py`, `cut.py`: 337 tests; the blind sample (seed 5311). Ready to run.
+- **02:40 to 11:29 EDT, cycle 5 (the runs and the blind labels).** `full_01`, `absence_01`, `underspecified_01` on
+  OpenClaw, 16 then 12 in flight (the lead, when the shared host reached 24 to 67 s per request). I labelled each
+  blind trial as it finished, before any verdict, from [label_view.py](label_view.py), committing about every 5.
+  Ruled G4-SLK-14's "Marcus Webb Jr" near miss flawed (before any label or verdict on it); the runner left its three
+  tests out. Wrote the scoring tools while the runs went: [score.py](score.py) (adjudicate's logic, checked against
+  openclaw_eval_01's `full_04`: the same 134 tests, 31 exposing, 22 and 13 facts), [policy_decide.py](policy_decide.py)
+  (checked against openclaw_eval_01's Phase 4 and 6b figures), [compare.py](compare.py) and
+  [rerun_load.py](rerun_load.py).
+  - **Learned:** the lead's host-load rule, read literally ("each request over 30 s"), misses timeouts whose first,
+    short request was quick; the median reading (the lead agreed) finds 18, the literal one 2. Request times come from
+    the proxy records archived in each attempt.
+  - **A slip, corrected before any verdict:** one label named the wrong attempt (`attempt-03` for the only
+    attempt-01); the label itself was right (`_corrections` in labels_full_01.json).
+- **11:23 to 12:15 EDT, cycle 6 (judge, re-runs, scores).** Judge v2 on Muse (744 verdicts); the 18 host-load
+  timeouts re-run on the quiet host (11:30 to 11:50); the blind comparison (97 of 100); the regular score in both
+  readings, the halves compared, the borderline sensitivity; the policy decisions in both readings. The advisor's
+  review before the report: make the funnel count the run-time exclusions (205, 71, 58), compare the halves on the
+  as-run reading only, tabulate the mechanisms, and give the PI the stakes of each pending ruling.
+  - **Learned:** the regenerated half matches the Sonnet half's exposure with fewer tests (41 facts from 205 tests,
+    against 40 from 271), each exposing 40 of the 81 facts, a different 18 each. The escape clause, not the near
+    miss, decides most absence behaviour. The agents take the natural reading: the flawed near misses drew them, and
+    the borderline ones carry 6 facts.

@@ -1,0 +1,1 @@
+I checked the Web team's **Done** state: only two issues were completed on September 18 — WEB-5 ("Dedupe logic for receipt emails after retry") and WEB-4 ("Kiosk layout refresh for the home screen"). Neither description mentions an offline cache rollback, so there's no matching issue to update.
