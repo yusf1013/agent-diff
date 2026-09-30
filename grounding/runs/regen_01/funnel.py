@@ -1,6 +1,7 @@
 """The generation funnel of this study, as report_01's Table 5 counts it, with the policy units and the Muse cost
 (generation, drop-F variants, and judge v2's verdicts in runs/judged_*).
-No model calls; plain python3 is enough (run after suite.py, policy_units.py and cut.py).
+No model calls; plain python3 is enough (run after suite.py, policy_units.py and cut.py). The valid counts are the
+cut's, less the tests a ruling made after the cut leaves out (as the runner does at run time).
 
     python3 grounding/runs/regen_01/funnel.py [--json]
 
@@ -12,8 +13,24 @@ import json
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+from grounding.runs.regen_01 import rules  # noqa: E402  (the rulings as they stand now)
+
 HERE = Path(__file__).resolve().parent
 RUNS = HERE / "runs"
+
+
+def run_time(run: str, cut: dict) -> dict:
+    """The cut's kept tests less those a later ruling leaves out (the runner leaves them out at run time: G4-SLK-14's
+    'Marcus Webb Jr' near miss was ruled flawed after the cut), with the reasons."""
+    later = {}
+    for cid in cut["tests"]:
+        path = next((RUNS / f"{run}_cases").glob(f"*/{cid}.json"))
+        why = rules.rulings.test_exclusion(json.loads(path.read_text()))
+        if why:
+            later[cid] = why
+    return {"tests": [c for c in cut["tests"] if c not in later], "left_out": {**cut["left_out"], **later},
+            "left_out_at_run_time": later}
 
 
 def calls(folder: Path) -> list[dict]:
@@ -33,7 +50,8 @@ def main():
     outcomes = [json.loads(p.read_text()) for p in sorted(RUNS.glob("gen_*/G4-*/outcome.json"))]
     check = json.loads((HERE / "suite" / "check.json").read_text())
     units = json.loads((HERE / "suite" / "units.json").read_text())
-    cut = {r: json.loads((RUNS / f"{r}_cases.json").read_text()) for r in ("full_01", "absence_01", "underspecified_01")}
+    cut = {r: run_time(r, json.loads((RUNS / f"{r}_cases.json").read_text()))
+           for r in ("full_01", "absence_01", "underspecified_01")}
     dropf = [json.loads(p.read_text()) for p in sorted(RUNS.glob("dropf_*/U-*/record.json"))]
     near = [(sid, w, v) for sid, r in review.items() for w, v in r["decoys"].items()]
     verdicts = {}
@@ -70,6 +88,7 @@ def main():
                  "all": cost(gen_calls + dropf_calls + judge_calls)},
     }
     result["tests_to_run"] = result["regular"]["valid"] + result["absence"]["valid"] + result["underspecified"]["valid"]
+    result["left_out_at_run_time"] = {r: c["left_out_at_run_time"] for r, c in cut.items()}
     if "--json" in sys.argv:
         print(json.dumps(result, indent=1))
         return
