@@ -166,3 +166,9 @@ section. Decisions that stand go to the [roadmap](roadmap.md); this is the recor
   moved); openclaw_eval_01's README brought to the 10-minute, rulings-updated numbers (6a 108 of 429; with 6b 139
   of 563, 87 / 60; over-budget policy trials 129 of 1,170 under 10 minutes against 188 under 8). Assigned next: the
   Sonnet baselines brief.
+- 02:2x harness (commits to 73e47f4858; merged as 9ce4be318a): the Sol pilot judged with the same judge: on the same
+  32 tests, Sol has no failures where Sonnet on Claude Code has two (one trial each; an observation). The openai
+  store layout is fixed behind AGENTDIFF_OPENAI_STORE=main (the login store becomes the attempt state's main-agent
+  store; the attempt agent gets a fresh one; memory_search then works, at the cost of an embeddings request per
+  call on the plan); the default path is byte-for-byte unchanged, so the running round is untouched; it goes on at
+  the start of a future round. Assigned next: unit tests, then the Qwen-as-writer investigation (qwen_writer_01).
