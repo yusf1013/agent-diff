@@ -345,8 +345,8 @@ these, and it should not: they are a different property of the same executions.
 ## 7. Limits
 
 - One model on one harness; the belief behind most value errors is Qwen's. Another model may err elsewhere.
-- One annotator (this session, an Opus agent; manual under the PI's rule). The labels and the specifications are its; the precision of the sampled checks rests on
-  3 to 33 reads each.
+- One annotator (this session, an Opus agent; manual under the PI's rule). The labels and the specifications are
+  its; the precision of the sampled checks rests on 3 to 33 reads each.
 - The specifications cover the fields the construction declares; a value written to an undeclared field is seen only
   as a side effect.
 - Stance checks are English-pattern based and were tuned on this data; their precision on a new model is unknown.
