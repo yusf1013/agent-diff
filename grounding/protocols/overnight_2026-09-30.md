@@ -406,3 +406,12 @@ section. Decisions that stand go to the [roadmap](roadmap.md); this is the recor
   as strings (re-running phase4 score for full_02/03/04 from another checkout would void their judged trials);
   openclaw's first-pass decisions_{mode}.json never applied the budget rule (a dated record). Roadmap rows 6a, 6b,
   6e, 6h and 7 brought current. Sol's regen-half run evidence committed at df1dc89750 (14,554 files).
+- 14:0x sol_score, two kit fixes merged (0c7c339b2a, 6f788eca9e; main at 558ec971b5): `autogen_01/kit/score_run.py`
+  compares recorded attempt paths from grounding/runs/ on and warns on stderr when one cannot be found (before the
+  fix, re-scoring full_04 from a worktree counted 0 of its 205 verdicts; after it, the three score files and every
+  adjudicated file reproduce byte for byte from the worktree); `openclaw_eval_01/policy.py`'s population readings
+  use only the units that ran and record `units_without_verdicts` (sampler.cell_stats itself stops at the first
+  unrun unit on purpose: the sequential design's frontier). No decision or number changes. The same trap in the
+  judge's verdict cache (`autogen_02/kit/judge2.py:124`, `autogen_01/kit/judge.py:135`: a re-judge from another
+  checkout would treat every cached verdict as stale and call Muse again) is assigned as the third fix, to be proved
+  without a model call.
