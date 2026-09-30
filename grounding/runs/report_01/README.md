@@ -63,3 +63,20 @@ the earlier reading of 8 minutes (runs between 8 and 10 minutes counted as timed
 
 **The report texts (report.md, report_concise.md) still carry the 8-minute numbers**; their tables are to be
 updated from `numbers/` (RQ4, RQ6, §0.4's execution categories, the limits section).
+
+## Text changes (2026-09-30)
+
+report.md and report_concise.md brought to the rebuilt numbers (brief:
+[report_update.md](../../protocols/briefs/report_update.md); session "values"). Every number is read from a file;
+none is recomputed from memory. `numbers/` and `kit/` are unchanged. One exception to "numbers/ is current":
+`numbers/policy.json` was written (commit 49ce3672dc) before the two duplicate policy pairs were merged (4fec9ec540,
+which re-made `openclaw_eval_01/runs/policy/decisions_population_underspecified.json`), so Table 11's figures are
+read from the two decision files, the sources the table already cites. Format: section, old → new, source.
+
+### Setup (§0)
+
+- report.md §0.3, "The 8-minute budget" → "The 10-minute budget": a trial ended by OpenClaw's 600-second turn limit
+  (or whose agent time, limiter waits excluded, passes 600 s) is the agent's failure; the 8-minute reading is
+  withdrawn. Source: roadmap, "Decisions (2026-09-29)"; `openclaw_eval_01/rulings.py` (`BUDGET_S = 600`,
+  `over_budget`); this README, "Recount".
+- Both texts' opening note: states the update of 2026-09-30 and points here.

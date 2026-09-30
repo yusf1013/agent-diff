@@ -1,9 +1,11 @@
 # Automated fact-discrimination tests for tool-using agents: evaluation and results
 
-*A stub for the evaluation and results sections of a paper, written 2026-09-29 from the committed runs. It covers
-the experiments, what they show and what they do not. There is no introduction, background or related work. Every
-table names its source: a script in [kit/](kit/) and the JSON it writes into [numbers/](numbers/), or a run record.
-Rows marked "–" or "not measured" are measurements not yet made.*
+*A stub for the evaluation and results sections of a paper, written 2026-09-29 from the committed runs and brought
+to the rebuilt numbers on 2026-09-30 (the 10-minute budget, duplicate policy units, blind_review_01; every change is
+logged in [README.md](README.md), "Text changes"). It covers the experiments, what they show and what they do not.
+There is no introduction, background or related work. Every table names its source: a script in [kit/](kit/) and the
+JSON it writes into [numbers/](numbers/), or a run record. Rows marked "–" or "not measured" are measurements not yet
+made.*
 
 ## 0. Setup
 
@@ -60,9 +62,10 @@ a PDF whose comment says the same thing but was posted by someone else.
   `team-design@…`). Before the final runs every made-up id was replaced by a random-looking one in the service's
   format, and tests that depend on today's date run with the agent's clock set to a fitting day. Box's ids are
   numbers and did not change.
-- **The 8-minute budget.** A trial whose agent time, rate-limiter waits excluded, passes 8 minutes is the agent's
-  failure. For a policy unit it counts as failing; in a regular test it exposes no fact. It was applied
-  retroactively; OpenClaw ran with a 10-minute limit.
+- **The 10-minute budget.** A trial that OpenClaw's own 600-second turn limit ends, or whose agent time,
+  rate-limiter waits excluded, passes 600 s, is the agent's failure. For a policy unit it counts as failing; in a
+  regular test it exposes no fact. Every final run used that limit; an earlier reading of 8 minutes (trials past 8
+  minutes counted as timed out) was withdrawn on 2026-09-29.
 - **The policy decision rule** was fixed in code before the runs ([policy.py](../openclaw_eval_01/policy.py)):
   - every run of every valid unit counts, with units as independent draws;
   - the rate is failing trials over usable trials, with a cluster bootstrap over units (20,000 resamples, seed

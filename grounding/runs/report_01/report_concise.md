@@ -1,8 +1,10 @@
 # Fact-discrimination tests for tool-using agents: concise results
 
-*2026-09-29. Main evaluation: 1,006 methodology cases on OpenClaw with self-hosted Qwen3.8-27B.
-Section and table numbers follow the longer report where retained. Recomputed counts and the final execution
-manifest: [concise.json](numbers/concise.json), produced by [concise.py](kit/concise.py).*
+*2026-09-29, brought to the rebuilt numbers on 2026-09-30 (the 10-minute budget, duplicate policy units,
+blind_review_01; every change is logged in [README.md](README.md), "Text changes"). Main evaluation: 1,006
+methodology cases on OpenClaw with self-hosted Qwen3.8-27B. Section and table numbers follow the longer report where
+retained. Recomputed counts and the final execution manifest: [concise.json](numbers/concise.json), produced by
+[concise.py](kit/concise.py).*
 
 ## 0.4 Size of the experiment
 
