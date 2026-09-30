@@ -149,3 +149,7 @@ $L grounding.runs.sol_eval_01.kit.compare_qwen; $L grounding.runs.sol_eval_01.ki
     to agent main". Sol calls it in 110 of 444 trials and then tells the user memory was unavailable. Qwen's 9 calls
     never hit it. Reported to the lead. Outcomes are not affected.
 
+- **01:36-01:40, an incident in the lead's run (the lead's report).** 262 `regular_6b` jobs failed instantly: the
+  runner reads roadmap_01/known_defects.json per attempt, and the file briefly held merge-conflict markers. Those
+  jobs left no attempt folders; the 145 completed attempts are sound. The lead re-ran the missing jobs
+  (`runs/run_regular_6b_rest.sh`, concurrency 6, beside the policy pass). `regular_6b` is judged only when complete.
