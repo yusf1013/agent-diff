@@ -5,7 +5,7 @@ Session "harness", started by the lead session "RoadMap specialist" on 2026-09-2
 
 ## Status
 
-- **Date:** 2026-09-30, 01:45 EDT.
+- **Date:** 2026-09-30, 01:20 EDT.
 - **Done:** the desk survey (report sections 1-3, sent to the lead); the smoke adapter ([adapter.py](adapter.py),
   [smoke.py](smoke.py), [clock/fakeclock.c](clock/fakeclock.c)); 15 smoke attempts on three tests: Claude Code with
   Sonnet 5.5 (plan) and with the self-hosted Qwen, Codex with Sol (plan: all 4 runs spent; `gpt-6.1-sol` refused, so
@@ -128,7 +128,7 @@ One entry per cycle: what changed, what ran, what was learned.
   self-host checks `Authorization: Bearer`); fixed with `ANTHROPIC_AUTH_TOKEN`, relabelled as an infrastructure
   error. Then all three ran (109-270 s), with the shifted clock on Calendar.
 
-### Cycle 5 (01:00-01:25): Codex with Qwen again, and the write-up
+### Cycle 5 (01:00-01:14): Codex with Qwen again, and the write-up
 
 - With `model_context_window = 131072` Codex still warns that it has no metadata for the model (the other defaults
   stay generic). The three Codex-Qwen runs took 118-130 s.
@@ -139,7 +139,7 @@ One entry per cycle: what changed, what ran, what was learned.
   Codex Calendar runs afterwards.
 - Report sections 4-6 written; the table of attempts comes from [summarize.py](summarize.py).
 
-### Cycle 6 (01:25-01:45): review
+### Cycle 6 (01:14-01:20): review
 
 - The advisor's review. The three Anthropic quotes the reading rests on were checked on the raw pages (curl, not a
   summarizer): the Agent SDK article (dated 2026-06-16, the June 15 pause banner verbatim), the consumer terms

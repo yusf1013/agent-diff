@@ -1,0 +1,1 @@
+I didn't add a reaction. Diego Alvarez's only message about the gateway rollback in #deployments ("Gateway rollback completed, keeping an eye on the dashboards.") has 2 eyes reactions, not 3. I found no other message from Diego about the rollback in that channel.
