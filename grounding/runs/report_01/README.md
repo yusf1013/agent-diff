@@ -458,7 +458,13 @@ The second agent, GPT-6.1 Sol on OpenClaw (the Muse-written half), added to both
 session sol_score. Format: section, old → new, source. `numbers/` and `kit/` are unchanged.
 
 **Sources.** Every number is read from the files of sol_eval_01 at commit fca57dd6de (merged into main in
-d32f0787b9). No number is recomputed here. All paths below are under `grounding/runs/sol_eval_01/`.
+d32f0787b9), and none is recomputed from memory. The only arithmetic on the files' values:
+- sums over the four sets, and agent hours from seconds;
+- percentages;
+- TN by subtraction, and the rule-of-three bounds;
+- rounding half up.
+
+All paths below are under `grounding/runs/sol_eval_01/`.
 
 - `eval/side_by_side_regular.json`:
   - `groups`, per group `sol`, `qwen_same_tests` and `tests_exposing`; the groups are all, domain, form, set and

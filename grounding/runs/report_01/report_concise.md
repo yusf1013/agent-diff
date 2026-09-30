@@ -494,16 +494,13 @@ Per fact, on the same cases:
 **Test awareness,** measured on visible text: Sol remarks on a trap, a decoy or a fixture in 11 of 1,491
 executions, all in reasoning summaries. Qwen does so in 483, in its thinking. Neither does in a final answer.
 
-**What it means.**
-- **The suite and its judge carry over unchanged** to a second, stronger agent.
-- **Sol fails far less often than Qwen.** The same 282 cases expose 7 facts instead of 47, and all 7 are among
-  Qwen's.
-- **It fails differently:** it does not check, where Qwen sees the mismatch and acts anyway.
-- **Its failures reproduce.** Detect@1 equals detect@3 on regular cases, and 15 of its 21 failing absence cases
-  fail all three executions.
-- **No cell supports the eight-case policy shortcut,** as for Qwen on OpenClaw: Sol's policy failures depend on the
-  case. The per-fact cases find 17 fact–mode pairs with no regular exposure.
-- **Exposure counts describe an agent as much as the suite,** so comparisons between agents need the same cases.
+**What it means.** The suite and its judge carry over unchanged to a second, stronger agent. Sol fails far less
+often than Qwen: the same 282 cases expose 7 facts instead of 47, and all 7 are among Qwen's. It also fails
+differently: it does not check, where Qwen sees the mismatch and acts anyway. Its failures reproduce. Detect@1 equals
+detect@3 on regular cases, and 15 of its 21 failing absence cases fail all three executions. As for Qwen on OpenClaw,
+no cell supports the eight-case policy shortcut, because Sol's policy failures depend on the case. The per-fact cases
+find 17 fact–mode pairs with no regular exposure. Exposure counts therefore describe an agent as much as the suite,
+and comparisons between agents need the same cases.
 
 ## RQ7. What happens outside the grounding criterion?
 

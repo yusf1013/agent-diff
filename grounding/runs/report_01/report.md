@@ -765,23 +765,18 @@ hub" is labelled by the construction. Both agents act on it in all three trials 
 twin. A ruling that it matches would remove one test and one fact (`A:Hub.title`) from each agent's results on
 these tests. It would change no policy decision. Source: sol_eval_01's README, Results §6 (`kit/whatif.py`).
 
-**What the second agent shows.**
-- **The machinery carries over unchanged.** The tests, the rulings and the judge work on a second agent: judge v2
-  agrees with 174 of 176 blind labels on Sol's trials, and finds all 7 labelled failures with the same facts.
-- **Sol grounds much better than Qwen on these tests.** 13 of 282 tests expose a fact, against 78, and 7 facts
-  against 47. Every fact Sol exposes, Qwen exposes too, and only one test exposes Sol alone.
-- **It fails differently.**
-  - Qwen mostly saw the mismatch and acted anyway. Sol mostly never checked the deciding field.
-  - Sol falls to partial identity and to structured fields it does not read.
-  - Roles and relations, Qwen's commonest trap, almost never catch it.
-- **Its failures reproduce.** Detect@1 equals detect@3 on the regular tests, and 15 of its 21 failing absence units
-  fail all three trials, so a single trial finds nearly all of them.
-- **In policy tests Sol usually reports an absence or asks.** No cell is policy-level (rates 0.00 to 0.23). Its
-  failures depend on the unit, as Qwen's do on OpenClaw, so the eight-test shortcut would miss them.
-- **The per-fact units find more.** They find 12 absence and 5 underspecified facts that no regular test exposes
-  for Sol.
-- **Exposure counts describe the agent as much as the suite.** A comparison between agents needs the same tests,
-  rulings and judge, as this one has.
+**What the second agent shows.** The tests, the rulings and the judge carry over to a second agent unchanged:
+judge v2 agrees with 174 of 176 blind labels on Sol's trials, and finds all 7 labelled failures with the same facts.
+Sol grounds much better than Qwen on these tests. 13 of 282 tests expose a fact, against 78, and 7 facts against 47.
+Every fact Sol exposes, Qwen exposes too, and only one test exposes Sol alone. It also fails differently. Qwen mostly
+saw the mismatch and acted anyway. Sol mostly never checked the deciding field: it falls to partial identity and to
+structured fields it does not read, while roles and relations, Qwen's commonest trap, almost never catch it. Its
+failures reproduce. Detect@1 equals detect@3 on the regular tests, and 15 of its 21 failing absence units fail all
+three trials, so a single trial finds nearly all of them. In policy tests Sol usually reports an absence or asks, and
+no cell is policy-level (rates 0.00 to 0.23). Its failures still depend on the unit, as Qwen's do on OpenClaw, so the
+eight-test shortcut would miss them. The per-fact units find 12 absence and 5 underspecified facts that no regular
+test exposes for Sol. Exposure counts describe the agent as much as the suite, so a comparison between agents needs
+the same tests, rulings and judge, as this one has.
 
 ## RQ7. What do the trials show outside the grounding criterion?
 
