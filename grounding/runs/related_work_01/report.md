@@ -10,8 +10,8 @@ theirs, from their papers or repositories, checked on 2026-09-30; numbers about 
 - **2026-09-30, done:** the map (12 angles, 6 of them new), cards for 69 works in 35 blocks, the verdict table, two pilots on existing
   evidence (no model calls), the projection plan, the baseline proposals, the claims file ([claims.md](claims.md):
   every claim about another work, quoted from its source with the fetch date).
-- **2026-09-30, phase 2:** the four arms that need no decision are built (§5.6). S1 and B2 are done. B1's 48 selected
-  items and P1's matched 48 variants run on the self-hosted Qwen at the lead's request.
+- **2026-09-30, phase 2:** the four arms that need no decision are done (§5.6). B1's 48 selected items and P1's matched
+  48 variants ran on the self-hosted Qwen at the lead's request; the results are in §5.7.
 - **Blocked:** nothing.
 
 ## Summary
@@ -706,10 +706,10 @@ ours.
 
 | Arm | State | Where | Items |
 |---|---|---|---|
-| **P1**, Agent-Diff's tests mutated | Built and reviewed; the matched 48 running (judge v2 in policy mode, on Muse) | [p1/](p1/README.md) | 350 valid variants; 48 chosen by stated rules ([p1_selection.json](p1/runs/p1_01/p1_selection.json)) |
+| **P1**, Agent-Diff's tests mutated | Done: the matched 48 run and judged (§5.7) | [p1/](p1/README.md) | 350 valid variants; 48 chosen by stated rules ([p1_selection.json](p1/runs/p1_01/p1_selection.json)) |
 | **B2**, the abstention suites projected | Done (reading) | [b2/](b2/README.md) | 2,843 items, nearly all "no operation" of the tool-withheld kind |
 | **S1**, the shortcut check on Agent-Diff's seeds | Done (no model) | [s1/](s1/README.md) | 60 plural obligations accounted for; 3 of 15 practical shortcuts defeated; 152 of 210 targets unnoticed if omitted |
-| **B1**, masking an operation | Built and checked; the 48 selected running (boundary_02's oracle) | [b1/](b1/README.md) | 71 items, 48 selected |
+| **B1**, masking an operation | Done: the 48 selected run and graded (§5.7) | [b1/](b1/README.md) | 71 items, 48 selected |
 
 The corrections to §5.3's S1 row: the arm used the obligation cards' plural obligations, not the suite's
 "multi-entity" label, and Calendar is out (no cards). The measures are those of s1/README.md.
@@ -786,6 +786,49 @@ validation error are read as a broken environment, and the agent keeps probing.
 - The harnesses differ, so the comparison is indicative. The case for keeping both kinds of test stands on the
   kinds of behaviour, not on the rates.
 
+**P1, Agent-Diff's tests mutated** ([p1/](p1/README.md)):
+- **What ran:** the matched 48 variants (24 absence, 24 underspecified), 3 trials each, on OpenClaw with the
+  self-hosted Qwen, graded by triage plus judge v2 in policy mode on Muse. The matched 48 differ from the plan because
+  only 11 underspecified variants grade cleanly (p1/README.md).
+- **Reading B (primary)** takes four variants from their rerun (p1_01_fix). In those variants my seed gave the copied
+  issue the identifier the replica hands the team's next issue, so creating issues there failed. **Reading A** keeps
+  their first trials as artifacts (void).
+- **Also recorded:** 5 attempts broken by the backend freeze and 3 cut off when the runner stopped were rerun by the
+  runner's retry.
+
+| Cell | P1, reading B | P1, reading A | Ours: 6a policy population (same agent) | baselines_01 |
+|---|---|---|---|---|
+| Absence, all | **34 of 72 trials fail**; 14 of 24 variants fail at least once | the same | – | presupposing tests: N0 10 of 27 trials, 5 of 9 tests; N1 6 of 24, 2 of 8 |
+| Absence: Box / Linear / Slack | 14/24, 7/24, 13/24 trials | the same | 126/165, 160/263, 75/125 trials | – |
+| Underspecified, all | **64 of 72 trials fail**; 23 of 24 variants | 52 of 60 usable (12 void); 19 of 24 | – | none written |
+| Underspecified: Box / Linear / Slack | 6/6, 29/33, 29/33 trials | 6/6, 17/21, 29/33 | 65/136, 83/205, 63/82 trials | – |
+
+- **How they fail:**
+  - **Absence:** the agent re-creates the missing record (a new "investments" folder, hub, Engineering team or
+    #engineering channel), or acts on a natural near miss in Agent-Diff's seed (the misfiled copy of the crisis
+    notes; #project-alpha for #project-alpha-dev). Or it runs out the budget.
+  - **Underspecified:** the agent notices the second match, picks the "primary" one and discloses it afterwards.
+    Under our judge's rule that is a failure (it should ask first).
+- **Two caveats on the underspecified mode:**
+  - **Six of its 24 variants are key-only duplicates**: Linear issues identical except for their id and identifier.
+    P1's review meant to exclude such copies as contested; "identifier" was missing from its list of key-like fields.
+    Without them: 50 of 54 trials fail, 18 of 18 variants.
+  - **P1's copies are exact or near-exact duplicates.** Our underspecified units open one condition at a time, so
+    the agent has less to notice.
+- **Units:** the 48 reach 31 fact–mode requirements by occurrence, and 21 fail at least once (absence 8,
+  underspecified 13). P1 designs no near misses, so under our credit rule it exposes no facts, as N0 and N1 did. Its
+  failures are request-level policy failures. That is the gap between the units the report predicted (§5.2).
+- **The judge:** judge v2 agrees with my 60 blind labels on the final outcome in 59 cases (54 on the raw outcome).
+  - The raw differences: 4 timeouts I left not established, where the judge graded the state (failures either way
+    under the budget rule); and 2 seed-flaw artifacts the judge graded on the agent's intent.
+  - The final difference is a trial that probed the backend directly, which my label missed; the rule fails it.
+  - On the rerun's 4 labelled trials it agrees on all 4.
+- **Cost:** judge v2 on Muse, $7.12 at list price for 156 judged trials. The solver is the self-host, with no charge.
+- **Found on the way:**
+  - the counter flaw in my P1 seeds (fixed; the four variants rerun);
+  - a backend freeze caused by a lock in one Linear environment (a platform defect, reported);
+  - 2 of 156 attempts probed the backend directly.
+
 **S1** ([s1/](s1/README.md)), done without a model:
 - Agent-Diff's seeds defeat **3 of the 15** practical lazy shortcuts our automation defeats on Slack, Box and Linear
   (it defeats all 19, Calendar's four included).
@@ -795,9 +838,6 @@ validation error are read as a broken environment, and the agent keeps probing.
 **B2** ([b2/](b2/README.md)), reading: the abstention suites' 2,843 boundary-type items are nearly all "no
 operation" of the tool-withheld kind. Read-only fields, permissions and state preconditions, 76 of our 93 faithful
 elements, have no counterpart.
-
-**P1** ([p1/](p1/README.md)): built and ready: the matched 48 as cases, with the blind sample drawn. It waits for the
-host after B1.
 
 ## 6. What we do that they cannot
 

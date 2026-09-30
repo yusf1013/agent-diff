@@ -128,6 +128,21 @@ underspecified ones are 11 clean, 2 separable and 11 shared ([p1_selection.json]
 blind sample (60 of 144 trials, [eval/blind_p1_01.json](eval/blind_p1_01.json)) was drawn from the cases folder
 before the run. It checks judge v2 on the shared tier in particular.
 
+**Results** ([report.md](../report.md) §5.7; summary_A.json and summary_B.json):
+- **Absence:** 34 of 72 trials fail; 14 of 24 variants fail at least once.
+- **Underspecified (reading B):** 64 of 72 trials fail; 23 of 24 variants. Without the six key-only Linear
+  duplicates: 50 of 54.
+- **Judge v2 against the 60 blind labels:** 59 of 60 on the final outcome.
+- **Cost:** $7.12 list on Muse.
+
+**Record of the run:**
+- **A construction flaw in my seeds.** A copied Linear issue did not advance the team's issue counter, so creating an
+  issue in that team collided with the copy's identifier. Four variants were affected; their trials are artifacts,
+  and they were rerun as p1_01_fix after materialize.py was repaired.
+- **The backend froze once.** A lock in one Linear environment froze it; 5 attempts were retried.
+- **The runner stopped** at its background time limit; 3 attempts were retried.
+- **Two attempts probed the backend directly.**
+
 ## Files
 
 | Path | What |

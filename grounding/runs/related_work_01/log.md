@@ -223,3 +223,16 @@ is reported, not fixed.
 - **P1 (p1_01):** the matched 48 differ from the plan (24 absence; 24 underspecified, graded by tiers), because 67
   of 78 valid underspecified variants sit in tests that change several records of one kind. The cases install and
   render in judge v2's bundle. The blind sample (60) is drawn. It waits for the host.
+- **B1 finished** after the lead resumed it: 47 of 144 trials pass as run, 50 of 144 with the 12 host-load trials
+  rerun on a quieter host (3 of the 12 then pass). 40 of 48 items fail at least once. The oracle agrees with all 30
+  blind labels.
+- **P1 ran:** 144 trials plus the 12-trial fix run.
+  - Absence: 34 of 72 trials fail. Underspecified: 64 of 72 fail (reading B).
+  - Judge v2 agrees with 59 of 60 labels on the final outcome. Muse cost $7.12 list.
+- **Found in P1:**
+  - the counter flaw in my Linear copies (fixed; four variants rerun);
+  - a backend freeze from a lock in my own trial's environment (its stale session terminated; a platform defect,
+    reported);
+  - the runner stopped at its time limit (3 attempts retried);
+  - six underspecified variants are key-only duplicates that P1's review meant to exclude ("identifier" missing from
+    its key-like fields). They are reported apart.

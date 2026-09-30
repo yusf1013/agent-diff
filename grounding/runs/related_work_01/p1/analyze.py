@@ -46,17 +46,39 @@ def outcome(verdict: dict, att: Path) -> str:
     return COLLAPSE.get(verdict.get("outcome"), "void")
 
 
-def main():
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--verdicts", type=Path, required=True)
-    args = ap.parse_args()
-    cases = {p.stem: json.loads(p.read_text()) for p in (RUN / "cases").glob("*/*.json")}
+# The four underspecified Linear variants whose copied issue took the identifier the replica gives the team's next
+# issue (a construction flaw, p1_01_fix/README.md): their p1_01 trials are artifacts of the seed. Reading A keeps them
+# as artifacts (void); reading B takes their reruns with repaired seeds.
+FLAWED = {"U-P1-U-linear_38-O1", "U-P1-U-linear_45-O2", "U-P1-U-linear_47-O2", "U-P1-U-linear_56-O3"}
+
+
+def load(verdict_dir: Path) -> dict:
     rows = {}
-    for path in sorted(args.verdicts.glob("*/*/*/verdict.json")):
+    for path in sorted(verdict_dir.glob("*/*/*/verdict.json")):
         v = json.loads(path.read_text())
         run, trial, cid = v["key"].split("/")
         rows[(trial, cid)] = {"verdict": v.get("outcome"), "outcome": outcome(v, Path(v["attempt"])),
                               "judge": COLLAPSE.get(v.get("outcome"), "void"), "note": v.get("note", "")[:200]}
+    return rows
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--verdicts", type=Path, required=True)
+    ap.add_argument("--fix-verdicts", type=Path)
+    ap.add_argument("--reading", choices=("A", "B"), default="A")
+    args = ap.parse_args()
+    cases = {p.stem: json.loads(p.read_text()) for p in (RUN / "cases").glob("*/*.json")}
+    rows = load(args.verdicts)
+    for key in list(rows):
+        if key[1] in FLAWED:
+            rows[key] = {**rows[key], "outcome": "void"}  # reading A: an artifact of the seed
+    for trial in ("t1", "t2", "t3"):  # attempts the runner could not finish (the backend freeze): void in A
+        for cid in FLAWED:
+            rows.setdefault((trial, cid), {"verdict": None, "outcome": "void", "judge": "void",
+                                           "note": "infrastructure error (the backend freeze)"})
+    if args.reading == "B" and args.fix_verdicts:
+        rows.update(load(args.fix_verdicts))
     groups = defaultdict(lambda: defaultdict(dict))
     for (trial, cid), r in rows.items():
         c = cases[cid]
@@ -99,7 +121,8 @@ def main():
         out["judge vs hand labels"] = {"labelled": len(pairs), "agree": sum(a == b for _, a, b in pairs),
                                        "disagreements": [{"trial": k, "label": a, "judge": b} for k, a, b in pairs
                                                          if a != b]}
-    (HERE / "summary.json").write_text(json.dumps(out, indent=1) + "\n")
+    out["reading"] = args.reading
+    (HERE / f"summary_{args.reading}.json").write_text(json.dumps(out, indent=1) + "\n")
     print(json.dumps(out, indent=1))
 
 
