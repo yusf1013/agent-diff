@@ -112,7 +112,7 @@ section. Decisions that stand go to the [roadmap](roadmap.md); this is the recor
   suite, the only same-harness comparison; or Claude Code's loop at $0); the Codex weekly window at 71%, reset
   2026-10-03 15:17 EDT, shared with the Sol round. Assigned next: Claude Code as a backend of our runner and a
   32-test Sonnet pilot (claudecode_pilot_01).
-- 01:35 the Sol policy units now run once each first, then trials 2 and 3, because of the plan's window.
+- 01:22 the Sol policy units now run once each first, then trials 2 and 3, because of the plan's window.
 - 01:4x sol_score, regular_p4 scored (provisional, 6 of 444 trials pending the retry pass): **Sol exposes a fact in
   5 of 148 Phase 4 tests, against Qwen's 47 on the same tests; 3 facts at detect@3 and detect@1 against Qwen's 26
   and 20.** Every test Sol exposes, Qwen exposes too (A:Message.blocks in G4-SLK-04's three forms, A:Event.summary,
@@ -123,16 +123,16 @@ section. Decisions that stand go to the [roadmap](roadmap.md); this is the recor
   round: in the openai backend `memory_search` fails ("agent database belongs to agent main; requested agent
   assistant") because the login store copied into the attempt's agent directory carries the main agent's identity;
   Sol called it in 110 of 444 trials; no grounding outcome changes.
-- 02:00 report_01/numbers rebuilt in full after the two rulings (the values session, now on the report update,
+- 01:29 report_01/numbers rebuilt in full after the two rulings (the values session, now on the report update,
   found it half-rebuilt): the final manifest is 998 cases and 2,994 executions (563 regular tests; 242 absence and
   193 underspecified units). The report texts are being re-synced to it.
-- 02:1x harness (commit c6210f8594): a Claude Code backend with OpenClaw's contract (claudecode_pilot_01/backend.py,
+- 01:32 harness (commit c6210f8594): a Claude Code backend with OpenClaw's contract (claudecode_pilot_01/backend.py,
   run.py reusing openclaw_eval_01's selection): two smoke runs in 12–13 s, the context date matching each test's
   clock, no MCP servers, no leaks, no account email. Authentication for tonight, approved by the lead for the pilot
   only: the login's access token read at launch into an environment variable, never written, the refresh token
   never read, runs refused near expiry; a full round waits for the PI's `claude setup-token`. Next: the 32-test
   pilot with Sonnet 5.5, its 32 trials blind-labelled, judge v2 on Muse (cap $3).
-- 02:2x regen (commit a3deb4e781; merged into main as 7dfd8ab40e, with both sets of near-miss rulings kept in
+- 01:37 regen (commit a3deb4e781; merged into main as 7dfd8ab40e, with both sets of near-miss rulings kept in
   known_defects.json): 33 of 35 briefs accepted on the first draw (G4-LIN-30 and G4-SLK-18 rejected by the cold
   reader as unnatural; a second draw each allowed); 202 Muse calls, $25.45 list, $1.50 billed. Review of the 33:
   24 valid, 5 weak but valid, 4 flawed but usable; 5 of 130 near misses flawed (group B, under the 09-28 rulings);
@@ -144,6 +144,6 @@ section. Decisions that stand go to the [roadmap](roadmap.md); this is the recor
 - 01:36–01:40 **an incident of my making:** while I merged exp/regen-01 into main, roadmap_01/known_defects.json
   held merge-conflict markers for a few minutes; the runner reads that file per attempt, so 262 of the 6b regular
   jobs failed instantly with a JSONDecodeError and the run ended early (145 6b attempts completed and sound). The
-  missing jobs were restarted at 02:35 (runs/run_regular_6b_rest.sh, concurrency 6, beside the policy pass). Lesson
+  missing jobs were restarted at 01:42 (runs/run_regular_6b_rest.sh, concurrency 6, beside the policy pass). Lesson
   recorded for the briefs: never resolve a merge conflict in the main checkout while runs read the file; merge in a
   worktree, or stop the runs first.
