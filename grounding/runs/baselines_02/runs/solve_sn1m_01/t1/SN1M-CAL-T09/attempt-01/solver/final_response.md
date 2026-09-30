@@ -1,0 +1,1 @@
+Done. There were four "Kickoff call" events on Wednesday (June 20), but the one Maya created and Priya organizes was the 9:00–10:00 AM one — I renamed it to **"Kickoff call - confirmed"**. The other three (created by Priya, or organized by Maya herself) are untouched.

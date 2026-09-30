@@ -1,0 +1,1 @@
+Done — renamed the Tuesday 11:00am Team sync (Cedar room, the one showing as free/transparent) to **"Team sync (open door)"**. The other Tuesday syncs (9am Cedar, 2pm and 4pm Orchid) were left untouched.

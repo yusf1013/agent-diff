@@ -1,0 +1,1 @@
+Done. There were four "Pricing Sheet" files, but only one had a shared link — **Pricing Sheet.xlsx** in the **Partners** folder (open access). I posted the comment **"Link expires Friday"** on it (comment ID 854579881).

@@ -1,0 +1,1 @@
+Done. There were 4 "Pricing Sheet" files in the workspace, but only one had a shared link: **Pricing Sheet.xlsx** in the Partners folder (shared link: `https://app.box.com/s/4522`). I posted the comment "Link expires Friday" on it (comment ID 202028284).

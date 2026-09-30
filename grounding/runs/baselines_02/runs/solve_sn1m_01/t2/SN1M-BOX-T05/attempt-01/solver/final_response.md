@@ -1,0 +1,1 @@
+Done — replied "Unblocked now, legal signed off" on **Release Plan.docx**, on the original "Can we ship on Friday?" comment (id 48203) that Leo Park answered with "Blocked on legal". Reply posted as comment id 875954757.

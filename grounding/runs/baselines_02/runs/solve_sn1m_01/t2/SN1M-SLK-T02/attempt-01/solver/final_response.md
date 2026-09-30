@@ -1,0 +1,1 @@
+Done. Found the Release 4.2 sign-off message with the Approve button (there were three similar messages in #releases — the other one had a "Details" button) and added the :heart: reaction to the right one. ✅
