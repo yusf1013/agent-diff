@@ -105,6 +105,29 @@ unique, and most of the rest are key-only duplicates that do not test the policy
 Throughput and judge rates are scaled from baselines_01 (about 1,700 trials in 5–7 hours at 12 in flight; judge v2
 reads about 45% of trials at $0.028 list). **No decision is needed to run it**, except the budget.
 
+## The run (2026-09-30, at the lead's request): p1_01
+
+**Why the matched 48 differs from the plan.** The plan said 8 variants per service and mode. Grading decides the
+shape:
+- The triage (judge v2's first step) tells which record an action touched from the state: the obligation's written
+  table and the column that points at its referent ([run_prep.py](run_prep.py)).
+- A variant grades cleanly only when no other part of the same request writes that table. Otherwise another part's
+  legitimate change reads as a substitute.
+- **67 of the 78 valid underspecified variants fail that test.** Their tests change several records of one kind
+  (several issues, several messages). Box has no underspecified variant that qualifies at any tier except the two
+  shared ones.
+
+The selection was fixed before the run:
+- state-changing and attributable variants only;
+- within each cell, clean ones first, then separable ones (other parts write other columns; the effect counts only
+  this obligation's columns), then shared ones;
+- every case lists the test's other obligations as context references for judge v2's bundle.
+
+**The 48:** 24 absence (8 per service, all clean) and 24 underspecified: Slack 11, Linear 11, Box 2. By tier, the
+underspecified ones are 11 clean, 2 separable and 11 shared ([p1_selection.json](runs/p1_01/p1_selection.json)). The
+blind sample (60 of 144 trials, [eval/blind_p1_01.json](eval/blind_p1_01.json)) was drawn from the cases folder
+before the run. It checks judge v2 on the shared tier in particular.
+
 ## Files
 
 | Path | What |
@@ -114,4 +137,5 @@ reads about 45% of trials at $0.028 list). **No decision is needed to run it**, 
 | [review_slack.py](review_slack.py), [review_box.py](review_box.py), [review_linear.py](review_linear.py), [review.py](review.py) | The manual verdicts and their reasons; `review.py` writes [review.jsonl](review.jsonl) and prints the funnel |
 | [facts.py](facts.py), [facts.json](facts.json) | Catalog facts per valid variant |
 | [materialize.py](materialize.py) | A variant's seed; `--check-all` builds every valid one |
+| [run_prep.py](run_prep.py), [blind_sample.py](blind_sample.py) | The matched selection as cases our runner and judge v2 read; the blind sample's drawer |
 | [schema_dump.py](schema_dump.py), [schemas.json](schemas.json) | Keys, unique constraints and foreign keys of the three replicas (dumped with the backend's interpreter) |
