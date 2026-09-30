@@ -3,22 +3,57 @@
 *Kept by the lead session ("RoadMap specialist") while the PI was away. Newest entries at the bottom of each
 section. Decisions that stand go to the [roadmap](roadmap.md); this is the record of what happened.*
 
-## For the PI in the morning
+## For the PI in the morning (written 05:40; the session log below has every detail)
 
-1. **The Sonnet round cannot run on the plan in OpenClaw's own loop** (the `harness` session's survey, sections 1–3
-   of `grounding/runs/harness_scout_01/report.md`): Anthropic allows plan usage only inside Claude Code's binary;
-   third-party loops with Claude logins are prohibited or billed per token. OpenClaw's "claude-cli" backend is
-   Claude Code's loop with OpenClaw's prompt appended. The choice: OpenClaw's own loop with an API key (about $263
-   for the full suite at list price, about half for the Muse-written half), or Claude Code's loop on the plan. The
-   Sol round is within terms: OpenAI's "Sign in with ChatGPT" (DevDay, 2026-09-29) names OpenClaw.
-2. **This machine's Claude login reports a Pro plan, not Max.** If you upgraded, log in again; it decides a Sonnet
-   round's quota.
-3. **16 G4-LIN-08 tests and units** are clocked to 2026-10-16, after the OpenAI login's expiry, and cannot run on
-   the plan as they are (shift the scenario's dates, or an API key).
-4. **Two of the three F0 lures are flawed under your 09-28 rulings** (a cycle named "Cycle 4"; Slack's blocks), so
-   those facts keep plain near misses; the blind review's later "Cycle 4 needs the number" adjudication conflicts
-   with the first ruling.
-5. **A framing proposal** for your point 5: [framing_proposal.md](framing_proposal.md).
+**Results**
+1. **GPT-6.1 Sol on OpenClaw, the Muse-written half** (`sol_eval_01`, scored by the `sol_score` session, final numbers
+   pending its last pass): Sol exposes a fact in 13 of 282 regular tests against Qwen's 78 on the same tests; 7 facts at
+   detect@3 against 47; every fact Sol exposes, Qwen exposes too. No run over budget; a median 42 s per run against
+   174 s. Judge v2 agrees with 87 of 89 blind labels (the two differences are tests your blind-review rulings make
+   flawed). Policy sets: run 3 trials each, judged; decisions pending. 16 G4-LIN-08 tests and units could not run
+   (clocked past the login's expiry).
+2. **The judge on the self-hosted Qwen meets the bar** (`judge_qwen_01`): 0 missed of 192 labelled failures (1 under the
+   any-reason reading), precision 97.4% against Muse's 98.0%, the same verdict on 440 of 443 and the same facts on
+   every joint failure, at $0 per token (3.5 GPU-hours) against $13 list for Muse. The judges fail differently: Muse
+   credits unsent conclusions (harmless under the budget), Qwen calls real failures artifacts where the replica notes
+   are silent (three candidate note additions). The full replay is 680 of 1,696 done, paused for host capacity.
+3. **Failures beyond fact discrimination** (`values_01`): 179 of 3,018 executions carry a finding the grounding verdict
+   cannot see, 52 of them passing grounding; literal values are always copied right, the errors are interpretations
+   (Linear's priority scale above all); 96 replies state a value other than the one written; 14 executions fabricated
+   the identifying evidence. Mechanical checks at precision 1.00; a value-layer proposal.
+4. **Related work** (`related_work_01`): 69 works, 12 angles; concurrent work names our failure class (Entity Binding
+   Failures, arXiv 2606.30531) and agrees with our look-alike results; ClawEnvKit is the generator baseline to run;
+   Agent-Diff's served evaluation has no closed-world check; the credit rule's ancestor is Zhong, Yu and Klein 2020.
+   Four baseline preparations built (P1, B2, S1, B1); B1 running.
+5. **The second harness** (`harness_scout_01`, `claudecode_pilot_01`): Claude Code, with Sonnet 5.5 on your plan and the
+   self-hosted Qwen, both run end to end; a 32-test Sonnet pilot: 2 failures, judge 32 of 32, 13 s per run, $0. On
+   the same 32, Sol had none.
+6. **The regenerated half** (`regen_01`): 34 of 35 briefs accepted, 337 tests, covering 76 of the briefs' 82 facts and
+   74 of Sonnet's 81; runs on Qwen in progress (about half of the regular set at 05:36).
+7. **Naive baselines with Sonnet 5.5** (`baselines_02`): generated and reviewed (109 of 116 valid; more designated near
+   misses than Muse's twins, still no probes); runs paused at 96 of 267 for host capacity; the first target-present
+   exposure by a naive baseline seen.
+8. **Transfer to the real services** (`transfer_feasibility_01`): 37 tests run as is, 403 with test accounts, 476 with
+   a stated change, 90 not on ordinary accounts; a 40-test case study proposed at $0 in plans.
+9. The 10-minute budget applied everywhere; both report texts brought to the current numbers (998 cases, 2,994
+   executions after two of your blind-review rulings reached the rulings file); a framing proposal for your point 5.
+
+**Decisions for you**
+1. The Sonnet round: OpenClaw's loop on an API key (about $263 list for the full suite, the only same-harness
+   comparison) or Claude Code's loop on the plan ($0; needs a `claude setup-token` from the plan that is really Max:
+   this machine's login says Pro).
+2. The timeout rule under a shared host: regen and the baseline arms lost trials to host load (24–67 s per request);
+   they are kept apart and rerun on a quiet host, both readings reported.
+3. Rulings: the three "word in a sibling field" cases; "Atlas Onboarding Archive" for "the Atlas Onboarding hub";
+   AR-BOX-24's run-date dependency; the conflict between the 09-28 "Cycle 4" ruling and the blind review's.
+4. Baseline budgets: ClawEnvKit (48 tasks, about $5–7 list, 2 days of adapters); the full Agent-Diff projection.
+5. Harness hardening: attempts run as you with a shell; a future round should use a restricted user or a container
+   (the main rounds are clean: no bypass produced a pass).
+
+**Open**
+- The 16 G4-LIN-08 tests (shift the scenario's dates, or an API key).
+- trojai3's GPUs are still taken; Qwen serves from trojai4's two PCIe copies, which cannot carry three solver arms.
+- Five replica findings from values_01 and two from the baseline arms (on the replica list, not fixed).
 
 ## What ran
 
