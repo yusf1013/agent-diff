@@ -19,7 +19,13 @@ import random
 import sys
 from pathlib import Path
 
-from grounding.runs.autogen_01.kit.bundle import compact_row
+
+
+def compact_row(row: dict, limit: int = 900) -> str:
+    """A row as JSON, empty values left out (unlike the judge bundle's, no field is dropped as boilerplate)."""
+    keep = {k: v for k, v in row.items() if v not in (None, "", [], {}, "[]")}
+    text = json.dumps(keep, ensure_ascii=False, default=str)
+    return text if len(text) <= limit else text[:limit] + "…"
 
 HERE = Path(__file__).resolve().parent
 OC = HERE.parent / "openclaw_eval_01" / "runs"
