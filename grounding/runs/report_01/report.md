@@ -878,7 +878,7 @@ mechanisms on every failing trial it reads ([numbers/exposure.json](numbers/expo
 | Unit | Cost |
 |---|---:|
 | Accepted scenario (writer and reader) | $0.62 (Phase 4), $0.82 (6b); ($0.035, $0.046) |
-| Valid regular test | $0.125 ($0.007) |
+| Valid regular test | $0.126 ($0.007) |
 | Judge v2 verdict on an OpenClaw trial | $0.029 ($0.002) |
 | Judging per OpenClaw trial run (4,464) | $0.020 ($0.0014) |
 | Baseline test (B1, B2), for comparison | $0.011 to $0.014 at list |

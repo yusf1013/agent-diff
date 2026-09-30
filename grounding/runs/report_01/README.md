@@ -388,8 +388,9 @@ and decisions; its `valid` keeps both cases of each duplicate pair (Linear and S
   K2.7 Code $141.42 → $140.30; Kimi K3 $370.65 → $367.70; GLM-5 $139.11 → $138.00; GLM-5.1 / 5.2 / 5.3 $187.39 →
   $185.90; GLM-5.3 Flash $21.06 → $20.89; MiniMax M2.5 $36.49 → $36.20; M2.7 $46.37 → $46.00; M3 $44.05 → $43.70;
   hosted Qwen3.8-27B $83.07 → $82.41. Rates and their check date unchanged.
-- report.md §0.4 and §12 unchanged: `numbers/scale.json`, `qwen_usage.json` and `costs.json` count every run, which
-  the rulings do not change.
+- report.md §12's unit cost "Valid regular test $0.125 ($0.007)" → $0.126 ($0.007), as in RQ3 (`numbers/costs.json`,
+  $36.74 and $2.08 over Muse's 292 valid regular tests). The rest of report.md §12 and §0.4's tables are unchanged:
+  `numbers/scale.json`, `qwen_usage.json` and `costs.json` count every run, which the rulings do not change.
 
 ### §13 Remaining measurements
 
