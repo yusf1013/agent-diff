@@ -312,7 +312,13 @@ pre-checks and the cold reader, with findings going back to the same writer sess
   neither the Mobile team's group nor a Refund label of that team) and two undeclared near misses (issues with a
   Bug label only). Never retried.
 
-**A test was built, then a ruling left it out (23 items).** A ruling is a decision, recorded in
+**A test was built, then a ruling left it out (23 items).** All 23 had passed every automated stage (the writer's
+checks, the replica pre-checks, the cold reader, the derivation and its witness check); what left them out is manual
+review, by the PI or by a session (a Claude agent's review counts as manual, the PI's rule). 5 of them ran and were
+judged before the ruling (the two blind-review rulings; their trials are voided); 18 were left out before they ran
+(the regeneration's cut, the completion and Muse studies' pre-run reviews, and three tests the runner left out at
+run time when the "Marcus Webb Jr" ruling arrived after the cut). By origin: 5 the PI's own rulings, 9 the PI's
+rulings of 2026-09-28 applied by agents to later scenarios of the same kind, 9 agents' own reviews. A ruling is a decision, recorded in
 `runs/roadmap_01/known_defects.json`, that a near miss does not differ from the request the way the writer
 claimed, or that a variant is invalid; the scoring then leaves out every test holding that near miss and voids any
 trial that acted only on it. The rulings here, by who made them:
