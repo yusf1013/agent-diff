@@ -91,6 +91,31 @@ def first_attempt_reason(run_dirs, case_id, trial):
     return "?"
 
 
+def single_scenarios(designated, test_meta, rows_by_scenario):
+    """(domain, fact) -> the scenario whose single-decoy probes count for the fact: the designated packed probe's
+    scenario; for a fact without one, its own brief's usable Muse scenario that holds a valid probe for it."""
+    brief_facts = defaultdict(set)
+    for p in ("autogen_01/inputs/briefs_arm_r.json", "autogen_01/inputs/briefs_arm_p.json", "autogen_02/inputs/briefs_phase4.json",
+              "completion_01/inputs/briefs_6b.json", "regen_01/inputs/briefs_regen.json"):
+        for b in load(RUNS / p):
+            for f in b["facts"]:
+                brief_facts[(b["domain"], base_fact(b["domain"], f))].add(b["scenario_id"].replace("AP2-", "AP-"))
+    regen_brief = {b["scenario_id"]: (b.get("sonnet") or [b["scenario_id"]])[0].replace("AP2-", "AP-") for b in load(RUNS / "regen_01/inputs/briefs_regen.json")}
+    out = {}
+    for key, sid in designated.items():
+        if key.startswith("probe "):
+            _, d, f = key.split(" ", 2)
+            out[(d, f)] = sid
+    seen = {(meta["domain"], f) for meta in test_meta.values() if meta["form"] == "probe" for f in meta["facts"]}
+    for (d, f) in sorted(seen - set(out)):
+        cands = sorted(s for s, ids in rows_by_scenario.items() if s.startswith("G4-")
+                       and (regen_brief.get(s, s) in brief_facts.get((d, f), ()) or s in brief_facts.get((d, f), ()))
+                       and any(test_meta[c]["form"] == "probe" and f in test_meta[c]["facts"] for c in ids))
+        if cands:
+            out[(d, f)] = cands[0]
+    return out
+
+
 def attempts_per_trial(run_dirs, case_ids):
     """case -> {trial: number of attempt folders}, over the run folders that hold the case."""
     out = defaultdict(dict)
@@ -158,6 +183,7 @@ def main():
     missing = [k for k, v in designated_probe.items() if v is None]
     print(f"designated probes resolved: {sum(1 for v in designated_probe.values() if v)} of {len(designated_probe)}; unresolved: {missing}")
     designated_probe_ids = {v for v in designated_probe.values() if v}
+    scenario_for_single = single_scenarios(designated, test_meta, rows_by_scenario)
     des_units = {"absence": {}, "underspecified": {}}
     for key, uid in designated.items():
         form, d, f = key.split(" ", 2)
@@ -210,12 +236,9 @@ def main():
         from grounding.runs.denominator_01.kit.single_decoy import prescribed as _prescribed
         tracked_ids = set(designated_probe_ids)
         for cid, meta in test_meta.items():
-            if meta["form"] == "cover" and meta["scenario"] in chosen_scenarios:
-                tracked_ids.add(cid)
-        for key, sid in designated.items():
-            if not key.startswith("probe "):
-                continue
-            _, d, f = key.split(" ", 2)
+            if meta["form"] == "cover" and meta["scenario"].startswith("G4-"):
+                tracked_ids.add(cid)                    # one cover per brief: every usable Muse scenario's cover
+        for (d, f), sid in scenario_for_single.items():
             singles = sorted(cid for cid in rows_by_scenario[sid] if test_meta[cid]["form"] == "probe" and f in test_meta[cid]["facts"])
             tracked_ids.update(singles[:_prescribed(d, f)])
         tracked = exposure(tracked_ids)

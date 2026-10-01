@@ -50,7 +50,21 @@ def main():
     gaps = replica_gaps()
     servable = {(d, f) for d in DOMAINS for f in CAT[d] if f not in set(gaps[d])}
     filling = load(HERE / "numbers/filling.json")["final+retry"]
-    des_scenario = {k.split(" ", 2)[2]: v for k, v in filling["designated_tests"].items() if k.startswith("probe ")}
+    from grounding.runs.denominator_01.kit.outcomes import single_scenarios
+    test_meta, rows_by_scenario = {}, defaultdict(list)
+    for index, folder in SUITES:
+        doc = load(index)
+        for m in (doc["tests"] if isinstance(doc, dict) else doc):
+            if isinstance(m, str):
+                continue
+            case = load(folder / m["domain"] / f"{m['case_id']}.json")
+            if rulings.test_exclusion(case):
+                continue
+            bad = rulings.flawed(rulings.scenario_of(case["case_id"]))
+            test_meta[m["case_id"]] = {"domain": m["domain"], "form": m["form"], "scenario": m["scenario"],
+                                       "facts": {base_fact(m["domain"], c["requirement"]) for ref in case["references"] for c in ref.get("claims", []) if str(c["witness"]) not in bad}}
+            rows_by_scenario[m["scenario"]].append(m["case_id"])
+    des_scenario = single_scenarios(filling["designated_tests"], test_meta, rows_by_scenario)
     chosen = set(des_scenario.values())
     # valid single-decoy probes per (scenario, fact), and the cover's valid decoys
     singles = defaultdict(set)
@@ -70,7 +84,7 @@ def main():
     per_domain = {d: {"prescribed": 0, "built_valid": 0, "filled_capped": 0, "facts": 0} for d in DOMAINS}
     for (d, f) in sorted(servable):
         n = prescribed(d, f)
-        sid = des_scenario.get(f)
+        sid = des_scenario.get((d, f))
         built = len(singles.get((sid, f), set())) if sid else 0
         per_domain[d]["prescribed"] += n
         per_domain[d]["built_valid"] += built

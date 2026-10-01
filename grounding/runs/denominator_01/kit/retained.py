@@ -30,8 +30,7 @@ HERE = Path(__file__).resolve().parents[1]
 def main():
     filling = load(HERE / "numbers/filling.json")["final+retry"]
     designated = filling["designated_tests"]
-    des_scenario = {k.split(" ", 2)[2]: v for k, v in designated.items() if k.startswith("probe ")}
-    chosen = set(des_scenario.values())
+    from grounding.runs.denominator_01.kit.outcomes import single_scenarios
     des_units = {m: set() for m in ("absence", "underspecified")}
     for k, v in designated.items():
         form = k.split(" ", 1)[0]
@@ -62,16 +61,18 @@ def main():
                             dv[base_fact(d, c["requirement"])].add(str(c["witness"]))
                 for f, ws in dv.items():
                     cover_decoys[(m["scenario"], f)] = ws
+    des_scenario = single_scenarios(designated, test_meta, rows_by_scenario)
+    packed_scenario = {tuple(k.split(" ", 2)[1:]): v for k, v in designated.items() if k.startswith("probe ")}
     packed, counted_singles = set(), set()
-    for f, sid in des_scenario.items():
-        d = test_meta[rows_by_scenario[sid][0]]["domain"]
+    for (d, f), sid in packed_scenario.items():
         cands = [c for c in rows_by_scenario[sid] if test_meta[c]["form"] in ("probe", "fact probe") and f in test_meta[c]["facts"]]
         fp = [c for c in cands if test_meta[c]["form"] == "fact probe"]
         if fp:
             packed.add(fp[0])
         elif len(cover_decoys.get((sid, f), ())) == 1 and cands:
             packed.add(cands[0])
-        singles = sorted(c for c in cands if test_meta[c]["form"] == "probe")
+    for (d, f), sid in des_scenario.items():
+        singles = sorted(c for c in rows_by_scenario[sid] if test_meta[c]["form"] == "probe" and f in test_meta[c]["facts"])
         counted_singles.update(singles[:prescribed(d, f)])
     counted_singles -= packed
     kind = {}
@@ -88,6 +89,25 @@ def main():
             kind[cid] = "remaining: packed probe of another scenario for a fact already filled"
         else:
             kind[cid] = "remaining: single-decoy probe beyond the counted ones"
+    # what the "beyond the counted ones" probes are: the fact, its family, whether the probe sits in the fact's
+    # designated scenario (then the writer built more decoys than the catalog names alternatives) or in another
+    # scenario that also claims the fact
+    family_of = {}
+    for index, folder in SUITES:
+        doc = load(index)
+        for m in (doc["tests"] if isinstance(doc, dict) else doc):
+            if not isinstance(m, str):
+                family_of[m["case_id"]] = m.get("family")
+    beyond = []
+    for cid, k in kind.items():
+        if k != "remaining: single-decoy probe beyond the counted ones":
+            continue
+        meta = test_meta[cid]
+        for f in sorted(meta["facts"]):
+            d = meta["domain"]
+            beyond.append({"test": cid, "fact": f, "family": family_of.get(cid), "in_the_designated_scenario": des_scenario.get((d, f)) == meta["scenario"],
+                           "prescribed_for_the_fact": prescribed(d, f) if f in __import__("grounding.runs.denominator_01.kit.single_decoy", fromlist=["CAT"]).CAT[d] else None,
+                           "decoys_in_the_designated_scenario": len(cover_decoys.get((des_scenario.get((d, f)), f), ()))})
 
     # ---- policy units, classified -------------------------------------------------------------------------------
     unit_meta = {}
@@ -154,6 +174,7 @@ def main():
     bsum = load(RUNS / "boundary_auto_01/summary.json")
     result["boundary"] = {"valid_round1": bsum["valid (reader agreed)"], "elements_with_a_failing_trial": bsum["elements with a failing trial"],
                           "harness": "bare toy loop on the self-hosted Qwen (8-minute budget, 40 turns); not run on OpenClaw, not run on Sol"}
+    result["beyond_the_counted_single_decoy_probes"] = beyond
     (HERE / "numbers/retained.json").write_text(json.dumps(result, indent=1) + "\n")
     for agent in ("qwen", "sol"):
         print(f"\n== {agent}")
