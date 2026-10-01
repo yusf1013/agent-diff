@@ -471,3 +471,9 @@ section. Decisions that stand go to the [roadmap](roadmap.md); this is the recor
   earliest attempt with one retry 643; everything on record 667. Two misreadings of mine corrected on the way: the
   09-30 "afternoon decisions" were never the PI's (withdrawn), and the 59 non-faithful boundary elements are 27
   unfaithful, 14 not boundaries, 12 replica gaps and 6 uncertain, not "boundaries the replica does not enforce".
+- 2026-10-01 afternoon **the PI: Muse is the writer** of the main suite; other writers only in a separate comparison.
+  The adopted set is written up in denominator.md ("The adopted set"): 633 of 732 items; on the designated packed
+  probes Qwen exposes 61 facts at detect@3 against 88 over every Muse-written test and 106 over everything on
+  record (22 of the 27 lost facts were exposed only by a single-decoy probe beside the packed one); Sol 10 against
+  13; every policy decision unchanged on the designated units. The 99 unfilled items by cause and the funnel in
+  plain stages are in the same section (`runs/denominator_01/kit/outcomes.py`).

@@ -131,6 +131,9 @@ against that denominator, which is independent of any generation attempt or writ
 - **Several-match: a separate addition, its coverage space to be settled by its own investigation** (the 19
   "shortcuts" are the wrong granularity; the 131 tests followed the covers, not a space; a hiding-place space of
   about 60 was sketched on 2026-10-01 and not adopted).
+- **Muse is the writer of the main suite** (the PI, 2026-10-01 afternoon); other writers only in a separate comparison.
+  The adopted set: the Muse pipeline's attempt per brief with one retry after a failed attempt, one test per item:
+  633 of 732 items filled ([denominator.md](denominator.md), "The adopted set").
 - **The denominator without several-match: 732 cases** = 213 regular probes + 213 absence + 213 underspecified + 93
   boundaries. Cover cases are the sampling vehicle (natural requests, conditions and near misses from which the
   probes and policy tests derive) and are not counted. Every report number is read against these.

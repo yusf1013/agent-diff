@@ -107,13 +107,15 @@ rulings as they stand, whenever the ruling was made):
 
 | Rule | Scenarios | Briefs with no usable scenario | Probe items of 213 | Absence of 213 | Underspecified of 213 | Boundary of 93 | **Filled of 732** |
 |---|---:|---|---:|---:|---:|---:|---:|
-| **A. The Muse pipeline, one attempt, plus one retry after a failed attempt** (Muse for every brief; Sonnet's attempts become the writer comparison) | 86 | 4: the Linear team brief, the Linear issue-count brief, the Box task brief, the Linear label brief | 195 | 187 | 161 | 90 | **633** |
+| **A (adopted). The Muse pipeline, one attempt, plus one retry after a failed attempt** (Muse for every brief; Sonnet's attempts become the writer comparison) | 86 | 4: the Linear team brief, the Linear issue-count brief, the Box task brief, the Linear label brief | 195 | 187 | 161 | 90 | **633** |
 | A without the retry | 83 | 6 (the four, the Box file-location brief, the Calendar event-visibility brief) | 185 | 179 | 154 | 89 | 607 |
-| B. The earliest attempt, plus one retry (Sonnet v1 for the 34 hand-grouped briefs, Muse for the rest) | 86 | 4: the label-parent brief (invalid at review), the Linear issue-count brief, the Box task brief, the Linear label brief | 198 | 191 | 164 | 90 | 643 |
+| B (not adopted). The earliest attempt, plus one retry (Sonnet v1 for the 34 hand-grouped briefs, Muse for the rest) | 86 | 4: the label-parent brief (invalid at review), the Linear issue-count brief, the Box task brief, the Linear label brief | 198 | 191 | 164 | 90 | 643 |
 | B without the retry | 83 | 7 | 188 | 182 | 156 | 89 | 615 |
 | Every attempt on record (production, redundant) | 135 | — | 202 | 197 | 178 | 90 | 667 |
 
-The PI has not yet chosen the rule (2026-10-01). Under either rule the uniformity gap is the same: the two
+**The PI's decision (2026-10-01, afternoon): Muse is the writer of the main suite; other writers only in a separate
+comparison. So rule A is adopted: the adopted set is 86 Muse scenarios, one test per item, 633 of 732 items
+filled.** The uniformity gap: the two
 completion_01 briefs rejected and never retried (the Box task brief, the Linear label brief) get the retry every
 other failed brief got, or are declared failed without one; the outcome-driven round-2 rewordings of ten boundary
 requests do not count (only the one whose round-1 request was invalid is a retry), so boundary results come from
@@ -178,3 +180,95 @@ scenarios); under the PI's rule an invalid test is invalid whenever it shows.
 
 Judge: judge v2 on Muse Spark 1.3 (list prices reported); the self-hosted Qwen replays all 2,115 Muse verdicts at
 98.6% agreement (judge_qwen_01), whether it becomes the judge is the PI's open decision.
+
+## The adopted set against the runs on record (2026-10-01; `runs/denominator_01/kit/outcomes.py` → `numbers/outcomes.json`)
+
+**One attempt, and what a retry is.** One attempt is one writer session on a brief: the writer drafts the scenario,
+code checks it, the replica pre-checks run it, the cold reader reads it; every finding goes back to the same writer
+session (up to 6 check rounds and 2 reader rounds). Those are the internal retries, inside one attempt. A retry in
+the denominator's sense is a fresh writer session on the same brief after an attempt ended without an accepted
+scenario. Five happened (the three failures of the Sept 27 batch, regenerated on Sept 28; two second draws on
+Sept 30), two are owed (the Box task brief and the Linear label brief, rejected on Sept 28 and never retried).
+
+**Redundancy inside the 633.** None by construction: one designated test per item (the 46 spare tests beyond one
+per item are reported apart, with the 86 covers and the 206 single-decoy or unpacked probes). Every designated test
+has three trials on disk for each agent. Attempts replaced for infrastructure reasons, never for the agent's
+result: Qwen, 6 tests (Box tests of the regenerated half whose first attempt failed the environment preflight;
+16 trial-attempts); Sol, 18 tests (a provider error, 14; a provider stall, 4). Trials voided after judging because
+the agent acted only on a near miss later ruled flawed: Qwen 18 trials, Sol 13. Trials ended by the ten-minute
+budget count as failures without exposure (Qwen 25 among the designated probes; Sol none).
+
+**Do the numbers drop?** Yes, and the drop has a cause worth the PI's attention.
+
+| Regular exposure, facts at detect@3 (detect@1) | Qwen | Sol |
+|---|---:|---:|
+| Everything on record, Sonnet's tests included (768 valid tests) | 106 (78) | not run |
+| Every Muse-written valid test (497: covers, packed probes, single-decoy probes) | 88 (62) | 13 (12) |
+| **The designated packed probe per item (195)** | **61 (35)** | **10 (10)** |
+
+Qwen's 27 facts lost between "every Muse test" and the designated probes: 22 were exposed only by a single-decoy
+probe beside the packed one (with all of the fact's decoys present Qwen picks the best match and passes; shown a
+single decoy it acts on it), 3 only by another Muse scenario's test (a tie-break spare), 2 only by a cover. Sol's
+3: two by single-decoy probes, one by a tie-break spare. **So the packed-probe definition costs about a quarter of
+the regular exposures the single-decoy form finds.** The policy cells do not move: on the designated units every
+decision is as published (Qwen: Calendar absence policy-level at 0.889, Box absence 0.781 and Slack underspecified
+0.719 undecided, the five others not policy-level; Sol: all eight not policy-level, rates 0.00–0.17), rates within
+0.03 of the all-units reading.
+
+**The 99 unfilled items, by what happened:**
+
+| What happened | Probe | Absence | Underspecified | Boundary | Items |
+|---|---:|---:|---:|---:|---:|
+| The brief produced no scenario (4 briefs, 11 facts) | 11 | 11 | 11 | — | 33 |
+| A test was built, then a ruling left it out (a near miss ruled flawed, or the variant read as invalid) | 1 | 11 | 11 | — | 23 |
+| No test of the form could be derived from the scenario | 4 | 4 | 30 | — | 38 |
+| Only a single-decoy probe exists for a two-decoy fact (the packed form lost its trap) | 2 | — | — | — | 2 |
+| The cold reader rejected the request | — | — | — | 3 | 3 |
+| **All** | **18** | **26** | **52** | **3** | **99** |
+
+The facts: the four failed briefs are the Linear team (key, description, privacy), the Linear issue count, the Box
+task (item, creator, their binding, assignment count) and the Linear label (group flag, name, team). The rulings
+touch the folder name, the file's parent folder and collections, the folder's description and tags (Box); the
+calendar's title, the list entry's selected and hidden flags and calendar, the event's video link, status, transparency
+and attendee resource (Calendar); the cycle number (Linear); the channel name, the message text, the user's real name
+and username, the member count, the reply count and the workspace role (Slack). No underspecified variant could be
+derived for 30 facts whose condition cannot be dropped and leave a request for one record (the Linear user's flags
+and names, the workflow state's name and type, the Box file's name, extension and tags, the Slack conversation's
+flags and topic, the thread parent, among others). No probe for a comment's file and a milestone's project (their
+near miss loses its trap once the target is gone), a calendar-list entry's selected flag and a message's text.
+
+**The funnel, in plain stages** (Batch 1: Sept 27, the first 32 briefs drawn by rule; Batch 2: Sept 28, the 19
+remaining drawn briefs, the 4 development-fact briefs and the 3 retries of Batch 1's failures; Batch 3: Sept 30, the
+34 hand-grouped briefs regenerated with Muse and 1 new brief, with 2 retries):
+
+| Briefs to scenarios | Batch 1 | Batch 2 | Batch 3 | All |
+|---|---:|---:|---:|---:|
+| Briefs attempted (first attempt) | 32 | 23 | 35 | 90 |
+| Accepted at the first attempt | 29 | 21 | 33 | 83 |
+| Failed at the first attempt | 3 | 2 | 2 | 7 |
+| Retries run (in this batch) | 0 | 3 | 2 | 5 |
+| Accepted at the retry | 0 | 2 | 1 | 3 |
+| Briefs still without a scenario | 0 | 3 | 1 | 4 |
+| Usable after manual review | 29 | 23 | 34 | 86 |
+| Writer versions per accepted scenario, median | 2 | 2 | 2 | 2 |
+| Writer versions per accepted scenario, maximum | 7 | 7 | 9 | 9 |
+
+| Scenarios to tests | Batch 1 | Batch 2 | Batch 3 | All |
+|---|---:|---:|---:|---:|
+| Regular tests derived | 159 | 138 | 216 | 513 |
+| Dropped: the near miss loses its trap without the target | 1 | 1 | 4 | 6 |
+| Left out by a ruling before the runs | 0 | 1 | 7 | 8 |
+| Left out by a ruling after judgment | 0 | 2 | 0 | 2 |
+| Valid regular tests | 158 | 134 | 205 | 497 |
+| Absence tests derived | 61 | 69 | 78 | 208 |
+| Absence tests valid | 60 | 66 | 71 | 197 |
+| Underspecified tests derived | 51 | 51 | 64 | 166 |
+| Underspecified tests valid | 50 | 44 | 58 | 152 |
+
+| Tests to items | Probes | Absence | Underspecified | Boundary | All |
+|---|---:|---:|---:|---:|---:|
+| Prescribed items | 213 | 213 | 213 | 93 | 732 |
+| Valid tests of the form | 205 | 197 | 152 | 90 | 644 |
+| Spare tests beyond one per item | 10 | 10 | 26 | 0 | 46 |
+| Covers and single-decoy probes, reported apart | 292 | — | — | — | 292 |
+| **Items filled** | **195** | **187** | **161** | **90** | **633** |
