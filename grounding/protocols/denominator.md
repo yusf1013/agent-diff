@@ -272,3 +272,104 @@ remaining drawn briefs, the 4 development-fact briefs and the 3 retries of Batch
 | Spare tests beyond one per item | 10 | 10 | 26 | 0 | 46 |
 | Covers and single-decoy probes, reported apart | 292 | — | — | — | 292 |
 | **Items filled** | **195** | **187** | **161** | **90** | **633** |
+
+## Two more denominators, tracked beside the 732 (the PI's proposal, 2026-10-01 afternoon)
+
+- **Covers: one per brief, 90 prescribed** (the 89 briefs plus the new related-issue brief), **86 filled**. For
+  tracking only: the brief set is a sampling choice.
+- **Single-decoy probes: one per (fact, designated alternative), 286 prescribed.** The catalog names each fact's
+  designated alternatives (a sibling field, an indirection, a direction, ...); a fact with none gets one
+  plain-difference probe; a hierarchy, binding or derived fact carries its one lure in its kind. Per service: Box
+  80, Calendar 48, Linear 112, Slack 46. Against it, the adopted set's valid single-decoy probes in each fact's
+  designated scenario, counted per fact and capped at the fact's prescribed number (a built decoy is not labelled
+  with the catalog alternative it realizes): **227 filled** (Box 60, Calendar 40, Linear 93, Slack 34), from 297
+  built. Kit: `runs/denominator_01/kit/single_decoy.py` → `numbers/single_decoy.json`.
+
+## The 99 unfilled items, in full (2026-10-01 afternoon)
+
+**Four briefs produced no scenario (33 items).** Each attempt ran the writer, the code checks, the replica
+pre-checks and the cold reader, with findings going back to the same writer session.
+- *The Linear team brief* (a team's key, description and privacy flag), two attempts, three reader rounds each.
+  Last wording of the first: "Set the priority of the issue on the private team with MOB in its key, described in
+  its team profile as owning offline sync, to High." Of the second: "Please set the 'Login fails on checkout'
+  issue to High priority. It is in the private PAY* team that handles checkout billing." The reader rejected every
+  version as unnatural: a real user names the team; stacking a privacy flag, a key fragment and the description's
+  wording "reads as constructed to force a lookup". The same brief failed the same way with Sonnet. The three
+  facts have no natural single-record request in this pipeline's hands.
+- *The Linear issue-count brief* (the number of open issues of a project or cycle), two attempts, 4 and 7
+  versions. Last wording: "Set the priority of the Done issue assigned to Maya Chen in the Harbor Launch project in
+  the cycle with only two open issues left to High." The checks first caught probes that removed the named project
+  with the target; then the reader rejected every version: identifying a cycle by its exact count of open issues
+  "is a puzzle-like hint that only a test would contain".
+- *The Box task brief* (which item a task is on, who created it, their binding, the number of assignees), one
+  attempt, three reader rounds. Last wording: "Add the tag launch-ready to the board pack draft PDF in the Launch
+  folder with the review task Omar Haddad created about proofreading the launch summary, the one with two
+  assignees." The reader: a real user would name the file; task creator, task wording and assignee count read as
+  constructed disambiguation. Never retried.
+- *The Linear label brief* (a label's group flag, name and team), one attempt, three reader rounds. Wording: "Set
+  the priority to High for the issue with the Refund label group of the Mobile team." The reader found the
+  near miss for the label's team failing two conditions at once (the Refund group was workspace-level, so it was
+  neither the Mobile team's group nor a Refund label of that team) and two undeclared near misses (issues with a
+  Bug label only). Never retried.
+
+**A test was built, then a ruling left it out (23 items).** A ruling is a decision, recorded in
+`runs/roadmap_01/known_defects.json`, that a near miss does not differ from the request the way the writer
+claimed, or that a variant is invalid; the scoring then leaves out every test holding that near miss and voids any
+trial that acted only on it. The rulings here, by who made them:
+- *The PI, in the blind review of 2026-09-30:* "Add the tag 'seaport-final' to the Seaport Archive folder whose
+  description mentions the lighthouse and that is tagged 'harbor'": a folder named "Seaport Archive 2024" is a
+  match when the other conditions hold (a natural reading includes it), so the folder-name near miss is no near
+  miss; its absence twin and the drop-F variants of the same scenario's description and tags go with it (3
+  items). "Add the tag harbor-final to the favorited copy of Harbor launch plan.pdf in the Harbor Launch folder
+  that also has the Harbor budget spreadsheet": a copy in a subfolder of the named folder counts as "in the
+  folder", so the parent-folder near miss is no near miss; its twin and the collections variant go (2 items).
+- *The PI, 2026-09-28, applied by the lead to later scenarios of the same kind:* a cycle named "Cycle 7" but
+  numbered 9 is what a user saying "cycle 7" may mean (the cycle-number twin, 1 item); a message whose displayed
+  blocks say what its plain text does not is about that topic (the message-text twin and the reply-count variant
+  of "Invite the user whose post about the lattice outage in #outages drew two replies", 2 items); "the active
+  launch channel whose topic is ..." does not name a channel, so a channel whose purpose is launch coordination is
+  such a channel (the channel-name twin, 1 item); "Marcus Webb", unquoted, includes Marcus Webb Jr (the real-name
+  probe, its twin and the username variant, 3 items); "the small 5-person release channel" counts people, not the
+  bot, so a channel with five people and the bot is a match (the member-count twin and the role variant, 2 items).
+- *The regeneration session's review (2026-09-30):* "Move the kickoff review on my Editorial Calendar on Thursday
+  to Room 5B": the calendar the user's own list shows as "Editorial Calendar" and a second calendar titled
+  "Editorial Calendar" that is merely not selected for display are both what "my Editorial Calendar" means (the
+  calendar-title twin, the selected-flag twin and variant, 3 items); "the Garden Workshop calendar on my calendar
+  list shared with Sam Rivera" without "on my calendar list" has intended matches the agent cannot list (1 item).
+- *The completion session's review (2026-09-28):* "the confirmed sprint review with a video link": an event whose
+  description holds a Meet link naturally has a video link (the video-link twin, the status and attendee-resource
+  variants, 3 items).
+- *The Muse study's pre-run review (2026-09-27):* "Hide the calendar I call Team Travel": dropping "hidden" frees
+  a calendar that is already hidden, which "hide" excludes (1 item); the event-transparency near miss of "Move
+  the Budget Review ... it's blocking time on my calendar" is contestable (the aside carries the condition) and
+  its twin stays out (1 item).
+
+**No test of the form could be derived from the scenario (38 items): generation-side, every one.** None
+subtracts from the denominator: each fact can carry the test; this scenario could not. The derivation and its
+checks are code; the writer's part is a Muse call with a recorded reason.
+- *30 underspecified variants.* The construction drops the condition carrying the fact and asks the Muse writer
+  for a deletion-only rewording; code checks the relaxed query selects exactly the target and the freed near
+  misses, and a cold reader must read the new request the same way. Outcomes: the writer declined 16 (no
+  deletion-only edit keeps the intended matches: "Removing 'Data Analyst' leaves 'posted by our in Chicago', which
+  is ungrammatical, and repairing it requires inserting a generic noun not in the original"; "Removing 'active'
+  leaves 'the human admin', which still naturally implies a current active user"); the reader rejected 12 (the
+  reworded request does not fit exactly the intended set, or reads as test-constructed, or the writer added a
+  word); code found 3 not derivable (fewer than two identifying conditions would remain, the scope rule; or the
+  relaxed query selects more than the intended records).
+- *4 probes and 4 absence twins.* The derivation removes the target and the rows only it used, then runs the
+  witness check: the request must select nothing, and the request with the fact's condition relaxed must select
+  the near miss (that is what makes it a trap). Where the only instance of an entity the request names was
+  attached to the target, the relaxed request finds nothing, and the near miss is no trap. Example: "Add a fire
+  reaction to the message in #launch about the release checklist that Priya Sharma reacted to with eyes" — the
+  near miss for the reaction relation is a checklist message that someone else reacted to with eyes; once the
+  target is removed, no message anywhere carries an eyes reaction by Priya, so an agent looking for her reaction
+  correctly finds none, and the probe cannot expose the fact. The same for a hub's file items when the only files
+  of the named hub were the target's neighbours, for a comment's file and for a milestone's project. Code drops
+  these ("claim not killed by witness: original=False, mutant=False"), with no manual step; the generation-time
+  check that named entities must survive the target's removal does not yet cover relationship rows (a reaction, a
+  membership), which is why these reached the derivation.
+- *2 probes with only a single-decoy form* (a hub item's file, a message's reactions): the same check dropped
+  their packed form (the two-decoy probe), since one of the two decoys loses its trap as above; the other decoy's
+  single probe is valid and ran, but it is not the packed form the denominator prescribes.
+- *3 boundary requests the cold reader rejected* (one each in Slack, Calendar and Box): the request did not name
+  the record, hinted at the limit, or read as unnatural.
