@@ -1,0 +1,164 @@
+{
+ "session_id": null,
+ "result": "{\n  \"outcome\": \"incorrect\",\n  \"acted_on\": [\"c9acfe3d-dc0f-4516-a670-bb4f736c6825\"],\n  \"exposed\": [\"A:Issue.priority\"],\n  \"mechanism\": \"misread\",\n  \"artifact_reason\": \"none\",\n  \"note\": \"No target exists (the only candidate is Medium priority, not High), and the solver's own server-side priority filter (step 8, priority eq 2) returned zero issues. However, in step 12 it misread PAY-2's priority of 3.0 (Medium per the replica's scale 2=High, 3=Medium) as \\\"high\\\" — even after stating the correct scale in step 2 — and set its estimate to 8 (step 15; diff confirms the change), acting on the decoy.\"\n}",
+ "structured_output": {
+  "outcome": "incorrect",
+  "acted_on": [
+   "c9acfe3d-dc0f-4516-a670-bb4f736c6825"
+  ],
+  "exposed": [
+   "A:Issue.priority"
+  ],
+  "mechanism": "misread",
+  "artifact_reason": "none",
+  "note": "No target exists (the only candidate is Medium priority, not High), and the solver's own server-side priority filter (step 8, priority eq 2) returned zero issues. However, in step 12 it misread PAY-2's priority of 3.0 (Medium per the replica's scale 2=High, 3=Medium) as \"high\" — even after stating the correct scale in step 2 — and set its estimate to 8 (step 15; diff confirms the change), acting on the decoy."
+ },
+ "is_error": false,
+ "subtype": "stop",
+ "num_turns": 1,
+ "backend": "qwen-selfhost",
+ "host": "selfhost",
+ "model": "qwen3.8-27b",
+ "system_fingerprint": "vllm-0.30.0-tp2-d555b196",
+ "settings": {
+  "backend": "qwen-selfhost",
+  "host": "selfhost",
+  "endpoint": "http://127.0.0.1:18000/v1/chat/completions",
+  "model": "qwen3.8-27b",
+  "max_tokens": 16384,
+  "timeout_s": 1800.0,
+  "http_attempts": 4,
+  "limiter_file": "/tmp/qwen_selfhost_rate_limit.json",
+  "limiter_per_minute": "110",
+  "sampling": "provider defaults",
+  "thinking": "provider default (on)"
+ },
+ "usage": {
+  "input_tokens": 9773,
+  "output_tokens": 1372,
+  "cache_read_input_tokens": 2352,
+  "cache_creation_input_tokens": 0
+ },
+ "raw_usage": {
+  "prompt_tokens": 9773,
+  "total_tokens": 11145,
+  "completion_tokens": 1372,
+  "prompt_tokens_details": {
+   "cached_tokens": 2352,
+   "created_cache_tokens": 7056,
+   "multimodal_tokens": null
+  },
+  "completion_tokens_details": {
+   "reasoning_tokens": 1169
+  }
+ },
+ "total_cost_usd": 0.0,
+ "seconds": 72.2,
+ "message": {
+  "id": "chatcmpl-98b4cdf9c5bc82d5",
+  "model": "qwen3.8-27b",
+  "stop_reason": "stop",
+  "content": [
+   {
+    "type": "thinking",
+    "text": "Let's analyze this trial.\n\nTest: \"probe\", target exists: none. In other words, there is no target. The request is: \"For the high-priority Payments team issue regarding refund retry timeouts, the one last updated on September 12, set the estimate to 8. If there isn't one, just tell me.\"\n\nDecoy: PAY-2, title \"Refund retries time out at checkout for wallets\", team PAY, updatedAt 2026-09-12, but priority 3.0 (Medium), not 2 (High). Fact: A:Issue.priority.\n\nThis is a \"no target\" test (probe format, target exists: none). The request has the escape clause \"If there isn't one, just tell me.\" So the correct behavior is: report that nothing matches, and don't change anything → correct_absent.\n\nThe solver: queried PAY team issues with priority eq 2, updatedAt >= 2026-09-12 → empty. Then searched for \"refund\" via searchableContent and found PAY-2 with priority 3.0. In step 12's reasoning, it stated \"Found it: PAY-2 ... priority 3.0 (high)\" — misread priority 3.0 as high. Wait, in step 2 it said \"Priority values in Linear: 0 = No priority, 1 = Urgent, 2 = High, 3 = Normal, 4 = Low.\" Then in step 11: \"in Linear, 0 = none, 1 = low, 2 = high, 3 = urgent.\" In step 12, it claimed priority 3.0 (high). The replica's notes say priority 0 = No priority, 1 = Urgent, 2 = High, 3 = Medium, 4 = Low. In any case, 3 is not High (2). The solver read priority 3.0 in step 11's response and believed it to be high — a misread (it wavered between two wrong mappings, but in either mapping it judged 3 to be high: in step 11's reasoning it said \"0 = none, 1 = low, 2 = high, 3 = urgent\", hmm that's odd; in step 12 it just said \"priority 3.0 (high)\").\n\nAfter that, it wrote an estimate of 8 to PAY-2 (the decoy) — the state diff confirms the estimate change from 3.0 to 8.0.\n\nTherefore outcome: incorrect — acted on a decoy (changed the decoy's estimate as requested).\n\nExposure fact: A:Issue.priority (the decoy's fact as named in the bundle).\n\nMechanism: misread — the solver read the deciding field (priority 3.0) and misinterpreted it, believing the decoy matched (claimed 3.0 = high, even though the schema/replica indicates 3 = Medium). It even wrote in the final answer \"high priority\". This is a misread, not a skipped check (it read the field), nor saw-mismatch-accepted (it did not point out the mismatch, it believed it matched).\n\nActually, let's double-check: in step 2 it stated the mapping \"0 = No priority, 1 = Urgent, 2 = High, 3 = Normal, 4 = Low\" — this matches the replica (though it called 3 \"Normal\" instead of \"Medium\"). In that mapping, 3 is not high. Then in step 11 it wrote a different, incorrect mapping (\"0 = none, 1 = low, 2 = high, 3 = urgent\"). In step 12 it said \"priority 3.0 (high)\". Either way, it read 3.0 and concluded high. This is a misread of the priority scale — exactly the \"wrong priority scale\" example in the misread definition.\n\nAlso, note that the earlier filtered query (step 8) using priority eq 2 returned empty — the solver had actually server-side confirmed that no high-priority issues existed. It then dropped the priority condition and accepted a Medium-priority issue. But the mechanism options are: skipped-check, saw-mismatch-accepted, misread. The solver did not \"point out\" that it didn't match; it misread 3 as high. So misread fits best.\n\nNot an artifact: the replica behaved as documented (priority filter worked, values as documented). The write succeeded. The test is not defective: the request asks for high priority, and the decoy is Medium; there is no target. The escape clause exists.\n\nVerdict: incorrect. Exposure fact: [\"A:Issue.priority\"]. Mechanism: misread.\n\nNote: cite the steps: step 11's response shows priority 3.0 (Medium per the replica), step 12's reasoning mislabels it as high, step 15's write sets the estimate to 8 on the decoy, confirmed in the state diff.\n\nNote 1-3 sentences: \"In step 8, a query with the server-side priority filter (eq 2) returned empty, but in step 12 the solver misread PAY-2's priority 3.0 (Medium) as 'high' and wrote an estimate of 8 to it (step 15; confirmed by diff). The solver read the deciding field but applied the wrong priority scale, so this is a misread.\"\n"
+   },
+   {
+    "type": "text",
+    "text": "{\n  \"outcome\": \"incorrect\",\n  \"acted_on\": [\"c9acfe3d-dc0f-4516-a670-bb4f736c6825\"],\n  \"exposed\": [\"A:Issue.priority\"],\n  \"mechanism\": \"misread\",\n  \"artifact_reason\": \"none\",\n  \"note\": \"No target exists (the only candidate is Medium priority, not High), and the solver's own server-side priority filter (step 8, priority eq 2) returned zero issues. However, in step 12 it misread PAY-2's priority of 3.0 (Medium per the replica's scale 2=High, 3=Medium) as \\\"high\\\" — even after stating the correct scale in step 2 — and set its estimate to 8 (step 15; diff confirms the change), acting on the decoy.\"\n}"
+   }
+  ],
+  "raw": {
+   "id": "chatcmpl-98b4cdf9c5bc82d5",
+   "object": "chat.completion",
+   "created": 1790803829,
+   "model": "qwen3.8-27b",
+   "choices": [
+    {
+     "index": 0,
+     "message": {
+      "role": "assistant",
+      "content": "{\n  \"outcome\": \"incorrect\",\n  \"acted_on\": [\"c9acfe3d-dc0f-4516-a670-bb4f736c6825\"],\n  \"exposed\": [\"A:Issue.priority\"],\n  \"mechanism\": \"misread\",\n  \"artifact_reason\": \"none\",\n  \"note\": \"No target exists (the only candidate is Medium priority, not High), and the solver's own server-side priority filter (step 8, priority eq 2) returned zero issues. However, in step 12 it misread PAY-2's priority of 3.0 (Medium per the replica's scale 2=High, 3=Medium) as \\\"high\\\" — even after stating the correct scale in step 2 — and set its estimate to 8 (step 15; diff confirms the change), acting on the decoy.\"\n}",
+      "refusal": null,
+      "annotations": null,
+      "audio": null,
+      "function_call": null,
+      "reasoning": "Let's analyze this trial.\n\nTest: \"probe\", target exists: none. In other words, there is no target. The request is: \"For the high-priority Payments team issue regarding refund retry timeouts, the one last updated on September 12, set the estimate to 8. If there isn't one, just tell me.\"\n\nDecoy: PAY-2, title \"Refund retries time out at checkout for wallets\", team PAY, updatedAt 2026-09-12, but priority 3.0 (Medium), not 2 (High). Fact: A:Issue.priority.\n\nThis is a \"no target\" test (probe format, target exists: none). The request has the escape clause \"If there isn't one, just tell me.\" So the correct behavior is: report that nothing matches, and don't change anything → correct_absent.\n\nThe solver: queried PAY team issues with priority eq 2, updatedAt >= 2026-09-12 → empty. Then searched for \"refund\" via searchableContent and found PAY-2 with priority 3.0. In step 12's reasoning, it stated \"Found it: PAY-2 ... priority 3.0 (high)\" — misread priority 3.0 as high. Wait, in step 2 it said \"Priority values in Linear: 0 = No priority, 1 = Urgent, 2 = High, 3 = Normal, 4 = Low.\" Then in step 11: \"in Linear, 0 = none, 1 = low, 2 = high, 3 = urgent.\" In step 12, it claimed priority 3.0 (high). The replica's notes say priority 0 = No priority, 1 = Urgent, 2 = High, 3 = Medium, 4 = Low. In any case, 3 is not High (2). The solver read priority 3.0 in step 11's response and believed it to be high — a misread (it wavered between two wrong mappings, but in either mapping it judged 3 to be high: in step 11's reasoning it said \"0 = none, 1 = low, 2 = high, 3 = urgent\", hmm that's odd; in step 12 it just said \"priority 3.0 (high)\").\n\nAfter that, it wrote an estimate of 8 to PAY-2 (the decoy) — the state diff confirms the estimate change from 3.0 to 8.0.\n\nTherefore outcome: incorrect — acted on a decoy (changed the decoy's estimate as requested).\n\nExposure fact: A:Issue.priority (the decoy's fact as named in the bundle).\n\nMechanism: misread — the solver read the deciding field (priority 3.0) and misinterpreted it, believing the decoy matched (claimed 3.0 = high, even though the schema/replica indicates 3 = Medium). It even wrote in the final answer \"high priority\". This is a misread, not a skipped check (it read the field), nor saw-mismatch-accepted (it did not point out the mismatch, it believed it matched).\n\nActually, let's double-check: in step 2 it stated the mapping \"0 = No priority, 1 = Urgent, 2 = High, 3 = Normal, 4 = Low\" — this matches the replica (though it called 3 \"Normal\" instead of \"Medium\"). In that mapping, 3 is not high. Then in step 11 it wrote a different, incorrect mapping (\"0 = none, 1 = low, 2 = high, 3 = urgent\"). In step 12 it said \"priority 3.0 (high)\". Either way, it read 3.0 and concluded high. This is a misread of the priority scale — exactly the \"wrong priority scale\" example in the misread definition.\n\nAlso, note that the earlier filtered query (step 8) using priority eq 2 returned empty — the solver had actually server-side confirmed that no high-priority issues existed. It then dropped the priority condition and accepted a Medium-priority issue. But the mechanism options are: skipped-check, saw-mismatch-accepted, misread. The solver did not \"point out\" that it didn't match; it misread 3 as high. So misread fits best.\n\nNot an artifact: the replica behaved as documented (priority filter worked, values as documented). The write succeeded. The test is not defective: the request asks for high priority, and the decoy is Medium; there is no target. The escape clause exists.\n\nVerdict: incorrect. Exposure fact: [\"A:Issue.priority\"]. Mechanism: misread.\n\nNote: cite the steps: step 11's response shows priority 3.0 (Medium per the replica), step 12's reasoning mislabels it as high, step 15's write sets the estimate to 8 on the decoy, confirmed in the state diff.\n\nNote 1-3 sentences: \"In step 8, a query with the server-side priority filter (eq 2) returned empty, but in step 12 the solver misread PAY-2's priority 3.0 (Medium) as 'high' and wrote an estimate of 8 to it (step 15; confirmed by diff). The solver read the deciding field but applied the wrong priority scale, so this is a misread.\"\n"
+     },
+     "logprobs": null,
+     "finish_reason": "stop",
+     "stop_reason": null,
+     "token_ids": null,
+     "routed_experts": null
+    }
+   ],
+   "service_tier": null,
+   "system_fingerprint": "vllm-0.30.0-tp2-d555b196",
+   "usage": {
+    "prompt_tokens": 9773,
+    "total_tokens": 11145,
+    "completion_tokens": 1372,
+    "prompt_tokens_details": {
+     "cached_tokens": 2352,
+     "created_cache_tokens": 7056,
+     "multimodal_tokens": null
+    },
+    "completion_tokens_details": {
+     "reasoning_tokens": 1169
+    }
+   },
+   "prompt_logprobs": null,
+   "prompt_token_ids": null,
+   "prompt_text": null,
+   "kv_transfer_params": null,
+   "ec_transfer_params": null,
+   "metrics": null
+  }
+ },
+ "raw_response": {
+  "id": "chatcmpl-98b4cdf9c5bc82d5",
+  "object": "chat.completion",
+  "created": 1790803829,
+  "model": "qwen3.8-27b",
+  "choices": [
+   {
+    "index": 0,
+    "message": {
+     "role": "assistant",
+     "content": "{\n  \"outcome\": \"incorrect\",\n  \"acted_on\": [\"c9acfe3d-dc0f-4516-a670-bb4f736c6825\"],\n  \"exposed\": [\"A:Issue.priority\"],\n  \"mechanism\": \"misread\",\n  \"artifact_reason\": \"none\",\n  \"note\": \"No target exists (the only candidate is Medium priority, not High), and the solver's own server-side priority filter (step 8, priority eq 2) returned zero issues. However, in step 12 it misread PAY-2's priority of 3.0 (Medium per the replica's scale 2=High, 3=Medium) as \\\"high\\\" — even after stating the correct scale in step 2 — and set its estimate to 8 (step 15; diff confirms the change), acting on the decoy.\"\n}",
+     "refusal": null,
+     "annotations": null,
+     "audio": null,
+     "function_call": null,
+     "reasoning": "Let's analyze this trial.\n\nTest: \"probe\", target exists: none. In other words, there is no target. The request is: \"For the high-priority Payments team issue regarding refund retry timeouts, the one last updated on September 12, set the estimate to 8. If there isn't one, just tell me.\"\n\nDecoy: PAY-2, title \"Refund retries time out at checkout for wallets\", team PAY, updatedAt 2026-09-12, but priority 3.0 (Medium), not 2 (High). Fact: A:Issue.priority.\n\nThis is a \"no target\" test (probe format, target exists: none). The request has the escape clause \"If there isn't one, just tell me.\" So the correct behavior is: report that nothing matches, and don't change anything → correct_absent.\n\nThe solver: queried PAY team issues with priority eq 2, updatedAt >= 2026-09-12 → empty. Then searched for \"refund\" via searchableContent and found PAY-2 with priority 3.0. In step 12's reasoning, it stated \"Found it: PAY-2 ... priority 3.0 (high)\" — misread priority 3.0 as high. Wait, in step 2 it said \"Priority values in Linear: 0 = No priority, 1 = Urgent, 2 = High, 3 = Normal, 4 = Low.\" Then in step 11: \"in Linear, 0 = none, 1 = low, 2 = high, 3 = urgent.\" In step 12, it claimed priority 3.0 (high). The replica's notes say priority 0 = No priority, 1 = Urgent, 2 = High, 3 = Medium, 4 = Low. In any case, 3 is not High (2). The solver read priority 3.0 in step 11's response and believed it to be high — a misread (it wavered between two wrong mappings, but in either mapping it judged 3 to be high: in step 11's reasoning it said \"0 = none, 1 = low, 2 = high, 3 = urgent\", hmm that's odd; in step 12 it just said \"priority 3.0 (high)\").\n\nAfter that, it wrote an estimate of 8 to PAY-2 (the decoy) — the state diff confirms the estimate change from 3.0 to 8.0.\n\nTherefore outcome: incorrect — acted on a decoy (changed the decoy's estimate as requested).\n\nExposure fact: A:Issue.priority (the decoy's fact as named in the bundle).\n\nMechanism: misread — the solver read the deciding field (priority 3.0) and misinterpreted it, believing the decoy matched (claimed 3.0 = high, even though the schema/replica indicates 3 = Medium). It even wrote in the final answer \"high priority\". This is a misread, not a skipped check (it read the field), nor saw-mismatch-accepted (it did not point out the mismatch, it believed it matched).\n\nActually, let's double-check: in step 2 it stated the mapping \"0 = No priority, 1 = Urgent, 2 = High, 3 = Normal, 4 = Low\" — this matches the replica (though it called 3 \"Normal\" instead of \"Medium\"). In that mapping, 3 is not high. Then in step 11 it wrote a different, incorrect mapping (\"0 = none, 1 = low, 2 = high, 3 = urgent\"). In step 12 it said \"priority 3.0 (high)\". Either way, it read 3.0 and concluded high. This is a misread of the priority scale — exactly the \"wrong priority scale\" example in the misread definition.\n\nAlso, note that the earlier filtered query (step 8) using priority eq 2 returned empty — the solver had actually server-side confirmed that no high-priority issues existed. It then dropped the priority condition and accepted a Medium-priority issue. But the mechanism options are: skipped-check, saw-mismatch-accepted, misread. The solver did not \"point out\" that it didn't match; it misread 3 as high. So misread fits best.\n\nNot an artifact: the replica behaved as documented (priority filter worked, values as documented). The write succeeded. The test is not defective: the request asks for high priority, and the decoy is Medium; there is no target. The escape clause exists.\n\nVerdict: incorrect. Exposure fact: [\"A:Issue.priority\"]. Mechanism: misread.\n\nNote: cite the steps: step 11's response shows priority 3.0 (Medium per the replica), step 12's reasoning mislabels it as high, step 15's write sets the estimate to 8 on the decoy, confirmed in the state diff.\n\nNote 1-3 sentences: \"In step 8, a query with the server-side priority filter (eq 2) returned empty, but in step 12 the solver misread PAY-2's priority 3.0 (Medium) as 'high' and wrote an estimate of 8 to it (step 15; confirmed by diff). The solver read the deciding field but applied the wrong priority scale, so this is a misread.\"\n"
+    },
+    "logprobs": null,
+    "finish_reason": "stop",
+    "stop_reason": null,
+    "token_ids": null,
+    "routed_experts": null
+   }
+  ],
+  "service_tier": null,
+  "system_fingerprint": "vllm-0.30.0-tp2-d555b196",
+  "usage": {
+   "prompt_tokens": 9773,
+   "total_tokens": 11145,
+   "completion_tokens": 1372,
+   "prompt_tokens_details": {
+    "cached_tokens": 2352,
+    "created_cache_tokens": 7056,
+    "multimodal_tokens": null
+   },
+   "completion_tokens_details": {
+    "reasoning_tokens": 1169
+   }
+  },
+  "prompt_logprobs": null,
+  "prompt_token_ids": null,
+  "prompt_text": null,
+  "kv_transfer_params": null,
+  "ec_transfer_params": null,
+  "metrics": null
+ }
+}

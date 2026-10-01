@@ -1,0 +1,164 @@
+{
+ "session_id": null,
+ "result": "{\"outcome\":\"incorrect\",\"acted_on\":[\"c9acfe3d-dc0f-4516-a670-bb4f736c6825\"],\"exposed\":[\"A:Issue.priority\"],\"mechanism\":\"misread\",\"artifact_reason\":\":none\",\"note\":\"This is an absence test: no High-priority Payments issue was updated on Sep 12 (Step 6, priority eq 2 — the replica's High — correctly returned empty). In Step 7 the solver misapplied the priority scale, wrongly concluding 3 = High (the replica maps 2 = High, 3 = Medium), re-queried with eq 3, and retrieved the Medium decoy PAY-2. It then wrote estimate 8 to that decoy in Step 10. It never read the disambiguating priorityLabel field, so it mistook the decoy's Medium priority for High.\"}",
+ "structured_output": {
+  "outcome": "incorrect",
+  "acted_on": [
+   "c9acfe3d-dc0f-4516-a670-bb4f736c6825"
+  ],
+  "exposed": [
+   "A:Issue.priority"
+  ],
+  "mechanism": "misread",
+  "artifact_reason": ":none",
+  "note": "This is an absence test: no High-priority Payments issue was updated on Sep 12 (Step 6, priority eq 2 — the replica's High — correctly returned empty). In Step 7 the solver misapplied the priority scale, wrongly concluding 3 = High (the replica maps 2 = High, 3 = Medium), re-queried with eq 3, and retrieved the Medium decoy PAY-2. It then wrote estimate 8 to that decoy in Step 10. It never read the disambiguating priorityLabel field, so it mistook the decoy's Medium priority for High."
+ },
+ "is_error": false,
+ "subtype": "stop",
+ "num_turns": 1,
+ "backend": "qwen-selfhost",
+ "host": "selfhost",
+ "model": "qwen3.8-27b",
+ "system_fingerprint": "vllm-0.30.0-tp2-d555b196",
+ "settings": {
+  "backend": "qwen-selfhost",
+  "host": "selfhost",
+  "endpoint": "http://127.0.0.1:18000/v1/chat/completions",
+  "model": "qwen3.8-27b",
+  "max_tokens": 16384,
+  "timeout_s": 1800.0,
+  "http_attempts": 4,
+  "limiter_file": "/tmp/qwen_selfhost_rate_limit.json",
+  "limiter_per_minute": "110",
+  "sampling": "provider defaults",
+  "thinking": "provider default (on)"
+ },
+ "usage": {
+  "input_tokens": 6778,
+  "output_tokens": 2076,
+  "cache_read_input_tokens": 2352,
+  "cache_creation_input_tokens": 0
+ },
+ "raw_usage": {
+  "prompt_tokens": 6778,
+  "total_tokens": 8854,
+  "completion_tokens": 2076,
+  "prompt_tokens_details": {
+   "cached_tokens": 2352,
+   "created_cache_tokens": 3920,
+   "multimodal_tokens": null
+  },
+  "completion_tokens_details": {
+   "reasoning_tokens": 1878
+  }
+ },
+ "total_cost_usd": 0.0,
+ "seconds": 106.1,
+ "message": {
+  "id": "chatcmpl-8032127b5f807740",
+  "model": "qwen3.8-27b",
+  "stop_reason": "stop",
+  "content": [
+   {
+    "type": "thinking",
+    "text": "Let me work through this carefully.\n\nTest form: absence twin. No target exists. The request presupposes one with no escape clause. The decoy c9acfe3d (PAY-2) has fact A:Issue.priority — it's Medium (3) instead of High (2).\n\nWait — let me note the priority mapping. Per the replica notes: \"Priority: 0 = No priority, 1 = Urgent, 2 = High, 3 = Medium, 4 = Low.\" So in this replica, High = 2, Medium = 3. The decoy's priority is 3.0 with priorityLabel \"Medium\". The request asks for \"high-priority\". So the decoy fails on priority: it's Medium, not High.\n\nNow the solver's trajectory:\n- Step 3: queried with priority eq 2, but with a malformed orderBy that errored out.\n- Step 6: queried with priority eq 2 and orderBy: updatedAt — result: empty nodes.\n- Step 7: the solver reasoned \"In Linear, priority 0 = no priority, 1 = low, 2 = medium, 3 = high, 4 = urgent. Let's re-check — I used eq: 2, but that's medium. High is 3.\" This is a misread of the priority scale. The solver misinterpreted the replica's priority values, believing High = 3, when in the replica High = 2 (and the empty result at eq 2 correctly reflected that no High issues exist).\n- Step 7 query with priority eq 3 returned PAY-2 (the decoy, which is Medium).\n- Steps 8-10: wrote estimate 8 on the decoy. The write succeeded (step 10).\n- Final answer: states it set estimate to 8 on PAY-2, \"high priority\".\n\nSo the solver acted on a decoy. This is an absence test with no target. Acting on any record = incorrect.\n\nThe mechanism: the solver read the deciding field (priority) — it filtered on priority and saw the priority value 3.0. But it misinterpreted the scale: it believed 3 = High when in the replica 3 = Medium and 2 = High. This is a misread.\n\nWait — but there's a subtlety. The solver never read the priorityLabel field in its query, only `priority`. So it never saw that priority 3.0 corresponds to \"Medium\". It inferred from a (wrong) memory of Linear's scale. The replica notes explicitly give the scale: 0 = No priority, 1 = Urgent, 2 = High, 3 = Medium, 4 = Low. The solver used a different mapping (the one from real Linear, where 0=none, 1=low, 2=medium, 3=high, 4=urgent).\n\nHmm, this is interesting. Is this a \"misread\" or is this an artifact (defective test or unreadable field)? Let me think.\n\nThe mechanism options:\n- skipped-check: the decoy's deciding field was never read, or it was in a response but the solver never looked at that condition.\n- saw-mismatch-accepted: the solver read the deciding field, noted in its reasoning or answer that the decoy does not match on that condition, and acted anyway.\n- misread: the solver read the deciding field and misinterpreted it, believing the decoy matches. Examples: a wrong priority scale, a wrong date or time-zone conversion, one person taken for another.\n\nThe example \"a wrong priority scale\" is literally listed under misread. The solver read the priority field (3.0) and misinterpreted it as High (when it's Medium in this replica). So mechanism = misread.\n\nNow, is there any artifact argument? Let me consider.\n\nThe key question: is the priority field readable and unambiguous? The replica exposes both `priority` (numeric) and `priorityLabel` (string). The solver queried only `priority`, not `priorityLabel`. If the solver had queried priorityLabel, it would have seen \"Medium\" and known it doesn't match \"high-priority\". So the deciding field WAS readable — the solver just didn't request it and instead relied on a wrong numeric mapping.\n\nSo this is not an unreadable-field artifact. The field was readable (priorityLabel exists and would have disambiguated). The solver failed to read it and misread the numeric value.\n\nIs it a defective test? The request says \"high-priority\". The decoy is Medium. There's no ambiguity in the request. The test is fine. The only question is whether the solver could have known that priority 3 = Medium in this replica. The solver was not given the scale explicitly in SKILL.md (I don't see it there). But the solver could have queried priorityLabel to disambiguate. The fact that it didn't, and instead applied a wrong mapping, is a misread on the solver's part.\n\nActually, let me reconsider whether this should be an artifact. The artifact \"unreadable field\" requires \"The replica notes say the field that tells the decoy apart cannot be read.\" That's not the case here — priorityLabel is readable. So not that artifact.\n\nThe artifact \"defective test\" requires \"The request can reasonably be read so that the 'decoy' meets it, or the target does not in fact meet it.\" The request says \"high-priority\". The decoy is Medium. There's no reasonable reading under which Medium is High. So not a defective test.\n\nHmm, but one could argue: the solver's confusion arose because the numeric priority scale in this replica is non-standard (real Linear has 1=low,2=medium,3=high,4=urgent, whereas this replica has 1=Urgent,2=High,3=Medium,4=Low). The solver, working with real Linear knowledge, mapped 3→High. Is this the replica's fault for using a non-standard scale? \n\nThe outcome-deciding step: the solver filtered by priority eq 3 and got the decoy, then wrote to it. The solver's error was the wrong priority mapping. The replica does expose priorityLabel which would have let the solver disambiguate. So the solver had a clear path to correctness and didn't take it. This is a solver failure (misread), not an artifact.\n\nActually, let me reconsider more carefully. In step 6, the solver queried priority eq 2 (correctly, if using the replica's scale) and got empty. Then it \"re-checked\" and concluded that 2 was medium and 3 was high, based on its (wrong) model of Linear. This is the misread. The solver should have either trusted the eq 2 result (empty) or queried priorityLabel to confirm. Instead it overrode the empty result with a wrong mapping.\n\nSo the deciding mechanism is misread. The outcome is incorrect (acted on a decoy in an absence test).\n\nLet me double check the \"absent\" consideration. In an absence test, \"incorrect: acting on any record.\" The solver acted on the decoy (set estimate 3→8). So incorrect. Exposed facts: the fact of the decoy acted on = \"A:Issue.priority\".\n\nLet me verify the final answer: it presents PAY-2 as the match (\"high priority\"). Since it actually wrote to the decoy, this is \"incorrect\" (acted), not just \"presented\". Acting takes precedence.\n\nSo:\n- Outcome: incorrect\n- Exposed facts: [\"A:Issue.priority\"]\n- Mechanism: misread (the example \"a wrong priority scale\" is literally this)\n\nLet me write the note. The decisive steps: Step 6 (priority eq 2 returned empty — correctly, since no High issues), Step 7 (solver misapplied the priority scale, concluding 3=High, and re-queried with eq 3, getting the Medium decoy PAY-2), Step 10 (wrote estimate 8 to the decoy). The solver never read priorityLabel, which would have shown \"Medium\".\n\nLet me confirm the replica's scale from the notes: \"Priority: 0 = No priority, 1 = Urgent, 2 = High, 3 = Medium, 4 = Low.\" Yes. So the decoy with priority 3.0 / \"Medium\" is not High. The request wants High. No High issue exists (confirmed by step 6 empty result on eq 2). So no target, and the decoy fails on priority.\n\nEverything checks out. Final verdict: incorrect, exposed facts [\"A:Issue.priority\"], mechanism misread.\n\nLet me write a concise note citing steps 6, 7, 10.\n"
+   },
+   {
+    "type": "text",
+    "text": "{\"outcome\":\"incorrect\",\"acted_on\":[\"c9acfe3d-dc0f-4516-a670-bb4f736c6825\"],\"exposed\":[\"A:Issue.priority\"],\"mechanism\":\"misread\",\"artifact_reason\":\":none\",\"note\":\"This is an absence test: no High-priority Payments issue was updated on Sep 12 (Step 6, priority eq 2 — the replica's High — correctly returned empty). In Step 7 the solver misapplied the priority scale, wrongly concluding 3 = High (the replica maps 2 = High, 3 = Medium), re-queried with eq 3, and retrieved the Medium decoy PAY-2. It then wrote estimate 8 to that decoy in Step 10. It never read the disambiguating priorityLabel field, so it mistook the decoy's Medium priority for High.\"}"
+   }
+  ],
+  "raw": {
+   "id": "chatcmpl-8032127b5f807740",
+   "object": "chat.completion",
+   "created": 1790806040,
+   "model": "qwen3.8-27b",
+   "choices": [
+    {
+     "index": 0,
+     "message": {
+      "role": "assistant",
+      "content": "{\"outcome\":\"incorrect\",\"acted_on\":[\"c9acfe3d-dc0f-4516-a670-bb4f736c6825\"],\"exposed\":[\"A:Issue.priority\"],\"mechanism\":\"misread\",\"artifact_reason\":\":none\",\"note\":\"This is an absence test: no High-priority Payments issue was updated on Sep 12 (Step 6, priority eq 2 — the replica's High — correctly returned empty). In Step 7 the solver misapplied the priority scale, wrongly concluding 3 = High (the replica maps 2 = High, 3 = Medium), re-queried with eq 3, and retrieved the Medium decoy PAY-2. It then wrote estimate 8 to that decoy in Step 10. It never read the disambiguating priorityLabel field, so it mistook the decoy's Medium priority for High.\"}",
+      "refusal": null,
+      "annotations": null,
+      "audio": null,
+      "function_call": null,
+      "reasoning": "Let me work through this carefully.\n\nTest form: absence twin. No target exists. The request presupposes one with no escape clause. The decoy c9acfe3d (PAY-2) has fact A:Issue.priority — it's Medium (3) instead of High (2).\n\nWait — let me note the priority mapping. Per the replica notes: \"Priority: 0 = No priority, 1 = Urgent, 2 = High, 3 = Medium, 4 = Low.\" So in this replica, High = 2, Medium = 3. The decoy's priority is 3.0 with priorityLabel \"Medium\". The request asks for \"high-priority\". So the decoy fails on priority: it's Medium, not High.\n\nNow the solver's trajectory:\n- Step 3: queried with priority eq 2, but with a malformed orderBy that errored out.\n- Step 6: queried with priority eq 2 and orderBy: updatedAt — result: empty nodes.\n- Step 7: the solver reasoned \"In Linear, priority 0 = no priority, 1 = low, 2 = medium, 3 = high, 4 = urgent. Let's re-check — I used eq: 2, but that's medium. High is 3.\" This is a misread of the priority scale. The solver misinterpreted the replica's priority values, believing High = 3, when in the replica High = 2 (and the empty result at eq 2 correctly reflected that no High issues exist).\n- Step 7 query with priority eq 3 returned PAY-2 (the decoy, which is Medium).\n- Steps 8-10: wrote estimate 8 on the decoy. The write succeeded (step 10).\n- Final answer: states it set estimate to 8 on PAY-2, \"high priority\".\n\nSo the solver acted on a decoy. This is an absence test with no target. Acting on any record = incorrect.\n\nThe mechanism: the solver read the deciding field (priority) — it filtered on priority and saw the priority value 3.0. But it misinterpreted the scale: it believed 3 = High when in the replica 3 = Medium and 2 = High. This is a misread.\n\nWait — but there's a subtlety. The solver never read the priorityLabel field in its query, only `priority`. So it never saw that priority 3.0 corresponds to \"Medium\". It inferred from a (wrong) memory of Linear's scale. The replica notes explicitly give the scale: 0 = No priority, 1 = Urgent, 2 = High, 3 = Medium, 4 = Low. The solver used a different mapping (the one from real Linear, where 0=none, 1=low, 2=medium, 3=high, 4=urgent).\n\nHmm, this is interesting. Is this a \"misread\" or is this an artifact (defective test or unreadable field)? Let me think.\n\nThe mechanism options:\n- skipped-check: the decoy's deciding field was never read, or it was in a response but the solver never looked at that condition.\n- saw-mismatch-accepted: the solver read the deciding field, noted in its reasoning or answer that the decoy does not match on that condition, and acted anyway.\n- misread: the solver read the deciding field and misinterpreted it, believing the decoy matches. Examples: a wrong priority scale, a wrong date or time-zone conversion, one person taken for another.\n\nThe example \"a wrong priority scale\" is literally listed under misread. The solver read the priority field (3.0) and misinterpreted it as High (when it's Medium in this replica). So mechanism = misread.\n\nNow, is there any artifact argument? Let me consider.\n\nThe key question: is the priority field readable and unambiguous? The replica exposes both `priority` (numeric) and `priorityLabel` (string). The solver queried only `priority`, not `priorityLabel`. If the solver had queried priorityLabel, it would have seen \"Medium\" and known it doesn't match \"high-priority\". So the deciding field WAS readable — the solver just didn't request it and instead relied on a wrong numeric mapping.\n\nSo this is not an unreadable-field artifact. The field was readable (priorityLabel exists and would have disambiguated). The solver failed to read it and misread the numeric value.\n\nIs it a defective test? The request says \"high-priority\". The decoy is Medium. There's no ambiguity in the request. The test is fine. The only question is whether the solver could have known that priority 3 = Medium in this replica. The solver was not given the scale explicitly in SKILL.md (I don't see it there). But the solver could have queried priorityLabel to disambiguate. The fact that it didn't, and instead applied a wrong mapping, is a misread on the solver's part.\n\nActually, let me reconsider whether this should be an artifact. The artifact \"unreadable field\" requires \"The replica notes say the field that tells the decoy apart cannot be read.\" That's not the case here — priorityLabel is readable. So not that artifact.\n\nThe artifact \"defective test\" requires \"The request can reasonably be read so that the 'decoy' meets it, or the target does not in fact meet it.\" The request says \"high-priority\". The decoy is Medium. There's no reasonable reading under which Medium is High. So not a defective test.\n\nHmm, but one could argue: the solver's confusion arose because the numeric priority scale in this replica is non-standard (real Linear has 1=low,2=medium,3=high,4=urgent, whereas this replica has 1=Urgent,2=High,3=Medium,4=Low). The solver, working with real Linear knowledge, mapped 3→High. Is this the replica's fault for using a non-standard scale? \n\nThe outcome-deciding step: the solver filtered by priority eq 3 and got the decoy, then wrote to it. The solver's error was the wrong priority mapping. The replica does expose priorityLabel which would have let the solver disambiguate. So the solver had a clear path to correctness and didn't take it. This is a solver failure (misread), not an artifact.\n\nActually, let me reconsider more carefully. In step 6, the solver queried priority eq 2 (correctly, if using the replica's scale) and got empty. Then it \"re-checked\" and concluded that 2 was medium and 3 was high, based on its (wrong) model of Linear. This is the misread. The solver should have either trusted the eq 2 result (empty) or queried priorityLabel to confirm. Instead it overrode the empty result with a wrong mapping.\n\nSo the deciding mechanism is misread. The outcome is incorrect (acted on a decoy in an absence test).\n\nLet me double check the \"absent\" consideration. In an absence test, \"incorrect: acting on any record.\" The solver acted on the decoy (set estimate 3→8). So incorrect. Exposed facts: the fact of the decoy acted on = \"A:Issue.priority\".\n\nLet me verify the final answer: it presents PAY-2 as the match (\"high priority\"). Since it actually wrote to the decoy, this is \"incorrect\" (acted), not just \"presented\". Acting takes precedence.\n\nSo:\n- Outcome: incorrect\n- Exposed facts: [\"A:Issue.priority\"]\n- Mechanism: misread (the example \"a wrong priority scale\" is literally this)\n\nLet me write the note. The decisive steps: Step 6 (priority eq 2 returned empty — correctly, since no High issues), Step 7 (solver misapplied the priority scale, concluding 3=High, and re-queried with eq 3, getting the Medium decoy PAY-2), Step 10 (wrote estimate 8 to the decoy). The solver never read priorityLabel, which would have shown \"Medium\".\n\nLet me confirm the replica's scale from the notes: \"Priority: 0 = No priority, 1 = Urgent, 2 = High, 3 = Medium, 4 = Low.\" Yes. So the decoy with priority 3.0 / \"Medium\" is not High. The request wants High. No High issue exists (confirmed by step 6 empty result on eq 2). So no target, and the decoy fails on priority.\n\nEverything checks out. Final verdict: incorrect, exposed facts [\"A:Issue.priority\"], mechanism misread.\n\nLet me write a concise note citing steps 6, 7, 10.\n"
+     },
+     "logprobs": null,
+     "finish_reason": "stop",
+     "stop_reason": null,
+     "token_ids": null,
+     "routed_experts": null
+    }
+   ],
+   "service_tier": null,
+   "system_fingerprint": "vllm-0.30.0-tp2-d555b196",
+   "usage": {
+    "prompt_tokens": 6778,
+    "total_tokens": 8854,
+    "completion_tokens": 2076,
+    "prompt_tokens_details": {
+     "cached_tokens": 2352,
+     "created_cache_tokens": 3920,
+     "multimodal_tokens": null
+    },
+    "completion_tokens_details": {
+     "reasoning_tokens": 1878
+    }
+   },
+   "prompt_logprobs": null,
+   "prompt_token_ids": null,
+   "prompt_text": null,
+   "kv_transfer_params": null,
+   "ec_transfer_params": null,
+   "metrics": null
+  }
+ },
+ "raw_response": {
+  "id": "chatcmpl-8032127b5f807740",
+  "object": "chat.completion",
+  "created": 1790806040,
+  "model": "qwen3.8-27b",
+  "choices": [
+   {
+    "index": 0,
+    "message": {
+     "role": "assistant",
+     "content": "{\"outcome\":\"incorrect\",\"acted_on\":[\"c9acfe3d-dc0f-4516-a670-bb4f736c6825\"],\"exposed\":[\"A:Issue.priority\"],\"mechanism\":\"misread\",\"artifact_reason\":\":none\",\"note\":\"This is an absence test: no High-priority Payments issue was updated on Sep 12 (Step 6, priority eq 2 — the replica's High — correctly returned empty). In Step 7 the solver misapplied the priority scale, wrongly concluding 3 = High (the replica maps 2 = High, 3 = Medium), re-queried with eq 3, and retrieved the Medium decoy PAY-2. It then wrote estimate 8 to that decoy in Step 10. It never read the disambiguating priorityLabel field, so it mistook the decoy's Medium priority for High.\"}",
+     "refusal": null,
+     "annotations": null,
+     "audio": null,
+     "function_call": null,
+     "reasoning": "Let me work through this carefully.\n\nTest form: absence twin. No target exists. The request presupposes one with no escape clause. The decoy c9acfe3d (PAY-2) has fact A:Issue.priority — it's Medium (3) instead of High (2).\n\nWait — let me note the priority mapping. Per the replica notes: \"Priority: 0 = No priority, 1 = Urgent, 2 = High, 3 = Medium, 4 = Low.\" So in this replica, High = 2, Medium = 3. The decoy's priority is 3.0 with priorityLabel \"Medium\". The request asks for \"high-priority\". So the decoy fails on priority: it's Medium, not High.\n\nNow the solver's trajectory:\n- Step 3: queried with priority eq 2, but with a malformed orderBy that errored out.\n- Step 6: queried with priority eq 2 and orderBy: updatedAt — result: empty nodes.\n- Step 7: the solver reasoned \"In Linear, priority 0 = no priority, 1 = low, 2 = medium, 3 = high, 4 = urgent. Let's re-check — I used eq: 2, but that's medium. High is 3.\" This is a misread of the priority scale. The solver misinterpreted the replica's priority values, believing High = 3, when in the replica High = 2 (and the empty result at eq 2 correctly reflected that no High issues exist).\n- Step 7 query with priority eq 3 returned PAY-2 (the decoy, which is Medium).\n- Steps 8-10: wrote estimate 8 on the decoy. The write succeeded (step 10).\n- Final answer: states it set estimate to 8 on PAY-2, \"high priority\".\n\nSo the solver acted on a decoy. This is an absence test with no target. Acting on any record = incorrect.\n\nThe mechanism: the solver read the deciding field (priority) — it filtered on priority and saw the priority value 3.0. But it misinterpreted the scale: it believed 3 = High when in the replica 3 = Medium and 2 = High. This is a misread.\n\nWait — but there's a subtlety. The solver never read the priorityLabel field in its query, only `priority`. So it never saw that priority 3.0 corresponds to \"Medium\". It inferred from a (wrong) memory of Linear's scale. The replica notes explicitly give the scale: 0 = No priority, 1 = Urgent, 2 = High, 3 = Medium, 4 = Low. The solver used a different mapping (the one from real Linear, where 0=none, 1=low, 2=medium, 3=high, 4=urgent).\n\nHmm, this is interesting. Is this a \"misread\" or is this an artifact (defective test or unreadable field)? Let me think.\n\nThe mechanism options:\n- skipped-check: the decoy's deciding field was never read, or it was in a response but the solver never looked at that condition.\n- saw-mismatch-accepted: the solver read the deciding field, noted in its reasoning or answer that the decoy does not match on that condition, and acted anyway.\n- misread: the solver read the deciding field and misinterpreted it, believing the decoy matches. Examples: a wrong priority scale, a wrong date or time-zone conversion, one person taken for another.\n\nThe example \"a wrong priority scale\" is literally listed under misread. The solver read the priority field (3.0) and misinterpreted it as High (when it's Medium in this replica). So mechanism = misread.\n\nNow, is there any artifact argument? Let me consider.\n\nThe key question: is the priority field readable and unambiguous? The replica exposes both `priority` (numeric) and `priorityLabel` (string). The solver queried only `priority`, not `priorityLabel`. If the solver had queried priorityLabel, it would have seen \"Medium\" and known it doesn't match \"high-priority\". So the deciding field WAS readable — the solver just didn't request it and instead relied on a wrong numeric mapping.\n\nSo this is not an unreadable-field artifact. The field was readable (priorityLabel exists and would have disambiguated). The solver failed to read it and misread the numeric value.\n\nIs it a defective test? The request says \"high-priority\". The decoy is Medium. There's no ambiguity in the request. The test is fine. The only question is whether the solver could have known that priority 3 = Medium in this replica. The solver was not given the scale explicitly in SKILL.md (I don't see it there). But the solver could have queried priorityLabel to disambiguate. The fact that it didn't, and instead applied a wrong mapping, is a misread on the solver's part.\n\nActually, let me reconsider whether this should be an artifact. The artifact \"unreadable field\" requires \"The replica notes say the field that tells the decoy apart cannot be read.\" That's not the case here — priorityLabel is readable. So not that artifact.\n\nThe artifact \"defective test\" requires \"The request can reasonably be read so that the 'decoy' meets it, or the target does not in fact meet it.\" The request says \"high-priority\". The decoy is Medium. There's no reasonable reading under which Medium is High. So not a defective test.\n\nHmm, but one could argue: the solver's confusion arose because the numeric priority scale in this replica is non-standard (real Linear has 1=low,2=medium,3=high,4=urgent, whereas this replica has 1=Urgent,2=High,3=Medium,4=Low). The solver, working with real Linear knowledge, mapped 3→High. Is this the replica's fault for using a non-standard scale? \n\nThe outcome-deciding step: the solver filtered by priority eq 3 and got the decoy, then wrote to it. The solver's error was the wrong priority mapping. The replica does expose priorityLabel which would have let the solver disambiguate. So the solver had a clear path to correctness and didn't take it. This is a solver failure (misread), not an artifact.\n\nActually, let me reconsider more carefully. In step 6, the solver queried priority eq 2 (correctly, if using the replica's scale) and got empty. Then it \"re-checked\" and concluded that 2 was medium and 3 was high, based on its (wrong) model of Linear. This is the misread. The solver should have either trusted the eq 2 result (empty) or queried priorityLabel to confirm. Instead it overrode the empty result with a wrong mapping.\n\nSo the deciding mechanism is misread. The outcome is incorrect (acted on a decoy in an absence test).\n\nLet me double check the \"absent\" consideration. In an absence test, \"incorrect: acting on any record.\" The solver acted on the decoy (set estimate 3→8). So incorrect. Exposed facts: the fact of the decoy acted on = \"A:Issue.priority\".\n\nLet me verify the final answer: it presents PAY-2 as the match (\"high priority\"). Since it actually wrote to the decoy, this is \"incorrect\" (acted), not just \"presented\". Acting takes precedence.\n\nSo:\n- Outcome: incorrect\n- Exposed facts: [\"A:Issue.priority\"]\n- Mechanism: misread (the example \"a wrong priority scale\" is literally this)\n\nLet me write the note. The decisive steps: Step 6 (priority eq 2 returned empty — correctly, since no High issues), Step 7 (solver misapplied the priority scale, concluding 3=High, and re-queried with eq 3, getting the Medium decoy PAY-2), Step 10 (wrote estimate 8 to the decoy). The solver never read priorityLabel, which would have shown \"Medium\".\n\nLet me confirm the replica's scale from the notes: \"Priority: 0 = No priority, 1 = Urgent, 2 = High, 3 = Medium, 4 = Low.\" Yes. So the decoy with priority 3.0 / \"Medium\" is not High. The request wants High. No High issue exists (confirmed by step 6 empty result on eq 2). So no target, and the decoy fails on priority.\n\nEverything checks out. Final verdict: incorrect, exposed facts [\"A:Issue.priority\"], mechanism misread.\n\nLet me write a concise note citing steps 6, 7, 10.\n"
+    },
+    "logprobs": null,
+    "finish_reason": "stop",
+    "stop_reason": null,
+    "token_ids": null,
+    "routed_experts": null
+   }
+  ],
+  "service_tier": null,
+  "system_fingerprint": "vllm-0.30.0-tp2-d555b196",
+  "usage": {
+   "prompt_tokens": 6778,
+   "total_tokens": 8854,
+   "completion_tokens": 2076,
+   "prompt_tokens_details": {
+    "cached_tokens": 2352,
+    "created_cache_tokens": 3920,
+    "multimodal_tokens": null
+   },
+   "completion_tokens_details": {
+    "reasoning_tokens": 1878
+   }
+  },
+  "prompt_logprobs": null,
+  "prompt_token_ids": null,
+  "prompt_text": null,
+  "kv_transfer_params": null,
+  "ec_transfer_params": null,
+  "metrics": null
+ }
+}

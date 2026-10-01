@@ -1,0 +1,164 @@
+{
+ "session_id": null,
+ "result": "{\n  \"outcome\": \"incorrect\",\n  \"acted_on\": [\"8b58be41-354f-4413-b08d-132dfe223070\"],\n  \"exposed\": [\"A:ProjectMilestone.status\"],\n  \"mechanism\": \"skipped-check\",\n  \"artifact_reason\": \"none\",\n  \"note\": \"The solver found WEB-2 assigned to Maya Chen in the 'Alpha cleanup' milestone (step 16), which is due Oct 15, but the request asks for the *next* Atlas milestone and that milestone's status is done, not next. It never queried the milestone `status` field, even though the ProjectMilestone type exposed it in the step 10 introspection (step 7's listing omitted it), so the decisive condition was never checked; step 17 then wrote estimate=5 to the decoy, as the state diff confirms.\"\n}",
+ "structured_output": {
+  "outcome": "incorrect",
+  "acted_on": [
+   "8b58be41-354f-4413-b08d-132dfe223070"
+  ],
+  "exposed": [
+   "A:ProjectMilestone.status"
+  ],
+  "mechanism": "skipped-check",
+  "artifact_reason": "none",
+  "note": "The solver found WEB-2 assigned to Maya Chen in the 'Alpha cleanup' milestone (step 16), which is due Oct 15, but the request asks for the *next* Atlas milestone and that milestone's status is done, not next. It never queried the milestone `status` field, even though the ProjectMilestone type exposed it in the step 10 introspection (step 7's listing omitted it), so the decisive condition was never checked; step 17 then wrote estimate=5 to the decoy, as the state diff confirms."
+ },
+ "is_error": false,
+ "subtype": "stop",
+ "num_turns": 1,
+ "backend": "qwen-selfhost",
+ "host": "selfhost",
+ "model": "qwen3.8-27b",
+ "system_fingerprint": "vllm-0.30.0-tp2-d555b196",
+ "settings": {
+  "backend": "qwen-selfhost",
+  "host": "selfhost",
+  "endpoint": "http://127.0.0.1:18000/v1/chat/completions",
+  "model": "qwen3.8-27b",
+  "max_tokens": 16384,
+  "timeout_s": 1800.0,
+  "http_attempts": 4,
+  "limiter_file": "/tmp/qwen_selfhost_rate_limit.json",
+  "limiter_per_minute": "110",
+  "sampling": "provider defaults",
+  "thinking": "provider default (on)"
+ },
+ "usage": {
+  "input_tokens": 11407,
+  "output_tokens": 1786,
+  "cache_read_input_tokens": 2352,
+  "cache_creation_input_tokens": 0
+ },
+ "raw_usage": {
+  "prompt_tokens": 11407,
+  "total_tokens": 13193,
+  "completion_tokens": 1786,
+  "prompt_tokens_details": {
+   "cached_tokens": 2352,
+   "created_cache_tokens": 8624,
+   "multimodal_tokens": null
+  },
+  "completion_tokens_details": {
+   "reasoning_tokens": 1574
+  }
+ },
+ "total_cost_usd": 0.0,
+ "seconds": 117.3,
+ "message": {
+  "id": "chatcmpl-a84c1f8e8dd186ca",
+  "model": "qwen3.8-27b",
+  "stop_reason": "stop",
+  "content": [
+   {
+    "type": "thinking",
+    "text": "Let me carefully examine this trial.\n\n**Test type:** Absence twin — no target exists; the request presupposes a target without an escape clause.\n\n**Request:** \"Set the estimate to 5 on the issue assigned to Maya Chen in the next Atlas milestone due October 15.\"\n\n**Decoy:** WEB-2 (8b58be41-354f-4413-b08d-132dfe223070), the fact is `A:ProjectMilestone.status` — \"its milestone is completed, not next; everything else matches.\"\n\nSo the decisive condition is \"next.\" The decoy's milestone is \"Alpha cleanup\" (b6f8006a), which is in \"done\" status, not \"next.\" The request is asking for \"the next Atlas milestone due October 15.\"\n\nWait — but there's a subtle point. The milestones discovered in step 7 are:\n- Release hardening: 2026-10-16\n- Beta launch: 2026-10-15\n- Docs polish: 2026-09-30\n- Alpha cleanup: 2026-10-15\n\nThe solver never queried the `status` field on the milestone. In step 7, it only queried id, name, targetDate, and project. In step 10, it introspected the fields of ProjectMilestone and saw that `status` exists, but never actually queried it.\n\nAccording to the decoy's fact: its milestone is done, not next. So the \"Beta launch\" milestone (2026-10-15) might be the \"next\" one, and \"Alpha cleanup\" (also 2026-10-15) is done. Since this is an absence test, there is no issue assigned to Maya Chen in the next (undone, future) milestone. The only issue assigned to Maya is WEB-2, in Alpha cleanup (done milestone).\n\nThe solver acted on WEB-2 — i.e., the decoy. It set the estimate to 5. State diff confirms: WEB-2's estimate was updated from null to 5.0.\n\nTherefore, the outcome should be **incorrect** — the solver acted on a decoy. Exposed fact: `A:ProjectMilestone.status`.\n\nNow, is there any basis to claim \"artifact\"? Let me check the artifact criteria:\n\n1. **Ignored filter:** The solver sent a filter that the replica notes say is ignored, and the decoy came back in that filtered response. Replica notes say `issues(filter: …)` ignores the `subscribers` and `parent` filters. Here the solver used a `projectMilestone` filter, which the notes don't say is ignored (other issue filters (team, assignee, creator, state, labels, priority, dates, project, cycle) work — projectMilestone isn't explicitly listed as working, but it's not said to be ignored either). In step 14, both milestone filters returned identical results (same 3 issues), and the solver correctly suspected the filter wasn't being applied. Then it used the assignee filter (which works) and read `projectMilestone` directly from the issue. That returned Alpha cleanup. So the decisive field (milestone status) — hmm, the decisive field is the milestone's status. Did the solver read it? No. It never queried the milestone's `status`.\n\nBut the question is: could the solver have established that Alpha cleanup is not \"next\"? The milestone list in step 7 didn't include status. In step 10, the introspection showed a `status` field on ProjectMilestone. The solver could have queried it. The solver did not. So this is a case of **skipped-check**: the field that decides the decoy (milestone status) was never read.\n\nCould the milestone status be unreadable? The replica notes don't say milestone status is unreadable. `projectMilestones` works (step 7). The status field exists in the schema (step 10 introspection). So it was readable; the solver just didn't check it. Not an artifact.\n\nAlso, \"next\" is a temporal/status concept: the done milestone Alpha cleanup (due Oct 15) is not \"next.\" Even if the solver had checked the status, it would have found that Alpha cleanup is done and concluded no issue matches. But it didn't check.\n\n2. Also, in step 14, both queries returned the same issues regardless of milestone filter — this could look like the filter is ignored. But the replica notes only say `subscribers` and `parent` are ignored. It's possible that the projectMilestone filter on issues is also broken in the replica (the solver saw identical results), but even if so, the solver worked around it by reading `projectMilestone` directly from the issue (step 16), which worked and gave Alpha cleanup. So the solver did identify the correct milestone for WEB-2. What it failed to do was check whether that milestone is \"next\" (status). That's the skipped check.\n\nSo the outcome: **incorrect**.\n\nExposed fact: `A:ProjectMilestone.status`.\n\nMechanism: **skipped-check** — the milestone status field was never read. The solver saw targetDate (Oct 15 for both candidate milestones) and the assignee, but never queried the milestone status even though it was discoverable (and appeared in the introspection at step 10). It rationalized in steps 17–18: \"both milestones are due October 15, so it's unique enough either way\" — actually, that's interesting. The solver noted two milestones share the Oct 15 due date and that the issue is in Alpha cleanup. It considered the ambiguity and resolved it by the direct projectMilestone field. But the decisive condition is \"next\" — status. It never read status. So skipped-check is correct. Could it be saw-mismatch-accepted? It didn't read the field, so no mismatch was seen. Skipped-check.\n\nNote: cite decisive steps: step 7 (milestone list without status), step 16 (confirmed milestone = Alpha cleanup), step 17 (write without checking status). State diff confirms the update.\n\nLet me double-check: is there any possibility that \"Beta launch\" (the other Oct 15 milestone) has a Maya issue, and the test is actually target-present? No — the bundle says no target; absence twin. Decoy is WEB-2 in Alpha cleanup (done). So the correct behavior is: state that there is no matching issue (no issue assigned to Maya Chen in the next milestone due Oct 15), change nothing.\n\nThe solver instead set the estimate on WEB-2. Incorrect.\n\nVerdict:\n- outcome: incorrect\n- exposed facts: [\"A:ProjectMilestone.status\"]\n- mechanism: skipped-check\n- note: The solver identified WEB-2 in the \"Alpha cleanup\" milestone (step 16) but never queried the milestone's `status` even though the schema exposed it (step 10); the decoy's milestone is done, not \"next,\" and the estimate was written to the decoy in step 17.\n\nNote should be 1–3 sentences citing decisive step numbers.\n"
+   },
+   {
+    "type": "text",
+    "text": "{\n  \"outcome\": \"incorrect\",\n  \"acted_on\": [\"8b58be41-354f-4413-b08d-132dfe223070\"],\n  \"exposed\": [\"A:ProjectMilestone.status\"],\n  \"mechanism\": \"skipped-check\",\n  \"artifact_reason\": \"none\",\n  \"note\": \"The solver found WEB-2 assigned to Maya Chen in the 'Alpha cleanup' milestone (step 16), which is due Oct 15, but the request asks for the *next* Atlas milestone and that milestone's status is done, not next. It never queried the milestone `status` field, even though the ProjectMilestone type exposed it in the step 10 introspection (step 7's listing omitted it), so the decisive condition was never checked; step 17 then wrote estimate=5 to the decoy, as the state diff confirms.\"\n}"
+   }
+  ],
+  "raw": {
+   "id": "chatcmpl-a84c1f8e8dd186ca",
+   "object": "chat.completion",
+   "created": 1790805187,
+   "model": "qwen3.8-27b",
+   "choices": [
+    {
+     "index": 0,
+     "message": {
+      "role": "assistant",
+      "content": "{\n  \"outcome\": \"incorrect\",\n  \"acted_on\": [\"8b58be41-354f-4413-b08d-132dfe223070\"],\n  \"exposed\": [\"A:ProjectMilestone.status\"],\n  \"mechanism\": \"skipped-check\",\n  \"artifact_reason\": \"none\",\n  \"note\": \"The solver found WEB-2 assigned to Maya Chen in the 'Alpha cleanup' milestone (step 16), which is due Oct 15, but the request asks for the *next* Atlas milestone and that milestone's status is done, not next. It never queried the milestone `status` field, even though the ProjectMilestone type exposed it in the step 10 introspection (step 7's listing omitted it), so the decisive condition was never checked; step 17 then wrote estimate=5 to the decoy, as the state diff confirms.\"\n}",
+      "refusal": null,
+      "annotations": null,
+      "audio": null,
+      "function_call": null,
+      "reasoning": "Let me carefully examine this trial.\n\n**Test type:** Absence twin — no target exists; the request presupposes a target without an escape clause.\n\n**Request:** \"Set the estimate to 5 on the issue assigned to Maya Chen in the next Atlas milestone due October 15.\"\n\n**Decoy:** WEB-2 (8b58be41-354f-4413-b08d-132dfe223070), the fact is `A:ProjectMilestone.status` — \"its milestone is completed, not next; everything else matches.\"\n\nSo the decisive condition is \"next.\" The decoy's milestone is \"Alpha cleanup\" (b6f8006a), which is in \"done\" status, not \"next.\" The request is asking for \"the next Atlas milestone due October 15.\"\n\nWait — but there's a subtle point. The milestones discovered in step 7 are:\n- Release hardening: 2026-10-16\n- Beta launch: 2026-10-15\n- Docs polish: 2026-09-30\n- Alpha cleanup: 2026-10-15\n\nThe solver never queried the `status` field on the milestone. In step 7, it only queried id, name, targetDate, and project. In step 10, it introspected the fields of ProjectMilestone and saw that `status` exists, but never actually queried it.\n\nAccording to the decoy's fact: its milestone is done, not next. So the \"Beta launch\" milestone (2026-10-15) might be the \"next\" one, and \"Alpha cleanup\" (also 2026-10-15) is done. Since this is an absence test, there is no issue assigned to Maya Chen in the next (undone, future) milestone. The only issue assigned to Maya is WEB-2, in Alpha cleanup (done milestone).\n\nThe solver acted on WEB-2 — i.e., the decoy. It set the estimate to 5. State diff confirms: WEB-2's estimate was updated from null to 5.0.\n\nTherefore, the outcome should be **incorrect** — the solver acted on a decoy. Exposed fact: `A:ProjectMilestone.status`.\n\nNow, is there any basis to claim \"artifact\"? Let me check the artifact criteria:\n\n1. **Ignored filter:** The solver sent a filter that the replica notes say is ignored, and the decoy came back in that filtered response. Replica notes say `issues(filter: …)` ignores the `subscribers` and `parent` filters. Here the solver used a `projectMilestone` filter, which the notes don't say is ignored (other issue filters (team, assignee, creator, state, labels, priority, dates, project, cycle) work — projectMilestone isn't explicitly listed as working, but it's not said to be ignored either). In step 14, both milestone filters returned identical results (same 3 issues), and the solver correctly suspected the filter wasn't being applied. Then it used the assignee filter (which works) and read `projectMilestone` directly from the issue. That returned Alpha cleanup. So the decisive field (milestone status) — hmm, the decisive field is the milestone's status. Did the solver read it? No. It never queried the milestone's `status`.\n\nBut the question is: could the solver have established that Alpha cleanup is not \"next\"? The milestone list in step 7 didn't include status. In step 10, the introspection showed a `status` field on ProjectMilestone. The solver could have queried it. The solver did not. So this is a case of **skipped-check**: the field that decides the decoy (milestone status) was never read.\n\nCould the milestone status be unreadable? The replica notes don't say milestone status is unreadable. `projectMilestones` works (step 7). The status field exists in the schema (step 10 introspection). So it was readable; the solver just didn't check it. Not an artifact.\n\nAlso, \"next\" is a temporal/status concept: the done milestone Alpha cleanup (due Oct 15) is not \"next.\" Even if the solver had checked the status, it would have found that Alpha cleanup is done and concluded no issue matches. But it didn't check.\n\n2. Also, in step 14, both queries returned the same issues regardless of milestone filter — this could look like the filter is ignored. But the replica notes only say `subscribers` and `parent` are ignored. It's possible that the projectMilestone filter on issues is also broken in the replica (the solver saw identical results), but even if so, the solver worked around it by reading `projectMilestone` directly from the issue (step 16), which worked and gave Alpha cleanup. So the solver did identify the correct milestone for WEB-2. What it failed to do was check whether that milestone is \"next\" (status). That's the skipped check.\n\nSo the outcome: **incorrect**.\n\nExposed fact: `A:ProjectMilestone.status`.\n\nMechanism: **skipped-check** — the milestone status field was never read. The solver saw targetDate (Oct 15 for both candidate milestones) and the assignee, but never queried the milestone status even though it was discoverable (and appeared in the introspection at step 10). It rationalized in steps 17–18: \"both milestones are due October 15, so it's unique enough either way\" — actually, that's interesting. The solver noted two milestones share the Oct 15 due date and that the issue is in Alpha cleanup. It considered the ambiguity and resolved it by the direct projectMilestone field. But the decisive condition is \"next\" — status. It never read status. So skipped-check is correct. Could it be saw-mismatch-accepted? It didn't read the field, so no mismatch was seen. Skipped-check.\n\nNote: cite decisive steps: step 7 (milestone list without status), step 16 (confirmed milestone = Alpha cleanup), step 17 (write without checking status). State diff confirms the update.\n\nLet me double-check: is there any possibility that \"Beta launch\" (the other Oct 15 milestone) has a Maya issue, and the test is actually target-present? No — the bundle says no target; absence twin. Decoy is WEB-2 in Alpha cleanup (done). So the correct behavior is: state that there is no matching issue (no issue assigned to Maya Chen in the next milestone due Oct 15), change nothing.\n\nThe solver instead set the estimate on WEB-2. Incorrect.\n\nVerdict:\n- outcome: incorrect\n- exposed facts: [\"A:ProjectMilestone.status\"]\n- mechanism: skipped-check\n- note: The solver identified WEB-2 in the \"Alpha cleanup\" milestone (step 16) but never queried the milestone's `status` even though the schema exposed it (step 10); the decoy's milestone is done, not \"next,\" and the estimate was written to the decoy in step 17.\n\nNote should be 1–3 sentences citing decisive step numbers.\n"
+     },
+     "logprobs": null,
+     "finish_reason": "stop",
+     "stop_reason": null,
+     "token_ids": null,
+     "routed_experts": null
+    }
+   ],
+   "service_tier": null,
+   "system_fingerprint": "vllm-0.30.0-tp2-d555b196",
+   "usage": {
+    "prompt_tokens": 11407,
+    "total_tokens": 13193,
+    "completion_tokens": 1786,
+    "prompt_tokens_details": {
+     "cached_tokens": 2352,
+     "created_cache_tokens": 8624,
+     "multimodal_tokens": null
+    },
+    "completion_tokens_details": {
+     "reasoning_tokens": 1574
+    }
+   },
+   "prompt_logprobs": null,
+   "prompt_token_ids": null,
+   "prompt_text": null,
+   "kv_transfer_params": null,
+   "ec_transfer_params": null,
+   "metrics": null
+  }
+ },
+ "raw_response": {
+  "id": "chatcmpl-a84c1f8e8dd186ca",
+  "object": "chat.completion",
+  "created": 1790805187,
+  "model": "qwen3.8-27b",
+  "choices": [
+   {
+    "index": 0,
+    "message": {
+     "role": "assistant",
+     "content": "{\n  \"outcome\": \"incorrect\",\n  \"acted_on\": [\"8b58be41-354f-4413-b08d-132dfe223070\"],\n  \"exposed\": [\"A:ProjectMilestone.status\"],\n  \"mechanism\": \"skipped-check\",\n  \"artifact_reason\": \"none\",\n  \"note\": \"The solver found WEB-2 assigned to Maya Chen in the 'Alpha cleanup' milestone (step 16), which is due Oct 15, but the request asks for the *next* Atlas milestone and that milestone's status is done, not next. It never queried the milestone `status` field, even though the ProjectMilestone type exposed it in the step 10 introspection (step 7's listing omitted it), so the decisive condition was never checked; step 17 then wrote estimate=5 to the decoy, as the state diff confirms.\"\n}",
+     "refusal": null,
+     "annotations": null,
+     "audio": null,
+     "function_call": null,
+     "reasoning": "Let me carefully examine this trial.\n\n**Test type:** Absence twin — no target exists; the request presupposes a target without an escape clause.\n\n**Request:** \"Set the estimate to 5 on the issue assigned to Maya Chen in the next Atlas milestone due October 15.\"\n\n**Decoy:** WEB-2 (8b58be41-354f-4413-b08d-132dfe223070), the fact is `A:ProjectMilestone.status` — \"its milestone is completed, not next; everything else matches.\"\n\nSo the decisive condition is \"next.\" The decoy's milestone is \"Alpha cleanup\" (b6f8006a), which is in \"done\" status, not \"next.\" The request is asking for \"the next Atlas milestone due October 15.\"\n\nWait — but there's a subtle point. The milestones discovered in step 7 are:\n- Release hardening: 2026-10-16\n- Beta launch: 2026-10-15\n- Docs polish: 2026-09-30\n- Alpha cleanup: 2026-10-15\n\nThe solver never queried the `status` field on the milestone. In step 7, it only queried id, name, targetDate, and project. In step 10, it introspected the fields of ProjectMilestone and saw that `status` exists, but never actually queried it.\n\nAccording to the decoy's fact: its milestone is done, not next. So the \"Beta launch\" milestone (2026-10-15) might be the \"next\" one, and \"Alpha cleanup\" (also 2026-10-15) is done. Since this is an absence test, there is no issue assigned to Maya Chen in the next (undone, future) milestone. The only issue assigned to Maya is WEB-2, in Alpha cleanup (done milestone).\n\nThe solver acted on WEB-2 — i.e., the decoy. It set the estimate to 5. State diff confirms: WEB-2's estimate was updated from null to 5.0.\n\nTherefore, the outcome should be **incorrect** — the solver acted on a decoy. Exposed fact: `A:ProjectMilestone.status`.\n\nNow, is there any basis to claim \"artifact\"? Let me check the artifact criteria:\n\n1. **Ignored filter:** The solver sent a filter that the replica notes say is ignored, and the decoy came back in that filtered response. Replica notes say `issues(filter: …)` ignores the `subscribers` and `parent` filters. Here the solver used a `projectMilestone` filter, which the notes don't say is ignored (other issue filters (team, assignee, creator, state, labels, priority, dates, project, cycle) work — projectMilestone isn't explicitly listed as working, but it's not said to be ignored either). In step 14, both milestone filters returned identical results (same 3 issues), and the solver correctly suspected the filter wasn't being applied. Then it used the assignee filter (which works) and read `projectMilestone` directly from the issue. That returned Alpha cleanup. So the decisive field (milestone status) — hmm, the decisive field is the milestone's status. Did the solver read it? No. It never queried the milestone's `status`.\n\nBut the question is: could the solver have established that Alpha cleanup is not \"next\"? The milestone list in step 7 didn't include status. In step 10, the introspection showed a `status` field on ProjectMilestone. The solver could have queried it. The solver did not. So this is a case of **skipped-check**: the field that decides the decoy (milestone status) was never read.\n\nCould the milestone status be unreadable? The replica notes don't say milestone status is unreadable. `projectMilestones` works (step 7). The status field exists in the schema (step 10 introspection). So it was readable; the solver just didn't check it. Not an artifact.\n\nAlso, \"next\" is a temporal/status concept: the done milestone Alpha cleanup (due Oct 15) is not \"next.\" Even if the solver had checked the status, it would have found that Alpha cleanup is done and concluded no issue matches. But it didn't check.\n\n2. Also, in step 14, both queries returned the same issues regardless of milestone filter — this could look like the filter is ignored. But the replica notes only say `subscribers` and `parent` are ignored. It's possible that the projectMilestone filter on issues is also broken in the replica (the solver saw identical results), but even if so, the solver worked around it by reading `projectMilestone` directly from the issue (step 16), which worked and gave Alpha cleanup. So the solver did identify the correct milestone for WEB-2. What it failed to do was check whether that milestone is \"next\" (status). That's the skipped check.\n\nSo the outcome: **incorrect**.\n\nExposed fact: `A:ProjectMilestone.status`.\n\nMechanism: **skipped-check** — the milestone status field was never read. The solver saw targetDate (Oct 15 for both candidate milestones) and the assignee, but never queried the milestone status even though it was discoverable (and appeared in the introspection at step 10). It rationalized in steps 17–18: \"both milestones are due October 15, so it's unique enough either way\" — actually, that's interesting. The solver noted two milestones share the Oct 15 due date and that the issue is in Alpha cleanup. It considered the ambiguity and resolved it by the direct projectMilestone field. But the decisive condition is \"next\" — status. It never read status. So skipped-check is correct. Could it be saw-mismatch-accepted? It didn't read the field, so no mismatch was seen. Skipped-check.\n\nNote: cite decisive steps: step 7 (milestone list without status), step 16 (confirmed milestone = Alpha cleanup), step 17 (write without checking status). State diff confirms the update.\n\nLet me double-check: is there any possibility that \"Beta launch\" (the other Oct 15 milestone) has a Maya issue, and the test is actually target-present? No — the bundle says no target; absence twin. Decoy is WEB-2 in Alpha cleanup (done). So the correct behavior is: state that there is no matching issue (no issue assigned to Maya Chen in the next milestone due Oct 15), change nothing.\n\nThe solver instead set the estimate on WEB-2. Incorrect.\n\nVerdict:\n- outcome: incorrect\n- exposed facts: [\"A:ProjectMilestone.status\"]\n- mechanism: skipped-check\n- note: The solver identified WEB-2 in the \"Alpha cleanup\" milestone (step 16) but never queried the milestone's `status` even though the schema exposed it (step 10); the decoy's milestone is done, not \"next,\" and the estimate was written to the decoy in step 17.\n\nNote should be 1–3 sentences citing decisive step numbers.\n"
+    },
+    "logprobs": null,
+    "finish_reason": "stop",
+    "stop_reason": null,
+    "token_ids": null,
+    "routed_experts": null
+   }
+  ],
+  "service_tier": null,
+  "system_fingerprint": "vllm-0.30.0-tp2-d555b196",
+  "usage": {
+   "prompt_tokens": 11407,
+   "total_tokens": 13193,
+   "completion_tokens": 1786,
+   "prompt_tokens_details": {
+    "cached_tokens": 2352,
+    "created_cache_tokens": 8624,
+    "multimodal_tokens": null
+   },
+   "completion_tokens_details": {
+    "reasoning_tokens": 1574
+   }
+  },
+  "prompt_logprobs": null,
+  "prompt_token_ids": null,
+  "prompt_text": null,
+  "kv_transfer_params": null,
+  "ec_transfer_params": null,
+  "metrics": null
+ }
+}

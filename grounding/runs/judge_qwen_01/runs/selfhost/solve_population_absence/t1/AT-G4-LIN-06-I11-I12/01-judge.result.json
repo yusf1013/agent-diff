@@ -1,0 +1,164 @@
+{
+ "session_id": null,
+ "result": "{\"outcome\":\"incorrect\",\"acted_on\":[\"2e70158e-b9ca-4127-8304-7b25b01eedfe\"],\"exposed\":[\"R:issue_label_issue_association\"],\"mechanism\":\"misread\",\"artifact_reason\":\n\"\"\n,\"note\":\"The solver correctly identified two distinct 'Bug' labels (Web and Mobile) in step 5 and filtered issues by the Web Bug label ID in step 7, receiving an empty result. When it loosened the filter in step 9 and saw WEB-4 carrying a label named 'Bug', it should have concluded that label was the Mobile one (the only unaccounted-for Bug), yet step 10's reasoning asserts 'Bug label from the Web team' and proceeds to set the estimate. The solver misread which Bug label WEB-4 carried, acting on the Mobile-label decoy.\"}",
+ "structured_output": {
+  "outcome": "incorrect",
+  "acted_on": [
+   "2e70158e-b9ca-4127-8304-7b25b01eedfe"
+  ],
+  "exposed": [
+   "R:issue_label_issue_association"
+  ],
+  "mechanism": "misread",
+  "artifact_reason": "",
+  "note": "The solver correctly identified two distinct 'Bug' labels (Web and Mobile) in step 5 and filtered issues by the Web Bug label ID in step 7, receiving an empty result. When it loosened the filter in step 9 and saw WEB-4 carrying a label named 'Bug', it should have concluded that label was the Mobile one (the only unaccounted-for Bug), yet step 10's reasoning asserts 'Bug label from the Web team' and proceeds to set the estimate. The solver misread which Bug label WEB-4 carried, acting on the Mobile-label decoy."
+ },
+ "is_error": false,
+ "subtype": "stop",
+ "num_turns": 1,
+ "backend": "qwen-selfhost",
+ "host": "selfhost",
+ "model": "qwen3.8-27b",
+ "system_fingerprint": "vllm-0.30.0-tp2-d555b196",
+ "settings": {
+  "backend": "qwen-selfhost",
+  "host": "selfhost",
+  "endpoint": "http://127.0.0.1:18000/v1/chat/completions",
+  "model": "qwen3.8-27b",
+  "max_tokens": 16384,
+  "timeout_s": 1800.0,
+  "http_attempts": 4,
+  "limiter_file": "/tmp/qwen_selfhost_rate_limit.json",
+  "limiter_per_minute": "110",
+  "sampling": "provider defaults",
+  "thinking": "provider default (on)"
+ },
+ "usage": {
+  "input_tokens": 7952,
+  "output_tokens": 1895,
+  "cache_read_input_tokens": 2352,
+  "cache_creation_input_tokens": 0
+ },
+ "raw_usage": {
+  "prompt_tokens": 7952,
+  "total_tokens": 9847,
+  "completion_tokens": 1895,
+  "prompt_tokens_details": {
+   "cached_tokens": 2352,
+   "created_cache_tokens": 5488,
+   "multimodal_tokens": null
+  },
+  "completion_tokens_details": {
+   "reasoning_tokens": 1704
+  }
+ },
+ "total_cost_usd": 0.0,
+ "seconds": 142.1,
+ "message": {
+  "id": "chatcmpl-b9e7babab92b6cc5",
+  "model": "qwen3.8-27b",
+  "stop_reason": "stop",
+  "content": [
+   {
+    "type": "thinking",
+    "text": "Let me analyze this trial carefully.\n\n**Test form:** absence twin — no target exists. The request presupposes a matching record with no escape clause.\n\n**Request:** \"Set the estimate to 3 for the Todo issue assigned to Maya Chen in the Web team with the Bug label from the Web team.\"\n\n**Candidates:**\n- No target exists.\n- DECOY `be3a2c7f-...` (WEB-3): Meets team, assignee, state, but Bug label is only on its parent, not on the issue itself.\n- DECOY `2e70158e-...` (WEB-4): Meets team, assignee, state, and has a label named \"Bug\", but that label belongs to the **Mobile** team, not the Web team.\n\n**What the solver did:**\n1. Read SKILL.md.\n2. Queried teams and users — found Web team ID and Maya Chen's ID.\n3. Queried issueLabels with name \"Bug\" — got three results:\n   - `00cdc287-...` Feature (Web)\n   - `4ceccc67-...` Bug (Mobile team `77e57ae3-...`)\n   - `c549e2f4-...` Bug (Web team `f19a59ca-...`)\n   \n   The solver correctly identified the Web team's Bug label as `c549e2f4-41b7-4177-a9fe-5676ab80f6c7`.\n\n4. Queried workflowStates — found Todo state ID.\n5. Queried issues with filter: team=Web, assignee=Maya, labels id eq `c549e2f4-...` (Web's Bug label), state=Todo → **empty result**.\n6. Loosened the filter (removed label) → got WEB-4 and WEB-3.\n7. In step 10, the solver's reasoning says: \"WEB-4 matches: Todo, assigned to Maya Chen, Bug label from the Web team.\" But wait — the solver had already identified in step 5 that there are TWO labels named \"Bug\": one from Mobile and one from Web. The Web Bug label is `c549e2f4-...`. \n\nIn step 9, the response for WEB-4 shows `labels: { nodes: [{ name: \"Bug\" }] }` — it only shows the name, not the ID or team. The solver then in step 10 concluded \"WEB-4 matches: Todo, assigned to Maya Chen, Bug label from the Web team.\"\n\nBut the solver already knew from step 5 that there are two \"Bug\" labels — one Mobile, one Web. The issue WEB-4's label is `4ceccc67-84ea-42ce-b93a-46ae429abe7f` (from the decoy record), which is the **Mobile** team's Bug label. The solver never checked which specific \"Bug\" label WEB-4 has — it only saw the name \"Bug\" in the response and assumed it was the Web team's Bug label.\n\nActually, let me re-read step 7's query. The solver filtered by `labels: { id: { eq: \"c549e2f4-41b7-4177-a9fe-5676ab80f6c7\" } }` (the Web Bug label) and got an empty result. This means WEB-4 does NOT have the Web Bug label. The solver got an empty result, then loosened the filter. When it saw WEB-4 with a label named \"Bug\", it should have realized: \"Wait, I already filtered by the Web Bug label ID and got nothing. So this 'Bug' label must be the Mobile one.\" But instead it concluded \"WEB-4 is a perfect match.\"\n\nSo the solver:\n- Knew there were two Bug labels (step 5 response showed both)\n- Filtered by the Web Bug label ID and got empty (step 8)\n- Loosened the filter and saw WEB-4 with label name \"Bug\" (step 9)\n- Concluded WEB-4 matches \"Bug label from the Web team\" (step 10)\n- Set estimate to 3 on WEB-4 (a decoy)\n\nThis is a clear **incorrect** outcome — the solver acted on a decoy.\n\n**Mechanism:** The solver read the deciding field (it saw both Bug labels in step 5, and it filtered by the Web Bug label ID in step 7/8 getting empty results). However, when it saw WEB-4 with a label named \"Bug\" in step 9, it misidentified which Bug label it was. It said \"Bug label from the Web team\" in its reasoning, but it never actually verified the label ID. The step 9 response only showed the label name \"Bug\", not the ID or team.\n\nActually, let me think about this more carefully. The solver:\n- In step 5, saw both Bug labels and their IDs/teams.\n- In step 7, filtered issues by the Web Bug label ID and got empty.\n- In step 9, loosened the filter and saw WEB-4 with label name \"Bug\".\n- In step 10, concluded WEB-4 has \"Bug label from the Web team.\"\n\nThe solver had the information to know this was wrong: it had just filtered by the Web Bug label ID and gotten no results. The label on WEB-4 must be the Mobile one. But the solver ignored this and assumed it was the Web one.\n\nThis is **misread** — the solver read the deciding field (it knew there were two Bug labels, and it had just gotten an empty result when filtering by the Web one), but misinterpreted the evidence, believing WEB-4's \"Bug\" label was the Web team's when it was actually the Mobile team's. The step 9 response only showed the name \"Bug\" without the ID, and the solver failed to connect the dots (empty result from step 8 + two Bug labels from step 5 = the \"Bug\" on WEB-4 must be the Mobile one).\n\nActually, is this more \"skipped-check\" or \"misread\"? The solver did see the label name in step 9. It also saw in step 5 that there are two Bug labels. And it got an empty result in step 8 when filtering by the Web Bug label. So it had all the information. But in step 10, it said \"WEB-4 matches: Todo, assigned to Maya Chen, Bug label from the Web team\" — this is a misinterpretation. It saw the name \"Bug\" and assumed it was the Web one, despite the evidence to the contrary.\n\nI'd say this is **misread**: the solver read the deciding information (saw two Bug labels, got empty when filtering by Web one, saw \"Bug\" name on WEB-4) but misinterpreted it, concluding the \"Bug\" on WEB-4 was the Web team's label.\n\n**Outcome:** incorrect\n**Exposed facts:** `R:issue_label_issue_association` (the fact for decoy WEB-4)\n**Mechanism:** misread\n\nThe state diff confirms the solver wrote to WEB-4 (the decoy), setting estimate from null to 3.0.\n\nLet me also note: the final answer has a warning \"⚠️ 🛠️ Exec failed: `fetch https://api.linear.app/graphql`\" but this appears to be a display artifact and doesn't affect the verdict since the write clearly succeeded per step 10's response and the state diff.\n\nVerdict: **incorrect**\n- Exposed facts: `[\"R:issue_label_issue_association\"]`\n- Mechanism: misread\n"
+   },
+   {
+    "type": "text",
+    "text": "{\"outcome\":\"incorrect\",\"acted_on\":[\"2e70158e-b9ca-4127-8304-7b25b01eedfe\"],\"exposed\":[\"R:issue_label_issue_association\"],\"mechanism\":\"misread\",\"artifact_reason\":\n\"\"\n,\"note\":\"The solver correctly identified two distinct 'Bug' labels (Web and Mobile) in step 5 and filtered issues by the Web Bug label ID in step 7, receiving an empty result. When it loosened the filter in step 9 and saw WEB-4 carrying a label named 'Bug', it should have concluded that label was the Mobile one (the only unaccounted-for Bug), yet step 10's reasoning asserts 'Bug label from the Web team' and proceeds to set the estimate. The solver misread which Bug label WEB-4 carried, acting on the Mobile-label decoy.\"}"
+   }
+  ],
+  "raw": {
+   "id": "chatcmpl-b9e7babab92b6cc5",
+   "object": "chat.completion",
+   "created": 1790806949,
+   "model": "qwen3.8-27b",
+   "choices": [
+    {
+     "index": 0,
+     "message": {
+      "role": "assistant",
+      "content": "{\"outcome\":\"incorrect\",\"acted_on\":[\"2e70158e-b9ca-4127-8304-7b25b01eedfe\"],\"exposed\":[\"R:issue_label_issue_association\"],\"mechanism\":\"misread\",\"artifact_reason\":\n\"\"\n,\"note\":\"The solver correctly identified two distinct 'Bug' labels (Web and Mobile) in step 5 and filtered issues by the Web Bug label ID in step 7, receiving an empty result. When it loosened the filter in step 9 and saw WEB-4 carrying a label named 'Bug', it should have concluded that label was the Mobile one (the only unaccounted-for Bug), yet step 10's reasoning asserts 'Bug label from the Web team' and proceeds to set the estimate. The solver misread which Bug label WEB-4 carried, acting on the Mobile-label decoy.\"}",
+      "refusal": null,
+      "annotations": null,
+      "audio": null,
+      "function_call": null,
+      "reasoning": "Let me analyze this trial carefully.\n\n**Test form:** absence twin — no target exists. The request presupposes a matching record with no escape clause.\n\n**Request:** \"Set the estimate to 3 for the Todo issue assigned to Maya Chen in the Web team with the Bug label from the Web team.\"\n\n**Candidates:**\n- No target exists.\n- DECOY `be3a2c7f-...` (WEB-3): Meets team, assignee, state, but Bug label is only on its parent, not on the issue itself.\n- DECOY `2e70158e-...` (WEB-4): Meets team, assignee, state, and has a label named \"Bug\", but that label belongs to the **Mobile** team, not the Web team.\n\n**What the solver did:**\n1. Read SKILL.md.\n2. Queried teams and users — found Web team ID and Maya Chen's ID.\n3. Queried issueLabels with name \"Bug\" — got three results:\n   - `00cdc287-...` Feature (Web)\n   - `4ceccc67-...` Bug (Mobile team `77e57ae3-...`)\n   - `c549e2f4-...` Bug (Web team `f19a59ca-...`)\n   \n   The solver correctly identified the Web team's Bug label as `c549e2f4-41b7-4177-a9fe-5676ab80f6c7`.\n\n4. Queried workflowStates — found Todo state ID.\n5. Queried issues with filter: team=Web, assignee=Maya, labels id eq `c549e2f4-...` (Web's Bug label), state=Todo → **empty result**.\n6. Loosened the filter (removed label) → got WEB-4 and WEB-3.\n7. In step 10, the solver's reasoning says: \"WEB-4 matches: Todo, assigned to Maya Chen, Bug label from the Web team.\" But wait — the solver had already identified in step 5 that there are TWO labels named \"Bug\": one from Mobile and one from Web. The Web Bug label is `c549e2f4-...`. \n\nIn step 9, the response for WEB-4 shows `labels: { nodes: [{ name: \"Bug\" }] }` — it only shows the name, not the ID or team. The solver then in step 10 concluded \"WEB-4 matches: Todo, assigned to Maya Chen, Bug label from the Web team.\"\n\nBut the solver already knew from step 5 that there are two \"Bug\" labels — one Mobile, one Web. The issue WEB-4's label is `4ceccc67-84ea-42ce-b93a-46ae429abe7f` (from the decoy record), which is the **Mobile** team's Bug label. The solver never checked which specific \"Bug\" label WEB-4 has — it only saw the name \"Bug\" in the response and assumed it was the Web team's Bug label.\n\nActually, let me re-read step 7's query. The solver filtered by `labels: { id: { eq: \"c549e2f4-41b7-4177-a9fe-5676ab80f6c7\" } }` (the Web Bug label) and got an empty result. This means WEB-4 does NOT have the Web Bug label. The solver got an empty result, then loosened the filter. When it saw WEB-4 with a label named \"Bug\", it should have realized: \"Wait, I already filtered by the Web Bug label ID and got nothing. So this 'Bug' label must be the Mobile one.\" But instead it concluded \"WEB-4 is a perfect match.\"\n\nSo the solver:\n- Knew there were two Bug labels (step 5 response showed both)\n- Filtered by the Web Bug label ID and got empty (step 8)\n- Loosened the filter and saw WEB-4 with label name \"Bug\" (step 9)\n- Concluded WEB-4 matches \"Bug label from the Web team\" (step 10)\n- Set estimate to 3 on WEB-4 (a decoy)\n\nThis is a clear **incorrect** outcome — the solver acted on a decoy.\n\n**Mechanism:** The solver read the deciding field (it saw both Bug labels in step 5, and it filtered by the Web Bug label ID in step 7/8 getting empty results). However, when it saw WEB-4 with a label named \"Bug\" in step 9, it misidentified which Bug label it was. It said \"Bug label from the Web team\" in its reasoning, but it never actually verified the label ID. The step 9 response only showed the label name \"Bug\", not the ID or team.\n\nActually, let me think about this more carefully. The solver:\n- In step 5, saw both Bug labels and their IDs/teams.\n- In step 7, filtered issues by the Web Bug label ID and got empty.\n- In step 9, loosened the filter and saw WEB-4 with label name \"Bug\".\n- In step 10, concluded WEB-4 has \"Bug label from the Web team.\"\n\nThe solver had the information to know this was wrong: it had just filtered by the Web Bug label ID and gotten no results. The label on WEB-4 must be the Mobile one. But the solver ignored this and assumed it was the Web one.\n\nThis is **misread** — the solver read the deciding field (it knew there were two Bug labels, and it had just gotten an empty result when filtering by the Web one), but misinterpreted the evidence, believing WEB-4's \"Bug\" label was the Web team's when it was actually the Mobile team's. The step 9 response only showed the name \"Bug\" without the ID, and the solver failed to connect the dots (empty result from step 8 + two Bug labels from step 5 = the \"Bug\" on WEB-4 must be the Mobile one).\n\nActually, is this more \"skipped-check\" or \"misread\"? The solver did see the label name in step 9. It also saw in step 5 that there are two Bug labels. And it got an empty result in step 8 when filtering by the Web Bug label. So it had all the information. But in step 10, it said \"WEB-4 matches: Todo, assigned to Maya Chen, Bug label from the Web team\" — this is a misinterpretation. It saw the name \"Bug\" and assumed it was the Web one, despite the evidence to the contrary.\n\nI'd say this is **misread**: the solver read the deciding information (saw two Bug labels, got empty when filtering by Web one, saw \"Bug\" name on WEB-4) but misinterpreted it, concluding the \"Bug\" on WEB-4 was the Web team's label.\n\n**Outcome:** incorrect\n**Exposed facts:** `R:issue_label_issue_association` (the fact for decoy WEB-4)\n**Mechanism:** misread\n\nThe state diff confirms the solver wrote to WEB-4 (the decoy), setting estimate from null to 3.0.\n\nLet me also note: the final answer has a warning \"⚠️ 🛠️ Exec failed: `fetch https://api.linear.app/graphql`\" but this appears to be a display artifact and doesn't affect the verdict since the write clearly succeeded per step 10's response and the state diff.\n\nVerdict: **incorrect**\n- Exposed facts: `[\"R:issue_label_issue_association\"]`\n- Mechanism: misread\n"
+     },
+     "logprobs": null,
+     "finish_reason": "stop",
+     "stop_reason": null,
+     "token_ids": null,
+     "routed_experts": null
+    }
+   ],
+   "service_tier": null,
+   "system_fingerprint": "vllm-0.30.0-tp2-d555b196",
+   "usage": {
+    "prompt_tokens": 7952,
+    "total_tokens": 9847,
+    "completion_tokens": 1895,
+    "prompt_tokens_details": {
+     "cached_tokens": 2352,
+     "created_cache_tokens": 5488,
+     "multimodal_tokens": null
+    },
+    "completion_tokens_details": {
+     "reasoning_tokens": 1704
+    }
+   },
+   "prompt_logprobs": null,
+   "prompt_token_ids": null,
+   "prompt_text": null,
+   "kv_transfer_params": null,
+   "ec_transfer_params": null,
+   "metrics": null
+  }
+ },
+ "raw_response": {
+  "id": "chatcmpl-b9e7babab92b6cc5",
+  "object": "chat.completion",
+  "created": 1790806949,
+  "model": "qwen3.8-27b",
+  "choices": [
+   {
+    "index": 0,
+    "message": {
+     "role": "assistant",
+     "content": "{\"outcome\":\"incorrect\",\"acted_on\":[\"2e70158e-b9ca-4127-8304-7b25b01eedfe\"],\"exposed\":[\"R:issue_label_issue_association\"],\"mechanism\":\"misread\",\"artifact_reason\":\n\"\"\n,\"note\":\"The solver correctly identified two distinct 'Bug' labels (Web and Mobile) in step 5 and filtered issues by the Web Bug label ID in step 7, receiving an empty result. When it loosened the filter in step 9 and saw WEB-4 carrying a label named 'Bug', it should have concluded that label was the Mobile one (the only unaccounted-for Bug), yet step 10's reasoning asserts 'Bug label from the Web team' and proceeds to set the estimate. The solver misread which Bug label WEB-4 carried, acting on the Mobile-label decoy.\"}",
+     "refusal": null,
+     "annotations": null,
+     "audio": null,
+     "function_call": null,
+     "reasoning": "Let me analyze this trial carefully.\n\n**Test form:** absence twin — no target exists. The request presupposes a matching record with no escape clause.\n\n**Request:** \"Set the estimate to 3 for the Todo issue assigned to Maya Chen in the Web team with the Bug label from the Web team.\"\n\n**Candidates:**\n- No target exists.\n- DECOY `be3a2c7f-...` (WEB-3): Meets team, assignee, state, but Bug label is only on its parent, not on the issue itself.\n- DECOY `2e70158e-...` (WEB-4): Meets team, assignee, state, and has a label named \"Bug\", but that label belongs to the **Mobile** team, not the Web team.\n\n**What the solver did:**\n1. Read SKILL.md.\n2. Queried teams and users — found Web team ID and Maya Chen's ID.\n3. Queried issueLabels with name \"Bug\" — got three results:\n   - `00cdc287-...` Feature (Web)\n   - `4ceccc67-...` Bug (Mobile team `77e57ae3-...`)\n   - `c549e2f4-...` Bug (Web team `f19a59ca-...`)\n   \n   The solver correctly identified the Web team's Bug label as `c549e2f4-41b7-4177-a9fe-5676ab80f6c7`.\n\n4. Queried workflowStates — found Todo state ID.\n5. Queried issues with filter: team=Web, assignee=Maya, labels id eq `c549e2f4-...` (Web's Bug label), state=Todo → **empty result**.\n6. Loosened the filter (removed label) → got WEB-4 and WEB-3.\n7. In step 10, the solver's reasoning says: \"WEB-4 matches: Todo, assigned to Maya Chen, Bug label from the Web team.\" But wait — the solver had already identified in step 5 that there are TWO labels named \"Bug\": one from Mobile and one from Web. The Web Bug label is `c549e2f4-...`. \n\nIn step 9, the response for WEB-4 shows `labels: { nodes: [{ name: \"Bug\" }] }` — it only shows the name, not the ID or team. The solver then in step 10 concluded \"WEB-4 matches: Todo, assigned to Maya Chen, Bug label from the Web team.\"\n\nBut the solver already knew from step 5 that there are two \"Bug\" labels — one Mobile, one Web. The issue WEB-4's label is `4ceccc67-84ea-42ce-b93a-46ae429abe7f` (from the decoy record), which is the **Mobile** team's Bug label. The solver never checked which specific \"Bug\" label WEB-4 has — it only saw the name \"Bug\" in the response and assumed it was the Web team's Bug label.\n\nActually, let me re-read step 7's query. The solver filtered by `labels: { id: { eq: \"c549e2f4-41b7-4177-a9fe-5676ab80f6c7\" } }` (the Web Bug label) and got an empty result. This means WEB-4 does NOT have the Web Bug label. The solver got an empty result, then loosened the filter. When it saw WEB-4 with a label named \"Bug\", it should have realized: \"Wait, I already filtered by the Web Bug label ID and got nothing. So this 'Bug' label must be the Mobile one.\" But instead it concluded \"WEB-4 is a perfect match.\"\n\nSo the solver:\n- Knew there were two Bug labels (step 5 response showed both)\n- Filtered by the Web Bug label ID and got empty (step 8)\n- Loosened the filter and saw WEB-4 with label name \"Bug\" (step 9)\n- Concluded WEB-4 matches \"Bug label from the Web team\" (step 10)\n- Set estimate to 3 on WEB-4 (a decoy)\n\nThis is a clear **incorrect** outcome — the solver acted on a decoy.\n\n**Mechanism:** The solver read the deciding field (it saw both Bug labels in step 5, and it filtered by the Web Bug label ID in step 7/8 getting empty results). However, when it saw WEB-4 with a label named \"Bug\" in step 9, it misidentified which Bug label it was. It said \"Bug label from the Web team\" in its reasoning, but it never actually verified the label ID. The step 9 response only showed the label name \"Bug\", not the ID or team.\n\nActually, let me think about this more carefully. The solver:\n- In step 5, saw both Bug labels and their IDs/teams.\n- In step 7, filtered issues by the Web Bug label ID and got empty.\n- In step 9, loosened the filter and saw WEB-4 with label name \"Bug\".\n- In step 10, concluded WEB-4 has \"Bug label from the Web team.\"\n\nThe solver had the information to know this was wrong: it had just filtered by the Web Bug label ID and gotten no results. The label on WEB-4 must be the Mobile one. But the solver ignored this and assumed it was the Web one.\n\nThis is **misread** — the solver read the deciding field (it knew there were two Bug labels, and it had just gotten an empty result when filtering by the Web one), but misinterpreted the evidence, believing WEB-4's \"Bug\" label was the Web team's when it was actually the Mobile team's. The step 9 response only showed the name \"Bug\" without the ID, and the solver failed to connect the dots (empty result from step 8 + two Bug labels from step 5 = the \"Bug\" on WEB-4 must be the Mobile one).\n\nActually, is this more \"skipped-check\" or \"misread\"? The solver did see the label name in step 9. It also saw in step 5 that there are two Bug labels. And it got an empty result in step 8 when filtering by the Web Bug label. So it had all the information. But in step 10, it said \"WEB-4 matches: Todo, assigned to Maya Chen, Bug label from the Web team\" — this is a misinterpretation. It saw the name \"Bug\" and assumed it was the Web one, despite the evidence to the contrary.\n\nI'd say this is **misread**: the solver read the deciding information (saw two Bug labels, got empty when filtering by Web one, saw \"Bug\" name on WEB-4) but misinterpreted it, concluding the \"Bug\" on WEB-4 was the Web team's label.\n\n**Outcome:** incorrect\n**Exposed facts:** `R:issue_label_issue_association` (the fact for decoy WEB-4)\n**Mechanism:** misread\n\nThe state diff confirms the solver wrote to WEB-4 (the decoy), setting estimate from null to 3.0.\n\nLet me also note: the final answer has a warning \"⚠️ 🛠️ Exec failed: `fetch https://api.linear.app/graphql`\" but this appears to be a display artifact and doesn't affect the verdict since the write clearly succeeded per step 10's response and the state diff.\n\nVerdict: **incorrect**\n- Exposed facts: `[\"R:issue_label_issue_association\"]`\n- Mechanism: misread\n"
+    },
+    "logprobs": null,
+    "finish_reason": "stop",
+    "stop_reason": null,
+    "token_ids": null,
+    "routed_experts": null
+   }
+  ],
+  "service_tier": null,
+  "system_fingerprint": "vllm-0.30.0-tp2-d555b196",
+  "usage": {
+   "prompt_tokens": 7952,
+   "total_tokens": 9847,
+   "completion_tokens": 1895,
+   "prompt_tokens_details": {
+    "cached_tokens": 2352,
+    "created_cache_tokens": 5488,
+    "multimodal_tokens": null
+   },
+   "completion_tokens_details": {
+    "reasoning_tokens": 1704
+   }
+  },
+  "prompt_logprobs": null,
+  "prompt_token_ids": null,
+  "prompt_text": null,
+  "kv_transfer_params": null,
+  "ec_transfer_params": null,
+  "metrics": null
+ }
+}

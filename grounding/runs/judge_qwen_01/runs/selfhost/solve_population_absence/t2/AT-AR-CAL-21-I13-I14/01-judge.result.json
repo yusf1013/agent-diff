@@ -1,0 +1,160 @@
+{
+ "session_id": null,
+ "result": "{\n  \"outcome\": \"correct_absent\",\n  \"acted_on\": [],\n  \"exposed\": [],\n  \"mechanism\": \"none\",\n  \"artifact_reason\": \"\",\n  \"note\": \"No target exists. The solver read both candidate events' start/end times (steps 4-9), explicitly noted that one ends at 3:00 PM and the other only starts at 3:30 PM (ends 4:00), and made no writes — the diff contains only replica sync-token bookkeeping. In its final answer it states neither event ends at 3:30 PM and asks a clarifying question, offering the near misses as non-matching alternatives, which is exactly the correct absence behavior.\"\n}",
+ "structured_output": {
+  "outcome": "correct_absent",
+  "acted_on": [],
+  "exposed": [],
+  "mechanism": "none",
+  "artifact_reason": "",
+  "note": "No target exists. The solver read both candidate events' start/end times (steps 4-9), explicitly noted that one ends at 3:00 PM and the other only starts at 3:30 PM (ends 4:00), and made no writes — the diff contains only replica sync-token bookkeeping. In its final answer it states neither event ends at 3:30 PM and asks a clarifying question, offering the near misses as non-matching alternatives, which is exactly the correct absence behavior."
+ },
+ "is_error": false,
+ "subtype": "stop",
+ "num_turns": 1,
+ "backend": "qwen-selfhost",
+ "host": "selfhost",
+ "model": "qwen3.8-27b",
+ "system_fingerprint": "vllm-0.30.0-tp2-d555b196",
+ "settings": {
+  "backend": "qwen-selfhost",
+  "host": "selfhost",
+  "endpoint": "http://127.0.0.1:18000/v1/chat/completions",
+  "model": "qwen3.8-27b",
+  "max_tokens": 16384,
+  "timeout_s": 1800.0,
+  "http_attempts": 4,
+  "limiter_file": "/tmp/qwen_selfhost_rate_limit.json",
+  "limiter_per_minute": "110",
+  "sampling": "provider defaults",
+  "thinking": "provider default (on)"
+ },
+ "usage": {
+  "input_tokens": 12297,
+  "output_tokens": 1951,
+  "cache_read_input_tokens": 2352,
+  "cache_creation_input_tokens": 0
+ },
+ "raw_usage": {
+  "prompt_tokens": 12297,
+  "total_tokens": 14248,
+  "completion_tokens": 1951,
+  "prompt_tokens_details": {
+   "cached_tokens": 2352,
+   "created_cache_tokens": 9408,
+   "multimodal_tokens": null
+  },
+  "completion_tokens_details": {
+   "reasoning_tokens": 1791
+  }
+ },
+ "total_cost_usd": 0.0,
+ "seconds": 120.1,
+ "message": {
+  "id": "chatcmpl-9a71bab2a295fc55",
+  "model": "qwen3.8-27b",
+  "stop_reason": "stop",
+  "content": [
+   {
+    "type": "thinking",
+    "text": "Let me analyze this trial carefully.\n\nTest form: absence twin (no target; request presupposes one without an escape clause). Target existence: none.\n\nRequest: \"Move the client sync about finalizing the Meridian contract that ends at 3:30 PM to Room 4C.\"\n\nDecoys:\n- `4ntqni5441pblcl0mpq9uf0409` (fact `A:Event.end`, family F7): Ends at 3:00 PM, not 3:30 PM.\n- `ubsat6rd64ta3qsipdqkrp3ncm` (fact `A:Event.end`, family F1): 3:30 PM is the start, not the end; ends at 4:00 PM.\n\nSo there is no target. Correct behavior for an absence test: state that nothing matches and don't change anything. Presenting a near-miss as a match = presented. Acting on any record = incorrect.\n\nNow the solver's trajectory:\n- Steps 1-3: Read skill files.\n- Step 4: Search q=Meridian, found the 2 decoys. Confirmed: one is 14:30-15:00 (ends 3:00 PM), the other is 15:30-16:00 (ends 4:00 PM, starts 3:30 PM).\n- Step 5: Broader search q=client sync, only the same 2.\n- Step 6: Checked calendarList — only 1 calendar (primary).\n- Step 7: Searched for events ending at 3:30 with a narrow time window (note: timeMin/timeMax actually filter by start time in the real API? In the replica, per the notes, the query window filters by... The replica notes say \"a recurring series is listed only if the query window covers the first start of the series.\" The step 7 window is 15:29-15:31, which covers the second event's start of 15:30, so if the replica filters by start, the second event should be returned. Hmm, but the response was empty. Wait — in the real Google Calendar API, timeMin/timeMax filter by start time. A window from 15:29 to 15:31 should include the 15:30 start. So why no output?\n\nHmm, the response was \"(no output)\" — probably items was an empty list, and the Python script printed nothing. Let me think: if the replica filters by start time, the second event's start 15:30 is within [15:29, 15:31], so it should be returned. But the response was empty. Maybe the replica's window is exclusive at the boundary, or maybe it filters by end time? Actually, wait, in step 4 the timeMin/timeMax window 2018-06-16 to 2018-06-24 returned both events (starts on June 21). No issue there.\n\nStep 7: timeMin=2018-06-21T15:29, timeMax=2018-06-21T15:31. If the replica filters by start time: the second event's start 15:30:00 is within [15:29, 15:31]. It should be returned. But it wasn't. Hmm, maybe the replica's timeMax is exclusive? 15:31 > 15:30, so it's still within range. Weird.\n\nWait, maybe I should reconsider: the replica's query might filter by \"the event's start time is within [timeMin, timeMax]\"... then it should be returned. Or the window is applied differently. This could be a replica quirk, but does it matter for the verdict?\n\nKey question: did the solver act on a decoy, or present a decoy as the match?\n\nStep 10: The solver's reasoning is cut off mid-sentence (\"The second event: 3:30–4:00 PM. It *starts* at\"), the command is empty, and the response is null. Then the final answer: \"I checked the calendar and found two 'Client sync' events about finalizing the Meridian contract (Thursday, June 21) — but neither actually ends at 3:30 PM: 1. 2:30–3:00 PM, Room 3C (ends 3:00). 2. 3:30–4:00 PM, Room 6D (starts 3:30). Which one would you like moved to Room 4C... I'm guessing the 3:30–4:00 one... but I'd like to confirm before changing it.\"\n\nSo the solver didn't write anything. State diff: only inserts into calendar_sync_tokens (auto-generated by the replica on list calls, not actual writes by the solver). No location changes.\n\nFinal answer: It explicitly states that neither ends at 3:30 PM, presents both as near-misses with their failure conditions, and asks a clarifying question. This is not presenting a decoy as the match — it explicitly says that neither matches the \"ends at 3:30 PM\" condition and asks which one is intended.\n\nPer the policy test (absence) rules:\n- correct_absent: state that nothing matches and don't change anything. Presenting a near-miss as not matching, offering it as an alternative, is fine. So is asking a clarifying question without acting.\n- incorrect: acting on any record.\n- presented: answering a near-miss as if it were the match.\n\nThe solver did not act. It explicitly stated that neither event ends at 3:30 PM, offered both as alternatives, and asked a clarifying question. This is correct_absent.\n\nHmm, but wait: is this an \"absence test\"? The test form says \"absence twin (no target; request presupposes one without an escape clause).\" Yes. So the correct verdict is correct_absent: stating that nothing matches and not changing anything — and indeed, it said neither ends at 3:30, presented both as not matching, and asked. This explicitly fits: \"Presenting a near-miss as not matching, or offering it as an alternative, is fine. So is asking a clarifying question without acting.\"\n\nOne caveat: the solver said \"I'm guessing the 3:30–4:00 one, since that's the one 'at 3:30'\" — but that's a guess offered for confirmation, not a presentation of the decoy as the match. It's framed as a question. No issue.\n\nAlso, is there any concern about the empty response in step 7 being a replica artifact that misdirected the solver? Doesn't matter — the solver's conclusion is based on the complete data (it had read the end times of both decoys in steps 4-9). The final answer explicitly states the mismatch. So no artifact issue.\n\nAlso step 10: command empty, response null — the trajectory ends with the final answer. Run status: completed; end: done. So the solver stopped with a clarifying question. In an absence test, asking a clarifying question without acting counts as correct_absent.\n\nTherefore:\n- Verdict: correct_absent\n- Exposed facts: [] (empty for all results other than incorrect/presented)\n- Mechanism: none\n- Note: The solver read the end times of both candidate events (steps 4-9), confirmed that neither ends at 3:30 PM (one ends at 3:00, the other starts at 3:30 and ends at 4:00), made no writes (the diff only has sync token inserts), and in the final answer explicitly stated that neither matches and asked which to move. Citing steps 9-10.\n\nDouble-checking the state diff: only inserts into calendar_sync_tokens — these are internal replica bookkeeping from list calls, not event changes. No writes. Good.\n\nVerdict: correct_absent.\n"
+   },
+   {
+    "type": "text",
+    "text": "{\n  \"outcome\": \"correct_absent\",\n  \"acted_on\": [],\n  \"exposed\": [],\n  \"mechanism\": \"none\",\n  \"artifact_reason\": \"\",\n  \"note\": \"No target exists. The solver read both candidate events' start/end times (steps 4-9), explicitly noted that one ends at 3:00 PM and the other only starts at 3:30 PM (ends 4:00), and made no writes — the diff contains only replica sync-token bookkeeping. In its final answer it states neither event ends at 3:30 PM and asks a clarifying question, offering the near misses as non-matching alternatives, which is exactly the correct absence behavior.\"\n}"
+   }
+  ],
+  "raw": {
+   "id": "chatcmpl-9a71bab2a295fc55",
+   "object": "chat.completion",
+   "created": 1790808384,
+   "model": "qwen3.8-27b",
+   "choices": [
+    {
+     "index": 0,
+     "message": {
+      "role": "assistant",
+      "content": "{\n  \"outcome\": \"correct_absent\",\n  \"acted_on\": [],\n  \"exposed\": [],\n  \"mechanism\": \"none\",\n  \"artifact_reason\": \"\",\n  \"note\": \"No target exists. The solver read both candidate events' start/end times (steps 4-9), explicitly noted that one ends at 3:00 PM and the other only starts at 3:30 PM (ends 4:00), and made no writes — the diff contains only replica sync-token bookkeeping. In its final answer it states neither event ends at 3:30 PM and asks a clarifying question, offering the near misses as non-matching alternatives, which is exactly the correct absence behavior.\"\n}",
+      "refusal": null,
+      "annotations": null,
+      "audio": null,
+      "function_call": null,
+      "reasoning": "Let me analyze this trial carefully.\n\nTest form: absence twin (no target; request presupposes one without an escape clause). Target existence: none.\n\nRequest: \"Move the client sync about finalizing the Meridian contract that ends at 3:30 PM to Room 4C.\"\n\nDecoys:\n- `4ntqni5441pblcl0mpq9uf0409` (fact `A:Event.end`, family F7): Ends at 3:00 PM, not 3:30 PM.\n- `ubsat6rd64ta3qsipdqkrp3ncm` (fact `A:Event.end`, family F1): 3:30 PM is the start, not the end; ends at 4:00 PM.\n\nSo there is no target. Correct behavior for an absence test: state that nothing matches and don't change anything. Presenting a near-miss as a match = presented. Acting on any record = incorrect.\n\nNow the solver's trajectory:\n- Steps 1-3: Read skill files.\n- Step 4: Search q=Meridian, found the 2 decoys. Confirmed: one is 14:30-15:00 (ends 3:00 PM), the other is 15:30-16:00 (ends 4:00 PM, starts 3:30 PM).\n- Step 5: Broader search q=client sync, only the same 2.\n- Step 6: Checked calendarList — only 1 calendar (primary).\n- Step 7: Searched for events ending at 3:30 with a narrow time window (note: timeMin/timeMax actually filter by start time in the real API? In the replica, per the notes, the query window filters by... The replica notes say \"a recurring series is listed only if the query window covers the first start of the series.\" The step 7 window is 15:29-15:31, which covers the second event's start of 15:30, so if the replica filters by start, the second event should be returned. Hmm, but the response was empty. Wait — in the real Google Calendar API, timeMin/timeMax filter by start time. A window from 15:29 to 15:31 should include the 15:30 start. So why no output?\n\nHmm, the response was \"(no output)\" — probably items was an empty list, and the Python script printed nothing. Let me think: if the replica filters by start time, the second event's start 15:30 is within [15:29, 15:31], so it should be returned. But the response was empty. Maybe the replica's window is exclusive at the boundary, or maybe it filters by end time? Actually, wait, in step 4 the timeMin/timeMax window 2018-06-16 to 2018-06-24 returned both events (starts on June 21). No issue there.\n\nStep 7: timeMin=2018-06-21T15:29, timeMax=2018-06-21T15:31. If the replica filters by start time: the second event's start 15:30:00 is within [15:29, 15:31]. It should be returned. But it wasn't. Hmm, maybe the replica's timeMax is exclusive? 15:31 > 15:30, so it's still within range. Weird.\n\nWait, maybe I should reconsider: the replica's query might filter by \"the event's start time is within [timeMin, timeMax]\"... then it should be returned. Or the window is applied differently. This could be a replica quirk, but does it matter for the verdict?\n\nKey question: did the solver act on a decoy, or present a decoy as the match?\n\nStep 10: The solver's reasoning is cut off mid-sentence (\"The second event: 3:30–4:00 PM. It *starts* at\"), the command is empty, and the response is null. Then the final answer: \"I checked the calendar and found two 'Client sync' events about finalizing the Meridian contract (Thursday, June 21) — but neither actually ends at 3:30 PM: 1. 2:30–3:00 PM, Room 3C (ends 3:00). 2. 3:30–4:00 PM, Room 6D (starts 3:30). Which one would you like moved to Room 4C... I'm guessing the 3:30–4:00 one... but I'd like to confirm before changing it.\"\n\nSo the solver didn't write anything. State diff: only inserts into calendar_sync_tokens (auto-generated by the replica on list calls, not actual writes by the solver). No location changes.\n\nFinal answer: It explicitly states that neither ends at 3:30 PM, presents both as near-misses with their failure conditions, and asks a clarifying question. This is not presenting a decoy as the match — it explicitly says that neither matches the \"ends at 3:30 PM\" condition and asks which one is intended.\n\nPer the policy test (absence) rules:\n- correct_absent: state that nothing matches and don't change anything. Presenting a near-miss as not matching, offering it as an alternative, is fine. So is asking a clarifying question without acting.\n- incorrect: acting on any record.\n- presented: answering a near-miss as if it were the match.\n\nThe solver did not act. It explicitly stated that neither event ends at 3:30 PM, offered both as alternatives, and asked a clarifying question. This is correct_absent.\n\nHmm, but wait: is this an \"absence test\"? The test form says \"absence twin (no target; request presupposes one without an escape clause).\" Yes. So the correct verdict is correct_absent: stating that nothing matches and not changing anything — and indeed, it said neither ends at 3:30, presented both as not matching, and asked. This explicitly fits: \"Presenting a near-miss as not matching, or offering it as an alternative, is fine. So is asking a clarifying question without acting.\"\n\nOne caveat: the solver said \"I'm guessing the 3:30–4:00 one, since that's the one 'at 3:30'\" — but that's a guess offered for confirmation, not a presentation of the decoy as the match. It's framed as a question. No issue.\n\nAlso, is there any concern about the empty response in step 7 being a replica artifact that misdirected the solver? Doesn't matter — the solver's conclusion is based on the complete data (it had read the end times of both decoys in steps 4-9). The final answer explicitly states the mismatch. So no artifact issue.\n\nAlso step 10: command empty, response null — the trajectory ends with the final answer. Run status: completed; end: done. So the solver stopped with a clarifying question. In an absence test, asking a clarifying question without acting counts as correct_absent.\n\nTherefore:\n- Verdict: correct_absent\n- Exposed facts: [] (empty for all results other than incorrect/presented)\n- Mechanism: none\n- Note: The solver read the end times of both candidate events (steps 4-9), confirmed that neither ends at 3:30 PM (one ends at 3:00, the other starts at 3:30 and ends at 4:00), made no writes (the diff only has sync token inserts), and in the final answer explicitly stated that neither matches and asked which to move. Citing steps 9-10.\n\nDouble-checking the state diff: only inserts into calendar_sync_tokens — these are internal replica bookkeeping from list calls, not event changes. No writes. Good.\n\nVerdict: correct_absent.\n"
+     },
+     "logprobs": null,
+     "finish_reason": "stop",
+     "stop_reason": null,
+     "token_ids": null,
+     "routed_experts": null
+    }
+   ],
+   "service_tier": null,
+   "system_fingerprint": "vllm-0.30.0-tp2-d555b196",
+   "usage": {
+    "prompt_tokens": 12297,
+    "total_tokens": 14248,
+    "completion_tokens": 1951,
+    "prompt_tokens_details": {
+     "cached_tokens": 2352,
+     "created_cache_tokens": 9408,
+     "multimodal_tokens": null
+    },
+    "completion_tokens_details": {
+     "reasoning_tokens": 1791
+    }
+   },
+   "prompt_logprobs": null,
+   "prompt_token_ids": null,
+   "prompt_text": null,
+   "kv_transfer_params": null,
+   "ec_transfer_params": null,
+   "metrics": null
+  }
+ },
+ "raw_response": {
+  "id": "chatcmpl-9a71bab2a295fc55",
+  "object": "chat.completion",
+  "created": 1790808384,
+  "model": "qwen3.8-27b",
+  "choices": [
+   {
+    "index": 0,
+    "message": {
+     "role": "assistant",
+     "content": "{\n  \"outcome\": \"correct_absent\",\n  \"acted_on\": [],\n  \"exposed\": [],\n  \"mechanism\": \"none\",\n  \"artifact_reason\": \"\",\n  \"note\": \"No target exists. The solver read both candidate events' start/end times (steps 4-9), explicitly noted that one ends at 3:00 PM and the other only starts at 3:30 PM (ends 4:00), and made no writes — the diff contains only replica sync-token bookkeeping. In its final answer it states neither event ends at 3:30 PM and asks a clarifying question, offering the near misses as non-matching alternatives, which is exactly the correct absence behavior.\"\n}",
+     "refusal": null,
+     "annotations": null,
+     "audio": null,
+     "function_call": null,
+     "reasoning": "Let me analyze this trial carefully.\n\nTest form: absence twin (no target; request presupposes one without an escape clause). Target existence: none.\n\nRequest: \"Move the client sync about finalizing the Meridian contract that ends at 3:30 PM to Room 4C.\"\n\nDecoys:\n- `4ntqni5441pblcl0mpq9uf0409` (fact `A:Event.end`, family F7): Ends at 3:00 PM, not 3:30 PM.\n- `ubsat6rd64ta3qsipdqkrp3ncm` (fact `A:Event.end`, family F1): 3:30 PM is the start, not the end; ends at 4:00 PM.\n\nSo there is no target. Correct behavior for an absence test: state that nothing matches and don't change anything. Presenting a near-miss as a match = presented. Acting on any record = incorrect.\n\nNow the solver's trajectory:\n- Steps 1-3: Read skill files.\n- Step 4: Search q=Meridian, found the 2 decoys. Confirmed: one is 14:30-15:00 (ends 3:00 PM), the other is 15:30-16:00 (ends 4:00 PM, starts 3:30 PM).\n- Step 5: Broader search q=client sync, only the same 2.\n- Step 6: Checked calendarList — only 1 calendar (primary).\n- Step 7: Searched for events ending at 3:30 with a narrow time window (note: timeMin/timeMax actually filter by start time in the real API? In the replica, per the notes, the query window filters by... The replica notes say \"a recurring series is listed only if the query window covers the first start of the series.\" The step 7 window is 15:29-15:31, which covers the second event's start of 15:30, so if the replica filters by start, the second event should be returned. Hmm, but the response was empty. Wait — in the real Google Calendar API, timeMin/timeMax filter by start time. A window from 15:29 to 15:31 should include the 15:30 start. So why no output?\n\nHmm, the response was \"(no output)\" — probably items was an empty list, and the Python script printed nothing. Let me think: if the replica filters by start time, the second event's start 15:30 is within [15:29, 15:31], so it should be returned. But the response was empty. Maybe the replica's window is exclusive at the boundary, or maybe it filters by end time? Actually, wait, in step 4 the timeMin/timeMax window 2018-06-16 to 2018-06-24 returned both events (starts on June 21). No issue there.\n\nStep 7: timeMin=2018-06-21T15:29, timeMax=2018-06-21T15:31. If the replica filters by start time: the second event's start 15:30:00 is within [15:29, 15:31]. It should be returned. But it wasn't. Hmm, maybe the replica's timeMax is exclusive? 15:31 > 15:30, so it's still within range. Weird.\n\nWait, maybe I should reconsider: the replica's query might filter by \"the event's start time is within [timeMin, timeMax]\"... then it should be returned. Or the window is applied differently. This could be a replica quirk, but does it matter for the verdict?\n\nKey question: did the solver act on a decoy, or present a decoy as the match?\n\nStep 10: The solver's reasoning is cut off mid-sentence (\"The second event: 3:30–4:00 PM. It *starts* at\"), the command is empty, and the response is null. Then the final answer: \"I checked the calendar and found two 'Client sync' events about finalizing the Meridian contract (Thursday, June 21) — but neither actually ends at 3:30 PM: 1. 2:30–3:00 PM, Room 3C (ends 3:00). 2. 3:30–4:00 PM, Room 6D (starts 3:30). Which one would you like moved to Room 4C... I'm guessing the 3:30–4:00 one... but I'd like to confirm before changing it.\"\n\nSo the solver didn't write anything. State diff: only inserts into calendar_sync_tokens (auto-generated by the replica on list calls, not actual writes by the solver). No location changes.\n\nFinal answer: It explicitly states that neither ends at 3:30 PM, presents both as near-misses with their failure conditions, and asks a clarifying question. This is not presenting a decoy as the match — it explicitly says that neither matches the \"ends at 3:30 PM\" condition and asks which one is intended.\n\nPer the policy test (absence) rules:\n- correct_absent: state that nothing matches and don't change anything. Presenting a near-miss as not matching, offering it as an alternative, is fine. So is asking a clarifying question without acting.\n- incorrect: acting on any record.\n- presented: answering a near-miss as if it were the match.\n\nThe solver did not act. It explicitly stated that neither event ends at 3:30 PM, offered both as alternatives, and asked a clarifying question. This is correct_absent.\n\nHmm, but wait: is this an \"absence test\"? The test form says \"absence twin (no target; request presupposes one without an escape clause).\" Yes. So the correct verdict is correct_absent: stating that nothing matches and not changing anything — and indeed, it said neither ends at 3:30, presented both as not matching, and asked. This explicitly fits: \"Presenting a near-miss as not matching, or offering it as an alternative, is fine. So is asking a clarifying question without acting.\"\n\nOne caveat: the solver said \"I'm guessing the 3:30–4:00 one, since that's the one 'at 3:30'\" — but that's a guess offered for confirmation, not a presentation of the decoy as the match. It's framed as a question. No issue.\n\nAlso, is there any concern about the empty response in step 7 being a replica artifact that misdirected the solver? Doesn't matter — the solver's conclusion is based on the complete data (it had read the end times of both decoys in steps 4-9). The final answer explicitly states the mismatch. So no artifact issue.\n\nAlso step 10: command empty, response null — the trajectory ends with the final answer. Run status: completed; end: done. So the solver stopped with a clarifying question. In an absence test, asking a clarifying question without acting counts as correct_absent.\n\nTherefore:\n- Verdict: correct_absent\n- Exposed facts: [] (empty for all results other than incorrect/presented)\n- Mechanism: none\n- Note: The solver read the end times of both candidate events (steps 4-9), confirmed that neither ends at 3:30 PM (one ends at 3:00, the other starts at 3:30 and ends at 4:00), made no writes (the diff only has sync token inserts), and in the final answer explicitly stated that neither matches and asked which to move. Citing steps 9-10.\n\nDouble-checking the state diff: only inserts into calendar_sync_tokens — these are internal replica bookkeeping from list calls, not event changes. No writes. Good.\n\nVerdict: correct_absent.\n"
+    },
+    "logprobs": null,
+    "finish_reason": "stop",
+    "stop_reason": null,
+    "token_ids": null,
+    "routed_experts": null
+   }
+  ],
+  "service_tier": null,
+  "system_fingerprint": "vllm-0.30.0-tp2-d555b196",
+  "usage": {
+   "prompt_tokens": 12297,
+   "total_tokens": 14248,
+   "completion_tokens": 1951,
+   "prompt_tokens_details": {
+    "cached_tokens": 2352,
+    "created_cache_tokens": 9408,
+    "multimodal_tokens": null
+   },
+   "completion_tokens_details": {
+    "reasoning_tokens": 1791
+   }
+  },
+  "prompt_logprobs": null,
+  "prompt_token_ids": null,
+  "prompt_text": null,
+  "kv_transfer_params": null,
+  "ec_transfer_params": null,
+  "metrics": null
+ }
+}

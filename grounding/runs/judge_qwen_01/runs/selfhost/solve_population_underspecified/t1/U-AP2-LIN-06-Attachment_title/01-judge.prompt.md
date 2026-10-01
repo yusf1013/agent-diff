@@ -1,0 +1,292 @@
+# Trial of test `U-AP2-LIN-06-Attachment_title` (linear)
+
+Test form: underspecified (several records fully meet the singular request; each is listed as TARGET). Target present: yes.
+
+## Request given to the solver
+Rename the attachment on ENG-14 that links to Dropbox to "Marketing brief (archived)".
+
+## Candidates
+### Reference r1 (what the request asks to act on); records live in `attachments`
+- TARGET `ecbb8e48-2615-4a34-af0b-058986f317e0`: {"id": "ecbb8e48-2615-4a34-af0b-058986f317e0", "issueId": "9338fb8d-b06a-4883-b86f-2514ee8fee45", "title": "Marketing brief", "source": {"type": "api"}, "sourceType": "api", "creatorId": "8657b78b-d211-437f-add7-838830bb0461", "groupBySource": true, "createdAt": "2026-06-01T09:00:00", "updatedAt": "2026-06-01T09:00:00"}
+- TARGET `28b8e7e5-e964-493e-b62a-d6d0c0afa123`: {"id": "28b8e7e5-e964-493e-b62a-d6d0c0afa123", "issueId": "9338fb8d-b06a-4883-b86f-2514ee8fee45", "title": "Marketing briefing", "source": {"type": "api"}, "sourceType": "api", "creatorId": "8657b78b-d211-437f-add7-838830bb0461", "groupBySource": true, "createdAt": "2026-06-01T09:00:00", "updatedAt": "2026-06-01T09:00:00"}
+- TARGET `3d199713-ef20-4919-985c-4ea987c013f1`: {"id": "3d199713-ef20-4919-985c-4ea987c013f1", "issueId": "9338fb8d-b06a-4883-b86f-2514ee8fee45", "title": "Vendor contract draft", "source": {"type": "api"}, "sourceType": "api", "creatorId": "8657b78b-d211-437f-add7-838830bb0461", "groupBySource": true, "createdAt": "2026-06-01T09:00:00", "updatedAt": "2026-06-01T09:00:00"}
+- DECOY `a1fbec85-c269-49a9-90e8-242963e8906d` (fact `A:Attachment.url`, family F8): Titled 'Marketing brief' on ENG-14, but hosted at files.example.com; 'dropbox' only appears in the path (dropbox-sync), not the actual Dropbox domain.
+  record: {"id": "a1fbec85-c269-49a9-90e8-242963e8906d", "issueId": "9338fb8d-b06a-4883-b86f-2514ee8fee45", "title": "Marketing brief", "source": {"type": "api"}, "sourceType": "api", "creatorId": "8657b78b-d211-437f-add7-838830bb0461", "groupBySource": true, "createdAt": "2026-06-01T09:00:00", "updatedAt": "2026-06-01T09:00:00"}
+- DECOY `1bf8cc94-bac3-40e0-b195-4e5acabb3ca3` (fact `R:Attachment.issueId`, family F8): Same title and Dropbox link, but attached to MOB-14, the Mobile team's issue 14, not ENG-14.
+  record: {"id": "1bf8cc94-bac3-40e0-b195-4e5acabb3ca3", "issueId": "0cdea444-b599-4b3c-9213-bc5b0e593f38", "title": "Marketing brief", "source": {"type": "api"}, "sourceType": "api", "creatorId": "bb991ef9-b9d2-44c8-b6f2-53f4cc48a8e6", "groupBySource": true, "createdAt": "2026-06-01T09:00:00", "updatedAt": "2026-06-01T09:00:00"}
+- DECOY `c91a20c8-4da8-476f-8724-400dcbf1ea14` (fact `R:Attachment.issueId`, family F2): Same title and Dropbox link, but attached to ENG-15, a sub-issue of ENG-14, not to ENG-14 itself.
+  record: {"id": "c91a20c8-4da8-476f-8724-400dcbf1ea14", "issueId": "5ec56723-6e6c-4dec-abe4-9e748f13095f", "title": "Marketing brief", "source": {"type": "api"}, "sourceType": "api", "creatorId": "8657b78b-d211-437f-add7-838830bb0461", "groupBySource": true, "createdAt": "2026-06-01T09:00:00", "updatedAt": "2026-06-01T09:00:00"}
+
+## Solver steps
+Run status: completed; termination: done; steps: 30.
+
+#### Step 1
+Reasoning: The user wants to rename an attachment on Linear issue ENG-14. First, let me check the Linear skill.
+Command: read {"path": "~/.openclaw-state/8a0ee7567b8f42c4/workspace-assistant/skills/linear/SKILL.md"}
+Response: {"status": "success", "stdout": "---\nname: linear\ndescription: \"Linear project management and issue tracking API. Use it for anything in the user's Linear account.\"\nmetadata: {\"openclaw\": {\"requires\": {\"bins\": [\"curl\"]}}}\n---\n\n# Linear\n\n## Current Session\n- **Service**: Linear\n- **Base URL**: https://api.linear.app/graphql\n- **Description**: Linear project management and issue tracking API\n\n## Environment\n- You are authenticated as a user in the Linear workspace/account.\n- Authentication is handled automatically via proxy. Use placeholder tokens like `<TOKEN>` where credentials would go.\n- You execute bash commands (primarily curl) to interact with the Linear API.\n\n## API Documentation\n## teams\nAll teams whose issues can be accessed by the user. This might be different from `administrableTeams`, which also includes teams whose settings can be changed by the user.\n\n## issues\nAll issues.\n\n## issue\nGet a single issue by ID.\n\n## workflowStates\nAll issue workflow states.\n\n## users\nAll users for the organization.\n\n## issueCreate\nCreates a new issue.\n\n## issueUpdate\nUpdates an issue.\n\n## commentCreate\nCreates a new comment.\n\n## teamCreate\nCreates a new team. The user who creates the team will automatically be added as a member to the newly created team.\n\n## issueLabelCreate\nCreates a new label.\n\n## issueLabels\nAll issue labels.\n\n## comments\nAll comments.\n\n## commentUpdate\nUpdates a comment.\n\n## commentDelete\nDeletes a comment.\n\n## issueLabelUpdate\nUpdates a label.\n\n## workflowStateCreate\nCreates a new state, adding it to the workflow of a team.\n\n## workflowStateArchive\nArchives a state. Only states with issues that have all been archived can be archived.\n\n## teamMembershipCreate\nCreates a new team membership.\n\n## issueRelationCreate\nCreates a new issue relation.\n"}
+
+#### Step 2
+Reasoning: The Linear skill's documentation doesn't directly mention attachments or renaming them. Let me check if the Linear API has any attachment-related operations. The Linear GraphQL API has an `attachment` query and... let me think about what's available.
+
+The Linear API has:
+- `attachment(id: ID)` query
+- `attachments` query
+- An `attachmentUpdate` mutation? Actually, I'm not sure if the Linear API supports renaming attachments. Let me check the docs.
+
+Linear API: I know that `attachmentCreate` (which creates an attachment from a URL) and `attachment` query exist. Is there a `fileUpdate`? Actually, I recall that Linear added `attachmentUpdate`... hmm.
+
+Let me check Linear's API documentation. There's an `attachment` query that returns `Attachment` type with fields like `id`, `url`, `title`, `contentType`, etc.
+
+Actually, in the Linear API, the attachment type has `title` and `url`. Is there a mutation to update the title? Let me search.
+
+The skill's docs list the available operations, but don't include attachments at all. The docs are pretty sparse, so I should query the actual API to discover what's available. I can use GraphQL's introspection to find attachment-related types and mutations.
+
+Let me start by querying issue ENG-14 first and checking its attachments.
+
+Plan:
+1. Query issue ENG-14 with attachments.
+2. Find the attachment that links to Dropbox.
+3. Use introspection to check whether a mutation like `attachmentUpdate` exists.
+4. Rename it.
+
+Let's give it a try. The auth
+Command: curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: Bearer <TOKEN>' -d '{"query":"query { issue(identifier: \"ENG-14\") { identifier title attachments { id url title contentType createdAt } } }"}'
+Response: {"status": "success", "stdout": "{\"errors\":[{\"message\":\"Unknown argument 'identifier' on field 'Query.issue'.\",\"locations\":[{\"line\":1,\"column\":15}]},{\"message\":\"Cannot query field 'id' on type 'AttachmentConnection'.\",\"locations\":[{\"line\":1,\"column\":70}]},{\"message\":\"Cannot query field 'url' on type 'AttachmentConnection'.\",\"locations\":[{\"line\":1,\"column\":73}]},{\"message\":\"Cannot query field 'title' on type 'AttachmentConnection'.\",\"locations\":[{\"line\":1,\"column\":77}]},{\"message\":\"Cannot query field 'contentType' on type 'AttachmentConnection'.\",\"locations\":[{\"line\":1,\"column\":83}]},{\"message\":\"Cannot query field 'createdAt' on type 'AttachmentConnection'.\",\"locations\":[{\"line\":1,\"column\":95}]},{\"message\":\"Field 'issue' argument 'id' of type 'String!' is required, but it was not provided.\",\"locations\":[{\"line\":1,\"column\":9}]}]}"}
+
+#### Step 3
+Reasoning: In the `issue` query, `id` is required as an argument (probably a URL-encoded issue id or UUID), and `attachments` is a connection (which needs nodes). First, let's search for the issue by identifier using the `issues` query.
+Command: curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: Bearer <TOKEN>' -d '{"query":"query { issues(filter: { identifier: { eq: \"ENG-14\" } }) { nodes { id identifier title attachments { nodes { id url title contentType } } } } }"}'
+Response: {"status": "success", "stdout": "{\"errors\":[{\"message\":\"Field 'identifier' is not defined by type 'IssueFilter'.\",\"locations\":[{\"line\":1,\"column\":26}]},{\"message\":\"Cannot query field 'contentType' on type 'Attachment'.\",\"locations\":[{\"line\":1,\"column\":123}]}]}"}
+
+#### Step 4
+Reasoning: In this API version, the IssueFilter does not have an `identifier` field. Let me introspect the schema to find the correct field name. I'll introspect the IssueFilter's fields and the Attachment type.
+Command: curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: Bearer <TOKEN>' -d '{"query":"query { __type(name: \"IssueFilter\") { inputFields { name type { name kind ofType { name } } } } __type(name: \"Attachment\") { fields { name } } }"}'
+Response: {"status": "success", "stdout": "{\"errors\":[{\"message\":\"Fields '__type' conflict because they have differing arguments. Use different aliases on the fields to fetch both if this was intentional.\",\"locations\":[{\"line\":1,\"column\":9},{\"line\":1,\"column\":97}]}]}"}
+
+#### Step 5
+Reasoning: Let's use aliases.
+Command: curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: Bearer <TOKEN>' -d '{"query":"query { f: __type(name: \"IssueFilter\") { inputFields { name type { name kind } } } a: __type(name: \"Attachment\") { fields { name } } }"}'
+Response: {"status": "success", "stdout": "{\"data\":{\"f\":{\"inputFields\":[{\"name\":\"addedToCycleAt\",\"type\":{\"name\":\"NullableDateComparator\",\"kind\":\"INPUT_OBJECT\"}},{\"name\":\"addedToCyclePeriod\",\"type\":{\"name\":\"CyclePeriodComparator\",\"kind\":\"INPUT_OBJECT\"}},{\"name\":\"ageTime\",\"type\":{\"name\":\"NullableDurationComparator\",\"kind\":\"INPUT_OBJECT\"}},{\"name\":\"and\",\"type\":{\"name\":null,\"kind\":\"LIST\"}},{\"name\":\"archivedAt\",\"type\":{\"name\":\"NullableDateComparator\",\"kind\":\"INPUT_OBJECT\"}},{\"name\":\"assignee\",\"type\":{\"name\":\"NullableUserFilter\",\"kind\":\"INPUT_OBJECT\"}},{\"name\":\"attachments\",\"type\":{\"name\":\"AttachmentCollectionFilter\",\"kind\":\"INPUT_OBJECT\"}},{\"name\":\"autoArchivedAt\",\"type\":{\"name\":\"NullableDateComparator\",\"kind\":\"INPUT_OBJECT\"}},{\"name\":\"autoClosedAt\",\"type\":{\"name\":\"NullableDateComparator\",\"kind\":\"INPUT_OBJECT\"}},{\"name\":\"accumulatedStateUpdatedAt\",\"type\":{\"name\":\"NullableDateComparator\",\"kind\":\"INPUT_OBJECT\"}},{\"name\":\"canceledAt\",\"type\":{\"name\":\"NullableDateComparator\",\"kind\":\"INPUT_OBJECT\"}},{\"name\":\"children\",\"type\":{\"name\":\"IssueCollectionFilter\",\"kind\":\"INPUT_OBJECT\"}},{\"name\":\"comments\",\"type\":{\"name\":\"CommentCollectionFilter\",\"kind\":\"INPUT_OBJECT\"}},{\"name\":\"completedAt\",\"type\":{\"name\":\"NullableDateComparator\",\"kind\":\"INPUT_OBJECT\"}},{\"name\":\"createdAt\",\"type\":{\"name\":\"DateComparator\",\"kind\":\"INPUT_OBJECT\"}},{\"name\":\"creator\",\"type\":{\"name\":\"NullableUserFilter\",\"kind\":\"INPUT_OBJECT\"}},{\"name\":\"customerCount\",\"type\":{\"name\":\"NumberComparator\",\"kind\":\"INPUT_OBJECT\"}},{\"name\":\"customerImportantCount\",\"type\":{\"name\":\"NumberComparator\",\"kind\":\"INPUT_OBJECT\"}},{\"name\":\"cycle\",\"type\":{\"name\":\"NullableCycleFilter\",\"kind\":\"INPUT_OBJECT\"}},{\"name\":\"cycleTime\",\"type\":{\"name\":\"NullableDurationComparator\",\"kind\":\"INPUT_OBJECT\"}},{\"name\":\"delegate\",\"type\":{\"name\":\"NullableUserFilter\",\"kind\":\"INPUT_OBJECT\"}},{\"name\":\"description\",\"type\":{\"name\":\"NullableStringComparator\",\"kind\":\"INPUT_OBJECT\"}},{\"name\":\"dueDate\",\"type\":{\"name\":\"NullableTimelessDateComparator\",\"kind\":\"INPUT_OBJECT\"}},{\"name\":\"estimate\",\"type\":{\"name\":\"EstimateComparator\",\"kind\":\"INPUT_OBJECT\"}},{\"name\":\"hasBlockedByRelations\",\"type\":{\"name\":\"RelationExistsComparator\",\"kind\":\"INPUT_OBJECT\"}},{\"name\":\"hasBlockingRelations\",\"type\":{\"name\":\"RelationExistsComparator\",\"kind\":\"INPUT_OBJECT\"}},{\"name\":\"hasDuplicateRelations\",\"type\":{\"name\":\"RelationExistsComparator\",\"kind\":\"INPUT_OBJECT\"}},{\"name\":\"hasSuggestedTeams\",\"type\":{\"name\":\"RelationExistsComparator\",\"kind\":\"INPUT_OBJECT\"}},{\"name\":\"hasRelatedRelations\",\"type\":{\"name\":\"RelationExistsComparator\",\"kind\":\"INPUT_OBJECT\"}},{\"name\":\"hasSuggestedAssignees […3051 chars omitted…] \":\"updatedAt\",\"type\":{\"name\":\"DateComparator\",\"kind\":\"INPUT_OBJECT\"}}]},\"a\":{\"fields\":[{\"name\":\"archivedAt\"},{\"name\":\"bodyData\"},{\"name\":\"createdAt\"},{\"name\":\"creator\"},{\"name\":\"externalUserCreator\"},{\"name\":\"groupBySource\"},{\"name\":\"id\"},{\"name\":\"issue\"},{\"name\":\"metadata\"},{\"name\":\"originalIssue\"},{\"name\":\"source\"},{\"name\":\"sourceType\"},{\"name\":\"subtitle\"},{\"name\":\"title\"},{\"name\":\"updatedAt\"},{\"name\":\"url\"}]}}}"}
+
+#### Step 6
+Reasoning: ENG-14 is probably a "Customer Issue" (a different resource). Let me check the CustomerIssue type.
+Command: curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: Bearer <TOKEN>' -d '{"query":"query { a: __type(name: \"Attachment\") { fields { name type { name kind ofType { name kind } } } } }"}'
+Response: {"status": "success", "stdout": "{\"data\":{\"a\":{\"fields\":[{\"name\":\"archivedAt\",\"type\":{\"name\":\"DateTime\",\"kind\":\"SCALAR\",\"ofType\":null}},{\"name\":\"bodyData\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\",\"ofType\":null}},{\"name\":\"createdAt\",\"type\":{\"name\":null,\"kind\":\"NON_NULL\",\"ofType\":{\"name\":\"DateTime\",\"kind\":\"SCALAR\"}}},{\"name\":\"creator\",\"type\":{\"name\":\"User\",\"kind\":\"OBJECT\",\"ofType\":null}},{\"name\":\"externalUserCreator\",\"type\":{\"name\":\"ExternalUser\",\"kind\":\"OBJECT\",\"ofType\":null}},{\"name\":\"groupBySource\",\"type\":{\"name\":null,\"kind\":\"NON_NULL\",\"ofType\":{\"name\":\"Boolean\",\"kind\":\"SCALAR\"}}},{\"name\":\"id\",\"type\":{\"name\":null,\"kind\":\"NON_NULL\",\"ofType\":{\"name\":\"ID\",\"kind\":\"SCALAR\"}}},{\"name\":\"issue\",\"type\":{\"name\":null,\"kind\":\"NON_NULL\",\"ofType\":{\"name\":\"Issue\",\"kind\":\"OBJECT\"}}},{\"name\":\"metadata\",\"type\":{\"name\":null,\"kind\":\"NON_NULL\",\"ofType\":{\"name\":\"JSONObject\",\"kind\":\"SCALAR\"}}},{\"name\":\"originalIssue\",\"type\":{\"name\":\"Issue\",\"kind\":\"OBJECT\",\"ofType\":null}},{\"name\":\"source\",\"type\":{\"name\":\"JSONObject\",\"kind\":\"SCALAR\",\"ofType\":null}},{\"name\":\"sourceType\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\",\"ofType\":null}},{\"name\":\"subtitle\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\",\"ofType\":null}},{\"name\":\"title\",\"type\":{\"name\":null,\"kind\":\"NON_NULL\",\"ofType\":{\"name\":\"String\",\"kind\":\"SCALAR\"}}},{\"name\":\"updatedAt\",\"type\":{\"name\":null,\"kind\":\"NON_NULL\",\"ofType\":{\"name\":\"DateTime\",\"kind\":\"SCALAR\"}}},{\"name\":\"url\",\"type\":{\"name\":null,\"kind\":\"NON_NULL\",\"ofType\":{\"name\":\"String\",\"kind\":\"SCALAR\"}}}]}}}"}
+
+#### Step 7
+Reasoning: 
+Command: curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: Bearer <TOKEN>' -d '{"query":"query { ci: __type(name: \"CustomerIssue\") { fields { name } } }"}'
+Response: {"status": "success", "stdout": "{\"data\":{\"ci\":null}}"}
+
+#### Step 8
+Reasoning: The Attachment type has `title`, `url`, `source`, `sourceType`, `metadata`, etc. Next, let's find issue ENG-14. I need to find it. I can use `issues(filter: { ... })`, but the filter doesn't directly support identifier. However, there's `searchableContent` — I can use that with a value like "ENG-14". Let's try `issues(filter: { searchableContent: { includes: "ENG-14" } })`.
+
+Actually, it might be better to first get the team. The "ENG" key suggests an Engineering team. I could get teams, find the one with key ENG, then get the issue by number: `team(id) { issues(filter: { number: { eq: 14 } }) }`.
+
+Let's do both: search with searchableContent.
+Command: curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: Bearer <TOKEN>' -d '{"query":"query { issues(filter: { searchableContent: { includes: \"ENG-14\" } }) { nodes { id identifier title attachments { nodes { id title url sourceType source } } } } }"}'
+Response: {"status": "success", "stdout": "{\"errors\":[{\"message\":\"Field 'includes' is not defined by type 'ContentComparator'.\",\"locations\":[{\"line\":1,\"column\":47}]}]}"}
+
+#### Step 9
+Reasoning: ContentComparator might have `includes`... let me check the type. Or use `number` + `team`. ENG-14: the team key is probably ENG, number is 14. Let me try filtering by team (key eq ENG) and number eq 14.
+Command: curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: Bearer <TOKEN>' -d '{"query":"query { teams { nodes { id key name } } }"}'
+Response: {"status": "success", "stdout": "{\"data\":{\"teams\":{\"nodes\":[{\"id\":\"bd6e11a3-fe01-45fc-856b-b0264345c619\",\"key\":\"ENG\",\"name\":\"Engineering\"},{\"id\":\"fbdc9963-e38a-4c89-b085-0496652b3e17\",\"key\":\"MOB\",\"name\":\"Mobile\"}]}}}"}
+
+#### Step 10
+Reasoning: The ENG team exists. I'll use team + number to find the issue ENG-14.
+Command: curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: Bearer <TOKEN>' -d '{"query":"query { issues(filter: { team: { id: { eq: \"bd6e11a3-fe01-45fc-856b-b0264345c619\" } }, number: { eq: 14 } }) { nodes { id identifier title attachments { nodes { id title url sourceType source createdAt } } } } }"}'
+Response: {"status": "success", "stdout": "{\"data\":null,\"errors\":[{\"message\":\"Cannot return null for non-nullable field AttachmentConnection.nodes.\",\"locations\":[{\"line\":1,\"column\":154}],\"path\":[\"issues\",\"nodes\",0,\"attachments\",\"nodes\"]}]}"}
+
+#### Step 11
+Reasoning: The "nodes" field on "AttachmentConnection" cannot be returned as null — probably pagination or arguments are required. Let me check the arguments of AttachmentConnection.
+Command: curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: Bearer <TOKEN>' -d '{"query":"query { t: __type(name: \"AttachmentConnection\") { fields { name args { name type { name kind } } type { name kind ofType { name } } } } }"}'
+Response: {"status": "success", "stdout": "{\"data\":{\"t\":{\"fields\":[{\"name\":\"edges\",\"args\":[],\"type\":{\"name\":null,\"kind\":\"NON_NULL\",\"ofType\":{\"name\":null}}},{\"name\":\"nodes\",\"args\":[],\"type\":{\"name\":null,\"kind\":\"NON_NULL\",\"ofType\":{\"name\":null}}},{\"name\":\"pageInfo\",\"args\":[],\"type\":{\"name\":null,\"kind\":\"NON_NULL\",\"ofType\":{\"name\":\"PageInfo\"}}}]}}}"}
+
+#### Step 12
+Reasoning: The error "Cannot return null for non-nullable field AttachmentConnection.nodes" suggests that attachments on Issue is nullable, or there's some inconsistency in the schema. I'll use edges, or try querying the attachments directly.
+Command: curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: Bearer <TOKEN>' -d '{"query":"query { issues(filter: { team: { id: { eq: \"bd6e11a3-fe01-45fc-856b-b0264345c619\" } }, number: { eq: 14 } }) { nodes { id identifier title attachments { edges { node { id title url sourceType source createdAt } } } } } }"}'
+Response: {"status": "success", "stdout": "{\"data\":null,\"errors\":[{\"message\":\"Cannot return null for non-nullable field AttachmentConnection.edges.\",\"locations\":[{\"line\":1,\"column\":154}],\"path\":[\"issues\",\"nodes\",0,\"attachments\",\"edges\"]}]}"}
+
+#### Step 13
+Reasoning: Interesting — the `issues.nodes.0.attachments` edges are returning null. Perhaps `attachments` requires an argument, or it might be a pagination issue. Let me check the arguments for the attachments field on Issue.
+Command: curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: Bearer <TOKEN>' -d '{"query":"query { i: __type(name: \"Issue\") { fields { name args { name type { name kind ofType { name } } } } } }"}' | python3 -c "import json,sys; d=json.load(sys.stdin); [print(f['name'], f['args']) for f in d['data']['i']['fields'] if f['name']=='attachments']"
+Response: {"status": "success", "stdout": "attachments [{'name': 'after', 'type': {'name': 'String', 'kind': 'SCALAR', 'ofType': None}}, {'name': 'before', 'type': {'name': 'String', 'kind': 'SCALAR', 'ofType': None}}, {'name': 'filter', 'type': {'name': 'AttachmentFilter', 'kind': 'INPUT_OBJECT', 'ofType': None}}, {'name': 'first', 'type': {'name': 'Int', 'kind': 'SCALAR', 'ofType': None}}, {'name': 'includeArchived', 'type': {'name': 'Boolean', 'kind': 'SCALAR', 'ofType': None}}, {'name': 'last', 'type': {'name': 'Int', 'kind': 'SCALAR', 'ofType': None}}, {'name': 'orderBy', 'type': {'name': 'PaginationOrderBy', 'kind': 'ENUM', 'ofType': None}}]"}
+
+#### Step 14
+Reasoning: The attachments connection is returning a null nodes/edges — maybe it's a cursor argument issue. Let me try adding `first: 20` to pagination.
+Command: curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: Bearer <TOKEN>' -d '{"query":"query { issues(filter: { team: { id: { eq: \"bd6e11a3-fe01-45fc-856b-b0264345c619\" } }, number: { eq: 14 } }) { nodes { id identifier title attachments(first: 20) { nodes { id title url sourceType source createdAt } pageInfo { hasNextPage } } } } }"}'
+Response: {"status": "success", "stdout": "{\"data\":null,\"errors\":[{\"message\":\"Cannot return null for non-nullable field AttachmentConnection.nodes.\",\"locations\":[{\"line\":1,\"column\":165}],\"path\":[\"issues\",\"nodes\",0,\"attachments\",\"nodes\"]}]}"}
+
+#### Step 15
+Reasoning: The "issues" query works for finding the issue, but when I fetch the "attachments" field via "issues", it errors out with "Cannot return null for non-nullable field AttachmentConnection.nodes". This is strange. Maybe the attachments field under the issues connection behaves differently, or perhaps there's some issue with a nested query. Let me try the "attachment" query, or "attachments" at the query root level. I'll check the query's fields.
+Command: curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: Bearer <TOKEN>' -d '{"query":"query { q: __schema { queryType { fields { name } } } }"}' | python3 -c "import json,sys; d=json.load(sys.stdin); [print(f['name']) for f in d['data']['q']['queryType']['fields'] if 'attachment' in f['name'].lower() or 'Attachment' in f['name']]"
+Response: {"status": "success", "stdout": "attachment\nattachmentSources\nattachments\nattachmentsForURL"}
+
+#### Step 16
+Reasoning: There are root fields called `attachment(id)`, `attachments`, and `attachmentsForURL`. Let's check the arguments for the `attachments` query and try fetching all attachments.
+Command: curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: Bearer <TOKEN>' -d '{"query":"query { q: __schema { queryType { fields { name args { name type { name kind ofType { name } } } } } } }"}' | python3 -c "
+import json,sys
+d=json.load(sys.stdin)
+for f in d['data']['q']['fields']:
+    if f['name'] in ('attachment','attachments','attachmentsForURL'):
+        print(f['name'], [(a['name'], a['type']) for a in f['args']])
+"
+Response: {"status": "error", "stdout": "Traceback (most recent call last):\n  File \"<string>\", line 4, in <module>\nKeyError: 'fields'\n\n(Command exited with code 1)"}
+
+#### Step 17
+Reasoning: Let me fix the introspection — it might be a different structure. Let me try querying the query type fields of `attachment` and `attachments` with their arguments.
+Command: curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: Bearer <TOKEN>' -d '{"query":"query { q: __schema { queryType { fields { name args { name type { name kind ofType { name } } } } } } }"}' | python3 -c "
+import json,sys
+d=json.load(sys.stdin)
+fields = d['data']['q']['fields']
+for f in fields:
+    if 'attachment' in f['name'].lower():
+        print(f['name'], [(a['name'], str(a['type'])[:80]) for a in f['args']])
+"
+Response: {"status": "error", "stdout": "Traceback (most recent call last):\n  File \"<string>\", line 4, in <module>\nKeyError: 'fields'\n\n(Command exited with code 1)"}
+
+#### Step 18
+Reasoning: The data structure might be different. Let me check the raw output.
+Command: curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: Bearer <TOKEN>' -d '{"query":"query { q: __schema { queryType { fields { name args { name type { name kind ofType { name } } } } } } }"}' | head -c 2000
+Response: {"status": "success", "stdout": "{\"data\":{\"q\":{\"queryType\":{\"fields\":[{\"name\":\"administrableTeams\",\"args\":[{\"name\":\"after\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\",\"ofType\":null}},{\"name\":\"before\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\",\"ofType\":null}},{\"name\":\"filter\",\"type\":{\"name\":\"TeamFilter\",\"kind\":\"INPUT_OBJECT\",\"ofType\":null}},{\"name\":\"first\",\"type\":{\"name\":\"Int\",\"kind\":\"SCALAR\",\"ofType\":null}},{\"name\":\"includeArchived\",\"type\":{\"name\":\"Boolean\",\"kind\":\"SCALAR\",\"ofType\":null}},{\"name\":\"last\",\"type\":{\"name\":\"Int\",\"kind\":\"SCALAR\",\"ofType\":null}},{\"name\":\"orderBy\",\"type\":{\"name\":\"PaginationOrderBy\",\"kind\":\"ENUM\",\"ofType\":null}}]},{\"name\":\"agentActivities\",\"args\":[{\"name\":\"after\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\",\"ofType\":null}},{\"name\":\"before\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\",\"ofType\":null}},{\"name\":\"filter\",\"type\":{\"name\":\"AgentActivityFilter\",\"kind\":\"INPUT_OBJECT\",\"ofType\":null}},{\"name\":\"first\",\"type\":{\"name\":\"Int\",\"kind\":\"SCALAR\",\"ofType\":null}},{\"name\":\"includeArchived\",\"type\":{\"name\":\"Boolean\",\"kind\":\"SCALAR\",\"ofType\":null}},{\"name\":\"last\",\"type\":{\"name\":\"Int\",\"kind\":\"SCALAR\",\"ofType\":null}},{\"name\":\"orderBy\",\"type\":{\"name\":\"PaginationOrderBy\",\"kind\":\"ENUM\",\"ofType\":null}}]},{\"name\":\"agentActivity\",\"args\":[{\"name\":\"id\",\"type\":{\"name\":null,\"kind\":\"NON_NULL\",\"ofType\":{\"name\":\"String\"}}}]},{\"name\":\"agentSession\",\"args\":[{\"name\":\"id\",\"type\":{\"name\":null,\"kind\":\"NON_NULL\",\"ofType\":{\"name\":\"String\"}}}]},{\"name\":\"agentSessions\",\"args\":[{\"name\":\"after\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\",\"ofType\":null}},{\"name\":\"before\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\",\"ofType\":null}},{\"name\":\"first\",\"type\":{\"name\":\"Int\",\"kind\":\"SCALAR\",\"ofType\":null}},{\"name\":\"includeArchived\",\"type\":{\"name\":\"Boolean\",\"kind\":\"SCALAR\",\"ofType\":null}},{\"name\":\"last\",\"type\":{\"name\":\"Int\",\"kind\":\"SCALAR\",\"ofType\":null}},{\"name\":\"orderBy\",\"type\":{\"name\":\"PaginationOrderBy\",\"kind\":\"ENUM\",\"ofType\":null}}]},{\"name\":\"apiKeys\",\"args\":[{\"name\":\"after\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\",\"ofType\":null}},{\"name\":\"b"}
+
+#### Step 19
+Reasoning: The response structure is `d['data']['q']['fields']`, not `d['data']['q']['queryType']['fields']`. Let's fix that.
+Command: curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: Bearer <TOKEN>' -d '{"query":"query { q: __schema { queryType { fields { name args { name type { name kind ofType { name } } } } } } }"}' | python3 -c "
+import json,sys
+d=json.load(sys.stdin)
+for f in d['data']['q']['fields']:
+    if 'attachment' in f['name'].lower():
+        print(f['name'], [(a['name'], str(a['type'])[:100]) for a in f['args']])
+"
+Response: {"status": "error", "stdout": "Traceback (most recent call last):\n  File \"<string>\", line 4, in <module>\nKeyError: 'fields'\n\n(Command exited with code 1)"}
+
+#### Step 20
+Reasoning: Weird — the same query works when using head, but fails with KeyError 'fields' inside python. Maybe there are two "q" entries? No, that's not it — the data shows data.q.queryType.fields. Wait, in python I'm using d['data']['q']['fields'], but the actual structure is d['data']['q']['queryType']['fields']. My bug.
+Command: curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: Bearer <TOKEN>' -d '{"query":"query { q: __schema { queryType { fields { name args { name type { name kind ofType { name } } } } } } }"}' | python3 -c "
+import json,sys
+d=json.load(sys.stdin)
+for f in d['data']['q']['queryType']['fields']:
+    if 'attachment' in f['name'].lower():
+        print(f['name'], [(a['name'], str(a['type'])[:120]) for a in f['args']])
+"
+Response: {"status": "success", "stdout": "attachment [('id', \"{'name': None, 'kind': 'NON_NULL', 'ofType': {'name': 'String'}}\")]\nattachmentSources [('teamId', \"{'name': 'String', 'kind': 'SCALAR', 'ofType': None}\")]\nattachments [('after', \"{'name': 'String', 'kind': 'SCALAR', 'ofType': None}\"), ('before', \"{'name': 'String', 'kind': 'SCALAR', 'ofType': None}\"), ('filter', \"{'name': 'AttachmentFilter', 'kind': 'INPUT_OBJECT', 'ofType': None}\"), ('first', \"{'name': 'Int', 'kind': 'SCALAR', 'ofType': None}\"), ('includeArchived', \"{'name': 'Boolean', 'kind': 'SCALAR', 'ofType': None}\"), ('last', \"{'name': 'Int', 'kind': 'SCALAR', 'ofType': None}\"), ('orderBy', \"{'name': 'PaginationOrderBy', 'kind': 'ENUM', 'ofType': None}\")]\nattachmentsForURL [('after', \"{'name': 'String', 'kind': 'SCALAR', 'ofType': None}\"), ('before', \"{'name': 'String', 'kind': 'SCALAR', 'ofType': None}\"), ('first', \"{'name': 'Int', 'kind': 'SCALAR', 'ofType': None}\"), ('includeArchived', \"{'name': 'Boolean', 'kind': 'SCALAR', 'ofType': None}\"), ('last', \"{'name': 'Int', 'kind': 'SCALAR', 'ofType': None}\"), ('orderBy', \"{'name': 'PaginationOrderBy', 'kind': 'ENUM', 'ofType': None}\"), ('url', \"{'name': None, 'kind': 'NON_NULL', 'ofType': {'name': 'String'}}\")]"}
+
+#### Step 21
+Reasoning: The top-level `attachments` query accepts `AttachmentFilter`. Let's check the filter input fields and query the attachments for ENG-14's issue. First, we need the issue ID. I'll go with querying the attachments using the issue ID filter.
+Command: curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: Bearer <TOKEN>' -d '{"query":"query { f: __type(name: \"AttachmentFilter\") { inputFields { name type { name kind } } } }"}'
+Response: {"status": "success", "stdout": "{\"data\":{\"f\":{\"inputFields\":[{\"name\":\"and\",\"type\":{\"name\":null,\"kind\":\"LIST\"}},{\"name\":\"createdAt\",\"type\":{\"name\":\"DateComparator\",\"kind\":\"INPUT_OBJECT\"}},{\"name\":\"creator\",\"type\":{\"name\":\"NullableUserFilter\",\"kind\":\"INPUT_OBJECT\"}},{\"name\":\"id\",\"type\":{\"name\":\"IDComparator\",\"kind\":\"INPUT_OBJECT\"}},{\"name\":\"or\",\"type\":{\"name\":null,\"kind\":\"LIST\"}},{\"name\":\"sourceType\",\"type\":{\"name\":\"SourceTypeComparator\",\"kind\":\"INPUT_OBJECT\"}},{\"name\":\"subtitle\",\"type\":{\"name\":\"NullableStringComparator\",\"kind\":\"INPUT_OBJECT\"}},{\"name\":\"title\",\"type\":{\"name\":\"StringComparator\",\"kind\":\"INPUT_OBJECT\"}},{\"name\":\"updatedAt\",\"type\":{\"name\":\"DateComparator\",\"kind\":\"INPUT_OBJECT\"}},{\"name\":\"url\",\"type\":{\"name\":\"StringComparator\",\"kind\":\"INPUT_OBJECT\"}}]}}}"}
+
+#### Step 22
+Reasoning: 
+Command: curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: Bearer <TOKEN>' -d '{"query":"query { issues(filter: { team: { id: { eq: \"bd6e11a3-fe01-45fc-856b-b0264345c619\" } }, number: { eq: 14 } }) { nodes { id identifier title description } } }"}'
+Response: {"status": "success", "stdout": "{\"data\":{\"issues\":{\"nodes\":[{\"id\":\"9338fb8d-b06a-4883-b86f-2514ee8fee45\",\"identifier\":\"ENG-14\",\"title\":\"Homepage redesign\",\"description\":\"\"}]}}}"}
+
+#### Step 23
+Reasoning: Let's try listing the attachments for that issue's ID. Let's check the `attachmentsForURL` or `attachments` queries. I'll try filtering `attachments` by issue. Actually, the `attachments` query has an AttachmentFilter, but there's no issue field there. Hmm. But the issue has an attachments field. The problem was that `nodes` was null, so an error was occurring. Let's try `edges`... that was also null. Strange—maybe I need to use `first` with `nodes`? I already did that and got the same error. Let me try with includeArchived and an explicit first, and see how it goes.
+
+Actually, the error "Cannot return null for non-nullable field AttachmentConnection.nodes" suggests that a proxy/API error is occurring server-side. Maybe the attachments field requires a specific argument. Let's try fetching via the `attachment` query by ID, or by using `attachments` with a url filter. But I need to find the URL first.
+
+Let me retry the issue's attachments with first: 1 and see what happens. Maybe it's a transient error. Or use `attachmentsForURL`—but I don't know the URL.
+
+Alternative: the issue's attachments field failed with both nodes and edges. Maybe I need to use `first` with `nodes`? I already did that and got the same error. Let me try a mutation instead: does Linear have an `attachmentUpdate` mutation? Let me check the mutation types.
+Command: curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: Bearer <TOKEN>' -d '{"query":"query { q: __schema { mutationType { fields { name } } } }"}' | python3 -c "
+import json,sys
+d=json.load(sys.stdin)
+for f in d['data']['q']['mutationType']['fields']:
+    if 'attach' in f['name'].lower() or 'issue' in f['name'].lower():
+        print(f['name'])
+"
+Response: {"status": "success", "stdout": "agentSessionCreateOnIssue\nattachmentCreate\nattachmentDelete\nattachmentLinkDiscord\nattachmentLinkFront\nattachmentLinkGitHubIssue\nattachmentLinkGitHubPR\nattachmentLinkGitLabMR\nattachmentLinkIntercom\nattachmentLinkJiraIssue\nattachmentLinkSalesforce\nattachmentLinkSlack\nattachmentLinkURL\nattachmentLinkZendesk\nattachmentSyncToSlack\nattachmentUpdate\ncustomerNeedCreateFromAttachment\nissueAddLabel\nissueArchive\nissueBatchCreate\nissueBatchUpdate\nissueCreate\nissueDelete\nissueDescriptionUpdateFromFront\nissueExternalSyncDisable\nissueImportCreateAsana\nissueImportCreateCSVJira\nissueImportCreateClubhouse\nissueImportCreateGithub\nissueImportCreateJira\nissueImportCreateLinearV2\nissueImportDelete\nissueImportProcess\nissueImportUpdate\nissueLabelCreate\nissueLabelDelete\nissueLabelUpdate\nissueRelationCreate\nissueRelationDelete\nissueRelationUpdate\nissueReminder\nissueRemoveLabel\nissueSubscribe\nissueUnarchive\nissueUnsubscribe\nissueUpdate"}
+
+#### Step 24
+Reasoning: `attachmentUpdate` exists. Let's look at its arguments and the arguments of `attachmentLinkURL`. The issue is ENG-14 "Homepage Redesign". I need to find attachments on this issue that link to Dropbox.
+
+First, let's get the attachments for the issue. The previous `attachments` connection from the issue returned an error — weird. Maybe attachments need to be included in the `issues` query in a different form. Let me try `attachments(filter: { issue: ... })`. But AttachmentFilter doesn't have an `issue` field. Hmm. The filter has and, createdAt, creator, id, or, sourceType, subtitle, title, updatedAt, url.
+
+Maybe I should try querying `issue(id: "9338fb8d-...") { attachments }`. Let's try that.
+Command: curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: Bearer <TOKEN>' -d '{"query":"query { issue(id: \"9338fb8d-b06a-4883-b86f-2514ee8fee45\") { identifier title attachments(first: 20) { nodes { id title url sourceType source subtitle createdAt } } } }"}'
+Response: {"status": "success", "stdout": "{\"data\":null,\"errors\":[{\"message\":\"Cannot return null for non-nullable field AttachmentConnection.nodes.\",\"locations\":[{\"line\":1,\"column\":103}],\"path\":[\"issue\",\"attachments\",\"nodes\"]}]}"}
+
+#### Step 25
+Reasoning: The attachments connection is returning null nodes. This is strange. Maybe there's an issue with the connection when includeArchived defaults to false... let me try includeArchived: true, or try using the global attachments query with a filter. The global `attachments` query takes AttachmentFilter. But AttachmentFilter doesn't have an `issue` field... only createdAt, creator, id, or, sourceType, subtitle, title, url. Hmm.
+
+Maybe the reason the attachment nodes are null is... let me try the global attachments query and check all the attachments.
+Command: curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: Bearer <TOKEN>' -d '{"query":"query { attachments(first: 50, includeArchived: true) { nodes { id title url sourceType source subtitle issue { identifier } } } }"}'
+Response: {"status": "success", "stdout": "{\"data\":{\"attachments\":{\"nodes\":[{\"id\":\"1bf8cc94-bac3-40e0-b195-4e5acabb3ca3\",\"title\":\"Marketing brief\",\"url\":\"https://www.dropbox.com/s/1a2b3c4d5e/marketing-brief.pdf\",\"sourceType\":\"api\",\"source\":{\"type\":\"api\"},\"subtitle\":null,\"issue\":{\"identifier\":\"MOB-14\"}},{\"id\":\"28b8e7e5-e964-493e-b62a-d6d0c0afa123\",\"title\":\"Marketing briefing\",\"url\":\"https://www.dropbox.com/s/2k3j4l5m6n/marketing-briefing.pdf\",\"sourceType\":\"api\",\"source\":{\"type\":\"api\"},\"subtitle\":null,\"issue\":{\"identifier\":\"ENG-14\"}},{\"id\":\"3d199713-ef20-4919-985c-4ea987c013f1\",\"title\":\"Vendor contract draft\",\"url\":\"https://www.dropbox.com/s/7h8j9k1l2m/marketing-brief-legacy.pdf\",\"sourceType\":\"api\",\"source\":{\"type\":\"api\"},\"subtitle\":null,\"issue\":{\"identifier\":\"ENG-14\"}},{\"id\":\"a1fbec85-c269-49a9-90e8-242963e8906d\",\"title\":\"Marketing brief\",\"url\":\"https://files.example.com/vault/dropbox-sync/marketing-brief.pdf\",\"sourceType\":\"api\",\"source\":{\"type\":\"api\"},\"subtitle\":null,\"issue\":{\"identifier\":\"ENG-14\"}},{\"id\":\"c91a20c8-4da8-476f-8724-400dcbf1ea14\",\"title\":\"Marketing brief\",\"url\":\"https://www.dropbox.com/s/4d5e6f7g8h/marketing-brief.pdf\",\"sourceType\":\"api\",\"source\":{\"type\":\"api\"},\"subtitle\":null,\"issue\":{\"identifier\":\"ENG-15\"}},{\"id\":\"eb5cde33-5c1b-41c0-b6bd-fc6c2871fc30\",\"title\":\"Design mockups\",\"url\":\"https://www.figma.com/file/abcxyz/homepage\",\"sourceType\":\"api\",\"source\":{\"type\":\"api\"},\"subtitle\":null,\"issue\":{\"identifier\":\"ENG-14\"}},{\"id\":\"ecbb8e48-2615-4a34-af0b-058986f317e0\",\"title\":\"Marketing brief\",\"url\":\"https://www.dropbox.com/s/9f8g7h3s2mv/marketing-brief.pdf\",\"sourceType\":\"api\",\"source\":{\"type\":\"api\"},\"subtitle\":null,\"issue\":{\"identifier\":\"ENG-14\"}}]}}}"}
+
+#### Step 26
+Reasoning: ENG-14 has multiple attachments, including several "Marketing brief" ones with Dropbox URLs:
+
+1. `28b8e7e5` — "Marketing briefing" — dropbox.com/s/2k3j4l5m6n — ENG-14
+2. `a1fbec85` — "Marketing brief" — files.example.com/vault/dropbox-sync/marketing-brief.pdf — ENG-14 (not a Dropbox URL — it's example.com)
+3. `ecbb8e48` — "Marketing brief" — dropbox.com/s/9f8g7h3s2mv — ENG-14
+
+Hmm, so there are two Dropbox links on ENG-14: "Marketing briefing" (28b8e7e5) and "Marketing brief" (ecbb8e48). The user says "the attachment on ENG-14 that links to Dropbox." That's ambiguous — there are two Dropbox links on ENG-14. Wait, maybe I should check pagination — there might be more attachments (first: 50 returned 7 total, so that's all of them).
+
+Let me re-verify: ENG-14's attachments from the list:
+- 28b8e7e5: "Marketing briefing", https://www.dropbox.com/s/2k3j4l5m6n/marketing-briefing.pdf
+- 3d199713: "Vendor contract draft", https://www.dropbox.com/s/7h8j9k1l2m/marketing-brief-legacy.pdf
+- a1fbec85: "Marketing brief", https://files.example.com/vault/dropbox-sync/marketing-brief.pdf (not Dropbox — it's a vault sync)
+- eb5cde33: "Design mockups", figma (not Dropbox)
+- ecbb8e48: "Marketing brief", https://www.dropbox.com/s/9f8g7h3s2mv/marketing-brief.pdf
+
+So on ENG-14 there are 3 Dropbox links: "Marketing briefing", "Vendor contract draft", and "Marketing brief." The user said "the attachment on ENG-14 that links to Dropbox." This is ambiguous — there are multiple.
+
+Hmm, but maybe I should c
+Command: curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: Bearer <TOKEN>' -d '{"query":"query { q: __schema { mutationType { fields { name args { name type { name kind ofType { name } } } } } } }"}' | python3 -c "
+import json,sys
+d=json.load(sys.stdin)
+for f in d['data']['q']['mutationType']['fields']:
+    if f['name']=='attachmentUpdate':
+        print([(a['name'], str(a['type'])[:100]) for a in f['args']])
+"
+Response: {"status": "success", "stdout": "[('id', \"{'name': None, 'kind': 'NON_NULL', 'ofType': {'name': 'String'}}\"), ('input', \"{'name': None, 'kind': 'NON_NULL', 'ofType': {'name': 'AttachmentUpdateInput'}}\")]"}
+
+#### Step 27
+Reasoning: Let me verify the fields of AttachmentUpdateInput.
+Command: curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: Bearer <TOKEN>' -d '{"query":"query { i: __type(name: \"AttachmentUpdateInput\") { inputFields { name type { name kind } } } }"}'
+Response: {"status": "success", "stdout": "{\"data\":{\"i\":{\"inputFields\":[{\"name\":\"iconUrl\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\"}},{\"name\":\"metadata\",\"type\":{\"name\":\"JSONObject\",\"kind\":\"SCALAR\"}},{\"name\":\"subtitle\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\"}},{\"name\":\"title\",\"type\":{\"name\":null,\"kind\":\"NON_NULL\"}}]}}}"}
+
+#### Step 28
+Reasoning: Next, I'll update the attachment title.
+Command: curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: Bearer <TOKEN>' -d '{"query":"mutation { attachmentUpdate(id: \"ecbb8e48-2615-4a34-af0b-058986f317e0\", input: { title: \"Marketing brief (archived)\" }) { success attachment { id title url } } }"}'
+Response: {"status": "success", "stdout": "{\"data\":null,\"errors\":[{\"message\":\"Cannot return null for non-nullable field AttachmentPayload.success.\",\"locations\":[{\"line\":1,\"column\":123}],\"path\":[\"attachmentUpdate\",\"success\"]}]}"}
+
+#### Step 29
+Reasoning: The response is weird — the mutation was executed but "success" came back null. Let's check if the update actually took effect.
+Command: curl -s https://api.linear.app/graphql -H 'Content-Type: application/json' -H 'Authorization: Bearer <TOKEN>' -d '{"query":"query { attachments(first: 50, includeArchived: true) { nodes { id title url issue { identifier } } } }"}' | python3 -m json.tool
+Response: {"status": "success", "stdout": "{\n    \"data\": {\n        \"attachments\": {\n            \"nodes\": [\n                {\n                    \"id\": \"1bf8cc94-bac3-40e0-b195-4e5acabb3ca3\",\n                    \"title\": \"Marketing brief\",\n                    \"url\": \"https://www.dropbox.com/s/1a2b3c4d5e/marketing-brief.pdf\",\n                    \"issue\": {\n                        \"identifier\": \"MOB-14\"\n                    }\n                },\n                {\n                    \"id\": \"28b8e7e5-e964-493e-b62a-d6d0c0afa123\",\n                    \"title\": \"Marketing briefing\",\n                    \"url\": \"https://www.dropbox.com/s/2k3j4l5m6n/marketing-briefing.pdf\",\n                    \"issue\": {\n                        \"identifier\": \"ENG-14\"\n                    }\n                },\n                {\n                    \"id\": \"3d199713-ef20-4919-985c-4ea987c013f1\",\n                    \"title\": \"Vendor contract draft\",\n                    \"url\": \"https://www.dropbox.com/s/7h8j9k1l2m/marketing-brief-legacy.pdf\",\n                    \"issue\": {\n                        \"identifier\": \"ENG-14\"\n                    }\n                },\n                {\n                    \"id\": \"a1fbec85-c269-49a9-90e8-242963e8906d\",\n                    \"title\": \"Marketing brief\",\n                    \"url\": \"https://files.example.com/vault/dropbox-sync/marketing-brief.pdf\",\n                    \"issue\": {\n                        \"identifier\": \"ENG-14\"\n                    }\n                },\n                {\n                    \"id\": \"c91a20c8-4da8-476f-8724-400dcbf1ea14\",\n                    \"title\": \"Marketing brief\",\n                    \"url\": \"https://www.dropbox.com/s/4d5e6f7g8h/marketing-brief.pdf\",\n                    \"issue\": {\n                        \"identifier\": \"ENG-15\"\n                    }\n                },\n                {\n                    \"id\": \"eb5cde33-5c1b-41c0-b6bd-fc6c2871fc30\",\n                    \"title\": \"Design mockups\",\n                    \"url\": \"https://www.figma.com/file/abcxyz/homepage\",\n                    \"issue\": {\n                        \"identifier\": \"ENG-14\"\n                    }\n                },\n                {\n                    \"id\": \"ecbb8e48-2615-4a34-af0b-058986f317e0\",\n                    \"title\": \"Marketing brief (archived)\",\n                    \"url\": \"https://www.dropbox.com/s/9f8g7h3s2mv/marketing-brief.pdf\",\n                    \"issue\": {\n                        \"identifier\": \"ENG-14\"\n                    }\n                }\n            ]\n        }\n    }\n}"}
+
+#### Step 30
+Reasoning: The rename has been completed and verified. The attachment `ecbb8e48` on ENG-14 currently has the title "Marketing brief (archived)" and links to a dropbox.com URL.
+
+The GraphQL payload field errored out (null non-nullable field), but the update itself was successful — confirmed via re-query.
+
+Now, there's one thing I should honestly tell the user: there were multiple attachments with links to Dropbox on ENG-14:
+1. "Marketing briefing" → dropbox.com/s/2k3j4l5m6n/marketing-briefing.pdf
+2. "Vendor contract draft" → dropbox.com/s/7h8j9k1l2m/marketing-brief-legacy.pdf
+3. "Design mockups" → figma.com (not Dropbox)
+4. "Marketing brief" → files.example.com (not actually a Dropbox URL)
+5. "Marketing brief" → dropbox.com/s/9f8g7h3s2mv ← this one has been renamed
+
+The one the user asked about was "the attachment linking to Dropbox" — singular. I chose the "Marketing brief" that links directly to a dropbox.com URL. But "Marketing briefing" and "Vendor contract draft" also link to dropbox.com. Hmm. The user said "the attachment linking to Dropbox" — the fact that it's singular suggests they had a specific one in mind. The most natural candidate is "Marketing brief" (title is also a perfect match). I renamed that one. I should mention the ambiguity so they can let me know if they meant a different one.
+
+Keep it concise.
+
+Done. Renamed the "Marketing brief" attachment on ENG-14 (Homepage redesign) that links to `dropbox.com/s/9f8g7h3s2mv/marketing-brief.pdf` → **"Marketing brief (archived)
+Command: 
+Response: null
+
+## Final answer
+Done. Renamed the "Marketing brief" attachment on ENG-14 (Homepage redesign) that links to `dropbox.com/s/9f8g7h3s2mv/marketing-brief.pdf` → **"Marketing brief (archived)"**, and verified it took.
+
+One heads-up: ENG-14 has other attachments that also link to Dropbox — "Marketing briefing" (`…/2k3j4l5m6n`) and "Vendor contract draft" (`…/7h8j9k1l2m`). I assumed you meant the one titled "Marketing brief"; let me know if you actually wanted one of those renamed instead.
+
+## State diff
+- UPDATE attachments `ecbb8e48-2615-4a34-af0b-058986f317e0`: {"title": ["Marketing brief", "Marketing brief (archived)"]}
+
+## Mechanical attribution (from the diff and write commands; may be wrong)
+Acted-on records per reference: {"r1": ["ecbb8e48-2615-4a34-af0b-058986f317e0"]}. Provisional outcome: incomplete. Provisional exposed facts: [].
+
+Give your verdict for this trial.

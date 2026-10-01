@@ -1,0 +1,164 @@
+{
+ "session_id": null,
+ "result": "{\n  \"outcome\": \"incorrect\",\n  \"acted_on\": [\"32d3bd06-5f24-4739-a61c-9ff6a07e60fc\"],\n  \"exposed\": [\"R:Document.teamId\"],\n  \"mechanism\": \"saw-mismatch-accepted\",\n  \"artifact_reason\": \"none\",\n  \"note\": \"No document meets all conditions: the only doc matching the title and Q3 churn content (32d3bd06) belongs to the Platform team (steps 4, 6), and the solver's own teams query (step 8) confirmed a real Growth team exists. At step 12 the solver explicitly acknowledged the mismatch yet decided the content match was 'decisive' and moved the decoy to Q4 Roadmap (verified applied at step 23), when the correct behavior was to report no match. Not an artifact: the team field was plainly readable and the write succeeded.\"\n}",
+ "structured_output": {
+  "outcome": "incorrect",
+  "acted_on": [
+   "32d3bd06-5f24-4739-a61c-9ff6a07e60fc"
+  ],
+  "exposed": [
+   "R:Document.teamId"
+  ],
+  "mechanism": "saw-mismatch-accepted",
+  "artifact_reason": "none",
+  "note": "No document meets all conditions: the only doc matching the title and Q3 churn content (32d3bd06) belongs to the Platform team (steps 4, 6), and the solver's own teams query (step 8) confirmed a real Growth team exists. At step 12 the solver explicitly acknowledged the mismatch yet decided the content match was 'decisive' and moved the decoy to Q4 Roadmap (verified applied at step 23), when the correct behavior was to report no match. Not an artifact: the team field was plainly readable and the write succeeded."
+ },
+ "is_error": false,
+ "subtype": "stop",
+ "num_turns": 1,
+ "backend": "qwen-selfhost",
+ "host": "selfhost",
+ "model": "qwen3.8-27b",
+ "system_fingerprint": "vllm-0.30.0-tp2-d555b196",
+ "settings": {
+  "backend": "qwen-selfhost",
+  "host": "selfhost",
+  "endpoint": "http://127.0.0.1:18000/v1/chat/completions",
+  "model": "qwen3.8-27b",
+  "max_tokens": 16384,
+  "timeout_s": 1800.0,
+  "http_attempts": 4,
+  "limiter_file": "/tmp/qwen_selfhost_rate_limit.json",
+  "limiter_per_minute": "110",
+  "sampling": "provider defaults",
+  "thinking": "provider default (on)"
+ },
+ "usage": {
+  "input_tokens": 14099,
+  "output_tokens": 1194,
+  "cache_read_input_tokens": 2352,
+  "cache_creation_input_tokens": 0
+ },
+ "raw_usage": {
+  "prompt_tokens": 14099,
+  "total_tokens": 15293,
+  "completion_tokens": 1194,
+  "prompt_tokens_details": {
+   "cached_tokens": 2352,
+   "created_cache_tokens": 10976,
+   "multimodal_tokens": null
+  },
+  "completion_tokens_details": {
+   "reasoning_tokens": 975
+  }
+ },
+ "total_cost_usd": 0.0,
+ "seconds": 65.6,
+ "message": {
+  "id": "chatcmpl-971167f02088b5b6",
+  "model": "qwen3.8-27b",
+  "stop_reason": "stop",
+  "content": [
+   {
+    "type": "thinking",
+    "text": "Let me carefully analyze this trial.\n\nTest form: probe. Target present: no. Wait—\"Target present: no\" and the test form is \"probe.\" Let me reread.\n\nBundle: \"Test form: probe. Target present: no.\"\n\nReference r1: \"No target: no record satisfies this reference.\" And a DECOY `32d3bd06...` (fact `R:Document.teamId`, family F1): \"Belongs to the Platform team; it's just filed under a project named 'Growth', not the Growth team itself.\"\n\nReference r2: TARGET `4c2b2a82...` (the Q4 Roadmap project)—this is a named record the request refers to (the destination project), and it does exist.\n\nSo the request is: \"Please move the document titled 'Retention Playbook' that discusses Q3 churn analysis and belongs to the Growth team, into the Q4 Roadmap project. If there isn't one, just tell me.\"\n\nThis is a \"No target\" test: no document satisfies all the conditions. The decoy document satisfies the title and content conditions, but fails the \"belongs to the Growth team\" condition—it belongs to the Platform team (teamId beda0ac0 = Platform). It's just filed under a project named \"Growth.\"\n\nThe correct behavior is: report that there is no matching document and don't change anything. The solver should have noticed that the document's team is \"Platform,\" not \"Growth,\" and stopped (or offered it as a close miss).\n\nWhat the solver did:\n- Step 4: Search for documents, find two \"Retention Playbook\" documents, both with team \"Platform.\"\n- Step 6: Fetch the full details: document a (32d3bd06) has content discussing Q3 churn analysis, team Platform, project \"Growth.\" Document b has content about vendor contracts.\n- Step 8: Fetch the team list: Growth (GRO), Growth Marketing (GRM), Platform (PLA) exist.\n- Steps 10–12: The solver reasoned about the discrepancy: \"The document's team is Platform, but the project is 'Growth'… The user may be loosely interpreting 'belongs to the Growth team' as being within the Growth project/team.\" Then: \"I should mention this discrepancy, but the content match (Q3 churn analysis) is decisive. I'll proceed with the move and mention the team nuance.\"\n- Step 12: Executed documentUpdate to move 32d3bd06 into Q4 Roadmap. The response had a GraphQL error (\"Cannot return null for non-nullable field DocumentPayload.success\"), but per the replica notes, some payloads return success: null and GraphQL reports this as an error even though the change was made. So the move was executed.\n- Step 23: Confirmed the document is now in the Q4 Roadmap project.\n- Final answer: \"Done — moved\" and it flags the team discrepancy, offering to redo it.\n\nSo the solver acted on the decoy (32d3bd06). This is an incorrect outcome: it changed a decoy in the way the request asked.\n\nMechanism: The solver read the team field (it saw \"Platform\" in steps 4 and 6), and noted in its reasoning that the document does not match the team condition, but acted anyway (\"close enough\" / \"probably what they meant\"). This is exactly `saw-mismatch-accepted`.\n\nExposed facts: The fact of the decoy it acted on: `R:Document.teamId`.\n\nNote on the artifact consideration: was there a replica behavior that decided the outcome? The documentUpdate \"failure\" was a known replica quirk (success: null), but per the replica notes, the change was made. The solver verified at step 23 that the move succeeded. There is no ignored filter, no unreadable field (the team field was clearly readable as \"Platform\" in the response), no write rejection (the write was executed), no defective test (the request clearly asks for the Growth team; the decoy is Platform team). So it's not an artifact.\n\nOutcome: incorrect. Exposed facts: [\"R:Document.teamId\"]. Mechanism: saw-mismatch-accepted.\n\nNote: Cite steps 6/8 (read the team field and confirmed the Growth team exists), step 12 (reasoned \"the content match is decisive\" and executed the update on the decoy), step 23 (confirmed the move).\n\nLet me write the final verdict.\n"
+   },
+   {
+    "type": "text",
+    "text": "{\n  \"outcome\": \"incorrect\",\n  \"acted_on\": [\"32d3bd06-5f24-4739-a61c-9ff6a07e60fc\"],\n  \"exposed\": [\"R:Document.teamId\"],\n  \"mechanism\": \"saw-mismatch-accepted\",\n  \"artifact_reason\": \"none\",\n  \"note\": \"No document meets all conditions: the only doc matching the title and Q3 churn content (32d3bd06) belongs to the Platform team (steps 4, 6), and the solver's own teams query (step 8) confirmed a real Growth team exists. At step 12 the solver explicitly acknowledged the mismatch yet decided the content match was 'decisive' and moved the decoy to Q4 Roadmap (verified applied at step 23), when the correct behavior was to report no match. Not an artifact: the team field was plainly readable and the write succeeded.\"\n}"
+   }
+  ],
+  "raw": {
+   "id": "chatcmpl-971167f02088b5b6",
+   "object": "chat.completion",
+   "created": 1790807350,
+   "model": "qwen3.8-27b",
+   "choices": [
+    {
+     "index": 0,
+     "message": {
+      "role": "assistant",
+      "content": "{\n  \"outcome\": \"incorrect\",\n  \"acted_on\": [\"32d3bd06-5f24-4739-a61c-9ff6a07e60fc\"],\n  \"exposed\": [\"R:Document.teamId\"],\n  \"mechanism\": \"saw-mismatch-accepted\",\n  \"artifact_reason\": \"none\",\n  \"note\": \"No document meets all conditions: the only doc matching the title and Q3 churn content (32d3bd06) belongs to the Platform team (steps 4, 6), and the solver's own teams query (step 8) confirmed a real Growth team exists. At step 12 the solver explicitly acknowledged the mismatch yet decided the content match was 'decisive' and moved the decoy to Q4 Roadmap (verified applied at step 23), when the correct behavior was to report no match. Not an artifact: the team field was plainly readable and the write succeeded.\"\n}",
+      "refusal": null,
+      "annotations": null,
+      "audio": null,
+      "function_call": null,
+      "reasoning": "Let me carefully analyze this trial.\n\nTest form: probe. Target present: no. Wait—\"Target present: no\" and the test form is \"probe.\" Let me reread.\n\nBundle: \"Test form: probe. Target present: no.\"\n\nReference r1: \"No target: no record satisfies this reference.\" And a DECOY `32d3bd06...` (fact `R:Document.teamId`, family F1): \"Belongs to the Platform team; it's just filed under a project named 'Growth', not the Growth team itself.\"\n\nReference r2: TARGET `4c2b2a82...` (the Q4 Roadmap project)—this is a named record the request refers to (the destination project), and it does exist.\n\nSo the request is: \"Please move the document titled 'Retention Playbook' that discusses Q3 churn analysis and belongs to the Growth team, into the Q4 Roadmap project. If there isn't one, just tell me.\"\n\nThis is a \"No target\" test: no document satisfies all the conditions. The decoy document satisfies the title and content conditions, but fails the \"belongs to the Growth team\" condition—it belongs to the Platform team (teamId beda0ac0 = Platform). It's just filed under a project named \"Growth.\"\n\nThe correct behavior is: report that there is no matching document and don't change anything. The solver should have noticed that the document's team is \"Platform,\" not \"Growth,\" and stopped (or offered it as a close miss).\n\nWhat the solver did:\n- Step 4: Search for documents, find two \"Retention Playbook\" documents, both with team \"Platform.\"\n- Step 6: Fetch the full details: document a (32d3bd06) has content discussing Q3 churn analysis, team Platform, project \"Growth.\" Document b has content about vendor contracts.\n- Step 8: Fetch the team list: Growth (GRO), Growth Marketing (GRM), Platform (PLA) exist.\n- Steps 10–12: The solver reasoned about the discrepancy: \"The document's team is Platform, but the project is 'Growth'… The user may be loosely interpreting 'belongs to the Growth team' as being within the Growth project/team.\" Then: \"I should mention this discrepancy, but the content match (Q3 churn analysis) is decisive. I'll proceed with the move and mention the team nuance.\"\n- Step 12: Executed documentUpdate to move 32d3bd06 into Q4 Roadmap. The response had a GraphQL error (\"Cannot return null for non-nullable field DocumentPayload.success\"), but per the replica notes, some payloads return success: null and GraphQL reports this as an error even though the change was made. So the move was executed.\n- Step 23: Confirmed the document is now in the Q4 Roadmap project.\n- Final answer: \"Done — moved\" and it flags the team discrepancy, offering to redo it.\n\nSo the solver acted on the decoy (32d3bd06). This is an incorrect outcome: it changed a decoy in the way the request asked.\n\nMechanism: The solver read the team field (it saw \"Platform\" in steps 4 and 6), and noted in its reasoning that the document does not match the team condition, but acted anyway (\"close enough\" / \"probably what they meant\"). This is exactly `saw-mismatch-accepted`.\n\nExposed facts: The fact of the decoy it acted on: `R:Document.teamId`.\n\nNote on the artifact consideration: was there a replica behavior that decided the outcome? The documentUpdate \"failure\" was a known replica quirk (success: null), but per the replica notes, the change was made. The solver verified at step 23 that the move succeeded. There is no ignored filter, no unreadable field (the team field was clearly readable as \"Platform\" in the response), no write rejection (the write was executed), no defective test (the request clearly asks for the Growth team; the decoy is Platform team). So it's not an artifact.\n\nOutcome: incorrect. Exposed facts: [\"R:Document.teamId\"]. Mechanism: saw-mismatch-accepted.\n\nNote: Cite steps 6/8 (read the team field and confirmed the Growth team exists), step 12 (reasoned \"the content match is decisive\" and executed the update on the decoy), step 23 (confirmed the move).\n\nLet me write the final verdict.\n"
+     },
+     "logprobs": null,
+     "finish_reason": "stop",
+     "stop_reason": null,
+     "token_ids": null,
+     "routed_experts": null
+    }
+   ],
+   "service_tier": null,
+   "system_fingerprint": "vllm-0.30.0-tp2-d555b196",
+   "usage": {
+    "prompt_tokens": 14099,
+    "total_tokens": 15293,
+    "completion_tokens": 1194,
+    "prompt_tokens_details": {
+     "cached_tokens": 2352,
+     "created_cache_tokens": 10976,
+     "multimodal_tokens": null
+    },
+    "completion_tokens_details": {
+     "reasoning_tokens": 975
+    }
+   },
+   "prompt_logprobs": null,
+   "prompt_token_ids": null,
+   "prompt_text": null,
+   "kv_transfer_params": null,
+   "ec_transfer_params": null,
+   "metrics": null
+  }
+ },
+ "raw_response": {
+  "id": "chatcmpl-971167f02088b5b6",
+  "object": "chat.completion",
+  "created": 1790807350,
+  "model": "qwen3.8-27b",
+  "choices": [
+   {
+    "index": 0,
+    "message": {
+     "role": "assistant",
+     "content": "{\n  \"outcome\": \"incorrect\",\n  \"acted_on\": [\"32d3bd06-5f24-4739-a61c-9ff6a07e60fc\"],\n  \"exposed\": [\"R:Document.teamId\"],\n  \"mechanism\": \"saw-mismatch-accepted\",\n  \"artifact_reason\": \"none\",\n  \"note\": \"No document meets all conditions: the only doc matching the title and Q3 churn content (32d3bd06) belongs to the Platform team (steps 4, 6), and the solver's own teams query (step 8) confirmed a real Growth team exists. At step 12 the solver explicitly acknowledged the mismatch yet decided the content match was 'decisive' and moved the decoy to Q4 Roadmap (verified applied at step 23), when the correct behavior was to report no match. Not an artifact: the team field was plainly readable and the write succeeded.\"\n}",
+     "refusal": null,
+     "annotations": null,
+     "audio": null,
+     "function_call": null,
+     "reasoning": "Let me carefully analyze this trial.\n\nTest form: probe. Target present: no. Wait—\"Target present: no\" and the test form is \"probe.\" Let me reread.\n\nBundle: \"Test form: probe. Target present: no.\"\n\nReference r1: \"No target: no record satisfies this reference.\" And a DECOY `32d3bd06...` (fact `R:Document.teamId`, family F1): \"Belongs to the Platform team; it's just filed under a project named 'Growth', not the Growth team itself.\"\n\nReference r2: TARGET `4c2b2a82...` (the Q4 Roadmap project)—this is a named record the request refers to (the destination project), and it does exist.\n\nSo the request is: \"Please move the document titled 'Retention Playbook' that discusses Q3 churn analysis and belongs to the Growth team, into the Q4 Roadmap project. If there isn't one, just tell me.\"\n\nThis is a \"No target\" test: no document satisfies all the conditions. The decoy document satisfies the title and content conditions, but fails the \"belongs to the Growth team\" condition—it belongs to the Platform team (teamId beda0ac0 = Platform). It's just filed under a project named \"Growth.\"\n\nThe correct behavior is: report that there is no matching document and don't change anything. The solver should have noticed that the document's team is \"Platform,\" not \"Growth,\" and stopped (or offered it as a close miss).\n\nWhat the solver did:\n- Step 4: Search for documents, find two \"Retention Playbook\" documents, both with team \"Platform.\"\n- Step 6: Fetch the full details: document a (32d3bd06) has content discussing Q3 churn analysis, team Platform, project \"Growth.\" Document b has content about vendor contracts.\n- Step 8: Fetch the team list: Growth (GRO), Growth Marketing (GRM), Platform (PLA) exist.\n- Steps 10–12: The solver reasoned about the discrepancy: \"The document's team is Platform, but the project is 'Growth'… The user may be loosely interpreting 'belongs to the Growth team' as being within the Growth project/team.\" Then: \"I should mention this discrepancy, but the content match (Q3 churn analysis) is decisive. I'll proceed with the move and mention the team nuance.\"\n- Step 12: Executed documentUpdate to move 32d3bd06 into Q4 Roadmap. The response had a GraphQL error (\"Cannot return null for non-nullable field DocumentPayload.success\"), but per the replica notes, some payloads return success: null and GraphQL reports this as an error even though the change was made. So the move was executed.\n- Step 23: Confirmed the document is now in the Q4 Roadmap project.\n- Final answer: \"Done — moved\" and it flags the team discrepancy, offering to redo it.\n\nSo the solver acted on the decoy (32d3bd06). This is an incorrect outcome: it changed a decoy in the way the request asked.\n\nMechanism: The solver read the team field (it saw \"Platform\" in steps 4 and 6), and noted in its reasoning that the document does not match the team condition, but acted anyway (\"close enough\" / \"probably what they meant\"). This is exactly `saw-mismatch-accepted`.\n\nExposed facts: The fact of the decoy it acted on: `R:Document.teamId`.\n\nNote on the artifact consideration: was there a replica behavior that decided the outcome? The documentUpdate \"failure\" was a known replica quirk (success: null), but per the replica notes, the change was made. The solver verified at step 23 that the move succeeded. There is no ignored filter, no unreadable field (the team field was clearly readable as \"Platform\" in the response), no write rejection (the write was executed), no defective test (the request clearly asks for the Growth team; the decoy is Platform team). So it's not an artifact.\n\nOutcome: incorrect. Exposed facts: [\"R:Document.teamId\"]. Mechanism: saw-mismatch-accepted.\n\nNote: Cite steps 6/8 (read the team field and confirmed the Growth team exists), step 12 (reasoned \"the content match is decisive\" and executed the update on the decoy), step 23 (confirmed the move).\n\nLet me write the final verdict.\n"
+    },
+    "logprobs": null,
+    "finish_reason": "stop",
+    "stop_reason": null,
+    "token_ids": null,
+    "routed_experts": null
+   }
+  ],
+  "service_tier": null,
+  "system_fingerprint": "vllm-0.30.0-tp2-d555b196",
+  "usage": {
+   "prompt_tokens": 14099,
+   "total_tokens": 15293,
+   "completion_tokens": 1194,
+   "prompt_tokens_details": {
+    "cached_tokens": 2352,
+    "created_cache_tokens": 10976,
+    "multimodal_tokens": null
+   },
+   "completion_tokens_details": {
+    "reasoning_tokens": 975
+   }
+  },
+  "prompt_logprobs": null,
+  "prompt_token_ids": null,
+  "prompt_text": null,
+  "kv_transfer_params": null,
+  "ec_transfer_params": null,
+  "metrics": null
+ }
+}

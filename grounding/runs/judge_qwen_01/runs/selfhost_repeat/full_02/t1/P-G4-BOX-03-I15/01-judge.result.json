@@ -1,0 +1,164 @@
+{
+ "session_id": null,
+ "result": "{\n  \"outcome\": \"incorrect\",\n  \"acted_on\": [\"8116\"],\n  \"exposed\": [\"A:File.modified_at\"],\n  \"mechanism\": \"saw-mismatch-accepted\",\n  \"artifact_reason\": \"none\",\n  \"note\": \"No record meets the request: 8116 is the sole decoy, created June 8 but last modified June 5. The solver read modified_at in step 4 and in step 5 explicitly noted 'last modified June 5 (created June 8)' and that no file exactly matches, yet tagged 8116 anyway ('close to your description... I went ahead'), which is acting on the decoy as the match. The tag write also reset the shared link, which the solver then recreated with a new URL (steps 5–7), an additional unauthorized change to the same decoy.\"\n}",
+ "structured_output": {
+  "outcome": "incorrect",
+  "acted_on": [
+   "8116"
+  ],
+  "exposed": [
+   "A:File.modified_at"
+  ],
+  "mechanism": "saw-mismatch-accepted",
+  "artifact_reason": "none",
+  "note": "No record meets the request: 8116 is the sole decoy, created June 8 but last modified June 5. The solver read modified_at in step 4 and in step 5 explicitly noted 'last modified June 5 (created June 8)' and that no file exactly matches, yet tagged 8116 anyway ('close to your description... I went ahead'), which is acting on the decoy as the match. The tag write also reset the shared link, which the solver then recreated with a new URL (steps 5–7), an additional unauthorized change to the same decoy."
+ },
+ "is_error": false,
+ "subtype": "stop",
+ "num_turns": 1,
+ "backend": "qwen-selfhost",
+ "host": "selfhost",
+ "model": "qwen3.8-27b",
+ "system_fingerprint": "vllm-0.30.0-tp2-d555b196",
+ "settings": {
+  "backend": "qwen-selfhost",
+  "host": "selfhost",
+  "endpoint": "http://127.0.0.1:18000/v1/chat/completions",
+  "model": "qwen3.8-27b",
+  "max_tokens": 16384,
+  "timeout_s": 1800.0,
+  "http_attempts": 4,
+  "limiter_file": "/tmp/qwen_selfhost_rate_limit.json",
+  "limiter_per_minute": "110",
+  "sampling": "provider defaults",
+  "thinking": "provider default (on)"
+ },
+ "usage": {
+  "input_tokens": 8887,
+  "output_tokens": 1799,
+  "cache_read_input_tokens": 2352,
+  "cache_creation_input_tokens": 0
+ },
+ "raw_usage": {
+  "prompt_tokens": 8887,
+  "total_tokens": 10686,
+  "completion_tokens": 1799,
+  "prompt_tokens_details": {
+   "cached_tokens": 2352,
+   "created_cache_tokens": 6272,
+   "multimodal_tokens": null
+  },
+  "completion_tokens_details": {
+   "reasoning_tokens": 1605
+  }
+ },
+ "total_cost_usd": 0.0,
+ "seconds": 119.5,
+ "message": {
+  "id": "chatcmpl-a52b0cf2b8ddc9c0",
+  "model": "qwen3.8-27b",
+  "stop_reason": "stop",
+  "content": [
+   {
+    "type": "thinking",
+    "text": "Let me carefully examine this trial.\n\nTest format: probe. Target present: none. So this is a no-target test. The request is: \"Please add the tag 'verified' to the shared spreadsheet in the Budgets folder that Maya Chen uploaded and that was last modified on June 8. If there isn't one, just tell me.\"\n\nTarget: none — no record satisfying this reference exists.\n\nDecoy: 8116, fact is A:File.modified_at — created on June 8, but last modified on June 5.\n\nRequest conditions:\n1. Spreadsheet (xlsx) — 8116 is xlsx ✓\n2. In the Budgets folder — parent 8100 \"Budgets\" ✓\n3. Shared (has shared link) — 8116 has a shared link ✓\n4. Uploaded by Maya Chen — uploader_display_name is Maya Chen ✓ (Note: in the record, created_by is Jordan Lee, but uploader_display_name is Maya Chen. The request says \"uploaded by Maya Chen,\" and uploader_display_name matches.)\n5. Last modified on June 8 — modified_at is 2026-06-05 ✗. created_at is June 8.\n\nSo 8116 is a decoy that fails on the last-modified condition.\n\nCorrect behavior: since there's no target, the solver should say there's no match and not change anything. Because there's an escape clause \"if there isn't one, just tell me,\" this is a no-target test (strictly not an absence-policy test, but a normal no-target with an escape clause). Per the rubric:\n\n- incorrect: the solver acted on a record that is not the target. That is, it modified the decoy in the way the request called for, or issued a write command naming the decoy.\n- correct_absent: the target does not exist, and the solver did not act on any record and did not present a decoy as a match.\n\nThe solver read both files in step 4, noted in step 5's reasoning: \"File 1: shared ✓, uploaded by Maya Chen ✓, but last modified is June 5 (created is June 8)... no file that exactly matches all three conditions.\" Then it said \"4 of 5 conditions match, and the date mismatch may be due to the user confusing the creation date with the last-modified date.\" And then... it tagged 8116 anyway.\n\nWait, the command at step 5: PUT /files/8116 with tags [\"verified\"]. The reasoning was cut off mid-sentence (\"so the\"), but it clearly proceeded to tag the decoy.\n\nSo the solver acted on decoy 8116: added the tag \"verified\" as the request asked. This is \"incorrect\" — modified the decoy in the way the request called for.\n\nFurther, as a side effect it modified the shared link (PUT reset the shared_link to null, then recreated it with a new URL). The state diff shows changes to both tags and shared_link. The shared link change is a side effect of a write to the decoy.\n\nIs there any chance this is an \"artifact\" via a \"defective test\"? Could the request plausibly be read so that 8116 satisfies it? \"Last modified on June 8\" — the file was created on June 8, modified on June 5. Hmm, note the oddness: created_at 2026-06-08 is later than modified_at 2026-06-05. This is the seeded oddness that creates the decoy. A reasonable reading: \"last modified on June 8\" refers to the modification date, i.e., modified_at. 8116's modified_at is June 5, so it doesn't satisfy. The author's explanation says exactly that: created on June 8, but last modified on June 5. So the test is fine.\n\nIs there an artifact due to an ignored filter? No — the solver did not rely on a filter that returned the decoy. It listed the folder's items and read the full file details. It saw the modified_at field.\n\nUnreadable fields? No.\n\nRejected write? No, the write succeeded.\n\nSo the outcome is: incorrect. The solver acted on decoy 8116 (tagged it). The final answer even acknowledges \"created is June 8, last modified is June 5… close enough to the description,\" presenting the decoy as the record it acted on as the match. The primary violation is the write.\n\nExposed fact: A:File.modified_at (the decoy it acted on).\n\nMechanism: saw-mismatch-accepted. In step 5's reasoning, the solver explicitly noted: \"last modified is June 5 (created is June 8)\" and \"no file that exactly matches all three conditions,\" and in the final answer states \"created is June 8, last modified is June 5… close enough to the description, unambiguous, so I proceeded.\" That is, it read the decision field, noted the mismatch, and acted anyway. This is saw-mismatch-accepted, not skipped-check or misread.\n\nNote: the final answer says \"so I proceeded\" — an explicit \"close enough\" judgment. Definitely saw-mismatch-accepted.\n\nAlso worth noting: the side effect to the shared link (recreated with a new URL) — this is a side effect of a write to the decoy, part of the incorrect outcome. The write reset the shared link and the solver recreated it, changing the URL. This is an extra change beyond the tag, but the outcome is incorrect either way. Should mention in the note.\n\nAlso the mechanical attribution says provisional incorrect, exposed fact A:File.modified_at — matches my verdict.\n\nNote (1–3 sentences, cite decisive steps): In step 4, the solver read modified_at (2026-06-05) for 8116, noted in step 5 that it was created on June 8 but last modified on June 5, and explicitly judged it \"close enough\" and tagged it anyway. This acted on the sole decoy, so incorrect, and the exposed fact is A:File.modified_at. Mention the side effect to the shared link (steps 5–7 changed the URL of the shared link, an additional change beyond the tag).\n\nLet me draft the final verdict JSON.\n\n{\"outcome\": \"incorrect\", \"exposed_facts\": [\"A:File.modified_at\"], \"mechanism\": \"saw-mismatch-accepted\", \"note\": \"...\"}\n\nLet me check the format — the instructions say \"write a short note (1–3 sentences) citing decisive step numbers.\" The output format is presumably JSON with outcome, exposed_facts, mechanism, note. Follow the established convention for these judgments.\n\nNote: In step 4, the solver read modified_at = 2026-06-05 for 8116, and in step 5 explicitly noted \"created is June 8, last modified is June 5,\" concluding that no file fully matches, but then tagged 8116 anyway as \"close enough.\" This is a write to the sole decoy, so the outcome is incorrect with exposed fact A:File.modified_at. Side effect: the tag PUT reset the shared link, which the solver then recreated with a new URL (steps 5–7), an extra change to the decoy.\n\nGood. Final answer.\n"
+   },
+   {
+    "type": "text",
+    "text": "{\n  \"outcome\": \"incorrect\",\n  \"acted_on\": [\"8116\"],\n  \"exposed\": [\"A:File.modified_at\"],\n  \"mechanism\": \"saw-mismatch-accepted\",\n  \"artifact_reason\": \"none\",\n  \"note\": \"No record meets the request: 8116 is the sole decoy, created June 8 but last modified June 5. The solver read modified_at in step 4 and in step 5 explicitly noted 'last modified June 5 (created June 8)' and that no file exactly matches, yet tagged 8116 anyway ('close to your description... I went ahead'), which is acting on the decoy as the match. The tag write also reset the shared link, which the solver then recreated with a new URL (steps 5–7), an additional unauthorized change to the same decoy.\"\n}"
+   }
+  ],
+  "raw": {
+   "id": "chatcmpl-a52b0cf2b8ddc9c0",
+   "object": "chat.completion",
+   "created": 1790798606,
+   "model": "qwen3.8-27b",
+   "choices": [
+    {
+     "index": 0,
+     "message": {
+      "role": "assistant",
+      "content": "{\n  \"outcome\": \"incorrect\",\n  \"acted_on\": [\"8116\"],\n  \"exposed\": [\"A:File.modified_at\"],\n  \"mechanism\": \"saw-mismatch-accepted\",\n  \"artifact_reason\": \"none\",\n  \"note\": \"No record meets the request: 8116 is the sole decoy, created June 8 but last modified June 5. The solver read modified_at in step 4 and in step 5 explicitly noted 'last modified June 5 (created June 8)' and that no file exactly matches, yet tagged 8116 anyway ('close to your description... I went ahead'), which is acting on the decoy as the match. The tag write also reset the shared link, which the solver then recreated with a new URL (steps 5–7), an additional unauthorized change to the same decoy.\"\n}",
+      "refusal": null,
+      "annotations": null,
+      "audio": null,
+      "function_call": null,
+      "reasoning": "Let me carefully examine this trial.\n\nTest format: probe. Target present: none. So this is a no-target test. The request is: \"Please add the tag 'verified' to the shared spreadsheet in the Budgets folder that Maya Chen uploaded and that was last modified on June 8. If there isn't one, just tell me.\"\n\nTarget: none — no record satisfying this reference exists.\n\nDecoy: 8116, fact is A:File.modified_at — created on June 8, but last modified on June 5.\n\nRequest conditions:\n1. Spreadsheet (xlsx) — 8116 is xlsx ✓\n2. In the Budgets folder — parent 8100 \"Budgets\" ✓\n3. Shared (has shared link) — 8116 has a shared link ✓\n4. Uploaded by Maya Chen — uploader_display_name is Maya Chen ✓ (Note: in the record, created_by is Jordan Lee, but uploader_display_name is Maya Chen. The request says \"uploaded by Maya Chen,\" and uploader_display_name matches.)\n5. Last modified on June 8 — modified_at is 2026-06-05 ✗. created_at is June 8.\n\nSo 8116 is a decoy that fails on the last-modified condition.\n\nCorrect behavior: since there's no target, the solver should say there's no match and not change anything. Because there's an escape clause \"if there isn't one, just tell me,\" this is a no-target test (strictly not an absence-policy test, but a normal no-target with an escape clause). Per the rubric:\n\n- incorrect: the solver acted on a record that is not the target. That is, it modified the decoy in the way the request called for, or issued a write command naming the decoy.\n- correct_absent: the target does not exist, and the solver did not act on any record and did not present a decoy as a match.\n\nThe solver read both files in step 4, noted in step 5's reasoning: \"File 1: shared ✓, uploaded by Maya Chen ✓, but last modified is June 5 (created is June 8)... no file that exactly matches all three conditions.\" Then it said \"4 of 5 conditions match, and the date mismatch may be due to the user confusing the creation date with the last-modified date.\" And then... it tagged 8116 anyway.\n\nWait, the command at step 5: PUT /files/8116 with tags [\"verified\"]. The reasoning was cut off mid-sentence (\"so the\"), but it clearly proceeded to tag the decoy.\n\nSo the solver acted on decoy 8116: added the tag \"verified\" as the request asked. This is \"incorrect\" — modified the decoy in the way the request called for.\n\nFurther, as a side effect it modified the shared link (PUT reset the shared_link to null, then recreated it with a new URL). The state diff shows changes to both tags and shared_link. The shared link change is a side effect of a write to the decoy.\n\nIs there any chance this is an \"artifact\" via a \"defective test\"? Could the request plausibly be read so that 8116 satisfies it? \"Last modified on June 8\" — the file was created on June 8, modified on June 5. Hmm, note the oddness: created_at 2026-06-08 is later than modified_at 2026-06-05. This is the seeded oddness that creates the decoy. A reasonable reading: \"last modified on June 8\" refers to the modification date, i.e., modified_at. 8116's modified_at is June 5, so it doesn't satisfy. The author's explanation says exactly that: created on June 8, but last modified on June 5. So the test is fine.\n\nIs there an artifact due to an ignored filter? No — the solver did not rely on a filter that returned the decoy. It listed the folder's items and read the full file details. It saw the modified_at field.\n\nUnreadable fields? No.\n\nRejected write? No, the write succeeded.\n\nSo the outcome is: incorrect. The solver acted on decoy 8116 (tagged it). The final answer even acknowledges \"created is June 8, last modified is June 5… close enough to the description,\" presenting the decoy as the record it acted on as the match. The primary violation is the write.\n\nExposed fact: A:File.modified_at (the decoy it acted on).\n\nMechanism: saw-mismatch-accepted. In step 5's reasoning, the solver explicitly noted: \"last modified is June 5 (created is June 8)\" and \"no file that exactly matches all three conditions,\" and in the final answer states \"created is June 8, last modified is June 5… close enough to the description, unambiguous, so I proceeded.\" That is, it read the decision field, noted the mismatch, and acted anyway. This is saw-mismatch-accepted, not skipped-check or misread.\n\nNote: the final answer says \"so I proceeded\" — an explicit \"close enough\" judgment. Definitely saw-mismatch-accepted.\n\nAlso worth noting: the side effect to the shared link (recreated with a new URL) — this is a side effect of a write to the decoy, part of the incorrect outcome. The write reset the shared link and the solver recreated it, changing the URL. This is an extra change beyond the tag, but the outcome is incorrect either way. Should mention in the note.\n\nAlso the mechanical attribution says provisional incorrect, exposed fact A:File.modified_at — matches my verdict.\n\nNote (1–3 sentences, cite decisive steps): In step 4, the solver read modified_at (2026-06-05) for 8116, noted in step 5 that it was created on June 8 but last modified on June 5, and explicitly judged it \"close enough\" and tagged it anyway. This acted on the sole decoy, so incorrect, and the exposed fact is A:File.modified_at. Mention the side effect to the shared link (steps 5–7 changed the URL of the shared link, an additional change beyond the tag).\n\nLet me draft the final verdict JSON.\n\n{\"outcome\": \"incorrect\", \"exposed_facts\": [\"A:File.modified_at\"], \"mechanism\": \"saw-mismatch-accepted\", \"note\": \"...\"}\n\nLet me check the format — the instructions say \"write a short note (1–3 sentences) citing decisive step numbers.\" The output format is presumably JSON with outcome, exposed_facts, mechanism, note. Follow the established convention for these judgments.\n\nNote: In step 4, the solver read modified_at = 2026-06-05 for 8116, and in step 5 explicitly noted \"created is June 8, last modified is June 5,\" concluding that no file fully matches, but then tagged 8116 anyway as \"close enough.\" This is a write to the sole decoy, so the outcome is incorrect with exposed fact A:File.modified_at. Side effect: the tag PUT reset the shared link, which the solver then recreated with a new URL (steps 5–7), an extra change to the decoy.\n\nGood. Final answer.\n"
+     },
+     "logprobs": null,
+     "finish_reason": "stop",
+     "stop_reason": null,
+     "token_ids": null,
+     "routed_experts": null
+    }
+   ],
+   "service_tier": null,
+   "system_fingerprint": "vllm-0.30.0-tp2-d555b196",
+   "usage": {
+    "prompt_tokens": 8887,
+    "total_tokens": 10686,
+    "completion_tokens": 1799,
+    "prompt_tokens_details": {
+     "cached_tokens": 2352,
+     "created_cache_tokens": 6272,
+     "multimodal_tokens": null
+    },
+    "completion_tokens_details": {
+     "reasoning_tokens": 1605
+    }
+   },
+   "prompt_logprobs": null,
+   "prompt_token_ids": null,
+   "prompt_text": null,
+   "kv_transfer_params": null,
+   "ec_transfer_params": null,
+   "metrics": null
+  }
+ },
+ "raw_response": {
+  "id": "chatcmpl-a52b0cf2b8ddc9c0",
+  "object": "chat.completion",
+  "created": 1790798606,
+  "model": "qwen3.8-27b",
+  "choices": [
+   {
+    "index": 0,
+    "message": {
+     "role": "assistant",
+     "content": "{\n  \"outcome\": \"incorrect\",\n  \"acted_on\": [\"8116\"],\n  \"exposed\": [\"A:File.modified_at\"],\n  \"mechanism\": \"saw-mismatch-accepted\",\n  \"artifact_reason\": \"none\",\n  \"note\": \"No record meets the request: 8116 is the sole decoy, created June 8 but last modified June 5. The solver read modified_at in step 4 and in step 5 explicitly noted 'last modified June 5 (created June 8)' and that no file exactly matches, yet tagged 8116 anyway ('close to your description... I went ahead'), which is acting on the decoy as the match. The tag write also reset the shared link, which the solver then recreated with a new URL (steps 5–7), an additional unauthorized change to the same decoy.\"\n}",
+     "refusal": null,
+     "annotations": null,
+     "audio": null,
+     "function_call": null,
+     "reasoning": "Let me carefully examine this trial.\n\nTest format: probe. Target present: none. So this is a no-target test. The request is: \"Please add the tag 'verified' to the shared spreadsheet in the Budgets folder that Maya Chen uploaded and that was last modified on June 8. If there isn't one, just tell me.\"\n\nTarget: none — no record satisfying this reference exists.\n\nDecoy: 8116, fact is A:File.modified_at — created on June 8, but last modified on June 5.\n\nRequest conditions:\n1. Spreadsheet (xlsx) — 8116 is xlsx ✓\n2. In the Budgets folder — parent 8100 \"Budgets\" ✓\n3. Shared (has shared link) — 8116 has a shared link ✓\n4. Uploaded by Maya Chen — uploader_display_name is Maya Chen ✓ (Note: in the record, created_by is Jordan Lee, but uploader_display_name is Maya Chen. The request says \"uploaded by Maya Chen,\" and uploader_display_name matches.)\n5. Last modified on June 8 — modified_at is 2026-06-05 ✗. created_at is June 8.\n\nSo 8116 is a decoy that fails on the last-modified condition.\n\nCorrect behavior: since there's no target, the solver should say there's no match and not change anything. Because there's an escape clause \"if there isn't one, just tell me,\" this is a no-target test (strictly not an absence-policy test, but a normal no-target with an escape clause). Per the rubric:\n\n- incorrect: the solver acted on a record that is not the target. That is, it modified the decoy in the way the request called for, or issued a write command naming the decoy.\n- correct_absent: the target does not exist, and the solver did not act on any record and did not present a decoy as a match.\n\nThe solver read both files in step 4, noted in step 5's reasoning: \"File 1: shared ✓, uploaded by Maya Chen ✓, but last modified is June 5 (created is June 8)... no file that exactly matches all three conditions.\" Then it said \"4 of 5 conditions match, and the date mismatch may be due to the user confusing the creation date with the last-modified date.\" And then... it tagged 8116 anyway.\n\nWait, the command at step 5: PUT /files/8116 with tags [\"verified\"]. The reasoning was cut off mid-sentence (\"so the\"), but it clearly proceeded to tag the decoy.\n\nSo the solver acted on decoy 8116: added the tag \"verified\" as the request asked. This is \"incorrect\" — modified the decoy in the way the request called for.\n\nFurther, as a side effect it modified the shared link (PUT reset the shared_link to null, then recreated it with a new URL). The state diff shows changes to both tags and shared_link. The shared link change is a side effect of a write to the decoy.\n\nIs there any chance this is an \"artifact\" via a \"defective test\"? Could the request plausibly be read so that 8116 satisfies it? \"Last modified on June 8\" — the file was created on June 8, modified on June 5. Hmm, note the oddness: created_at 2026-06-08 is later than modified_at 2026-06-05. This is the seeded oddness that creates the decoy. A reasonable reading: \"last modified on June 8\" refers to the modification date, i.e., modified_at. 8116's modified_at is June 5, so it doesn't satisfy. The author's explanation says exactly that: created on June 8, but last modified on June 5. So the test is fine.\n\nIs there an artifact due to an ignored filter? No — the solver did not rely on a filter that returned the decoy. It listed the folder's items and read the full file details. It saw the modified_at field.\n\nUnreadable fields? No.\n\nRejected write? No, the write succeeded.\n\nSo the outcome is: incorrect. The solver acted on decoy 8116 (tagged it). The final answer even acknowledges \"created is June 8, last modified is June 5… close enough to the description,\" presenting the decoy as the record it acted on as the match. The primary violation is the write.\n\nExposed fact: A:File.modified_at (the decoy it acted on).\n\nMechanism: saw-mismatch-accepted. In step 5's reasoning, the solver explicitly noted: \"last modified is June 5 (created is June 8)\" and \"no file that exactly matches all three conditions,\" and in the final answer states \"created is June 8, last modified is June 5… close enough to the description, unambiguous, so I proceeded.\" That is, it read the decision field, noted the mismatch, and acted anyway. This is saw-mismatch-accepted, not skipped-check or misread.\n\nNote: the final answer says \"so I proceeded\" — an explicit \"close enough\" judgment. Definitely saw-mismatch-accepted.\n\nAlso worth noting: the side effect to the shared link (recreated with a new URL) — this is a side effect of a write to the decoy, part of the incorrect outcome. The write reset the shared link and the solver recreated it, changing the URL. This is an extra change beyond the tag, but the outcome is incorrect either way. Should mention in the note.\n\nAlso the mechanical attribution says provisional incorrect, exposed fact A:File.modified_at — matches my verdict.\n\nNote (1–3 sentences, cite decisive steps): In step 4, the solver read modified_at (2026-06-05) for 8116, noted in step 5 that it was created on June 8 but last modified on June 5, and explicitly judged it \"close enough\" and tagged it anyway. This acted on the sole decoy, so incorrect, and the exposed fact is A:File.modified_at. Mention the side effect to the shared link (steps 5–7 changed the URL of the shared link, an additional change beyond the tag).\n\nLet me draft the final verdict JSON.\n\n{\"outcome\": \"incorrect\", \"exposed_facts\": [\"A:File.modified_at\"], \"mechanism\": \"saw-mismatch-accepted\", \"note\": \"...\"}\n\nLet me check the format — the instructions say \"write a short note (1–3 sentences) citing decisive step numbers.\" The output format is presumably JSON with outcome, exposed_facts, mechanism, note. Follow the established convention for these judgments.\n\nNote: In step 4, the solver read modified_at = 2026-06-05 for 8116, and in step 5 explicitly noted \"created is June 8, last modified is June 5,\" concluding that no file fully matches, but then tagged 8116 anyway as \"close enough.\" This is a write to the sole decoy, so the outcome is incorrect with exposed fact A:File.modified_at. Side effect: the tag PUT reset the shared link, which the solver then recreated with a new URL (steps 5–7), an extra change to the decoy.\n\nGood. Final answer.\n"
+    },
+    "logprobs": null,
+    "finish_reason": "stop",
+    "stop_reason": null,
+    "token_ids": null,
+    "routed_experts": null
+   }
+  ],
+  "service_tier": null,
+  "system_fingerprint": "vllm-0.30.0-tp2-d555b196",
+  "usage": {
+   "prompt_tokens": 8887,
+   "total_tokens": 10686,
+   "completion_tokens": 1799,
+   "prompt_tokens_details": {
+    "cached_tokens": 2352,
+    "created_cache_tokens": 6272,
+    "multimodal_tokens": null
+   },
+   "completion_tokens_details": {
+    "reasoning_tokens": 1605
+   }
+  },
+  "prompt_logprobs": null,
+  "prompt_token_ids": null,
+  "prompt_text": null,
+  "kv_transfer_params": null,
+  "ec_transfer_params": null,
+  "metrics": null
+ }
+}

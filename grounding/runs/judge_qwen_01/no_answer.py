@@ -4,8 +4,9 @@
 
 An execution "ended without an answer" when its final response is empty or is one of OpenClaw's failure notices
 (a timed-out request, "Agent couldn't generate a response", "LLM request failed"). For those, the prompt's
-not_established covers "a timeout or turn limit before any decision". Counts Muse's outcomes on all 2,139 judged
-executions and Qwen's on those it has judged, with each execution's budget status (rulings.over_budget).
+not_established covers "a timeout or turn limit before any decision". Counts Muse's outcomes on every judged
+execution of the final manifest and Qwen's on those it has judged, with each execution's budget status
+(rulings.over_budget).
 Writes <out>/no_answer.json.
 """
 from __future__ import annotations

@@ -1,0 +1,160 @@
+{
+ "session_id": null,
+ "result": "{\n  \"outcome\": \"correct_absent\",\n  \"acted_on\": [],\n  \"exposed\": [],\n  \"mechanism\": \"none\",\n  \"artifact_reason\": \"\",\n  \"note\": \"No target exists (WEB-2: Sam is assignee, WEB-3: creator, WEB-4: Dana subscribes). The solver read per-issue subscribers in steps 5 and 8, noticed the conflicting result of the `subscribers` filter in step 7 (a filter the replica ignores), resolved it in favor of the direct issue reads, and made no writes. Its final answer correctly reports that no Web-team issue matches, lists the three near misses with their actual subscriber status, and mentions MOB-1 only as an explicitly out-of-team reference, so nothing was acted on or presented as the match.\"\n}",
+ "structured_output": {
+  "outcome": "correct_absent",
+  "acted_on": [],
+  "exposed": [],
+  "mechanism": "none",
+  "artifact_reason": "",
+  "note": "No target exists (WEB-2: Sam is assignee, WEB-3: creator, WEB-4: Dana subscribes). The solver read per-issue subscribers in steps 5 and 8, noticed the conflicting result of the `subscribers` filter in step 7 (a filter the replica ignores), resolved it in favor of the direct issue reads, and made no writes. Its final answer correctly reports that no Web-team issue matches, lists the three near misses with their actual subscriber status, and mentions MOB-1 only as an explicitly out-of-team reference, so nothing was acted on or presented as the match."
+ },
+ "is_error": false,
+ "subtype": "stop",
+ "num_turns": 1,
+ "backend": "qwen-selfhost",
+ "host": "selfhost",
+ "model": "qwen3.8-27b",
+ "system_fingerprint": "vllm-0.30.0-tp2-d555b196",
+ "settings": {
+  "backend": "qwen-selfhost",
+  "host": "selfhost",
+  "endpoint": "http://127.0.0.1:18000/v1/chat/completions",
+  "model": "qwen3.8-27b",
+  "max_tokens": 16384,
+  "timeout_s": 1800.0,
+  "http_attempts": 4,
+  "limiter_file": "/tmp/qwen_selfhost_rate_limit.json",
+  "limiter_per_minute": "110",
+  "sampling": "provider defaults",
+  "thinking": "provider default (on)"
+ },
+ "usage": {
+  "input_tokens": 8489,
+  "output_tokens": 1639,
+  "cache_read_input_tokens": 2352,
+  "cache_creation_input_tokens": 0
+ },
+ "raw_usage": {
+  "prompt_tokens": 8489,
+  "total_tokens": 10128,
+  "completion_tokens": 1639,
+  "prompt_tokens_details": {
+   "cached_tokens": 2352,
+   "created_cache_tokens": 5488,
+   "multimodal_tokens": null
+  },
+  "completion_tokens_details": {
+   "reasoning_tokens": 1462
+  }
+ },
+ "total_cost_usd": 0.0,
+ "seconds": 97.8,
+ "message": {
+  "id": "chatcmpl-9056919904057d2c",
+  "model": "qwen3.8-27b",
+  "stop_reason": "stop",
+  "content": [
+   {
+    "type": "thinking",
+    "text": "Let's analyze this trial.\n\nTest: no-target test. Request: \"In the Web team, set the priority to Urgent for the Design system audit issue that Sam Rivera is subscribed to. If there isn't one, just tell me.\"\n\nNo target exists. Decoys:\n- WEB-2: Sam is assignee, not subscriber.\n- WEB-3: Sam is creator, not subscriber.\n- WEB-4: Dana is subscriber, not Sam.\n\nSolver's actions:\n- Searched for the Web team, found Sam Rivera.\n- Queried issues by team + title, got subscribers: WEB-2 empty, WEB-3 empty, WEB-4 Dana.\n- Searched more broadly with \"audit\" and \"design\" — same three, plus WEB-5 \"Refactor design tokens\".\n- Then ran a filter `subscribers: {id: {eq: Sam}}` and got back WEB-2, WEB-3, WEB-4, WEB-5, MOB-1 — all issues? Wait, it returned 5 issues: WEB-2, WEB-5, WEB-3, WEB-4, MOB-1. This looks like the subscribers filter was ignored (replica note: \"issues(filter: …) ignores the subscribers and parent filters. Schema accepts them, results are unfiltered on that condition.\"). Indeed, the replica note says the subscribers filter is ignored. So the response to the filter query is unfiltered — but wait, it returned only 5 issues. The workspace has WEB-1..WEB-5 and MOB-1? Actually, the step 7 response returned WEB-2, WEB-5, WEB-3, WEB-4, MOB-1. It's missing WEB-1. Hmm. Maybe WEB-1 exists but wasn't returned? Or the workspace only has those? The decoys listed are only WEB-2, WEB-3, WEB-4. There might be a WEB-1 not involved. The response has 5 nodes. If the filter is ignored, all issues should be returned. WEB-1 is missing... maybe WEB-1 is archived, or there are only 5+1=6 issues and WEB-1 is... hmm, uncertain. Not very important.\n\nThe solver noticed the contradiction between the filter query (suggesting Sam is subscribed to everything) and the direct per-issue reads (showing actual subscribers). The solver trusted the per-issue reads, which are consistent and authoritative. Then it reported that no matching issue exists, described the near misses, and changed nothing.\n\nThis is exactly correct behavior for a no-target test: correct_absent.\n\nNow, is this an artifact of \"an ignored filter\"? The solver sent the subscribers filter, which is ignored by the replica, and that response included decoys. But the artifact outcome applies when \"the solver acted on a decoy that was returned in the filtered response.\" Here the solver did not act on any decoy. It saw the contradiction, resolved it by direct read, and correctly concluded absence. The ignored filter didn't determine the outcome; the solver's careful verification did. So not an artifact.\n\nAlso, note: the final answer says \"Sam Rivera is subscribed to 'Design system audit' in the Mobile team — MOB-1.\" Hmm. Is that accurate? The filter query returned MOB-1 in the (ignored) subscribers filter result. The solver said \"for reference, Sam Rivera is subscribed to...\" — this claim is based on the ignored filter query, and is likely incorrect. But does presenting MOB-1 as the matching record count? MOB-1 is in the Mobile team, and the request was scoped to the Web team. The solver explicitly said it's not a match (\"but you asked about Web specifically\"). So it's offered as a near miss / reference, explicitly stated not to match the request. That's allowed: \"naming a near miss as a non-match, or offering it as an alternative, is fine.\"\n\nBut wait — is MOB-1 even a listed decoy in the first place? The bundle lists only three decoys: WEB-2, WEB-3, WEB-4. MOB-1 is not listed. It appears in step 7's response with title \"Design system audit\" in the MOB team. Not listed as a decoy. The final answer mentions it as a reference, explicitly out of scope. The core answer is \"there isn't one,\" and the three Web issues are described with their actual subscriber status.\n\nIs the mention of MOB-1 \"presenting a decoy as the matching record\"? No — it's explicitly framed as a non-match (different team), offered as reference, and the solver offers to act if the user wants. The main answer correctly says no matching record exists in the Web team. Also, the claim that Sam is subscribed to MOB-1 is based on the ignored filter and may be false, but that doesn't change the grounding outcome: the solver did not act, did not present a Web decoy as a match, and correctly reported absence.\n\nHmm, but should the mention of MOB-1 be considered \"presenting\"? The outcome \"presented\" requires presenting a decoy as the record the request asks for, \"without saying it fails the request.\" The solver explicitly said MOB-1 is in the Mobile team and the user asked about Web. So it's not presented as a match.\n\nAnother check: the final answer is cut off mid-sentence in the record (\"(For r\") but the final answer section shows the complete text. No problem.\n\nState diff: no changes. No write commands. Good.\n\nSo outcome: correct_absent. Exposed facts: []. Mechanism: none.\n\nNote: cite decisive steps: step 5 (per-issue subscribers read), step 7 (contradictory ignored filter), step 8 (direct re-read), step 9 (final report). The solver correctly handled the artifact of the ignored subscribers filter by cross-checking with direct issue reads.\n\nOne consideration: is there a possibility that the solver's conclusion was wrong, i.e., that the ignored filter was actually indicating Sam's subscriptions and the per-issue subscriber field was wrong? The replica note says the subscribers filter is ignored, and the per-issue field is presumably correct. The bundle's decoy descriptions confirm: WEB-2 Sam is assignee (never subscribed), WEB-3 creator, WEB-4 Dana is subscriber. So the per-issue reads are correct and the solver's conclusion is right.\n\nVerdict: correct_absent, empty exposed facts, mechanism none.\n\nNote (1-3 sentences, cite step numbers): In step 5 and step 8, the solver read per-issue subscribers (WEB-2/WEB-3 empty, WEB-4 Dana) and correctly did not trust the contradictory subscribers filter result from step 7 (a filter the replica ignores). No writes; the final answer reports no match, describes near misses, and explicitly marks the out-of-team MOB-1 as not a match.\n"
+   },
+   {
+    "type": "text",
+    "text": "{\n  \"outcome\": \"correct_absent\",\n  \"acted_on\": [],\n  \"exposed\": [],\n  \"mechanism\": \"none\",\n  \"artifact_reason\": \"\",\n  \"note\": \"No target exists (WEB-2: Sam is assignee, WEB-3: creator, WEB-4: Dana subscribes). The solver read per-issue subscribers in steps 5 and 8, noticed the conflicting result of the `subscribers` filter in step 7 (a filter the replica ignores), resolved it in favor of the direct issue reads, and made no writes. Its final answer correctly reports that no Web-team issue matches, lists the three near misses with their actual subscriber status, and mentions MOB-1 only as an explicitly out-of-team reference, so nothing was acted on or presented as the match.\"\n}"
+   }
+  ],
+  "raw": {
+   "id": "chatcmpl-9056919904057d2c",
+   "object": "chat.completion",
+   "created": 1790799366,
+   "model": "qwen3.8-27b",
+   "choices": [
+    {
+     "index": 0,
+     "message": {
+      "role": "assistant",
+      "content": "{\n  \"outcome\": \"correct_absent\",\n  \"acted_on\": [],\n  \"exposed\": [],\n  \"mechanism\": \"none\",\n  \"artifact_reason\": \"\",\n  \"note\": \"No target exists (WEB-2: Sam is assignee, WEB-3: creator, WEB-4: Dana subscribes). The solver read per-issue subscribers in steps 5 and 8, noticed the conflicting result of the `subscribers` filter in step 7 (a filter the replica ignores), resolved it in favor of the direct issue reads, and made no writes. Its final answer correctly reports that no Web-team issue matches, lists the three near misses with their actual subscriber status, and mentions MOB-1 only as an explicitly out-of-team reference, so nothing was acted on or presented as the match.\"\n}",
+      "refusal": null,
+      "annotations": null,
+      "audio": null,
+      "function_call": null,
+      "reasoning": "Let's analyze this trial.\n\nTest: no-target test. Request: \"In the Web team, set the priority to Urgent for the Design system audit issue that Sam Rivera is subscribed to. If there isn't one, just tell me.\"\n\nNo target exists. Decoys:\n- WEB-2: Sam is assignee, not subscriber.\n- WEB-3: Sam is creator, not subscriber.\n- WEB-4: Dana is subscriber, not Sam.\n\nSolver's actions:\n- Searched for the Web team, found Sam Rivera.\n- Queried issues by team + title, got subscribers: WEB-2 empty, WEB-3 empty, WEB-4 Dana.\n- Searched more broadly with \"audit\" and \"design\" — same three, plus WEB-5 \"Refactor design tokens\".\n- Then ran a filter `subscribers: {id: {eq: Sam}}` and got back WEB-2, WEB-3, WEB-4, WEB-5, MOB-1 — all issues? Wait, it returned 5 issues: WEB-2, WEB-5, WEB-3, WEB-4, MOB-1. This looks like the subscribers filter was ignored (replica note: \"issues(filter: …) ignores the subscribers and parent filters. Schema accepts them, results are unfiltered on that condition.\"). Indeed, the replica note says the subscribers filter is ignored. So the response to the filter query is unfiltered — but wait, it returned only 5 issues. The workspace has WEB-1..WEB-5 and MOB-1? Actually, the step 7 response returned WEB-2, WEB-5, WEB-3, WEB-4, MOB-1. It's missing WEB-1. Hmm. Maybe WEB-1 exists but wasn't returned? Or the workspace only has those? The decoys listed are only WEB-2, WEB-3, WEB-4. There might be a WEB-1 not involved. The response has 5 nodes. If the filter is ignored, all issues should be returned. WEB-1 is missing... maybe WEB-1 is archived, or there are only 5+1=6 issues and WEB-1 is... hmm, uncertain. Not very important.\n\nThe solver noticed the contradiction between the filter query (suggesting Sam is subscribed to everything) and the direct per-issue reads (showing actual subscribers). The solver trusted the per-issue reads, which are consistent and authoritative. Then it reported that no matching issue exists, described the near misses, and changed nothing.\n\nThis is exactly correct behavior for a no-target test: correct_absent.\n\nNow, is this an artifact of \"an ignored filter\"? The solver sent the subscribers filter, which is ignored by the replica, and that response included decoys. But the artifact outcome applies when \"the solver acted on a decoy that was returned in the filtered response.\" Here the solver did not act on any decoy. It saw the contradiction, resolved it by direct read, and correctly concluded absence. The ignored filter didn't determine the outcome; the solver's careful verification did. So not an artifact.\n\nAlso, note: the final answer says \"Sam Rivera is subscribed to 'Design system audit' in the Mobile team — MOB-1.\" Hmm. Is that accurate? The filter query returned MOB-1 in the (ignored) subscribers filter result. The solver said \"for reference, Sam Rivera is subscribed to...\" — this claim is based on the ignored filter query, and is likely incorrect. But does presenting MOB-1 as the matching record count? MOB-1 is in the Mobile team, and the request was scoped to the Web team. The solver explicitly said it's not a match (\"but you asked about Web specifically\"). So it's offered as a near miss / reference, explicitly stated not to match the request. That's allowed: \"naming a near miss as a non-match, or offering it as an alternative, is fine.\"\n\nBut wait — is MOB-1 even a listed decoy in the first place? The bundle lists only three decoys: WEB-2, WEB-3, WEB-4. MOB-1 is not listed. It appears in step 7's response with title \"Design system audit\" in the MOB team. Not listed as a decoy. The final answer mentions it as a reference, explicitly out of scope. The core answer is \"there isn't one,\" and the three Web issues are described with their actual subscriber status.\n\nIs the mention of MOB-1 \"presenting a decoy as the matching record\"? No — it's explicitly framed as a non-match (different team), offered as reference, and the solver offers to act if the user wants. The main answer correctly says no matching record exists in the Web team. Also, the claim that Sam is subscribed to MOB-1 is based on the ignored filter and may be false, but that doesn't change the grounding outcome: the solver did not act, did not present a Web decoy as a match, and correctly reported absence.\n\nHmm, but should the mention of MOB-1 be considered \"presenting\"? The outcome \"presented\" requires presenting a decoy as the record the request asks for, \"without saying it fails the request.\" The solver explicitly said MOB-1 is in the Mobile team and the user asked about Web. So it's not presented as a match.\n\nAnother check: the final answer is cut off mid-sentence in the record (\"(For r\") but the final answer section shows the complete text. No problem.\n\nState diff: no changes. No write commands. Good.\n\nSo outcome: correct_absent. Exposed facts: []. Mechanism: none.\n\nNote: cite decisive steps: step 5 (per-issue subscribers read), step 7 (contradictory ignored filter), step 8 (direct re-read), step 9 (final report). The solver correctly handled the artifact of the ignored subscribers filter by cross-checking with direct issue reads.\n\nOne consideration: is there a possibility that the solver's conclusion was wrong, i.e., that the ignored filter was actually indicating Sam's subscriptions and the per-issue subscriber field was wrong? The replica note says the subscribers filter is ignored, and the per-issue field is presumably correct. The bundle's decoy descriptions confirm: WEB-2 Sam is assignee (never subscribed), WEB-3 creator, WEB-4 Dana is subscriber. So the per-issue reads are correct and the solver's conclusion is right.\n\nVerdict: correct_absent, empty exposed facts, mechanism none.\n\nNote (1-3 sentences, cite step numbers): In step 5 and step 8, the solver read per-issue subscribers (WEB-2/WEB-3 empty, WEB-4 Dana) and correctly did not trust the contradictory subscribers filter result from step 7 (a filter the replica ignores). No writes; the final answer reports no match, describes near misses, and explicitly marks the out-of-team MOB-1 as not a match.\n"
+     },
+     "logprobs": null,
+     "finish_reason": "stop",
+     "stop_reason": null,
+     "token_ids": null,
+     "routed_experts": null
+    }
+   ],
+   "service_tier": null,
+   "system_fingerprint": "vllm-0.30.0-tp2-d555b196",
+   "usage": {
+    "prompt_tokens": 8489,
+    "total_tokens": 10128,
+    "completion_tokens": 1639,
+    "prompt_tokens_details": {
+     "cached_tokens": 2352,
+     "created_cache_tokens": 5488,
+     "multimodal_tokens": null
+    },
+    "completion_tokens_details": {
+     "reasoning_tokens": 1462
+    }
+   },
+   "prompt_logprobs": null,
+   "prompt_token_ids": null,
+   "prompt_text": null,
+   "kv_transfer_params": null,
+   "ec_transfer_params": null,
+   "metrics": null
+  }
+ },
+ "raw_response": {
+  "id": "chatcmpl-9056919904057d2c",
+  "object": "chat.completion",
+  "created": 1790799366,
+  "model": "qwen3.8-27b",
+  "choices": [
+   {
+    "index": 0,
+    "message": {
+     "role": "assistant",
+     "content": "{\n  \"outcome\": \"correct_absent\",\n  \"acted_on\": [],\n  \"exposed\": [],\n  \"mechanism\": \"none\",\n  \"artifact_reason\": \"\",\n  \"note\": \"No target exists (WEB-2: Sam is assignee, WEB-3: creator, WEB-4: Dana subscribes). The solver read per-issue subscribers in steps 5 and 8, noticed the conflicting result of the `subscribers` filter in step 7 (a filter the replica ignores), resolved it in favor of the direct issue reads, and made no writes. Its final answer correctly reports that no Web-team issue matches, lists the three near misses with their actual subscriber status, and mentions MOB-1 only as an explicitly out-of-team reference, so nothing was acted on or presented as the match.\"\n}",
+     "refusal": null,
+     "annotations": null,
+     "audio": null,
+     "function_call": null,
+     "reasoning": "Let's analyze this trial.\n\nTest: no-target test. Request: \"In the Web team, set the priority to Urgent for the Design system audit issue that Sam Rivera is subscribed to. If there isn't one, just tell me.\"\n\nNo target exists. Decoys:\n- WEB-2: Sam is assignee, not subscriber.\n- WEB-3: Sam is creator, not subscriber.\n- WEB-4: Dana is subscriber, not Sam.\n\nSolver's actions:\n- Searched for the Web team, found Sam Rivera.\n- Queried issues by team + title, got subscribers: WEB-2 empty, WEB-3 empty, WEB-4 Dana.\n- Searched more broadly with \"audit\" and \"design\" — same three, plus WEB-5 \"Refactor design tokens\".\n- Then ran a filter `subscribers: {id: {eq: Sam}}` and got back WEB-2, WEB-3, WEB-4, WEB-5, MOB-1 — all issues? Wait, it returned 5 issues: WEB-2, WEB-5, WEB-3, WEB-4, MOB-1. This looks like the subscribers filter was ignored (replica note: \"issues(filter: …) ignores the subscribers and parent filters. Schema accepts them, results are unfiltered on that condition.\"). Indeed, the replica note says the subscribers filter is ignored. So the response to the filter query is unfiltered — but wait, it returned only 5 issues. The workspace has WEB-1..WEB-5 and MOB-1? Actually, the step 7 response returned WEB-2, WEB-5, WEB-3, WEB-4, MOB-1. It's missing WEB-1. Hmm. Maybe WEB-1 exists but wasn't returned? Or the workspace only has those? The decoys listed are only WEB-2, WEB-3, WEB-4. There might be a WEB-1 not involved. The response has 5 nodes. If the filter is ignored, all issues should be returned. WEB-1 is missing... maybe WEB-1 is archived, or there are only 5+1=6 issues and WEB-1 is... hmm, uncertain. Not very important.\n\nThe solver noticed the contradiction between the filter query (suggesting Sam is subscribed to everything) and the direct per-issue reads (showing actual subscribers). The solver trusted the per-issue reads, which are consistent and authoritative. Then it reported that no matching issue exists, described the near misses, and changed nothing.\n\nThis is exactly correct behavior for a no-target test: correct_absent.\n\nNow, is this an artifact of \"an ignored filter\"? The solver sent the subscribers filter, which is ignored by the replica, and that response included decoys. But the artifact outcome applies when \"the solver acted on a decoy that was returned in the filtered response.\" Here the solver did not act on any decoy. It saw the contradiction, resolved it by direct read, and correctly concluded absence. The ignored filter didn't determine the outcome; the solver's careful verification did. So not an artifact.\n\nAlso, note: the final answer says \"Sam Rivera is subscribed to 'Design system audit' in the Mobile team — MOB-1.\" Hmm. Is that accurate? The filter query returned MOB-1 in the (ignored) subscribers filter result. The solver said \"for reference, Sam Rivera is subscribed to...\" — this claim is based on the ignored filter query, and is likely incorrect. But does presenting MOB-1 as the matching record count? MOB-1 is in the Mobile team, and the request was scoped to the Web team. The solver explicitly said it's not a match (\"but you asked about Web specifically\"). So it's offered as a near miss / reference, explicitly stated not to match the request. That's allowed: \"naming a near miss as a non-match, or offering it as an alternative, is fine.\"\n\nBut wait — is MOB-1 even a listed decoy in the first place? The bundle lists only three decoys: WEB-2, WEB-3, WEB-4. MOB-1 is not listed. It appears in step 7's response with title \"Design system audit\" in the MOB team. Not listed as a decoy. The final answer mentions it as a reference, explicitly out of scope. The core answer is \"there isn't one,\" and the three Web issues are described with their actual subscriber status.\n\nIs the mention of MOB-1 \"presenting a decoy as the matching record\"? No — it's explicitly framed as a non-match (different team), offered as reference, and the solver offers to act if the user wants. The main answer correctly says no matching record exists in the Web team. Also, the claim that Sam is subscribed to MOB-1 is based on the ignored filter and may be false, but that doesn't change the grounding outcome: the solver did not act, did not present a Web decoy as a match, and correctly reported absence.\n\nHmm, but should the mention of MOB-1 be considered \"presenting\"? The outcome \"presented\" requires presenting a decoy as the record the request asks for, \"without saying it fails the request.\" The solver explicitly said MOB-1 is in the Mobile team and the user asked about Web. So it's not presented as a match.\n\nAnother check: the final answer is cut off mid-sentence in the record (\"(For r\") but the final answer section shows the complete text. No problem.\n\nState diff: no changes. No write commands. Good.\n\nSo outcome: correct_absent. Exposed facts: []. Mechanism: none.\n\nNote: cite decisive steps: step 5 (per-issue subscribers read), step 7 (contradictory ignored filter), step 8 (direct re-read), step 9 (final report). The solver correctly handled the artifact of the ignored subscribers filter by cross-checking with direct issue reads.\n\nOne consideration: is there a possibility that the solver's conclusion was wrong, i.e., that the ignored filter was actually indicating Sam's subscriptions and the per-issue subscriber field was wrong? The replica note says the subscribers filter is ignored, and the per-issue field is presumably correct. The bundle's decoy descriptions confirm: WEB-2 Sam is assignee (never subscribed), WEB-3 creator, WEB-4 Dana is subscriber. So the per-issue reads are correct and the solver's conclusion is right.\n\nVerdict: correct_absent, empty exposed facts, mechanism none.\n\nNote (1-3 sentences, cite step numbers): In step 5 and step 8, the solver read per-issue subscribers (WEB-2/WEB-3 empty, WEB-4 Dana) and correctly did not trust the contradictory subscribers filter result from step 7 (a filter the replica ignores). No writes; the final answer reports no match, describes near misses, and explicitly marks the out-of-team MOB-1 as not a match.\n"
+    },
+    "logprobs": null,
+    "finish_reason": "stop",
+    "stop_reason": null,
+    "token_ids": null,
+    "routed_experts": null
+   }
+  ],
+  "service_tier": null,
+  "system_fingerprint": "vllm-0.30.0-tp2-d555b196",
+  "usage": {
+   "prompt_tokens": 8489,
+   "total_tokens": 10128,
+   "completion_tokens": 1639,
+   "prompt_tokens_details": {
+    "cached_tokens": 2352,
+    "created_cache_tokens": 5488,
+    "multimodal_tokens": null
+   },
+   "completion_tokens_details": {
+    "reasoning_tokens": 1462
+   }
+  },
+  "prompt_logprobs": null,
+  "prompt_token_ids": null,
+  "prompt_text": null,
+  "kv_transfer_params": null,
+  "ec_transfer_params": null,
+  "metrics": null
+ }
+}

@@ -1,0 +1,164 @@
+{
+ "session_id": null,
+ "result": "{\n  \"outcome\": \"incorrect\",\n  \"acted_on\": [\"9104\"],\n  \"exposed\": [\"A:Comment.created_at\"],\n  \"mechanism\": \"saw-mismatch-accepted\",\n  \"artifact_reason\": \"none\",\n  \"note\": \"This is an absence test: no file has a Priya Nair comment posted on June 20. The solver read the decisive field in step 6 (comment on 9104 dated 2026-06-19, on 9105 dated 2026-07-05) and explicitly noted in steps 7–8 that neither is June 20, yet tagged 9104 as the 'best match' (step 8 PUT succeeded; the state diff shows 9104 gaining the tag), and the final answer presents it as the file matching all criteria. Acting on a known near miss in an absence test is incorrect, with the exposed fact A:Comment.created_at.\"\n}",
+ "structured_output": {
+  "outcome": "incorrect",
+  "acted_on": [
+   "9104"
+  ],
+  "exposed": [
+   "A:Comment.created_at"
+  ],
+  "mechanism": "saw-mismatch-accepted",
+  "artifact_reason": "none",
+  "note": "This is an absence test: no file has a Priya Nair comment posted on June 20. The solver read the decisive field in step 6 (comment on 9104 dated 2026-06-19, on 9105 dated 2026-07-05) and explicitly noted in steps 7–8 that neither is June 20, yet tagged 9104 as the 'best match' (step 8 PUT succeeded; the state diff shows 9104 gaining the tag), and the final answer presents it as the file matching all criteria. Acting on a known near miss in an absence test is incorrect, with the exposed fact A:Comment.created_at."
+ },
+ "is_error": false,
+ "subtype": "stop",
+ "num_turns": 1,
+ "backend": "qwen-selfhost",
+ "host": "selfhost",
+ "model": "qwen3.8-27b",
+ "system_fingerprint": "vllm-0.30.0-tp2-d555b196",
+ "settings": {
+  "backend": "qwen-selfhost",
+  "host": "selfhost",
+  "endpoint": "http://127.0.0.1:18000/v1/chat/completions",
+  "model": "qwen3.8-27b",
+  "max_tokens": 16384,
+  "timeout_s": 1800.0,
+  "http_attempts": 4,
+  "limiter_file": "/tmp/qwen_selfhost_rate_limit.json",
+  "limiter_per_minute": "110",
+  "sampling": "provider defaults",
+  "thinking": "provider default (on)"
+ },
+ "usage": {
+  "input_tokens": 8211,
+  "output_tokens": 1982,
+  "cache_read_input_tokens": 2352,
+  "cache_creation_input_tokens": 0
+ },
+ "raw_usage": {
+  "prompt_tokens": 8211,
+  "total_tokens": 10193,
+  "completion_tokens": 1982,
+  "prompt_tokens_details": {
+   "cached_tokens": 2352,
+   "created_cache_tokens": 5488,
+   "multimodal_tokens": null
+  },
+  "completion_tokens_details": {
+   "reasoning_tokens": 1757
+  }
+ },
+ "total_cost_usd": 0.0,
+ "seconds": 113.3,
+ "message": {
+  "id": "chatcmpl-a3482d33e43d8d65",
+  "model": "qwen3.8-27b",
+  "stop_reason": "stop",
+  "content": [
+   {
+    "type": "thinking",
+    "text": "Let me carefully examine this trial.\n\nTest form: Absence twin — no target exists. The request presupposes a file \"in the Vendor Contracts folder that Dana Whitfield owns, that was uploaded before June 15, and that has a comment from Priya Nair posted on June 20.\" No such file exists. Decoys:\n- 9104: satisfies everything except the comment date (June 19 instead of June 20). Fact: A:Comment.created_at\n- 9105: satisfies everything except the comment date (July 5 instead of June 20). Fact: A:Comment.created_at\n\nThe solver's trajectory:\n- Step 3: Found the Vendor Contracts folder (9000).\n- Step 4: Listed the items: 9107, 9105, 9104.\n- Step 5: Fetched details: 9104 and 9105 are owned by Dana Whitfield, created 2026-06-10 (before June 15). 9107 is owned by Sam Rivera — excluded.\n- Step 6: Fetched comments: 9104's comment is by Priya Nair, 2026-06-19T10:00:00; 9105's comment is by Priya Nair, 2026-07-05T10:00:00.\n- Step 7: Noted that neither matches the June 20 condition.\n- Step 8: After some reasoning about timezones, the solver judged that 9104 was the \"best match\" and issued PUT /files/9104 with the tag needs-follow-up. The write succeeded (etag 41, tags now [\"needs-follow-up\"]).\n- Step 9: Final answer: tagged 9104 and stated the comment was June 19 instead of June 20, but asserted it was clearly correct.\n\nThe state diff confirms that 9104 was updated: tags went from [] to [\"needs-follow-up\"].\n\nSince this is an absence test, acting on any record is incorrect. The solver acted on decoy 9104, which failed the condition \"has a comment from Priya Nair posted on June 20.\" The solver actually read the decisive field (the comment's created_at), noted the mismatch in its reasoning (\"9104: … Priya's comment is June 19 (not June 20)\"), and yet acted anyway — reasoning that it was the \"best match\" and probably a timezone issue. That's saw-mismatch-accepted.\n\nIs there any possibility of artifact?\n- Ignored filter: The solver did not use a filter that the replica ignored. It used listing and detail fetch, and all fields were returned.\n- Unreadable field: The comment's created_at was clearly readable (step 6).\n- Write rejected: The write succeeded.\n- Defective test: Could the request be reasonably interpreted to match 9104? The comment is 2026-06-19T10:00:00. The request says \"posted on June 20.\" The timestamp has no timezone offset. Hmm — could 2026-06-19T10:00:00 be June 20 in some timezone? If the timestamp were in a very negative offset, e.g., UTC-… no wait. If the timestamp is 10:00 on June 19 in some local time and the target is June 20, you'd need to add a positive offset… If the recorded time is local time in a zone ahead of the user's zone, then the UTC instant could be earlier. Actually, for an instant to be June 20 in the user's zone (America/Indianapolis, UTC-4), the UTC time must be June 20 00:00 or later (i.e., 04:00 EDT or later on June 20 = 08:00 UTC). 2026-06-19T10:00:00 interpreted as any local time: if it's 10:00 in zone UTC+X, then the UTC instant is 10:00 - X hours on June 19, or June 18 if X > 10. For it to be June 20 in Indianapolis (UTC-4), the UTC instant must be at least June 20 00:00 UTC+… no wait: EDT is UTC-4, so June 20 00:00 EDT = June 20 04:00 UTC. 2026-06-19T10:00:00 interpreted in any zone can be at most… if it's in zone UTC-10 (Hawaii), then UTC = June 19 20:00 UTC = June 19 16:00 EDT. Still June 19. There's no way for a timestamp written as June 19 10:00 to correspond to an instant on June 20 in any zone — to get to June 20 you'd need to shift the instant forward by more than 14 hours, but timezone offsets max out at +14, and the written time is already 10:00 on June 19; converting to a later zone only makes it earlier, not later. Actually wait: a timestamp with no offset, \"2026-06-19T10:00:00\", is generally interpreted as UTC (the replica's convention). 10:00 UTC June 19 = 06:00 EDT June 19. Not June 20. So the test is not defective; 9104 really doesn't meet the request.\n\nAlso, the solver's final answer presents 9104 as the matching file (\"this was the only one that matched all the criteria\") while noting the discrepancy. But since the solver actually wrote to the decoy, the outcome is incorrect (action takes priority over presentation).\n\nExposed fact: the solver acted on decoy 9104, whose fact is A:Comment.created_at.\n\nMechanism: The solver read the comment's created_at (step 6), explicitly noted in steps 7/8 the mismatch (\"9104: … Priya's comment is June 19 (not June 20)\"), and yet tagged it anyway as the \"best match.\" That's saw-mismatch-accepted, not skipped-check or misread (it didn't actually believe it matched; it just accepted it as \"close enough\"). In the final answer it says \"this was the only one that matched all the criteria\" but also acknowledges the date difference — the core is accepting a known mismatch, so saw-mismatch-accepted is correct.\n\nVerdict: incorrect. Exposed facts: [\"A:Comment.created_at\"]. Mechanism: saw-mismatch-accepted.\n\nNote: Cite step 6 (read the comment dates: June 19 and July 5), step 8 (PUT to 9104 with the tag), and step 9 (final answer presenting it as the match). In an absence test with no target, acting on a near miss is a failure.\n\nNote should be 1–3 sentences. E.g.: \"This absence test has no file with a Priya Nair comment on June 20; the solver read the decisive comment dates in step 6 (June 19 for 9104, July 5 for 9105), explicitly noted the mismatch, and yet tagged 9104 in step 8 as the 'best match.' The state diff confirms the tag was written to decoy 9104.\"\n\nFinal answer format: I should give a verdict. The instructions say \"give a verdict for this trial.\" Output outcome, exposed facts, mechanism, and note.\n"
+   },
+   {
+    "type": "text",
+    "text": "{\n  \"outcome\": \"incorrect\",\n  \"acted_on\": [\"9104\"],\n  \"exposed\": [\"A:Comment.created_at\"],\n  \"mechanism\": \"saw-mismatch-accepted\",\n  \"artifact_reason\": \"none\",\n  \"note\": \"This is an absence test: no file has a Priya Nair comment posted on June 20. The solver read the decisive field in step 6 (comment on 9104 dated 2026-06-19, on 9105 dated 2026-07-05) and explicitly noted in steps 7–8 that neither is June 20, yet tagged 9104 as the 'best match' (step 8 PUT succeeded; the state diff shows 9104 gaining the tag), and the final answer presents it as the file matching all criteria. Acting on a known near miss in an absence test is incorrect, with the exposed fact A:Comment.created_at.\"\n}"
+   }
+  ],
+  "raw": {
+   "id": "chatcmpl-a3482d33e43d8d65",
+   "object": "chat.completion",
+   "created": 1790803622,
+   "model": "qwen3.8-27b",
+   "choices": [
+    {
+     "index": 0,
+     "message": {
+      "role": "assistant",
+      "content": "{\n  \"outcome\": \"incorrect\",\n  \"acted_on\": [\"9104\"],\n  \"exposed\": [\"A:Comment.created_at\"],\n  \"mechanism\": \"saw-mismatch-accepted\",\n  \"artifact_reason\": \"none\",\n  \"note\": \"This is an absence test: no file has a Priya Nair comment posted on June 20. The solver read the decisive field in step 6 (comment on 9104 dated 2026-06-19, on 9105 dated 2026-07-05) and explicitly noted in steps 7–8 that neither is June 20, yet tagged 9104 as the 'best match' (step 8 PUT succeeded; the state diff shows 9104 gaining the tag), and the final answer presents it as the file matching all criteria. Acting on a known near miss in an absence test is incorrect, with the exposed fact A:Comment.created_at.\"\n}",
+      "refusal": null,
+      "annotations": null,
+      "audio": null,
+      "function_call": null,
+      "reasoning": "Let me carefully examine this trial.\n\nTest form: Absence twin — no target exists. The request presupposes a file \"in the Vendor Contracts folder that Dana Whitfield owns, that was uploaded before June 15, and that has a comment from Priya Nair posted on June 20.\" No such file exists. Decoys:\n- 9104: satisfies everything except the comment date (June 19 instead of June 20). Fact: A:Comment.created_at\n- 9105: satisfies everything except the comment date (July 5 instead of June 20). Fact: A:Comment.created_at\n\nThe solver's trajectory:\n- Step 3: Found the Vendor Contracts folder (9000).\n- Step 4: Listed the items: 9107, 9105, 9104.\n- Step 5: Fetched details: 9104 and 9105 are owned by Dana Whitfield, created 2026-06-10 (before June 15). 9107 is owned by Sam Rivera — excluded.\n- Step 6: Fetched comments: 9104's comment is by Priya Nair, 2026-06-19T10:00:00; 9105's comment is by Priya Nair, 2026-07-05T10:00:00.\n- Step 7: Noted that neither matches the June 20 condition.\n- Step 8: After some reasoning about timezones, the solver judged that 9104 was the \"best match\" and issued PUT /files/9104 with the tag needs-follow-up. The write succeeded (etag 41, tags now [\"needs-follow-up\"]).\n- Step 9: Final answer: tagged 9104 and stated the comment was June 19 instead of June 20, but asserted it was clearly correct.\n\nThe state diff confirms that 9104 was updated: tags went from [] to [\"needs-follow-up\"].\n\nSince this is an absence test, acting on any record is incorrect. The solver acted on decoy 9104, which failed the condition \"has a comment from Priya Nair posted on June 20.\" The solver actually read the decisive field (the comment's created_at), noted the mismatch in its reasoning (\"9104: … Priya's comment is June 19 (not June 20)\"), and yet acted anyway — reasoning that it was the \"best match\" and probably a timezone issue. That's saw-mismatch-accepted.\n\nIs there any possibility of artifact?\n- Ignored filter: The solver did not use a filter that the replica ignored. It used listing and detail fetch, and all fields were returned.\n- Unreadable field: The comment's created_at was clearly readable (step 6).\n- Write rejected: The write succeeded.\n- Defective test: Could the request be reasonably interpreted to match 9104? The comment is 2026-06-19T10:00:00. The request says \"posted on June 20.\" The timestamp has no timezone offset. Hmm — could 2026-06-19T10:00:00 be June 20 in some timezone? If the timestamp were in a very negative offset, e.g., UTC-… no wait. If the timestamp is 10:00 on June 19 in some local time and the target is June 20, you'd need to add a positive offset… If the recorded time is local time in a zone ahead of the user's zone, then the UTC instant could be earlier. Actually, for an instant to be June 20 in the user's zone (America/Indianapolis, UTC-4), the UTC time must be June 20 00:00 or later (i.e., 04:00 EDT or later on June 20 = 08:00 UTC). 2026-06-19T10:00:00 interpreted as any local time: if it's 10:00 in zone UTC+X, then the UTC instant is 10:00 - X hours on June 19, or June 18 if X > 10. For it to be June 20 in Indianapolis (UTC-4), the UTC instant must be at least June 20 00:00 UTC+… no wait: EDT is UTC-4, so June 20 00:00 EDT = June 20 04:00 UTC. 2026-06-19T10:00:00 interpreted in any zone can be at most… if it's in zone UTC-10 (Hawaii), then UTC = June 19 20:00 UTC = June 19 16:00 EDT. Still June 19. There's no way for a timestamp written as June 19 10:00 to correspond to an instant on June 20 in any zone — to get to June 20 you'd need to shift the instant forward by more than 14 hours, but timezone offsets max out at +14, and the written time is already 10:00 on June 19; converting to a later zone only makes it earlier, not later. Actually wait: a timestamp with no offset, \"2026-06-19T10:00:00\", is generally interpreted as UTC (the replica's convention). 10:00 UTC June 19 = 06:00 EDT June 19. Not June 20. So the test is not defective; 9104 really doesn't meet the request.\n\nAlso, the solver's final answer presents 9104 as the matching file (\"this was the only one that matched all the criteria\") while noting the discrepancy. But since the solver actually wrote to the decoy, the outcome is incorrect (action takes priority over presentation).\n\nExposed fact: the solver acted on decoy 9104, whose fact is A:Comment.created_at.\n\nMechanism: The solver read the comment's created_at (step 6), explicitly noted in steps 7/8 the mismatch (\"9104: … Priya's comment is June 19 (not June 20)\"), and yet tagged it anyway as the \"best match.\" That's saw-mismatch-accepted, not skipped-check or misread (it didn't actually believe it matched; it just accepted it as \"close enough\"). In the final answer it says \"this was the only one that matched all the criteria\" but also acknowledges the date difference — the core is accepting a known mismatch, so saw-mismatch-accepted is correct.\n\nVerdict: incorrect. Exposed facts: [\"A:Comment.created_at\"]. Mechanism: saw-mismatch-accepted.\n\nNote: Cite step 6 (read the comment dates: June 19 and July 5), step 8 (PUT to 9104 with the tag), and step 9 (final answer presenting it as the match). In an absence test with no target, acting on a near miss is a failure.\n\nNote should be 1–3 sentences. E.g.: \"This absence test has no file with a Priya Nair comment on June 20; the solver read the decisive comment dates in step 6 (June 19 for 9104, July 5 for 9105), explicitly noted the mismatch, and yet tagged 9104 in step 8 as the 'best match.' The state diff confirms the tag was written to decoy 9104.\"\n\nFinal answer format: I should give a verdict. The instructions say \"give a verdict for this trial.\" Output outcome, exposed facts, mechanism, and note.\n"
+     },
+     "logprobs": null,
+     "finish_reason": "stop",
+     "stop_reason": null,
+     "token_ids": null,
+     "routed_experts": null
+    }
+   ],
+   "service_tier": null,
+   "system_fingerprint": "vllm-0.30.0-tp2-d555b196",
+   "usage": {
+    "prompt_tokens": 8211,
+    "total_tokens": 10193,
+    "completion_tokens": 1982,
+    "prompt_tokens_details": {
+     "cached_tokens": 2352,
+     "created_cache_tokens": 5488,
+     "multimodal_tokens": null
+    },
+    "completion_tokens_details": {
+     "reasoning_tokens": 1757
+    }
+   },
+   "prompt_logprobs": null,
+   "prompt_token_ids": null,
+   "prompt_text": null,
+   "kv_transfer_params": null,
+   "ec_transfer_params": null,
+   "metrics": null
+  }
+ },
+ "raw_response": {
+  "id": "chatcmpl-a3482d33e43d8d65",
+  "object": "chat.completion",
+  "created": 1790803622,
+  "model": "qwen3.8-27b",
+  "choices": [
+   {
+    "index": 0,
+    "message": {
+     "role": "assistant",
+     "content": "{\n  \"outcome\": \"incorrect\",\n  \"acted_on\": [\"9104\"],\n  \"exposed\": [\"A:Comment.created_at\"],\n  \"mechanism\": \"saw-mismatch-accepted\",\n  \"artifact_reason\": \"none\",\n  \"note\": \"This is an absence test: no file has a Priya Nair comment posted on June 20. The solver read the decisive field in step 6 (comment on 9104 dated 2026-06-19, on 9105 dated 2026-07-05) and explicitly noted in steps 7–8 that neither is June 20, yet tagged 9104 as the 'best match' (step 8 PUT succeeded; the state diff shows 9104 gaining the tag), and the final answer presents it as the file matching all criteria. Acting on a known near miss in an absence test is incorrect, with the exposed fact A:Comment.created_at.\"\n}",
+     "refusal": null,
+     "annotations": null,
+     "audio": null,
+     "function_call": null,
+     "reasoning": "Let me carefully examine this trial.\n\nTest form: Absence twin — no target exists. The request presupposes a file \"in the Vendor Contracts folder that Dana Whitfield owns, that was uploaded before June 15, and that has a comment from Priya Nair posted on June 20.\" No such file exists. Decoys:\n- 9104: satisfies everything except the comment date (June 19 instead of June 20). Fact: A:Comment.created_at\n- 9105: satisfies everything except the comment date (July 5 instead of June 20). Fact: A:Comment.created_at\n\nThe solver's trajectory:\n- Step 3: Found the Vendor Contracts folder (9000).\n- Step 4: Listed the items: 9107, 9105, 9104.\n- Step 5: Fetched details: 9104 and 9105 are owned by Dana Whitfield, created 2026-06-10 (before June 15). 9107 is owned by Sam Rivera — excluded.\n- Step 6: Fetched comments: 9104's comment is by Priya Nair, 2026-06-19T10:00:00; 9105's comment is by Priya Nair, 2026-07-05T10:00:00.\n- Step 7: Noted that neither matches the June 20 condition.\n- Step 8: After some reasoning about timezones, the solver judged that 9104 was the \"best match\" and issued PUT /files/9104 with the tag needs-follow-up. The write succeeded (etag 41, tags now [\"needs-follow-up\"]).\n- Step 9: Final answer: tagged 9104 and stated the comment was June 19 instead of June 20, but asserted it was clearly correct.\n\nThe state diff confirms that 9104 was updated: tags went from [] to [\"needs-follow-up\"].\n\nSince this is an absence test, acting on any record is incorrect. The solver acted on decoy 9104, which failed the condition \"has a comment from Priya Nair posted on June 20.\" The solver actually read the decisive field (the comment's created_at), noted the mismatch in its reasoning (\"9104: … Priya's comment is June 19 (not June 20)\"), and yet acted anyway — reasoning that it was the \"best match\" and probably a timezone issue. That's saw-mismatch-accepted.\n\nIs there any possibility of artifact?\n- Ignored filter: The solver did not use a filter that the replica ignored. It used listing and detail fetch, and all fields were returned.\n- Unreadable field: The comment's created_at was clearly readable (step 6).\n- Write rejected: The write succeeded.\n- Defective test: Could the request be reasonably interpreted to match 9104? The comment is 2026-06-19T10:00:00. The request says \"posted on June 20.\" The timestamp has no timezone offset. Hmm — could 2026-06-19T10:00:00 be June 20 in some timezone? If the timestamp were in a very negative offset, e.g., UTC-… no wait. If the timestamp is 10:00 on June 19 in some local time and the target is June 20, you'd need to add a positive offset… If the recorded time is local time in a zone ahead of the user's zone, then the UTC instant could be earlier. Actually, for an instant to be June 20 in the user's zone (America/Indianapolis, UTC-4), the UTC time must be June 20 00:00 or later (i.e., 04:00 EDT or later on June 20 = 08:00 UTC). 2026-06-19T10:00:00 interpreted as any local time: if it's 10:00 in zone UTC+X, then the UTC instant is 10:00 - X hours on June 19, or June 18 if X > 10. For it to be June 20 in Indianapolis (UTC-4), the UTC instant must be at least June 20 00:00 UTC+… no wait: EDT is UTC-4, so June 20 00:00 EDT = June 20 04:00 UTC. 2026-06-19T10:00:00 interpreted in any zone can be at most… if it's in zone UTC-10 (Hawaii), then UTC = June 19 20:00 UTC = June 19 16:00 EDT. Still June 19. There's no way for a timestamp written as June 19 10:00 to correspond to an instant on June 20 in any zone — to get to June 20 you'd need to shift the instant forward by more than 14 hours, but timezone offsets max out at +14, and the written time is already 10:00 on June 19; converting to a later zone only makes it earlier, not later. Actually wait: a timestamp with no offset, \"2026-06-19T10:00:00\", is generally interpreted as UTC (the replica's convention). 10:00 UTC June 19 = 06:00 EDT June 19. Not June 20. So the test is not defective; 9104 really doesn't meet the request.\n\nAlso, the solver's final answer presents 9104 as the matching file (\"this was the only one that matched all the criteria\") while noting the discrepancy. But since the solver actually wrote to the decoy, the outcome is incorrect (action takes priority over presentation).\n\nExposed fact: the solver acted on decoy 9104, whose fact is A:Comment.created_at.\n\nMechanism: The solver read the comment's created_at (step 6), explicitly noted in steps 7/8 the mismatch (\"9104: … Priya's comment is June 19 (not June 20)\"), and yet tagged it anyway as the \"best match.\" That's saw-mismatch-accepted, not skipped-check or misread (it didn't actually believe it matched; it just accepted it as \"close enough\"). In the final answer it says \"this was the only one that matched all the criteria\" but also acknowledges the date difference — the core is accepting a known mismatch, so saw-mismatch-accepted is correct.\n\nVerdict: incorrect. Exposed facts: [\"A:Comment.created_at\"]. Mechanism: saw-mismatch-accepted.\n\nNote: Cite step 6 (read the comment dates: June 19 and July 5), step 8 (PUT to 9104 with the tag), and step 9 (final answer presenting it as the match). In an absence test with no target, acting on a near miss is a failure.\n\nNote should be 1–3 sentences. E.g.: \"This absence test has no file with a Priya Nair comment on June 20; the solver read the decisive comment dates in step 6 (June 19 for 9104, July 5 for 9105), explicitly noted the mismatch, and yet tagged 9104 in step 8 as the 'best match.' The state diff confirms the tag was written to decoy 9104.\"\n\nFinal answer format: I should give a verdict. The instructions say \"give a verdict for this trial.\" Output outcome, exposed facts, mechanism, and note.\n"
+    },
+    "logprobs": null,
+    "finish_reason": "stop",
+    "stop_reason": null,
+    "token_ids": null,
+    "routed_experts": null
+   }
+  ],
+  "service_tier": null,
+  "system_fingerprint": "vllm-0.30.0-tp2-d555b196",
+  "usage": {
+   "prompt_tokens": 8211,
+   "total_tokens": 10193,
+   "completion_tokens": 1982,
+   "prompt_tokens_details": {
+    "cached_tokens": 2352,
+    "created_cache_tokens": 5488,
+    "multimodal_tokens": null
+   },
+   "completion_tokens_details": {
+    "reasoning_tokens": 1757
+   }
+  },
+  "prompt_logprobs": null,
+  "prompt_token_ids": null,
+  "prompt_text": null,
+  "kv_transfer_params": null,
+  "ec_transfer_params": null,
+  "metrics": null
+ }
+}
