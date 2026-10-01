@@ -489,3 +489,11 @@ section. Decisions that stand go to the [roadmap](roadmap.md); this is the recor
   took the year for 2025/2026 in 40 of 657 Calendar trials (22 judged failures; 7 of 108 exposing trials; no fact
   rests on them alone). Recommendation: render each test's dates to the run week at environment creation, no agent
   clock; first action: shift the clocked Linear scenario −4 weeks and run its 16 cases on Sol (needs the PI's go).
+- 2026-10-01 later, the dates investigation revised after the PI's objection (dates_01 §9): a whole-week shift leaves
+  the scenario's now up to six days from the real day, so weekday and now-relative requests drift ("this Thursday"
+  can fall behind; the overdue scenario's near miss becomes a second match). Corrected rule: align the anchor to the
+  run date by whole days, rewrite weekday names through the condition annotations; apply only where a test depends on
+  the day (14 of 86: 11 Calendar weekday requests, "overdue", "current cycle", the clocked Linear scenario); the
+  other 72 run on any day untouched. Proposed: the 16 Calendar scenarios rendered to the present and rerun on Qwen
+  and Sol to measure the 2018 effect (~160 tests × 3 trials per agent); the clocked Linear scenario shifted −4
+  weeks for Sol's 16 cases. Both await the PI's go.

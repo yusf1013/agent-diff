@@ -9,6 +9,9 @@ what is the complete fix? No model calls; everything below is read from the reco
 ## Status
 
 - **2026-10-01, evening: investigated; the fix is designed and prototyped mechanically; the PI's decision is pending.**
+- **2026-10-01, later: the PI's objection (section 9) corrects the shift rule from whole weeks to whole days aligned to the
+  run date, with weekday words rewritten; the fix is to be applied only where a test depends on the day (14 of 86
+  scenarios), and a Calendar rerun in the present is proposed to measure the 2018 effect.**
 - Nothing was run and nothing in the suites was changed.
 
 ## 1. What happened
@@ -147,3 +150,55 @@ transfer study's rule that a server-set time becomes the seeding time.
    environment creation, with the Calendar replica setting.
 3. **Writer docs:** the Calendar note changes from "the agent is told it is June 17, 2018" to "the scenario's anchor
    is June 17, 2018; tests are rendered to the run week". No other writer change.
+
+## 9. The PI's objection, and the corrected rule (2026-10-01, later)
+
+**The objection.** A whole-week shift keeps weekday names true but leaves the scenario's "now" up to six days away
+from the real day. A test that assumes "Thursday, October 8" is today, shifted back a week and run on Friday October
+2, has its Thursday behind it: "this Thursday" now means next week, and the target has gone stale. The same holds for
+"tomorrow", "yesterday", "overdue", "current cycle": any phrase that is read relative to the day of the run drifts by
+however far the two "nows" differ. The objection is right, and the inventory shows the exact case already in the
+suite: *"Set the estimate to 5 on the overdue high-priority issue assigned to Maya Chen on the Web team"* has its
+target due September 22 and its near miss due September 30; on any real day after September 30 both are overdue and
+the near miss becomes a second match. That scenario runs on a clock of September 25 today.
+
+**The corrected rule: align the anchor to the run date, by whole days.** Every date moves by the whole number of
+days between the scenario's anchor and the day the environment is created, in wall time, so the scenario's "now"
+and the real "now" fall on the same day and times of day are preserved; the request's weekday names are rewritten
+to the new weekdays through the same condition annotations that carry the explicit dates ("on Thursday" → "on
+Monday"), and now-relative words need no rewriting because they are true again: the overdue issue is due three days
+before the run day and the near miss five days after it, whatever the day. What remains is drift *within* the day
+(the anchor's time of day against the real time), which matters only for a request about "today at 10 a.m."; no
+adopted request has such a phrase, and the build check flags "today", "tonight", "this morning" and "in N hours".
+
+**Apply it only where a test depends on the day.** The dependence can be detected reliably, because the writer's
+condition annotations say which phrases carry conditions: a test depends on the day when a condition phrase holds a
+weekday name or a now-relative word, or when a record is created after the run day. Explicit dates ("due on
+October 15", "created on March 4") are labels: shifting them or not changes nothing about what the agent must do,
+and a date in a value to be written ("Dry run Thursday 10am"; "Retro moved to Friday, September 25") is content.
+By that rule:
+
+| Scenarios | Depend on the day? | Why |
+|---|---:|---|
+| Calendar, requests naming a weekday ("the Budget Review ... on Thursday") | 11 | the weekday is read against the anchor's week |
+| Linear, "the overdue issue"; "the Mobile team's current cycle" | 2 | a due date against today; a cycle window around today |
+| Linear, the clocked scenario (a near miss created October 15) | 1 | a record in the future until October 15 |
+| **Need rendering** | **14** | |
+| Calendar, no date word in the request (hide a calendar; set a location) | 5 | the replica's listing window hides nothing (no event ends before its fixed day) |
+| Every other scenario: explicit dates or no dates, every record in the past | 67 | the run day plays no part |
+| **Run on any day as they are** | **72** | |
+
+The rendered 14 are rebuilt tests of the same scenarios, verified as before (the reference check, the derivation,
+no stale literal); the other 72 are not touched. The agent-clock shift is retired for all 86.
+
+**The Calendar rerun the PI asked for.** The 11 weekday Calendar scenarios (and, for completeness, the 5 others)
+rendered to the present week and run again on OpenClaw with Qwen and with Sol, judged, and compared test by test
+with the 2018 runs: the question is how much of Calendar's failure rate the 2018 setting produced. Size: 93 regular
+tests and 72 policy units on record for the 16 scenarios (before rulings), about 160 tests × 3 trials per agent;
+Sol's Calendar trials took a median 45 s (5.9 agent-hours in all on the plan, which lapses around October 6);
+judging about $10 at list price per agent on Muse, or nothing on the self-hosted Qwen. Blind labels before any
+verdict, as always. Qwen's 40 year-confused trials are the prediction: they should vanish.
+
+**The clocked Linear scenario for Sol.** Its request has an explicit date and no weekday or now-relative word, so
+a whole-week shift back (−4 weeks: clock September 18, "due on September 17") carries no drift of the kind above;
+the run of its 16 cases on Sol (48 trials) is the one remaining item.
