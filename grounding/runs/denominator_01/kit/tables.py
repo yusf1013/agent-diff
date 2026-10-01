@@ -258,15 +258,15 @@ def main():
     L.append("## Table 4. The by-product tests, and the failures they add\n")
     L.append("Tests outside the denominator that arose as by-products of a legitimate attempt (a scenario built for its own brief). "
              "A failure is \"new\" when no included test of the same kind (regular exposure, absence, underspecified) showed a failure "
-             "for that fact with that agent, \"repeated\" when one did. Sonnet's tests (the writer comparison) and the outdated first "
+             "for that fact with that agent; the other failures reproduce one already observed. Sonnet's tests (the writer comparison) and the outdated first "
              "version of the related-issue fact are not by-products and are not here.\n")
-    L.append("| By-product | Tests | Qwen: failed | Qwen: new | Qwen: repeated | Sol: failed | Sol: new | Sol: repeated |")
-    L.append("|---|---:|---:|---:|---:|---:|---:|---:|")
+    L.append("| By-product | Tests | Qwen: failed | Qwen: new | Sol: failed | Sol: new |")
+    L.append("|---|---:|---:|---:|---:|---:|")
     tot4 = Counter()
     for o, label in ORIGINS:
         r = rows4[o]; tot4.update(r)
-        L.append(f"| {label} | {r['tests']} | {r['qwen_failed']} | {r['qwen_new']} | {r['qwen_repeated']} | {r['sol_failed']} | {r['sol_new']} | {r['sol_repeated']} |")
-    L.append(f"| **All** | **{tot4['tests']}** | **{tot4['qwen_failed']}** | **{tot4['qwen_new']}** | **{tot4['qwen_repeated']}** | **{tot4['sol_failed']}** | **{tot4['sol_new']}** | **{tot4['sol_repeated']}** |")
+        L.append(f"| {label} | {r['tests']} | {r['qwen_failed']} | {r['qwen_new']} | {r['sol_failed']} | {r['sol_new']} |")
+    L.append(f"| **All** | **{tot4['tests']}** | **{tot4['qwen_failed']}** | **{tot4['qwen_new']}** | **{tot4['sol_failed']}** | **{tot4['sol_new']}** |")
     OUT_MD.write_text("\n".join(L) + "\n")
     json.dump({"filled": filled, "prescribed": PRESCRIBED, "runs": runs, "attempts": t3}, open(HERE / "numbers/tables.json", "w"), indent=1)
     print("\n".join(L))

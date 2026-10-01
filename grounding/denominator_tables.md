@@ -48,12 +48,12 @@ In the pipeline: four briefs (eleven facts) got no scenario, all from the cold r
 
 ## Table 4. The by-product tests, and the failures they add
 
-Tests outside the denominator that arose as by-products of a legitimate attempt (a scenario built for its own brief). A failure is "new" when no included test of the same kind (regular exposure, absence, underspecified) showed a failure for that fact with that agent, "repeated" when one did. Sonnet's tests (the writer comparison) and the outdated first version of the related-issue fact are not by-products and are not here.
+Tests outside the denominator that arose as by-products of a legitimate attempt (a scenario built for its own brief). A failure is "new" when no included test of the same kind (regular exposure, absence, underspecified) showed a failure for that fact with that agent; the other failures reproduce one already observed. Sonnet's tests (the writer comparison) and the outdated first version of the related-issue fact are not by-products and are not here.
 
-| By-product | Tests | Qwen: failed | Qwen: new | Qwen: repeated | Sol: failed | Sol: new | Sol: repeated |
-|---|---:|---:|---:|---:|---:|---:|---:|
-| The writer built more decoys for its own facts than the catalog names | 73 | 19 | 3 | 16 | 3 | 2 | 1 |
-| The writer gave a decoy to a condition on a fact outside its brief | 21 | 14 | 4 | 10 | 3 | 0 | 3 |
-| A fact in two briefs by the brief set's design (who posted a message) | 5 | 3 | 2 | 1 | 0 | 0 | 0 |
-| The variant builder: one variant per fact of a condition that carries several facts | 6 | 3 | 1 | 2 | 0 | 0 | 0 |
-| **All** | **105** | **39** | **10** | **29** | **6** | **2** | **4** |
+| By-product | Tests | Qwen: failed | Qwen: new | Sol: failed | Sol: new |
+|---|---:|---:|---:|---:|---:|
+| The writer built more decoys for its own facts than the catalog names | 73 | 19 | 3 | 3 | 2 |
+| The writer gave a decoy to a condition on a fact outside its brief | 21 | 14 | 4 | 3 | 0 |
+| A fact in two briefs by the brief set's design (who posted a message) | 5 | 3 | 2 | 0 | 0 |
+| The variant builder: one variant per fact of a condition that carries several facts | 6 | 3 | 1 | 0 | 0 |
+| **All** | **105** | **39** | **10** | **6** | **2** |
