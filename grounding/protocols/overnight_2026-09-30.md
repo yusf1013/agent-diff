@@ -460,3 +460,14 @@ section. Decisions that stand go to the [roadmap](roadmap.md); this is the recor
   section of 2026-09-30 (the Muse-only suite, Qwen as judge, the Qwen-writer sample, step 8) is marked withdrawn,
   and the lead's 09:5x reading of the judge replay as a decision is withdrawn with it; the replay's result stands as
   a result. Nothing had been run on the strength of either.
+- 2026-10-01 10:30–14:00 **the denominator, with the PI** (the PI's point: fix the denominator before any further
+  number). Settled: 255 catalog facts, 42 unservable, 213 servable; one packed probe, one absence and one
+  underspecified test per fact; 152 boundary elements, 93 faithful, one test each; several-match a separate
+  addition pending its own investigation (the 19 "shortcuts" are the wrong granularity, the 131 tests followed the
+  covers); **732 cases without several-match**; covers are the sampling vehicle, kept as generated with their
+  shortcomings on record. Written as the reference [protocols/denominator.md](denominator.md), with the kit
+  [runs/denominator_01](../runs/denominator_01/README.md) measuring how the attempts on record fill it: the frozen
+  pipeline with one retry fills 633 of 732 (195 probes, 187 absence, 161 underspecified, 90 boundaries); the
+  earliest attempt with one retry 643; everything on record 667. Two misreadings of mine corrected on the way: the
+  09-30 "afternoon decisions" were never the PI's (withdrawn), and the 59 non-faithful boundary elements are 27
+  unfaithful, 14 not boundaries, 12 replica gaps and 6 uncertain, not "boundaries the replica does not enforce".

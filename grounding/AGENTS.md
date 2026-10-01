@@ -74,5 +74,13 @@ These rules apply to everything the PI reads: chat replies, the Status and "For 
 - A label the PI did not coin (study and session names, step numbers such as 6h, arm names such as P1, verdict labels, fact IDs) comes after a plain description, or not at all.
 - Write as much as the PI needs to follow without opening a file. Put further detail behind a link.
 
+## The denominator
+
+Every reported number is read against the tests the methodology prescribes from the domain model alone:
+[protocols/denominator.md](protocols/denominator.md) (732 cases without several-match: 213 servable facts × a
+packed probe, an absence test and an underspecified test, plus 93 faithful capability boundaries; per service and
+with what is excluded). Production counts (cases built, runs made) are never denominators; a study that reports
+coverage or exposure says how many of the prescribed items its tests fill, with `runs/denominator_01`'s kit.
+
 ## Writing custom tests
 Use the existing custom Slack workflow in grounding/integrations/agentdiff/runtime.py, following grounding/AGENTS.md. Use grounding/runs/slack_campaign/compiler_pilot_01/W01/case.json and its execution review as examples. Author the seed, prompt, cards, and task specification before execution. Run the solver without native assertions, then manually review its trajectory, output, and diff. Keep the evidence bundle ready for our custom evaluator. Save everything in a new persistent directory under grounding/runs/, and preserve all test files and execution evidence during cleanup. Keep the new folder directory simple and protect it from bloat. 
