@@ -76,6 +76,7 @@ def main() -> None:
               (RUNS / "completion_01/suite/cases/suite.json", RUNS / "completion_01/suite/cases"),
               (RUNS / "regen_01/runs/full_01_cases/suite.json", RUNS / "regen_01/runs/full_01_cases")]
     decoys = defaultdict(set)         # (scenario, fact) -> valid witnesses declared in the cover
+    families = defaultdict(set)       # (scenario, fact) -> families of the valid near misses (F0 = plain)
     forms = defaultdict(Counter)      # (scenario, fact) -> form -> valid tests
     scenarios = {}                    # scenario -> {"domain", "usable"(cover valid), "excluded"}
     tests_total = Counter(); tests_valid = Counter()
@@ -105,6 +106,10 @@ def main() -> None:
             facts_here = {f for f, w in claims if w not in bad}
             for f in facts_here:
                 forms[(sid, f)][m["form"]] += 1
+            for ref in case["references"]:
+                for c in ref.get("claims", []):
+                    if str(c["witness"]) not in bad:
+                        families[(sid, base_fact(d, c["requirement"]))].add(str(c.get("family") or "F0").split("+")[0])
     print(f"scenarios with a cover on record: {len(scenarios)}; usable: {sum(s['usable'] for s in scenarios.values())}")
 
     def packed(sid, f):
@@ -218,8 +223,10 @@ def main() -> None:
                             have[u["mode"]].add((d, f))
         per_domain = {d: {k: sum(1 for (dd, f) in v if dd == d) for k, v in have.items()} for d in DOMAINS}
         briefs_failed = sorted(b for b, s in des.items() if s is None)
-        # One test per item (the PI's rule): the test from the scenario of the fact's own brief; failing that, the
-        # earliest-generated other scenario (Phase 4, then 6b, then the regeneration; then by id). Outcome-blind.
+        # One test per item (the PI's rule): the test from the scenario of the fact's own brief; among those, a scenario
+        # whose near miss realizes a catalog alternative (F1-F8) before one with only a plain decoy (the PI, 2026-10-01:
+        # the repeat made for a fact's lure is the one kept); then the earliest-generated scenario; then by id.
+        # Construction-based, never on a solver outcome.
         RANK = {"sonnet_r": 0, "sonnet_p1": 0, "sonnet_p2": 1, "muse_phase4": 2, "muse_6b": 3, "muse_regen": 4}
         designated_tests = {}; spares = Counter(); shared = Counter()
         hist = defaultdict(Counter); examples = defaultdict(list)
@@ -239,7 +246,12 @@ def main() -> None:
                 def key(x):
                     s = x if form == "probe" else next(u["scenario"] for u in units if u["unit"] == x)
                     own = 0 if (d, f) in brief_facts.get(brief_of.get(s, s), set()) else 1
-                    return (own, RANK.get(attempt_of.get(s, ""), 9), s, x)
+                    if form == "probe":
+                        fams = families.get((s, f), set())
+                    else:
+                        fams = {str(u.get("family") or "F0").split("+")[0] for u in units if u["unit"] == x}
+                    plain_only = 0 if any(fam != "F0" for fam in fams) else 1   # a named alternative outranks a plain decoy
+                    return (own, plain_only, RANK.get(attempt_of.get(s, ""), 9), s, x)
                 cands = sorted(set(cands), key=key)
                 designated_tests[f"{form} {d} {f}"] = cands[0]
                 spares[form] += len(cands) - 1

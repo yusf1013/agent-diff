@@ -124,8 +124,10 @@ requests do not count (only the one whose round-1 request was invalid is a retry
 round 1 for the other nine.
 
 **One test per item.** Where the designated attempts leave two or more valid tests for one item (a fact claimed in
-two scenarios, or two units of one fact), the test from the scenario of the fact's own brief counts; failing that,
-the earliest-generated scenario's. The rest are spares (rule A: 10 probes, 10 absence, 26 underspecified). One
+two scenarios, or two units of one fact), the test from the scenario of the fact's own brief counts; among those, a
+scenario whose near miss realizes a catalog alternative outranks one with only a plain decoy (the PI, 2026-10-01
+evening: the repeat made for a fact's lure is the one kept); then the earliest-generated scenario's. Every rule is
+about construction, never about a solver's outcome. The rest are spares (rule A: 10 probes, 10 absence, 26 underspecified). One
 underspecified test can fill two items when its dropped condition carries two facts (rule A: 152 valid units fill
 161 items).
 
@@ -374,13 +376,13 @@ something again for an item already filled.
 
 | Origin | Tests | What they are |
 |---|---:|---|
-| By-product: the writer built more decoys for its own facts than the catalog names | 71 | single-decoy probes |
+| By-product: the writer built more decoys for its own facts than the catalog names | 73 | single-decoy probes |
 | By-product: the writer gave a decoy to a condition on a fact outside its brief (four scenarios) | 20 | 8 single-decoy probes, 8 absence twins, 4 underspecified variants |
 | By-product: the variant builder makes one variant per fact, and some conditions carry several facts | 6 | 4 underspecified variants of facts filled by another variant, 2 duplicate variants |
-| A second brief, decided by the lead on 2026-09-30, for a fact whose first scenario realized only a plain decoy where the catalog names a lure (the related issue's direction) | 6 | 3 single-decoy probes, 1 packed probe, 1 twin, 1 variant |
+| The outdated first version of a fact given a second brief (the related issue's direction: its first scenario had only a plain decoy where the catalog names the reversed relation; the second brief, decided by the lead on 2026-09-30, realized it, and is the one kept) | 2 | the first scenario's plain probe and its absence twin (its underspecified variant stays, since it also carries the relation's source fact) |
 | A fact in two briefs by the brief set's design (who posted a message, in two of the design study's fact sets) | 5 | 2 single-decoy probes, 1 packed probe, 1 twin, 1 variant |
 | Another writer's attempt at the same items (Sonnet, kept as the writer comparison by the PI's decision) | 485 | 48 covers, 223 probes, 116 absence, 98 underspecified |
-| **All excluded** | **593** | |
+| **All excluded** | **591** | |
 
 No test was run more than its three trials by decision; attempts were replaced only for infrastructure failures.
 
@@ -478,3 +480,17 @@ checks are code; the writer's part is a Muse call with a recorded reason.
   single probe is valid and ran, but it is not the packed form the denominator prescribes.
 - *3 boundary requests the cold reader rejected* (one each in Slack, Calendar and Box): the request did not name
   the record, hinted at the limit, or read as unnatural.
+
+**The decided repeat, clarified (2026-10-01 evening).** The decision of 2026-09-30 was to give the related issue's
+direction a brief of its own because its only scenario — *"Set the estimate to 5 for the Web team issue assigned to
+Maya Chen that blocks the Checkout crash on Safari issue"* — had a plain decoy for it (a relation to another issue)
+where the catalog names the reversed relation as the lure; nothing was said then about the first version, and both
+stayed in the suite. The repeat — *"Set the estimate to 5 for the Todo issue assigned to Maya Chen with the Bug label
+that is blocked by the Checkout rollout issue"* — realized the lure (an issue that blocks the anchor instead of being
+blocked by it) and added a partial-identity and an indirection decoy. Under the denominator the repeat is the version
+kept for this fact and the first version's plain probe and twin are the outdated spares; the tie-break now says so.
+Failures: on Qwen the first version's probe exposed nothing, its twin failed 2 of 3 trials and its variant 1 of 3;
+the repeat's packed probe and three probes exposed nothing, its twin failed 3 of 3 and its variant 1 of 3. On Sol the
+first version exposed nothing anywhere; the repeat's partial-identity probe exposed the fact in one trial — Sol's
+only exposure of it, and the one fact Sol exposed that Qwen did not. The suite's totals do not move (Table 2 is
+unchanged), since the fact's designated packed probe exposed nothing for either agent before or after.
