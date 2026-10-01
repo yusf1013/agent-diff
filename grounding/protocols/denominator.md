@@ -367,6 +367,23 @@ posted a message, in two reproduction briefs) and the tie-break chose the other 
 keyed by service and fact, and with the single-decoy credit extended to facts without a packed probe, the counts
 above replace the afternoon's (packed probes 195 tests, counted single-decoy probes 130, beyond 84).
 
+**The excluded tests by origin (the PI's distinction, 2026-10-01 evening).** Two different things: a test that
+arose as a by-product of a legitimate attempt (a scenario built for its own brief, whose items were unfilled, in which
+the writer or a builder produced more than the one test per item), and a test from a decision to generate or run
+something again for an item already filled.
+
+| Origin | Tests | What they are |
+|---|---:|---|
+| By-product: the writer built more decoys for its own facts than the catalog names | 71 | single-decoy probes |
+| By-product: the writer gave a decoy to a condition on a fact outside its brief (four scenarios) | 20 | 8 single-decoy probes, 8 absence twins, 4 underspecified variants |
+| By-product: the variant builder makes one variant per fact, and some conditions carry several facts | 6 | 4 underspecified variants of facts filled by another variant, 2 duplicate variants |
+| A second brief, decided by the lead on 2026-09-30, for a fact whose first scenario realized only a plain decoy where the catalog names a lure (the related issue's direction) | 6 | 3 single-decoy probes, 1 packed probe, 1 twin, 1 variant |
+| A fact in two briefs by the brief set's design (who posted a message, in two of the design study's fact sets) | 5 | 2 single-decoy probes, 1 packed probe, 1 twin, 1 variant |
+| Another writer's attempt at the same items (Sonnet, kept as the writer comparison by the PI's decision) | 485 | 48 covers, 223 probes, 116 absence, 98 underspecified |
+| **All excluded** | **593** | |
+
+No test was run more than its three trials by decision; attempts were replaced only for infrastructure failures.
+
 ## The 99 unfilled items, in full (2026-10-01 afternoon)
 
 **Four briefs produced no scenario (33 items).** Each attempt ran the writer, the code checks, the replica
