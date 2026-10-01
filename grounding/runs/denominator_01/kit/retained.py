@@ -136,6 +136,34 @@ def main():
         else:
             ukind[uid] = f"remaining: {m['mode']} unit of a fact already filled"
 
+    # ---- the origin of every excluded Muse test (the PI's distinction: by-product of a legitimate attempt, or not) ----
+    brief_facts = defaultdict(set)
+    for pth in ("autogen_01/inputs/briefs_arm_r.json", "autogen_01/inputs/briefs_arm_p.json", "autogen_02/inputs/briefs_phase4.json",
+                "completion_01/inputs/briefs_6b.json", "regen_01/inputs/briefs_regen.json"):
+        for b in load(RUNS / pth):
+            for f in b["facts"]:
+                brief_facts[b["scenario_id"]].add(base_fact(b["domain"], f))
+    regen_brief = {b["scenario_id"]: (b.get("sonnet") or [b["scenario_id"]])[0] for b in load(RUNS / "regen_01/inputs/briefs_regen.json")}
+    def in_own_brief(sid, f):
+        b = regen_brief.get(sid, sid)
+        return f in brief_facts.get(sid, set()) or f in brief_facts.get(b, set()) or f in brief_facts.get(b.replace("AP-", "AP2-"), set())
+    TWO_BRIEFS = {("slack", "R:messages.user_id")}
+    OUTDATED = {("G4-LIN-17", "R:IssueRelation.relatedIssueId")}
+    def origin(sid, d, facts, k):
+        if any((sid, f) in OUTDATED for f in facts):
+            return "outdated first version"
+        if any((d, f) in TWO_BRIEFS for f in facts) and sid == "G4-SLK-11":
+            return "a fact in two briefs by the brief set's design"
+        if not all(in_own_brief(sid, f) for f in facts):
+            return "a decoy on a condition outside the brief"
+        if k == "remaining: single-decoy probe beyond the counted ones":
+            return "the writer's extra decoys on its own facts"
+        return "the variant builder: one variant per fact of a shared condition"
+    test_origin = {cid: origin(test_meta[cid]["scenario"], test_meta[cid]["domain"], test_meta[cid]["facts"], k)
+                   for cid, k in kind.items() if k.startswith("remaining") and "Sonnet" not in k}
+    unit_origin = {uid: origin(unit_meta[uid]["scenario"], unit_meta[uid]["domain"], {base_fact(unit_meta[uid]["domain"], f) for f in unit_meta[uid]["facts"]}, k)
+                   for uid, k in ukind.items() if k.startswith("remaining") and "Sonnet" not in k}
+
     # ---- outcomes per agent ----------------------------------------------------------------------------------
     result = {}
     for agent, score_paths in (("qwen", QWEN_SCORES), ("sol", SOL_SCORES)):
@@ -168,13 +196,23 @@ def main():
             fails = sum(1 for x in outs if x in sampler.FAIL)
             r["failing_trials"] += fails; r["usable_trials"] += len(outs)
             r["with_a_failure"] += 1 if fails else 0
+        detail_tests = {cid: {"kind": k, "domain": test_meta[cid]["domain"], "facts": sorted(test_meta[cid]["facts"]),
+                              "exposed": sorted({base_fact(test_meta[cid]["domain"], x) for x in sc[cid].get("exposed", [])}) if cid in sc else None}
+                        for cid, k in kind.items()}
+        detail_units = {uid: {"kind": k, "domain": unit_meta[uid]["domain"], "mode": unit_meta[uid]["mode"],
+                              "facts": sorted(base_fact(unit_meta[uid]["domain"], f) for f in unit_meta[uid]["facts"]),
+                              "failed": (any(x in sampler.FAIL for x in outcomes.get(uid, {}).values()) if any(x in sampler.FAIL | sampler.PASS for x in outcomes.get(uid, {}).values()) else None)}
+                        for uid, k in ukind.items()}
         result[agent] = {"regular": {k: {**v, "facts": len(v["facts"]), "_facts": sorted(v["facts"])} for k, v in sorted(rows.items())},
-                         "policy": {k: dict(v) for k, v in sorted(urows.items())}}
+                         "policy": {k: dict(v) for k, v in sorted(urows.items())},
+                         "tests": detail_tests, "units": detail_units}
     # boundary: the automated study's round 1, valid requests, on the toy loop
     bsum = load(RUNS / "boundary_auto_01/summary.json")
     result["boundary"] = {"valid_round1": bsum["valid (reader agreed)"], "elements_with_a_failing_trial": bsum["elements with a failing trial"],
                           "harness": "bare toy loop on the self-hosted Qwen (8-minute budget, 40 turns); not run on OpenClaw, not run on Sol"}
     result["beyond_the_counted_single_decoy_probes"] = beyond
+    result["origin_of_excluded_muse_tests"] = test_origin
+    result["origin_of_excluded_muse_units"] = unit_origin
     (HERE / "numbers/retained.json").write_text(json.dumps(result, indent=1) + "\n")
     for agent in ("qwen", "sol"):
         print(f"\n== {agent}")

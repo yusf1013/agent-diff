@@ -216,6 +216,57 @@ def main():
              "for 30 facts (the writer declined 16, the reader rejected 12, code found 3 not derivable); the writer built fewer "
              "single decoys than the catalog names for some facts; the cold reader rejected three boundary requests. In manual "
              "review: rulings on near misses and variants (23 items), and single-decoy probes holding a ruled near miss.\n")
+    # ---- table 4: the by-product tests and the failures they add ----------------------------------------------
+    R = load(HERE / "numbers/retained.json")
+    ORIGINS = [("the writer's extra decoys on its own facts", "The writer built more decoys for its own facts than the catalog names"),
+               ("a decoy on a condition outside the brief", "The writer gave a decoy to a condition on a fact outside its brief"),
+               ("a fact in two briefs by the brief set's design", "A fact in two briefs by the brief set's design (who posted a message)"),
+               ("the variant builder: one variant per fact of a shared condition", "The variant builder: one variant per fact of a condition that carries several facts")]
+    rows4 = {o: {"tests": 0, **{f"{a}_{k}": 0 for a in ("qwen", "sol") for k in ("failed", "new", "repeated")}} for o, _ in ORIGINS}
+    for agent in ("qwen", "sol"):
+        T, U = R[agent]["tests"], R[agent]["units"]
+        retained_exposed = set()
+        for cid, v in T.items():
+            if v["kind"].startswith("denominator") and v["exposed"]:
+                retained_exposed |= {(v["domain"], f) for f in v["exposed"]}
+        retained_failed = {"absence": set(), "underspecified": set()}
+        for uid, v in U.items():
+            if v["kind"].startswith("denominator") and v["failed"]:
+                retained_failed[v["mode"]] |= {(v["domain"], f) for f in v["facts"]}
+        for cid, o in R["origin_of_excluded_muse_tests"].items():
+            if o not in rows4:
+                continue
+            v = T[cid]
+            if agent == "qwen":
+                rows4[o]["tests"] += 1
+            if v["exposed"] is None or not v["exposed"]:
+                continue
+            rows4[o][f"{agent}_failed"] += 1
+            new = any((v["domain"], f) not in retained_exposed for f in v["exposed"])
+            rows4[o][f"{agent}_new" if new else f"{agent}_repeated"] += 1
+        for uid, o in R["origin_of_excluded_muse_units"].items():
+            if o not in rows4:
+                continue
+            v = U[uid]
+            if agent == "qwen":
+                rows4[o]["tests"] += 1
+            if not v["failed"]:
+                continue
+            rows4[o][f"{agent}_failed"] += 1
+            new = any((v["domain"], f) not in retained_failed[v["mode"]] for f in v["facts"])
+            rows4[o][f"{agent}_new" if new else f"{agent}_repeated"] += 1
+    L.append("## Table 4. The by-product tests, and the failures they add\n")
+    L.append("Tests outside the denominator that arose as by-products of a legitimate attempt (a scenario built for its own brief). "
+             "A failure is \"new\" when no included test of the same kind (regular exposure, absence, underspecified) showed a failure "
+             "for that fact with that agent, \"repeated\" when one did. Sonnet's tests (the writer comparison) and the outdated first "
+             "version of the related-issue fact are not by-products and are not here.\n")
+    L.append("| By-product | Tests | Qwen: failed | Qwen: new | Qwen: repeated | Sol: failed | Sol: new | Sol: repeated |")
+    L.append("|---|---:|---:|---:|---:|---:|---:|---:|")
+    tot4 = Counter()
+    for o, label in ORIGINS:
+        r = rows4[o]; tot4.update(r)
+        L.append(f"| {label} | {r['tests']} | {r['qwen_failed']} | {r['qwen_new']} | {r['qwen_repeated']} | {r['sol_failed']} | {r['sol_new']} | {r['sol_repeated']} |")
+    L.append(f"| **All** | **{tot4['tests']}** | **{tot4['qwen_failed']}** | **{tot4['qwen_new']}** | **{tot4['qwen_repeated']}** | **{tot4['sol_failed']}** | **{tot4['sol_new']}** | **{tot4['sol_repeated']}** |")
     OUT_MD.write_text("\n".join(L) + "\n")
     json.dump({"filled": filled, "prescribed": PRESCRIBED, "runs": runs, "attempts": t3}, open(HERE / "numbers/tables.json", "w"), indent=1)
     print("\n".join(L))
