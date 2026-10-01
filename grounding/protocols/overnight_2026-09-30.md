@@ -447,3 +447,12 @@ section. Decisions that stand go to the [roadmap](roadmap.md); this is the recor
   reported earlier). Checking out the merge worktree printed Git LFS's "919 files that should have been pointers"
   (autogen_02/runs' *.jsonl under an LFS pattern added after they were committed): pre-existing, a warning only,
   for the PI's repository list.
+- 2026-10-01 09:5x (the lead, catching up): judge_qwen finished at 19:25 yesterday; merged as 931a4dcef6. The full
+  replay holds under the PI's afternoon condition (roadmap, Decisions 2026-09-30): the bar met on two independent
+  labelled passes with the same numbers, 98.6% agreement over all 2,115 executions, every policy decision and the
+  regular counts unchanged with Qwen's verdicts (one fact swapped). The lead's decision: later rounds are judged on
+  the self-hosted Qwen; Muse stays the reference for blind-label adjudication. Qwen's misses (7 real failures called
+  artifacts over 2,115) come from three gaps in the judge's inputs that the PI can close for either judge: the
+  Calendar replica notes do not say where a calendar's data owner shows; the judge's bundle hides a file's
+  uploader_display_name; the Slack notes say messages carry reactions when conversations.history returns none. A
+  new replica defect: the Linear replica ignores an issue filter on projectMilestone.
