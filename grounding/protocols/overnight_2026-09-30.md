@@ -460,7 +460,7 @@ section. Decisions that stand go to the [roadmap](roadmap.md); this is the recor
   section of 2026-09-30 (the Muse-only suite, Qwen as judge, the Qwen-writer sample, step 8) is marked withdrawn,
   and the lead's 09:5x reading of the judge replay as a decision is withdrawn with it; the replay's result stands as
   a result. Nothing had been run on the strength of either.
-- 2026-10-01 10:30–14:00 **the denominator, with the PI** (the PI's point: fix the denominator before any further
+- 2026-10-01 10:28–12:14 and on (commit times) **the denominator, with the PI** (the PI's point: fix the denominator before any further
   number). Settled: 255 catalog facts, 42 unservable, 213 servable; one packed probe, one absence and one
   underspecified test per fact; 152 boundary elements, 93 faithful, one test each; several-match a separate
   addition pending its own investigation (the 19 "shortcuts" are the wrong granularity, the 131 tests followed the

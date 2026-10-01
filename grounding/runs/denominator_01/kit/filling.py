@@ -48,7 +48,8 @@ def main() -> None:
     for b in load(RUNS / "completion_01/inputs/briefs_6b.json"):
         brief_of[b["scenario_id"]] = b["scenario_id"]
         if "generated again" in b["source"]:
-            retried_in_6b.add(b["scenario_id"])          # second attempt of a Phase 4 brief
+            retried_in_6b.add(b["scenario_id"])          # second attempt of a Phase 4 brief, a 6b scenario
+            attempt_of[b["scenario_id"]] = "muse_6b"
         else:
             attempt_of.setdefault(b["scenario_id"], "muse_6b")
     regen_second_draw = {"G4-SLK-18", "G4-LIN-30"}       # gen_04 (the lead's yes): a second attempt
@@ -153,6 +154,8 @@ def main() -> None:
         for sid, bid in brief_of.items():
             if sid in scenarios or sid in retried_in_6b or sid in regen_second_draw or attempt_of.get(sid) == "muse_regen":
                 cands[bid].append(sid)
+        for bid in brief_facts:
+            cands.setdefault(bid, [])                    # a brief whose only attempt was rejected
         out = {}
         for bid, sids in cands.items():
             order = []
@@ -249,7 +252,42 @@ def main() -> None:
                 "units_carrying_two_items": dict(shared),
                 "candidates_per_item": {k: dict(v) for k, v in hist.items()}, "examples": dict(examples),
                 "designated_tests": designated_tests,
-                "unfilled": {k: sorted(f"{d} {f}" for (d, f) in all_servable - v) for k, v in have.items() if k != "cover"}}
+                "unfilled": {k: sorted(f"{d} {f}" for (d, f) in all_servable - v) for k, v in have.items() if k != "cover"},
+                "unfilled_reasons": unfilled_reasons(chosen, have, briefs_failed),
+                "units_built_by_run": {f"{a} {m}": n for (a, m), n in sorted(Counter(
+                    (attempt_of.get(u["scenario"], "?"), u["mode"]) for u in units
+                    if u["scenario"] in chosen and u["why"] != "listed twice").items())},
+                "valid_units_by_run": {f"{a} {m}": n for (a, m), n in sorted(Counter(
+                    (attempt_of.get(u["scenario"], "?"), u["mode"]) for u in units
+                    if u["valid"] and u["scenario"] in chosen).items())}}
+
+    def unfilled_reasons(chosen, have, briefs_failed):
+        """Why an item is unfilled: its brief failed; a test exists on record but is left out (with the ruling); or no
+        test of that form was derived for the fact in the designated scenario."""
+        out = {}
+        failed_facts = {(d, f) for b in briefs_failed for (d, f) in brief_facts[b]}
+        for form in ("probe", "absence", "underspecified"):
+            for (d, f) in sorted(all_servable - have[form]):
+                key = f"{form} {d} {f}"
+                if (d, f) in failed_facts and not any((d, f) in brief_facts[brief_of.get(s, s)] for s in chosen):
+                    out[key] = "the brief failed"; continue
+                left_out = []
+                if form == "probe":
+                    for index, folder in SUITES:
+                        doc = load(index); rows = doc["tests"] if isinstance(doc, dict) else doc
+                        for m in rows:
+                            if isinstance(m, str) or m["scenario"] not in chosen or m["form"] == "cover" or m["domain"] != d:
+                                continue
+                            case = load(folder / m["domain"] / f"{m['case_id']}.json")
+                            if any(base_fact(d, c["requirement"]) == f for ref in case["references"] for c in ref.get("claims", [])):
+                                why = rulings.test_exclusion(case)
+                                left_out.append(f"{m['case_id']}: {why}" if why else f"{m['case_id']}: valid single-decoy probe, no packed form")
+                else:
+                    for u in units:
+                        if u["mode"] == form and u["scenario"] in chosen and u["domain"] == d and f in u["facts"] and not u["valid"]:
+                            left_out.append(f"{u['unit']}: {u['why']}")
+                out[key] = "; ".join(left_out) if left_out else "no test of this form on record for the fact in the designated scenario"
+        return out
 
     results = {}
     for rule in ("first", "first+retry", "final", "final+retry"):

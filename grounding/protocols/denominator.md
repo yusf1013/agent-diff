@@ -19,7 +19,7 @@ denominator. **Without several-match the denominator is 732 cases.**
 |---|---:|---:|---:|---|
 | Box | 60 | 0 | 60 | — |
 | Calendar | 40 | 6 | 34 | a calendar's sharing rules (the rule's role, scope type, scope value and calendar) can be listed only with the owner role; a recurring series (the occurrence's series, the derived occurrence) is listed only when the window covers its first start |
-| Linear | 121 | 36 | 85 | every `projects` query errors and a project's lead cannot be read (the 20 project, project-status, project-relation and initiative-to-project facts); the `parent` filter is ignored (an issue's parent, as hierarchy and as binding); initiatives, notifications and organization invites exist "with varying completeness" (13 facts) |
+| Linear | 121 | 36 | 85 | every `projects` query errors and a project's lead cannot be read (15 facts: the project, project-status, project-relation and initiative-to-project facts); the `parent` filter is ignored (2: an issue's parent, as hierarchy and as binding); initiatives, notifications and organization invites exist "with varying completeness" (19 facts) |
 | Slack | 34 | 0 | 34 | — |
 | **All** | **255** | **42** | **213** | |
 
@@ -65,8 +65,8 @@ Trials (three per test) are metadata, not budget.
   derive. The number of covers is a sampling choice. The 89 briefs on record are kept as generated (the PI,
   2026-10-01), with their shortcomings on record: two grouping rules (38 briefs grouped by hand, size free; 51 by a
   script, one entity's facts in catalog order, three per brief, a fixed size never put to the PI); 22 single-fact
-  briefs, whose requests meet the scope rule only where the writer added conditions; 15 briefs generated twice and
-  34 three times (see "How it is filled"); 12 facts claimed by writers beyond their briefs, so 8 facts earn credit in
+  briefs, whose requests meet the scope rule only where the writer added conditions; the 18 reproduction briefs generated twice (Sonnet, then Muse) and the 16 prospective briefs three times (Sonnet
+  v1, v2, then Muse), 3 briefs regenerated after a failed attempt and 2 given a second draw (see "How it is filled"); 12 facts claimed by writers beyond their briefs, so 8 facts earn credit in
   two or three scenarios; one Slack fact (who posted a message) in two briefs.
 - **Single-decoy probes of a multi-decoy fact.** The derivation also makes one probe per decoy; where a fact has
   two or more decoys those are spares beside the packed probe, reported apart (204 in the frozen pipeline's output).
@@ -90,22 +90,27 @@ no item may hold redundant copies, and no item may get more attempts than anothe
 | 18 reproduction briefs (the design study's hand-written scenarios' fact sets) | Sonnet, method v1 (autogen_01 arm R, 2026-09-26): 18 accepted, 1 invalid at review | Muse, the frozen pipeline (regen_01, 2026-09-30): 18 accepted | — |
 | 16 prospective briefs (chosen by hand) | Sonnet, method v1 (arm P): 15 accepted; the Linear team brief (key, description, privacy) rejected | Sonnet, method v2 (arm P v2): 16 accepted | Muse, the frozen pipeline (regen_01): 14 accepted at the first draw; the Slack channel brief (member count, creation date, workspace role) accepted at a second draw; the Linear team brief rejected twice |
 | 32 briefs drawn by rule, orders 1–32 | Muse, the frozen pipeline (autogen_02 Phase 4, 2026-09-27): 29 accepted; the Box file-location brief (parent folder, collections) and the Linear issue-count brief rejected, the Calendar event-visibility brief lost to a Muse outage | Muse (completion_01, 2026-09-28), the three generated again: the Box and Calendar briefs accepted, the Linear issue-count brief rejected again | — |
-| 19 briefs drawn by rule, orders 33–51, and 4 briefs for the development briefs' 12 facts | Muse, the frozen pipeline (completion_01): 21 accepted; the Box task brief (item, creator, binding, assignment count) and the Linear label brief (group flag, name, team) rejected, never retried | — | — |
+| 19 briefs drawn by rule, orders 33–51, and 4 briefs for the development briefs' 12 facts (those 12 facts had been generated twice before, in autogen_01's development rounds under the unfrozen method, never counted) | Muse (completion_01): 21 accepted; the Box task brief (item, creator, binding, assignment count) and the Linear label brief (group flag, name, team) rejected, never retried | — | — |
 | 1 new brief (the related issue's direction) | Muse (regen_01): accepted | — | — |
 
 Inside an attempt the writer may answer the code checks up to 6 times and the cold reader twice (the orchestrator's
-limits since 2026-09-25; autogen_01's plan text said 4); a Muse outage retry is the same attempt. The Sonnet arms
-ran under method v1 and v2 of the same orchestrator.
+limits, unchanged since 2026-09-25; autogen_01's plan text said 4); a Muse outage retry is the same attempt. The
+Sonnet arms ran under method v1 and v2 of the same orchestrator. **The three Muse runs are not one frozen pipeline:**
+they share the orchestrator, the derivation and the checks frozen at tag `grounding-freeze-01` (2026-09-27; Phase
+4's suite was rebuilt from its recorded scenarios with the frozen kit), but Phase 4's writer ran on 2026-09-27
+00:05–01:27 EDT, before that day's writer-prompt fix ("the writer matches the examples' standard, not their
+content; the Box example loses its test-only hint", 20:24), and completion_01 (09-28) and the regeneration (09-30)
+after it: the Muse pipeline at two dated versions of the writer prompt.
 
 **The one-attempt rules compared** (the kit's `numbers/filling.json`; "filled" = items with a test valid under the
 rulings as they stand, whenever the ruling was made):
 
 | Rule | Scenarios | Briefs with no usable scenario | Probe items of 213 | Absence of 213 | Underspecified of 213 | Boundary of 93 | **Filled of 732** |
 |---|---:|---|---:|---:|---:|---:|---:|
-| **A. The frozen pipeline, one attempt, plus one retry after a failed attempt** (Muse for every brief; Sonnet's attempts become the writer comparison) | 86 | 2: the Linear team brief, the Linear issue-count brief | 195 | 187 | 161 | 90 | **633** |
-| A without the retry | 83 | 4 | 185 | 179 | 154 | 89 | 607 |
-| B. The earliest attempt, plus one retry (Sonnet v1 for the 34 hand-grouped briefs, Muse for the rest) | 86 | 2: the label-parent brief (invalid), the Linear issue-count brief | 198 | 191 | 164 | 90 | 643 |
-| B without the retry | 83 | 5 | 188 | 182 | 156 | 89 | 615 |
+| **A. The Muse pipeline, one attempt, plus one retry after a failed attempt** (Muse for every brief; Sonnet's attempts become the writer comparison) | 86 | 4: the Linear team brief, the Linear issue-count brief, the Box task brief, the Linear label brief | 195 | 187 | 161 | 90 | **633** |
+| A without the retry | 83 | 6 (the four, the Box file-location brief, the Calendar event-visibility brief) | 185 | 179 | 154 | 89 | 607 |
+| B. The earliest attempt, plus one retry (Sonnet v1 for the 34 hand-grouped briefs, Muse for the rest) | 86 | 4: the label-parent brief (invalid at review), the Linear issue-count brief, the Box task brief, the Linear label brief | 198 | 191 | 164 | 90 | 643 |
+| B without the retry | 83 | 7 | 188 | 182 | 156 | 89 | 615 |
 | Every attempt on record (production, redundant) | 135 | — | 202 | 197 | 178 | 90 | 667 |
 
 The PI has not yet chosen the rule (2026-10-01). Under either rule the uniformity gap is the same: the two
@@ -126,14 +131,42 @@ underspecified test can fill two items when its dropped condition carries two fa
 |---|---:|---:|---:|---:|---:|
 | Box | 54 of 60 | 52 of 60 | 46 of 60 | 20 of 21 | 172 of 201 |
 | Calendar | 33 of 34 | 30 of 34 | 26 of 34 | 23 of 24 | 112 of 126 |
-| Linear | 77 of 85 | 76 of 85 | 68 of 85 | 19 of 20 | 240 of 275 |
-| Slack | 31 of 34 | 29 of 34 | 21 of 34 | 28 of 28 | 109 of 130 |
+| Linear | 77 of 85 | 76 of 85 | 68 of 85 | 20 of 20 | 241 of 275 |
+| Slack | 31 of 34 | 29 of 34 | 21 of 34 | 27 of 28 | 108 of 130 |
 | **All** | **195** | **187** | **161** | **90** | **633 of 732** |
 
 (Boundary per service: the four invalid round-1 requests are one each in Slack, Calendar, Box and Linear; Linear's
-is the one restored by the retry.) The unfilled items are listed in `numbers/filling.json` (`unfilled`), by reason:
-the brief failed; the scenario exists but the fact's probe lost its trap without the target or holds a near miss
-ruled flawed; the fact's condition cannot be dropped under the scope rule or the writer declined.
+is the one restored by the retry.) The 99 unfilled items (`numbers/filling.json`, `unfilled_reasons`): 33 in the four failed briefs (11 facts × 3
+forms); 25 with a test on record that the rulings leave out (a flawed near miss or a variant read as invalid: 3
+probes, 11 absence, 11 underspecified); 36 with no test of that form derived for the fact (4 probes: a comment's
+file and a milestone's project lose their trap without the target, a calendar-list entry's selected flag and a
+message's text got no packed probe; 4 absence twins; 30 underspecified: the condition could not be dropped under the
+scope rule, the writer declined, or code found it not derivable); 2 probes whose only valid form is a single-decoy
+probe of a two-decoy fact (a hub item's file, a message's reactions); and 3 boundaries whose request the cold reader
+rejected.
+
+**The funnel under rule A** (brief attempts to valid tests to items; the regular columns from report_01's
+`numbers/generator.json` and regen_01's `eval/funnel.json`, the units from this kit):
+
+| Stage | Phase 4 (2026-09-27) | completion_01 (2026-09-28) | regeneration (2026-09-30) | All |
+|---|---:|---:|---:|---:|
+| Briefs, first attempts | 32 | 23 | 35 | 90 |
+| Retries after a failed attempt | — | 3 (Phase 4's failures) | 2 (second draws) | 5 (2 owed) |
+| Writer versions per accepted scenario, median and max | 2, 7 | 2, 3 (the outage retry batch 2, 7) | 2, 9 | |
+| Accepted scenarios | 29 | 21 + 2 retried | 33 + 1 retried | 86 |
+| Without a scenario | 2 rejected, 1 outage (all three retried) | 2 rejected, never retried; 1 retry rejected | 2 rejected; 1 retry rejected | 4 briefs |
+| Reviewed usable | 29 | 23 | 34 | 86 |
+| Derived regular candidates (cover / probe / fact probe) | 29 / 99 / 31 | 23 / 93 / 22 | 34 / 135 / 47 | 513 |
+| Dropped by the witness check | 1 | 1 | 4 | 6 |
+| Left out by the rulings, before the runs / after judgment | 0 / 0 | 1 / 2 | 7 / 0 | 10 |
+| Valid regular tests | 158 | 134 | 205 | 497 = 86 covers + 205 packed probes + 204 single-decoy spares + 2 unpacked |
+| Absence units built → valid | 61 → 60 | 69 → 66 | 78 → 71 | 208 → 197 |
+| Underspecified units built → valid | 51 → 50 | 51 → 44 | 64 → 58 | 166 → 152 |
+| Boundary requests → valid | | | | 93 → 89, + 1 retry = 90 |
+| **Items filled, one test per item** | | | | **195 probes + 187 absence + 161 underspecified + 90 boundaries = 633 of 732** |
+
+Two of the rulings after judgment came from the blind review of 2026-09-30 (two Box near misses, in completion_01's
+scenarios); under the PI's rule an invalid test is invalid whenever it shows.
 
 ## The agents under test, on the filled items (as of 2026-10-01)
 
