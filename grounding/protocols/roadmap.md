@@ -100,6 +100,37 @@ the final runs use one frozen version.
    test in the suite, then verified by re-running the Calendar tests and the clocked tests on a day other than
    their original one. Owner: a session on a brief; the design is discussed with the PI before it is applied.
 
+## Decisions (2026-10-01, the PI: the denominator comes first)
+
+The methodology prescribes a fixed number of tests from the domain model alone; every report number is read
+against that denominator, which is independent of any generation attempt or writer.
+
+- **Facts: 255 in the catalog, 42 unservable on the replicas, 213 servable.** The one number known for sure.
+- **Briefs (covers): the 89 as generated are kept, as a generation-side matter** (they are the vehicle by which the
+  facts are covered, and the generation is done). Their shortcomings are on record:
+  - two grouping rules: 38 briefs grouped by hand (the 18 reproduction briefs copy the earlier design study's
+    hand-written scenarios, size free, as the PI approved; 16 prospective and 4 development briefs chosen by hand),
+    51 by a script's rule (one entity's facts in catalog order, three per brief) whose fixed size was never put to
+    the PI;
+  - 22 briefs hold a single fact, so their requests meet the scope rule (a multi-condition request) only where the
+    writer added conditions on its own;
+  - 15 briefs were generated twice (method v1 and v2) and both scenarios sit in the suite; the regenerated half
+    adds a third scenario to 34 briefs;
+  - the writers claimed 12 facts beyond their briefs, so 8 facts earn credit in two or three briefs; one Slack
+    fact (who posted a message) is in two briefs;
+  - 3 briefs produced no accepted scenario and one scenario is invalid: 9 servable facts have no cover.
+- **Probes: one per fact, holding all of the fact's decoys: 213.** The single-decoy probes of multi-decoy facts
+  (212 in the current suite) are a separate set, reported apart, not part of the denominator.
+- **Absence: 213. Underspecified: 213.** One test per fact in each mode. The scope rule, two facts sharing one
+  condition, the writer declining a rewording, dropped probes and the rulings are generation-side matters and do
+  not touch the denominator.
+- **Production counts are not denominators:** 998 cases, 254 cover–fact slots, 255 absence units, 204 covered
+  facts, 170 facts with an underspecified unit are what the writers produced, with redundancy.
+- **Capability boundary: 152 elements derived from the catalog (the write side of each attribute and relation), 93
+  faithful on the replicas; one test per faithful element: 93.** The 152 are an addition to the domain-model input.
+- **Several-match: the coverage space is under investigation** (the 19 "shortcuts" are the wrong granularity; the
+  131 tests followed the covers, not a space).
+
 ## Withdrawn: "Decisions (2026-09-30, the PI's afternoon review)"
 
 *The PI, 2026-10-01: "I gave no decisions yesterday. That was a misunderstanding." The four items below and step 8
