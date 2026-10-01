@@ -327,6 +327,41 @@ number for the fact, or by another scenario's test) and 2 for Sol (a cycle's nam
 Between the third and fourth, 22 for Qwen and 1 for Sol: the covers' and single-decoy probes' exposures. Policy
 cells are unchanged by any of this (they have no tracked spares).
 
+**Every valid test on record, retained or excluded, with each agent's failures** (`runs/denominator_01/kit/retained.py`
+→ `numbers/retained.json`; a regular test "with a failure" exposed a fact in some trial; a policy test with a failing
+trial; boundary: the automated study's round 1 on the bare toy loop). Three packed probes serve two facts each (one
+decoy claimed for two facts), so 192 tests fill the 195 packed items and 124 the 127 counted single-decoy items;
+142 underspecified tests fill 161 items.
+
+| Tests | On record | Qwen: run | Qwen: with a failure | Sol: run | Sol: with a failure |
+|---|---:|---:|---:|---:|---:|
+| **In the denominator** | | | | | |
+| Covers | 86 | 86 | 10 | 85 | 2 |
+| Packed probes | 192 | 192 | 61 | 189 | 10 |
+| Single-decoy probes, counted | 124 | 124 | 44 | 120 | 4 |
+| Absence tests | 187 | 187 | 154 | 184 | 31 |
+| Underspecified tests | 142 | 142 | 111 | 138 | 8 |
+| Boundary tests (bare toy loop, Qwen only) | 90 | 89 | 49 | 0 | 0 |
+| **Retained** | **821** | **820** | **429** | **716** | **55** |
+| **Remaining, outside the denominator** | | | | | |
+| Sonnet-written covers | 48 | 48 | 4 | 0 | 0 |
+| Sonnet-written packed probes | 49 | 49 | 10 | 0 | 0 |
+| Sonnet-written single-decoy probes | 174 | 174 | 47 | 0 | 0 |
+| Muse packed probes of a fact already filled (another scenario) | 5 | 5 | 1 | 5 | 0 |
+| Muse single-decoy probes beyond the counted ones | 90 | 90 | 23 | 88 | 4 |
+| Sonnet-written absence tests | 116 | 116 | 101 | 0 | 0 |
+| Sonnet-written underspecified tests | 97 | 97 | 72 | 0 | 0 |
+| Muse absence tests of a fact already filled | 10 | 10 | 9 | 10 | 2 |
+| Muse underspecified tests of a fact already filled | 10 | 10 | 6 | 10 | 0 |
+| Duplicate underspecified tests (same request as another) | 3 | 2 | 2 | 1 | 0 |
+| **Excluded** | **602** | **601** | **275** | **114** | **6** |
+
+Sol's "run" falls short of "on record" by the clocked Linear brief's tests (its login's expiry). Facts exposed at
+detect@3 by the retained regular tests: Qwen 83, Sol 11; by the excluded Muse regular tests: Qwen 22, of which
+5 are not among the retained; Sol 4, of which 2 not among the retained; the Sonnet-written tests expose
+18 facts for Qwen that no Muse test exposes. Policy failing trials over usable trials, retained: Qwen
+639/983, Sol 86/964.
+
 ## The 99 unfilled items, in full (2026-10-01 afternoon)
 
 **Four briefs produced no scenario (33 items).** Each attempt ran the writer, the code checks, the replica
