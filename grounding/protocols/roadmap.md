@@ -128,8 +128,12 @@ against that denominator, which is independent of any generation attempt or writ
   facts, 170 facts with an underspecified unit are what the writers produced, with redundancy.
 - **Capability boundary: 152 elements derived from the catalog (the write side of each attribute and relation), 93
   faithful on the replicas; one test per faithful element: 93.** The 152 are an addition to the domain-model input.
-- **Several-match: the coverage space is under investigation** (the 19 "shortcuts" are the wrong granularity; the
-  131 tests followed the covers, not a space).
+- **Several-match: a separate addition, its coverage space to be settled by its own investigation** (the 19
+  "shortcuts" are the wrong granularity; the 131 tests followed the covers, not a space; a hiding-place space of
+  about 60 was sketched on 2026-10-01 and not adopted).
+- **The denominator without several-match: 732 cases** = 213 regular probes + 213 absence + 213 underspecified + 93
+  boundaries. Cover cases are the sampling vehicle (natural requests, conditions and near misses from which the
+  probes and policy tests derive) and are not counted. Every report number is read against these.
 
 ## Withdrawn: "Decisions (2026-09-30, the PI's afternoon review)"
 
