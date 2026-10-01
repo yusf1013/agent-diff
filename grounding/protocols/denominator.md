@@ -1,5 +1,7 @@
 # The denominator: the tests the methodology prescribes
 
+*The three summary tables (the denominator filled of prescribed; OpenClaw runs and failures on the filled items; the attempts) are in [../denominator_tables.md](../denominator_tables.md), built by `runs/denominator_01/kit/tables.py`.*
+
 *The PI's decisions of 2026-10-01 (the discussion is logged in [overnight_2026-09-30.md](overnight_2026-09-30.md)
 and the roadmap's "Decisions (2026-10-01)"). Every reported number is read against the counts here. They come from
 the domain model and the replicas alone; no generation attempt, writer, retry or run changes them. The kit that
