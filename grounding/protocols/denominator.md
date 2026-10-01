@@ -285,6 +285,48 @@ remaining drawn briefs, the 4 development-fact briefs and the 3 retries of Batch
   with the catalog alternative it realizes): **227 filled** (Box 60, Calendar 40, Linear 93, Slack 34), from 297
   built. Kit: `runs/denominator_01/kit/single_decoy.py` → `numbers/single_decoy.json`.
 
+**The denominator with the two tracked forms, per service (2026-10-01):**
+
+| Service | Covers | Packed probes | Single-decoy probes | Absence | Underspecified | Boundary | Total |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Box | 21 | 60 | 80 | 60 | 60 | 21 | 302 |
+| Calendar | 16 | 34 | 48 | 34 | 34 | 24 | 190 |
+| Linear | 35 | 85 | 112 | 85 | 85 | 20 | 422 |
+| Slack | 18 | 34 | 46 | 34 | 34 | 28 | 194 |
+| **All** | **90** | **213** | **286** | **213** | **213** | **93** | **1,108** |
+
+The 732 of the main denominator are the four right-hand columns' 213 + 213 + 213 + 93; covers and single-decoy
+probes are tracked beside them. **Filled by the adopted set:**
+
+| Service | Covers | Packed probes | Single-decoy probes | Absence | Underspecified | Boundary | Total |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Box | 20 | 54 | 60 | 52 | 46 | 20 | 252 |
+| Calendar | 16 | 33 | 40 | 30 | 26 | 23 | 168 |
+| Linear | 32 | 77 | 93 | 76 | 68 | 20 | 366 |
+| Slack | 18 | 31 | 34 | 29 | 21 | 27 | 160 |
+| **All** | **86** | **195** | **227** | **187** | **161** | **90** | **946** |
+
+One test can fill a packed-probe item and a single-decoy item at once (a fact with one decoy: its single probe is
+its packed form); 127 of the 227 counted single-decoy probes stand beside a packed probe, the other 100 are it.
+
+**What leaving out the rest costs, with the tracked forms counted** (`numbers/outcomes.json`, "tracked_denominators_set":
+the chosen scenarios' covers, the designated packed probes, and per fact its single-decoy probes in claim order up to
+the catalog's prescribed number):
+
+| Set of tests | Tests | Qwen, facts exposed in any of 3 trials | Qwen, first trial | Sol, any of 3 | Sol, first trial |
+|---|---:|---:|---:|---:|---:|
+| Everything on record, Sonnet's tests included | 768 | 106 | 78 | — | — |
+| Every Muse-written valid test | 497 | 88 | 62 | 13 | 12 |
+| The tracked denominators: covers, packed probes, counted single-decoy probes | 408 | 83 | 56 | 11 | 11 |
+| The packed probes alone | 195 | 61 | 35 | 10 | 10 |
+
+Between the first two rows Qwen loses 18 facts exposed only by Sonnet-written tests (the writer comparison, outside
+the suite). Between the second and third, 5 for Qwen (a folder's creation date and item count, an event's start,
+a user's status label, who posted a message: exposed only by a single-decoy probe beyond the catalog's prescribed
+number for the fact, or by another scenario's test) and 2 for Sol (a cycle's name, the related issue's direction).
+Between the third and fourth, 22 for Qwen and 1 for Sol: the covers' and single-decoy probes' exposures. Policy
+cells are unchanged by any of this (they have no tracked spares).
+
 ## The 99 unfilled items, in full (2026-10-01 afternoon)
 
 **Four briefs produced no scenario (33 items).** Each attempt ran the writer, the code checks, the replica

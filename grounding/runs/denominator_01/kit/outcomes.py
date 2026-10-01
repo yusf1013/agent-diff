@@ -205,6 +205,20 @@ def main():
         des = exposure(designated_probe_ids)
         muse = exposure(valid_muse)
         everything = exposure(valid_all)
+        # the tracked denominators: the chosen scenarios' covers, the designated packed probes, and per fact its
+        # single-decoy probes in claim order up to the catalog's prescribed number (outcome-blind)
+        from grounding.runs.denominator_01.kit.single_decoy import prescribed as _prescribed
+        tracked_ids = set(designated_probe_ids)
+        for cid, meta in test_meta.items():
+            if meta["form"] == "cover" and meta["scenario"] in chosen_scenarios:
+                tracked_ids.add(cid)
+        for key, sid in designated.items():
+            if not key.startswith("probe "):
+                continue
+            _, d, f = key.split(" ", 2)
+            singles = sorted(cid for cid in rows_by_scenario[sid] if test_meta[cid]["form"] == "probe" and f in test_meta[cid]["facts"])
+            tracked_ids.update(singles[:_prescribed(d, f)])
+        tracked = exposure(tracked_ids)
         lost = sorted(f"{d} {f}" for (d, f) in everything["_f3"] - des["_f3"])
         # why each lost fact is lost: exposed only by Sonnet tests / only by covers / only by spare probes
         why = {}
@@ -242,6 +256,9 @@ def main():
             "designated_items_ran": ran_items,
             "items_exposed_detect3": len(item_hits3), "items_exposed_detect1": len(item_hits1),
             "designated_probes": {k: v for k, v in des.items() if not k.startswith("_")},
+            "tracked_denominators_set": {k: v for k, v in tracked.items() if not k.startswith("_")},
+            "facts_lost_from_all_muse_to_tracked": sorted(f"{d} {f}" for (d, f) in muse["_f3"] - tracked["_f3"]),
+            "facts_lost_from_tracked_to_designated": sorted(f"{d} {f}" for (d, f) in tracked["_f3"] - des["_f3"]),
             "all_muse_tests": {k: v for k, v in muse.items() if not k.startswith("_")},
             "everything_on_record": {k: v for k, v in everything.items() if not k.startswith("_")},
             "facts_lost_from_everything_to_designated": lost, "why_lost": why, "lost_by_kind": dict(lost_by_kind),
@@ -294,7 +311,8 @@ def main():
     (HERE / "numbers/outcomes.json").write_text(json.dumps(result, indent=1, default=sorted) + "\n")
     for agent, r in result["agents"].items():
         print(f"\n== {agent}: designated probes ran {r['designated_items_ran']}; items exposed @3 {r['items_exposed_detect3']}, @1 {r['items_exposed_detect1']}")
-        print("   designated:", r["designated_probes"]); print("   all Muse tests:", r["all_muse_tests"]); print("   everything:", r["everything_on_record"])
+        print("   designated:", r["designated_probes"]); print("   tracked set (covers + packed + capped singles):", r["tracked_denominators_set"]); print("   all Muse tests:", r["all_muse_tests"]); print("   everything:", r["everything_on_record"])
+        print("   lost all-Muse -> tracked:", r["facts_lost_from_all_muse_to_tracked"])
         print("   lost (everything -> designated):", len(r["facts_lost_from_everything_to_designated"]), r["lost_by_kind"])
         print("   replaced first-attempt statuses:", r["replaced_first_attempt_statuses"], "| voided trials in designated tests:", r["designated_tests_with_a_voided_trial"], r["voided_trial_reasons"])
         print("   lost (all Muse -> designated):", r["facts_lost_from_all_muse_to_designated"])
