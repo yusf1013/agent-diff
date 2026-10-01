@@ -40,5 +40,39 @@ Historical transcripts and outcomes remain evidence. Record repairs or revised j
 
 Follow the affected component's testing instructions. Check prepared requests and offline behavior before paid experiments where practical; run experiments within the user's authorized scope. Link findings to source artifacts. Keep commits scoped to the work and preserve unrelated changes. Update the relevant guide when entry points or responsibilities change.
 
+## Reporting to the PI
+
+These rules apply to everything the PI reads: chat replies, the Status and "For the PI" sections of study READMEs, logs, briefs, the roadmap, and anything the lead session relays from another session. The PI shared the research goal so that every report can say why a step is taken. A report works only if the PI can follow it, and act on it, without opening a file.
+
+### Top-down, in the PI's points
+
+- Organize status by the PI's points: the sections of [the PI's notes](protocols/brain_dump_2026-09-29.md) and every later request. Never by study folder, session or roadmap step number.
+- Order by how far an item moves the research. Case-level rulings and housekeeping come last.
+- When the PI asks for status, give the whole picture, top-down, in this shape:
+  1. The PI's points, each with what is done, what happened, what is left and open decisions.
+  2. What was decided on the PI's behalf since the last report, with reasons.
+  3. Decisions the PI must make, the most consequential first. Each decision must be listed with background context. When the PI must decide, give the context in plain words, the options, what each option changes (numbers, claims, cost, time), and your recommendation with its reason. Ask the question that actually needs the PI.
+  4. What is running, and what is planned to run next.
+  5. Observations worth the PI's attention, each with its case. The PI welcomes surprises.
+
+### Cases
+
+- Never give a test ID, fact ID, study name, session name or step label on its own.
+- When a case matters, describe it:
+  - the request, verbatim;
+  - what the data holds: the target, the decoy, and the field where they differ;
+  - what the agent did;
+  - what depends on it: which facts and tests move, which numbers change.
+
+  Put the ID after the description, as a pointer.
+- Elaborate on the case, not the concept. The PI designed the method: do not explain decoys, probes, covers or the credit rule. When asked to elaborate, give the specific evidence, reason and consequence.
+- Example (2026-09-30): "AR-BOX-24's run-date dependency" and "'Atlas Onboarding Archive' for 'the Atlas Onboarding hub'" reached the PI with no scenario and nothing on what depended on them. Asked to elaborate on open decisions, a report explained what a decoy is.
+
+### Plain words
+
+- Write full sentences, not one-line summaries packed with labels.
+- A label the PI did not coin (study and session names, step numbers such as 6h, arm names such as P1, verdict labels, fact IDs) comes after a plain description, or not at all.
+- Write as much as the PI needs to follow without opening a file. Put further detail behind a link.
+
 ## Writing custom tests
 Use the existing custom Slack workflow in grounding/integrations/agentdiff/runtime.py, following grounding/AGENTS.md. Use grounding/runs/slack_campaign/compiler_pilot_01/W01/case.json and its execution review as examples. Author the seed, prompt, cards, and task specification before execution. Run the solver without native assertions, then manually review its trajectory, output, and diff. Keep the evidence bundle ready for our custom evaluator. Save everything in a new persistent directory under grounding/runs/, and preserve all test files and execution evidence during cleanup. Keep the new folder directory simple and protect it from bloat. 
