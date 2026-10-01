@@ -456,3 +456,7 @@ section. Decisions that stand go to the [roadmap](roadmap.md); this is the recor
   Calendar replica notes do not say where a calendar's data owner shows; the judge's bundle hides a file's
   uploader_display_name; the Slack notes say messages carry reactions when conversations.history returns none. A
   new replica defect: the Linear replica ignores an issue filter on projectMilestone.
+- 2026-10-01 10:3x the PI: "I gave no decisions yesterday. That was a misunderstanding." The roadmap's afternoon
+  section of 2026-09-30 (the Muse-only suite, Qwen as judge, the Qwen-writer sample, step 8) is marked withdrawn,
+  and the lead's 09:5x reading of the judge replay as a decision is withdrawn with it; the replay's result stands as
+  a result. Nothing had been run on the strength of either.
