@@ -477,3 +477,15 @@ section. Decisions that stand go to the [roadmap](roadmap.md); this is the recor
   record (22 of the 27 lost facts were exposed only by a single-decoy probe beside the packed one); Sol 10 against
   13; every policy decision unchanged on the designated units. The 99 unfilled items by cause and the funnel in
   plain stages are in the same section (`runs/denominator_01/kit/outcomes.py`).
+- 2026-10-01 evening **the dates investigation** (the PI's request): [dates_01](../runs/dates_01/README.md). The writers
+  of Box, Linear and Slack were told nothing about the current date (the Calendar writer is told it is June 17, 2018,
+  the replica's built-in day); the October 15 of the clocked Linear scenario is the sibling-field lure for a due date,
+  not a belief about today. OpenClaw tells the agent only the time zone; the date comes from the message timestamp,
+  which the fake clock shifts; bash, files and HTTP headers keep the real clock. Inventory of the 86 scenarios: all
+  carry dates, 31 queries filter on one, 19 request date phrases (all inside the writer's conditions) plus one
+  content date, 13 weekday words, 2 day-dependent words, no record created after its run clock. A whole-week shift
+  of every date passes the reference check and reproduces the derivation for 86 of 86 scenarios at three shifts.
+  In the numbers: the 15 Sol items not run; the real clock read in 13 + 10 Qwen and 2 Sol trials; Qwen's reasoning
+  took the year for 2025/2026 in 40 of 657 Calendar trials (22 judged failures; 7 of 108 exposing trials; no fact
+  rests on them alone). Recommendation: render each test's dates to the run week at environment creation, no agent
+  clock; first action: shift the clocked Linear scenario −4 weeks and run its 16 cases on Sol (needs the PI's go).

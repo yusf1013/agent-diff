@@ -87,7 +87,13 @@ the final runs use one frozen version.
      - **Runs:** on OpenClaw, compared under fact_coverage_02's decision D5.
    - **6e. Reports:** OpenClaw for first-time readers; the system (generation and judging); the baselines.
 
-8. **Dates that never go stale (recorded 2026-09-30 as an investigation; withdrawn with the section below: not decided by the PI).** The PI's question: *how can a test that depends on
+8. **Dates that never go stale.** Asked for by the PI on 2026-10-01 and investigated the same day:
+   [dates_01](../runs/dates_01/README.md). Finding: the agent-clock shift broke Sol's login (15 items not run), leaked the
+   real clock in a few trials, and set a 2018 world against the model's prior in 40 Qwen Calendar trials (no fact's
+   exposure rests on them); the writers were never told a current date. The proper fix, prototyped mechanically on all
+   86 scenarios: render each test's dates to the run week at environment creation (whole-week shift of seed, query,
+   witnesses and request phrases bound by the writer's conditions; Calendar's replica now follows), no agent clock.
+   The PI's decision is pending. The earlier text of this step (2026-09-30, withdrawn as a decision):** The PI's question: *how can a test that depends on
    dates be right on any day it is run, without adding overhead to the LLMs in the pipeline?* Today every date in a
    scenario is absolute and the test runs the agent under a shifted clock (step 3's "dates are controlled on the
    test side"), which fails wherever the agent's process cannot be back- or forward-dated: the 16 G4-LIN-08 tests
