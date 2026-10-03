@@ -471,8 +471,11 @@ def run_attempt(case: dict, attempt: Path, *, harness: str, backend: str, databa
 
         root.mkdir(parents=True)
         curl_shim(root / "bin" / "curl", backend_url, env.environmentId)
-        fake_now = oc.case_clock(case)
+        case, dates_info = oc.for_run(case, attempt)   # discontinued clock shift: the test's dates are rendered
+        fake_now = None
         proc_env, clock = base_env(root, domain, fake_now)
+        if dates_info:
+            proc_env["TZ"] = dates_info["zone"]
         spec = claude_setup(root, backend, model, effort) if harness == "claude" else codex_setup(root, backend, model, effort)
         if fake_now is not None and harness == "claude":
             clock.update(shift_clock(proc_env, fake_now, shared_login=backend == "plan"))

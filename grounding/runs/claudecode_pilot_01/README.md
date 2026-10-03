@@ -105,7 +105,7 @@ Parts (the lead's assignment):
 |---|---|
 | [backend.py](backend.py) | One attempt through `claude -p`, with OpenClaw's `run_attempt` contract |
 | [run.py](run.py) | The runner: openclaw_eval_01's selection, trials and output layout, with this backend |
-| [clock/fakeclock.c](clock/fakeclock.c) | The LD_PRELOAD wall-clock shift (from harness_scout_01). **Discontinued (the PI, 2026-10-03): shifting the agent's clock is a severe anti-pattern; no new run may use it** ([grounding/AGENTS.md](../../AGENTS.md), "Dates: never change the agent's clock"; the replacement: [dates_02](../dates_02/README.md)) |
+| [clock/fakeclock.c](clock/fakeclock.c) | The LD_PRELOAD wall-clock shift (from harness_scout_01). **Discontinued (the PI, 2026-10-03): shifting the agent's clock is a severe anti-pattern; no longer applied** ([grounding/AGENTS.md](../../AGENTS.md), "Dates: never change the agent's clock"); the backend renders templated tests instead ([dates_02](../dates_02/README.md)) |
 | [eval/blind_pilot_01.json](eval/blind_pilot_01.json) | The pilot's blind list: all 32 trials, fixed before the run |
 | [eval/labels_pilot_01.json](eval/labels_pilot_01.json) | My labels, written before any verdict ([label_view.py](eval/label_view.py), [add_label.py](eval/add_label.py)) |
 | [eval/judge_trials_pilot_01.json](eval/judge_trials_pilot_01.json) | Judge v2's selection (all 32) |

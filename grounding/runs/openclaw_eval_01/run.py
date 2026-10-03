@@ -39,6 +39,7 @@ import urllib.request
 from datetime import date, datetime, timezone
 from pathlib import Path
 
+from grounding.common.dates import at_anchor, is_template
 from grounding.integrations.agentdiff.runtime import write
 from grounding.integrations.openclaw import runtime as oc
 from grounding.integrations.openclaw.purdue_proxy import SELFHOST_PORT
@@ -88,8 +89,9 @@ def select(cases_dir: Path, wanted: list[str] | None, read: set[str], today: dat
     run, left_out = [], {}
     for case_id, item in cases.items():
         action = action_for(case_id, actions)
-        until = date_limit(action)
-        ruled = rulings.test_exclusion(item[0])
+        template = is_template(item[0])   # a template is right on any day, and its rulings read it as written
+        until = None if template else date_limit(action)
+        ruled = rulings.test_exclusion(at_anchor(item[0]) if template else item[0])
         if action.startswith(("leave out", "dropped")):
             left_out[case_id] = action
         elif ruled:
@@ -151,7 +153,7 @@ async def execute(case: dict, source: Path, trial: int, args, slot: asyncio.Sema
             if not (args.retry_infrastructure and latest["status"] in ("infrastructure_error", "preflight",
                                                                        "solver_running")):
                 return latest
-        until = date_limit(action_for(case["case_id"], defect_actions()))
+        until = None if is_template(case) else date_limit(action_for(case["case_id"], defect_actions()))
         if until and date.today() > until:
             line = {"case_id": case["case_id"], "trial": trial, "skipped": f"past {until}", "at": datetime.now().isoformat()}
             with open(args.out / "skipped.jsonl", "a") as handle:

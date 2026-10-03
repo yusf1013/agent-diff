@@ -46,10 +46,10 @@ Changing an agent's clock, or anything else in the agent's own environment, so t
 
 - GPT-6.1 Sol could not run 15 items of the denominator. OpenClaw checks its login's expiry against the shifted clock, and a test clock of October 16 lay past the expiry.
 - Only the agent's Node process was shifted. `date`, `ls -l` and HTTP headers showed the real day, so agents saw two different "nows".
-- Calendar's tests are dated 2018, which fights the model's own sense of the year: 40 of Qwen's Calendar trials reasoned as if it were 2025 or 2026.
+- Calendar's tests are dated 2018, which fights the model's own sense of the year: in 40 of Qwen's 657 Calendar trials its reasoning named 2025 or 2026 as the year (dates_01).
 - It cannot carry over to the real services, whose servers stamp records with the real time.
 
-Dates belong to the test. Every date in a test (its data, its request, its expected values, what the judge reads) is held relative to the moment the test was written for, and is rendered against the real date when the test's environment is created. The agent always runs on the real clock. The investigation and the fix are in [runs/dates_02](runs/dates_02/README.md). The old shims (OpenClaw's `integrations/openclaw/fake_clock.cjs` and the Claude Code backend's LD_PRELOAD `clock/fakeclock.c`, both reached through `case_clock` in `integrations/openclaw/runtime.py`) stay in the code only until the renderer replaces them. No new run may use them; a test that cannot run without them waits for the renderer.
+Dates belong to the test. Every date in a test (its data, its request, its expected values, what the judge reads) is held relative to the moment the test was written for, and is rendered against the real date when the test's environment is created. The agent always runs on the real clock. The investigation and the fix are in [runs/dates_02](runs/dates_02/README.md): every test behind the denominator tables has a verified template in `runs/dates_02/suite/`, and the runners render it (`for_run` in [common/dates.py](common/dates.py), called by the OpenClaw runtime and the Claude Code backend). The shims' code paths are removed; a test made for a shifted clock (one with a `clock`, or a Calendar test dated 2018) is refused. A new scenario gets the same treatment: template it with `common/dates.py` before it runs.
 
 ## Reporting to the PI
 

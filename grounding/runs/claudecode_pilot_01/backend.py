@@ -13,7 +13,8 @@ the scoring, `blind_sample.py` and `adjudicate.py` read a Claude Code run as the
    servers and the claude.ai connectors off, for at most TIMEOUT_SECONDS; for a test with a clock (Calendar, and the
    tests the rulings gave one) the wall clock is shifted (clock/fakeclock.c). Discontinued (the PI, 2026-10-03):
    shifting the agent's clock is a severe anti-pattern (grounding/AGENTS.md, "Dates: never change the agent's
-   clock"); no new run may use it, and it goes when the date renderer of grounding/runs/dates_02 replaces it;
+   clock"); the shift is no longer applied: a templated test is rendered against the real day (`oc.for_run`), and a
+   test made for a shifted clock is refused;
 4. records the state after the run, the diff, the transcript as judge steps, the context Claude Code put around the
    prompt, usage and the plan's rate-limit windows, then deletes the environment, the template and the run directory.
 
@@ -397,6 +398,7 @@ def run_attempt(case: dict, attempt: Path, *, database_url: str, backend_url: st
     from agent_diff import AgentDiff
     if followup or layout != "judge":
         raise ValueError("the Claude Code backend runs one turn in the judge layout")
+    case, dates_info = oc.for_run(case, attempt)   # rendered against today; no agent clock is ever shifted
     domain = case["domain"]
     summary = summary if summary is not None else {}
     environment_dir, solver_dir = attempt / "environment", attempt / "solver"
@@ -426,8 +428,10 @@ def run_attempt(case: dict, attempt: Path, *, database_url: str, backend_url: st
 
         root.mkdir(parents=True)
         run = build_run_dir(root, backend_url, env.environmentId)
-        fake_now = oc.case_clock(case)
+        fake_now = None   # discontinued (the PI, 2026-10-03): the test's dates are rendered instead (oc.for_run)
         proc_env, clock = process_env(run, domain, fake_now, auth_vars)
+        if dates_info:
+            proc_env["TZ"] = dates_info["zone"]
         prompt = oc.PREFIX[domain] + case["prompt"]
         cmd = command(prompt, model, effort, backend)
         cmd[cmd.index("DEBUG_FILE")] = str(raw_dir / "debug.log")
@@ -438,7 +442,7 @@ def run_attempt(case: dict, attempt: Path, *, database_url: str, backend_url: st
             "effort": effort, "tools": TOOLS, "layout": layout, "auth": auth, "auth_note": auth_note,
             "command": ["<prompt>" if part == prompt else part for part in cmd], "prompt": prompt,
             "prompt_prefix": oc.PREFIX[domain], "follow_up": {"enabled": False},
-            "timeout_seconds_per_turn": timeout_s, "fake_clock": clock,
+            "timeout_seconds_per_turn": timeout_s, "fake_clock": clock, "dates": dates_info,
             "env_keys": sorted(proc_env), "state_dir": str(root), "work_dir": str(run["work"]),
             "config_dir": str(run["config"]), "skills_sha256": run["skills_sha256"],
             "curl_shim_sha256": hashlib.sha256((run["bin"] / "curl").read_bytes()).hexdigest(),

@@ -57,15 +57,16 @@ def test_neutral_state_names_nothing_of_the_benchmark(tmp_path, workspace, monke
     assert agent["workspace"] == str(state / f"workspace-{oc.NEUTRAL_AGENT_ID}")
     assert "Qwen" in (state / f"workspace-{oc.NEUTRAL_AGENT_ID}" / "IDENTITY.md").read_text()
     assert config["tools"]["exec"]["pathPrepend"] == [str(state / "bin")]
-    for name in ("curl", "clock.cjs"):
+    assert not (state / "bin" / "clock.cjs").exists()     # no clock shim: shifting the agent's clock is discontinued
+    for name in ("curl",):
         text = (state / "bin" / name).read_text()
         assert "AGENTDIFF" not in text and "agentdiff" not in text.lower() and "toy harness" not in text
     assert "SVC_BASE_URL" in (state / "bin" / "curl").read_text()
     written = (state / "openclaw.json").read_text().lower()
     assert "agentdiff" not in written
-    env = oc.process_env(state, "env1", "http://127.0.0.1:18001", "calendar", oc.CALENDAR_NOW, neutral=True)
-    assert not any("AGENTDIFF" in k for k in env) and env["NODE_OPTIONS"].endswith(str(state / "bin" / "clock.cjs"))
-    assert env["SVC_ENV_ID"] == "env1" and "CLOCK_START" in env
+    env = oc.process_env(state, "env1", "http://127.0.0.1:18001", "calendar", "America/Los_Angeles", neutral=True)
+    assert not any("AGENTDIFF" in k for k in env) and "NODE_OPTIONS" not in env and "CLOCK_START" not in env
+    assert env["SVC_ENV_ID"] == "env1" and env["TZ"] == "America/Los_Angeles"
 
 
 def test_the_guard_finds_what_a_prompt_gives_away(tmp_path):

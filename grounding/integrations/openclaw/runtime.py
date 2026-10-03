@@ -35,6 +35,7 @@ import uuid
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
+from grounding.common import dates as test_dates
 from grounding.integrations.agentdiff import custom_runtime, runtime
 from grounding.integrations.agentdiff import smoke_runtime as smoke
 from grounding.integrations.agentdiff.runtime import ddl_lock, digest, engine_for, environment_schema, write
@@ -95,8 +96,8 @@ LEAK_TOKENS = ("agentdiff", "agent_diff", "agent-diff", "pyproj", "openclaw-runs
 # The toy harness told the Calendar agent "Current Date/Time: Sunday, June 17, 2018 at 00:01 (midnight),
 # timezone America/Los_Angeles"; OpenClaw gets the same moment from its (shifted) clock instead.
 # DISCONTINUED (the PI, 2026-10-03): shifting the agent's clock is a severe anti-pattern (grounding/AGENTS.md, "Dates:
-# never change the agent's clock"). No new run may use it; the test's own dates are rendered to the real date instead
-# (grounding/runs/dates_02), and this code goes when that renderer replaces it.
+# never change the agent's clock"). Its code paths are removed; the test's own dates are rendered against the real day
+# instead (`for_run`, grounding/common/dates.py). CALENDAR_NOW and FAKE_CLOCK stay only as the record.
 CALENDAR_NOW = datetime(2018, 6, 17, 7, 1, tzinfo=timezone.utc)
 CALENDAR_TZ = "America/Los_Angeles"
 TIME_COMMANDS = re.compile(r"(^|[\s;&|(`$])(date|timedatectl|hwclock|cal|ncal|uptime|stat)(\s|$)|datetime|time\.time|"
@@ -182,7 +183,6 @@ def build_state_dir(state: Path, route: str, domain: str, variant: str | None = 
                 text = text.replace(old, new)
             path.write_text(text)
         neutral_copy(SHIM_DIR / "curl", state / "bin" / "curl", "#")
-        neutral_copy(FAKE_CLOCK, state / "bin" / "clock.cjs", "//")
     defaults = {k: v for k, v in real["agents"].get("defaults", {}).items() if k not in ("model", "models", "workspace")}
     defaults["workspace"] = str(state / "workspace")
     if domain == "calendar":
@@ -233,33 +233,38 @@ def register_route(token: str, log_dir: Path) -> Path:
     return path
 
 
-def process_env(state: Path, env_id: str, backend_url: str, domain: str, fake_now: datetime | None,
+def process_env(state: Path, env_id: str, backend_url: str, domain: str, tz: str | None = None,
                 neutral: bool = False) -> dict:
+    """The attempt's process environment. The agent runs on the real clock; `tz` is the time zone of the test's
+    anchor (Calendar's Los Angeles; for the other services this machine's own zone), so that the agent's "today" is
+    the day the test was rendered for."""
     name = (lambda n: NEUTRAL_NAMES[n]) if neutral else (lambda n: n)
     node_bin = str(Path(os.path.realpath(shutil.which("node") or "/usr/bin/node")).parent)
     env = {"HOME": str(Path.home()), "LANG": "C.UTF-8", "USER": os.getenv("USER", "yusf"),
            "PATH": os.pathsep.join([node_bin, str(Path.home() / ".npm-global/bin"), "/usr/local/bin", "/usr/bin", "/bin"]),
            "OPENCLAW_STATE_DIR": str(state), name("AGENTDIFF_BACKEND_URL"): backend_url,
            name("AGENTDIFF_ENV_ID"): env_id}
-    if fake_now is not None:
-        clock = state / "bin" / "clock.cjs" if neutral else FAKE_CLOCK
-        env.update({"NODE_OPTIONS": f"--require {clock}",
-                    name("AGENTDIFF_FAKE_NOW"): fake_now.isoformat().replace("+00:00", "Z")})
-        if domain == "calendar":  # other domains keep the machine's zone, as they ran before clocks
-            env["TZ"] = CALENDAR_TZ
+    if tz:
+        env["TZ"] = tz
     return env
 
 
 def case_clock(case: dict) -> datetime | None:
-    """The instant the agent's clock starts at: the test's own `clock` (a test that is only right on some days;
-    roadmap, 2026-09-28), else Calendar's fixed day, else None (the real clock).
+    """Discontinued (the PI, 2026-10-03): the instant a shifted agent clock used to start at. Shifting the agent's
+    clock is a severe anti-pattern (grounding/AGENTS.md, "Dates: never change the agent's clock"); the test's own dates
+    are rendered against the real day instead (`for_run`)."""
+    raise RuntimeError(f"{case.get('case_id')}: {test_dates.DISCONTINUED}")
 
-    DISCONTINUED (the PI, 2026-10-03): shifting the agent's clock is a severe anti-pattern (grounding/AGENTS.md,
-    "Dates: never change the agent's clock"). No new run may use it; it goes when the date renderer of
-    grounding/runs/dates_02 replaces it."""
-    if case.get("clock"):
-        return datetime.fromisoformat(case["clock"]["now"].replace("Z", "+00:00"))
-    return CALENDAR_NOW if case["domain"] == "calendar" else None
+
+def for_run(case: dict, attempt: Path | None = None) -> tuple[dict, dict | None]:
+    """The test as it runs now (grounding/common/dates.py): a template is rendered against the real day; the attempt
+    keeps the template as case.template.json and the rendered test as case.json, which the judge and the scoring read.
+    A test made to run on a shifted clock is refused."""
+    rendered, info = test_dates.for_run(case)
+    if info is not None and attempt is not None:
+        write(attempt / "case.template.json", case)
+        write(attempt / "case.json", rendered)
+    return rendered, info
 
 
 def prompt_leaks(requests_dir: Path, case_id: str) -> list[str]:
@@ -680,6 +685,7 @@ def run_attempt(case: dict, attempt: Path, *, database_url: str, backend_url: st
     solver/openclaw/ (the readers take the first solver/*.json as the record), and the record's steps take the toy
     harness's format (`judge_steps`). The default keeps openclaw_transfer_01's layout."""
     from agent_diff import AgentDiff
+    case, dates_info = for_run(case, attempt)   # rendered against today; no agent clock is ever shifted
     domain = case["domain"]
     summary = summary if summary is not None else {}
     environment_dir, solver_dir = attempt / "environment", attempt / "solver"
@@ -714,8 +720,8 @@ def run_attempt(case: dict, attempt: Path, *, database_url: str, backend_url: st
         config = build_state_dir(state, token, domain, variant, backend, neutral)
         agent_id = config["agents"]["list"][0]["id"]
         workspace = state / f"workspace-{agent_id}"
-        fake_now = case_clock(case)
-        env_vars = process_env(state, env.environmentId, backend_url, domain, fake_now, neutral)
+        env_vars = process_env(state, env.environmentId, backend_url, domain,
+                               dates_info["zone"] if dates_info else None, neutral)
         prompt = PREFIX[domain] + case["prompt"]
         write(solver_dir / "config.json", {
             "harness": "openclaw", "openclaw_version": subprocess.run([OPENCLAW_BIN, "--version"], capture_output=True,
@@ -729,8 +735,7 @@ def run_attempt(case: dict, attempt: Path, *, database_url: str, backend_url: st
             "follow_up": {"enabled": followup, "message": FOLLOW_UP,
                           "rule": "sent when turn 1 changed no state and its reply asks the user a question"},
             "timeout_seconds_per_turn": timeout_s, "workspace_variant": variant,
-            "fake_clock": {"start": fake_now.isoformat(), "timezone": CALENDAR_TZ if domain == "calendar"
-                           else "the machine's"} if fake_now else None,
+            "fake_clock": None, "dates": dates_info,
             "workspace_files": sorted(p.name for p in workspace.iterdir()),
             "skills_sha256": {str(p.relative_to(workspace / "skills")): hashlib.sha256(p.read_bytes()).hexdigest()
                               for p in sorted((workspace / "skills").rglob("*.md"))},
@@ -751,9 +756,6 @@ def run_attempt(case: dict, attempt: Path, *, database_url: str, backend_url: st
         asks = bool(turn1["text"]) and bool(QUESTION.search(turn1["text"]))
         followup_info = {"sent": False, "turn1_changed_state": changed1, "turn1_asks": asks}
         if followup and turn1["termination"] == "done" and not changed1 and asks:
-            if fake_now is not None:
-                env_vars = process_env(state, env.environmentId, backend_url, domain,
-                                       fake_now + timedelta(seconds=turn1["duration_s"]), neutral)
             turn2 = run_turn(state, env_vars, FOLLOW_UP, timeout_s, raw_dir, "turn2", agent_id)
             write(environment_dir / "followup_state.json", export(domain, engine, schema))
             (solver_dir / "followup_response.md").write_text(turn2["text"] + "\n")
@@ -780,8 +782,6 @@ def run_attempt(case: dict, attempt: Path, *, database_url: str, backend_url: st
         flags = {"compactions": compactions(rows), "tool_calls_turn1": len([s for s in record["steps"] if s.get("tool")]),
                  "read_skill": sorted({Path(s["arguments"].get("path", "")).parent.name for s in steps
                                        if s.get("tool") == "read" and str(s.get("arguments", {}).get("path", "")).endswith("SKILL.md")})}
-        if fake_now is not None:
-            flags["clock_suspects"] = clock_scan(steps, [t["text"] for t in turns], real_year=domain == "calendar")
         oauth = bool(BACKENDS[backend].get("oauth"))  # no proxy: the transcript is the only record of the model side
         flags["model_settings"] = {row["type"]: {k: v for k, v in row.items() if k not in ("type", "id", "timestamp")}
                                    for row in rows if row.get("type") in ("model_change", "thinking_level_change")}
