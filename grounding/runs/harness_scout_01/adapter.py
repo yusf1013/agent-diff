@@ -446,6 +446,7 @@ def run_attempt(case: dict, attempt: Path, *, harness: str, backend: str, databa
                 model: str | None = None, effort: str = "medium", timeout_s: int = TIMEOUT_SECONDS,
                 keep_state: bool = False) -> dict:
     from agent_diff import AgentDiff
+    case, dates_info = oc.for_run(case, attempt)   # rendered against today before anything is installed; no clock shift
     domain = case["domain"]
     summary = {"case_id": case["case_id"], "harness": harness, "backend": backend, "started_at": now_iso()}
     environment_dir, solver_dir = attempt / "environment", attempt / "solver"
@@ -471,8 +472,7 @@ def run_attempt(case: dict, attempt: Path, *, harness: str, backend: str, databa
 
         root.mkdir(parents=True)
         curl_shim(root / "bin" / "curl", backend_url, env.environmentId)
-        case, dates_info = oc.for_run(case, attempt)   # discontinued clock shift: the test's dates are rendered
-        fake_now = None
+        fake_now = None   # discontinued (the PI, 2026-10-03): the test's dates are rendered instead (oc.for_run)
         proc_env, clock = base_env(root, domain, fake_now)
         if dates_info:
             proc_env["TZ"] = dates_info["zone"]

@@ -196,9 +196,16 @@ agent is told it is Sunday, June 17, 2018"). The templating then runs as a pipel
 with the date the writer was given as its anchor. No instruction to write templates is needed.
 
 **The replicas (reported, not changed).** Calendar's replica keeps a fixed "now" of June 17, 2018. For worlds rendered
-to the present this changes nothing in the current tests (it only bounds `events.list` from below, and no Calendar
-scenario has a recurring event), but edits are stamped "updated" in 2018, quick-add reads "tomorrow" from 2018, and a
-recurring event would be expanded around 2018 when no window is given.
+to the present this changes nothing in the current tests: in `events.list` it only sets the default lower bound, and
+its one-year upper window applies only when recurring events are expanded (checked in the replica's code,
+`list_events`), and no Calendar scenario has a recurring event. But edits are stamped "updated" in 2018, quick-add
+reads "tomorrow" from 2018, and a recurring event would be expanded around 2018 when no window is given.
+
+**Running the templates.** `openclaw_eval_01/run.py --cases-dir grounding/runs/dates_02/suite/cases` (or `.../units`
+for the policy units; the boundary tests need their code oracle wired first). The judge reads the rendered `case.json`
+of each attempt as it stands (`fact_coverage_02.analyze.current` swaps in references only for an identical request
+and data). `openclaw_eval_01/policy.py` still writes its unit folders from the old suites; a new policy run takes the
+units from `dates_02/suite/units` instead (an old Calendar or clocked unit is refused, not run wrong).
 
 ## For the PI
 
