@@ -93,7 +93,14 @@ the final runs use one frozen version.
    exposure rests on them); the writers were never told a current date. The proper fix, prototyped mechanically on all
    86 scenarios: render each test's dates to the run week at environment creation (whole-week shift of seed, query,
    witnesses and request phrases bound by the writer's conditions; Calendar's replica now follows), no agent clock.
-   The PI's decision is pending. The earlier text of this step (2026-09-30, withdrawn as a decision):** The PI's question: *how can a test that depends on
+   **Decided by the PI on 2026-10-03:** shifting the agent's clock is discontinued as a severe anti-pattern
+   ([grounding/AGENTS.md](../AGENTS.md), "Dates: never change the agent's clock"). Dates belong to the test: every
+   date is held as a template relative to the moment the test was written for and rendered against the real date
+   when the environment is created. The PI asked for three things: the documentation (done the same day); which
+   tests in the denominator tables the dates affected (made too easy, impossible, stale, or not run); and the fix,
+   first by checks applied retrospectively to the generated tests, with minimal writer instructions only as the last
+   resort, and with the writer given the current date. Study: [dates_02](../runs/dates_02/README.md).
+   The PI's decision of 2026-10-01 had been pending. The earlier text of this step (2026-09-30, withdrawn as a decision):** The PI's question: *how can a test that depends on
    dates be right on any day it is run, without adding overhead to the LLMs in the pipeline?* Today every date in a
    scenario is absolute and the test runs the agent under a shifted clock (step 3's "dates are controlled on the
    test side"), which fails wherever the agent's process cannot be back- or forward-dated: the 16 G4-LIN-08 tests
@@ -220,7 +227,9 @@ The PI's thinking of that day is organized in [the notes](brain_dump_2026-09-29.
     pipeline step. Otherwise it only rescues the tests whose ids leak.
   - Tests where a leak may have mattered are re-run with the new ids, not regenerated. With the script reliable,
     that is every Calendar, Linear and Slack test. Box ids are already numbers, so Box keeps its results.
-- **Dates are controlled on the test side.** A test that is only right on certain days runs with the agent's clock
+- **Dates are controlled on the test side.** *Superseded on 2026-10-03: the PI discontinued shifting the agent's
+  clock as an anti-pattern (step 8; [grounding/AGENTS.md](../AGENTS.md), "Dates: never change the agent's clock").
+  The test's dates move instead.* A test that is only right on certain days runs with the agent's clock
   set to such a day, as Calendar tests already do (Sunday, June 17, 2018). Nothing waits for the real date.
   - AR-SLK-21 ("posted … on Tuesday") and G4-LIN-02 ("overdue") get 2026-09-25. AP-LIN-01 (an issue "completed on
     October 2, 2026") gets 2026-10-05, and G4-LIN-08 (a near miss created on 2026-10-15) gets 2026-10-16. Their
@@ -311,8 +320,8 @@ The PI's thinking of that day is organized in [the notes](brain_dump_2026-09-29.
   replica-gap exclusions (from the pre-checks' findings).
 - **Slack on the common runner,** off its separate campaign runtime.
 - **The audit table:** count the Linear and Slack seed helpers.
-- **Deferred:** the clone copier's rows two steps from the target. A full solution for dates relative to today waits
-  until it is needed; OpenClaw has several clocks.
+- **Deferred:** the clone copier's rows two steps from the target. ~~A full solution for dates relative to today waits
+  until it is needed; OpenClaw has several clocks.~~ Superseded 2026-10-03: step 8.
 
 ## Status
 

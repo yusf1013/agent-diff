@@ -94,6 +94,9 @@ NEUTRAL_IDENTITY = {"AgentDiff Qwen": "Qwen"}
 LEAK_TOKENS = ("agentdiff", "agent_diff", "agent-diff", "pyproj", "openclaw-runs", "attempt-", "fixture")
 # The toy harness told the Calendar agent "Current Date/Time: Sunday, June 17, 2018 at 00:01 (midnight),
 # timezone America/Los_Angeles"; OpenClaw gets the same moment from its (shifted) clock instead.
+# DISCONTINUED (the PI, 2026-10-03): shifting the agent's clock is a severe anti-pattern (grounding/AGENTS.md, "Dates:
+# never change the agent's clock"). No new run may use it; the test's own dates are rendered to the real date instead
+# (grounding/runs/dates_02), and this code goes when that renderer replaces it.
 CALENDAR_NOW = datetime(2018, 6, 17, 7, 1, tzinfo=timezone.utc)
 CALENDAR_TZ = "America/Los_Angeles"
 TIME_COMMANDS = re.compile(r"(^|[\s;&|(`$])(date|timedatectl|hwclock|cal|ncal|uptime|stat)(\s|$)|datetime|time\.time|"
@@ -249,7 +252,11 @@ def process_env(state: Path, env_id: str, backend_url: str, domain: str, fake_no
 
 def case_clock(case: dict) -> datetime | None:
     """The instant the agent's clock starts at: the test's own `clock` (a test that is only right on some days;
-    roadmap, 2026-09-28), else Calendar's fixed day, else None (the real clock)."""
+    roadmap, 2026-09-28), else Calendar's fixed day, else None (the real clock).
+
+    DISCONTINUED (the PI, 2026-10-03): shifting the agent's clock is a severe anti-pattern (grounding/AGENTS.md,
+    "Dates: never change the agent's clock"). No new run may use it; it goes when the date renderer of
+    grounding/runs/dates_02 replaces it."""
     if case.get("clock"):
         return datetime.fromisoformat(case["clock"]["now"].replace("Z", "+00:00"))
     return CALENDAR_NOW if case["domain"] == "calendar" else None

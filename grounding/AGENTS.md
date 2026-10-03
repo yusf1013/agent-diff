@@ -40,6 +40,17 @@ Historical transcripts and outcomes remain evidence. Record repairs or revised j
 
 Follow the affected component's testing instructions. Check prepared requests and offline behavior before paid experiments where practical; run experiments within the user's authorized scope. Link findings to source artifacts. Keep commits scoped to the work and preserve unrelated changes. Update the relevant guide when entry points or responsibilities change.
 
+## Dates: never change the agent's clock
+
+Changing an agent's clock, or anything else in the agent's own environment, so that a test's hard-coded dates come out right is a severe anti-pattern. The PI discontinued it on 2026-10-03, calling it "the absolute stupidest thing we could have done", and strongly advises against it for every harness, model and test. It hides a stale test instead of fixing it, and it broke in every way it could:
+
+- GPT-6.1 Sol could not run 15 items of the denominator. OpenClaw checks its login's expiry against the shifted clock, and a test clock of October 16 lay past the expiry.
+- Only the agent's Node process was shifted. `date`, `ls -l` and HTTP headers showed the real day, so agents saw two different "nows".
+- Calendar's tests are dated 2018, which fights the model's own sense of the year: 40 of Qwen's Calendar trials reasoned as if it were 2025 or 2026.
+- It cannot carry over to the real services, whose servers stamp records with the real time.
+
+Dates belong to the test. Every date in a test (its data, its request, its expected values, what the judge reads) is held relative to the moment the test was written for, and is rendered against the real date when the test's environment is created. The agent always runs on the real clock. The investigation and the fix are in [runs/dates_02](runs/dates_02/README.md). The old shims (OpenClaw's `integrations/openclaw/fake_clock.cjs` and the Claude Code backend's LD_PRELOAD `clock/fakeclock.c`, both reached through `case_clock` in `integrations/openclaw/runtime.py`) stay in the code only until the renderer replaces them. No new run may use them; a test that cannot run without them waits for the renderer.
+
 ## Reporting to the PI
 
 These rules apply to everything the PI reads: chat replies, the Status and "For the PI" sections of study READMEs, logs, briefs, the roadmap, and anything the lead session relays from another session. The PI shared the research goal so that every report can say why a step is taken. A report works only if the PI can follow it, and act on it, without opening a file.

@@ -11,7 +11,9 @@ the scoring, `blind_sample.py` and `adjudicate.py` read a Claude Code run as the
    skills, no memory, no history;
 3. runs `claude -p` once on the prefixed prompt (no follow-up turn) with only the Bash, Read and Skill tools, no MCP
    servers and the claude.ai connectors off, for at most TIMEOUT_SECONDS; for a test with a clock (Calendar, and the
-   tests the rulings gave one) the wall clock is shifted (clock/fakeclock.c);
+   tests the rulings gave one) the wall clock is shifted (clock/fakeclock.c). Discontinued (the PI, 2026-10-03):
+   shifting the agent's clock is a severe anti-pattern (grounding/AGENTS.md, "Dates: never change the agent's
+   clock"); no new run may use it, and it goes when the date renderer of grounding/runs/dates_02 replaces it;
 4. records the state after the run, the diff, the transcript as judge steps, the context Claude Code put around the
    prompt, usage and the plan's rate-limit windows, then deletes the environment, the template and the run directory.
 

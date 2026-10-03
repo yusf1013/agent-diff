@@ -12,6 +12,10 @@ what is the complete fix? No model calls; everything below is read from the reco
 - **2026-10-01, later: the PI's objection (section 9) corrects the shift rule from whole weeks to whole days aligned to the
   run date, with weekday words rewritten; the fix is to be applied only where a test depends on the day (14 of 86
   scenarios), and a Calendar rerun in the present is proposed to measure the 2018 effect.**
+- **2026-10-03: the PI decided. Shifting the agent's clock is discontinued as a severe anti-pattern
+  ([grounding/AGENTS.md](../../AGENTS.md), "Dates: never change the agent's clock"); dates belong to the test, held
+  as templates and rendered at environment creation. The follow-up (which tests the dates affected, and the fix) is
+  [dates_02](../dates_02/README.md).**
 - Nothing was run and nothing in the suites was changed.
 
 ## 1. What happened
