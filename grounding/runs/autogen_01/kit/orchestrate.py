@@ -89,6 +89,8 @@ def generate(brief: dict, run_dir: Path) -> dict:
     out.mkdir(parents=True, exist_ok=True)
     ws = WORK / run_dir.name / sid / "writer"
     setup_workspace(ws, brief)
+    today = dates.today_for(brief["domain"])     # the scenario's reference day: its dates are rendered from it
+    dates.move_examples(ws / "examples", today)  # the worked examples are dated around the same day
     calls_log = run_dir / "calls.jsonl"
     history = []
     started = time.time()
@@ -99,7 +101,6 @@ def generate(brief: dict, run_dir: Path) -> dict:
                                     system_append=(KIT / "prompts" / "writer.md").read_text(), resume=resume,
                                     label=sid, timeout=3600))
 
-    today = dates.today_for(brief["domain"])     # the scenario's reference day: its dates are rendered from it
     result = writer(first_prompt(brief, today))
     session = result["session_id"]
     check_rounds = reader_rounds = 0

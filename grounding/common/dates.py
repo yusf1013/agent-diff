@@ -60,6 +60,7 @@ PHRASE = re.compile(
     rf"|(?P<md>\b(?P<md_m>{MON_RE})(?P<md_dot>\.?)\s+(?P<md_d>\d{{1,2}})(?P<md_th>st|nd|rd|th)?(?![\d:])(?:(?P<md_ys>,?\s+)(?P<md_y>\d{{4}})(?!\d))?)"
     rf"|(?P<wdthe>\b(?P<wdthe_w>{WD_RE})\s+the\s+(?P<wdthe_d>\d{{1,2}})(?P<wdthe_th>st|nd|rd|th)\b)"
     rf"|(?P<my>\b(?P<my_m>{MON_RE})(?P<my_dot>\.?)\s+(?P<my_y>\d{{4}})(?!\d))"
+    r"|(?P<onnth>\bon\s+the\s+(?P<onnth_d>\d{1,2})(?P<onnth_th>st|nd|rd|th)\b)"
     rf"|(?P<wd>\b(?P<wd_w>{WD_RE})(?![A-Za-z]))"
     rf"|(?P<mon2>\b(?P<mon2_m>{'|'.join(MONTHS)})(?![\w])(?!\s+\d))"
     rf"|(?P<mon>\b(?P<mon_pre>in|of|since|from|until|by|during|early|late|mid|before|after|through)(?P<mon_sp>[ -])(?P<mon_m>{'|'.join(MONTHS)})(?![\w])(?!\s+\d))"
@@ -358,6 +359,24 @@ def phrase_token(m: re.Match, ctx: Context) -> str | None:
             ctx.bindings[key] = ((_nearest(cands, ctx) - ctx.anchor_day).days, "the nearest such date to the anchor")
         k = ctx.bindings[key][0]
         return f"{OPEN}P|{k:+d}|{weekday_code(g['wdthe_w'])}{between('wdthe_w', 'wdthe_d')}{{d}}{{th}}{CLOSE}"
+    if g["onnth"]:
+        day = int(g["onnth_d"])
+
+        def res():
+            for pool, how in ((ctx.target_days, "the target's date with that day of the month"),
+                              (ctx.seed_days, "a date in the data with that day of the month")):
+                hits = [d for d in pool if d.day == day and abs((d - ctx.anchor_day).days) <= 31]
+                if hits:
+                    return _nearest(hits, ctx), how
+            return None, ""
+        key = ("onnth", day)
+        if key not in ctx.bindings:
+            d, how = res()
+            if d is None:
+                return None
+            ctx.bindings[key] = ((d - ctx.anchor_day).days, how)
+        k = ctx.bindings[key][0]
+        return f"on the {OPEN}P|{k:+d}|{{d}}{{th}}{CLOSE}"
     if g["my"]:
         mon, year = month_number(g["my_m"]), int(g["my_y"])
 
@@ -421,7 +440,8 @@ def template_text(s: str, ctx: Context, found: list, path: str) -> str:
     out, last = [], 0
     for m in PHRASE.finditer(s):
         tok = phrase_token(m, ctx)
-        kind = next(k for k in ("iso", "ts", "utc", "wdmd", "md", "wdthe", "my", "wd", "mon", "mon2", "yr") if m.group(k))
+        kind = next(k for k in ("iso", "ts", "utc", "wdmd", "md", "wdthe", "my", "onnth", "wd", "mon", "mon2", "yr")
+                    if m.group(k))
         found.append({"path": path, "kind": kind, "text": m.group(0), "token": tok})
         if tok is None:
             continue
@@ -435,7 +455,11 @@ def template_text(s: str, ctx: Context, found: list, path: str) -> str:
 def make(case: dict, ctx: Context) -> tuple[dict, list]:
     """(template, occurrences): every date-bearing value or phrase of `case` replaced by a token."""
     found = []
-    rows = [row for rows in case.get("seed", {}).values() if isinstance(rows, list) for row in rows if isinstance(row, dict)]
+    seed = case.get("seed", {})
+    if isinstance(seed, dict):        # a test: tables of rows
+        rows = [row for rows in seed.values() if isinstance(rows, list) for row in rows if isinstance(row, dict)]
+    else:                             # a writer's scenario: seed operations [kind, arguments]
+        rows = [op[1] for op in seed if isinstance(op, list) and len(op) > 1 and isinstance(op[1], dict)]
 
     def days_around(ids: set) -> set:
         """The days of the records holding any of `ids`, and of the records those point to (one step)."""
@@ -656,4 +680,63 @@ def for_run(case: dict, now: datetime | None = None) -> tuple[dict, dict | None]
     if case.get("clock") or case.get("domain") == "calendar":
         raise RuntimeError(f"{case.get('case_id')}: {DISCONTINUED}")
     return case, None
+
+
+# The writer's worked examples with dates, and the day each was written for (Calendar's, like its tests). The writer
+# sees them moved to the date it is given, so that no example shows another year (the PI, 2026-10-04).
+EXAMPLE_ANCHORS = {"calendar-example.json": (date(2018, 6, 17), CALENDAR_ZONE)}
+
+
+def example_context(example: dict, anchor_day: date, zone: str) -> Context:
+    """A Context for a scenario in the writer's format (seed operations, a reference with its target ids)."""
+    ctx = Context(anchor_day, zone, example["domain"], zone if example["domain"] == "calendar" else "UTC")
+    targets = set(map(str, (example.get("reference") or {}).get("target", [])))
+    for op in example.get("seed", []):
+        args = op[1] if isinstance(op, list) and len(op) > 1 and isinstance(op[1], dict) else {}
+        for _, v in walk(args):
+            if isinstance(v, str) and ISO_FULL.match(v):
+                d = local_day(v, ctx)
+                ctx.seed_days.add(d)
+                if str(args.get("id")) in targets:
+                    ctx.target_days.add(d)
+                p = parse_timestamp(v, ctx)
+                if p and p[2] not in ("naive", "UTC") and not p[2].startswith("fixed"):
+                    ctx.instants.append((p[5].astimezone(timezone.utc).strftime("%H:%M"), p[0], p[1], p[2]))
+    return ctx
+
+
+def move_example(raw: str, anchor_day: date, zone: str, run_day: date) -> str:
+    """The example's text with every date moved to `run_day`, its layout kept: each string that changes is replaced
+    where it stands."""
+    example = json.loads(raw)
+    t, _ = make(example, example_context(example, anchor_day, zone))
+    t["dates"] = {"anchor": {"day": anchor_day.isoformat(), "zone": zone}, "mode": "day"}
+    moved = render(t, run_day)
+    moved.pop("dates")
+    pairs = {}
+    for (_, a), (_, b) in zip(walk(example), walk(moved)):
+        if isinstance(a, str) and a != b:
+            pairs[a] = b
+    out = raw
+    for a in sorted(pairs, key=len, reverse=True):
+        for enc in {json.dumps(a, ensure_ascii=False), json.dumps(a)}:
+            out = out.replace(enc, json.dumps(pairs[a], ensure_ascii=False))
+    if json.loads(out) != moved:
+        raise ValueError("moving the example changed more than its dates")
+    return out
+
+
+def move_examples(folder, today: dict) -> list[str]:
+    """Move the worked examples in a writer's workspace to the date it is given; returns the files moved."""
+    from pathlib import Path
+    moved = []
+    for name, (anchor_day, zone) in EXAMPLE_ANCHORS.items():
+        path = Path(folder) / name
+        if path.exists():
+            run_day = date.fromisoformat(today["date"]) if today["zone"] == zone else \
+                datetime.fromisoformat(f"{today['date']}T{today['time']}").replace(
+                    tzinfo=ZoneInfo(today["zone"])).astimezone(ZoneInfo(zone)).date()
+            path.write_text(move_example(path.read_text(), anchor_day, zone, run_day))
+            moved.append(name)
+    return moved
 

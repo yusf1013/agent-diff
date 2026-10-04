@@ -82,3 +82,21 @@ def test_a_new_scenario_takes_the_date_its_writer_was_given_as_its_reference_day
             "clock": {"now": "2026-09-25T16:00:00Z"}}
     a = anchors.anchor_for("G4-LIN-99", "linear", case)
     assert a.day == date(2026, 11, 2) and a.source == "the date its writer was given"
+
+
+def test_the_calendar_worked_example_moves_to_the_writers_date_and_keeps_its_meaning(tmp_path):
+    import shutil
+    from grounding.runs.autogen_01.kit import scenario
+    src = REPO / "grounding/runs/autogen_01/kit/examples/calendar-example.json"
+    raw = src.read_text()
+    anchor, zone = dates.EXAMPLE_ANCHORS["calendar-example.json"]
+    assert dates.move_example(raw, anchor, zone, anchor) == raw        # unchanged on its own day
+    shutil.copy(src, tmp_path / "calendar-example.json")
+    dates.move_examples(tmp_path, {"date": "2026-10-10", "time": "09:00", "zone": "America/Los_Angeles"})
+    moved = json.loads((tmp_path / "calendar-example.json").read_text())
+    assert moved["request"] == "Move the design review that Priya Nair declined on Wednesday to Room 5B."
+    assert "2018" not in json.dumps(moved)
+    brief = {"scenario_id": moved["scenario_id"], "domain": "calendar",
+             "facts": sorted({d["fact"] for d in moved["reference"]["decoys"]})}
+    _, problems = scenario.build(moved, brief)                          # the pipeline's own checks still pass
+    assert problems == []
