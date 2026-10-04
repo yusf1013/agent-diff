@@ -63,3 +63,22 @@ def test_a_test_made_for_a_shifted_clock_is_refused():
         dates.for_run({"case_id": "G4-CAL-01", "domain": "calendar"})
     plain = {"case_id": "G4-BOX-01", "domain": "box", "prompt": "x"}
     assert dates.for_run(plain) == (plain, None)
+
+
+def test_the_writer_and_the_reader_are_given_the_date():
+    from grounding.runs.autogen_01.kit import orchestrate, reader
+    when = dates.today_for("calendar", now=datetime(2026, 10, 4, 19, 30, tzinfo=timezone.utc))
+    assert when == {"date": "2026-10-04", "time": "12:30", "zone": "America/Los_Angeles"}
+    brief = {"scenario_id": "G4-CAL-99", "domain": "calendar", "facts": []}
+    prompt = orchestrate.first_prompt(brief, when)
+    assert "Today is Sunday, October 4, 2026, and the time is 12:30 in America/Los_Angeles." in prompt
+    assert "2018" not in reader.CONTEXT["calendar"]
+
+
+def test_a_new_scenario_takes_the_date_its_writer_was_given_as_its_reference_day():
+    from grounding.runs.dates_02.kit import anchors
+    case = {"domain": "linear", "written_for": {"date": "2026-11-02", "time": "09:15",
+                                                "zone": "America/Indiana/Indianapolis"},
+            "clock": {"now": "2026-09-25T16:00:00Z"}}
+    a = anchors.anchor_for("G4-LIN-99", "linear", case)
+    assert a.day == date(2026, 11, 2) and a.source == "the date its writer was given"

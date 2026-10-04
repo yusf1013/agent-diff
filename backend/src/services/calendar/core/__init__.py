@@ -43,7 +43,7 @@ from .utils import (
     format_date,
     now_rfc3339,
     calendar_now,
-    REPLICA_NOW_RFC3339,
+    REPLICA_NOW_ENV,
     is_all_day_event,
     extract_datetime,
     PageToken,

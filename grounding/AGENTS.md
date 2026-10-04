@@ -38,7 +38,7 @@ Use new run directories and preserve failed attempts. Save assembled instruction
 
 Historical transcripts and outcomes remain evidence. Record repairs or revised judgments separately. Resolve old paths with `python -m grounding.paths OLD_PATH` from the repository root.
 
-Follow the affected component's testing instructions. Check prepared requests and offline behavior before paid experiments where practical; run experiments within the user's authorized scope. Link findings to source artifacts. Keep commits scoped to the work and preserve unrelated changes. Update the relevant guide when entry points or responsibilities change.
+Follow the affected component's testing instructions. Check prepared requests and offline behavior before paid experiments where practical; run experiments within the user's authorized scope. Runs on our self-hosted Qwen (`SOLVER_BACKEND=selfhost`; [solver/README.md](solver/README.md)) cost nothing and need no approval: use them freely, and prefer them, for live checks and validation (the PI, 2026-10-04), within the shared rate limiter and concurrency limits. Anything that costs money or a plan's quota (a Muse, Claude or OpenAI call) still needs the PI's go. Link findings to source artifacts. Keep commits scoped to the work and preserve unrelated changes. Update the relevant guide when entry points or responsibilities change.
 
 ## Dates: never change the agent's clock
 
@@ -54,6 +54,13 @@ Dates belong to the test. Every date in a test (its data, its request, its expec
 ## Reporting to the PI
 
 These rules apply to everything the PI reads: chat replies, the Status and "For the PI" sections of study READMEs, logs, briefs, the roadmap, and anything the lead session relays from another session. The PI shared the research goal so that every report can say why a step is taken. A report works only if the PI can follow it, and act on it, without opening a file.
+
+### The reader has none of your context
+
+- You have read files, run commands and seen their results in this session; the PI has seen none of it. The repository holds thousands of test cases, runs and records, and the PI knows none of them in detail. Write for a reader who has never seen the test, file, run or number you mention.
+- So anything taken from your context is a label until you introduce it: a phrase quoted from a request ("created in March"), a test's or record's name, a section of a file, a number (of tests, trials, checks or files). Introduce it first: for a test, its whole request and what its data holds; for a number, what is counted and why it matters. Otherwise leave it out.
+- A word or a mechanism you introduced (a new term, a new check, a new file or tool) gets a plain explanation where it first appears, in every report. The rule below against explaining the PI's own concepts (decoys, probes, covers) does not cover yours.
+- Treat every reply to the PI as one turn of a conversation: answer what was asked, in the order it was asked, in full sentences, and say what you did, what you found and what you need. Length is not the constraint; being followed is. A summary that needs labels to be short is too short.
 
 ### Top-down, in the PI's points
 

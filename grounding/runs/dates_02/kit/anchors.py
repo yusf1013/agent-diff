@@ -62,6 +62,9 @@ _PHASE4 = None
 
 def anchor_for(scenario: str, domain: str, case: dict) -> Anchor:
     global _PHASE4
+    if case.get("written_for"):     # generated since 2026-10-03: the writer was given the date
+        w = case["written_for"]
+        return Anchor(date.fromisoformat(w["date"]), w["zone"], "the date its writer was given", None)
     clock = (case.get("clock") or {}).get("now")
     if domain == "calendar":
         return Anchor(CALENDAR_DAY, CALENDAR_ZONE, "the Calendar notes' stated now: Sunday, June 17, 2018, 00:01, "

@@ -21,8 +21,7 @@ from grounding.runs.autogen_01.kit.bundle import compact_row
 
 KIT = Path(__file__).resolve().parent
 CONTEXT = {
-    "calendar": "The person making the request is Jordan Lee (jordan.lee@northwind.example), and it is Sunday "
-                "2018-06-17, 00:01 in America/Los_Angeles.",
+    "calendar": "The person making the request is Jordan Lee (jordan.lee@northwind.example).",
     "box": "The person making the request is Jordan Lee (user 30000000001).",
     "linear": "The person making the request is Jordan Lee (user u-actor).",
     "slack": "The person making the request is the workspace's assistant bot (U01AGENBOT9), acting for the team.",
@@ -96,11 +95,13 @@ def read(case: dict, workspace: Path, log_dir: Path, calls_log: Path, label: str
     from turn 1, numbered r1, r2, ..."""
     system = (KIT / "prompts" / "reader.md").read_text()
     domain = case["domain"]
+    from grounding.common import dates
+    when = f" {dates.today_text(case['written_for'])}" if case.get("written_for") else ""
     first = agent.run(agent.Call(
         role="reader", workspace=workspace, log_dir=log_dir, calls_log=calls_log, tools=[], schema=TURN1,
         system_append=system, label=label,
         prompt=f"A user of {SERVICE[domain]} gave an assistant this request:\n\n> {case['prompt']}\n\n"
-               f"{CONTEXT[domain]}\n\nStep 1: list the conditions a record must meet for this request to refer "
+               f"{CONTEXT[domain]}{when}\n\nStep 1: list the conditions a record must meet for this request to refer "
                "to it, and every phrase that could reasonably be read in more than one way."))
     table, ids = candidates(case)
     if author_conditions:

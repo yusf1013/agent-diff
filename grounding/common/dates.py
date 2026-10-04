@@ -606,6 +606,28 @@ def digest(value) -> str:
     return hashlib.sha256(json.dumps(value, sort_keys=True).encode()).hexdigest()
 
 
+CALENDAR_ZONE = "America/Los_Angeles"            # the calendars' zone, and the zone a Calendar agent is given
+LOCAL_ZONE = "America/Indiana/Indianapolis"      # this machine's zone, which every other agent is given
+
+
+def zone_for(domain: str) -> str:
+    return CALENDAR_ZONE if domain == "calendar" else LOCAL_ZONE
+
+
+def today_for(domain: str, now: datetime | None = None) -> dict:
+    """The date and time a writer is given (in the zone its scenario's agent will see); recorded on the scenario as
+    `written_for`, which is then its reference day."""
+    zone = zone_for(domain)
+    t = (now or datetime.now(timezone.utc)).astimezone(ZoneInfo(zone))
+    return {"date": t.date().isoformat(), "time": t.strftime("%H:%M"), "zone": zone}
+
+
+def today_text(when: dict) -> str:
+    d = date.fromisoformat(when["date"])
+    return (f"Today is {WEEKDAYS[d.weekday()]}, {MONTHS[d.month - 1]} {d.day}, {d.year}, and the time is "
+            f"{when['time']} in {when['zone']}.")
+
+
 DISCONTINUED = ("Shifting the agent's clock is discontinued (the PI, 2026-10-03: grounding/AGENTS.md, \"Dates: never "
                 "change the agent's clock\"). Run the test's template (grounding/runs/dates_02/suite), which is rendered "
                 "against the real day.")

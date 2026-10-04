@@ -3,6 +3,7 @@
 
 import base64
 import hashlib
+import os
 import secrets
 import string
 import uuid
@@ -11,8 +12,11 @@ from typing import Any, Optional, TypeVar, cast
 from dateutil import parser as date_parser
 from dateutil.rrule import rrule, rrulestr
 
-# Replica clock: fixed "now" to keep behavior deterministic in tests.
-REPLICA_NOW_RFC3339 = "2018-06-17T00:00:00-07:00"
+# Replica clock: the real current time, as Google Calendar's own. Set CALENDAR_REPLICA_NOW to an RFC3339 instant to
+# pin it instead (only to replay a benchmark whose data is dated around one fixed day, such as AgentDiff's own 2018
+# Calendar seeds). Until 2026-10-03 the replica's "now" was fixed at 2018-06-17T00:00:00-07:00; it is no longer
+# hard-coded (grounding/runs/dates_02).
+REPLICA_NOW_ENV = "CALENDAR_REPLICA_NOW"
 
 
 # ============================================================================
@@ -171,8 +175,9 @@ def parse_rfc3339(value: str) -> datetime:
 
 
 def calendar_now() -> datetime:
-    """Return the replica's fixed current time (UTC)."""
-    return parse_rfc3339(REPLICA_NOW_RFC3339)
+    """Return the replica's current time: the real time (UTC), unless CALENDAR_REPLICA_NOW pins it."""
+    pinned = os.environ.get(REPLICA_NOW_ENV)
+    return parse_rfc3339(pinned) if pinned else datetime.now(timezone.utc)
 
 
 def format_rfc3339(dt: datetime) -> str:

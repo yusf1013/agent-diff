@@ -25,6 +25,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
 from pathlib import Path
 
+from grounding.common import dates
 from grounding.runs.autogen_01.kit import agent, derive, preflight, reader, scenario
 
 KIT = Path(__file__).resolve().parent
@@ -54,11 +55,14 @@ def setup_workspace(ws: Path, brief: dict):
     (ws / "brief.json").write_text(json.dumps(visible, indent=1) + "\n")
 
 
-def first_prompt(brief: dict) -> str:
+def first_prompt(brief: dict, today: dict | None = None) -> str:
     facts = json.loads((STUDY / "inputs" / brief["domain"] / "facts.json").read_text())["facts"]
     entries = "\n".join(json.dumps(f, ensure_ascii=False) for f in facts if f["id"] in brief["facts"])
+    # The date (2026-10-03, the PI): writers had none and took "today" from example dates in their documentation.
+    when = (f"{dates.today_text(today)} The agent that will run your scenario sees the same date and time.\n\n"
+            if today else "")
     return (f"Write scenario `{brief['scenario_id']}` for the {brief['domain']} domain (see brief.json).\n\n"
-            f"Facts your scenario must test (each needs at least one decoy):\n{entries}\n\n"
+            f"Facts your scenario must test (each needs at least one decoy):\n{entries}\n\n{when}"
             "Start by reading docs/method.md, docs/format.md and the two examples, then the domain files. "
             "Save the scenario as scenario.json in your working directory.")
 
@@ -95,7 +99,8 @@ def generate(brief: dict, run_dir: Path) -> dict:
                                     system_append=(KIT / "prompts" / "writer.md").read_text(), resume=resume,
                                     label=sid, timeout=3600))
 
-    result = writer(first_prompt(brief))
+    today = dates.today_for(brief["domain"])     # the scenario's reference day: its dates are rendered from it
+    result = writer(first_prompt(brief, today))
     session = result["session_id"]
     check_rounds = reader_rounds = 0
     version = 0
@@ -111,6 +116,8 @@ def generate(brief: dict, run_dir: Path) -> dict:
             problems, kind = [f"{type(exc).__name__}: {exc}"], "missing"
         if s is not None:
             case, problems = scenario.build(s, brief)
+            if case is not None:
+                case["written_for"] = today
             kind = "checks"
             if not problems:
                 report, problems = preflight.check(case, out / f"preflight-v{version:02}", DB, BASE)
@@ -143,7 +150,7 @@ def generate(brief: dict, run_dir: Path) -> dict:
         result = writer(feedback(kind, problems), resume=session)
     outcome = {"scenario_id": sid, "domain": brief["domain"], "brief": brief, "status": status,
                "versions": version, "check_rounds": check_rounds, "reader_rounds": reader_rounds,
-               "history": history, "seconds": round(time.time() - started),
+               "history": history, "seconds": round(time.time() - started), "written_for": today,
                "finished_utc": datetime.now(timezone.utc).isoformat()}
     (out / "outcome.json").write_text(json.dumps(outcome, indent=1) + "\n")
     if status == "accepted":

@@ -106,7 +106,7 @@ from ..core import (
     generate_channel_id,
     generate_resource_id,
     etags_match,
-    REPLICA_NOW_RFC3339,
+    now_rfc3339,
     parse_rfc3339,
 )
 
@@ -1227,7 +1227,7 @@ async def events_list(request: Request) -> JSONResponse:
         )
 
     if not time_min:
-        time_min = REPLICA_NOW_RFC3339
+        time_min = now_rfc3339()
 
     # Get calendar list entry for access role and default reminders
     calendar_entry = get_calendar_list_entry(session, user_id, calendar_id)

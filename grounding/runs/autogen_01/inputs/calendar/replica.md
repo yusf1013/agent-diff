@@ -3,9 +3,8 @@
 This replica is what the agent under test talks to. Where it differs from the real service, the replica decides.
 
 ## Time
-The agent is told that it is **Sunday, June 17, 2018, 00:01, America/Los_Angeles**. Relative dates in requests
-("this Thursday", "tomorrow") resolve from there. Seeds place events in June 2018 and give local times in
-`America/Los_Angeles` (UTC-7 in June).
+The agent sees the same date and time as you (given in your first message), in `America/Los_Angeles`. Relative dates
+in requests ("this Thursday", "tomorrow") resolve from there. Seeds give local times in `America/Los_Angeles`.
 
 ## Reads
 - **`GET /users/me/calendarList`** lists the actor's calendar list entries: `summary`, `summaryOverride`,
