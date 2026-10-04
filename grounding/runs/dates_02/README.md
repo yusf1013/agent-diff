@@ -16,8 +16,8 @@ last resort, by instructing the writer, who should in any case be told the curre
   one-time exception to the rule that we report service defects rather than fix them); the test writer and the
   reader who checks its requests are now told the current date; and the fix was checked live, with eight tests run
   once each on our self-hosted Qwen. All eight behaved as designed (section 3, "The live check").
-- **Waiting for the PI:** whether GPT-6.1 Sol should now run the 15 tests it could never run. Sol's ChatGPT plan
-  lapses around 2026-10-06.
+- **Next:** GPT-6.1 Sol runs the 16 tests it could never run, once the current discussion with the PI is over (the
+  PI's decision of 2026-10-04); Sol's ChatGPT plan lapses around 2026-10-06.
 
 ## 1. The documentation
 
@@ -29,26 +29,39 @@ rule that replaces it: every date belongs to the test and is moved with the test
 real date. The roadmap marks the old rule of 2026-09-28 ("dates are controlled on the test side", that is, by moving
 the agent's clock) as superseded. The code that moved the agent's clock is removed from the runners (section 3).
 
-## 2. Which tests the dates affected
+## 2. Which tests the dates affected, and where each stands now
 
-The tests examined are all those behind [denominator_tables.md](../../denominator_tables.md): the 742 tests and
-policy tests that fill the items of its Tables 1 to 3, the 90 boundary tests, and the 105 tests of its Table 4 that
-arose as by-products: 937 tests in all, written from 86 scenarios by Muse (and one by Sonnet) plus the 90 boundary
-requests. On record are 5,153 runs of them on OpenClaw, by Qwen and by GPT-6.1 Sol.
+**What was examined.** The denominator tables report, for each service, how many of the tests our method prescribes
+we have, and how many of them each agent ran and failed. Those numbers rest on 937 test files: the 742 that fill the
+items of Tables 1 to 3 (86 covers, 195 packed probes, 131 single-decoy probes, 187 absence tests and 143
+underspecified tests), the 90 boundary tests, and the 105 extra tests that Table 4 lists. Qwen and GPT-6.1 Sol ran
+them 5,153 times on OpenClaw. I looked at every one of those tests and runs for anything the dates could have changed.
+
+**What was found.** Three groups were affected; the remaining tests were not.
+
+| Group | Tests | What the dates did | Where it stands now |
+|---|---:|---|---|
+| Every Calendar test | 176 | ran in a world dated June 2018, with the agent's clock set to June 17, 2018 | runs in the present; no result in the tables depended on 2018 |
+| The overdue-issue test and its variants | 7 | ran five days before the day its writer designed it for, which made one near miss easier | runs as designed; its results in the tables come from the easier version |
+| The test of the issue due on October 15 and its variants | 16 | never ran on Sol | runs on any day; Sol runs it once this discussion is over |
 
 ### 2a. Every Calendar test was dated June 2018
 
 The instructions the Calendar writer received said "the agent under test is told it is Sunday, June 17, 2018", and
-the Calendar service had that day built in, so every Calendar scenario was written around that week. That covers 176
-of the 937 tests (153 regular and policy tests and 23 boundary tests). As the PI noted, this is not an acceptable
-setting, and it is now gone: the tests are moved to the week they run in (section 3).
+the Calendar service had that day built in, so every Calendar scenario was written around that week, and every
+Calendar run set the agent's clock back to it. That covers 176 of the 937 tests: 153 regular and policy tests and 23
+boundary tests.
 
-Whether it changed any result on record: Qwen's recorded reasoning names a year other than 2018 in 31 of its 465
-Calendar runs (2026 in 21 of them), and in 3 runs it queried 2026 dates before correcting itself to 2018 within the
-same run. In each of those 3, the outcome came from its 2018 queries. Sol's reasoning is not recorded, and nothing it
-did or wrote shows another year. So the 2018 setting did not decide any result in the tables, for either agent.
+Did the 2018 setting change any result in the tables? The records say no. Qwen's recorded reasoning names a year other
+than 2018 in 31 of its 465 Calendar runs (2026 in 21 of them), and in 3 runs it queried 2026 dates before correcting
+itself to 2018 within the same run; in each of those 3, the outcome came from its 2018 queries. Sol's reasoning is
+not recorded, and nothing it did or wrote shows another year.
 
-### 2b. A test run five days before the day it was designed for, which made it easier
+Now: the Calendar tests run in the present, and the Calendar service keeps the real time. Three of them ran live on
+October 4 and behaved as designed (section 3, "The live check"). Running all Calendar tests again in the present would
+replace the 2018 results; given the records above, I expect little to change.
+
+### 2b. The overdue-issue test: run five days early, which made one near miss easier
 
 The request: *"Set the estimate to 5 on the overdue high-priority issue assigned to Maya Chen on the Web team."*
 
@@ -56,18 +69,21 @@ The data: the issue to change is due September 22 and still in progress. Three n
 21 that is already Done; an open issue due September 30; an open issue due October 10.
 
 The writer was never told a date. It took "today" from the Linear documentation it was given, whose example due date
-is "2026-09-30", and built its sharpest near miss as "due today, the nearest date on the wrong side of the cutoff":
-the open issue due September 30, which on September 30 is not yet overdue. On 2026-09-28 we put this test on an agent
-clock of September 25, a day on which its answer is still right; but on September 25 that issue is due in five days,
-an easy near miss rather than the boundary the writer built.
+is "2026-09-30", and built its sharpest near miss around that day: the open issue due September 30, which on
+September 30 is due today but not yet overdue. On 2026-09-28 we put the test on an agent clock of September 25, a day
+on which its answer is still right; but on September 25 that issue is due in five days, an easy near miss rather than
+the boundary the writer built.
 
-Both agents passed every test that holds that near miss, in every run. Both failed the absence version of the test
-(the one without the right issue) in all six runs, by changing the Done issue, which no date affects. So the fact
-"overdue" was only tested in its easier form; its regular item is "not failed" for both agents in Table 2, and
-whether they would fail the designed version is not known. The fix restores the design: on any run day, that issue
-is due on the run day itself. (7 tests from the scenario G4-LIN-02.)
+What the agents did: both passed every test that holds that near miss, in every run. Both failed the version without
+the right issue (the absence test) in all six runs, by changing the Done issue, which no date affects. So in Table 2
+the "overdue" fact's regular items (its packed probe and its single-decoy probes) show "not failed" for both agents,
+on the easier version.
 
-### 2c. Fifteen items Sol could never run
+Now: the test runs as its writer designed it: on any run day, that issue is due on the run day itself. On October 4,
+Qwen passed both the full test and the probe with the "due today" near miss, once each. Running the 7 tests again on
+both agents would replace the results from the easier version.
+
+### 2c. The test of the issue due on October 15: never run on Sol
 
 The request: *"Set the priority of the 3-point sub-issue of MOB-42 due on October 15 to High."*
 
@@ -78,41 +94,34 @@ MOB-421 instead of MOB-42; and one whose title mentions MOB-42 but whose parent 
 
 The scenario was written on September 27, so the near miss created on October 15 was a record from the future. On
 2026-09-28 we gave the test an agent clock of October 16, the first day it is valid. Qwen ran it that way. Sol could
-not: Sol runs through the ChatGPT plan's login, which OpenClaw checks against the agent's clock; the login expires on
-October 10, so under a clock of October 16 it looked expired and every run stopped before the model was called. Sol
-never ran the scenario's 16 tests, which fill 15 items of the denominator (1 cover, 3 packed probes, 4 single-decoy
-probes, 3 absence tests and 4 underspecified items) and 2 by-products. (Scenario G4-LIN-08.)
+not: Sol runs through the ChatGPT plan's login, which OpenClaw checks against the agent's clock, and the login
+expires on October 10; under a clock of October 16 it looked expired, and every run stopped before the model was
+called. So Sol never ran the scenario's 16 tests, which fill 15 items of the denominator (1 cover, 3 packed probes, 4
+single-decoy probes, 3 absence tests, 4 underspecified items) plus 2 tests of Table 4.
 
-With the fix, nothing moves the agent's clock, so the login works. The test's reference day is October 16, and run on
-October 4 everything moves 12 days earlier: the request says "due on October 3", the issue to change was due
-yesterday, the next-day near miss is due today, and the near miss "created on October 15" was created yesterday.
-That is exactly the situation Qwen faced on its October 16 clock, so the two agents become comparable.
+Now: the test is moved to the run day, so nothing touches the agent's clock and the login works. Run on October 4,
+the request says "due on October 3": the issue to change was due yesterday, the next-day near miss is due today, and
+the near miss "created on October 15" was created yesterday, the same situation Qwen faced on its October 16 clock.
+Qwen ran it live on October 4 and changed the right issue. Sol's 48 runs (16 tests, 3 each) go ahead once this
+discussion is over.
 
-### 2d. Tests that break if run as written, without moving anything
-
-If a test were run on the real clock exactly as written, 187 of the 937 would already be wrong today, and 178 more
-would go wrong later:
-
-- **Already wrong:** the 176 Calendar tests (their world is in 2018); four tests of the overdue scenario above (since
-  October 1 the open issue due September 30 is overdue too, so the full test's request matches two issues, and three
-  of its versions without the right issue match that near miss where they should match nothing); and seven tests of
-  the October-15 scenario above (until October 15 they hold a record from the future).
-- **In the next days:** a request about "the Mobile team's current cycle" goes wrong on October 5, when the cycle
-  its data marks as active ends and, by its dates, the next cycle is current; a request about "the next Atlas
-  milestone due October 15" goes wrong on October 16, when a milestone marked "next" is past its date (Linear itself
-  shows such a milestone as overdue).
-- **During 2027:** any request that writes a date without a year (such as "last modified on June 8") means the most
-  recent such date, so it starts to name a different date when that day comes round again; 14 scenarios.
-
-With the fix none of this happens, because the test moves with the run day. (Per test: [numbers/affected.json](numbers/affected.json).)
-
-### 2e. What ran on another day without harm
+### 2d. Why the other tests were not affected
 
 Most tests ran on a day other than the one they were written for (the first round was written on September 27 and
 ran on September 28 for Qwen and September 30 for Sol; the later tests ran with clocks set to the moment they were
-written), but their requests do not depend on what day it is: they name dates explicitly or not at all, so the run
-day changed nothing. Agents also sometimes read the real clock despite the moved one (a shell command such as `date`),
-and in the tests that do depend on the day, the real day of those runs (September 28 to 30) gives the same answer.
+written), but their requests do not depend on what day it is: they name dates explicitly ("last modified on June 8")
+or not at all, so the run day changed nothing.
+
+Two other requests do depend on the day, and both ran on days for which they were right:
+- *"Set the estimate to 3 on the checkout issue assigned to Maya Chen with the Frontend label in the Mobile team's
+  current cycle."* The cycle its data marks as current runs from September 21 to October 5, and the test ran with a
+  clock of September 28.
+- *"Set the estimate to 5 for the issue assigned to Maya Chen in the next Atlas milestone due October 15."* Its
+  milestone is marked "next" and due October 15, and the test ran with a clock of September 28.
+
+Agents also sometimes read the real date despite the moved clock (with a shell command such as `date`); in the tests
+that depend on the day, the real dates of those runs (September 28 to 30) give the same answers. Per-test detail, with
+every run of each affected test: [numbers/affected.json](numbers/affected.json).
 
 ## 3. The fix: the test's dates move, the agent's clock never does
 
@@ -239,8 +248,11 @@ America/Los_Angeles. The agent that will run your scenario sees the same date an
 agent will see), and nothing more. The Calendar instructions no longer say that the agent is told it is June 17,
 2018, and their example dates are written "YYYY-MM-DD". The reader, a separate model that reads each new request cold
 to check it, gets the same date sentence. Each accepted scenario records the date its writer was given, and that date
-becomes its reference day. One thing is unchanged: the writer's worked Calendar example, an expert-written scenario
-shown as a model, is still dated June 2018 (a decision below).
+becomes its reference day. The writer is also shown an expert-written Calendar scenario as a model, which was dated
+June 2018; when the writer starts, it is now moved to the writer's date in the same way as the tests (its request
+"Move the design review that Priya Nair declined on Thursday to Room 5B." keeps its event four days ahead, its
+near-miss notes are rewritten to match, and the pipeline's own scenario checks pass on it on any day; the PI's
+approval of 2026-10-04).
 
 ### The live check on our Qwen (2026-10-04)
 
@@ -264,22 +276,25 @@ After the edit in the first row, the service stamped the event "last updated" wi
 
 ## For the PI
 
-Decisions, the most urgent first:
+Decided on 2026-10-04: Sol runs the 16 tests of section 2c once the current discussion is over; the writer's Calendar
+example is converted to the writer's date; Slack is held until the scoring translates moved message identifiers or
+until it is needed (September 2027, or the move onto the real Slack).
 
-1. **Run Sol on the 15 items it never ran** (the October-15 scenario, section 2c): 16 tests, 3 runs each, 48 runs on
-   the ChatGPT plan, under an hour, before the plan lapses around October 6. Judging them costs about $1.60 on Muse at
-   list price, or nothing on our Qwen. Recommended.
-2. **The writer's worked Calendar example is still dated June 2018.** With the writer now told today's date, I expect
-   it to follow the date, but it may copy the example's year. Leave it, or convert the example to the present the
-   same way as the tests (recommended if new Calendar scenarios are generated).
-3. **Slack is held** until either the scoring translates moved message identifiers, or September 2027, whichever
-   comes first; the PI agreed to leave it for now.
+Open:
 
-What I decided on the PI's behalf: the overdue scenario is moved from its writer's design (September 30), not from
-the September 25 clock it ran on; the month request moves by whole months; a year written as a number in a test's
-text moves with the current year ("the 2018 cohort" becomes "the 2026 cohort" in a run this year), the same way in the
-request and in the data; the Calendar service's clock change keeps an opt-in setting to pin it, used by none of our
-tests.
+1. **Rerunning the affected tests to replace their recorded results.** The 7 tests of section 2b (on both agents) and
+   the Calendar tests of section 2a. Qwen's runs cost nothing; Sol's use the ChatGPT plan, which lapses around
+   2026-10-06.
+2. **An older pipeline rule now rests on a false premise.** Since 2026-09-27 the writer's scenario checks send back a
+   request outside Calendar that depends on today, with the message "only the Calendar replica has a fixed today".
+   That is no longer true, and requests that depend on the day ("overdue", "tomorrow", a weekday) are now safe,
+   because the test moves with the run day. Requests that depend on a week or a month ("last week", "this month")
+   would need the same care as the month request of section 3. Keep the rule as it is, or narrow it to those.
+
+What I decided on the PI's behalf: the overdue test is moved from its writer's design (September 30), not from the
+September 25 clock it ran on; the month request moves by whole months; a year written as a number in a test's text
+moves with the current year ("the 2018 cohort" becomes "the 2026 cohort" in a run this year), the same way in the
+request and in the data; the Calendar service's clock keeps an opt-in setting to pin it, used by none of our tests.
 
 ## Kit and numbers
 
