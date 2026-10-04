@@ -8,10 +8,13 @@ recorded in the status table at the end.
 
 A final evaluation of the automated grounding-test system, from three angles:
 1. **What the system finds in real agents:**
-   - **Agents:** OpenClaw with the self-hosted Qwen3.8-27B first; more models and harnesses later.
+   - **Agents:** real harnesses only, for every model (the PI, 2026-10-01). Done on OpenClaw: the self-hosted
+     Qwen3.8-27B and GPT-6.1 Sol. Being set up (2026-10-03): Claude Code and Codex, each with the Claude and the
+     ChatGPT subscription, in isolated logins; further harnesses (Hermes, Goose, Pi) at the PI's decision.
    - **Per agent:** the facts the regular tests expose, the eight policy decisions, and how the failures happen
      (analysed by hand).
-   - **A reference row:** Purdue's Qwen on the bare solver loop (autogen_02).
+   - **No bare-loop rows:** the bare loop (the toy harness, Purdue's or the self-hosted Qwen's) is outdated and is
+     not used in any analysis, comparison or report, not even as a reference row (the PI, 2026-10-01).
 2. **The system itself, reported in two phases:**
    - **Generation:** briefs, then scenarios, then valid tests, then tests run.
    - **Judging:** the judge's accuracy per agent, against a blind sample labelled by hand before any verdict.

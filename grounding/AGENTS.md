@@ -98,7 +98,11 @@ Every reported number is read against the tests the methodology prescribes from 
 [protocols/denominator.md](protocols/denominator.md) (732 cases without several-match: 213 servable facts × a
 packed probe, an absence test and an underspecified test, plus 93 faithful capability boundaries; per service and
 with what is excluded). Production counts (cases built, runs made) are never denominators; a study that reports
-coverage or exposure says how many of the prescribed items its tests fill, with `runs/denominator_01`'s kit. The three summary tables are [denominator_tables.md](denominator_tables.md). Only OpenClaw runs count as runs of an agent under test; bare-loop (toy harness) runs are intermediate results and are never reported as such.
+coverage or exposure says how many of the prescribed items its tests fill, with `runs/denominator_01`'s kit. The three summary tables are [denominator_tables.md](denominator_tables.md).
+
+## Real harnesses only
+
+For any model, only runs on a real harness count (OpenClaw so far). The bare loop (the toy harness) is outdated (the PI, 2026-10-01): its runs, Qwen's included, are not considered in any analysis, comparison or report, not even as a reference row.
 
 ## Writing custom tests
 Use the existing custom Slack workflow in grounding/integrations/agentdiff/runtime.py, following grounding/AGENTS.md. Use grounding/runs/slack_campaign/compiler_pilot_01/W01/case.json and its execution review as examples. Author the seed, prompt, cards, and task specification before execution. Run the solver without native assertions, then manually review its trajectory, output, and diff. Keep the evidence bundle ready for our custom evaluator. Save everything in a new persistent directory under grounding/runs/, and preserve all test files and execution evidence during cleanup. Keep the new folder directory simple and protect it from bloat. 
