@@ -11,6 +11,10 @@ For each brief:
 4. A cold reader, a fresh session for every version it reads. Its findings go back the same way.
 Every version of `scenario.json`, every finding and every call is kept under RUN_DIR/<id>/. Accepted scenarios
 are expanded into their suites under RUN_DIR/cases/<domain>/, listed in RUN_DIR/suite.json.
+
+Before the next generation, two date items deferred by the PI on 2026-10-04 must be raised with the PI first
+(grounding/AGENTS.md, "Dates: never change the agent's clock", "Before the next generation of tests"): the
+relative-date word check in scenario.py, and the suite builders' clock dates, which the runners now refuse.
 """
 from __future__ import annotations
 

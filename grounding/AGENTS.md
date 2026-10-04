@@ -51,6 +51,22 @@ Changing an agent's clock, or anything else in the agent's own environment, so t
 
 Dates belong to the test. Every date in a test (its data, its request, its expected values, what the judge reads) is held relative to the moment the test was written for, and is rendered against the real date when the test's environment is created. The agent always runs on the real clock. The investigation and the fix are in [runs/dates_02](runs/dates_02/README.md): every test behind the denominator tables has a verified template in `runs/dates_02/suite/`, and the runners render it (`for_run` in [common/dates.py](common/dates.py), called by the OpenClaw runtime and the Claude Code backend). The shims' code paths are removed; a test made for a shifted clock (one with a `clock`, or a Calendar test dated 2018) is refused. A new scenario gets the same treatment: template it with `common/dates.py` before it runs.
 
+**Before the next generation of tests (deferred by the PI on 2026-10-04; flag it to the PI first).** Two parts of
+the generation pipeline still assume the old clocks:
+
+1. The writer's scenario checks send back any request outside Calendar that depends on today (a word list in
+   `runs/autogen_01/kit/scenario.py`, `_relative_dates`: "today", "tomorrow", "overdue", "last week", "this month",
+   ...), with the reason "only the Calendar replica has a fixed today". That reason no longer holds: requests about a
+   day are now safe, because a test moves with the run day; requests about a calendar period ("last week", "this
+   month") still need care, as "created in March" did. The proposed replacement, agreed in principle: drop the word
+   list and, when a scenario is accepted, convert it and run the moving checks of `runs/dates_02/kit/checks.py`
+   (the same answer on every run day of the next two years; a named period keeps the same records), extended from
+   months to weeks, quarters and years; a request naming a period moves by whole periods, and only a concrete failure
+   goes back to the writer.
+2. The suite builders (`runs/completion_01/suite.py` and `runs/regen_01/suite.py`, `clock_for`) still stamp each new
+   test with a clock date, and the runners refuse such tests. Replace that step with templating (`common/dates.py`,
+   `make`, with the scenario's `written_for` date as its reference day), then run the dates_02 checks on the suite.
+
 ## Reporting to the PI
 
 These rules apply to everything the PI reads: chat replies, the Status and "For the PI" sections of study READMEs, logs, briefs, the roadmap, and anything the lead session relays from another session. The PI shared the research goal so that every report can say why a step is taken. A report works only if the PI can follow it, and act on it, without opening a file.

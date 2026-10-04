@@ -117,7 +117,11 @@ the final runs use one frozen version.
    exception to "report, don't fix"; the backend now runs from the repository); the writer and the cold reader are
    told the current date, and the Calendar notes no longer say 2018; self-hosted Qwen runs need no approval and
    validation on it is encouraged; eight converted tests ran live on Qwen, all as designed (dates_02, "The live
-   check"). Waiting for the PI: Sol on the 15 items it never ran. The earlier text of this step (2026-09-30, withdrawn as a decision):** The PI's question: *how can a test that depends on
+   check"). Waiting for the PI: Sol on the 15 items it never ran.
+   **Deferred by the PI to the next generation (2026-10-04), to be raised with the PI before any new tests are
+   generated:** replace the writer's relative-date word check with the moving checks (weeks, quarters and years
+   added to months), and replace the suite builders' clock dates (which the runners now refuse) with templating
+   from the scenario's `written_for` date. Details: grounding/AGENTS.md, "Before the next generation of tests". The earlier text of this step (2026-09-30, withdrawn as a decision):** The PI's question: *how can a test that depends on
    dates be right on any day it is run, without adding overhead to the LLMs in the pipeline?* Today every date in a
    scenario is absolute and the test runs the agent under a shifted clock (step 3's "dates are controlled on the
    test side"), which fails wherever the agent's process cannot be back- or forward-dated: the 16 G4-LIN-08 tests
