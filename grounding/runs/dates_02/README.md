@@ -183,7 +183,9 @@ reference day of a new test is exactly the date its writer was given.
   longer recognize them and would count an agent's action on them as a failure, without any error. Nothing in a Slack
   request depends on today: no Slack request uses today, yesterday, a weekday or "overdue" as a condition, and the
   only Slack date without a year (*"Add the eyes reaction to the message Priya Sharma posted in #launch-plan on
-  September 15th saying the demo video is ready"*) can only mean September 15, 2026 until September 15, 2027. The fix,
+  September 15th saying the demo video is ready"*) can only mean September 15, 2026 until September 15, 2027. The
+  messages' own text stays as written too (for example "Rollback for the billing service is scheduled for
+  tomorrow."), so as time passes it reads as older content; no condition depends on it. The fix,
   when needed, is to have the scoring translate the moved identifiers back (the runner knows the shift); it will also
   be needed to move tests onto the real Slack, whose servers assign identifiers.
 
